@@ -160,7 +160,7 @@ public class LaunchOMissile : Projectile, IDamagable {
 		projId = (int)ProjIds.LaunchOMissle;
 		maxTime = 0.75f;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		vel.y = speed * (unitVel switch {
 			0 => -0.2f,
 			1 => -0.05f,
@@ -280,7 +280,7 @@ public class LaunchOShoot : MaverickState {
 		Point? shootPos = lo.getFirstPOI();
 		if (shootState == 0 && shootPos != null) {
 			shootState = 1;
-			maverick.playSound("torpedo", sendRpc: true);
+			//maverick.playSound("torpedo", sendRpc: true);
 			if (maverick.ammo >= 1) new LaunchOMissile(lo.missileWeapon, shootPos.Value.addxy(0, -3), lo.xDir, player, 0, player.getNextActorNetId(), rpc: true);
 			if (maverick.ammo >= 2) new LaunchOMissile(lo.missileWeapon, shootPos.Value.addxy(0, 0), lo.xDir, player, 1, player.getNextActorNetId(), rpc: true);
 			if (maverick.ammo >= 3) new LaunchOMissile(lo.missileWeapon, shootPos.Value.addxy(0, 5), lo.xDir, player, 2, player.getNextActorNetId(), rpc: true);
@@ -300,7 +300,7 @@ public class LaunchOShoot : MaverickState {
 				maverick.frameSpeed = 1;
 				sprite += "2";
 				maverick.changeSpriteFromName(sprite, true);
-				maverick.playSound("torpedo", sendRpc: true);
+				//maverick.playSound("torpedo", sendRpc: true);
 				shootPos = lo.getFirstPOI();
 				if (maverick.ammo >= 1) new LaunchOMissile(lo.missileWeapon, shootPos.Value.addxy(0, -3), lo.xDir, player, 0, player.getNextActorNetId(), rpc: true);
 				if (maverick.ammo >= 2) new LaunchOMissile(lo.missileWeapon, shootPos.Value.addxy(0, 0), lo.xDir, player, 1, player.getNextActorNetId(), rpc: true);
@@ -345,7 +345,7 @@ public class LaunchOHomingTorpedoState : MaverickState {
 
 		if (maverick.frameIndex == 3 && !shootOnce) {
 			shootOnce = true;
-			maverick.playSound("torpedo", sendRpc: true);
+			//maverick.playSound("torpedo", sendRpc: true);
 			var pois = maverick.currentFrame.POIs;
 			var lo = (maverick as LaunchOctopus);
 
@@ -378,7 +378,7 @@ public class LaunchOWhirlpoolState : MaverickState {
 		maverick.stopMoving();
 		maverick.useGravity = false;
 		whirlpool = new LaunchOWhirlpoolProj(new LaunchOWhirlpoolWeapon(), maverick.pos.addxy(0, isAI ? -100 : 25), 1, player, player.getNextActorNetId(), sendRpc: true);
-		maverick.playSound("launchoWhirlpool", sendRpc: true);
+		//maverick.playSound("launchoWhirlpool", sendRpc: true);
 	}
 
 	public override void update() {
@@ -395,7 +395,7 @@ public class LaunchOWhirlpoolState : MaverickState {
 		whirlpoolSoundTime += Global.spf;
 		if (whirlpoolSoundTime > 0.5f) {
 			whirlpoolSoundTime = 0;
-			maverick.playSound("launchoWhirlpool", sendRpc: true);
+			//maverick.playSound("launchoWhirlpool", sendRpc: true);
 		}
 
 		if (stateTime > 2f) {
@@ -462,7 +462,7 @@ public class LaunchODrainState : MaverickState {
 		soundTime += Global.spf;
 		if (soundTime > 1f) {
 			soundTime = 0;
-			maverick.playSound("launchoDrain", sendRpc: true);
+			//maverick.playSound("launchoDrain", sendRpc: true);
 		}
 
 		if (stateTime > 4f) {

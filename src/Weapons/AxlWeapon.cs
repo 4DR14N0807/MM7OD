@@ -109,7 +109,7 @@ public class AxlWeapon : Weapon {
 		}
 
 		if (axlBulletType == AxlBulletType.AltFire) {
-			axl.playSound(!isCharged ? "axlBullet" : shootSounds[3]);
+			axl.playSound(!isCharged ? "" : shootSounds[3]);
 		} else {
 			axl.playSound(!isCharged ? shootSounds[0] : shootSounds[3]);
 		}

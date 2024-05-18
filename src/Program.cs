@@ -152,12 +152,12 @@ class Program {
 
 		List<string> loadText = new();
 		loadText.Add("NOM BIOS v" + Global.version + ", An Energy Sunstar Ally");
-		loadText.Add("Copyright ©2114, NOM Corporation");
+		loadText.Add("Copyright ©20XX, NOM Corporation");
 		loadText.Add("");
-		loadText.Add("MMXOD " + Global.shortForkName + " " + Global.versionName + " " + Global.subVersionName);
+		loadText.Add(/*"MMXOD " + */ Global.shortForkName + " " + Global.versionName /* + " " + Global.subVersionName*/);
 		loadText.Add("");
 		if (String.IsNullOrEmpty(Options.main.playerName)) {
-			loadText.Add("User: Dr. Cain");
+			loadText.Add("User: Dr. Light");
 		} else {
 			loadText.Add("User: " + Options.main.playerName);
 		}
@@ -171,10 +171,10 @@ class Program {
 		setupControllers(window);
 
 		if (Options.main.areShadersDisabled() == false) {
-			loadText.Add("Shaders OK.");
+			loadText.Add("Added Poderzinhos.");		//Shaders OK.
 			loadShaders();
 		} else {
-			loadText.Add("Shaders disabled, skipping.");
+			loadText.Add("No poderzinho?");		//Shaders disabled, skipping.
 		}
 
 		// Loading with GUI.
@@ -186,29 +186,30 @@ class Program {
 			loadText[loadText.Count - 1] = "Masterserver OK.";
 		}
 
-		loadText.Add("Loading Sprites...");
+		loadText.Add("Deleting MMX Characters..."); //Loading Sprites...
 		loadMultiThread(loadText, window, loadImages);
-		loadText[loadText.Count - 1] = "Loaded Sprites.";
+		loadText[loadText.Count - 1] = "MMX Chars Deleted."; //Loaded Sprites.
 
-		loadText.Add("Loading Sprite JSONS...");
+		loadText.Add("Deleting Walljump..."); //Loading Sprite JSONS...
 		loadMultiThread(loadText, window, loadSprites);
-		loadText[loadText.Count - 1] = $"Loaded {Global.realSpriteCount} Sprite JSONs.";
+		loadText[loadText.Count - 1] = $"Walljump Deleted."; //Loaded {Global.realSpriteCount} Sprite JSONs."; //Sprite JSONS OK.
 
-		loadText.Add("Loading Maps...");
+		loadText.Add("Replacing Maps..."); //Loading Maps...
 		loadMultiThread(loadText, window, loadLevels);
-		loadText[loadText.Count - 1] = "Maps Loaded.";
+		loadText[loadText.Count - 1] = "Maps Replaced."; // Maps Loaded.
 
-		loadText.Add("Loading SFX...");
+		loadText.Add("Downloading MEGAMARI..."); //Loading SFX...
 		loadMultiThread(loadText, window, loadSounds);
-		loadText[loadText.Count - 1] = $"Loaded {Global.soundCount} SFX files.";
 
-		loadText.Add("Loading Music...");
+		loadText[loadText.Count - 1] = $"MEGAMARI Downloaded."; //Loaded {Global.soundCount} SFX files."; SFX Loaded
+
+		loadText.Add("Adding Fumos..."); //Loading Music...
 		loadMultiThread(loadText, window, loadMusics);
-		loadText[loadText.Count - 1] = "Music Loaded.";
+		loadText[loadText.Count - 1] = "Fumos Added."; //Music Loaded.
 
-		loadText.Add("Calculating checksum...");
+		loadText.Add("Nerfing Rock..."); // Calculating checksum...
 		loadMultiThread(loadText, window, Global.computeChecksum);
-		loadText[loadText.Count - 1] = "Checksum OK.";
+		loadText[loadText.Count - 1] = "Nerfed."; // Checksum OK.
 
 		/*if (!Helpers.FileExists("region.json")) {
 			Helpers.WriteToFile("region.json", regionJson);
@@ -225,7 +226,7 @@ class Program {
 
 		// Force startup config to be fetched
 		Menu.change(new MainMenu());
-		Global.changeMusic("MMX1-TitleScreen");
+		Global.changeMusic("menu");
 
 		if (mode == 1) {
 			HostMenu menu = new HostMenu(new MainMenu(), null, false, false, true);
@@ -389,7 +390,7 @@ class Program {
 				Alignment.Right
 			);
 			Fonts.drawText(
-				FontType.BlueMenu, "FPS:" + fps.ToString(), Global.screenW - 5, yPos,
+				FontType.LigthGrey, "FPS:" + fps.ToString(), Global.screenW - 5, yPos,
 				Alignment.Right
 			);
 		}
@@ -1211,7 +1212,8 @@ class Program {
 		}
 	}
 
-	public static string getCpuName() {
+	public static string 
+	getCpuName() {
 		string cpuName = "Unknown";
 		#if WINDOWS
 			// For Windows OS.

@@ -38,7 +38,7 @@ public class HyperZeroStart : CharState {
 				} else if (zero.zeroHyperMode == 2) {
 					zero.isNightmareZero = true;
 				}
-				character.playSound("ching");
+				//character.playSound("ching");
 				character.fillHealthToMax();
 			}
 		} else {
@@ -71,7 +71,7 @@ public class HyperZeroStart : CharState {
 				destroyOnEnd: false, sendRpc: true
 			);
 			drWilyAnim.fadeIn = true;
-			character.playSound("blackzeroentry", forcePlay: false, sendRpc: true);
+			//character.playSound("BlackZeroEntry", forcePlay: false, sendRpc: true);
 		} else if (zero.zeroHyperMode == 1) {
 			drWilyAnim = new Anim(
 				character.pos.addxy(30 * character.xDir, -30), "drwily", -character.xDir,
@@ -80,7 +80,7 @@ public class HyperZeroStart : CharState {
 			drWilyAnim.fadeIn = true;
 			drWilyAnim.blink = true;
 			character.player.awakenedCurrencyEnd = (character.player.currency - 10);
-			character.playSound("awakenedzeroentry", forcePlay: false, sendRpc: true);
+			//character.playSound("AwakenedZeroEntry", forcePlay: false, sendRpc: true);
 		} else if (zero.zeroHyperMode == 2) {
 			drWilyAnim = new Anim(
 				character.pos.addxy(30 * character.xDir, -30), "gate", -character.xDir,
@@ -89,7 +89,7 @@ public class HyperZeroStart : CharState {
 			drWilyAnim.fadeIn = true;
 			drWilyAnim.blink = true;
 			character.player.currency -= 10;
-			character.playSound("nightmarezeroentry", forcePlay: false, sendRpc: true);
+			//character.playSound("NightmareZeroEntry", forcePlay: false, sendRpc: true);
 		}
 		zero.hyperZeroUsed = true;
 	}
@@ -159,9 +159,9 @@ public class KKnuckleParryStartState : CharState {
 			}
 		}
 		if (Helpers.randomRange(0, 10) < 10) {
-			character.playSound("zeroParry", forcePlay: false, sendRpc: true);
+			//character.playSound("zeroParry", forcePlay: false, sendRpc: true);
 		} else {
-			character.playSound("zeroParry2", forcePlay: false, sendRpc: true);
+			//character.playSound("zeroParry2", forcePlay: false, sendRpc: true);
 		}
 		character.changeState(new KKnuckleParryMeleeState(counterAttackTarget), true);
 	}

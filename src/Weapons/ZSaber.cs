@@ -98,7 +98,7 @@ public class ZeroSpinKickState : CharState {
 		soundTime -= Global.spf;
 		if (soundTime <= 0) {
 			soundTime = 0.15f;
-			character.playSound("spinkick", sendRpc: true);
+			//character.playSound("spinkick", sendRpc: true);
 		}
 
 		if (

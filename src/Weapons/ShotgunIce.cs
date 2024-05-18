@@ -13,7 +13,7 @@ public class ShotgunIce : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 8;
 		weaknessIndex = 4;
-		shootSounds = new List<string>() { "shotgunIce", "shotgunIce", "shotgunIce", "icyWind" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.5f;
 	}
 
@@ -70,8 +70,7 @@ public class ShotgunIceProj : Projectile {
 			vel = new Point(maxSpeed * velOverride.Value.x, maxSpeed * (velOverride.Value.y * 0.5f));
 		}
 		reflectable = true;
-		useGravity = true;
-		//this.fadeSound = "explosion";
+		//this.fadeSound = "";
 		if (rpc) {
 			byte[] extraArgs;
 			if (velOverride != null) {
@@ -134,7 +133,7 @@ public class ShotgunIceProj : Projectile {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		if (ownedByLocalPlayer) onHit();
-		playSound("shotgunicehitX1", forcePlay: false, sendRpc: true);
+		//playSound("shotgunicehitX1", forcePlay: false, sendRpc: true);
 		base.onHitDamagable(damagable);
 	}
 
@@ -180,7 +179,7 @@ public class ShotgunIceProjSled : Projectile {
 		weapon, pos, xDir, 0, 2, player, "shotgun_ice_charge", 0, 1, netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)ProjIds.ShotgunIceSled;
-		fadeSound = "iceBreak";
+		fadeSound = "";
 		shouldShieldBlock = false;
 		isPlatform = true;
 		//this.collider.wallOnly = true;

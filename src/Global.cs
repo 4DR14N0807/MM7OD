@@ -16,14 +16,14 @@ namespace MMXOnline;
 
 public partial class Global {
 	public static decimal version = 20m;
-	public static string versionName = "Revision 20";
+	public static string versionName = "v0.1";
 	public static string subVersionName = "Alpha 11";
 	public static string subVersionShortName = "a11";
 
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "F263FF1D269C91905C7D757635331974";
+	private const string assetChecksum = "0E32EE47E86FF6681644E2927FA8A1E9";
 
 	// For forks/mods of the game, add a prefix here so that different forks
 	// don't conflict with each other or the base game
@@ -32,13 +32,13 @@ public partial class Global {
 	// Better to use together with "checksumPrefix" and be diferent from it.
 	public const string checksumKey = checksumPrefix + " DEVTEST-13-03-2024";
 	// For displaying the name of the mod in the version string.
-	public static string shortForkName = "CE";
+	public static string shortForkName = "MM7OD";
 
 	public static string prodChecksum = checksumPrefix + " " + assetChecksum;
 
 	// Some terminology related stuff.
-	public static string nameCoin = "Metal";
-	public static string nameCoins = "Metals";
+	public static string nameCoin = "Bolt";
+	public static string nameCoins = "Bolts";
 
 	public static void promptDebugSettings() {
 		//testDocumentsInDebug = Helpers.showMessageBoxYesNo("Test documents in debug?", "Debug Settings");
@@ -54,7 +54,7 @@ public partial class Global {
 	 */
 
 	// Most common by far
-	public static int quickStartCharNum = 2;
+	public static int quickStartCharNum = 5;
 	public static int quickStartBotCharNum = 0;
 
 	public static bool _quickStart = true;

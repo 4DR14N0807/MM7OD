@@ -43,7 +43,8 @@ public class XSaberState : CharState {
 		base.update();
 		if (character.frameIndex >= 6 && !fired) {
 			fired = true;
-			character.playSound("zerosaberx3");
+			//character.playSound("ZeroSaberX3");
+
 			new XSaberProj(new XSaber(player), character.pos.addxy(20 * character.xDir, -20), character.xDir, player, player.getNextActorNetId(), rpc: true);
 		}
 
@@ -69,7 +70,8 @@ public class X6SaberState : CharState {
 		int frameSound = 1;
 		if (character.frameIndex >= frameSound && !fired) {
 			fired = true;
-			character.playSound("raijingeki");
+			//character.playSound("saberShot");
+
 			//new XSaberProj(new XSaber(player), character.pos.addxy(30 * character.xDir, -29), character.xDir, player, player.getNextActorNetId(), rpc: true);
 		}
 

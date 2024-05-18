@@ -35,7 +35,7 @@ public class SigmaSlashState : CharState {
 
 		if (character.frameIndex >= attackFrame && !fired) {
 			fired = true;
-			character.playSound("sigmaSaber", sendRpc: true);
+			//character.playSound("SigmaSaber", sendRpc: true);
 
 			Point off = new Point(30, -20);
 			if (character.sprite.name == "sigma_attack_air") {
@@ -165,7 +165,7 @@ public class SigmaBallShoot : CharState {
 			player.sigmaAmmo -= 7;
 			if (player.sigmaAmmo < 0) player.sigmaAmmo = 0;
 			sigma.sigmaAmmoRechargeCooldown = sigma.sigmaHeadBeamTimeBeforeRecharge;
-			character.playSound("energyBall", sendRpc: true);
+			//character.playSound("energyBall", sendRpc: true);
 			new SigmaBallProj(
 				player.sigmaBallWeapon, poi, character.xDir, player,
 				player.getNextActorNetId(), vel.normalize(), rpc: true
@@ -265,7 +265,7 @@ public class SigmaWallDashState : CharState {
 			fired = true;
 			character.saberCooldown = sigma.sigmaSaberMaxCooldown;
 
-			character.playSound("sigmaSaber", sendRpc: true);
+			//character.playSound("SigmaSaber", sendRpc: true);
 			character.changeSpriteFromName("wall_dash_attack", true);
 
 			Point off = new Point(30, -20);

@@ -44,12 +44,13 @@ public class Pickup : Actor {
 			if (chr.isHyperSigmaBS.getValue()) return;
 
 			if (pickupType == PickupType.Health) {
-				if (chr.player.health >= chr.player.maxHealth && !chr.player.hasSubtankCapacity()) return;
+				if (chr.player.health >= chr.player.maxHealth && !chr.player.hasETankCapacity()) return;
 				chr.addHealth(healAmount);
 				destroySelf(doRpcEvenIfNotOwned: true);
 			} else if (pickupType == PickupType.Ammo) {
 				if (chr.canAddAmmo()) {
-					chr.addPercentAmmo(healAmount);
+					//chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
+					chr.addAmmo(healAmount);
 					destroySelf(doRpcEvenIfNotOwned: true);
 				}
 			}
@@ -95,9 +96,7 @@ public class Pickup : Actor {
 				}
 			}
 		} else if (other.gameObject is Maverick maverick && maverick.ownedByLocalPlayer) {
-			if (pickupType == PickupType.Health &&
-				(maverick.health < maverick.maxHealth || maverick.netOwner.hasSubtankCapacity())
-			) {
+			if (pickupType == PickupType.Health && (maverick.health < maverick.maxHealth || maverick.netOwner.hasETankCapacity())) {
 				maverick.addHealth(healAmount, true);
 				destroySelf(doRpcEvenIfNotOwned: true);
 			} else if (pickupType == PickupType.Ammo && maverick.ammo < maverick.maxAmmo) {
@@ -110,13 +109,13 @@ public class Pickup : Actor {
 
 public class LargeHealthPickup : Pickup {
 	public LargeHealthPickup(
-		Player owner, Point pos, ushort? netId,
+		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
 	) : base(
-		owner, pos, "pickup_health_large", netId, ownedByLocalPlayer,
+		owner, pos, "pickup_health_large", netId, ownedByLocalPlayer, 
 		NetActorCreateId.LargeHealth, sendRpc: sendRpc
 	) {
-		healAmount = 8;
+		healAmount = 7;
 		pickupType = PickupType.Health;
 	}
 }
@@ -136,26 +135,26 @@ public class SmallHealthPickup : Pickup {
 
 public class LargeAmmoPickup : Pickup {
 	public LargeAmmoPickup(
-		Player owner, Point pos, ushort? netId,
+		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
 	) : base(
-		owner, pos, "pickup_ammo_large", netId, ownedByLocalPlayer,
+		owner, pos, "pickup_ammo_large", netId, ownedByLocalPlayer, 
 		NetActorCreateId.LargeAmmo, sendRpc: sendRpc
 	) {
-		healAmount = 50;
+		healAmount = 7;
 		pickupType = PickupType.Ammo;
 	}
 }
 
 public class SmallAmmoPickup : Pickup {
 	public SmallAmmoPickup(
-		Player owner, Point pos, ushort? netId,
+		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
 	) : base(
-		owner, pos, "pickup_ammo_small", netId, ownedByLocalPlayer,
+		owner, pos, "pickup_ammo_small", netId, ownedByLocalPlayer, 
 		NetActorCreateId.SmallAmmo, sendRpc: sendRpc
 	) {
-		healAmount = 25;
+		healAmount = 4;
 		pickupType = PickupType.Ammo;
 	}
 }

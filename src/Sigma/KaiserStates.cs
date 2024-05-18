@@ -157,7 +157,7 @@ public class KaiserSigmaIdleState : KaiserSigmaBaseState {
 				return;
 			}
 		} else if (player.input.isPressed(Control.Dash, player)) {
-			if (UpgradeMenu.subtankDelay > 0) {
+			if (UpgradeMenu.eTankDelay > 0) {
 				Global.level.gameMode.setHUDErrorMessage(player, "Cannot become Virus in battle");
 			} else {
 				character.changeState(new KaiserSigmaVirusState(), true);
@@ -219,7 +219,7 @@ public class KaiserSigmaHoverState : KaiserSigmaBaseState {
 		if (!moveAmount.isZero()) {
 			if (moveAmount.y > 0 && character.checkCollision(0, moveAmount.y * Global.spf) != null) {
 				kaiserSigma.changeToKaiserIdleOrFall();
-				character.playSound("crash", sendRpc: true);
+				//character.playSound("crash", sendRpc: true);
 				character.shakeCamera(sendRpc: true);
 				return;
 			}
@@ -267,7 +267,7 @@ public class KaiserSigmaFallState : KaiserSigmaBaseState {
 		if (!moveAmount.isZero()) {
 			if (moveAmount.y > 0 && character.checkCollision(0, moveAmount.y * Global.spf) != null) {
 				kaiserSigma.changeToKaiserIdleOrFall();
-				character.playSound("crash", sendRpc: true);
+				//character.playSound("crash", sendRpc: true);
 				character.shakeCamera(sendRpc: true);
 				return;
 			}
@@ -445,7 +445,7 @@ public class KaiserSigmaBeamState : KaiserSigmaBaseState {
 
 		if (state == 0) {
 			if (chargeTime == 0) {
-				chargeSound = character.playSound("kaiserSigmaCharge", sendRpc: true);
+				//chargeSound = character.playSound("kaiserSigmaCharge", sendRpc: true);
 			}
 			chargeTime += Global.spf;
 			Point shootPos = character.getFirstPOIOrDefault();
@@ -467,7 +467,7 @@ public class KaiserSigmaBeamState : KaiserSigmaBaseState {
 			if (chargeTime > 1f) {
 				state = 1;
 				proj = new KaiserSigmaBeamProj(new KaiserBeamWeapon(), shootPos, character.xDir, !isDown, player, player.getNextActorNetId(), rpc: true);
-				beamSound = character.playSound("kaiserSigmaBeam", sendRpc: true);
+				//beamSound = character.playSound("kaiserSigmaBeam", sendRpc: true);
 			}
 		} else if (state == 1) {
 			if (proj.destroyed) {
@@ -589,7 +589,7 @@ public class KaiserSigmaMissileProj : Projectile {
 		netcodeOverride = NetcodeModel.FavorDefender;
 
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		angle = 270;
 
 		if (rpc) {
@@ -662,7 +662,7 @@ public class KaiserSigmaMineProj : Projectile, IDamagable {
 		maxTime = 4f;
 		this.type = type;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		netcodeOverride = NetcodeModel.FavorDefender;
 
 		if (type == 1) {

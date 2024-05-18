@@ -76,7 +76,7 @@ public class VileRevive : CharState {
 			character.removeRenderEffect(RenderEffectType.Flash);
 		}
 		if (character.frameIndex == 7 && !once) {
-			character.playSound("ching");
+			//character.playSound("ching");
 			player.health = 1;
 			character.addHealth(player.maxHealth);
 			once = true;
@@ -105,8 +105,7 @@ public class VileRevive : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		//character.setzIndex(ZIndex.Foreground);
-		character.playSound("revive");
-		character.addMusicSource("mmx3_doppler", character.getCenterPos(), false);
+		character.addMusicSource("drdoppler", character.getCenterPos(), false);
 		if (!isMK5) {
 			drDopplerAnim = new Anim(character.pos.addxy(30 * character.xDir, -15), "drdoppler", -character.xDir, null, false);
 			drDopplerAnim.fadeIn = true;
@@ -198,7 +197,7 @@ public class VileHover : CharState {
 		}
 		if (base.player.input.isHeld("jump", base.player) && !once) {
 			once = true;
-			sound = character.playSound("vileHover", forcePlay: false, sendRpc: true);
+			//sound = character.playSound("Vilehover", forcePlay: false, sendRpc: true);
 		}
 	}
 
@@ -283,7 +282,6 @@ public class VileHover : CharState {
 		if (sound != null && !sound.deleted) {
 			sound.sound?.Stop();
 		}
-		RPC.stopSound.sendRpc("vileHover", character.netId);
-
+		//RPC.stopSound.sendRpc("Vilehover", character.netId);
 	}
 }

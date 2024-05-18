@@ -176,7 +176,7 @@ public partial class MegamanX : Character {
 
 		if (player.hasChip(2) && !isInvisible() && totalChipHealAmount < maxTotalChipHealAmount) {
 			noDamageTime += Global.spf;
-			if ((player.health < player.maxHealth || player.hasSubtankCapacity()) && noDamageTime > 4) {
+			if ((player.health < player.maxHealth || player.hasETankCapacity()) && noDamageTime > 4) {
 				rechargeHealthTime -= Global.spf;
 				if (rechargeHealthTime <= 0) {
 					rechargeHealthTime = 1;
@@ -875,7 +875,7 @@ public partial class MegamanX : Character {
 				boughtGoldenArmorOnce = true;
 			}
 			player.setGoldenArmor(true);
-			Global.playSound("ching");
+			//Global.playSound("ching");
 			return;
 		}
 		if (player.canUpgradeUltimateX()) {
@@ -884,7 +884,7 @@ public partial class MegamanX : Character {
 				boughtUltimateArmorOnce = true;
 			}
 			player.setUltimateArmor(true);
-			Global.playSound("chingX4");
+			//Global.playSound("chingX4");
 			return;
 		}
 	}
@@ -1063,6 +1063,8 @@ public partial class MegamanX : Character {
 			proj = new GenericMeleeProj(new XUPPunch(player), centerPoint, ProjIds.UPPunch, player, damage: 3, flinch: Global.halfFlinch);
 		} else if (sprite.name.Contains("unpo_parry_start")) {
 			proj = new GenericMeleeProj(new XUPParry(), centerPoint, ProjIds.UPParryBlock, player, 0, 0, 1);
+		} else if (sprite.name.Contains("slashclaw")) {
+			proj = new GenericMeleeProj(new SlashClawWeapon(player), centerPoint, ProjIds.SlashClaw, player);
 		}
 
 		return proj;
@@ -1191,9 +1193,9 @@ public partial class MegamanX : Character {
 				shootPos.x + x + (3 * xDir), shootPos.y + y, 1, 1, null, 1, 1, 1, zIndex
 			);
 		}
-		if (isHyperChargeActiveBS.getValue() && visible) {
+		/*if (isHyperChargeActiveBS.getValue() && visible) {
 			drawHyperCharge(x, y);
-		}
+		}*/
 		base.render(x, y);
 	}
 

@@ -4,7 +4,7 @@ namespace MMXOnline;
 
 public class GravityWell : Weapon {
 	public GravityWell() : base() {
-		shootSounds = new List<string>() { "buster", "buster", "buster", "warpIn" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.5f;
 		index = (int)WeaponIds.GravityWell;
 		weaponBarBaseIndex = 22;
@@ -90,7 +90,7 @@ public class GravityWellProj : Projectile, IDamagable {
 		changeSprite("gravitywell_proj", true);
 		frameIndex = 0;
 		frameSpeed = 0;
-		playSound("gravityWell", sendRpc: true);
+		//playSound("gravityWell", sendRpc: true);
 		wellAnim = new Anim(pos, "gravitywell_well_start", xDir, owner.getNextActorNetId(), false, true, true);
 	}
 
@@ -202,7 +202,7 @@ public class GravityWellProj : Projectile, IDamagable {
 		if (projId == (int)ProjIds.RaySplasher || projId == (int)ProjIds.RaySplasherTurret) damage *= 2;
 		health -= damage;
 		if (health <= 0) {
-			fadeSound = "explosion";
+			fadeSound = "";
 			fadeSprite = "explosion";
 			destroySelf();
 		}
@@ -332,7 +332,7 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 		if (projId == (int)ProjIds.RaySplasher || projId == (int)ProjIds.RaySplasherTurret) damage *= 2;
 		health -= damage;
 		if (health <= 0) {
-			fadeSound = "explosion";
+			fadeSound = "";
 			fadeSprite = "explosion";
 			destroySelf();
 		}

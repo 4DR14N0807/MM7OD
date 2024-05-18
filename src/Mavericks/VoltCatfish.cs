@@ -119,7 +119,7 @@ public class VoltCatfish : Maverick {
 
 	public MaverickState getShootState(bool isAI) {
 		var mshoot = new MShoot((Point pos, int xDir) => {
-			playSound("voltcCrash", sendRpc: true);
+			//playSound("voltcCrash", sendRpc: true);
 			new TriadThunderProjCharged(weapon, pos, xDir, 2, player, player.getNextActorNetId(), rpc: true);
 		}, null);
 		return mshoot;
@@ -232,7 +232,7 @@ public class VoltCTriadThunderState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		var vc = maverick as VoltCatfish;
 		if (!once && shootPos != null) {
-			maverick.playSound("voltcTriadThunder", sendRpc: true);
+			//maverick.playSound("voltcTriadThunder", sendRpc: true);
 			once = true;
 			int type = (vc.mines.Count == 0 ? 0 : 1);
 			var proj1 = new VoltCTriadThunderProj(maverick.weapon, shootPos.Value, maverick.xDir, type, new Point(maverick.xDir, 0.5f), vc, player, player.getNextActorNetId(), rpc: true);
@@ -371,7 +371,7 @@ public class VoltCUpBeamState : MaverickState {
 		Point? shootPos2 = maverick.getFirstPOI(1);
 		if (!once && shootPos != null) {
 			once = true;
-			maverick.playSound("voltcWeakBolt", sendRpc: true);
+			//maverick.playSound("voltcWeakBolt", sendRpc: true);
 			if (isAI || maverick.ammo >= 8) {
 				if (!isAI) maverick.deductAmmo(8);
 				new VoltCUpBeamProj(maverick.weapon, shootPos.Value, maverick.xDir, 0, player, player.getNextActorNetId(), rpc: true);
@@ -441,7 +441,7 @@ public class VoltCSpecialState : MaverickState {
 			maverick.ammo -= 8;
 			var beamPos = maverick.pos.addxy(0, -150);
 			upBeamProj = new VoltCUpBeamProj(maverick.weapon, beamPos, maverick.xDir, 1, player, player.getNextActorNetId(), rpc: true);
-			maverick.playSound("voltcStrongBolt", sendRpc: true);
+			//maverick.playSound("voltcStrongBolt", sendRpc: true);
 			state = 1;
 		} else if (state == 1) {
 			maverick.drainAmmo(drainAmmoRate);
@@ -450,7 +450,7 @@ public class VoltCSpecialState : MaverickState {
 				chargeProj2 = new VoltCChargeProj(maverick.weapon, maverick.getFirstPOI(1).Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 				chargeProj1 = new VoltCChargeProj(maverick.weapon, maverick.getFirstPOI(0).Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 				stateTime = 0;
-				maverick.playSound("voltcStatic", sendRpc: true);
+				//maverick.playSound("voltcStatic", sendRpc: true);
 				maverick.changeSpriteFromName("charge", true);
 				state = 2;
 			}
@@ -485,7 +485,7 @@ public class VoltCSpecialState : MaverickState {
 		Helpers.decrementTime(ref partSoundTime);
 		if (partSoundTime <= 0) {
 			partSoundTime = 0.5f;
-			maverick.playSound("voltcCrash", sendRpc: true);
+			//maverick.playSound("voltcCrash", sendRpc: true);
 		}
 	}
 

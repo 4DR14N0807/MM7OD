@@ -12,7 +12,7 @@ public class ZeroBuster : Weapon {
 		weaponBarBaseIndex = 0;
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 0;
-		shootSounds = new List<string>() { "buster", "buster2", "buster3", "buster4" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.15f;
 		displayName = "Z-Buster";
 		description = new string[] { "Shoot uncharged Z-Buster with ATTACK." };
@@ -214,13 +214,13 @@ public class ZeroDoubleBuster : CharState {
 		if (!fired1 && character.frameIndex == 3) {
 			fired1 = true;
 			if (!isPinkCharge) {
-				character.playSound("buster3X3", sendRpc: true);
+				//character.playSound("buster3X3", sendRpc: true);
 				new ZBuster4Proj(
 					zero.zeroBusterWeapon, character.getShootPos(),
 					character.getShootXDir(), type, player, player.getNextActorNetId(), rpc: true
 				);
 			} else {
-				character.playSound("buster2X3", sendRpc: true);
+				//character.playSound("buster2X3", sendRpc: true);
 				new ZBuster2Proj(
 					zero.zeroBusterWeapon, character.getShootPos(), character.getShootXDir(),
 					type, player, player.getNextActorNetId(), rpc: true
@@ -234,7 +234,7 @@ public class ZeroDoubleBuster : CharState {
 			} else {
 				//character.stockCharge(false);
 			}
-			character.playSound("buster3X3", sendRpc: true);
+			//character.playSound("buster3X3", sendRpc: true);
 			new ZBuster4Proj(
 				zero.zeroBusterWeapon, character.getShootPos(), character.getShootXDir(),
 				type, player, player.getNextActorNetId(), rpc: true
@@ -314,7 +314,8 @@ public class ZSaberProjSwingState : CharState {
 
 		if (character.frameIndex >= 7 && !fired) {
 			fired = true;
-			character.playSound("zerosaberx3", sendRpc: true);
+			//character.playSound("ZeroSaberX3", sendRpc: true);
+
 			if (shootProj) {
 				new ZSaberProj(
 					new ZSaber(player), character.pos.addxy(30 * character.xDir, -20),

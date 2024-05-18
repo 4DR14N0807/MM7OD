@@ -113,7 +113,7 @@ public class ZeroFallStab : CharState {
 		if (isUnderwaterQuakeBlazer()) return;
 
 		if (!character.sprite.name.Contains("_start") || character.frameIndex > 0) {
-			character.playSound("circleBlazeExplosion", sendRpc: true);
+			//character.playSound("circleBlazeExplosion", sendRpc: true);
 			new QuakeBlazerExplosionProj(weapon, character.pos.addxy(10 * character.xDir, -10), character.xDir, player, player.getNextActorNetId(), sendRpc: true);
 		}
 
@@ -162,13 +162,13 @@ public class ZeroFallStabLand : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.playSound("land", sendRpc: true);
+		//character.playSound("land", sendRpc: true);
 		switch (type) {
 			case (int)ZeroFallStabType.Hyouretsuzan:
 				character.breakFreeze(player, character.pos.addxy(character.xDir * 5, 0), sendRpc: true);
 				break;
 			case (int)ZeroFallStabType.Rakukojin:
-				character.playSound("swordthud", sendRpc: true);
+				//character.playSound("swordthud", sendRpc: true);
 				break;
 		}
 	}
@@ -262,7 +262,7 @@ public class DropKickState : CharState {
 			character.vel.y = 450;
 			if (!once) {
 				once = true;
-				character.playSound("punch2", sendRpc: true);
+				//character.playSound("punch2", sendRpc: true);
 			}
 		}
 

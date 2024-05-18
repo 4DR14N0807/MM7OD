@@ -44,7 +44,7 @@ public class BubbleCrab : Maverick {
 		if (sprite.name.Contains("jump_attack")) {
 			if (clawSoundTime == 0) {
 				clawSoundTime = 0.03f;
-				playSound("bcrabClaw");
+				//playSound("bcrabClaw");
 			}
 		}
 
@@ -218,7 +218,7 @@ public class BCrabShootState : MaverickState {
 		if (shootCooldown == 0 && shootPos != null) {
 			shootCooldown = 0.25f;
 			num = (num == 1 ? 0 : 1);
-			maverick.playSound("bcrabShoot", sendRpc: true);
+			//maverick.playSound("bcrabShoot", sendRpc: true);
 			int type = input.isHeld(Control.Up, player) ? 1 : 0;
 			new BCrabBubbleSplashProj(maverick.weapon, shootPos.Value, maverick.xDir, num, type, player, player.getNextActorNetId(), rpc: true);
 		}
@@ -359,7 +359,7 @@ public class BCrabShieldStartState : MaverickState {
 			if (!once && shootPos != null) {
 				once = true;
 				maverick.deductAmmo(8);
-				maverick.playSound("bcrabShield", sendRpc: true);
+				//maverick.playSound("bcrabShield", sendRpc: true);
 				var shield = new BCrabShieldProj(maverick.weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 				(maverick as BubbleCrab).shield = shield;
 			}
@@ -420,7 +420,7 @@ public class BCrabSummonCrabProj : Projectile, IDamagable {
 		this.vel = vel;
 		this.maverick = maverick;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		collider.wallOnly = true;
 		useGravity = true;
 		netcodeOverride = NetcodeModel.FavorDefender;

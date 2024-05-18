@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class PlasmaGun : AxlWeapon {
 	public PlasmaGun(int altFire) : base(altFire) {
-		shootSounds = new List<string>() { "plasmaGun", "plasmaGun", "plasmaGun", "plasmaGun" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1.5f;
 		altFireCooldown = 2f;
 		index = (int)WeaponIds.PlasmaGun;
@@ -123,7 +123,7 @@ public class PlasmaGunAltProj : Projectile {
 
 		Helpers.decrementTime(ref soundCooldown);
 		if (soundCooldown == 0) {
-			sound = player.character?.playSound("plasmaGunAlt");
+			//sound = player.character?.playSound("plasmaGunAlt");
 			soundCooldown = 2.259f;
 		}
 
@@ -275,7 +275,7 @@ public class VoltTornadoProj : Projectile {
 
 	public override void onStart() {
 		base.onStart();
-		playSound("voltTornado");
+		//playSound("voltTornado");
 	}
 
 	public override void update() {

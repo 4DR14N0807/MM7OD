@@ -72,7 +72,7 @@ public class CmdSigma : BaseSigma {
 					}
 				}
 				changeSprite(getSprite(charState.attackSprite), true);
-				playSound("sigmaSaber", sendRpc: true);
+				//playSound("SigmaSaber", sendRpc: true);
 				return true;
 			}
 			changeState(new SigmaSlashState(charState), true);

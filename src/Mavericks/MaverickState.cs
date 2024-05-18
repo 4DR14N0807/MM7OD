@@ -201,7 +201,7 @@ public class MaverickState {
 	public void landingCode() {
 		if (maverick.isHeavy) {
 			maverick.shakeCamera(sendRpc: true);
-			maverick.playSound("crash", sendRpc: true);
+			//maverick.playSound("crash", sendRpc: true);
 		}
 		if (maverick is FlameMammoth fm) {
 			new FlameMStompShockwave(fm.stompWeapon, fm.pos, fm.xDir, player, player.getNextActorNetId(), rpc: true);
@@ -382,7 +382,7 @@ public class MaverickState {
 	}
 
 	public void morphMothBeam(Point shootPos, bool isGround) {
-		maverick.playSound("morphmBeam", sendRpc: true);
+		//maverick.playSound("morphmBeam", sendRpc: true);
 		Point shootDir;
 		var inputDir = input.getInputDir(player);
 		if (inputDir.isZero()) shootDir = isGround ? new Point(maverick.xDir, 0) : new Point(0, 1);
@@ -586,21 +586,11 @@ public class MTaunt : MaverickState {
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
 		if (maverick is FlameMammoth) {
-			maverick.playSound("flamemTaunt", sendRpc: true);
+			//maverick.playSound("flamemTaunt", sendRpc: true);
 		} else if (maverick is Velguarder) {
-			maverick.playSound("velgHowl", sendRpc: true);
+			//maverick.playSound("velgHowl", sendRpc: true);
 		} else if (maverick is OverdriveOstrich) {
-			maverick.playSound("overdriveoTaunt", sendRpc: true);
-		} else if (maverick is FakeZero) {
-			maverick.playSound("ching", sendRpc: true);
-		} else if (maverick is CrystalSnail) {
-			maverick.playSound("csnailSpecial", sendRpc: true);
-		}
-		if (maverick is BlastHornet && player.input.isHeld(Control.Up, player)) {
-			maverick.changeSprite("bhornet_taunt2", true);
-			if (maverick.isAnimOver()) {
-				maverick.changeState(new MIdle());
-			}
+			//maverick.playSound("overdriveoTaunt", sendRpc: true);
 		}
 	}
 }
@@ -624,7 +614,7 @@ public class MRun : MaverickState {
 				dustTime = 0.05f;
 			}
 			if (runSoundTime == 0 && oo.getRunSpeed() >= oo.dustSpeed) {
-				oo.playSound("overdriveoRun", sendRpc: true);
+				//oo.playSound("overdriveoRun", sendRpc: true);
 				runSoundTime = 0.175f;
 			}
 
@@ -957,7 +947,7 @@ public class MLand : MaverickState {
 			if (!once) {
 				once = true;
 				bc.shield.startShieldBounceY();
-				bc.playSound("bcrabBounce", sendRpc: true);
+				//bc.playSound("bcrabBounce", sendRpc: true);
 			}
 			if (bc.isAnimOver() || bc.shield.shieldBounceTimeY > bc.shield.halfShieldBounceMaxTime) {
 				if (jumpHeldOnce) {
@@ -1064,7 +1054,7 @@ public class MDie : MaverickState {
 		} else if (maverick is FakeZero) {
 			maverick.visible = false;
 			Anim.createGibEffect("fakezero_piece", maverick.getCenterPos(), player, gibPattern: GibPattern.SemiCircle, sendRpc: true);
-			maverick.playSound("explosion", sendRpc: true);
+			//maverick.playSound("explosion", sendRpc: true);
 		}
 		if (isEnvDeath) {
 			maverick.lastGroundedPos = null;

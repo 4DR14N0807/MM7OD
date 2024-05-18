@@ -246,7 +246,12 @@ public class Fonts {
 			FontType.FBlue => "FixedBlue",
 			FontType.FOrange => "FixedOrange",
 			FontType.BlueMenu => "BlueMenu",
+			FontType.RedMenu => "RedMenu",
+			FontType.GreenMenu => "GreenMenu",
+			FontType.PurpleMenu => "PurpleMenu",
+			FontType.YellowMenu => "YellowMenu",
 			FontType.OrangeMenu => "OrangeMenu",
+			FontType.WhiteMenu => "WhiteMenu",
 			_ => "Blue"
 		};
 	}
@@ -259,7 +264,7 @@ public class Fonts {
 			FontType.BlueMenu => FontType.OrangeMenu,
 			FontType.OrangeMenu => FontType.BlueMenu,
 			FontType.DarkBlue => FontType.DarkOrange,
-			_ => FontType.Orange
+			_ => FontType.Grey
 		};
 	}
 }
@@ -283,5 +288,10 @@ public enum FontType {
 	FBlue,
 	FOrange,
 	BlueMenu,
-	OrangeMenu
+	RedMenu,
+	GreenMenu,
+	PurpleMenu,
+	YellowMenu,
+	OrangeMenu,
+	WhiteMenu
 }

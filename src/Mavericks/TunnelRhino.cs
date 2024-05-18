@@ -157,7 +157,7 @@ public class TunnelRTornadoFang : Projectile {
 		}
 
 		if (sparksCooldown == 0) {
-			playSound("tunnelrDrill");
+			//playSound("tunnelrDrill");
 			var sparks = new Anim(pos, "tunnelfang_sparks", xDir, null, true);
 			sparks.setzIndex(zIndex + 100);
 			sparksCooldown = 0.25f;
@@ -185,7 +185,7 @@ public class TunnelRShootState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("tunnelrShoot", sendRpc: true);
+			//maverick.playSound("tunnelrShoot", sendRpc: true);
 			if (!isSecond) {
 				new TunnelRTornadoFang(maverick.weapon, shootPos.Value, maverick.xDir, 0, player, player.getNextActorNetId(), sendRpc: true);
 			} else {
@@ -231,7 +231,7 @@ public class TunnelRShoot2State : MaverickState {
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
 			new TunnelRTornadoFang(maverick.weapon, shootPos.Value, maverick.xDir, 0, player, player.getNextActorNetId(), sendRpc: true);
-			maverick.playSound("tunnelrShoot", sendRpc: true);
+			//maverick.playSound("tunnelrShoot", sendRpc: true);
 		}
 
 		Point? shootPos2 = maverick.getFirstPOI("drillfront");
@@ -274,7 +274,7 @@ public class TunnelRDashState : MaverickState {
 
 		var hitWall = Global.level.checkCollisionActor(maverick, move.x * Global.spf * 2, -5);
 		if (hitWall?.isSideWallHit() == true) {
-			maverick.playSound("crash", sendRpc: true);
+			//maverick.playSound("crash", sendRpc: true);
 			maverick.shakeCamera(sendRpc: true);
 			maverick.changeToIdleOrFall();
 			return;

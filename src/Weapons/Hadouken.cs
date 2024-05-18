@@ -52,7 +52,7 @@ public class Hadouken : CharState {
 
 			new HadoukenProj(weapon, new Point(x + (20 * character.xDir), y - 20), character.xDir, player, player.getNextActorNetId(), rpc: true);
 
-			character.playSound("hadouken", sendRpc: true);
+			//character.playSound("hadouken", sendRpc: true);
 		}
 
 		if (character.isAnimOver()) {

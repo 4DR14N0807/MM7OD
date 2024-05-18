@@ -284,7 +284,7 @@ public class Sigma3Shoot : CharState {
 			if (ang != 0 && ang != 180) {
 				upDownDir = 0;
 			}
-			character.playSound("sigma3shoot", sendRpc: true);
+			//character.playSound("sigma3shoot", sendRpc: true);
 			new Sigma3FireProj(
 				player.sigmaFireWeapon, shootPOI.Value,
 				ang, upDownDir, player, player.getNextActorNetId(), sendRpc: true

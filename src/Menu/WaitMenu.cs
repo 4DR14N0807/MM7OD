@@ -181,28 +181,34 @@ public class WaitMenu : IMainMenu {
 		if (Global.serverClient.isHost) {
 			titleText = "Waiting for players...";
 		}
-		Fonts.drawText(FontType.RedishOrange, titleText, col1Pos, 20);
+		Fonts.drawText(FontType.BlueMenu, titleText, Global.halfScreenW, 21, Alignment.Center);
+
+		//DrawWrappers.DrawTextureHUD(Global.textures["border"], 15, 30);
 		if (!server.isLAN) {
-			Fonts.drawText(FontType.Orange, "Match Name: " + server.name, col1Pos, headerPos - 30);
-			Fonts.drawText(FontType.Orange, "Map: " + server.getMapDisplayName(), col1Pos, headerPos - 20);
+			Fonts.drawText(FontType.BlueMenu, "Match Name: ", col1Pos, headerPos - 20);
+			Fonts.drawText(FontType.OrangeMenu, server.name, col1Pos + 90, headerPos - 20);
+			Fonts.drawText(FontType.BlueMenu, "Map: ", col1Pos, headerPos - 5);
+			Fonts.drawText(FontType.OrangeMenu, server.getMapDisplayName(), col1Pos + 36, headerPos - 5);
+
 		} else {
-			Fonts.drawText(FontType.Orange, "Match Name: " + server.name, col1Pos, headerPos - 30);
-			Fonts.drawText(FontType.Orange, "Match IP: " + server.ip, col1Pos + 40, headerPos - 20);
-			Fonts.drawText(FontType.Orange, "Map: " + server.getMapDisplayName(), col1Pos, headerPos - 20);
+			Fonts.drawText(FontType.BlueMenu, "Match Name: " + server.name, col1Pos, headerPos - 20);
+			Fonts.drawText(FontType.BlueMenu, "Match IP: " + server.ip, col1Pos, headerPos - 5);
+			Fonts.drawText(FontType.BlueMenu, "Map: " + server.getMapDisplayName(), col1Pos, headerPos + 10);
 		}
 
-		Fonts.drawText(FontType.Yellow, "Player", col1Pos, headerPos);
-		Fonts.drawText(FontType.Yellow, "Id", col2Pos, headerPos);
-		Fonts.drawText(FontType.Yellow, "Host?", col3Pos, headerPos);
-		if (isTeamMode()) Fonts.drawText(FontType.Yellow, "Team", col4Pos, headerPos);
-		else Fonts.drawText(FontType.Yellow, "Spec?", col4Pos, headerPos);
+		Fonts.drawText(FontType.Grey, "PLAYER", col1Pos, headerPos + 10);
+		Fonts.drawText(FontType.Grey, "ID", col2Pos, headerPos + 10);
+		Fonts.drawText(FontType.Grey, "HOST?", col3Pos, headerPos + 10);
+		if (isTeamMode()) Fonts.drawText(FontType.Grey, "TEAM", col4Pos, headerPos + 10);
+		else Fonts.drawText(FontType.Grey, "SPEC?", col4Pos, headerPos + 10);
 
 		var startServerRow = rowHeight + headerPos;
 
 		if (Global.serverClient.isHost) {
-			DrawWrappers.DrawTextureHUD(
-				Global.textures["cursor"], 26, startServerRow - 2 + (selCursorY * rowHeight2)
-			);
+			Global.sprites["cursor"].drawToHUD(0, 26, startServerRow + 18 + (selCursorY * rowHeight2));
+			//DrawWrappers.DrawTextureHUD(
+			//	Global.textures["cursor"], 26, startServerRow - 2 + (selCursorY * rowHeight2)	
+			//);
 		}
 
 		for (int i = 0; i < server.players.Count; i++) {
@@ -212,23 +218,20 @@ public class WaitMenu : IMainMenu {
 				color = Color.Green;
 			}
 
-			Fonts.drawText(FontType.Blue, player.name, col1Pos, startServerRow + (i * rowHeight2));
-			Fonts.drawText(FontType.Blue, player.id.ToString(), col2Pos, startServerRow + (i * rowHeight2));
+			Fonts.drawText(FontType.LigthGrey, player.name, col1Pos, startServerRow + (i * rowHeight2) + 14);
+			Fonts.drawText(FontType.LigthGrey, player.id.ToString(), col2Pos, startServerRow + (i * rowHeight2) + 14);
 			Fonts.drawText(
-				FontType.Blue, player.isHost ? "yes" : "no",
-				col3Pos, startServerRow + (i * rowHeight2)
+				FontType.LigthGrey, player.isHost ? "yes" : "no",
+				col3Pos, startServerRow + (i * rowHeight2) + 14
 			);
 			if (isTeamMode()) {
 				string team = GameMode.getTeamName(player.alliance);
 				if (player.isSpectator) {
 					team = "Spec";
 				}
-				Fonts.drawText(FontType.Blue, team, col4Pos, startServerRow + (i * rowHeight2));
+				Fonts.drawText(FontType.LigthGrey, team, col4Pos, startServerRow + (i * rowHeight2) + 14);
 			} else {
-				Fonts.drawText(
-					FontType.Blue, player.isSpectator ? "yes" : "no",
-					col4Pos, startServerRow + (i * rowHeight2)
-				);
+				Fonts.drawText(FontType.LigthGrey, player.isSpectator ? "yes" : "no", col4Pos, startServerRow + (i * rowHeight2) + 14);
 			}
 		}
 

@@ -27,7 +27,9 @@ public class InGameMainMenu : IMainMenu {
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			if (selectY == 0) {
 				if (isSelWepDisabled()) return;
-				if (Global.level.mainPlayer.realCharNum == 4) {
+				if (Global.level.mainPlayer.realCharNum == 5) {
+					Menu.change(new SelectRockWeaponMenu(this, true));
+				} else if (Global.level.mainPlayer.realCharNum == 4) {
 					Menu.change(new SelectSigmaWeaponMenu(this, true));
 				} else if (Global.level.mainPlayer.realCharNum == 3) {
 					Menu.change(new SelectAxlWeaponMenu(this, true));
@@ -115,29 +117,29 @@ public class InGameMainMenu : IMainMenu {
 
 	public void render() {
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-		Fonts.drawText(FontType.Yellow, "MENU", Global.screenW * 0.5f, 20, Alignment.Center);
+		Fonts.drawText(FontType.BlueMenu, "MENU", Global.screenW * 0.5f, 20, Alignment.Center);
 
 		Global.sprites["cursor"].drawToHUD(0, startX - 10, optionPos[0] + 3 + (selectY * 20));
 
 		Fonts.drawText(
-			isSelWepDisabled() ? FontType.DarkBlue : FontType.Blue,
-			"Edit Loadout", startX, optionPos[0], selected: selectY == 0
+			isSelWepDisabled() ? FontType.Grey : FontType.Grey,
+			"EDIT LOADOUT", startX, optionPos[0], selected: selectY == 0
 		);
 		Fonts.drawText(
-			isSelArmorDisabled() ? FontType.DarkBlue : FontType.Blue,
-			"Upgrade Menu", startX, optionPos[1], selected: selectY == 1
+			isSelArmorDisabled() ? FontType.Grey : FontType.Grey,
+			"UPGRADE MENU", startX, optionPos[1], selected: selectY == 1
 		);
 		Fonts.drawText(
-			isSelCharDisabled() ? FontType.DarkBlue : FontType.Blue,
-			"Switch Character", startX, optionPos[2], selected: selectY == 2
+			isSelCharDisabled() ? FontType.Grey : FontType.Grey,
+			"SWITCH CHARACTER", startX, optionPos[2], selected: selectY == 2
 		);
 		Fonts.drawText(
-			isMatchOptionsDisabled() ? FontType.DarkBlue : FontType.Blue,
-			"Match Options", startX, optionPos[3], selected: selectY == 3
+			isMatchOptionsDisabled() ? FontType.Grey : FontType.Grey,
+			"MATCH OPTIONS", startX, optionPos[3], selected: selectY == 3
 		);
-		Fonts.drawText(FontType.Blue, "Controls", startX, optionPos[4], selected: selectY == 4);
-		Fonts.drawText(FontType.Blue, "Settings", startX, optionPos[5], selected: selectY == 5);
-		Fonts.drawText(FontType.Blue, "Leave Match", startX, optionPos[6], selected: selectY == 6);
+		Fonts.drawText(FontType.Grey, "CONTROLS", startX, optionPos[4], selected: selectY == 4);
+		Fonts.drawText(FontType.Grey, "SETTINGS", startX, optionPos[5], selected: selectY == 5);
+		Fonts.drawText(FontType.Grey, "LEAVE MATCH", startX, optionPos[6], selected: selectY == 6);
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [ESC]: Cancel", Global.halfScreenW, 198, Alignment.Center);
 	}
 }

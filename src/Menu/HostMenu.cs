@@ -20,6 +20,7 @@ public class HostMenuSettings {
 	public int netcodeModelUnderPing = Global.defaultThresholdPing;
 	public bool mirrored;
 	public bool useLoadout;
+	//public bool useRandomLoadout = false;
 	public bool isCustomMapPool;
 	public bool useCustomMatchSettings;
 	public int team = GameMode.blueAlliance;
@@ -300,7 +301,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Match name: " + serverName, pos.x, pos.y,
+							FontType.Grey, "MATCH NAME: " + serverName, pos.x, pos.y,
 							selected: index == selectArrowPosY
 						);
 					},
@@ -328,7 +329,7 @@ public class HostMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Blue, "Map pool: " + (isCustomMapPool ? "Custom" : "Official"),
+						FontType.Grey, "MAP POOL: " + (isCustomMapPool ? "Custom" : "Official"),
 						pos.x, pos.y, selected: index == selectArrowPosY
 					);
 				}
@@ -346,7 +347,7 @@ public class HostMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Blue, "Map size: " + selectedMapSize, pos.x, pos.y,
+						FontType.Grey, "MAP SIZE: " + selectedMapSize, pos.x, pos.y,
 						selected: index == selectArrowPosY
 					);
 				}
@@ -371,7 +372,7 @@ public class HostMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Blue, "Map: " + (isMapSelected ? selectedLevel.displayName : "[Select]"),
+						FontType.Grey, "MAP: " + (isMapSelected ? selectedLevel.displayName : "[Select]"),
 						pos.x, pos.y, selected: index == selectArrowPosY
 					);
 				},
@@ -390,7 +391,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Use loadout: " + Helpers.boolYesNo(useLoadout),
+							FontType.Grey, "USE LOADOUT: " + Helpers.boolYesNo(useLoadout),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -415,7 +416,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Mode: " + selectedGameMode, pos.x, pos.y,
+							FontType.Grey, "MODE: " + selectedGameMode, pos.x, pos.y,
 							selected: index == selectArrowPosY
 						);
 					}
@@ -435,7 +436,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Teams: " + teamNum,
+							FontType.Grey, "TEAMS: " + teamNum,
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -457,7 +458,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Team: " + GameMode.getTeamName(team),
+							FontType.Grey, "TEAM: " + GameMode.getTeamName(team),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -480,14 +481,14 @@ public class HostMenu : IMainMenu {
 						}
 					},
 					(Point pos, int index) => {
-						string playToStr = "Play to: ";
+						string playToStr = "PLAY TO: ";
 						if (selectedGameMode == GameMode.Elimination ||
 							selectedGameMode == GameMode.TeamElimination
 						) {
-							playToStr = "Lives: ";
+							playToStr = "LIVES: ";
 						}
 						Fonts.drawText(
-							FontType.Blue,
+							FontType.Grey,
 							playToStr + playTo, pos.x, pos.y,
 							selected: index == selectArrowPosY
 						);
@@ -520,7 +521,7 @@ public class HostMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Blue, "CPU count: " + botCount, pos.x, pos.y,
+						FontType.Grey, "CPU COUNT: " + botCount, pos.x, pos.y,
 						selected: index == selectArrowPosY
 					);
 				},
@@ -536,7 +537,7 @@ public class HostMenu : IMainMenu {
 							timeLimitDirty = true;
 							timeLimit--;
 							int minimumTimeLimit = 0;
-							if (selectedGameMode == GameMode.ControlPoint || selectedGameMode == GameMode.KingOfTheHill || selectedGameMode == GameMode.Elimination || selectedGameMode == GameMode.TeamElimination) {
+							if (selectedGameMode == GameMode.CTF || selectedGameMode == GameMode.ControlPoint || selectedGameMode == GameMode.KingOfTheHill || selectedGameMode == GameMode.Elimination || selectedGameMode == GameMode.TeamElimination) {
 								if (!is1v1) {
 									minimumTimeLimit = 1;
 								}
@@ -550,8 +551,8 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue,
-							"Time limit: " + (timeLimit > 0 ? timeLimit.ToString() + " minutes" : "None"),
+							FontType.Grey,
+							"TIME LIMIT: " + (timeLimit > 0 ? timeLimit.ToString() + " MINUTES" : "NONE"),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -573,7 +574,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Mirrored: " + Helpers.boolYesNo(mirrored),
+							FontType.Grey, "MIRRORED: " + Helpers.boolYesNo(mirrored),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -595,7 +596,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Large camera: " + (fixedCamera ? "Yes" : "No"),
+							FontType.Grey, "LARGE CAMERA: " + (fixedCamera ? "Yes" : "No"),
 							pos.x, pos.y,
 							selected: index == selectArrowPosY
 						);
@@ -616,7 +617,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Heart/Sub tanks: " + (disableHtSt ? "Disabled" : "Enabled"),
+							FontType.Grey, "E-TANKS: " + (disableHtSt ? "Disabled" : "Enabled"),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -636,7 +637,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Vehicles: " + (disableVehicles ? "Disabled" : "Enabled"),
+							FontType.Grey, "VEHICLES: " + (disableVehicles ? "Disabled" : "Enabled"),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -660,7 +661,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Private match: " + (hidden ? "Yes" : "No"),
+							FontType.Grey, "PRIVATE MATCH: " + (hidden ? "Yes" : "No"),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -690,7 +691,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Netcode: " + Helpers.getNetcodeModelString((NetcodeModel)netcodeModel),
+							FontType.Grey, "NETCODE: " + Helpers.getNetcodeModelString((NetcodeModel)netcodeModel),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -714,7 +715,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Favor below ping: " + netcodeModelUnderPing.ToString(),
+							FontType.Grey, "FAVOR BELOW PING: " + netcodeModelUnderPing.ToString(),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}
@@ -733,7 +734,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "Custom settings: " + Helpers.boolYesNo(useCustomMatchSettings),
+							FontType.Grey, "CUSTOM SETTINGS: " + Helpers.boolYesNo(useCustomMatchSettings),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					},
@@ -747,16 +748,7 @@ public class HostMenu : IMainMenu {
 	}
 
 	public string[] mapSortOrder = new string[] {
-		"factory_md", "airport_md", "maverickfactory_md", "desertbase_md", "weathercontrol_md",
-		"centralcomputer_1v1", "zerovirus_1v1", "sigma4_1v1", "dopplerlab_1v1", "sigma1_1v1",
-		"airport_1v1", "factory_1v1", "hunterbase_1v1", "forest_1v1", "highway", "highway2",
-		"bossroom", "powerplant", "factory", "gallery", "tower", "mountain", "ocean", "forest",
-		"forest2", "airport", "sigma", "sigma2", "japetribute_1v1", "training",
-		"maverickfactory", "weathercontrol", "dinosaurtank", "deepseabase", "volcaniczone",
-		"robotjunkyard", "desertbase", "desertbase2", "crystalmine", "centralcomputer",
-		"xhunter1", "xhunter2", "hunterbase", "highway2", "giantdam", "giantdam2",
-		"weaponsfactory", "frozentown", "aircraftcarrier", "powercenter", "shipyard",
-		"quarry", "safaripark", "dopplerlab", "hunterbase2",
+		"urbanarea", "iceberg", "recyclingplant", "substancefactory", "weatherinstitute", 
 	};
 	public int mapSortFunc(LevelData a, LevelData b) {
 		int aIndex = -1;
@@ -1272,16 +1264,20 @@ public class HostMenu : IMainMenu {
 	public void render() {
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["severbrowser"], 0, 0);
-			DrawWrappers.DrawTextureHUD(
+			Global.sprites["cursor"].drawToHUD( 0, 
+				menuOptions[selectArrowPosY].pos.x,
+				menuOptions[selectArrowPosY].pos.y + 4
+				);
+			/*DrawWrappers.DrawTextureHUD(
 				Global.textures["cursor"],
 				menuOptions[selectArrowPosY].pos.x,
-				menuOptions[selectArrowPosY].pos.y - 2
-			);
+				menuOptions[selectArrowPosY].pos.y - 2 
+			);*/
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
 			Global.sprites["cursor"].drawToHUD(
 				0, menuOptions[selectArrowPosY].pos.x,
-				menuOptions[selectArrowPosY].pos.y - 2
+				menuOptions[selectArrowPosY].pos.y + 4
 			);
 		}
 		DrawWrappers.DrawTextureHUD(selectedLevel.getMapThumbnail(), 254, 38);
@@ -1297,7 +1293,7 @@ public class HostMenu : IMainMenu {
 			titleText = "Create Mext Match";
 		}
 
-		Fonts.drawText(FontType.Yellow, titleText, Global.halfScreenW, 20, Alignment.Center);
+		Fonts.drawText(FontType.BlueMenu, titleText, Global.halfScreenW, 20, Alignment.Center);
 
 		int i = 0;
 		foreach (MenuOption menuOption in menuOptions) {

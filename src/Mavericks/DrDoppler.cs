@@ -116,7 +116,7 @@ public class DrDoppler : Maverick {
 	public void healDrDoppler(Player attacker, float damage) {
 		if (ownedByLocalPlayer && health < maxHealth) {
 			addHealth(damage, true);
-			playSound("heal", sendRpc: true);
+			//playSound("heal", sendRpc: true);
 			addDamageText(-damage);
 			ammo -= damage;
 			if (ammo < 0) ammo = 0;

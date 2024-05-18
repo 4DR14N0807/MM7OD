@@ -46,7 +46,7 @@ public class FlameMammoth : Maverick {
 
 	public MaverickState getShootState(bool isAI) {
 		var shootState = new MShoot((Point pos, int xDir) => {
-			playSound("flamemShoot", sendRpc: true);
+			//playSound("flamemShoot", sendRpc: true);
 			new FlameMFireballProj(new FlameMFireballWeapon(), pos, xDir, player.input.isHeld(Control.Down, player), player, player.getNextActorNetId(), rpc: true);
 		}, null);
 		if (isAI) {
@@ -162,7 +162,7 @@ public class FlameMFireballProj : Projectile {
 		base.onCollision(other);
 		if (!ownedByLocalPlayer) return;
 		if (other.gameObject is FlameMOilSpillProj oilSpill && oilSpill.ownedByLocalPlayer) {
-			playSound("flamemOilBurn", sendRpc: true);
+			//playSound("flamemOilBurn", sendRpc: true);
 			new FlameMBigFireProj(new FlameMOilFireWeapon(), oilSpill.pos, oilSpill.xDir, oilSpill.angle ?? 0, owner, owner.getNextActorNetId(), rpc: true);
 			// oilSpill.time = 0;
 			oilSpill.destroySelf(doRpcEvenIfNotOwned: true);
@@ -194,7 +194,7 @@ public class FlameMOilProj : Projectile {
 		if (!ownedByLocalPlayer) return;
 		if (!destroyed) {
 			new FlameMOilSpillProj(new FlameMOilWeapon(), other.getHitPointSafe(), 1, other.getNormalSafe().angle + 90, owner, owner.getNextActorNetId(), rpc: true);
-			playSound("flamemOil", sendRpc: true);
+			//playSound("flamemOil", sendRpc: true);
 			destroySelf();
 		}
 	}
@@ -213,7 +213,7 @@ public class FlameMOilProj : Projectile {
 		base.onCollision(other);
 		if (!ownedByLocalPlayer) return;
 		if (other.gameObject is FlameMBigFireProj bigFire && bigFire.ownedByLocalPlayer && !destroyed) {
-			playSound("flamemOilBurn", sendRpc: true);
+			//playSound("flamemOilBurn", sendRpc: true);
 			bigFire.reignite();
 			destroySelf();
 		}
@@ -290,7 +290,7 @@ public class FlameMBigFireProj : Projectile {
 		base.onCollision(other);
 		if (!ownedByLocalPlayer) return;
 		if (other.gameObject is FlameMOilSpillProj oilSpill && oilSpill.ownedByLocalPlayer && frameIndex >= 4) {
-			playSound("flamemOilBurn", sendRpc: true);
+			//playSound("flamemOilBurn", sendRpc: true);
 			new FlameMBigFireProj(new FlameMOilFireWeapon(), oilSpill.pos, oilSpill.xDir, oilSpill.angle ?? 0, owner, owner.getNextActorNetId(), rpc: true);
 			// oilSpill.time = 0;
 			oilSpill.destroySelf();

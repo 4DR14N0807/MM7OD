@@ -29,6 +29,11 @@ public struct Point {
 		return point;
 	}
 
+	public Point substractxy(float x, float y) {
+		var point = new Point(this.x - x, this.y - y);
+		return point;
+	}
+
 	// Avoid calls to this, if called a lot may be bottleneck
 	public Point normalize() {
 		x = Helpers.RoundEpsilon(x);

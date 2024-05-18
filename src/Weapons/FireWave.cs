@@ -11,7 +11,7 @@ public class FireWave : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 4;
 		weaknessIndex = 5;
-		shootSounds = new List<string>() { "fireWave", "fireWave", "fireWave", "fireWave" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.06f;
 		isStream = true;
 		switchCooldown = 0.25f;
@@ -64,7 +64,7 @@ public class FireWaveProjChargedStart : Projectile {
 					weapon, pos, xDir, damager.owner, 0,
 					Global.level.mainPlayer.getNextActorNetId(), 0, rpc: true
 				);
-				playSound("fireWave");
+				//playSound("fireWave");
 			}
 		}
 	}
@@ -133,7 +133,7 @@ public class FireWaveProjCharged : Projectile {
 		}
 		if (time > 0.2f && child == null && parentTime < 3) {
 			if (soundCooldown == 0) {
-				playSound("fireWave");
+				//playSound("fireWave");
 				soundCooldown = 0.25f;
 			}
 

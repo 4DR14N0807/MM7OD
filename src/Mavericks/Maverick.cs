@@ -78,7 +78,9 @@ public class Maverick : Actor, IDamagable {
 	public float strikerTime;
 	public int attackDir;
 	public SubTank usedSubtank;
+	public ETank usedETank;
 	public float netSubtankHealAmount;
+	public float netETankHealAmount;
 	public float invulnTime = 0;
 
 	public MaverickAIBehavior aiBehavior;
@@ -194,9 +196,9 @@ public class Maverick : Actor, IDamagable {
 		}
 	}
 
-	public void addHealth(float amount, bool fillSubtank) {
-		if (health >= maxHealth && fillSubtank) {
-			player.fillSubtank(amount);
+	public void addHealth(float amount, bool fillETank) {
+		if (health >= maxHealth && fillETank) {
+			player.fillETank(amount);
 		}
 		healAmount += amount;
 	}
@@ -240,7 +242,7 @@ public class Maverick : Actor, IDamagable {
 					weaponHealTime = 0;
 					weaponHealAmount = 0;
 				}
-				playSound("heal", forcePlay: true);
+				//playSound("heal", forcePlay: true);
 			}
 		}
 
@@ -248,25 +250,25 @@ public class Maverick : Actor, IDamagable {
 
 		if (health >= maxHealth) {
 			healAmount = 0;
-			usedSubtank = null;
+			usedETank = null;
 		}
 		if (healAmount > 0 && health > 0) {
 			healTime += Global.spf;
 			if (healTime > 0.05) {
 				healTime = 0;
 				healAmount--;
-				if (usedSubtank != null) {
-					usedSubtank.health--;
+				if (usedETank != null) {
+					usedETank.health--;
 				}
 				health = Helpers.clampMax(health + 1, maxHealth);
 				if (player == Global.level.mainPlayer || playHealSound) {
-					playSound("heal", forcePlay: true, sendRpc: true);
+					//playSound("heal", forcePlay: true, sendRpc: true);
 				}
 			}
 		}
 
-		if (usedSubtank != null && usedSubtank.health <= 0) {
-			usedSubtank = null;
+		if (usedETank != null && usedETank.health <= 0) {
+			usedETank = null;
 		}
 
 		updateProjectileCooldown();
@@ -649,7 +651,7 @@ public class Maverick : Actor, IDamagable {
 		}
 
 		if (ownedByLocalPlayer && damage > 0 && owner != null) {
-			netOwner.delaySubtank();
+			netOwner.delayETank();
 			addDamageTextHelper(owner, damage, maxHealth, true);
 		}
 
@@ -972,17 +974,17 @@ public class Maverick : Actor, IDamagable {
 		deductLabelY(labelNameOffY);
 	}
 
-	public bool drawSubtankHealing() {
+	public bool drawETankHealing() {
 		if (ownedByLocalPlayer) {
-			if (usedSubtank != null) {
-				drawSubtankHealingInner(usedSubtank.health);
+			if (usedETank != null) {
+				drawETankHealingInner(usedETank.health);
 				return true;
 			}
 		} else {
-			if (netSubtankHealAmount > 0) {
-				drawSubtankHealingInner(netSubtankHealAmount);
-				netSubtankHealAmount -= Global.spf * 20;
-				if (netSubtankHealAmount <= 0) netSubtankHealAmount = 0;
+			if (netETankHealAmount > 0) {
+				drawETankHealingInner(netETankHealAmount);
+				netETankHealAmount -= Global.spf * 20;
+				if (netETankHealAmount <= 0) netETankHealAmount = 0;
 				return true;
 			}
 		}
@@ -990,13 +992,13 @@ public class Maverick : Actor, IDamagable {
 		return false;
 	}
 
-	public void drawSubtankHealingInner(float health) {
+	public void drawETankHealingInner(float health) {
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
 
 		Global.sprites["menu_subtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		float yPos = 14 * (health / SubTank.maxHealth);
 		DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
 
@@ -1016,7 +1018,7 @@ public class Maverick : Actor, IDamagable {
 			drawName();
 		}
 
-		drawSubtankHealing();
+		drawETankHealing();
 
 		renderDamageText(35);
 

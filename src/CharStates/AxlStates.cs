@@ -21,7 +21,7 @@ public class HyperAxlStart : CharState {
 		if (character.loopCount > 8) {
 			axl.whiteAxlTime = axl.maxHyperAxlTime;
 			RPC.setHyperZeroTime.sendRpc(character.player.id, axl.whiteAxlTime, 1);
-			axl.playSound("ching");
+			//axl.playSound("ching");
 			if (player.input.isHeld(Control.Jump, player)) {
 				axl.changeState(new Hover(), true);
 			} else {
@@ -109,7 +109,7 @@ public class Hover : CharState {
 		);
 		hoverExhaust.setzIndex(ZIndex.Character - 1);
 		if (character.ownedByLocalPlayer) {
-			sound = character.playSound("axlHover", forcePlay: false, sendRpc: true);
+			//sound = character.playSound("Axlhover", forcePlay: false, sendRpc: true);
 		}
 	}
 
@@ -120,7 +120,7 @@ public class Hover : CharState {
 		if (sound != null && !sound.deleted) {
 			sound.sound?.Stop();
 		}
-		RPC.stopSound.sendRpc("axlHover", character.netId);
+		//RPC.stopSound.sendRpc("Axlhover", character.netId);
 	}
 }
 

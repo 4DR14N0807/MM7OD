@@ -95,7 +95,7 @@ public class CutterAttackState : CharState {
 		poi.x *= vile.xDir;
 		var player = vile.player;
 		Point muzzlePos = vile.pos.add(poi);
-		vile.playSound("frontrunner", sendRpc: true);
+		//vile.playSound("frontrunner", sendRpc: true);
 
 		proj = new VileCutterProj(player.vileCutterWeapon, muzzlePos, vile.getShootXDir(), player, player.getNextActorNetId(), shootVel, rpc: true);
 	}
@@ -201,7 +201,7 @@ public class VileCutterProj : Projectile {
 		soundCooldown -= Global.spf;
 		if (soundCooldown <= 0) {
 			soundCooldown = 0.3f;
-			playSound("cutter", sendRpc: true);
+			//playSound("cutter", sendRpc: true);
 		}
 
 		if (vileCutterType == VileCutterType.ParasiteSword) {

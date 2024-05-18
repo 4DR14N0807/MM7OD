@@ -146,7 +146,7 @@ public class Rakuhouha : CharState {
 			fired = true;
 
 			if (isShinMessenkou) {
-				character.playSound("zeroshinmessenkoubullet", forcePlay: false, sendRpc: true);
+				//character.playSound("ZeroShinMassenkouBullet", forcePlay: false, sendRpc: true);
 				new ShinMessenkouProj(weapon, new Point(x - shinMessenkouWidth, y), character.xDir, player, player.getNextActorNetId(), rpc: true);
 				new ShinMessenkouProj(weapon, new Point(x + shinMessenkouWidth, y), character.xDir, player, player.getNextActorNetId(), rpc: true);
 			} else if (isDarkHold) {
@@ -167,29 +167,29 @@ public class Rakuhouha : CharState {
 
 			if (!isCFlasher && !isDarkHold) {
 				character.shakeCamera(sendRpc: true);
-				character.playSound("rakuhouha", sendRpc: true);
+				//character.playSound("rakuhouha", sendRpc: true);
 			} else if (isCFlasher && !isDarkHold) {
-				character.playSound("cflasher", sendRpc: true);
+				//character.playSound("cflasher", sendRpc: true);
 			} else if (!isCFlasher && isDarkHold) {
-				character.playSound("darkhold", forcePlay: false, sendRpc: true);
+				//character.playSound("dark_hold", forcePlay: false, sendRpc: true);
 				if (Helpers.randomRange(0, 1) == 0) {
-					character.playSound("znnigerunayo", forcePlay: false, sendRpc: true);
+					//character.playSound("X6_ZeroN_Nigeru", forcePlay: false, sendRpc: true);
 				} else {
-					character.playSound("znowarida", forcePlay: false, sendRpc: true);
+					//character.playSound("X6_ZeroN_Owari", forcePlay: false, sendRpc: true);
 				}
 			}
 		}
 
 		if (!fired2 && isShinMessenkou && character.frameIndex > 11) {
 			fired2 = true;
-			character.playSound("zeroshinmessenkoubullet", forcePlay: false, sendRpc: true);
+			//character.playSound("ZeroShinMassenkouBullet", forcePlay: false, sendRpc: true);
 			new ShinMessenkouProj(weapon, new Point(x - shinMessenkouWidth * 2, y), character.xDir, player, player.getNextActorNetId(), rpc: true);
 			new ShinMessenkouProj(weapon, new Point(x + shinMessenkouWidth * 2, y), character.xDir, player, player.getNextActorNetId(), rpc: true);
 		}
 
 		if (!fired3 && isShinMessenkou && character.frameIndex > 14) {
 			fired3 = true;
-			character.playSound("zeroshinmessenkoubullet", forcePlay: false, sendRpc: true);
+			//character.playSound("ZeroShinMassenkouBullet", forcePlay: false, sendRpc: true);
 			new ShinMessenkouProj(weapon, new Point(x - shinMessenkouWidth * 3, y), character.xDir, player, player.getNextActorNetId(), rpc: true);
 			new ShinMessenkouProj(weapon, new Point(x + shinMessenkouWidth * 3, y), character.xDir, player, player.getNextActorNetId(), rpc: true);
 		}
@@ -319,7 +319,7 @@ public class Rekkoha : CharState {
 
 		if (character.frameIndex == 5 && !sound) {
 			sound = true;
-			character.playSound("rekkohax6", sendRpc: true);
+			//character.playSound("rekkoha", sendRpc: true);
 		}
 
 		if (stateTime > 26/60f && !fired1) {

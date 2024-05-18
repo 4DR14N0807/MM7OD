@@ -227,7 +227,7 @@ public class FStagShoot : MaverickState {
 					if (!fireball.launched) {
 						fireball.launched = true;
 						fireball.vel = new Point(fireball.xDir * 350, 50);
-						maverick.playSound("fstagShoot", sendRpc: true);
+						//maverick.playSound("fstagShoot", sendRpc: true);
 					}
 				}
 			} else {
@@ -235,7 +235,7 @@ public class FStagShoot : MaverickState {
 					if (!fireball.launched) {
 						fireball.launched = true;
 						fireball.vel = new Point(fireball.xDir * 350, -50);
-						maverick.playSound("fstagShoot", sendRpc: true);
+						//maverick.playSound("fstagShoot", sendRpc: true);
 					}
 				}
 			}
@@ -368,7 +368,7 @@ public class FStagDashState : MaverickState {
 	float chargeTime;
 	public FStagDashState(float chargeTime) : base("dash", "") {
 		this.chargeTime = chargeTime;
-		enterSound = "fstagDash";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -460,7 +460,7 @@ public class FStagUppercutState : MaverickState {
 	int downHitCount;
 	public FStagUppercutState(Character victim) : base("updash", "") {
 		this.victim = victim;
-		enterSound = "fstagUppercut";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -536,7 +536,7 @@ public class FStagUppercutState : MaverickState {
 			(maverick as FlameStag).uppercutWeapon.applyDamage(victim, false, maverick, (int)ProjIds.FStagUppercut,
 				overrideDamage: isCeiling ? 3 : 5, overrideFlinch: isCeiling ? 0 : Global.defFlinch, sendRpc: true);
 		}
-		maverick.playSound("crash", sendRpc: true);
+		//maverick.playSound("crash", sendRpc: true);
 		maverick.shakeCamera(sendRpc: true);
 	}
 

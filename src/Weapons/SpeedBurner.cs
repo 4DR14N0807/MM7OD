@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SpeedBurner : Weapon {
-	public SpeedBurner(Player? player) : base() {
+	public SpeedBurner(Player player) : base() {
 		if (player != null) {
 			damager = new Damager(player, 4, Global.defFlinch, 0.5f);
 		}
-		shootSounds = new List<string>() { "speedBurner", "speedBurner", "speedBurner", "speedBurnerCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)WeaponIds.SpeedBurner;
 		weaponBarBaseIndex = 16;
@@ -148,7 +148,7 @@ public class SpeedBurnerCharState : CharState {
 			character.applyDamage(player, (int)WeaponIds.SpeedBurner, 2, (int)ProjIds.SpeedBurnerRecoil);
 			//character.changeState(new Hurt(-character.xDir, Global.defFlinch, 0), true);
 			character.changeState(new Idle(), true);
-			character.playSound("hurt", sendRpc: true);
+			//character.playSound("hurt", sendRpc: true);
 			return;
 		} else if (stateTime > 0.6f) {
 			character.changeState(new Idle(), true);

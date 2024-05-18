@@ -280,6 +280,7 @@ public class Sprite {
 		bool hyperBusterReady = false;
 		bool isUPX = false;
 		bool isUltX = false;
+		bool isSuperAdaptor = false;
 		Character character = actor as Character;
 		if (character != null) {
 			if (character.isInvisibleBS.getValue() && !Global.shaderWrappers.ContainsKey("invisible")) {
@@ -296,6 +297,7 @@ public class Sprite {
 			}
 			isUPX = character.player.isX && (character.isHyperXBS.getValue() || (character.sprite.name == "mmx_revive" && character.frameIndex > 3));
 			isUltX = character.player.isX && character.hasUltimateArmorBS.getValue();
+			isSuperAdaptor = character.player.isRock && character.hasSuperAdaptorBS.getValue();
 		}
 
 		if (name == "mmx_unpo_grab" || name == "mmx_unpo_grab2") zIndex = ZIndex.MainPlayer;
@@ -370,6 +372,19 @@ public class Sprite {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_blue");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeRed)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_red");
+			}
+			else if (renderEffects.Contains(RenderEffectType.RBlueCharge)) {
+				//shader = Global.shaderWrappers.GetValueOrDefault("rockbluecharge");
+				var shaderList = new List<ShaderWrapper>();
+				ShaderWrapper rockCharge = Global.shaderWrappers["chargeBlue"];
+				rockCharge.SetUniform("paletteTexture", Global.textures["rock_charge_texture"]);
+				shaderList.Add(rockCharge);
+			}
+			else if (renderEffects.Contains(RenderEffectType.RGreenCharge)) {
+				var shaderList = new List<ShaderWrapper>();
+				ShaderWrapper rockCharge = Global.shaderWrappers["chargeGreen"];
+				rockCharge.SetUniform("paletteTexture", Global.textures["rock_charge2_texture"]);
+				shaderList.Add(rockCharge);
 			}
 			if (shader != null) {
 				shaders.Add(shader);
@@ -522,6 +537,7 @@ public class Sprite {
 			}
 		}
 
+		float extraXOff = 0;
 		float extraYOff = 0;
 		if (isUltX) {
 			bitmap = Global.textures["XUltimate"];
@@ -533,7 +549,12 @@ public class Sprite {
 			bitmap = Global.textures["XUP"];
 		}
 
-		DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1, currentFrame.rect.y1 - extraYOff, currentFrame.rect.w(), currentFrame.rect.h() + extraYOff, x + frameOffsetX, y + frameOffsetY - extraYOff, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
+		if (isSuperAdaptor) {
+			extraXOff = 5;
+			extraYOff = 6;
+			bitmap = Global.textures["rock_superadaptor"];
+		}
+		DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1 - extraXOff, currentFrame.rect.y1 - extraYOff, currentFrame.rect.w() + extraXOff, currentFrame.rect.h() + extraYOff, x + frameOffsetX - (extraXOff * xDirArg), y + frameOffsetY - extraYOff, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
 
 		if (isUPX) {
 			var upShaders = new List<ShaderWrapper>(shaders);

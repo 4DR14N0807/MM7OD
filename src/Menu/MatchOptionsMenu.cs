@@ -50,9 +50,9 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				var otherPlayers = Global.level.spectatablePlayers();
-				string spectate = Global.level.mainPlayer.isSpectator ? "Stop spectating" : "Spectate";
+				string spectate = Global.level.mainPlayer.isSpectator ? "STOP SPECTATING" : "SPECTATE";
 				Fonts.drawText(
-					canSpectate() ? FontType.Blue : FontType.Grey,
+					canSpectate() ? FontType.Grey : FontType.Grey,
 					spectate, pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -68,7 +68,7 @@ public class MatchOptionsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						canSuicide() ? FontType.Red : FontType.Grey, "Suicide",
+						canSuicide() ? FontType.Grey : FontType.Grey, "SUICIDE",
 						pos.x, pos.y, selected: selectY == index
 					);
 				}
@@ -103,8 +103,8 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				string teamName = Global.level.gameMode.teamNames[selectedTeam];
 				Fonts.drawText(
-					canChangeToTeam() ? FontType.Blue : FontType.Grey,
-					$"Change Team to < {teamName} >", pos.x, pos.y, selected: selectY == index
+					canChangeToTeam() ? FontType.Grey : FontType.Grey,
+					$"CHANGE TEAM TO: < {teamName} >", pos.x, pos.y, selected: selectY == index
 			);
 			}),
 			// Add bot
@@ -119,8 +119,8 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					canAddBot() ? FontType.Blue : FontType.Grey,
-					"Add Bot", pos.x, pos.y, selected: selectY == index
+					canAddBot() ? FontType.Grey : FontType.Grey,
+					"ADD BOT", pos.x, pos.y, selected: selectY == index
 				);
 			}),
 			// Remove bot
@@ -164,8 +164,8 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					canRemoveBot() ? FontType.Blue : FontType.Grey,
-					"Remove Bot: " + (botToRemove?.name ?? "(No bots)"),
+					canRemoveBot() ? FontType.Grey : FontType.Grey,
+					"REMOVE BOT: " + (botToRemove?.name ?? "(No bots)"),
 					pos.x, pos.y, selected: selectY == index
 			);
 			}),
@@ -178,8 +178,8 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Blue,
-					 "Chat History", pos.x, pos.y, selected: selectY == index
+					FontType.Grey,
+					 "CHAT HISTORY", pos.x, pos.y, selected: selectY == index
 				);
 			}),
 			// Disable chat
@@ -191,8 +191,8 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Blue,
-					Global.level.gameMode.chatMenu.chatEnabled ? "Disable Chat" : "Enable Chat",
+					FontType.Grey,
+					Global.level.gameMode.chatMenu.chatEnabled ? "DISABLE CHAT" : "ENABLE CHAT",
 					pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -227,8 +227,8 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Blue,
-					"Mute: " + getPlayerMuteMsg(playerToMute),
+					FontType.Grey,
+					"MUTE: " + getPlayerMuteMsg(playerToMute),
 					pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -247,7 +247,7 @@ public class MatchOptionsMenu : IMainMenu {
 				}
 				if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 					var oldMenu = this;
-					Menu.change(new ConfirmLeaveMenu(this, "Report player " + playerToReport.name + "?\nThis will generate a report_[name].txt\nfile in your game folder;\nsend it to your server admin.", () =>
+					Menu.change(new ConfirmLeaveMenu(this, "REPORT PLAYER " + playerToReport.name + "?\nThis will generate a report_[name].txt\nfile in your game folder;\nsend it to your server admin.", () =>
 					{
 						Global.serverClient?.rpc(RPC.reportPlayerRequest, playerToReport.name);
 						Menu.change(oldMenu);
@@ -256,8 +256,8 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Blue,
-					"Report: " + (playerToReport?.name ?? "(No players)"),
+					FontType.Grey,
+					"REPORT: " + (playerToReport?.name ?? "(No players)"),
 					pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -284,10 +284,10 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				string prefix = "";
-				if (!KickMenu.hasDirectKickPower()) prefix = "Vote ";
+				if (!KickMenu.hasDirectKickPower()) prefix = "VOTE ";
 				Fonts.drawText(
-					canKick() ? FontType.Blue : FontType.Grey,
-					prefix + "Kick: " + (playerToKick?.name ?? "(No players)"),
+					canKick() ? FontType.Grey : FontType.Grey,
+					prefix + "KICK: " + (playerToKick?.name ?? "(No players)"),
 					pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -307,9 +307,9 @@ public class MatchOptionsMenu : IMainMenu {
 				}
 			},
 			(Point pos, int index) => {
-				string msg = "Vote Reset Flags";
+				string msg = "VOTE RESET FLAGS";
 				Fonts.drawText(
-					canResetFlags() ? FontType.Blue : FontType.Grey,
+					canResetFlags() ? FontType.Grey : FontType.Grey,
 					msg, pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -337,9 +337,9 @@ public class MatchOptionsMenu : IMainMenu {
 				}
 			},
 			(Point pos, int index) => {
-				string msg = canEndMatchWithoutVote() ? "End Match" : "Vote End Match";
+				string msg = canEndMatchWithoutVote() ? "END MATCH" : "VOTE END MATCH";
 				Fonts.drawText(
-					canEndMatch() ? FontType.Blue : FontType.Grey,
+					canEndMatch() ? FontType.Grey : FontType.Grey,
 					msg, pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -392,7 +392,7 @@ public class MatchOptionsMenu : IMainMenu {
 	public void render() {
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
 		Fonts.drawText(
-			FontType.Yellow, "Match Options",
+			FontType.BlueMenu, "Match Options",
 			Global.screenW * 0.5f, 16, Alignment.Center
 		);
 

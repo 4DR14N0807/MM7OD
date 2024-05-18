@@ -111,7 +111,7 @@ public class RisingSpecterState : CharState {
 				new VileLaser(VileLaserType.RisingSpecter), shootPos, vile.xDir,
 				vile.player, vile.player.getNextActorNetId(), rpc: true
 			);
-			vile.playSound("risingSpecter", sendRpc: true);
+			//vile.playSound("risingSpecter", sendRpc: true);
 		}
 	}
 }
@@ -234,7 +234,7 @@ public class NecroBurstAttack : CharState {
 				new VileLaser(VileLaserType.NecroBurst), shootPos,
 				vile.xDir, vile.player, vile.player.getNextActorNetId(), rpc: true
 			);
-			vile.playSound("necroburst", sendRpc: true);
+			//vile.playSound("necroburst", sendRpc: true);
 		}
 	}
 
@@ -323,7 +323,7 @@ public class RAShrapnelProj : Projectile {
 public class StraightNightmareAttack : CharState {
 	bool shot = false;
 	public StraightNightmareAttack(bool grounded) : base(grounded ? "idle_shoot" : "cannon_air", "", "", "") {
-		enterSound = "straightNightmareShoot";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -396,7 +396,7 @@ public class StraightNightmareProj : Projectile {
 
 		Helpers.decrementTime(ref soundTime);
 		if (soundTime == 0) {
-			playSound("straightNightmare");
+			//playSound("straightNightmare");
 			soundTime = 0.1f;
 		}
 

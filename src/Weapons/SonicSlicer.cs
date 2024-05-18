@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class SonicSlicer : Weapon {
 	public SonicSlicer() : base() {
-		shootSounds = new List<string>() { "sonicSlicer", "sonicSlicer", "sonicSlicer", "sonicSlicerCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)WeaponIds.SonicSlicer;
 		weaponBarBaseIndex = 13;
@@ -84,7 +84,7 @@ public class SonicSlicerProj : Projectile {
 
 		var collideData = Global.level.checkCollisionActor(this, xDir, 0, vel);
 		if (collideData != null && collideData.hitData != null) {
-			playSound("dingX2");
+			//playSound("dingX2");
 			xDir *= -1;
 			vel.x *= -1;
 			new Anim(pos, "sonicslicer_sparks", xDir, null, true);
@@ -95,7 +95,7 @@ public class SonicSlicerProj : Projectile {
 		if (velYSign != 0) {
 			collideData = Global.level.checkCollisionActor(this, 0, velYSign, vel);
 			if (collideData != null && collideData.hitData != null) {
-				playSound("dingX2");
+				//playSound("dingX2");
 				vel.y *= -1;
 				new Anim(pos, "sonicslicer_sparks", xDir, null, true);
 				RPC.actorToggle.sendRpc(netId, RPCActorToggleType.SonicSlicerBounce);

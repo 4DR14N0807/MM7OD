@@ -110,7 +110,7 @@ public class GenericMeleeProj : Projectile {
 	}
 
 	public override DamagerMessage onDamage(IDamagable damagable, Player attacker) {
-		if (isZSaber() || projId == (int)ProjIds.X6Saber || projId == (int)ProjIds.XSaber) {
+		if (isZSaber() || projId == (int)ProjIds.X6Saber || projId == (int)ProjIds.XSaber || projId == (int)ProjIds.SlashClaw) {
 			Point hitPoint = (damagable as Actor).getCenterPos();
 			Collider hitbox = getGlobalCollider();
 			Collider collider = (damagable as Actor).collider;
@@ -121,9 +121,17 @@ public class GenericMeleeProj : Projectile {
 				hitPoint = new Point((hitboxCenter.x + hitCenter.x) * 0.5f, (hitboxCenter.y + hitCenter.y) * 0.5f);
 			}
 
-			string swordSparkSprite = projId == (int)ProjIds.ZSaber2 ? "sword_sparks_horizontal" : "sword_sparks_angled";
+			if (projId == (int)ProjIds.SlashClaw) {
 
-			new Anim(hitPoint, swordSparkSprite, 1, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+				string slashClawFade = "slash_claw_fade";
+				new Anim(hitPoint, slashClawFade, xDir, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+			} else {
+
+				string swordSparkSprite = projId == (int)ProjIds.ZSaber2 ? "sword_sparks_horizontal" : "sword_sparks_angled";
+
+				new Anim(hitPoint, swordSparkSprite, 1, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+
+			}
 		}
 
 		return null;

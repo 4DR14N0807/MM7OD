@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 public class SpinningBlade : Weapon {
 	public SpinningBlade() : base() {
-		shootSounds = new List<string>() { "", "", "", "spinningBladeCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1.25f;
 		index = (int)WeaponIds.SpinningBlade;
 		weaponBarBaseIndex = 20;
@@ -45,7 +45,7 @@ public class SpinningBladeProj : Projectile {
 		maxTime = 2f;
 		projId = (int)ProjIds.SpinningBlade;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		/*try {
 			spinSound = new Sound(Global.soundBuffers["spinningBlade"].soundBuffer);
 			spinSound.Volume = 50f;
@@ -100,7 +100,7 @@ public class SpinningBladeProj : Projectile {
 
 	public override void onStart() {
 		base.onStart();
-		spinSound = new Sound(Global.soundBuffers["spinningblade"].soundBuffer);
+		//spinSound = new Sound(Global.soundBuffers["spinningBlade"].soundBuffer);
 		spinSound.Volume = 50f;
 	}
 }
@@ -130,7 +130,7 @@ public class SpinningBladeProjCharged : Projectile {
 
 		if (time > 0.25f && !soundPlayed) {
 			soundPlayed = true;
-			playSound("spinningBlade");
+			//playSound("spinningBlade");
 		}
 
 		if (!ownedByLocalPlayer) return;

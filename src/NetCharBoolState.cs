@@ -98,36 +98,43 @@ public partial class Character {
 	public byte netCharState2;
 
 	public NetCharBoolState isHyperChargeActiveBS;
+	public NetCharBoolState hasChargedNoiseCrushBS;
 	public NetCharBoolState isSpeedDevilActiveBS;
 	public NetCharBoolState isInvulnBS;
 	public NetCharBoolState hasUltimateArmorBS;
+	public NetCharBoolState hasSuperAdaptorBS;
 	public NetCharBoolState isDefenderFavoredBS;
 	public NetCharBoolState hasSubtankCapacityBS;
+	public NetCharBoolState hasETankCapacityBS;
 	public NetCharBoolState isNightmareZeroBS;
 	public NetCharBoolState isDarkHoldBS;
 
 	public void initNetCharState2() {
-		isHyperChargeActiveBS = new NetCharBoolState(this, 0, NetCharBoolStateNum.Two, (character) => { return character.player.showHyperBusterCharge(); });
+		//isHyperChargeActiveBS = new NetCharBoolState(this, 0, NetCharBoolStateNum.Two, (character) => { return character.player.showHyperBusterCharge(); });
+		hasChargedNoiseCrushBS = new NetCharBoolState(this, 0, NetCharBoolStateNum.Two, (character) => { return (character as Rock)?.hasChargedNoiseCrush == true; });
 		isSpeedDevilActiveBS = new NetCharBoolState(this, 1, NetCharBoolStateNum.Two, (character) => { return character.player.speedDevil; });
 		isInvulnBS = new NetCharBoolState(this, 2, NetCharBoolStateNum.Two, (character) => { return character.invulnTime > 0; });
 		hasUltimateArmorBS = new NetCharBoolState(this, 3, NetCharBoolStateNum.Two, (character) => { return character.player.hasUltimateArmor(); });
 		isDefenderFavoredBS = new NetCharBoolState(this, 4, NetCharBoolStateNum.Two, (character) => { return character.player.isDefenderFavored; });
-		hasSubtankCapacityBS = new NetCharBoolState(this, 5, NetCharBoolStateNum.Two, (character) => { return character.player.hasSubtankCapacity(); });
+		hasETankCapacityBS = new NetCharBoolState(this, 5, NetCharBoolStateNum.Two, (character) => { return character.player.hasETankCapacity(); });
 		isNightmareZeroBS = new NetCharBoolState(this, 6, NetCharBoolStateNum.Two, (character) => {
 			return (character as Zero)?.isNightmareZero == true;
 		});
-		isDarkHoldBS = new NetCharBoolState(this, 7, NetCharBoolStateNum.Two, (character) => { return character.charState is DarkHoldState; });
+		//isDarkHoldBS = new NetCharBoolState(this, 7, NetCharBoolStateNum.Two, (character) => { return character.charState is DarkHoldState; });
+		hasSuperAdaptorBS = new NetCharBoolState(this, 7, NetCharBoolStateNum.Two, (character) => {return character.player.hasSuperAdaptor(); });
 	}
 
 	public byte updateAndGetNetCharState2() {
-		isHyperChargeActiveBS.updateValue();
+		//isHyperChargeActiveBS.updateValue();
+		hasChargedNoiseCrushBS.updateValue();
 		isSpeedDevilActiveBS.updateValue();
 		isInvulnBS.updateValue();
 		hasUltimateArmorBS.updateValue();
 		isDefenderFavoredBS.updateValue();
-		hasSubtankCapacityBS.updateValue();
+		hasETankCapacityBS.updateValue();
 		isNightmareZeroBS.updateValue();
-		isDarkHoldBS.updateValue();
+		//isDarkHoldBS.updateValue();
+		hasSuperAdaptorBS.updateValue();
 		return netCharState2;
 	}
 }

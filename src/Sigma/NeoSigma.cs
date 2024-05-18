@@ -80,7 +80,7 @@ public class NeoSigma : BaseSigma {
 					}
 				}
 				changeSprite(getSprite(charState.attackSprite), true);
-				playSound("sigma2slash", sendRpc: true);
+				//playSound("sigma2slash", sendRpc: true);
 				return true;
 			}
 			changeState(new SigmaClawState(charState, !grounded), true);

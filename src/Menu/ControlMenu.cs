@@ -43,7 +43,7 @@ public class ControlMenu : IMainMenu {
 				new string[] { Control.Right, "Right" },
 				new string[] { Control.Jump, "Jump" },
 				new string[] { Control.Shoot, "Shoot" },
-				new string[] { Control.Dash, "Dash" },
+				new string[] { Control.Dash, "Slide" },
 				new string[] { Control.Special1, "Special" },
 				new string[] { Control.WeaponLeft, "WeaponL" },
 				new string[] { Control.WeaponRight, "WeaponR" },
@@ -190,9 +190,12 @@ public class ControlMenu : IMainMenu {
 
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0);
-			DrawWrappers.DrawTextureHUD(
+			/*DrawWrappers.DrawTextureHUD(
 				Global.textures["cursor"], startX,
 				topLeft.y + startYOff + (selectArrowPosY * 8) + cursorYOff
+			);*/
+			Global.sprites["cursor"].drawToHUD(
+				0, startX, topLeft.y + startYOff + (selectArrowPosY * 8) + cursorYOff + 5
 			);
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
@@ -210,19 +213,21 @@ public class ControlMenu : IMainMenu {
 			3 when (axlAimMode == 1) => "AXL CONTROLS (ANGULAR)",
 			3 => "AXL CONTROLS (DIRECTIONAL)",
 			4 => "SIGMA CONTROLS",
+			5 => "ROCKMAN CONTROLS",
+			6 => "ROCKMAN CONTROLS",
 			_ => "GENERAL CONTROLS"
 		};
-		Fonts.drawText(FontType.Yellow, subtitle, Global.halfScreenW, 24, Alignment.Center);
+		Fonts.drawText(FontType.BlueMenu, subtitle, Global.halfScreenW, 14, Alignment.Center);
 
 		if (isController) {
 			Fonts.drawText(
-				FontType.Golden, "Setting controls for controller \"" +
+				FontType.LigthGrey, "Setting controls for controller \"" +
 				Control.getControllerName() + "\"",
 				Global.halfScreenW, 32, alignment: Alignment.Center
 			);
 		} else {
 			Fonts.drawText(
-				FontType.Golden, "Setting controls for keyboard",
+				FontType.LigthGrey, "Setting controls for keyboard",
 				Global.halfScreenW, 32, alignment: Alignment.Center
 			);
 		}
@@ -234,12 +239,12 @@ public class ControlMenu : IMainMenu {
 				boundKeyDisplay = "(Inherit)";
 			}
 			Fonts.drawText(
-				FontType.Blue, bindableControl[1] + ":",
+				FontType.Grey, bindableControl[1] + ":",
 				topLeft.x, topLeft.y + startYOff + 8 * (i + 1),
 				selected: selectArrowPosY == i
 			);
 			Fonts.drawText(
-				FontType.Blue, boundKeyDisplay,
+				FontType.Grey, boundKeyDisplay,
 				topLeft.x + 80, topLeft.y + startYOff + 8 * (i + 1),
 				selected: selectArrowPosY == i
 			);
@@ -270,8 +275,8 @@ public class ControlMenu : IMainMenu {
 				17, 17, Global.screenW - 17, Global.screenH - 17, true,
 				new Color(0, 0, 0, 224), 0, ZIndex.HUD, false
 			);
-			Fonts.drawText(FontType.Red, "ERROR", Global.screenW / 2, top - 20, alignment: Alignment.Center);
-			Fonts.drawText(FontType.RedishOrange, error, Global.screenW / 2, top, alignment: Alignment.Center);
+			Fonts.drawText(FontType.Grey, "ERROR", Global.screenW / 2, top - 20, alignment: Alignment.Center);
+			Fonts.drawText(FontType.Grey, error, Global.screenW / 2, top, alignment: Alignment.Center);
 			Fonts.drawTextEX(
 				FontType.Grey, Helpers.controlText("Press [OK] to continue"),
 				Global.screenW / 2, 20 + top, alignment: Alignment.Center

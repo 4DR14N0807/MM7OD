@@ -31,7 +31,7 @@ public class ChatHistoryMenu : IMainMenu {
 	public void render() {
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
 		Fonts.drawText(
-			FontType.Yellow, "Chat History", Global.screenW * 0.5f, 16, Alignment.Center
+			FontType.BlueMenu, "Chat History", Global.screenW * 0.5f, 16, Alignment.Center
 		);
 
 		var ch = Global.level.gameMode.chatMenu.chatHistory;

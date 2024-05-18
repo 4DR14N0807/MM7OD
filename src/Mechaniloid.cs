@@ -45,7 +45,7 @@ public class BirdMechaniloidProj : Projectile, IDamagable {
 		base(weapon, pos, xDir, 0, 3, player, "sigma2_bird", 0, 0f, netProjId, player.ownedByLocalPlayer) {
 		projId = (int)ProjIds.Sigma2BirdProj;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		destroyOnHit = true;
 		vel = new Point(0, -100);
 
@@ -314,7 +314,7 @@ public class Mechaniloid : Actor, IDamagable {
 		} else {
 			if (frameIndex == 0 && !shot) {
 				shot = true;
-				playSound("viralSigmaTankShoot", sendRpc: true);
+				//playSound("viralSigmaTankShoot", sendRpc: true);
 				var poi = getFirstPOIOrDefault();
 				new TankMechaniloidProj(weapon, poi, xDir, netOwner, netOwner.getNextActorNetId(), rpc: true);
 			}
@@ -407,7 +407,7 @@ public class Mechaniloid : Actor, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		playSound("explosion");
+		//playSound("explosion");
 		new Anim(getCenterPos(), "explosion", 1, null, true);
 		if (ownedByLocalPlayer) {
 			netOwner.mechaniloids.Remove(this);

@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class BoundBlaster : AxlWeapon {
 	public BoundBlaster(int altFire) : base(altFire) {
-		shootSounds = new List<string>() { "boundBlaster", "boundBlaster", "boundBlaster", "movingWheel" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.15f;
 		index = (int)WeaponIds.BoundBlaster;
 		weaponBarBaseIndex = 35;
@@ -19,7 +19,7 @@ public class BoundBlaster : AxlWeapon {
 		altFireCooldown = 2;
 
 		if (altFire == 1) {
-			shootSounds[3] = "boundBlaster";
+			shootSounds[3] = "";
 		}
 	}
 

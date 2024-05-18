@@ -76,7 +76,7 @@ public class SparkMandrill : Maverick {
 	public MaverickState getShootState() {
 		return new MShoot((Point pos, int xDir) => {
 			shakeCamera(sendRpc: true);
-			playSound("sparkmSparkX1", forcePlay: false, sendRpc: true);
+			//playSound("sparkmSparkX1", forcePlay: false, sendRpc: true);
 			//deductAmmo(32);
 			new TriadThunderProjCharged(sparkWeapon, pos, xDir, 1, player, player.getNextActorNetId(), rpc: true);
 			new TriadThunderProjCharged(sparkWeapon, pos, -xDir, 1, player, player.getNextActorNetId(), rpc: true);
@@ -182,7 +182,7 @@ public class SparkMDashPunchState : MaverickState {
 
 		var hitWall = Global.level.checkCollisionActor(maverick, move.x * Global.spf * 2, -5);
 		if (hitWall?.isSideWallHit() == true) {
-			maverick.playSound("crash", sendRpc: true);
+			//maverick.playSound("crash", sendRpc: true);
 			maverick.shakeCamera(sendRpc: true);
 			maverick.changeState(new MIdle());
 			return;

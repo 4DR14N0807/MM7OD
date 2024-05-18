@@ -20,7 +20,7 @@ public class ParasiticBomb : Weapon {
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
 		if (chargeLevel < 3) {
-			player.character.playSound("buster");
+			//player.character.playSound("buster");
 			new ParasiticBombProj(this, pos, xDir, player, netProjId);
 		} else {
 			if (player.character.ownedByLocalPlayer && player.character.beeSwarm == null) {
@@ -262,7 +262,7 @@ public class BeeCursorAnim : Anim {
 				destroySelf();
 				if (!target!.destroyed) {
 					if (character != null) {
-						character.chargeTime = character.charge3Time;
+						character.chargeTime = Character.charge3Time;
 						character.shoot(true);
 						character.chargeTime = 0;
 						new ParasiticBombProjCharged(new ParasiticBomb(), character.getShootPos(), character.pos.x - target.getCenterPos().x < 0 ? 1 : -1, character.player, character.player.getNextActorNetId(), target, rpc: true);
@@ -288,7 +288,7 @@ public class ParasiticBombProjCharged : Projectile, IDamagable {
 		this.weapon = weapon;
 		this.host = host;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		maxTime = 3f;
 		projId = (int)ProjIds.ParasiticBombCharged;
 		destroyOnHit = true;

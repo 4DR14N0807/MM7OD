@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -47,12 +47,12 @@ public class GameMode {
 		"Orange"
 	};
 	public FontType[] teamFonts = {
-		FontType.Blue,
-		FontType.Red,
-		FontType.Green,
-		FontType.Purple,
-		FontType.Yellow,
-		FontType.Orange
+		FontType.BlueMenu,
+		FontType.RedMenu,
+		FontType.GreenMenu,
+		FontType.PurpleMenu,
+		FontType.YellowMenu,
+		FontType.OrangeMenu
 	};
 
 	public VoteKick? currentVoteKick;
@@ -374,7 +374,7 @@ public class GameMode {
 
 		bool isWarpIn = level.mainPlayer.character != null && level.mainPlayer.character.isWarpIn();
 
-		Helpers.decrementTime(ref UpgradeMenu.subtankDelay);
+		Helpers.decrementTime(ref UpgradeMenu.eTankDelay);
 
 		if (!isOver) {
 			if (!Menu.inMenu && ((level.mainPlayer.warpedIn && !isWarpIn) || Global.level.mainPlayer.isSpectator) && Global.input.isPressedMenu(Control.MenuPause) && !chatMenu.recentlyExited) {
@@ -630,7 +630,7 @@ public class GameMode {
 				Global.sprites["hud_scrap"].drawToHUD(0, 4, 138);
 				Fonts.drawText(
 					FontType.Grey,
-					"x" + drawPlayer.currency.ToString(), 16, 140, Alignment.Left
+					"x" + drawPlayer.currency.ToString(), 22, 140, Alignment.Left
 				);
 			}
 			if (drawPlayer.character is MegamanX mmx && mmx.unpoShotCount > 0) {
@@ -700,7 +700,7 @@ public class GameMode {
 			);
 		} else if (Global.serverClient != null && Global.serverClient.isLagging() && hudErrorMsgTime == 0) {
 			Fonts.drawText(
-				FontType.RedishOrange, Helpers.controlText("Connectivity issues detected."),
+				FontType.LigthGrey, Helpers.controlText("Veneco Detectado."),
 				Global.halfScreenW, 50, Alignment.Center
 			);
 		} else if (mainPlayer?.character is BaseSigma sigma && sigma.possessTarget != null) {
@@ -1044,7 +1044,7 @@ public class GameMode {
 		if (remainingTime != null) {
 			var timespan = new TimeSpan(0, 0, MathInt.Ceiling(remainingTime.Value));
 			string timeStr = timespan.ToString(@"mm\:ss");
-			Fonts.drawText(FontType.Golden, timeStr, Global.halfScreenW, 5, Alignment.Center);
+			Fonts.drawText(FontType.OrangeMenu, timeStr, Global.halfScreenW, 5, Alignment.Center);
 		}
 	}
 
@@ -1319,6 +1319,7 @@ public class GameMode {
 		if (weapon is UndisguiseWeapon) return false;
 		if (weapon is NovaStrike && level.isHyper1v1()) return false;
 		if (weapon is Buster buster) return false;
+		if (weapon is SARocketPunch) return false;
 
 		return true;
 	}
@@ -2137,7 +2138,7 @@ public class GameMode {
 		float leftX = sx + 15;
 
 		DrawWrappers.DrawRect(sx, sy, x + 50, y - 18, true, new Color(0, 0, 0, 224), 1, ZIndex.HUD, false);
-		Global.sprites["cursorchar"].drawToHUD(0, x, y - 13);
+		Global.sprites["cursor"].drawToHUD(0, x, y - 13);
 		int sigmaForm = dnaCore.loadout?.sigmaLoadout?.sigmaForm ?? 0;
 
 		sy += 5;
@@ -2351,13 +2352,13 @@ public class GameMode {
 		int top2 = -3;
 		if (!Global.level.server.isP2P) {
 			Fonts.drawText(
-				FontType.DarkPurple, Global.level.server.region.name,
-				Global.screenW - 12, top2 + 12, Alignment.Right
+				FontType.LigthGrey, Global.level.server.region.name,
+				Global.screenW - 12, top2 + 14, Alignment.Right
 			);
 		} else {
 			Fonts.drawText(
-				FontType.DarkPurple, "P2P Server",
-				Global.screenW - 12, top2 + 12, Alignment.Right
+				FontType.LigthGrey, "P2P Server",
+				Global.screenW - 12, top2 + 14, Alignment.Right
 			);
 		}
 
@@ -2369,13 +2370,13 @@ public class GameMode {
 			else iconXPos = 253;
 		}
 		Fonts.drawText(
-			FontType.DarkPurple, netcodePingStr,
+			FontType.LigthGrey, netcodePingStr,
 			Global.screenW - 12, top2 + 22, Alignment.Right
 		);
-		Global.sprites["hud_netcode"].drawToHUD((int)level.server.netcodeModel, iconXPos, top2 + 26);
+		Global.sprites["hud_netcode"].drawToHUD((int)level.server.netcodeModel, Global.screenW - 50, top2 + 29);
 		if (Global.level.server.isLAN) {
 			Fonts.drawText(
-				FontType.DarkPurple, "IP: " + Global.level.server.ip,
+				FontType.LigthGrey, "IP: " + Global.level.server.ip,
 				Global.screenW - 12, top2 + 32, Alignment.Right
 			);
 		}
@@ -2390,7 +2391,7 @@ public class GameMode {
 		int col4x = (int)Math.Floor(Global.screenW * 0.65);
 		int col5x = (int)Math.Floor(Global.screenW * 0.85);
 		int lineY = padding + 20;
-		var labelTextY = lineY + 2;
+		var labelTextY = 48;
 		int line2Y = lineY + 12;
 		int topPlayerY = line2Y + 2;
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
@@ -2401,28 +2402,28 @@ public class GameMode {
 			MMXOnline.Race => "Race",
 			_ => Global.level.server.gameMode
 		};
-		Fonts.drawText(FontType.BlueMenu, modeText, padding, top);
+		Fonts.drawText(FontType.BlueMenu, modeText, padding, 12);
 		drawMapName(padding, top + 10);
 		if (Global.serverClient != null) {
 			Fonts.drawText(
-				FontType.BlueMenu, "Match: " + Global.level.server.name, padding + 100, top + 10
+				FontType.OrangeMenu, "Match: " + Global.level.server.name, padding + 100, 12
 			);
 			drawNetcodeData();
 		}
 
 		DrawWrappers.DrawLine(
-			padding - 2, lineY, Global.screenW - padding + 2, lineY, new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
+			padding - 2, labelTextY - 2, Global.screenW - padding + 2, labelTextY - 2, new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
 		);
-		Fonts.drawText(FontType.OrangeMenu, "Player", col1x, labelTextY, Alignment.Left);
-		Fonts.drawText(FontType.OrangeMenu, "Char", col2x, labelTextY, Alignment.Left);
-		Fonts.drawText(FontType.OrangeMenu, "Kills", col3x, labelTextY, Alignment.Left);
-		Fonts.drawText(FontType.OrangeMenu, this is Elimination ? "Lives" : "Deaths", col4x, labelTextY, Alignment.Left);
+		Fonts.drawText(FontType.OrangeMenu, "Player", col1x + 6, labelTextY, Alignment.Left);
+		Fonts.drawText(FontType.OrangeMenu, "Char", col2x + 6, labelTextY, Alignment.Left);
+		Fonts.drawText(FontType.OrangeMenu, "Kills", col3x + 6, labelTextY, Alignment.Left);
+		Fonts.drawText(FontType.OrangeMenu, this is Elimination ? "Lives" : "Deaths", col4x + 6, labelTextY, Alignment.Left);
 
 		if (Global.serverClient != null) {
-			Fonts.drawText(FontType.OrangeMenu, "Ping", col5x, labelTextY, Alignment.Left);
+			Fonts.drawText(FontType.OrangeMenu, "Ping", col5x + 6, labelTextY, Alignment.Left);
 		}
 		DrawWrappers.DrawLine(
-			padding - 2, line2Y, Global.screenW - padding + 2, line2Y, Color.White, 1, ZIndex.HUD, false
+			padding - 2, labelTextY + 15, Global.screenW - padding + 2, labelTextY + 15, Color.White, 1, ZIndex.HUD, false
 		);
 		var rowH = 10;
 		var players = getOrderedPlayerList();
@@ -2435,26 +2436,26 @@ public class GameMode {
 
 			if (Global.serverClient != null && player.serverPlayer.isHost) {
 				Fonts.drawText(
-					FontType.Yellow, "H", col1x - 8, 3 + topPlayerY + i * rowH
+					FontType.Yellow, "H", col1x - 4, labelTextY + 18 + i * rowH
 				);
 			} else if (Global.serverClient != null && player.serverPlayer.isBot) {
 				Fonts.drawText(
-					FontType.Grey, "B", col1x - 8, 3 + topPlayerY + i * rowH
+					FontType.Grey, "B", col1x - 4, labelTextY + 18 + i * rowH
 				);
 			}
 
-			Fonts.drawText(color, player.name, col1x, topPlayerY + (i) * rowH, Alignment.Left);
-			Fonts.drawText(FontType.Blue, player.kills.ToString(), col3x, topPlayerY + (i) * rowH, Alignment.Left);
+			Fonts.drawText(color, player.name, col1x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
+			Fonts.drawText(FontType.Blue, player.kills.ToString(), col3x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
 			Fonts.drawText(
 				FontType.Blue, player.getDeathScore().ToString(),
-				col4x, topPlayerY + (i) * rowH, Alignment.Left
+				col4x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left
 			);
 
 			if (Global.serverClient != null) {
-				Fonts.drawText(FontType.Blue, player.getDisplayPing(), col5x, topPlayerY + (i) * rowH, Alignment.Left);
+				Fonts.drawText(FontType.Blue, player.getDisplayPing(), col5x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
 			}
 
-			Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, col2x + 4, topPlayerY + i * rowH);
+			//Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, col2x + 4, labelTextY + 18 + i * rowH);
 		}
 		//drawSpectators();
 	}
@@ -2483,12 +2484,12 @@ public class GameMode {
 			MMXOnline.TeamElimination => "Team Elimination",
 			_ => Global.level.server.gameMode
 		};
-		Fonts.drawText(FontType.BlueMenu, textMode, padding, top);
+		Fonts.drawText(FontType.BlueMenu, textMode, padding, 12);
 		drawMapName(padding, top + 10);
 
 		if (Global.serverClient != null) {
 			Fonts.drawText(
-				FontType.BlueMenu, "Match: " + Global.level.server.name, padding + 100, top + 10
+				FontType.OrangeMenu, Global.level.server.name, 198, 12
 			);
 			drawNetcodeData();
 		}
@@ -2518,12 +2519,12 @@ public class GameMode {
 			_ => $"Red: {Global.level.gameMode.teamPoints[1]}"
 		};
 		(int x, int y)[] positions = {
-			(padding - 6, top + 32),
-			(padding + 238, top + 32),
-			(padding + 116, top + 32),
-			(padding - 6, top + 116),
-			(padding + 238, top + 116),
-			(padding + 116, top + 116),
+			(4, 46),
+			(248, 46),
+			(126, 46),
+			(4, 130),
+			(248, 130),
+			(126, 130),
 		};
 		drawTeamMiniScore(positions[0], 0, FontType.Blue, blueText);
 		drawTeamMiniScore(positions[1], 1, FontType.Red, redText);
@@ -2548,7 +2549,7 @@ public class GameMode {
 		int[] rows = new int[] { pos.y, pos.y + 10, pos.y + 24 };
 		int[] cols = new int[] { pos.x, pos.x + 72, pos.x + 88, pos.x + 104 };
 		DrawWrappers.DrawRect(
-			pos.x - 1, pos.y + 19, pos.x + 120, pos.y + 20, true,
+			pos.x + 9, pos.y + 19, pos.x + 120, pos.y + 20, true,
 			new Color(255, 255, 255, 128), 0, ZIndex.HUD, false
 		);
 
@@ -2567,12 +2568,12 @@ public class GameMode {
 			FontType charColor = getCharFont(player);
 
 			if (Global.serverClient != null && player.serverPlayer.isHost) {
-				Fonts.drawText(FontType.Yellow, "H", cols[0] - 8, posY);
+				Fonts.drawText(FontType.Yellow, "H", cols[0], posY);
 			} else if (Global.serverClient != null && player.serverPlayer.isBot) {
-				Fonts.drawText(FontType.Grey, "B", cols[0] - 8, posY);
+				Fonts.drawText(FontType.Grey, "B", cols[0], posY);
 			}
 
-			Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, cols[0] + 5, posY - 2);
+			//Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, cols[0] + 5, posY - 2);
 			Fonts.drawText(charColor, player.name, cols[0] + 12, posY);
 			Fonts.drawText(FontType.Blue, player.kills.ToString(), cols[1], posY);
 			Fonts.drawText(FontType.Red, player.getDeathScore().ToString(), cols[2], posY);
@@ -2585,7 +2586,7 @@ public class GameMode {
 
 	private void drawMapName(int x, int y) {
 		string displayName = "Map: " + level.levelData.displayName.Replace("_mirrored", "");
-		Fonts.drawText(FontType.BlueMenu, displayName, x, y, Alignment.Left);
+		Fonts.drawText(FontType.BlueMenu, displayName, x, 27, Alignment.Left);
 		if (level.levelData.isMirrored) {
 			int size = Fonts.measureText(Fonts.getFontSrt(FontType.BlueMenu), displayName);
 			Global.sprites["hud_mirror_icon"].drawToHUD(0, x + size + 9, y + 5);
@@ -2608,9 +2609,9 @@ public class GameMode {
 
 	public FontType getCharFont(Player player) {
 		if (player.isDead && !isOver) {
-			return FontType.Grey;
+			return FontType.LigthGrey;
 		} else if (player.eliminated()) {
-			return FontType.DarkOrange;
+			return FontType.LigthGrey;
 		} else if (player.isX) {
 			return FontType.Blue;
 		} else if (player.isZero) {
@@ -2621,6 +2622,8 @@ public class GameMode {
 			return FontType.Pink;
 		} else if (player.isSigma) {
 			return FontType.Green;
+		} else if (player.isRock) {
+			return FontType.Blue;
 		}
 		return FontType.Grey;
 	}
@@ -2651,7 +2654,7 @@ public class GameMode {
 	}
 
 	public void drawTimeIfSet(int yPos) {
-		FontType fontColor = FontType.Grey;
+		FontType fontColor = FontType.BlueMenu;
 		string timeStr = "";
 		if (setupTime > 0) {
 			var timespan = new TimeSpan(0, 0, MathInt.Ceiling(setupTime.Value));
@@ -2672,7 +2675,7 @@ public class GameMode {
 			}
 			if (isOvertime()) {
 				timeStr = "Overtime!";
-				fontColor = FontType.Red;
+				fontColor = FontType.RedMenu;
 			}
 		} else {
 			return;
@@ -2846,7 +2849,7 @@ public class GameMode {
 					var line = level.mainPlayer.randomTip[i];
 					if (i == 0) line = "Tip: " + line;
 					Fonts.drawText(
-						FontType.BlueMenu, line,
+						FontType.LigthGrey, line,
 						Global.screenW / 2, (Global.screenH / 2) + 45 + (12 * i), Alignment.Center
 					);
 				}
@@ -3000,7 +3003,7 @@ public class GameMode {
 		int maxTeams = Global.level.teamNum;
 
 		string teamText = $"{teamNames[teamSide]}: {teamPoints[teamSide]}";
-		Fonts.drawText(teamFonts[teamSide], teamText, 5, 5);
+		Fonts.drawText(teamFonts[teamSide], teamText, 5, 2);
 
 		int leaderTeam = 0;
 		int leaderScore = -1;
@@ -3015,11 +3018,11 @@ public class GameMode {
 			}
 		}
 		if (!moreThanOneLeader) {
-			Fonts.drawText(teamFonts[leaderTeam], $"Leader: {leaderScore}", 5, 15);
+			Fonts.drawText(teamFonts[leaderTeam], $"Leader: {leaderScore}", 5, 17);
 		} else {
-			Fonts.drawText(FontType.Grey, $"Leader: {leaderScore}", 5, 15);
+			Fonts.drawText(FontType.WhiteMenu, $"Leader: {leaderScore}", 5, 17);
 		}
-		drawTimeIfSet(25);
+		drawTimeIfSet(32);
 	}
 
 	public void drawAllTeamsHUD() {
@@ -3081,7 +3084,7 @@ public class GameMode {
 			float distInMeters = objPos.distanceTo(playerPos) * 0.044f;
 			bool isLeft = posX < Global.viewScreenW / 2;
 			Fonts.drawText(
-				FontType.BlueMenu, label + MathF.Round(distInMeters).ToString() + "m",
+				FontType.LigthGrey, label + MathF.Round(distInMeters).ToString() + "m",
 				posX, posY, isLeft ? Alignment.Left : Alignment.Right
 			);
 		}

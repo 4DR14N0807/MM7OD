@@ -2,12 +2,12 @@
 	<!--Common properties-->
 	<PropertyGroup>
 		<!--LangVersion>12.0</LangVersion-->
-		<AssemblyName>MMXOD</AssemblyName>
+		<AssemblyName>MM7OD</AssemblyName>
 		<OutputType>WinExe</OutputType>
 		<Nullable>enable</Nullable>
 		<Version>19.12</Version>
 		<AssemblyVersion>19.12</AssemblyVersion>
-		<ApplicationIcon>app.ico</ApplicationIcon>
+		<ApplicationIcon>favicon.ico</ApplicationIcon>
 		<TargetFramework>net6.0-windows</TargetFramework>
 		<ImplicitUsings>false</ImplicitUsings>
 		<SelfContained>false</SelfContained>

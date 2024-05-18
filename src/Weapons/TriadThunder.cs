@@ -6,7 +6,7 @@ public class TriadThunder : Weapon {
 	public static TriadThunder netWeapon = new TriadThunder();
 
 	public TriadThunder() : base() {
-		shootSounds = new List<string>() { "triadThunder", "triadThunder", "triadThunder", "" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 2.25f;
 		index = (int)WeaponIds.TriadThunder;
 		weaponBarBaseIndex = 19;
@@ -324,7 +324,7 @@ public class TriadThunderChargedState : CharState {
 			new TriadThunderProjCharged(weapon, new Point(x, y), 1, 0, player, player.getNextActorNetId(), rpc: true);
 			new TriadThunderQuake(weapon, new Point(x, y), 1, player, player.getNextActorNetId(), rpc: true);
 
-			character.playSound("crashX3", forcePlay: false, sendRpc: true);
+			//character.playSound("crashX3", forcePlay: false, sendRpc: true);
 		}
 
 		if (stateTime > 0.75f) {

@@ -1,6 +1,7 @@
 ﻿namespace MMXOnline;
 
 public enum RenderEffectType {
+	None,
 	Hit,
 	Flash,
 	//StockedCharge,
@@ -24,6 +25,10 @@ public enum RenderEffectType {
 	ChargePink,
 	ChargeYellow,
 	ChargeBlue,
+
+	// MM7 Charges
+	RBlueCharge,
+	RGreenCharge
 }
 
 public class RenderEffect {

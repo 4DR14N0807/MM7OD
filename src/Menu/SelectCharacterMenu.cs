@@ -30,6 +30,7 @@ public enum CharIds {
 	Vile,
 	Axl,
 	Sigma,
+	Rock,
 	PunchyZero,
 	BusterZero,
 	// Non-standart chars start here.
@@ -37,7 +38,6 @@ public enum CharIds {
 	ViralSigma,
 	KaiserSigma,
 	// Non-vanilla chars start here.
-	Rock = 10,
 }
 
 public class CharSelection {
@@ -57,66 +57,18 @@ public class CharSelection {
 
 	public static List<CharSelection> selections {
 		get {
-			return new List<CharSelection>() {
-				new CharSelection("X", 0, 1, 0, "menu_megaman", 0),
-				new CharSelection("Zero", 1, 1, 0, "menu_zero", 0),
-				new CharSelection("Kaiser Knuckle", 5, 1, 0, "zero_megapunch", 5) {
-					offset = new Point(0, 22)
-				},
-				new CharSelection("Buster Zero", 6, 1, 0, "zero_shoot", 0) {
-					offset = new Point(-4, 22)
-				},
-				new CharSelection("Vile", 2, 1, 0, "menu_vile", 0),
-				new CharSelection("Axl", 3, 1, 0, "menu_axl", 0),
-				new CharSelection("Sigma", 4, 1, 0, "menu_sigma", sigmaIndex),
-				//new CharSelection("Rockman", 10, 1, 0, "rock_idle", 0),
+			return new List<CharSelection>()
+			{
+					new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
 			};
 		}
 	}
 
 	public static List<CharSelection> selections1v1 {
 		get {
-			return new List<CharSelection>() {
-				new CharSelection("X(X1)", 0, 1, 0, "menu_megaman", 1),
-				new CharSelection("X(X2)", 0, 2, 0, "menu_megaman", 2),
-				new CharSelection("X(X3)", 0, 3, 0, "menu_megaman", 3),
-				new CharSelection("Zero", 1, 1, 0, "menu_zero", 0),
-				new CharSelection("Vile", 2, 1, 0, "menu_vile", 0),
-				new CharSelection("Axl", 3, 1, 0, "menu_axl", 0),
-				new CharSelection("Sigma", 4, 1, 0, "menu_sigma", sigmaIndex),
-				new CharSelection("Kaiser Zero", 5, 1, 0, "zero_megapunch", 5) {
-					offset = new Point(0, 22)
-				},
-				new CharSelection("Buster Zero", 6, 1, 0, "zero_shoot", 0) {
-					offset = new Point(-4, 22)
-				},
-				new CharSelection("C.Penguin", 210, 1, 0, "chillp_idle", 0),
-				new CharSelection("S.Mandrill", 212, 1, 1, "sparkm_idle", 0),
-				new CharSelection("A.Armadillo", 213, 1, 2, "armoreda_idle", 0),
-				new CharSelection("L.Octopus", 214, 1, 3, "launcho_idle", 0),
-				new CharSelection("B.Kuwanger", 215, 1, 4, "boomerk_idle", 0),
-				new CharSelection("S.Chameleon", 216, 1, 5, "stingc_idle", 0),
-				new CharSelection("S.Eagle", 217, 1, 6, "storme_idle", 0),
-				new CharSelection("F.Mammoth", 218, 1, 7, "flamem_idle", 0),
-				new CharSelection("Velguarder", 219, 1, 8, "velg_idle", 0),
-				new CharSelection("W.Sponge", 220, 1, 9, "wsponge_idle", 0),
-				new CharSelection("W.Gator", 221, 1, 10, "wheelg_idle", 0),
-				new CharSelection("B.Crab", 222, 1, 11, "bcrab_idle", 0),
-				new CharSelection("F.Stag", 223, 1, 12, "fstag_idle", 0),
-				new CharSelection("M.Moth", 224, 1, 13, "morphm_idle", 0),
-				new CharSelection("M.Centipede", 225, 1, 14, "magnac_idle", 0),
-				new CharSelection("C.Snail", 226, 1, 15, "csnail_idle", 0),
-				new CharSelection("O.Ostrich", 227, 1, 16, "overdriveo_idle", 0),
-				new CharSelection("Fake Zero", 228, 1, 17, "fakezero_idle", 0),
-				new CharSelection("B.Buffalo", 229, 1, 18, "bbuffalo_idle", 0),
-				new CharSelection("T.Seahorse", 230, 1, 19, "tseahorse_idle", 0),
-				new CharSelection("T.Rhino", 231, 1, 20, "tunnelr_idle", 0),
-				new CharSelection("V.Catfish", 232, 1, 21, "voltc_idle", 0),
-				new CharSelection("C.Crawfish", 233, 1, 22, "crushc_idle", 0),
-				new CharSelection("N.Tiger", 234, 1, 23, "neont_idle", 0),
-				new CharSelection("G.Beetle", 235, 1, 24, "gbeetle_idle", 0),
-				new CharSelection("B.Hornet", 236, 1, 25, "bhornet_idle", 0),
-				new CharSelection("Dr.Doppler", 237, 1, 26, "drdoppler_idle", 0),
+			return new List<CharSelection>()
+			{
+				new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
 			};
 		}
 	}
@@ -273,8 +225,8 @@ public class SelectCharacterMenu : IMainMenu {
 		//);
 		if (!isInGame) {
 			Fonts.drawText(
-				FontType.Yellow, "Select Character".ToUpper(),
-				Global.halfScreenW, 22, alignment: Alignment.Center
+				FontType.BlueMenu, "Select Character".ToUpper(),
+				Global.halfScreenW, 20, alignment: Alignment.Center
 			);
 		} else {
 			if (Global.level.gameMode.isOver) {
@@ -283,8 +235,8 @@ public class SelectCharacterMenu : IMainMenu {
 					true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
 				);
 				Fonts.drawText(
-					FontType.Yellow, "Select Character For Next Match".ToUpper(),
-					Global.halfScreenW, 22, alignment: Alignment.Center
+					FontType.BlueMenu, "Select Character For Next Match".ToUpper(),
+					Global.halfScreenW, 20, alignment: Alignment.Center
 				);
 			} else {
 				DrawWrappers.DrawRect(
@@ -292,8 +244,8 @@ public class SelectCharacterMenu : IMainMenu {
 					true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
 				);
 				Fonts.drawText(
-					FontType.Yellow, "Select Character".ToUpper(),
-					Global.halfScreenW, 22, alignment: Alignment.Center
+					FontType.BlueMenu, "Select Character".ToUpper(),
+					Global.halfScreenW, 20, alignment: Alignment.Center
 				);
 			}
 		}
@@ -316,41 +268,22 @@ public class SelectCharacterMenu : IMainMenu {
 
 		if (Global.frameCount % 60 < 30) {
 			Fonts.drawText(
-				FontType.Orange, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
+				FontType.Grey, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
 				Alignment.Center
 			);
 			Fonts.drawText(
-				FontType.Orange, ">", Global.halfScreenW + 60, Global.halfScreenH + 22,
+				FontType.Grey, ">", Global.halfScreenW + 60, Global.halfScreenH + 22,
 				Alignment.Center
 			);
 		}
 		Fonts.drawText(
-			FontType.Orange, charSelection.name, Global.halfScreenW, Global.halfScreenH + 22,
+			FontType.Grey, charSelection.name, Global.halfScreenW, Global.halfScreenH + 22,
 			alignment: Alignment.Center
 		);
 
 		string[] description = playerData.charNum switch {
-			(int)CharIds.X => new string[]{
-				"A versatile marksman whose arsenal can",
-				"accommodate a variety of different play styles."
-			},
-			(int)CharIds.Zero => new string[] {
-				"Powerful melee warrior", "with high damage combos."
-			},
-			(int)CharIds.Vile => new string[] {
-				"Unpredictable threat that can self-revive", "and call down Ride Armors."
-			},
-			(int)CharIds.Axl => new string[] {
-				"Precise and deadly close range assassin", "with aiming and rapid fire capabilities."
-			},
-			(int)CharIds.Sigma => new string[] {
-				"A fearsome military commander that can", "summon Mavericks on the battlefield."
-			},
-			(int)CharIds.BusterZero => new string[] {
-				"Fast ranged marksman", "with a simple but strong buster combo."
-			},
-			(int)CharIds.PunchyZero => new string[] {
-				"Close range melee brawler", "that can counter the enemy attacks."
+			(int)CharIds.Rock => new string[]{
+				"MEGACARAJITO"
 			},
 			_ => new string[] { "ERROR" }
 		};
@@ -361,11 +294,14 @@ public class SelectCharacterMenu : IMainMenu {
 			);
 			for (int i = 0; i < description.Length; i++) {
 				Fonts.drawText(
-					FontType.Green, description[i],
+					FontType.LigthGrey, description[i],
 					Global.halfScreenW, startY + 94 + (10 * (i + 1)), alignment: Alignment.Center
 				);
 			}
 		}
+		
+		
+		/*
 		if (!isInGame) {
 			Fonts.drawTextEX(
 				FontType.Grey, "[OK]: Continue, [BACK]: Back\n[MLEFT]/[MRIGHT]: Change character",
@@ -384,5 +320,6 @@ public class SelectCharacterMenu : IMainMenu {
 				);
 			}
 		}
+		*/
 	}
 }

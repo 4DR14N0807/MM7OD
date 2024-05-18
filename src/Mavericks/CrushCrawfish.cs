@@ -60,7 +60,7 @@ public class CrushCrawfish : Maverick {
 
 	public MaverickState getShootState(bool isAI) {
 		var mshoot = new MShoot((Point pos, int xDir) => {
-			playSound("crushcShoot", sendRpc: true);
+			//playSound("crushcShoot", sendRpc: true);
 			new CrushCProj(weapon, pos, xDir, player, player.getNextActorNetId(), sendRpc: true);
 		}, null);
 		if (isAI) {
@@ -185,7 +185,7 @@ public class CrushCShootArmState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!once && shootPos != null) {
 			once = true;
-			maverick.playSound("crushcClaw", sendRpc: true);
+			//maverick.playSound("crushcClaw", sendRpc: true);
 			var inputDir = input.getInputDir(player);
 			if (inputDir.y > 0) inputDir.y = 0;
 			if (inputDir.isZero()) inputDir = new Point(maverick.xDir, 0);

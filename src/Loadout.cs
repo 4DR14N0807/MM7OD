@@ -37,9 +37,9 @@ public class XLoadout {
 		indices.Add((byte)weapon1);
 		indices.Add((byte)weapon2);
 		indices.Add((byte)weapon3);
-		if (player.hasArmArmor(3)) indices.Add((int)WeaponIds.HyperBuster);
-		if (player.hasBodyArmor(2)) indices.Add((int)WeaponIds.GigaCrush);
-		if (player.hasUltimateArmor()) indices.Add((int)WeaponIds.NovaStrike);
+		//if (player.hasArmArmor(3)) indices.Add((int)WeaponIds.HyperBuster);
+		//if (player.hasBodyArmor(2)) indices.Add((int)WeaponIds.GigaCrush);
+		//if (player.hasUltimateArmor()) indices.Add((int)WeaponIds.NovaStrike);
 
 		return indices.Select(index => {
 			return Weapon.getAllSwitchableWeapons(new AxlLoadout()).Find(w => w.index == index).clone();
@@ -325,7 +325,7 @@ public class SigmaLoadout {
 		var indices = new List<byte>();
 		indices.Add((byte)(maverick1 + startMaverick));
 		indices.Add((byte)(maverick2 + startMaverick));
-		indices.Insert(sigmaWeaponSlot, (byte)WeaponIds.Sigma);
+		//indices.Insert(sigmaWeaponSlot, (byte)WeaponIds.Sigma);
 
 		return indices.Select(index => {
 			return Weapon.getAllSigmaWeapons(player).Find(w => w.index == index).clone();
@@ -351,6 +351,52 @@ public class SigmaLoadout {
 }
 
 [ProtoContract]
+public class RockLoadout {
+	[ProtoMember(1)] public int weapon1;    //0 indexed
+	[ProtoMember(2)] public int weapon2;
+	[ProtoMember(3)] public int weapon3;
+
+	public List<int> getRockWeaponIndices() {
+		return new List<int>() { weapon1, weapon2, weapon3 };
+	}
+
+	public void validate() {
+		if (weapon1 < 0 || weapon1 > 9) weapon1 = 0;
+		if (weapon2 < 0 || weapon2 > 9) weapon2 = 0;
+		if (weapon3 < 0 || weapon3 > 9) weapon3 = 0;
+
+		if ((weapon1 == weapon2 && weapon1 >= 0) ||
+			(weapon1 == weapon3 && weapon2 >= 0) ||
+			(weapon2 == weapon3 && weapon3 >= 0)) {
+			weapon1 = 0;
+			weapon2 = 1;
+			weapon3 = 2;
+		}
+	}
+
+	public List<Weapon> getWeaponsFromLoadout(Player player) {
+		var indices = new List<byte>();
+		indices.Add((byte)weapon1);
+		indices.Add((byte)weapon2);
+		indices.Add((byte)weapon3);
+
+		return indices.Select(index => {
+			return Weapon.getAllRockWeapons().Find(w => w.index == index).clone();
+		}).ToList();
+	}
+
+	public static RockLoadout createRandom() {
+		var randomRockWeapons = Weapon.getRandomRockWeapons();
+		return new RockLoadout() {
+			weapon1 = randomRockWeapons[0],
+			weapon2 = randomRockWeapons[1],
+			weapon3 = randomRockWeapons[2],
+		};
+	}
+}
+
+
+[ProtoContract]
 public class LoadoutData {
 	[ProtoMember(1)] public int playerId;
 	[ProtoMember(2)] public XLoadout xLoadout = new XLoadout();
@@ -358,6 +404,7 @@ public class LoadoutData {
 	[ProtoMember(4)] public VileLoadout vileLoadout = new VileLoadout();
 	[ProtoMember(5)] public AxlLoadout axlLoadout = new AxlLoadout();
 	[ProtoMember(6)] public SigmaLoadout sigmaLoadout = new SigmaLoadout();
+	[ProtoMember(7)] public RockLoadout rockLoadout = new RockLoadout();
 
 	public static LoadoutData createRandom(int playerId) {
 		return new LoadoutData() {
@@ -367,6 +414,7 @@ public class LoadoutData {
 			vileLoadout = VileLoadout.createRandom(),
 			axlLoadout = AxlLoadout.createRandom(),
 			sigmaLoadout = SigmaLoadout.createRandom(),
+			rockLoadout = RockLoadout.createRandom(),
 		};
 	}
 
@@ -378,6 +426,7 @@ public class LoadoutData {
 			vileLoadout = Helpers.cloneProtobuf(Options.main.vileLoadout),
 			axlLoadout = Helpers.cloneProtobuf(Options.main.axlLoadout),
 			sigmaLoadout = Helpers.cloneProtobuf(Options.main.sigmaLoadout),
+			rockLoadout = Helpers.cloneProtobuf(Options.main.rockLoadout),
 		};
 	}
 }

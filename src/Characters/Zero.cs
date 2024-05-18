@@ -208,7 +208,7 @@ public class Zero : Character {
 				weaponHealTime = 0;
 				weaponHealAmount--;
 				gigaWeapon.ammo = Helpers.clampMax(gigaWeapon.ammo + 1, gigaWeapon.maxAmmo);
-				playSound("heal", forcePlay: true);
+				//playSound("heal", forcePlay: true);
 			}
 		}
 
@@ -380,7 +380,7 @@ public class Zero : Character {
 					}
 				} else if ((Options.main.swapAirAttacks || airAttackCooldown == 0) && !lenientAttackPressed && !player.hasKnuckle()) {
 					if (zeroAirSpecialWeapon.type == (int)AirSpecialType.Kuuenzan || !spcPressed) {
-						playSound("saber1", sendRpc: true);
+						//playSound("saber1", sendRpc: true);
 						changeState(new Fall(), true);
 						changeSprite(Options.main.getSpecialAirAttack(), true);
 						if (!Options.main.swapAirAttacks) airAttackCooldown = maxAirAttackCooldown;
@@ -393,7 +393,7 @@ public class Zero : Character {
 					dashAttackCooldown = maxDashAttackCooldown;
 					slideVel = xDir * getDashSpeed();
 					changeState(new Idle(), true);
-					playSound("saber1", sendRpc: true);
+					//playSound("saber1", sendRpc: true);
 					changeSprite("zero_attack_dash2", true);
 				} else {
 					if (dashAttackCooldown > 0) return;
@@ -415,7 +415,7 @@ public class Zero : Character {
 				var attackSprite = charState.attackSprite;
 				if (player.hasKnuckle()) {
 					attackSprite = attackSprite.Replace("attack", "punch");
-					string attackSound = "punch1";
+					string attackSound = "";
 					if (charState is Jump || charState is Fall || charState is WallKick) attackSprite = "kick_air";
 					if (charState is Dash) {
 						if (dashAttackCooldown > 0) return;
@@ -450,7 +450,8 @@ public class Zero : Character {
 
 				if (!player.hasKnuckle()) {
 					if (isAwakenedZero()) {
-						playSound("zerosaberx3", sendRpc: true);
+						//playSound("zerosaberx3", sendRpc: true);
+
 						if (zSaberShotCooldown == 0) {
 							zSaberShotCooldown = maxZSaberShotCooldown;
 							Global.level.delayedActions.Add(new DelayedAction(() => {
@@ -458,20 +459,20 @@ public class Zero : Character {
 							}, 0.1f));
 						}
 					} else {
-						playSound("saber1", sendRpc: true);
+						//playSound("saber1", sendRpc: true);
 					}
 				}
 			} else if (charState is Idle && sprite.name == "zero_attack" && framePercent > 0.4f) {
-				playSound("saber2", sendRpc: true);
+				//playSound("saber2", sendRpc: true);
 				changeSprite("zero_attack2", true);
 				turnToInput(player.input, player);
 			} else if (charState is Idle && sprite.name == "zero_attack2" && framePercent > 0.4f) {
-				playSound("saber3", sendRpc: true);
+				//playSound("saber3", sendRpc: true);
 				changeSprite("zero_attack3", true);
 				turnToInput(player.input, player);
 			} else if (charState is Idle && sprite.name == "zero_punch" && framePercent > 0.4f) {
 				changeSprite("zero_punch2", true);
-				playSound("punch2");
+				//playSound("punch2");
 				turnToInput(player.input, player);
 			}
 		}
@@ -685,11 +686,10 @@ public class Zero : Character {
 		if (hasShootSprite) shootAnimTime = 0.3f;
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
-
 		if (isAwakenedZero()) {
 			if (chargeLevel >= 1) {
 				player.currency--;
-				playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
+				//playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
 				new ShingetsurinProj(
 					getShootPos(), xDir,
 					0, player, player.getNextActorNetId(), rpc: true
@@ -701,7 +701,7 @@ public class Zero : Character {
 						getShootPos(), xDir,
 						0.15f, player, player.getNextActorNetId(), rpc: true
 					);
-					playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
+					//playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
 				}, 0.15f));
 			}
 			if (chargeLevel >= 3) {
@@ -710,7 +710,7 @@ public class Zero : Character {
 						getShootPos(), xDir,
 						0.3f, player, player.getNextActorNetId(), rpc: true
 					);
-					playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
+					//playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
 				}, 0.3f));
 			}
 			if (chargeLevel >= 4) {
@@ -719,7 +719,7 @@ public class Zero : Character {
 						getShootPos(), xDir, 0.45f,
 						player, player.getNextActorNetId(), rpc: true
 					);
-					playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
+					//playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
 				}, 0.45f));
 			}
 			if (player.currency < 0) {
@@ -728,7 +728,7 @@ public class Zero : Character {
 		} else {
 			if (chargeLevel == 1) {
 				player.currency -= 1;
-					playSound("buster2", sendRpc: true);
+					//playSound("buster2", sendRpc: true);
 					zeroLemonCooldown = 0.375f;
 					new ZBuster2Proj(
 						zeroBusterWeapon, shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
@@ -736,11 +736,11 @@ public class Zero : Character {
 			} else if (chargeLevel == 2) {
 				player.currency -= 1;
 				zeroLemonCooldown = 0.375f;
-				playSound("buster3", sendRpc: true);
+				//playSound("buster3", sendRpc: true);
 					new ZBuster3Proj(
 						zeroBusterWeapon, shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
 				);
-				playSound("buster3X3", sendRpc: true);
+				//playSound("buster3X3", sendRpc: true);
 					new ZBuster4Proj(
 						zeroBusterWeapon, shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
 					);
@@ -750,7 +750,7 @@ public class Zero : Character {
 				if (chargeLevel >= 4 && canUseDoubleBusterCombo()) {
 					changeState(new ZeroDoubleBuster(false, false), true);
 				} else {
-					playSound("buster4", sendRpc: true);
+					//playSound("buster4", sendRpc: true);
 					zeroLemonCooldown = 0.375f;
 					new ZBuster4Proj(
 						zeroBusterWeapon, shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true

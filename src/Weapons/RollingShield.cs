@@ -10,7 +10,7 @@ public class RollingShield : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 3;
 		weaknessIndex = 6;
-		shootSounds = new List<string>() { "rollingShield", "rollingShield", "rollingShield", "" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.75f;
 	}
 
@@ -31,7 +31,7 @@ public class RollingShieldProj : Projectile {
 		base(weapon, pos, xDir, 200, 2, player, "rolling_shield", 0, 0, netProjId, player.ownedByLocalPlayer) {
 		projId = (int)ProjIds.RollingShield;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		useGravity = true;
 		collider.wallOnly = true;
 		vel.x = 0;
@@ -80,10 +80,10 @@ public class RollingShieldProjCharged : Projectile {
 	) {
 		projId = (int)ProjIds.RollingShieldCharged;
 		fadeSprite = "rolling_shield_charge_break";
-		fadeSound = "hit";
+		fadeSound = "";
 		useGravity = false;
 		mmx = (player.character as MegamanX);
-		rollingShieldSound = new LoopingSound("rollingShieldCharge", "rollingShieldChargeLoop", this);
+		rollingShieldSound = new LoopingSound("", "", this);
 		if (mmx is not null) {
 			mmx.chargedRollingShieldProj = this;
 		}

@@ -11,7 +11,7 @@ public class Torpedo : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 1;
 		weaknessIndex = 3;
-		shootSounds = new List<string>() { "torpedo", "torpedo", "torpedo", "buster3" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.625f;
 	}
 
@@ -62,7 +62,7 @@ public class TorpedoProj : Projectile, IDamagable {
 		}
 		this.type = type;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		this.angle = this.xDir == -1 ? 180 : 0;
 		if (angle != null) {
 			this.angle = angle + (this.xDir == -1 ? 180 : 0);

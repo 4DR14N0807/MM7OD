@@ -429,7 +429,7 @@ public class WSpongeSideChainState : MaverickState {
 
 		if (proj == null && maverick.getFirstPOI() != null) {
 			proj = new WSpongeSideChainProj((maverick as WireSponge).chainWeapon, maverick.getFirstPOIOrDefault(), maverick.xDir, maverick, spinTime, player, player.getNextActorNetId(), rpc: true);
-			maverick.playSound("wspongeChain", sendRpc: true);
+			//maverick.playSound("wspongeChain", sendRpc: true);
 		} else if (proj != null) {
 			if (input.isPressed(Control.Shoot, player) && !proj.reversed) {
 				proj.reverseDir();
@@ -615,7 +615,7 @@ public class WSpongeUpChainStartState : MaverickState {
 
 		if (proj == null && maverick.getFirstPOI() != null) {
 			proj = new WSpongeUpChainProj((maverick as WireSponge).chainWeapon, maverick.getFirstPOIOrDefault(), maverick.xDir, maverick, 1, player, player.getNextActorNetId(), rpc: true);
-			maverick.playSound("wspongeChain", sendRpc: true);
+			//maverick.playSound("wspongeChain", sendRpc: true);
 		}
 
 		if (proj != null) {
@@ -811,7 +811,7 @@ public class WSpongeSpike : Projectile, IDamagable {
 		projId = (int)ProjIds.WSpongeSpike;
 		destroyOnHit = true;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
@@ -1023,7 +1023,7 @@ public class WSpongeChargeState : MaverickState {
 		} else if (state == 1) {
 			if (!once && maverick.getFirstPOI() != null) {
 				once = true;
-				maverick.playSound("wspongePuff", sendRpc: true);
+				//maverick.playSound("wspongePuff", sendRpc: true);
 				new Anim(maverick.getFirstPOIOrDefault(), "wsponge_angry_puff", maverick.xDir, player.getNextActorNetId(), true, sendRpc: true);
 			}
 			if (maverick.isAnimOver()) {
@@ -1034,7 +1034,7 @@ public class WSpongeChargeState : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		chargeSound = maverick.playSound("wspongeCharge", sendRpc: true);
+		//chargeSound = maverick.playSound("wspongeCharge", sendRpc: true);
 	}
 
 	public override void onExit(MaverickState newState) {

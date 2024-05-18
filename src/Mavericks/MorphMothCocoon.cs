@@ -85,7 +85,7 @@ public class MorphMothCocoon : Maverick {
 		if ((health < maxHealth * 0.5f && health > 0) || scrapAbsorbed >= 32) {
 			if (selfDestructTime == 0) {
 				selfDestructTime = 0.1f;
-				playSound("morphmMorph", sendRpc: true);
+				//playSound("morphmMorph", sendRpc: true);
 				RPC.actorToggle.sendRpc(netId, RPCActorToggleType.MorphMothCocoonSelfDestruct);
 			}
 		}
@@ -108,7 +108,7 @@ public class MorphMothCocoon : Maverick {
 						(player.character as BaseSigma)?.becomeMaverick(mmw.maverick);
 					}
 
-					playSound("morphmHatch", sendRpc: true);
+					//playSound("morphmHatch", sendRpc: true);
 
 					new Anim(getCenterPos().addxy(0, 0), "morphmc_part_left", 1, player.getNextActorNetId(), false, sendRpc: true) { vel = new Point(-100, 100), ttl = 1f, xScale = xScale, yScale = yScale };
 					new Anim(getCenterPos().addxy(0, 0), "morphmc_part_right", 1, player.getNextActorNetId(), false, sendRpc: true) { vel = new Point(100, 100), ttl = 1f, xScale = xScale, yScale = yScale };
@@ -203,7 +203,7 @@ public class MorphMothCocoon : Maverick {
 
 	public void crash() {
 		if (crashCooldown == 0) {
-			playSound("morphmCrash");
+			//playSound("morphmCrash");
 			shakeCamera();
 			crashCooldown = 0.25f;
 		}
@@ -236,7 +236,7 @@ public class MorphMothCocoon : Maverick {
 	public MaverickState burn() {
 		if (isBurned) return null;
 		if (isUnderwater()) return null;
-		playSound("morphmBurn", sendRpc: true);
+		//playSound("morphmBurn", sendRpc: true);
 		if (state is MorphMCHangState) {
 			changeSpriteFromName("burn_hang", true);
 			return null;
@@ -346,7 +346,7 @@ public class MorphMCSpinState : MaverickState {
 		Helpers.decrementTime(ref soundTime);
 		if (soundTime <= 0) {
 			soundTime = 0.404f;
-			maverick.playSound("morphmSpin", sendRpc: true);
+			//maverick.playSound("morphmSpin", sendRpc: true);
 		}
 
 		Helpers.decrementTime(ref shootTime);
@@ -564,7 +564,7 @@ public class MorphMCHangState : MaverickState {
 			if (suckAngle >= 360) suckAngle = 0;
 			if (suckSoundTime <= 0) {
 				suckSoundTime = 0.269f;
-				mmCocoon.playSound("morphmVacuum", sendRpc: true);
+				//mmCocoon.playSound("morphmVacuum", sendRpc: true);
 			}
 			if (shootTime == 0) {
 				shootTime = 0.1f;

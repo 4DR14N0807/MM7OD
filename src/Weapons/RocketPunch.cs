@@ -247,7 +247,7 @@ public class RocketPunchAttack : CharState {
 
 	public void shoot() {
 		shot = true;
-		character.playSound("rocketPunch", sendRpc: true);
+		//character.playSound("rocketPunch", sendRpc: true);
 		character.frameIndex = 1;
 		character.frameTime = 0;
 		var poi = character.sprite.getCurrentFrame().POIs[0];

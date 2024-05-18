@@ -174,7 +174,7 @@ public class NeonTWallClawState : MaverickState {
 	public NeonTWallClawState(MaverickState prevState) : base("wall_slash", "") {
 		useGravity = false;
 		this.prevState = prevState;
-		enterSound = "neontSlash";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -192,7 +192,7 @@ public class NeonTClawState : MaverickState {
 		this.isSecond = isSecond;
 		exitOnAnimEnd = true;
 		canEnterSelf = true;
-		enterSound = "neontSlash";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -218,7 +218,7 @@ public class NeonTAirClawState : MaverickState {
 	bool wasWallPounce;
 	public NeonTAirClawState() : base("jump_slash", "") {
 		exitOnAnimEnd = true;
-		enterSound = "neontSlash";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -242,7 +242,7 @@ public class NeonTDashClawState : MaverickState {
 	float velX;
 	public NeonTDashClawState() : base("dash_slash", "") {
 		exitOnAnimEnd = true;
-		enterSound = "neontSlash";
+		enterSound = "";
 	}
 
 	public override void update() {

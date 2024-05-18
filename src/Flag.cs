@@ -269,7 +269,7 @@ public class FlagPedestal : Actor {
 			if (chr.ai != null) {
 				chr.ai.changeState(new FindPlayer(chr));
 			}
-			chr.player.currency += 5;
+			chr.player.currency += 20;
 			RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
 
 			var msg = chr.player.name + " scored";

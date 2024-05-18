@@ -4,6 +4,10 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class Weapon {
+
+	Character character;
+	Player mainPlayer;
+	Player charNum;
 	public List<string> shootSounds = new List<string>();
 	public float ammo;
 	public float maxAmmo;
@@ -18,7 +22,6 @@ public class Weapon {
 	public string[] description = {""};
 	public Damager? damager;
 	public int type; // For "swappable category" weapons, like techniques, vile weapon sections, etc.
-
 	public int streams;
 	public int maxStreams;
 	public float streamCooldown;
@@ -30,7 +33,6 @@ public class Weapon {
 	public int weaponSlotIndex;
 	public int weaknessIndex;
 	public int vileWeight;
-
 	public float rechargeTime;
 	public float rechargeCooldown;
 	public float? timeSinceLastShoot;
@@ -55,8 +57,8 @@ public class Weapon {
 	public bool drawAmmo = true;
 
 	public Weapon() {
-		ammo = 32;
-		maxAmmo = 32;
+		ammo = 28;
+		maxAmmo = 28;
 		rateOfFire = 0.15f;
 		shootSounds = new List<string>() { "", "", "", "" };
 	}
@@ -85,6 +87,7 @@ public class Weapon {
 		weaponList.AddRange(getAllXWeapons());
 		weaponList.AddRange(getAllAxlWeapons(axlLoadout));
 		weaponList.AddRange(getAllSigmaWeapons(null));
+		weaponList.AddRange(getAllRockWeapons());
 		return weaponList;
 	}
 
@@ -159,8 +162,15 @@ public class Weapon {
 				new GravityWell(),
 				new FrostShield(),
 				new TunnelFang(),
+				new RockBuster(),
+				new FreezeCracker(),
+				new SlashClawWeapon(null),
+				new NoiseCrush(),
+				new WildCoil(),
 			};
 	}
+
+	
 
 	public static List<Weapon> getAllAxlWeapons(AxlLoadout axlLoadout) {
 		return new List<Weapon>()
@@ -175,6 +185,38 @@ public class Weapon {
 				new IceGattling(axlLoadout.iceGattlingAlt),
 				new FlameBurner(axlLoadout.flameBurnerAlt),
 			};
+	}
+
+	public static List<Weapon> getAllRockWeapons() {
+		return new List<Weapon>() 
+		{
+				new RockBuster(),
+				new FreezeCracker(),
+				new ThunderBolt(),
+				new JunkShield(),
+				new ScorchWheel(),
+				new SlashClawWeapon(null),
+				new NoiseCrush(),
+				new DangerWrap(),
+				new WildCoil(),
+				
+		};
+	}
+
+	public static List<Weapon> getAllMM7Weapons() {
+		return new List<Weapon>() 
+		{
+				new RockBuster(),
+				new FreezeCracker(),
+				new ThunderBolt(),
+				new JunkShield(),
+				new ScorchWheel(),
+				new SlashClawWeapon(null),
+				new NoiseCrush(),
+				new DangerWrap(),
+				new WildCoil(),
+				
+		};
 	}
 
 	// friendlyIndex is 0-8.
@@ -217,6 +259,13 @@ public class Weapon {
 		return weaponPool;
 	}
 
+	public static List<int> getRockWeaponPool(bool includeBuster) {
+		List<int> weaponPool;
+		weaponPool = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8 };
+		if (includeBuster) weaponPool.Insert(0, 0);
+		return weaponPool;
+	}
+
 	public static List<int> getRandomXWeapons() {
 		return Helpers.getRandomSubarray(getWeaponPool(true), 3);
 	}
@@ -231,6 +280,9 @@ public class Weapon {
 				selWepIndices[1],
 			};
 	}
+	public static List<int> getRandomRockWeapons() {
+		return Helpers.getRandomSubarray(getRockWeaponPool(true), 3);
+	}
 
 	// GM19:
 	// Friendly reminder that this method MUST be deterministic across all clients,
@@ -243,6 +295,7 @@ public class Weapon {
 	public virtual void getProjectile(
 		Point pos, int xDir, Player player, float chargeLevel, ushort netProjId
 	) {
+
 	}
 
 	public virtual void vileShoot(WeaponIds weaponInput, Vile vile) {
@@ -286,7 +339,6 @@ public class Weapon {
 			}
 		}
 	}
-
 	public bool isCooldownPercentDone(float percent) {
 		if (rateOfFire == 0) { return true; }
 		return (shootTime / rateOfFire) < (1 - percent);

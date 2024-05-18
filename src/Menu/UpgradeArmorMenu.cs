@@ -63,7 +63,7 @@ public class UpgradeArmorMenu : IMainMenu {
 					if (!mainPlayer.isHeadArmorPurchased(xGame)) {
 						if (mainPlayer.currency >= MegamanX.headArmorCost) {
 							purchaseHelmetArmor(mainPlayer, xGame);
-							Global.playSound("ching");
+							//Global.playSound("ching");
 							if (mainPlayer.helmetArmorNum == 0) {
 								upgradeHelmetArmor(mainPlayer, xGame);
 							}
@@ -71,11 +71,11 @@ public class UpgradeArmorMenu : IMainMenu {
 					} else {
 						upgradeHelmetArmor(mainPlayer, 0);
 						upgradeHelmetArmor(mainPlayer, xGame);
-						Global.playSound("ching");
+						//Global.playSound("ching");
 					}
 				} else if (mainPlayer.hasAllX3Armor() && !mainPlayer.hasChip(2)) {
 					mainPlayer.setChipNum(2, false);
-					Global.playSound("ching");
+					//Global.playSound("ching");
 				}
 			}
 			if (selectArrowPosY == 1) {
@@ -83,7 +83,7 @@ public class UpgradeArmorMenu : IMainMenu {
 					if (!mainPlayer.isBodyArmorPurchased(xGame)) {
 						if (mainPlayer.currency >= MegamanX.bodyArmorCost) {
 							purchaseBodyArmor(mainPlayer, xGame);
-							Global.playSound("ching");
+							//Global.playSound("ching");
 							if (mainPlayer.bodyArmorNum == 0) {
 								upgradeBodyArmor(mainPlayer, xGame);
 							}
@@ -91,11 +91,11 @@ public class UpgradeArmorMenu : IMainMenu {
 					} else {
 						upgradeBodyArmor(mainPlayer, 0);
 						upgradeBodyArmor(mainPlayer, xGame);
-						Global.playSound("ching");
+						//Global.playSound("ching");
 					}
 				} else if (mainPlayer.hasAllX3Armor() && !mainPlayer.hasChip(1)) {
 					mainPlayer.setChipNum(1, false);
-					Global.playSound("ching");
+					//Global.playSound("ching");
 				}
 			}
 			if (selectArrowPosY == 2) {
@@ -103,7 +103,7 @@ public class UpgradeArmorMenu : IMainMenu {
 					if (!mainPlayer.isArmArmorPurchased(xGame)) {
 						if (mainPlayer.currency >= MegamanX.armArmorCost) {
 							purchaseArmArmor(mainPlayer, xGame);
-							Global.playSound("ching");
+							//Global.playSound("ching");
 							if (mainPlayer.armArmorNum == 0) {
 								upgradeArmArmor(mainPlayer, xGame);
 							}
@@ -111,11 +111,11 @@ public class UpgradeArmorMenu : IMainMenu {
 					} else {
 						upgradeArmArmor(mainPlayer, 0);
 						upgradeArmArmor(mainPlayer, xGame);
-						Global.playSound("ching");
+						//Global.playSound("ching");
 					}
 				} else if (mainPlayer.hasAllX3Armor() && !mainPlayer.hasChip(3)) {
 					mainPlayer.setChipNum(3, false);
-					Global.playSound("ching");
+					//Global.playSound("ching");
 				}
 			}
 			if (selectArrowPosY == 3) {
@@ -123,7 +123,7 @@ public class UpgradeArmorMenu : IMainMenu {
 					if (!mainPlayer.isBootsArmorPurchased(xGame)) {
 						if (mainPlayer.currency >= MegamanX.bootsArmorCost) {
 							purchaseBootsArmor(mainPlayer, xGame);
-							Global.playSound("ching");
+							//Global.playSound("ching");
 							if (mainPlayer.bootsArmorNum == 0) {
 								upgradeBootsArmor(mainPlayer, xGame);
 							}
@@ -131,11 +131,11 @@ public class UpgradeArmorMenu : IMainMenu {
 					} else {
 						upgradeBootsArmor(mainPlayer, 0);
 						upgradeBootsArmor(mainPlayer, xGame);
-						Global.playSound("ching");
+						//Global.playSound("ching");
 					}
 				} else if (mainPlayer.hasAllX3Armor() && !mainPlayer.hasChip(0)) {
 					mainPlayer.setChipNum(0, false);
-					Global.playSound("ching");
+					//Global.playSound("ching");
 				}
 			}
 		} else if (Global.input.isPressedMenu(Control.MenuAlt)) {
@@ -416,7 +416,7 @@ public class UpgradeArmorMenu : IMainMenu {
 					mainPlayer.character.boughtUltimateArmorOnce = true;
 				}
 				mainPlayer.setUltimateArmor(true);
-				Global.playSound("chingX4");
+				//Global.playSound("chingX4");
 				return true;
 			} else if (mainPlayer.canUpgradeGoldenX()) {
 				if (!mainPlayer.character.boughtGoldenArmorOnce) {
@@ -424,7 +424,7 @@ public class UpgradeArmorMenu : IMainMenu {
 					mainPlayer.character.boughtGoldenArmorOnce = true;
 				}
 				mainPlayer.setGoldenArmor(true);
-				Global.playSound("ching");
+				//Global.playSound("ching");
 				return true;
 			}
 		} else if (Global.input.isPressedMenu(Control.MenuAlt)) {

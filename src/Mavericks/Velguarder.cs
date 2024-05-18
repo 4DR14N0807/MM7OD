@@ -166,7 +166,7 @@ public class VelGShootFireState : MaverickState {
 			shootTime += Global.spf;
 			if (shootTime > 0.05f) {
 				shootTime = 0;
-				maverick.playSound("fireWave", sendRpc: true);
+				//maverick.playSound("fireWave", sendRpc: true);
 				new VelGFireProj(new VelGFireWeapon(), poi, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			}
 		}

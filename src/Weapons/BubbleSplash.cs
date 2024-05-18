@@ -9,7 +9,7 @@ public class BubbleSplash : Weapon {
 	public float hyperChargeDelay;
 
 	public BubbleSplash() : base() {
-		shootSounds = new List<string>() { "bubbleSplash", "bubbleSplash", "bubbleSplash", "bubbleSplashCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.1f;
 		isStream = true;
 		index = (int)WeaponIds.BubbleSplash;
@@ -92,7 +92,7 @@ public class BubbleSplashProj : Projectile {
 		}
 
 		fadeSprite = "bubblesplash_pop";
-		fadeSound = "bubbleSplashPop";
+		fadeSound = "";
 		fadeOnAutoDestroy = true;
 		projId = (int)ProjIds.BubbleSplash;
 

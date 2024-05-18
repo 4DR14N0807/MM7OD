@@ -338,7 +338,7 @@ public abstract class BaseSigma : Character {
 				weaponHealTime = 0;
 				weaponHealAmount--;
 				player.sigmaAmmo = Helpers.clampMax(player.sigmaAmmo + 1, player.sigmaMaxAmmo);
-				playSound("heal", forcePlay: true);
+				//playSound("heal", forcePlay: true);
 			}
 		}
 		if (player.maverick1v1 != null && player.readyTextOver &&
@@ -603,9 +603,9 @@ public abstract class BaseSigma : Character {
 		base.render(x, y);
 
 		bool drewStatusProgress = drawStatusProgress();
-		bool drewSubtankHealing = drawSubtankHealing();
+		bool drewETankHealing = drawETankHealing();
 
-		if (!drewStatusProgress && !drewSubtankHealing && player.isSigma && tagTeamSwapProgress > 0) {
+		if (!drewStatusProgress && !drewETankHealing && player.isSigma && tagTeamSwapProgress > 0) {
 			float healthBarInnerWidth = 30;
 
 			float progress = 1 - (tagTeamSwapProgress / 1);
@@ -632,7 +632,7 @@ public abstract class BaseSigma : Character {
 			deductLabelY(labelCooldownOffY);
 		}
 
-		if (!drewStatusProgress && !drewSubtankHealing &&
+		if (!drewStatusProgress && !drewETankHealing &&
 			player.isViralSigma() && charState is ViralSigmaPossessStart
 		) {
 			float healthBarInnerWidth = 30;

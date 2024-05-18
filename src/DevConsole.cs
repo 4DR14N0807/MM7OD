@@ -101,11 +101,11 @@ public class DevConsole {
 		}
 	}
 
-	public static void fillSubtank(string[] args) {
-		if (Global.level.mainPlayer.subtanks.Count < 1) {
-			Global.level.mainPlayer.subtanks.Add(new SubTank());
+	public static void fillETank(string[] args) {
+		if (Global.level.mainPlayer.etanks.Count < 1) {
+			Global.level.mainPlayer.etanks.Add(new ETank());
 		}
-		Global.level.mainPlayer.fillSubtank(12);
+		Global.level.mainPlayer.fillETank(12);
 	}
 
 	public static void showOrHideHitboxes(string[] args) {
@@ -214,8 +214,8 @@ public class DevConsole {
 			new Command("checksum", (args) => printChecksum()),
 			new Command("dna", (args) => addDnaCore(args)),
 			new Command("timeleft", (args) => Global.level.gameMode.remainingTime = 5),
-			new Command("subtank", (args) => fillSubtank(args)),
-			new Command("subtest", (args) => { fillSubtank(args); setHealth(new string[] { "1" }); }),
+			new Command("etank", (args) => fillETank(args)),
+			new Command("subtest", (args) => { fillETank(args); setHealth(new string[] { "1" }); }),
 			new Command("aiattack", (args) => AI.trainingBehavior = AITrainingBehavior.Attack),
 			new Command("aijump", (args) => AI.trainingBehavior = AITrainingBehavior.Jump),
 			new Command("aiguard", (args) => AI.trainingBehavior = AITrainingBehavior.Guard),

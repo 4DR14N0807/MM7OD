@@ -187,7 +187,7 @@ public class TSeahorseAcid2Proj : Projectile {
 		maxTime = 4f;
 		projId = (int)ProjIds.TSeahorseAcid2;
 		useGravity = true;
-		fadeSound = "acidBurst";
+		fadeSound = "";
 		vel = new Point(xDir * 112, -235);
 		this.type = type;
 		if (type == 2) vel = new Point(xDir * 50, -300);
@@ -232,7 +232,7 @@ public class TSeahorseAcid2Proj : Projectile {
 			if (vel.y < -300) vel.y = -300;
 			incPos(new Point(0, 5 * MathF.Sign(vel.y)));
 		}
-		playSound("acidBurst");
+		//playSound("acidBurst");
 	}
 
 	bool acidSplashOnce;
@@ -260,7 +260,7 @@ public class TSeahorseShoot2State : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("acidBurst", sendRpc: true);
+			//maverick.playSound("acidBurst", sendRpc: true);
 			new TSeahorseAcid2Proj(maverick.weapon, shootPos.Value, maverick.xDir, 0, player, player.getNextActorNetId(), rpc: true);
 			new TSeahorseAcid2Proj(maverick.weapon, shootPos.Value, maverick.xDir, 1, player, player.getNextActorNetId(), rpc: true);
 		}
@@ -271,7 +271,7 @@ public class TSeahorseTeleportState : MaverickState {
 	int state = 0;
 	float shootCooldown;
 	public TSeahorseTeleportState() : base("teleport", "") {
-		enterSound = "tseahorseTeleportOut";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -302,7 +302,7 @@ public class TSeahorseTeleportState : MaverickState {
 			if (input.isPressed(Control.Dash, player) || maverick.ammo <= 0 || (isAI && stateTime > 1)) {
 				state = 2;
 				maverick.changeSpriteFromName("teleport2", true);
-				maverick.playSound("tseahorseTeleportIn", sendRpc: true);
+				//maverick.playSound("tseahorseTeleportIn", sendRpc: true);
 			}
 		} else if (state == 2) {
 			if (maverick.isAnimOver()) {

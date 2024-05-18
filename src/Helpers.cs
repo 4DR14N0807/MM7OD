@@ -506,23 +506,23 @@ public class Helpers {
 		}
 	}
 
-	public static void menuLeftRightInc(ref int val, int min, int max, bool wrap = false, bool playSound = false) {
+	public static void menuLeftRightInc(ref int val, int min, int max, bool wrap = false, bool playSound = false, int valueToAdd = 1) {
 		if (min == max) return;
 		if (Global.input.isPressedMenu(Control.MenuLeft)) {
-			val--;
+			val -= valueToAdd;
 			if (val < min) {
 				val = wrap ? max : min;
-				if (wrap && playSound) Global.playSound("menuX2");
+				if (wrap && playSound) Global.playSound("menu");
 			} else {
-				if (playSound) Global.playSound("menuX2");
+				if (playSound) Global.playSound("menu");
 			}
 		} else if (Global.input.isPressedMenu(Control.MenuRight)) {
-			val++;
+			val += valueToAdd;
 			if (val > max) {
 				val = wrap ? min : max;
-				if (wrap && playSound) Global.playSound("menuX2");
+				if (wrap && playSound) Global.playSound("menu");
 			} else {
-				if (playSound) Global.playSound("menuX2");
+				if (playSound) Global.playSound("menu");
 			}
 		}
 	}
@@ -864,5 +864,11 @@ public class Helpers {
 		if (rightOfDotNumA < rightOfDotNumB) return -1;
 		else if (rightOfDotNumA > rightOfDotNumB) return 1;
 		else return 0;
+	}
+
+	// get the percentage of a value
+
+	public static double getValueOfPercentage(float value, float percentage) {
+		return MathF.Floor(value * percentage / 100);
 	}
 }

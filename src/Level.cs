@@ -797,7 +797,7 @@ public partial class Level {
 				}
 
 				var cpu = new Player(
-					"CPU" + (i + 1).ToString(), id, charNum,
+					"CPU" + (i + 1).ToString(), id, 5,
 					playerData, true, true, alliance, new Input(true), null
 				);
 				players.Add(cpu);
@@ -1506,6 +1506,8 @@ public partial class Level {
 	public void render() {
 		if (Global.level.mainPlayer == null) return;
 
+		if (Global.level.mainPlayer.charNum != 5) Global.sprites["nuh_uh"].drawToHUD(0, 0, 0);
+
 		if (Global.level.joinedLate && !Global.level.mainPlayer.warpedIn && Global.level.mainPlayer.character == null && blackJoinTime < 3) {
 			blackJoinTime += Global.spf;
 			return;
@@ -1672,11 +1674,11 @@ public partial class Level {
 
 		if (mainPlayer.readyTime > 0) {
 			if (mainPlayer.readyTime < 0.4) {
-				int frameIndex = (int)Math.Round((mainPlayer.readyTime / 0.4) * 9);
+				int frameIndex = (int)Math.Round((mainPlayer.readyTime / 0.4) * 13);
 				Global.sprites["ready"].drawToHUD(frameIndex, (Global.screenW / 2) - 21, Global.screenH / 2);
 			} else if (mainPlayer.readyTime < 1.75) {
 				if ((int)Math.Round(mainPlayer.readyTime * 7.5) % 2 == 0) {
-					Global.sprites["ready"].drawToHUD(9, (Global.screenW / 2) - 21, Global.screenH / 2);
+					Global.sprites["ready"].drawToHUD(13, (Global.screenW / 2) - 21, Global.screenH / 2);
 				}
 			}
 		}

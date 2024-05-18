@@ -20,7 +20,7 @@ public class ItemTracer : Weapon {
 		mmx.scannerCooldown = 1;
 		ammo -= 3;
 		Character? target = null;
-		mmx.playSound("itemTracer", sendRpc: true);
+		//mmx.playSound("itemTracer", sendRpc: true);
 		CollideData hit = Global.level.raycast(pos, pos.addxy(150 * xDir, 0), new List<Type>() { typeof(Actor) });
 		if (hit?.gameObject is Character chr && chr.player.alliance != player.alliance && !chr.player.scanned) {
 			target = chr;

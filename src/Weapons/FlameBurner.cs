@@ -4,7 +4,7 @@ namespace MMXOnline;
 
 public class FlameBurner : AxlWeapon {
 	public FlameBurner(int altFire) : base(altFire) {
-		shootSounds = new List<string>() { "flameBurner", "flameBurner", "flameBurner", "circleBlaze" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.075f;
 		altFireCooldown = 1.5f;
 		index = (int)WeaponIds.FlameBurner;
@@ -15,7 +15,7 @@ public class FlameBurner : AxlWeapon {
 		sprite = "axl_arm_flameburner";
 
 		if (altFire == 1) {
-			shootSounds[3] = "flameBurner2";
+			shootSounds[3] = "";
 			altFireCooldown = 1;
 		}
 	}
@@ -199,7 +199,7 @@ public class CircleBlazeProj : Projectile {
 		base(weapon, pos, 1, 250, 0, player, "circleblaze_proj", 0, 0.2f, netProjId, player.ownedByLocalPlayer) {
 		projId = (int)ProjIds.CircleBlaze;
 		//fadeSprite = "circleblaze_fade";
-		fadeSound = "circleBlazeExplosion";
+		fadeSound = "";
 		maxTime = 0.5f;
 		vel.x = bulletDir.x * speed;
 		vel.y = bulletDir.y * speed;

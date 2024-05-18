@@ -9,7 +9,7 @@ public class RaySplasher : Weapon {
 	public static RaySplasher netWeapon = new RaySplasher();
 
 	public RaySplasher() : base() {
-		shootSounds = new List<string>() { "raySplasher", "raySplasher", "raySplasher", "warpIn" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)WeaponIds.RaySplasher;
 		weaponBarBaseIndex = 21;
@@ -175,7 +175,7 @@ public class RaySplasherTurret : Actor, IDamagable {
 				target = closestTarget;
 				state = 2;
 				changeSprite("raysplasher_turret_fire", true);
-				playSound("raySplasher");
+				//playSound("raySplasher");
 			}
 		} else if (state == 2) {
 			if (target != null) {
@@ -242,7 +242,7 @@ public class RaySplasherTurret : Actor, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		playSound("freezebreak2");
+		//playSound("freezebreak2");
 		new Anim(pos, "raysplasher_turret_pieces", 1, null, false) { ttl = 2, useGravity = true, vel = Point.random(-150, -50, -100, -50), frameIndex = 0, frameSpeed = 0 };
 		new Anim(pos, "raysplasher_turret_pieces", -1, null, false) { ttl = 2, useGravity = true, vel = Point.random(50, 150, -100, -50), frameIndex = 0, frameSpeed = 0 };
 		new Anim(pos, "raysplasher_turret_pieces", 1, null, false) { ttl = 2, useGravity = true, vel = Point.random(-150, -50, -100, -50), frameIndex = 1, frameSpeed = 0 };

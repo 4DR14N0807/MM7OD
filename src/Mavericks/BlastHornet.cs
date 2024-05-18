@@ -139,7 +139,7 @@ public class BHornetBeeProj : Projectile, IDamagable {
 		base(weapon, pos, xDir, 0, 2, player, "bhornet_proj_wasp_small", 0, 1f, netProjId, player.ownedByLocalPlayer) {
 		this.weapon = weapon;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		maxTime = 1.25f;
 		projId = (int)ProjIds.BHornetBee;
 		destroyOnHit = false;
@@ -220,7 +220,7 @@ public class BHornetHomingBeeProj : Projectile, IDamagable {
 		base(weapon, pos, xDir, 0, 4, player, "bhornet_proj_wasp_small_glowing", Global.defFlinch, 0.5f, netProjId, player.ownedByLocalPlayer) {
 		this.weapon = weapon;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		maxTime = 3f;
 		projId = (int)ProjIds.BHornetHomingBee;
 		destroyOnHit = true;
@@ -389,7 +389,7 @@ public class BHornetCursorProj : Projectile {
 			stopMoving();
 			time = 0;
 			maxTime = 6;
-			playSound("bhornetLockOn", sendRpc: true);
+			//playSound("bhornetLockOn", sendRpc: true);
 			changeSprite("bhornet_particle_aim_big", true);
 		}
 	}
@@ -474,7 +474,7 @@ public class BHornetStingState : MaverickState {
 
 			if (!once && maverick.frameIndex >= 7) {
 				once = true;
-				maverick.playSound("bhornetSting", sendRpc: true);
+				//maverick.playSound("bhornetSting", sendRpc: true);
 			}
 
 			Point? stingAnimPos = maverick.getFirstPOI("spark");

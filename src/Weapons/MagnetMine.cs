@@ -7,7 +7,7 @@ public class MagnetMine : Weapon {
 	public const int maxMinesPerPlayer = 10;
 
 	public MagnetMine() : base() {
-		shootSounds = new List<string>() { "magnetMine", "magnetMine", "magnetMine", "magnetMineCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.75f;
 		index = (int)WeaponIds.MagnetMine;
 		weaponBarBaseIndex = 15;
@@ -44,7 +44,7 @@ public class MagnetMineProj : Projectile, IDamagable {
 		//maxTime = 2f;
 		maxDistance = 224;
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		reflectable = false;
 		projId = (int)ProjIds.MagnetMine;
 		this.player = player;
@@ -80,7 +80,7 @@ public class MagnetMineProj : Projectile, IDamagable {
 		}
 	}
 
-	public void applyDamage(Player owner, int? weaponIndex, float damage, int? projId) {
+	/*public void applyDamage(Player owner, int? weaponIndex, float damage, int? projId) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -88,7 +88,7 @@ public class MagnetMineProj : Projectile, IDamagable {
 		if (health <= 0) {
 			destroySelf();
 		}
-	}
+	}*/
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
@@ -105,7 +105,7 @@ public class MagnetMineProj : Projectile, IDamagable {
 
 			vel = new Point();
 			changeSprite("magnetmine_landed", true);
-			playSound("minePlant");
+			//playSound("minePlant");
 			maxTime = 300;
 
 			var triggers = Global.level.getTriggerList(this, 0, 0);
@@ -138,6 +138,10 @@ public class MagnetMineProj : Projectile, IDamagable {
 		if (player.alliance == alliance) return false;
 		return true;
 	}
+
+	public void applyDamage(Player owner, int? weaponIndex, float damage, int? projId) {
+		//throw new NotImplementedException();
+	}
 }
 
 public class MagnetMineProjCharged : Projectile {
@@ -154,6 +158,7 @@ public class MagnetMineProjCharged : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+		//playSound("magnetminechargedtravelX2", forcePlay: false, sendRpc: true);
 	}
 
 	public override void update() {
@@ -217,5 +222,21 @@ public class MagnetMineProjCharged : Projectile {
 				damager.damage = 2;
 			}
 		}
+	}
+
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
+		return damagerAlliance != owner.alliance;
+	}
+
+	public bool canBeHealed(int healerAlliance) {
+		return false;
+	}
+
+	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	}
+
+	public bool isInvincible(Player attacker, int? projId) {
+		if (projId == null) return true;
+		return !Damager.canDamageFrostShield(projId.Value);
 	}
 }

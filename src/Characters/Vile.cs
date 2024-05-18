@@ -141,7 +141,7 @@ public class Vile : Character {
 				weaponHealTime = 0;
 				weaponHealAmount--;
 				player.vileAmmo = Helpers.clampMax(player.vileAmmo + 1, player.vileMaxAmmo);
-				playSound("heal", forcePlay: true);
+				//playSound("heal", forcePlay: true);
 			}
 		}
 

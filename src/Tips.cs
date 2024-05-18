@@ -645,25 +645,6 @@ public class Tips {
 			},
 			new string[]
 			{
-				"Homing torpedos, both uncharged and charged",
-				"can be destroyed by hitting them with most weapons.",
-			},
-			new string[]
-			{
-				"You can double-jump as Zero. Use this to reach spots",
-				"inaccessible to Mega Man X."
-			},
-			new string[]
-			{
-				"Use the mid-air dash to avoid Storm Tornado salvos."
-			},
-			new string[]
-			{
-				"A Rolling Shield protective barrier can be overwhelmed",
-				"with mass fire. Every hit will deplete its health."
-			},
-			new string[]
-			{
 				"Press 1-9 to switch weapons more quickly.",
 				"If you have these keys bound already, it won't work."
 			},
@@ -675,22 +656,12 @@ public class Tips {
 			},
 			new string[]
 			{
-				"Press Down to crouch and reduce your profile.",
-				"You can shoot or attack when crouched.",
-			},
-			new string[]
-			{
 				$"The further you are behind, the more {Global.nameCoins} you earn.",
 			},
 			new string[]
 			{
 				"After respawning, for 2 seconds you cannot attack",
 				"or be attacked.",
-			},
-			new string[]
-			{
-				"Freeze enemies over pits, lava or spikes",
-				"for a quick kill!",
 			},
 			new string[]
 			{
@@ -704,20 +675,11 @@ public class Tips {
 			},
 			new string[]
 			{
-				"In a Ride Armor, jump on enemies to damage them!",
-			},
-			new string[]
-			{
 				"You can eject from a Ride Armor to reach high spots.",
 			},
 			new string[]
 			{
-				"If a \"teammate\" is attacking you or your team,",
-				"it's a disguised Axl. Attack him back!"
-			},
-			new string[]
-			{
-				"In CTF, hold the DASH key to drop the flag."
+				"In CTF, hold the SLIDE key to drop the flag."
 			},
 		};
 
@@ -741,6 +703,23 @@ public class Tips {
 			},
 		};
 
+	public static List<string[]> rockTipsPool = new List<string[]>() {
+		new string[]
+		{
+			"No walljump?"
+		},
+
+		new string[] 
+		{
+			"No dash momentum?"
+		},
+
+		new string[]
+		{
+			"You can use slide to dodge some attacks."
+		},
+	};
+
 	public static string[] getRandomTip(int charNum) {
 		var tipsPool = new List<string[]>(Tips.tipsPool);
 		if (Global.level.isRace()) tipsPool = Tips.raceTipsPool;
@@ -749,6 +728,7 @@ public class Tips {
 		else if (charNum == 2) tipsPool.AddRange(Tips.vileTipsPool);
 		else if (charNum == 3) tipsPool.AddRange(Tips.axlTipsPool);
 		else if (charNum == 4) tipsPool.AddRange(Tips.sigmaTipsPool);
+		else if (charNum == 5) tipsPool.AddRange(Tips.rockTipsPool);
 		return tipsPool.GetRandomItem();
 	}
 }

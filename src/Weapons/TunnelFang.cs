@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class TunnelFang : Weapon {
 	public TunnelFang() : base() {
-		shootSounds = new List<string>() { "buster", "buster", "buster", "tunnelFang" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1;
 		index = (int)WeaponIds.TunnelFang;
 		weaponBarBaseIndex = 24;
@@ -115,7 +115,7 @@ public class TunnelFangProj : Projectile {
 		}
 
 		if (sparksCooldown == 0) {
-			playSound("tunnelFangDrill");
+			//playSound("tunnelFangDrill");
 			var sparks = new Anim(pos, "tunnelfang_sparks", xDir, null, true);
 			sparks.setzIndex(zIndex + 100);
 			sparksCooldown = 0.25f;
@@ -187,7 +187,7 @@ public class TunnelFangProjCharged : Projectile {
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (sparksCooldown == 0) {
-			playSound("tunnelFangDrill");
+			//playSound("tunnelFangDrill");
 			var sparks = new Anim(pos.addxy(15 * xDir, 0), "tunnelfang_sparks", xDir, null, true);
 			sparks.setzIndex(zIndex + 100);
 			sparksCooldown = 0.25f;

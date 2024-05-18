@@ -139,6 +139,7 @@ public partial class Player {
 	public const int reviveXCost = 10;
 	public const int goldenArmorCost = 5;
 	public const int ultimateArmorCost = 10;
+	public const int superAdaptorCost = 75;
 	public bool lastDeathCanRevive;
 	public int vileFormToRespawnAs;
 	public bool hyperSigmaRespawn;
@@ -155,6 +156,7 @@ public partial class Player {
 	public bool isVile { get { return charNum == (int)CharIds.Vile; } }
 	public bool isAxl { get { return charNum == (int)CharIds.Axl; } }
 	public bool isSigma { get { return charNum == (int)CharIds.Sigma; } }
+	public bool isRock { get { return charNum == (int)CharIds.Rock;}}
 
 	public float health;
 	public float maxHealth;
@@ -212,17 +214,38 @@ public partial class Player {
 
 	public bool isMuted;
 
-	// Subtanks
-	public Dictionary<int, List<SubTank>> charSubTanks = new Dictionary<int, List<SubTank>>() {
-		{ (int)CharIds.X, new List<SubTank>() },
-		{ (int)CharIds.Zero, new List<SubTank>() },
-		{ (int)CharIds.Vile, new List<SubTank>() },
-		{ (int)CharIds.Axl, new List<SubTank>() },
-		{ (int)CharIds.Sigma, new List<SubTank>() },
-		{ (int)CharIds.PunchyZero, new List<SubTank>() },
-		{ (int)CharIds.BusterZero, new List<SubTank>() },
-		{ (int)CharIds.Rock, new List<SubTank>() },
-	};
+	// Energy Tanks
+	public Dictionary<int, List<ETank>> charETanks = new Dictionary<int, List<ETank>>()
+	{
+			{ (int)CharIds.X, new List<ETank>() },
+			{ (int)CharIds.Zero, new List<ETank>() },
+			{ (int)CharIds.Vile, new List<ETank>() },
+			{ (int)CharIds.Axl, new List<ETank>() },
+			{ (int)CharIds.Sigma, new List<ETank>() },
+			{ (int)CharIds.Rock, new List<ETank>() },
+		};
+	public List<ETank> etanks {
+		get {
+			return charETanks[isDisguisedAxl ? 3 : charNum];
+		}
+		set {
+			charETanks[isDisguisedAxl ? 3 : charNum] = value;
+		}
+	}
+	// Weapon Tanks
+	public Dictionary<int, List<WTank>> charWTanks = new Dictionary<int, List<WTank>>()
+	{
+			{ (int)CharIds.Rock, new List<WTank>() },
+			//{ (int)CharIds.Bass, new List<WTank>()},
+		};
+	public List<WTank> wtanks {
+		get {
+			return charWTanks[isDisguisedAxl ? 3 : charNum];
+		}
+		set {
+			charWTanks[isDisguisedAxl ? 3 : charNum] = value;
+		}
+	}
 	// Heart tanks
 	public Dictionary<int, int> charHeartTanks = new Dictionary<int, int>(){
 		{ (int)CharIds.X, 0 },
@@ -235,10 +258,6 @@ public partial class Player {
 		{ (int)CharIds.Rock, 0 },
 	};
 	// Getter functions.
-	public List<SubTank> subtanks {
-		get { return charSubTanks[isDisguisedAxl ? 3 : charNum]; }
-		set { charSubTanks[isDisguisedAxl ? 3 : charNum] = value; }
-	}
 	public int heartTanks {
 		get { return charHeartTanks[isDisguisedAxl ? 3 : charNum]; }
 		set { charHeartTanks[isDisguisedAxl ? 3 : charNum] = value; }
@@ -343,6 +362,7 @@ public partial class Player {
 	public ushort oldArmorFlag;
 	public bool ultimateArmor;
 	public bool oldUltimateArmor;
+	public bool superAdaptor;
 	public bool frozenCastle;
 	public bool oldFrozenCastle;
 	public bool speedDevil;
@@ -390,6 +410,9 @@ public partial class Player {
 	}
 
 	// Shaders
+	public ShaderWrapper rockPaletteShader = Helpers.cloneShaderSafe("rockPalette");
+	public ShaderWrapper MM7chargeShader = Helpers.cloneShaderSafe("chargeBlue");
+	public ShaderWrapper MM7charge2Shader = Helpers.cloneShaderSafe("chargeGreen");
 	public ShaderWrapper xPaletteShader = Helpers.cloneShaderSafe("palette");
 	public ShaderWrapper invisibleShader = Helpers.cloneShaderSafe("invisible");
 	public ShaderWrapper zeroPaletteShader = Helpers.cloneShaderSafe("hyperzero");
@@ -472,7 +495,7 @@ public partial class Player {
 	}
 
 	public int getStartHeartTanksForChar() {
-		if (!Global.level.server.disableHtSt && Global.level?.server?.customMatchSettings == null && !Global.level.gameMode.isTeamMode) {
+		/*if (!Global.level.server.disableHtSt && Global.level?.server?.customMatchSettings == null && !Global.level.gameMode.isTeamMode) {
 			int leaderKills = Global.level.getLeaderKills();
 			if (leaderKills >= 32) return 8;
 			if (leaderKills >= 28) return 7;
@@ -482,26 +505,30 @@ public partial class Player {
 			if (leaderKills >= 12) return 3;
 			if (leaderKills >= 8) return 2;
 			if (leaderKills >= 4) return 1;
-		}
+		}*/
 		return 0;
 	}
 
-	public int getStartSubTanks() {
+	public int getStartETanks() {
 		if (Global.level?.server?.customMatchSettings != null) {
-			return Global.level.server.customMatchSettings.startSubTanks;
+			return Global.level.server.customMatchSettings.startETanks;
 		}
 
 		return 0;
 	}
 
-	public int getStartSubTanksForChar() {
-		if (!Global.level.server.disableHtSt && Global.level?.server?.customMatchSettings == null && !Global.level.gameMode.isTeamMode) {
+	public int getStartWTanks() {
+		return 0;
+	}
+
+	public int getStartETanksForChar() {
+		/*if (!Global.level.server.disableHtSt && Global.level?.server?.customMatchSettings == null && !Global.level.gameMode.isTeamMode) {
 			int leaderKills = Global.level.getLeaderKills();
 			if (leaderKills >= 32) return 4;
 			if (leaderKills >= 24) return 3;
 			if (leaderKills >= 16) return 2;
 			if (leaderKills >= 8) return 1;
-		}
+		}*/
 
 		return 0;
 	}
@@ -563,10 +590,16 @@ public partial class Player {
 			}
 			charHeartTanks[key] = htCount;
 		}
-		foreach (var key in charSubTanks.Keys) {
-			int stCount = key == charNum ? getStartSubTanksForChar() : getStartSubTanks();
+		foreach (var key in charETanks.Keys) {
+			int stCount = key == charNum ? getStartETanksForChar() : getStartETanks();
 			for (int i = 0; i < stCount; i++) {
-				charSubTanks[key].Add(new SubTank());
+				charETanks[key].Add(new ETank());
+			}
+		}
+		foreach (var key in charWTanks.Keys) {
+			int wtCount = getStartWTanks();
+			for (int i=0; i < wtCount; i++) {
+				charWTanks[key].Add(new WTank());
 			}
 		}
 
@@ -603,7 +636,7 @@ public partial class Player {
 	}
 
 	public bool hasAllItems() {
-		return subtanks.Count >= 4 && heartTanks >= 8;
+		return etanks.Count >= 4 && heartTanks >= 8;
 	}
 
 	public float getHealthModifier() {
@@ -635,7 +668,7 @@ public partial class Player {
 	public float getMaxHealth() {
 		// 1v1 is the only mode without possible heart tanks/sub tanks
 		if (Global.level.is1v1()) {
-			return MathF.Ceiling(32 * getHealthModifier());
+			return MathF.Ceiling(28 * getHealthModifier());
 		}
 		int bonus = 0;
 		if (isSigma && isPuppeteer()) bonus = 4;
@@ -643,7 +676,7 @@ public partial class Player {
 		if (hpModifier < 1) {
 			return MathF.Ceiling((16 + bonus) * hpModifier) + heartTanks * getHeartTankModifier();
 		}
-		return MathF.Ceiling((16 + bonus + (heartTanks * getHeartTankModifier())) * hpModifier);
+		return MathF.Ceiling((28 + bonus + (heartTanks * getHeartTankModifier())) * hpModifier);
 	}
 
 	public void creditHealing(float healAmount) {
@@ -1639,6 +1672,11 @@ public partial class Player {
 			!hasGoldenArmor() && currency >= goldenArmorCost && !usedChipOnce;
 	}
 
+	public bool canGoSuperAdaptor() {
+		return character != null && isRock && character.charState is not Die && 
+		currency >= superAdaptorCost;
+	}
+
 	public bool canUpgradeUltimateX() {
 		return character != null &&
 			isX && !isDisguisedAxl &&
@@ -1771,7 +1809,7 @@ public partial class Player {
 		}
 	}
 
-	public void awardCurrency() {
+	public void awardCurrency(bool isKiller = true) {
 		if (axlBulletType == (int)AxlBulletWeaponType.AncientGun && isAxl) return;
 		if (character?.isCCImmuneHyperMode() == true) return;
 		if (character is Zero zero && (zero.isNightmareZero)) return;
@@ -1782,9 +1820,13 @@ public partial class Player {
 		//if (isX && hasGoldenArmor()) return;
 		if (Global.level.is1v1()) return;
 
-		if (isZero || isVile) { fillSubtank(2); } else if (isAxl) { fillSubtank(3); } else if (isX || isSigma) { fillSubtank(4); } else { fillSubtank(4); }
+		if (isZero || isVile) fillETank(2);
+		if (isAxl) fillETank(3);
+		if (isX || isSigma) fillETank(4);
+		if (isRock) fillETank(0);
 
-		currency++;
+		int toAdd = isKiller ? 10 : 5;
+		currency += toAdd;
 	}
 
 	public int getStartCurrency() {
@@ -1794,7 +1836,7 @@ public partial class Player {
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
-		return 3;
+		return 0;
 	}
 
 	public int getRespawnTime() {
@@ -2116,6 +2158,9 @@ public partial class Player {
 		} else if (isX) {
 			if (Global.level.is1v1()) return Options.main.gridModeX > 0;
 			return Options.main.gridModeX > 1;
+		} else if (isRock) {
+			if (Global.level.is1v1()) return Options.main.gridModeRock > 0;
+			return Options.main.gridModeRock > 1;
 		}
 
 		return false;
@@ -2224,6 +2269,21 @@ public partial class Player {
 
 	public bool hasUltimateArmor() {
 		return ultimateArmor;
+	}
+
+	public void setSuperAdaptor(bool addOrRemove) {
+		if (addOrRemove) {
+			superAdaptor = true;
+			removeWeaponsButBuster();
+			addSARocketPunch();
+		} else {
+			removeSARocketPunch();
+			superAdaptor = false;
+		}
+	}
+
+	public bool hasSuperAdaptor() {
+		return superAdaptor;
 	}
 
 	public int bootsArmorNum {
@@ -2537,21 +2597,21 @@ public partial class Player {
 		return isSigma && isPuppeteer() && currentMaverick != null && weapon is MaverickWeapon;
 	}
 
-	public bool hasSubtankCapacity() {
-		var subtanks = this.subtanks;
-		for (int i = 0; i < subtanks.Count; i++) {
-			if (subtanks[i].health < SubTank.maxHealth) {
+	public bool hasETankCapacity() {
+		var etanks = this.etanks;
+		for (int i = 0; i < etanks.Count; i++) {
+			if (etanks[i].health < ETank.maxHealth) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public bool canUseSubtank(SubTank subtank) {
+	public bool canUseEtank(ETank etank) {
 		if (isDead) return false;
 		if (character.healAmount > 0) return false;
 		if (health <= 0 || health >= maxHealth) return false;
-		if (subtank.health <= 0) return false;
+		if (etank.health <= 0) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
 		if (character.isCStingInvisible()) return false;
@@ -2560,25 +2620,35 @@ public partial class Player {
 		return true;
 	}
 
-	public void fillSubtank(float amount) {
+	public bool canUseWTank(WTank wtank) {
+		if (isDead) return false;
+		if (character.charState is WarpOut) return false;
+		if (character.charState.invincible) return false;
+		if (weapon is not RockBuster) return true;
+		if (weapon is not SARocketPunch) return true;
+		
+		return true;
+	}
+
+	public void fillETank(float amount) {
 		if (character?.healAmount > 0) return;
-		var subtanks = this.subtanks;
-		for (int i = 0; i < subtanks.Count; i++) {
-			if (subtanks[i].health < SubTank.maxHealth) {
-				subtanks[i].health += amount;
-				if (subtanks[i].health >= SubTank.maxHealth) {
-					subtanks[i].health = SubTank.maxHealth;
-					if (isMainPlayer) Global.playSound("subtankFull");
+		var etanks = this.etanks;
+		for (int i = 0; i < etanks.Count; i++) {
+			if (etanks[i].health < ETank.maxHealth) {
+				etanks[i].health += amount;
+				if (etanks[i].health >= ETank.maxHealth) {
+					etanks[i].health = ETank.maxHealth;
+					//if (isMainPlayer) Global.playSound("subtankFull");
 				} else {
-					if (isMainPlayer) Global.playSound("subtankFill");
+					if (isMainPlayer) Global.playSound("subtank_fill");
 				}
 				break;
 			}
 		}
 	}
 
-	public bool isUsingSubTank() {
-		return character?.usedSubtank != null;
+	public bool isUsingETank() {
+		return character?.usedEtank != null;
 	}
 
 	public int getSpawnIndex(int spawnPointCount) {
@@ -2591,9 +2661,9 @@ public partial class Player {
 		return index;
 	}
 
-	public void delaySubtank() {
+	public void delayETank() {
 		if (isMainPlayer) {
-			UpgradeMenu.subtankDelay = UpgradeMenu.maxSubtankDelay;
+			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
 		}
 	}
 }

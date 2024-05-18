@@ -11,7 +11,7 @@ public class RayGun : AxlWeapon {
 		sprite = "axl_arm_raygun";
 		flashSprite = "axl_raygun_flash";
 		chargedFlashSprite = "axl_raygun_flash";
-		shootSounds = new List<string>() { "raygun", "raygun", "raygun", "splashLaser" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		index = (int)WeaponIds.RayGun;
 		weaponBarBaseIndex = 30;
 		weaponBarIndex = 28;
@@ -217,18 +217,18 @@ public class RayGunAltProj : Projectile {
 
 		Helpers.decrementTime(ref soundCooldown);
 		if (soundCooldown == 0) {
-			string laserSound = "laser";
+			string laserSound = "";
 			soundCooldown = 0.217f;
 			int chargeLevel = getChargeLevel();
 			if (chargeLevel == 1) {
-				laserSound = "laser2";
+				laserSound = "";
 				soundCooldown = 0.18f;
 			} else if (chargeLevel == 2) {
-				laserSound = "laser3";
+				laserSound = "";
 				soundCooldown = 0.14f;
 			}
 
-			chr?.playSound(laserSound);
+			//chr?.playSound(laserSound);
 		}
 
 		if (!ownedByLocalPlayer) { return; }

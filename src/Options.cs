@@ -60,6 +60,7 @@ public class Options {
 	}
 
 	// X
+	public bool useRandomLoadout;
 	public int gridModeX;
 	public int hyperChargeSlot;
 	public bool novaStrikeSpecial;
@@ -100,6 +101,11 @@ public class Options {
 	public bool maverickStartFollow = true;
 	public bool puppeteerCancel;
 
+	// Rock
+	public bool useRandomRockLoadout;
+	public RockLoadout rockLoadout = new RockLoadout();
+	public int gridModeRock;
+
 	private static Options _main;
 
 	public static Options main {
@@ -139,13 +145,14 @@ public class Options {
 
 		hyperChargeSlot = Helpers.clamp(hyperChargeSlot, 0, 2);
 		sigmaWeaponSlot = Helpers.clamp(sigmaWeaponSlot, 0, 2);
-		preferredCharacter = Helpers.clamp(preferredCharacter, 0, 4);
+		preferredCharacter = Helpers.clamp(preferredCharacter, 5, 5);
 
 		xLoadout.validate();
 		zeroLoadout.validate();
 		vileLoadout.validate();
 		axlLoadout.validate();
 		sigmaLoadout.validate();
+		rockLoadout.validate();
 	}
 
 	public static bool isValidLANIP(string LANIPPrefix) {

@@ -53,7 +53,7 @@ public class FSplasherState : CharState {
 	Zero zero;
 
 	public FSplasherState() : base("dash", "") {
-		enterSound = "fsplasher";
+		enterSound = "";
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -272,7 +272,7 @@ public class HyorogaProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		playSound("iceBreak");
+		//playSound("iceBreak");
 		Anim.createGibEffect("hyoroga_proj_pieces", getCenterPos(), owner);
 	}
 }

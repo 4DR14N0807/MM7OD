@@ -87,13 +87,10 @@ public class TextExportMenu : IMainMenu {
 
 		int i = 0;
 		for (; i < lines.Count; i++) {
-			Fonts.drawText(
-				FontType.Green, lines[i], Global.screenW / 2, top + (i * 10),
-				alignment: Alignment.Center
-			);
+			Fonts.drawText(FontType.Grey, lines[i], Global.screenW / 2, top + (i * 10), Alignment.Center);
 		}
 		Fonts.drawText(
-			FontType.Orange, "TEXT EXPORT",
+			FontType.BlueMenu, "TEXT EXPORT",
 			Global.screenW / 2, 20, alignment: Alignment.Center
 		);
 		if (canCopyToClipboard) {

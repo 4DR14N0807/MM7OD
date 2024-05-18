@@ -21,20 +21,24 @@ public class ChargeEffect {
 	public List<Point> origPoints;
 	public List<ChargeParticle> chargeParts;
 	public bool active = false;
+	Character character;
 
 	public ChargeEffect() {
 		chargeParts = new List<ChargeParticle>();
-		var radius = 24;
+		
+		var point1 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point2 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point3 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point4 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point5 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point6 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point7 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point8 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point9 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point10 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point11 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
+		var point12 = new Point(Helpers.randomRange(-16, 16), Helpers.randomRange(0, 16)); //angle += 45;
 
-		var angle = 0;
-		var point1 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
-		var point2 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
-		var point3 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
-		var point4 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
-		var point5 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
-		var point6 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
-		var point7 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
-		var point8 = new Point(Helpers.sind(angle) * radius, Helpers.cosd(angle) * radius); angle += 45;
 
 		origPoints = new List<Point>() {
 			point1, point2, point3, point4, point5, point6, point7, point8
@@ -48,7 +52,12 @@ public class ChargeEffect {
 			new ChargeParticle(point5.clone(), -1.5f, null),
 			new ChargeParticle(point6.clone(), -3, null),
 			new ChargeParticle(point7.clone(), -1.5f, null),
-			new ChargeParticle(point8.clone(), -1.5f, null)
+			new ChargeParticle(point8.clone(), -1.5f, null),
+			new ChargeParticle(point9.clone(), 0, null),
+			new ChargeParticle(point10.clone(), -1.5f, null),
+			new ChargeParticle(point11.clone(), 0, null),
+			new ChargeParticle(point12.clone(), -1f, null)
+
 		};
 	}
 
@@ -57,14 +66,19 @@ public class ChargeEffect {
 	}
 
 	public void reset() {
-		chargeParts[0].time = 0;
-		chargeParts[1].time = 3;
-		chargeParts[2].time = 0;
-		chargeParts[3].time = 1.5f;
-		chargeParts[4].time = -1.5f;
-		chargeParts[5].time = -3;
-		chargeParts[6].time = -1.5f;
-		chargeParts[7].time = -1.5f;
+		chargeParts[0].time = Helpers.randomRange(-3, 0);
+		chargeParts[1].time = Helpers.randomRange(-3, 0);
+		chargeParts[2].time = Helpers.randomRange(-3, 0);
+		chargeParts[3].time = Helpers.randomRange(-3, 0);
+		chargeParts[4].time = Helpers.randomRange(-3, 0);
+		chargeParts[5].time = Helpers.randomRange(-3, 0);
+		chargeParts[6].time = Helpers.randomRange(-3, 0);
+		chargeParts[7].time = Helpers.randomRange(-3, 0);
+		chargeParts[8].time = Helpers.randomRange(-3, 0);
+		chargeParts[9].time = Helpers.randomRange(-3, 0);
+		chargeParts[10].time = Helpers.randomRange(-3, 0);
+		chargeParts[11].time = Helpers.randomRange(-3, 0);
+
 	}
 
 	public void update(float chargeLevel, int chargeType) {
@@ -72,8 +86,9 @@ public class ChargeEffect {
 		for (int i = 0; i < chargeParts.Count; i++) {
 			var part = chargeParts[i];
 			if (part.time > 0) {
-				part.pos.x = Helpers.moveTo(part.pos.x, 0, Global.spf * 70);
-				part.pos.y = Helpers.moveTo(part.pos.y, 0, Global.spf * 70);
+				//part.pos.x = Helpers.moveTo(part.pos.x, 0, Global.spf * 70);
+				//part.pos.y = Helpers.moveTo(part.pos.y, 0, Global.spf * 70);
+				part.pos.y -= 4;
 			}
 			var chargePart = "charge_part_" + chargeLevel.ToString();
 			if (chargeType != 1 && chargeLevel >= 4) {
@@ -83,11 +98,10 @@ public class ChargeEffect {
 			part.time += Global.spf * 20;
 			if (part.time > 3) {
 				part.time = -3;
-				part.pos.x = origPoints[i].x;
-				part.pos.y = origPoints[i].y;
+				part.pos.x = Helpers.randomRange(-16, 16);
+				part.pos.y = Helpers.randomRange(0, 16);
 			}
 		}
-
 	}
 
 	public void render(Point centerPos) {
@@ -135,28 +149,61 @@ public class DieEffectParticles {
 	public float ang = 0;
 	public float alpha = 1;
 	public List<Actor> dieParts = new List<Actor>();
+	public List<Actor> dieParts2 = new List<Actor>();
 	public bool destroyed = false;
 
 	public DieEffectParticles(Point centerPos, int charNum) {
 		this.centerPos = centerPos;
-		for (var i = ang; i < ang + 360; i += 22.5f) {
-			var x = this.centerPos.x + Helpers.cosd(i) * time * 150;
-			var y = this.centerPos.y + Helpers.sind(i) * time * 150;
-			var diePartSprite = charNum == 1 ? "die_particle_zero" : "die_particle";
-			var diePart = new DieParticleActor(diePartSprite, new Point(centerPos.x, centerPos.y));
-			dieParts.Add(diePart);
+		for (var i = ang; i < ang + 360; i += 30) {
+			if (i % 90 != 0 && i != 0) {
+				var x = this.centerPos.x + Helpers.cosd(i) * time * 51;
+				var y = this.centerPos.y + Helpers.sind(i) * time * 51;
+				var diePartSprite = charNum == 1 ? "rock_die_particles" : "rock_die_particles";
+				var diePart = new DieParticleActor(diePartSprite, new Point(centerPos.x, centerPos.y));
+				dieParts.Add(diePart);
+			}
 		}
+
+		for (var i = ang; i < ang + 360; i += 45) {
+				var x = this.centerPos.x + Helpers.cosd(i) * time * 84;
+				var y = this.centerPos.y + Helpers.sind(i) * time * 84;
+				var diePartSprite = charNum == 1 ? "rock_die_particles2" : "rock_die_particles2";
+				var diePart = new DieParticleActor(diePartSprite, new Point(centerPos.x, centerPos.y));
+				dieParts2.Add(diePart);
+		}
+
 	}
 
 	public void render(float offsetX, float offsetY) {
 		var counter = 0;
-		for (var i = ang; i < ang + 360; i += 22.5f) {
-			if (counter >= dieParts.Count) continue;
-			var diePart = dieParts[counter];
+		var counter2 = 0;
+		for (var i = ang; i < ang + 360; i += 30) {
+			if (i % 90 != 0 && i != 0) {
+				if (counter >= dieParts.Count) continue;
+				var diePart = dieParts[counter];
+				if (diePart == null) continue;
+
+				var x = centerPos.x + Helpers.cosd(i) * time * 51;
+				var y = centerPos.y + Helpers.sind(i) * time * 51;
+				float halfWidth = 10;
+
+				var rect = new Rect(x - halfWidth, y - halfWidth, x + halfWidth, y + halfWidth);
+				var camRect = new Rect(Global.level.camX, Global.level.camY, Global.level.camX + Global.viewScreenW, Global.level.camY + Global.viewScreenH);
+				if (rect.overlaps(camRect)) {
+					int frameIndex = (int)MathF.Round(time * 20) % diePart.sprite.frames.Count;
+					diePart.sprite.draw(frameIndex, x + offsetX, y + offsetY, 1, 1, null, alpha, 1, 1, ZIndex.Foreground);
+				}
+				counter++;
+			}
+		}
+
+		for (var i = ang; i < ang + 360; i += 45) {
+			if (counter2 >= dieParts2.Count) continue;
+			var diePart = dieParts2[counter2];
 			if (diePart == null) continue;
 
-			var x = centerPos.x + Helpers.cosd(i) * time * 150;
-			var y = centerPos.y + Helpers.sind(i) * time * 150;
+			var x = centerPos.x + Helpers.cosd(i) * time * 84;
+			var y = centerPos.y + Helpers.sind(i) * time * 84;
 			float halfWidth = 10;
 
 			var rect = new Rect(x - halfWidth, y - halfWidth, x + halfWidth, y + halfWidth);
@@ -165,16 +212,14 @@ public class DieEffectParticles {
 				int frameIndex = (int)MathF.Round(time * 20) % diePart.sprite.frames.Count;
 				diePart.sprite.draw(frameIndex, x + offsetX, y + offsetY, 1, 1, null, alpha, 1, 1, ZIndex.Foreground);
 			}
-
-			counter++;
+			counter2++;	
 		}
-
 	}
 
 	public void update() {
 		time += Global.spf;
 		alpha = Helpers.clamp01(1 - time * 0.5f);
-		ang += Global.spf * 100;
+		//ang += Global.spf * 100;
 
 		if (alpha <= 0) {
 			destroy();
@@ -183,6 +228,9 @@ public class DieEffectParticles {
 
 	public void destroy() {
 		foreach (var diePart in dieParts) {
+			diePart.destroySelf();
+		}
+		foreach (var diePart in dieParts2) {
 			diePart.destroySelf();
 		}
 		destroyed = true;
@@ -271,7 +319,7 @@ public class ExplodeDieEffect : Effect {
 
 			if (!exploder.maverickFade) {
 				if (!silent) {
-					exploder.playSound("explosion", sendRpc: true);
+					//exploder.playSound("explosion", sendRpc: true);
 				}
 			}
 		}

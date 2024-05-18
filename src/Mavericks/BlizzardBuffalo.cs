@@ -72,7 +72,7 @@ public class BlizzardBuffalo : Maverick {
 
 	public MaverickState getShootState(bool isAI) {
 		var mshoot = new MShoot((Point pos, int xDir) => {
-			playSound("bbuffaloShoot", sendRpc: true);
+			//playSound("bbuffaloShoot", sendRpc: true);
 
 			Point unitDir = new Point(xDir, -1);
 			var inputDir = input.getInputDir(player);
@@ -147,7 +147,7 @@ public class BBuffaloIceProj : Projectile {
 		if (checkCollision(0, 0) != null) {
 			destroySelf();
 			Anim.createGibEffect("bbuffalo_proj_ice_gibs", getCenterPos(), owner, sendRpc: true);
-			playSound("iceBreak", sendRpc: true);
+			//playSound("iceBreak", sendRpc: true);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class BBuffaloIceProj : Projectile {
 
 		destroySelf();
 		Anim.createGibEffect("bbuffalo_proj_ice_gibs", getCenterPos(), owner, sendRpc: true);
-		playSound("iceBreak", sendRpc: true);
+		//playSound("iceBreak", sendRpc: true);
 	}
 }
 
@@ -177,7 +177,7 @@ public class BBuffaloIceProjGround : Projectile, IDamagable {
 		maxTime = 5;
 		projId = (int)ProjIds.BBuffaloIceProjGround;
 		destroyOnHit = true;
-		playSound("frostShield");
+		//playSound("frostShield");
 		this.angle = angle;
 		updateHitboxes();
 		if (sendRpc) {
@@ -254,7 +254,7 @@ public class BBuffaloIceProjGround : Projectile, IDamagable {
 	public override void onDestroy() {
 		base.onDestroy();
 		Anim.createGibEffect("bbuffalo_proj_ice_gibs", getCenterPos(), owner);
-		playSound("iceBreak");
+		//playSound("iceBreak");
 	}
 }
 
@@ -363,7 +363,7 @@ public class BBuffaloShootBeamState : MaverickState {
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
 			muzzle = new Anim(shootPos.Value, "bbuffalo_beam_muzzle", maverick.xDir, player.getNextActorNetId(), true, sendRpc: true, host: maverick);
-			maverick.playSound("bbuffaloBeam", sendRpc: true);
+			//maverick.playSound("bbuffaloBeam", sendRpc: true);
 		}
 
 		if (proj != null && !proj.destroyed && input.isPressed(Control.Special1, player)) {
@@ -416,7 +416,7 @@ public class BBuffaloDashState : MaverickState {
 		var hitWall = Global.level.checkCollisionActor(maverick, maverick.xDir * 20, -5);
 		if (hitWall?.isSideWallHit() == true) {
 			crashAndDamage();
-			maverick.playSound("crash", sendRpc: true);
+			//maverick.playSound("crash", sendRpc: true);
 			maverick.shakeCamera(sendRpc: true);
 			maverick.changeState(new MIdle());
 			return;
@@ -447,7 +447,7 @@ public class BBuffaloDashState : MaverickState {
 		*/
 
 		new BBuffaloCrashProj(maverick.weapon, maverick.pos, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
-		maverick.playSound("crash", sendRpc: true);
+		//maverick.playSound("crash", sendRpc: true);
 		maverick.shakeCamera(sendRpc: true);
 	}
 

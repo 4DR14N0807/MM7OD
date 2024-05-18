@@ -106,7 +106,7 @@ public class RideChaser : Actor, IDamagable {
 					healAmount--;
 					health = Helpers.clampMax(health + 1, maxHealth);
 					if (player == Global.level.mainPlayer) {
-						playSound("heal");
+					//	playSound("heal");
 					}
 				}
 			}
@@ -196,8 +196,8 @@ public class RideChaser : Actor, IDamagable {
 
 			if (stuckFrames >= 2) {
 				if (character != null && canGetHurtFromCarCrash()) {
-					character.playSound("hurt", sendRpc: true);
-					character.playSound("rcCrash", sendRpc: true);
+					//character.playSound("hurt", sendRpc: true);
+					//character.playSound("rcCrash", sendRpc: true);
 					character.shakeCamera(sendRpc: true);
 					character.applyDamage(null, null, 4, null);
 					applyDamage(null, null, 8, (int)ProjIds.RideChaserCrash);
@@ -267,13 +267,13 @@ public class RideChaser : Actor, IDamagable {
 			if (!isDashing) {
 				Helpers.decrementTime(ref soundTime);
 				if (soundTime == 0 && !isWading()) {
-					playSound("rc", sendRpc: true);
+					//playSound("rc", sendRpc: true);
 					soundTime = 0.2f;
 				}
 			} else {
 				Helpers.decrementTime(ref soundTime);
 				if (soundTime == 0) {
-					playSound("rcDash", sendRpc: true);
+					//playSound("rcDash", sendRpc: true);
 					soundTime = 0.2f;
 				}
 			}
@@ -336,7 +336,7 @@ public class RideChaser : Actor, IDamagable {
 			destXDir = xDir * -1;
 			changeSprite("ridechaser_turn", true);
 			character.changeSpriteFromName("rc_turn", true);
-			playSound("rcTurn", sendRpc: true);
+			//playSound("rcTurn", sendRpc: true);
 
 			shouldDrawShoot = false;
 			shouldDrawIncline = false;
@@ -358,7 +358,7 @@ public class RideChaser : Actor, IDamagable {
 			if (shootTime == 0) {
 				new RCProj(gunWeapon, getFirstPOIOrDefault(), xDir, Helpers.clampMin0(speed - 150), player, player.getNextActorNetId(), sendRpc: true);
 				new Anim(getFirstPOIOrDefault(), "ridechaser_muzzle", xDir, player.getNextActorNetId(), true, sendRpc: true, host: this);
-				playSound("rcShoot", sendRpc: true);
+				//playSound("rcShoot", sendRpc: true);
 			}
 			shootTime += Global.spf;
 			if (shootTime > 0.15f) {
@@ -494,7 +494,7 @@ public class RideChaser : Actor, IDamagable {
 	public void explode() {
 		if (!isExploding) {
 			isExploding = true;
-			playSound("rcExplode");
+			//playSound("rcExplode");
 			Anim.createGibEffect("ridechaser_piece", getCenterPos(), netOwner, GibPattern.Radial);
 			new ExplodeDieEffect(player ?? netOwner, getCenterPos(), getCenterPos(), "empty", 1, zIndex, false, 35, 0.5f, false);
 		}

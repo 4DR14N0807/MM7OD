@@ -44,7 +44,7 @@ public class KingOfTheHill : GameMode {
 			else {
 				hudCpBarIndex = hill.blueCaptureTime > 0 ? 1 : 0;
 			}
-			Global.sprites["hud_cp_bar"].drawToHUD(hudCpBarIndex, 5 + 17 + (i * 2), 5 + 3 + hudcpY);
+			Global.sprites["hud_cp_bar"].drawToHUD(hudCpBarIndex, 5 + 17 + (i * 2), 6 + hudcpY);
 		}
 		if (hillText != "") {
 			Fonts.drawText(textColor, hillText, 38, 9 + hudcpY, Alignment.Center);

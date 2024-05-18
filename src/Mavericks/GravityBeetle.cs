@@ -166,7 +166,7 @@ public class GBeetleBallProj : Projectile {
 			didHit = true;
 		}
 		if (didHit) {
-			playSound("gbeetleProjBounce", sendRpc: false);
+			//playSound("gbeetleProjBounce", sendRpc: false);
 			increaseSize();
 			//hitWallCooldown += 0.1f;
 		}
@@ -217,7 +217,7 @@ public class GBeetleDashState : MaverickState {
 
 		Helpers.decrementTime(ref soundTime);
 		if (soundTime == 0) {
-			maverick.playSound("gbeetleDash", sendRpc: true);
+			//maverick.playSound("gbeetleDash", sendRpc: true);
 			soundTime = 0.085f;
 		}
 		Helpers.decrementTime(ref dustTime);
@@ -243,7 +243,7 @@ public class GBeetleDashState : MaverickState {
 
 		var hitWall = Global.level.checkCollisionActor(maverick, move.x * Global.spf * 2, -5);
 		if (hitWall?.isSideWallHit() == true) {
-			maverick.playSound("crash", sendRpc: true);
+			//maverick.playSound("crash", sendRpc: true);
 			maverick.shakeCamera(sendRpc: true);
 			tryChangeToIdle();
 			return;
@@ -321,7 +321,7 @@ public class BeetleGrabbedState : GenericGrabbedState {
 			}
 			if (character.stopCeiling()) {
 				(grabber as GravityBeetle).meleeWeapon.applyDamage(character, false, grabber, (int)ProjIds.GBeetleLiftCrash);
-				character.playSound("crash", sendRpc: true);
+				//character.playSound("crash", sendRpc: true);
 				character.shakeCamera(sendRpc: true);
 			}
 			return;
@@ -383,7 +383,7 @@ public class GBeetleGravityWellProj : Projectile {
 			var hit = checkCollision(0, -1);
 			if (moveDistance > 175 || hit?.isCeilingHit() == true) {
 				state = 1;
-				playSound("gbeetleWell", sendRpc: true);
+				//playSound("gbeetleWell", sendRpc: true);
 			}
 		} else if (state == 1) {
 			radiusFactor += Global.spf * 1.5f;

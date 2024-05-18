@@ -135,7 +135,7 @@ public class HexaInvoluteProj : Projectile {
 
 		Helpers.decrementTime(ref soundCooldown);
 		if (soundCooldown == 0) {
-			sound = owner.character?.playSound("hexaInvolute");
+			//sound = owner.character?.playSound("hexaInvolute");
 			soundCooldown = 2.1f;
 		}
 

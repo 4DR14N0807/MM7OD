@@ -51,7 +51,7 @@ public class XUPParryStartState : CharState {
 			if (character.ownedByLocalPlayer) {
 				bool shootProj = false;
 				bool absorbThenShoot = false;
-				character.playSound("upParryAbsorb", sendRpc: true);
+				//character.playSound("upParryAbsorb", sendRpc: true);
 				if (!player.input.isWeaponLeftOrRightHeld(player)) {
 					mmx.unpoAbsorbedProj = absorbedProj;
 					//character.player.weapons.Add(new AbsorbWeapon(absorbedProj));
@@ -78,7 +78,7 @@ public class XUPParryStartState : CharState {
 			}
 		}
 		mmx.refillUnpoBuster();
-		character.playSound("upParry", sendRpc: true);
+		//character.playSound("upParry", sendRpc: true);
 		character.changeState(new XUPParryMeleeState(counterAttackTarget, damage), true);
 	}
 
@@ -178,7 +178,7 @@ public class XUPParryMeleeState : CharState {
 		if (!once && shootPos != null) {
 			once = true;
 			new UPParryMeleeProj(new XUPParry(), shootPos.Value, character.xDir, damage, player, player.getNextActorNetId(), rpc: true);
-			character.playSound("upParryAttack", sendRpc: true);
+			//character.playSound("upParryAttack", sendRpc: true);
 			character.shakeCamera(sendRpc: true);
 		}
 
@@ -535,7 +535,7 @@ public class XReviveStart : CharState {
 			if (dialogIndex == 2) {
 				dialogWaitTime = 0.325f;
 			} else {
-				if (frameCount % 5 == 0) Global.playSound("text");
+				//if (frameCount % 5 == 0) Global.playSound("text");
 			}
 			frameCount++;
 
@@ -571,11 +571,11 @@ public class XReviveStart : CharState {
 				dialogWaitTime = 0;
 				if (dialogIndex < 4) {
 					dialogWaitTime = 0.03f;
-					if (Global.frameCount % 5 == 0) Global.playSound("text");
+					//if (Global.frameCount % 5 == 0) Global.playSound("text");
 				} else if (dialogIndex == 4) {
 					dialogWaitTime = 0.4f;
 				} else {
-					if (Global.frameCount % 5 == 0) Global.playSound("text");
+					//if (Global.frameCount % 5 == 0) Global.playSound("text");
 				}
 			} else {
 				dialogWaitTime = 0.03f;
@@ -645,7 +645,7 @@ public class XRevive : CharState {
 		if (!character.ownedByLocalPlayer) return;
 
 		if (!once && character.frameIndex >= 1 && sprite == "revive") {
-			character.playSound("ching", sendRpc: true);
+			//character.playSound("ching", sendRpc: true);
 			player.health = 1;
 			character.addHealth(player.maxHealth);
 
@@ -682,7 +682,7 @@ public class XRevive : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		reviveAnim = new XReviveAnim(character.getCenterPos(), player.getNextActorNetId(), sendRpc: true);
-		character.playSound("xRevive", sendRpc: true);
+		//character.playSound("xRevive", sendRpc: true);
 		mmx = character as MegamanX;
 	}
 

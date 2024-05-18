@@ -106,7 +106,7 @@ public class BoomerangKuwanger : Maverick {
 	public MaverickState getShootState() {
 		return new MShoot((Point pos, int xDir) => {
 			bald = true;
-			playSound("boomerkBoomerang", sendRpc: true);
+			//playSound("boomerkBoomerang", sendRpc: true);
 			float inputAngle = 25;
 			var inputDir = input.getInputDir(player);
 			if (inputDir.x != 0 && inputDir.y == 0) inputAngle = 0;
@@ -332,7 +332,7 @@ public class BoomerKTeleportState : MaverickState {
 		} else if (stateTime > 0.6f) {
 			if (!onceTeleportInSound) {
 				onceTeleportInSound = true;
-				maverick.playSound("boomerkTeleport", sendRpc: true);
+				//maverick.playSound("boomerkTeleport", sendRpc: true);
 			}
 			maverick.visible = Global.isOnFrameCycle(5);
 		}
@@ -344,7 +344,7 @@ public class BoomerKTeleportState : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		maverick.playSound("boomerkTeleport", sendRpc: true);
+		//maverick.playSound("boomerkTeleport", sendRpc: true);
 	}
 
 	public override void onExit(MaverickState newState) {
@@ -378,7 +378,7 @@ public class BoomerKDashState : MaverickState {
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
 		if (maverick is BoomerangKuwanger bk && bk.dashSoundCooldown == 0) {
-			maverick.playSound("boomerkDash", sendRpc: true);
+			//maverick.playSound("boomerkDash", sendRpc: true);
 			bk.dashSoundCooldown = 0.25f;
 		}
 	}
@@ -463,7 +463,7 @@ public class DeadLiftGrabbed : GenericGrabbedState {
 			}
 			if (character.stopCeiling()) {
 				new BoomerangKDeadLiftWeapon((grabber as Maverick).player).applyDamage(character, false, character, (int)ProjIds.BoomerangKDeadLift);
-				character.playSound("crash", sendRpc: true);
+				//character.playSound("crash", sendRpc: true);
 				character.shakeCamera(sendRpc: true);
 			}
 			return;

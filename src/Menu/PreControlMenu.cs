@@ -27,11 +27,11 @@ public class PreControlMenu : IMainMenu {
 		if (Global.input.isPressedMenu(Control.MenuLeft)) {
 			cursorToCharNum[selArrowPosY]--;
 			if (cursorToCharNum[selArrowPosY] < -2) {
-				cursorToCharNum[selArrowPosY] = 5;
+				cursorToCharNum[selArrowPosY] = 6;
 			}
 		} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 			cursorToCharNum[selArrowPosY]++;
-			if (cursorToCharNum[selArrowPosY] > 5) {
+			if (cursorToCharNum[selArrowPosY] > 6) {
 				cursorToCharNum[selArrowPosY] = -2;
 			}
 		}
@@ -73,25 +73,25 @@ public class PreControlMenu : IMainMenu {
 	public void render() {
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0);
-			Global.sprites["cursor"].drawToHUD(0, optionPos1.x - 10, 73 + (selArrowPosY * 20));
+			Global.sprites["cursor"].drawToHUD(0, optionPos1.x - 10, 74 + (selArrowPosY * 20));
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-			Global.sprites["cursor"].drawToHUD(0, optionPos1.x - 10, 73 + (selArrowPosY * 20));
+			Global.sprites["cursor"].drawToHUD(0, optionPos1.x - 10, 74 + (selArrowPosY * 20));
 		}
 
 		Fonts.drawText(
-			FontType.Yellow, "SELECT INPUT TO CONFIGURE",
+			FontType.BlueMenu, "SELECT INPUT TO CONFIGURE",
 			Global.screenW * 0.5f, 24, Alignment.Center
 		);
 
 		Fonts.drawText(
-			FontType.FBlue, getLeftRightStr("KEYBOARD " + getCharStr(0)),
+			FontType.Grey, getLeftRightStr("KEYBOARD " + getCharStr(0)),
 			optionPos1.x, optionPos1.y, selected: selArrowPosY == 0
 		);
 
 		if (Control.isJoystick()) {
 			Fonts.drawText(
-				FontType.FBlue, getLeftRightStr("CONTROLLER " + getCharStr(1)),
+				FontType.Grey, getLeftRightStr("CONTROLLER " + getCharStr(1)),
 				optionPos2.x, optionPos2.y, selected: selArrowPosY == 1
 			);
 		} else {
@@ -127,6 +127,7 @@ public class PreControlMenu : IMainMenu {
 			3 => "(Directional Axl)",
 			4 => "(Cursor Axl)",
 			5 => "(Sigma)",
+			6 => "(Rockman)",
 			_ => "(ERROR)"
 		};
 	}

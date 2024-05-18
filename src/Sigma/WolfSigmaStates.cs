@@ -207,7 +207,7 @@ public class WolfSigmaHead : Actor, IDamagable {
 					flameSoundTime += Global.spf;
 					if (flameSoundTime > 0.2f) {
 						flameSoundTime = 0;
-						playSound("fireWave");
+						//playSound("fireWave");
 					}
 					if (projTime > 0.06f) {
 						projTime = 0;
@@ -290,7 +290,7 @@ public class WolfSigmaBall : Projectile {
 	public override void update() {
 		if (frameIndex > 3 && !once) {
 			once = true;
-			playSound("energyBall");
+			//playSound("energyBall");
 			vel = dir.times(400);
 		}
 
@@ -472,7 +472,7 @@ public class WolfSigmaHand : Actor, IDamagable {
 			beamTime += Global.spf;
 			frameSpeed = 1;
 			if ((beamTime > beamDuration || beamLetGo) && !beamShot) {
-				playSound("wolfSigmaThunderX1", sendRpc: true);
+				//playSound("WolfSigmaThunderX1", sendRpc: true);
 				beamShot = true;
 				new WolfSigmaBeam(new WolfSigmaBeamWeapon(), pos.addxy(0, -10), 1, -1, 0, owner, owner.getNextActorNetId(), rpc: true);
 				new WolfSigmaBeam(new WolfSigmaBeamWeapon(), pos.addxy(0, 10), 1, 1, 0, owner, owner.getNextActorNetId(), rpc: true);
@@ -604,7 +604,7 @@ public class WolfSigmaHand : Actor, IDamagable {
 	public override void render(float x, float y) {
 		base.render(x, y);
 		if (isControlling) {
-			Global.sprites["cursorchar"].draw(0, pos.x + x, pos.y + y - 25, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+			Global.sprites["cursor"].draw(0, pos.x + x, pos.y + y - 25, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		}
 		if (offScreenTime > 0) {
 			float width = Helpers.progress(offScreenTime, maxOffscreenTime) * 30;

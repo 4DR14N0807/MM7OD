@@ -9,7 +9,8 @@ public class PreLoadoutMenu : IMainMenu {
 		90,
 		110,
 		130,
-		150
+		150,
+		170
 	};
 	public IMainMenu prevMenu;
 	public string message;
@@ -20,14 +21,14 @@ public class PreLoadoutMenu : IMainMenu {
 
 	public PreLoadoutMenu(IMainMenu prevMenu) {
 		this.prevMenu = prevMenu;
-		selectY = Options.main.preferredCharacter;
+		selectY = 0;
 	}
 
 	public void update() {
-		Helpers.menuUpDown(ref selectY, 0, 4);
+		Helpers.menuUpDown(ref selectY, 0, 0);
 
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
-			if (selectY == 0) {
+			/*if (selectY == 0) {
 				Menu.change(new SelectWeaponMenu(this, false));
 			}
 			if (selectY == 1) {
@@ -41,6 +42,9 @@ public class PreLoadoutMenu : IMainMenu {
 			}
 			if (selectY == 4) {
 				Menu.change(new SelectSigmaWeaponMenu(this, false));
+			}*/
+			if (selectY == 0) {
+				Menu.change(new SelectRockWeaponMenu(this, false));
 			}
 		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
 			Menu.change(prevMenu);
@@ -57,13 +61,14 @@ public class PreLoadoutMenu : IMainMenu {
 			Global.sprites["cursor"].drawToHUD(0, startX - 10, 73 + (selectY * 20));
 		}
 
-		Fonts.drawText(FontType.Golden, "SELECT CHARACTER LOADOUT", Global.screenW * 0.5f, 20, Alignment.Center);
+		Fonts.drawText(FontType.BlueMenu, "SELECT CHARACTER LOADOUT", Global.screenW * 0.5f, 20, Alignment.Center);
 
-		Fonts.drawText(FontType.DarkBlue, "X Loadout", startX, optionPos[0], selected: selectY == 0);
-		Fonts.drawText(FontType.DarkBlue, "Zero Loadout", startX, optionPos[1], selected: selectY == 1);
-		Fonts.drawText(FontType.DarkBlue, "Vile Loadout", startX, optionPos[2], selected: selectY == 2);
-		Fonts.drawText(FontType.DarkBlue, "Axl Loadout", startX, optionPos[3], selected: selectY == 3);
-		Fonts.drawText(FontType.DarkBlue, "Sigma Loadout", startX, optionPos[4], selected: selectY == 4);
+		//Fonts.drawText(FontType.DarkBlue, "X Loadout", startX, optionPos[0], selected: selectY == 0);
+		//Fonts.drawText(FontType.DarkBlue, "Zero Loadout", startX, optionPos[1], selected: selectY == 1);
+		//Fonts.drawText(FontType.DarkBlue, "Vile Loadout", startX, optionPos[2], selected: selectY == 2);
+		//Fonts.drawText(FontType.DarkBlue, "Axl Loadout", startX, optionPos[3], selected: selectY == 3);
+		//Fonts.drawText(FontType.DarkBlue, "Sigma Loadout", startX, optionPos[4], selected: selectY == 4);
+		Fonts.drawText(FontType.Grey, "ROCKMAN LOADOUT", startX, optionPos[0], selected: selectY == 0);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 200, Alignment.Center);
 	}

@@ -248,7 +248,7 @@ public class ChillPIceProj : Projectile {
 			piece.ttl = 1f;
 		}
 
-		playSound("freezebreak2", sendRpc: true);
+		//playSound("freezebreak2", sendRpc: true);
 	}
 }
 
@@ -260,7 +260,7 @@ public class ChillPIceStatueProj : Projectile, IDamagable {
 	public ChillPIceStatueProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool sendRpc = false) :
 		base(weapon, pos, xDir, 0, 2, player, "chillp_proj_statue", 0, 0, netProjId, player.ownedByLocalPlayer) {
 		projId = (int)ProjIds.ChillPIcePenguin;
-		fadeSound = "iceBreak";
+		fadeSound = "";
 		shouldShieldBlock = false;
 		destroyOnHit = true;
 
@@ -386,7 +386,7 @@ public class ChillPIceBlowState : MaverickState {
 				new ShotgunIceProjCharged((maverick as ChillPenguin).iceWindWeapon, shootPos.Value, maverick.xDir, player, 1, true, player.getNextActorNetId(), rpc: true);
 				if (!soundOnce) {
 					soundOnce = true;
-					maverick.playSound("icyWind", sendRpc: true);
+					//maverick.playSound("icyWind", sendRpc: true);
 				}
 			}
 		}
@@ -483,7 +483,7 @@ public class ChillPBlizzardState : MaverickState {
 				float topY = Global.level.getTopScreenY(maverick.pos.y);
 				if (player.isPuppeteer() && player.currentMaverick == maverick) topY = maverick.pos.y - 80;
 				new ChillPBlizzardProj((maverick as ChillPenguin).blizzardWeapon, new Point(maverick.pos.x, topY), maverick.xDir, player, player.getNextActorNetId(), rpc: true);
-				maverick.playSound("chillpBlizzard", sendRpc: true);
+				//maverick.playSound("chillpBlizzard", sendRpc: true);
 			}
 			if (maverick.sprite.isAnimOver()) {
 				maverick.changeState(new MFall());
@@ -517,7 +517,7 @@ public class ChillPSlideState : MaverickState {
 
 		if (!soundOnce) {
 			soundOnce = true;
-			maverick.playSound("chillpSlide", sendRpc: true);
+			//maverick.playSound("chillpSlide", sendRpc: true);
 		}
 
 		slideTime += Global.spf;

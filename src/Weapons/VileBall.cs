@@ -94,7 +94,7 @@ public class VileBombProj : Projectile {
 		if (vel != null) this.vel = (Point)vel;
 		if (type == 0) {
 			fadeSprite = "explosion";
-			fadeSound = "explosion";
+			fadeSound = "";
 			useGravity = true;
 		} else {
 			projId = (int)ProjIds.VileBombSplit;
@@ -174,7 +174,7 @@ public class PeaceOutRollerProj : Projectile {
 			normal2.multiply(250);
 			destroySelf(fadeSprite);
 			split = true;
-			playSound("ballPOR", sendRpc: true);
+			//playSound("ballPOR", sendRpc: true);
 			new PeaceOutRollerProj(weapon, pos.clone(), xDir, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(), normal2, rpc: true);
 			new PeaceOutRollerProj(weapon, pos.clone(), xDir, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(), normal2.times(-1), rpc: true);
 			destroySelf();

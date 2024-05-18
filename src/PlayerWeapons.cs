@@ -133,7 +133,7 @@ public partial class Player {
 		if (!character.canChangeWeapons()) return;
 
 		if (isGridModeEnabled() && weapons.Count > 1) {
-			if (input.isHeldMenu(Control.WeaponRight)) {
+			if (input.isWeaponLeftOrRightHeld(this)) {
 				gridModeHeld = true;
 				if (input.isPressedMenu(Control.Up)) gridModePos.y--;
 				else if (input.isPressedMenu(Control.Down)) gridModePos.y++;
@@ -297,6 +297,19 @@ public partial class Player {
 				axl.zoomOut();
 			}
 		}
+
+		if (isRock) {
+			if (character.getChargeLevel() >= 2) {
+				newWeapon.shootTime = 0;
+			} else {
+				// Switching from laggy move (like tornado) to a fast one
+				if (oldWeapon.switchCooldown != null && oldWeapon.shootTime > 0) {
+					newWeapon.shootTime = Math.Max(newWeapon.shootTime, oldWeapon.switchCooldown.Value);
+				} else {
+					newWeapon.shootTime = Math.Max(newWeapon.shootTime, oldWeapon.shootTime);
+				}
+			}
+		}
 	}
 
 	public void weaponLeft() {
@@ -358,7 +371,11 @@ label:
 					if (hasArmArmor(3)) weapons.Add(new HyperBuster());
 					if (hasBodyArmor(2)) weapons.Add(new GigaCrush());
 					if (hasUltimateArmor()) weapons.Add(new NovaStrike(this));
-				} else if (Global.level.is1v1()) {
+				} else if (!Global.level.isTraining() && Options.main.useRandomLoadout) {
+					weapons = getRandomXLoadout().Select(wep => wep.clone()).ToList();
+				} 
+				
+				else if (Global.level.is1v1()) {
 					if (xArmor1v1 == 1) {
 						weapons.Add(new Buster());
 						weapons.Add(new Torpedo());
@@ -501,6 +518,18 @@ label:
 
 					}
 				}
+			} else if (isRock) {
+				if (Global.level.isTraining() && !Global.level.server.useLoadout) {
+					weapons = Weapon.getAllRockWeapons().Select(w => w.clone()).ToList();
+				}  else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomRockLoadout) {
+					weapons = getRandomRockLoadout().Select(wep => wep.clone()).ToList();
+				} else if (Global.level.is1v1()) {
+					weapons = Weapon.getAllMM7Weapons().Select(w => w.clone()).ToList();
+				}
+
+				  else {
+					weapons = loadout.rockLoadout.getWeaponsFromLoadout(this);
+				}
 			}
 		} else {
 			foreach (var weapon in Weapon.getAllSwitchableWeapons(loadout.axlLoadout)) {
@@ -519,6 +548,10 @@ label:
 			return new DoubleBullet();
 		}
 		return new AxlBullet((AxlBulletWeaponType)axlBulletType);
+	}
+
+	public bool hasBusterLoadout() {
+		return weapons.Any(w => w is RockBuster);
 	}
 
 	public void configureStaticWeapons() {
@@ -626,6 +659,25 @@ label:
 		weapons.RemoveAll(w => w is GigaCrush);
 	}
 
+	public void addSARocketPunch() {
+		if (!weapons.Any(w => w is SARocketPunch)) {
+			weapons.Add(new SARocketPunch());
+		}
+	}
+
+	public void removeSARocketPunch() {
+		if (weapon is SARocketPunch) {
+			weaponSlot = 0;
+		}
+		weapons.RemoveAll(w => w is SARocketPunch);
+	}
+
+	public void removeWeaponsButBuster() {
+		weaponSlot = 0;
+		weapons.RemoveAll(w => w is not RockBuster);
+		if (!weapons.Any(w => w is RockBuster)) weapons.Add(new RockBuster());
+	}
+
 	public void updateWeapons() {
 		foreach (var weapon in weapons) {
 			weapon.update();
@@ -633,5 +685,57 @@ label:
 				weapon.charLinkedUpdate(character, false);
 			}
 		}
+	}
+
+	//-------------------RANDOM LOADOUT FEATURE (VIA SETTINGS)--------------------------------
+
+	public static List<Weapon> getRandomXLoadout() {
+		Random slot0 = new Random(), slot1 = new Random(), slot2 = new Random();
+		bool hasRepeatedWeapons = true;
+		int[] weaponIndexes = new int[3];
+		var indices = new List<byte>();
+
+		while (hasRepeatedWeapons) {
+			weaponIndexes[0] = slot0.Next(0, 25);
+			weaponIndexes[1] = slot1.Next(0, 25);
+			weaponIndexes[2] = slot2.Next(0, 25);
+
+			if (weaponIndexes[0] != weaponIndexes[1] 
+				&& weaponIndexes[0] != weaponIndexes[2] 
+				&& weaponIndexes[1] != weaponIndexes[2]) hasRepeatedWeapons = false;
+		}
+
+		indices.Add((byte)weaponIndexes[0]);
+		indices.Add((byte)weaponIndexes[1]);
+		indices.Add((byte)weaponIndexes[2]);
+
+		return indices.Select(index => {
+			return Weapon.getAllXWeapons().Find(w => w.index == index).clone();
+		}).ToList();;
+	}
+
+	public static List<Weapon> getRandomRockLoadout() {
+		Random slot0 = new Random(), slot1 = new Random(), slot2 = new Random();
+		bool hasRepeatedWeapons = true;
+		int[] weaponIndexes = new int[3];
+		var indices = new List<byte>();
+
+		while (hasRepeatedWeapons) {
+			weaponIndexes[0] = slot0.Next(0, 9);
+			weaponIndexes[1] = slot1.Next(0, 9);
+			weaponIndexes[2] = slot2.Next(0, 9);
+
+			if (weaponIndexes[0] != weaponIndexes[1] 
+				&& weaponIndexes[0] != weaponIndexes[2] 
+				&& weaponIndexes[1] != weaponIndexes[2]) hasRepeatedWeapons = false;
+		}
+
+		indices.Add((byte)weaponIndexes[0]);
+		indices.Add((byte)weaponIndexes[1]);
+		indices.Add((byte)weaponIndexes[2]);
+
+		return indices.Select(index => {
+			return Weapon.getAllRockWeapons().Find(w => w.index == index).clone();
+		}).ToList();;
 	}
 }

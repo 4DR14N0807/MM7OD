@@ -55,7 +55,7 @@ public class ArmoredArmadillo : Maverick {
 			changeSpriteFromName(state.sprite, true);
 			if (playAnim) {
 				Anim.createGibEffect("armoreda_armorpiece", getCenterPos(), player, sendRpc: true);
-				playSound("explosion", sendRpc: true);
+				//playSound("explosion", sendRpc: true);
 			}
 		}
 	}
@@ -150,7 +150,7 @@ public class ArmoredArmadillo : Maverick {
 
 	private MaverickState getShootState(bool isAI) {
 		var shootState = new MShoot((Point pos, int xDir) => {
-			playSound("energyBall", sendRpc: true);
+			//playSound("energyBall", sendRpc: true);
 			new ArmoredAProj(projWeapon, pos, xDir, player, player.getNextActorNetId(), rpc: true);
 		}, null);
 		if (isAI) {
@@ -277,7 +277,7 @@ public class ArmoredAGuardChargeState : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		maverick.playSound("4earmoredaCharge", sendRpc: true);
+		//maverick.playSound("armoredaCharge", sendRpc: true);
 	}
 
 	public override void update() {
@@ -298,7 +298,7 @@ public class ArmoredAGuardReleaseState : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		maverick.playSound("armoredaRelease", sendRpc: true);
+		//maverick.playSound("armoredaRelease", sendRpc: true);
 	}
 
 	public override void update() {
@@ -341,7 +341,7 @@ public class ArmoredAZappedState : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		maverick.playSound("armoredaZap", sendRpc: true);
+		//maverick.playSound("armoredaZap", sendRpc: true);
 		pushDir = new Point(-maverick.xDir * 75, 0);
 		maverick.vel.y = -100;
 	}
@@ -457,7 +457,7 @@ public class ArmoredARollState : MaverickState {
 			bounceCount++;
 			rollDirTime = 0;
 			rollDir = newRollDir.Value;
-			maverick.playSound("armoredaCrash", sendRpc: true);
+			//maverick.playSound("armoredaCrash", sendRpc: true);
 			maverick.shakeCamera(sendRpc: true);
 		} else {
 			maverick.move(moveAmount, false);

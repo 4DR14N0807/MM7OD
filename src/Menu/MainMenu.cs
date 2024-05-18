@@ -6,18 +6,18 @@ using static SFML.Window.Keyboard;
 namespace MMXOnline;
 
 public class MainMenu : IMainMenu {
-	public const int startPos = 107;
+	public const int startPos = 119;
 	public const int yDistance = 13;
 
 	public int selectY;
 	public Point[] optionPos = {
-		new Point(90, startPos),
-		new Point(90, startPos + yDistance),
-		new Point(90, startPos + yDistance * 2),
-		new Point(90, startPos + yDistance * 3),
-		new Point(90, startPos + yDistance * 4),
-		new Point(90, startPos + yDistance * 5),
-		new Point(90, startPos + yDistance * 6)
+		new Point(122, startPos),
+		new Point(122, startPos + yDistance),
+		new Point(122, startPos + yDistance * 2),
+		new Point(122, startPos + yDistance * 3),
+		new Point(122, startPos + yDistance * 4),
+		new Point(122, startPos + yDistance * 5),
+		new Point(122, startPos + yDistance * 6)
 	};
 
 	public float blinkTime = 0;
@@ -178,8 +178,9 @@ public class MainMenu : IMainMenu {
 	}
 
 	public void render() {
-		float startX = 75;
+		float startX = Global.screenW / 2;
 
+		/*
 		string selectionImage = "";
 		if (selectY == 0) selectionImage = "joinserver";
 		else if (selectY == 1) selectionImage = "hostserver";
@@ -188,20 +189,21 @@ public class MainMenu : IMainMenu {
 		else if (selectY == 4) selectionImage = "controls";
 		else if (selectY == 5) selectionImage = "options";
 		else if (selectY == 6) selectionImage = "quit";
-
+		*/
 		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0);
 		DrawWrappers.DrawTextureHUD(Global.textures["mainmenutitle"], 0, 0);
-		DrawWrappers.DrawTextureHUD(Global.textures["cursor"], startX - 10, startPos - 2 + (selectY * yDistance));
-		DrawWrappers.DrawTextureHUD(Global.textures[selectionImage], 208, 107);
-		DrawWrappers.DrawTextureHUD(Global.textures["mainmenubox"], 199, 98);
+		Global.sprites["cursor"].drawToHUD(0, startX - 53, startPos + 4 + (selectY * yDistance));
+		//DrawWrappers.DrawTextureHUD(Global.textures["cursor"], startX - 10, startPos - 2 + (selectY * yDistance));
+		//DrawWrappers.DrawTextureHUD(Global.textures[selectionImage], 208, 107);
+		//DrawWrappers.DrawTextureHUD(Global.textures["mainmenubox"], 199, 98);
 
-		Fonts.drawText(FontType.BlueMenu, "Join Match", startX, optionPos[0].y, selected: selectY == 0);
-		Fonts.drawText(FontType.BlueMenu, "Create Match", startX, optionPos[1].y, selected: selectY == 1);
-		Fonts.drawText(FontType.BlueMenu, "VS. CPU", startX, optionPos[2].y, selected: selectY == 2);
-		Fonts.drawText(FontType.BlueMenu, "Loadout", startX, optionPos[3].y, selected: selectY == 3);
-		Fonts.drawText(FontType.BlueMenu, "Controls", startX, optionPos[4].y, selected: selectY == 4);
-		Fonts.drawText(FontType.BlueMenu, "Settings", startX, optionPos[5].y, selected: selectY == 5);
-		Fonts.drawText(FontType.BlueMenu, "Quit", startX, optionPos[6].y, selected: selectY == 6);
+		Fonts.drawText(FontType.Grey, "JOIN MATCH", startX, optionPos[0].y, alignment: Alignment.Center, selected: selectY == 0);
+		Fonts.drawText(FontType.Grey, "CREATE MATCH", startX, optionPos[1].y, alignment: Alignment.Center,  selected: selectY == 1);
+		Fonts.drawText(FontType.Grey, "VS. CPU", startX, optionPos[2].y, alignment: Alignment.Center, selected: selectY == 2);
+		Fonts.drawText(FontType.Grey, "LOADOUT", startX, optionPos[3].y, alignment: Alignment.Center, selected: selectY == 3);
+		Fonts.drawText(FontType.Grey, "CONTROLS", startX, optionPos[4].y, alignment: Alignment.Center, selected: selectY == 4);
+		Fonts.drawText(FontType.Grey, "SETTINGS", startX, optionPos[5].y, alignment: Alignment.Center, selected: selectY == 5);
+		Fonts.drawText(FontType.Grey, "QUIT", startX, optionPos[6].y, alignment: Alignment.Center, selected: selectY == 6);
 
 		Fonts.drawTextEX(
 			FontType.Grey, "[MUP]/[MDOWN]: Change selection, [OK]: Choose",
@@ -211,38 +213,26 @@ public class MainMenu : IMainMenu {
 		if (state == 0) {
 			float top = Global.screenH * 0.4f;
 
-			//DrawWrappers.DrawRect(
-			//	5, top - 20, Global.screenW - 5, top + 60, true, new Color(0, 0, 0), 0, ZIndex.HUD, false
-			//);
-			DrawWrappers.DrawRect(
-				5, 5, Global.screenW - 5, Global.screenH - 5,
-				true, new Color(0, 0, 0), 0, ZIndex.HUD, false
-			);
-			Fonts.drawText(
-				FontType.DarkBlue, "Type in a multiplayer name", Global.screenW / 2, top, alignment: Alignment.Center
-			);
+			//DrawWrappers.DrawRect(5, top - 20, Global.screenW - 5, top + 60, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
+			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
+			Fonts.drawText(FontType.Grey, "Type in a multiplayer name", Global.screenW / 2, top, Alignment.Center);
 
 			float xPos = Global.screenW * 0.33f;
-			Fonts.drawText(FontType.DarkGreen, playerName, xPos, 20 + top, alignment: Alignment.Left);
+			Fonts.drawText(FontType.Grey, playerName, xPos, 20 + top, Alignment.Left);
 			if (blinkTime >= 0.5f) {
-				int width = Fonts.measureText(FontType.DarkGreen, playerName);
-				Fonts.drawText(FontType.DarkGreen, "|", xPos + width + 3, 20 + top, alignment: Alignment.Left);
+				//float width = Helpers.measureText(TCat.Default, playerName).x;
+				float width = Fonts.measureText(FontType.Grey, playerName);
+				Fonts.drawText(FontType.Grey, "<", xPos + width + 3, 20 + top, Alignment.Left);
 			}
 
-			Fonts.drawText(
-				FontType.Grey,
-				"Press Enter to continue", Global.screenW / 2, 40 + top, alignment: Alignment.Center
-			);
+			Fonts.drawText(FontType.Grey, "Press Enter to continue", Global.screenW / 2, 40 + top, Alignment.Center);                                           
 		} else if (state == 1) {
 			float top = Global.screenH * 0.25f;
-			DrawWrappers.DrawRect(
-				5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false
-			);
-			Fonts.drawText(
-				FontType.Blue, "Loading...", Global.screenW / 2, top, alignment: Alignment.Center
-			);
+			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
+			Fonts.drawText(FontType.Grey, "Loading...", Global.screenW / 2, top, Alignment.Center);
 		} else {
-			string versionText = "v" + Global.version + " " + Global.subVersionShortName + " " + Global.shortForkName;
+			//string versionText = "v" + Global.version + " " + Global.subVersionShortName + " " + Global.shortForkName;
+			string versionText = Global.shortForkName + " " + Global.versionName;
 			/*
 			if (Helpers.compareVersions(Global.version, Global.serverVersion) == -1 &&
 				Global.serverVersion != decimal.MaxValue
@@ -252,10 +242,10 @@ public class MainMenu : IMainMenu {
 			*/
 			int offset = 2;
 			if (Global.checksum != Global.prodChecksum) {
-				Fonts.drawText(FontType.DarkPurple, Global.CRC32Checksum, 2, offset);
+				Fonts.drawText(FontType.LigthGrey, Global.CRC32Checksum, 2, offset + 9);
 				offset += 10;
 			}
-			Fonts.drawText(FontType.DarkBlue, versionText, 2, offset);
+			Fonts.drawText(FontType.LigthGrey, versionText, 2, 2);
 
 		}
 	}

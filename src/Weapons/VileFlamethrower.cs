@@ -111,7 +111,7 @@ public class FlamethrowerState : CharState {
 				return;
 			}
 			shootTime = 0;
-			character.playSound("flamethrower");
+			//character.playSound("flamethrower");
 			new FlamethrowerProj(player.vileFlamethrowerWeapon, character.getPOIPos(shootPOI), character.xDir, false, player, player.getNextActorNetId(), sendRpc: true);
 		}
 

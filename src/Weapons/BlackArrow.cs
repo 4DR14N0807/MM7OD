@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class BlackArrow : AxlWeapon {
 	public BlackArrow(int altFire) : base(altFire) {
-		shootSounds = new List<string>() { "blackArrow", "blackArrow", "blackArrow", "blackArrow" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.4f;
 		altFireCooldown = 0.8f;
 		index = (int)WeaponIds.BlackArrow;
@@ -111,7 +111,7 @@ public class BlackArrowProj : Projectile {
 			if (getHeadshotVictim(owner, out IDamagable victim, out Point? hitPoint)) {
 				damager.applyDamage(victim, false, weapon, this, projId, overrideDamage: damager.damage * Damager.headshotModifier);
 				damager.damage = 0;
-				playSound("hurt");
+				//playSound("hurt");
 				destroySelf();
 				return;
 			}

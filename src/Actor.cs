@@ -738,7 +738,7 @@ public partial class Actor : GameObject {
 				underwaterTime += Global.spf;
 				if (chr != null) {
 					bubbleTime += Global.spf;
-					if (bubbleTime > 1) {
+					if (bubbleTime > 2) {
 						bubbleTime = 0;
 						new BubbleAnim(chr.getHeadPos() ?? chr.getCenterPos(), "bubbles");
 					}
@@ -1106,11 +1106,11 @@ public partial class Actor : GameObject {
 		if (drawHealText && ownedByLocalPlayer) {
 			float reportAmount = Helpers.clampMax(healAmount, maxHealth - currentHealth);
 			if (reportAmount == 0) {
-				bool hasSubtankCapacity = false;
-				if (this is Character chr && chr.player.hasSubtankCapacity()) hasSubtankCapacity = true;
-				if (this is Maverick maverick && maverick.player.hasSubtankCapacity()) hasSubtankCapacity = true;
-				if (hasSubtankCapacity) {
-					RPC.playSound.sendRpc("subtankFill", netId);
+				bool hasETankCapacity = false;
+				if (this is Character chr && chr.player.hasETankCapacity()) hasETankCapacity = true;
+				if (this is Maverick maverick && maverick.player.hasETankCapacity()) hasETankCapacity = true;
+				if (hasETankCapacity) {
+					RPC.playSound.sendRpc("subtank_fill", netId);
 				}
 			} else {
 				healer.creditHealing(reportAmount);
@@ -1369,6 +1369,7 @@ public partial class Actor : GameObject {
 				BusterZero => "dzero",
 				Vile => "vile",
 				Axl => "axl",
+				Rock => "rock",
 				CmdSigma => "sigma",
 				NeoSigma => "neosigma",
 				Doppma => "doppma",
@@ -1458,7 +1459,7 @@ public partial class Actor : GameObject {
 
 		Anim.createGibEffect("shotgun_ice_break", pos.Value, player, sendRpc: sendRpc);
 
-		playSound("iceBreak", sendRpc: sendRpc);
+		//playSound("iceBreak", sendRpc: sendRpc);
 	}
 
 	public void updateProjectileCooldown() {

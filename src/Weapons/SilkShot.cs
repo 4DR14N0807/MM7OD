@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class SilkShot : Weapon {
 	public SilkShot() : base() {
-		shootSounds = new List<string>() { "silkShot", "silkShot", "silkShot", "silkShotCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.75f;
 		index = (int)WeaponIds.SilkShot;
 		weaponBarBaseIndex = 11;
@@ -28,7 +28,7 @@ public class SilkShotProj : Projectile {
 	bool splitOnce;
 	public SilkShotProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) : base(weapon, pos, xDir, 200, 2, player, "silkshot_proj", 0, 0, netProjId, player.ownedByLocalPlayer) {
 		fadeSprite = "explosion";
-		fadeSound = "explosion";
+		fadeSound = "";
 		useGravity = true;
 		vel.y = -100;
 		projId = (int)ProjIds.SilkShot;
@@ -84,7 +84,7 @@ public class SilkShotProjCharged : Projectile {
 	bool splitOnce;
 	public SilkShotProjCharged(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) : base(weapon, pos, xDir, 200, 4, player, "silkshot_proj_charged", Global.defFlinch, 0, netProjId, player.ownedByLocalPlayer) {
 		fadeSprite = "explosion";
-		fadeSound = "silkShotChargedExplosion";
+		fadeSound = "";
 		useGravity = true;
 		vel.y = -100;
 		projId = (int)ProjIds.SilkShotCharged;

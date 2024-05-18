@@ -83,8 +83,8 @@ public class Axl : Character {
 		player, x, y, xDir, isVisible,
 		netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
+		iceGattlingSound = new LoopingSound("", "", "", this);
 		charId = CharIds.Axl;
-		iceGattlingSound = new LoopingSound("iceGattlingLoopStart", "iceGattlingLoopStop", "iceGattlingLoop", this);
 
 		muzzleFlash = new Anim(new Point(), "axl_pistol_flash", xDir, null, false);
 		muzzleFlash.visible = false;
@@ -347,7 +347,7 @@ public class Axl : Character {
 				weaponHealTime = 0;
 				weaponHealAmount--;
 				player.weapon.ammo = Helpers.clampMax(player.weapon.ammo + 1, player.weapon.maxAmmo);
-				playSound("heal", forcePlay: true);
+				//playSound("heal", forcePlay: true);
 			}
 		}
 
@@ -450,7 +450,7 @@ public class Axl : Character {
 				} */
 				if (isCharging() && getChargeLevel() >= 3 && isStealthMode()) {
 					stingChargeTime = 0;
-					playSound("stingCharge", sendRpc: true);
+					//playSound("stingCharge", sendRpc: true);
 				} else if (isCharging()) {
 					if (player.weapon is AxlBullet || player.weapon is DoubleBullet) {
 						recoilTime = 0.2f;
@@ -486,7 +486,7 @@ public class Axl : Character {
 								weapon.ammo = weapon.maxAmmo;
 							}
 							stingChargeTime = 12;
-							playSound("stingCharge", sendRpc: true);
+							//playSound("stingCharge", sendRpc: true);
 						}
 					}
 				}
@@ -950,7 +950,7 @@ public class Axl : Character {
 		axlCursorTarget = getLockOnTarget();
 
 		if (axlCursorTarget != null && prevTarget == null && player.isMainPlayer && targetSoundCooldown == 0) {
-			Global.playSound("axlTarget", false);
+			// Global.playSound("axlTarget", false);
 			targetSoundCooldown = Global.spf;
 		}
 
@@ -1231,6 +1231,7 @@ public class Axl : Character {
 				deductLabelY(labelKillFeedIconOffY);
 			}
 		}
+
 
 		if (player.isMainPlayer && !player.isDead) {
 			if (Options.main.aimKeyToggle) {

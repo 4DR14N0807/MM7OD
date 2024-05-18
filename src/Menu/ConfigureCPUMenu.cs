@@ -59,7 +59,7 @@ public class ConfigureCPUMenu : IMainMenu {
 
 		for (int i = 0; i < savedMatchSettings.extraCpuCharData.cpuDatas.Count; i++) {
 			var cpuData = savedMatchSettings.extraCpuCharData.cpuDatas[i];
-			cpuData.uiSelectedCharIndex = Helpers.clamp(cpuData.uiSelectedCharIndex, 0, charSelections.Count - 1);
+			cpuData.uiSelectedCharIndex = Helpers.clamp(cpuData.uiSelectedCharIndex, 5, charSelections.Count - 1);
 
 			bool forceEnable = (isOffline && i == 0);
 			int iCopy = i;
@@ -68,18 +68,18 @@ public class ConfigureCPUMenu : IMainMenu {
 			menuOptions.Add(
 				new MenuOption(60, currentY += lineH,
 					() => {
-						Helpers.menuLeftRightInc(ref cpuData.uiSelectedCharIndex, 0, charSelections.Count - 1);
+						Helpers.menuLeftRightInc(ref cpuData.uiSelectedCharIndex, 5, 5);
 						cpuData.charNum = charSelections[cpuData.uiSelectedCharIndex].mappedCharNum;
 						cpuData.armorSet = charSelections[cpuData.uiSelectedCharIndex].mappedCharArmor;
 						cpuData.isRandom = charSelections[cpuData.uiSelectedCharIndex].name == "Random";
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Blue, "CPU" + (iCopy + 1).ToString(),
+							FontType.Grey, "CPU" + (iCopy + 1).ToString(),
 							pos.x - 32, pos.y
 						);
 						Fonts.drawText(
-							FontType.Blue, "Character: " + charSelections[cpuData.uiSelectedCharIndex].name,
+							FontType.Grey, "Character: " + charSelections[cpuData.uiSelectedCharIndex].name,
 							pos.x + 14, pos.y, selected: index == selectArrowPosY
 						);
 					})
@@ -100,7 +100,7 @@ public class ConfigureCPUMenu : IMainMenu {
 								allianceStr = GameMode.getTeamName(cpuData.alliance);
 							}
 							Fonts.drawText(
-								FontType.Blue, "Team: " + allianceStr, pos.x, pos.y,
+								FontType.Grey, "Team: " + allianceStr, pos.x, pos.y,
 								selected: index == selectArrowPosY
 							);
 						})
@@ -128,12 +128,14 @@ public class ConfigureCPUMenu : IMainMenu {
 		}
 
 		Fonts.drawText(
-			FontType.Yellow, "Configure CPU players",
+			FontType.BlueMenu, "Configure CPU players",
 			Global.halfScreenW, 20, alignment: Alignment.Center
 		);
-		DrawWrappers.DrawTextureHUD(
+		/*DrawWrappers.DrawTextureHUD(
 			Global.textures["cursor"], menuOptions[0].pos.x + 6, menuOptions[selectArrowPosY].pos.y - 2
-		);
+		);*/
+
+		Global.sprites["cursor"].drawToHUD(0, menuOptions[0].pos.x + 6, menuOptions[selectArrowPosY].pos.y + 4);
 
 		int i = 0;
 		foreach (var menuOption in menuOptions) {

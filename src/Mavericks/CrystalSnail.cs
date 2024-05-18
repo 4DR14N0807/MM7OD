@@ -211,7 +211,7 @@ public class CrystalSnailShell : Actor {
 			vel = actor.deltaPos.times(1 / Global.spf);
 			if (vel.y >= -50) vel.y = -MathF.Abs(vel.x);
 			grounded = false;
-			playSound("csnailShellBounce", sendRpc: true);
+			//playSound("csnailShellBounce", sendRpc: true);
 		} else if (other.gameObject is Wall) {
 			bounces++;
 			if (bounces >= 3) {
@@ -230,7 +230,7 @@ public class CrystalSnailShell : Actor {
 				if (vel.y < -300) vel.y = -300;
 				incPos(new Point(0, 5 * MathF.Sign(vel.y)));
 			}
-			playSound("csnailShellBounce", sendRpc: true);
+			//playSound("csnailShellBounce", sendRpc: true);
 		}
 	}
 }
@@ -292,7 +292,7 @@ public class CSnailShootState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("csnailShoot", sendRpc: true);
+			//maverick.playSound("csnailShoot", sendRpc: true);
 			new CSnailCrystalHunterProj(
 				maverick.weapon, shootPos.Value, maverick.xDir,
 				new Point(maverick.xDir, -1),
@@ -368,7 +368,7 @@ public class CSnailShellState : MaverickState {
 			if (exhaustTime == 0) {
 				exhaustTime = 0.15f;
 				var anim = new Anim(maverick.pos, "csnail_shell_flame", maverick.xDir, player.getNextActorNetId(), true, sendRpc: true);
-				maverick.playSound("csnailFlame", sendRpc: true);
+				//maverick.playSound("csnailFlame", sendRpc: true);
 				anim.setzIndex(maverick.zIndex - 1);
 			}
 		}
@@ -443,7 +443,7 @@ public class CSnailShellSpinDashState : MaverickState {
 			Helpers.decrementTime(ref exhaustTime);
 			if (exhaustTime == 0) {
 				exhaustTime = 0.1f;
-				maverick.playSound("csnailFlame", sendRpc: true);
+				//maverick.playSound("csnailFlame", sendRpc: true);
 				var anim = new Anim(exhaustPos, "csnail_shell_flame", maverick.xDir, player.getNextActorNetId(), true, sendRpc: true);
 				anim.setzIndex(maverick.zIndex - 1);
 			}
@@ -514,7 +514,7 @@ public class CSnailShellSpinSlowState : MaverickState {
 		}
 
 		if (soundTime == 0) {
-			maverick.playSound("csnailSlowSpin", sendRpc: true);
+			//maverick.playSound("csnailSlowSpin", sendRpc: true);
 			soundTime = 0.22f;
 		}
 
@@ -571,7 +571,7 @@ public class CSnailTimeStopState : MaverickState {
 
 		if (!soundOnce) {
 			soundOnce = true;
-			maverick.playSound("csnailSpecial", sendRpc: true);
+			//maverick.playSound("csnailSpecial", sendRpc: true);
 		}
 
 		var cs = maverick as CrystalSnail;
@@ -584,7 +584,7 @@ public class CSnailTimeStopState : MaverickState {
 			}
 
 			cs.chargedCrystalHunter = new CrystalHunterCharged(shootPos.Value, player, player.getNextActorNetId(), player.ownedByLocalPlayer, overrideTime: overrideTime, sendRpc: true);
-			maverick.playSound("csnailSlowStart", sendRpc: true);
+			//maverick.playSound("csnailSlowStart", sendRpc: true);
 		}
 
 		if (maverick.isAnimOver()) {
@@ -623,7 +623,7 @@ public class CSnailWeaknessState : MaverickState {
 		if (!once) {
 			Helpers.decrementTime(ref soundTime);
 			if (soundTime == 0) {
-				maverick.playSound("csnailWeakness", sendRpc: true);
+				//maverick.playSound("csnailWeakness", sendRpc: true);
 				soundTime = 0.290f;
 			}
 

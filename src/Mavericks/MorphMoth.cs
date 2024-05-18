@@ -38,12 +38,12 @@ public class MorphMoth : Maverick {
 		base.update();
 
 		if (!isUnderwater()) {
-			spriteFrameToSounds["morphm_fly/0"] = "morphmFlap";
-			spriteFrameToSounds["morphm_fly/4"] = "morphmFlap";
-			spriteFrameToSounds["morphm_fly/8"] = "morphmFlap";
-			spriteFrameToSounds["morphm_fly_fall/0"] = "morphmFlap";
-			spriteFrameToSounds["morphm_fly_fall/4"] = "morphmFlap";
-			spriteFrameToSounds["morphm_fly_fall/8"] = "morphmFlap";
+			//spriteFrameToSounds["morphm_fly/0"] = "morphmFlap";
+			//spriteFrameToSounds["morphm_fly/4"] = "morphmFlap";
+			//spriteFrameToSounds["morphm_fly/8"] = "morphmFlap";
+			//spriteFrameToSounds["morphm_fly_fall/0"] = "morphmFlap";
+			//spriteFrameToSounds["morphm_fly_fall/4"] = "morphmFlap";
+			//spriteFrameToSounds["morphm_fly_fall/8"] = "morphmFlap";
 		} else {
 			spriteFrameToSounds.Clear();
 		}

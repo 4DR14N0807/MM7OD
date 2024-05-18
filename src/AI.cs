@@ -240,6 +240,7 @@ public class AI {
 		}
 
 		if (framesChargeHeld > 0) {
+			player.press(Control.Shoot);
 			if (character.chargeTime < maxChargeTime) {
 				//console.log("HOLD");
 				player.press(Control.Shoot);
@@ -335,6 +336,7 @@ public class AI {
 				}
 			} else {
 				if (aiState is FindPlayer) {
+					dashTime = 0.5f;
 					changeState(new AimAtPlayer(character));
 				}
 			}

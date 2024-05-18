@@ -223,7 +223,7 @@ public class MagnaCShootState : MaverickState {
 		Point? shootPos3 = maverick.getFirstPOI(2);
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("magnacShoot", sendRpc: true);
+			//maverick.playSound("magnacShoot", sendRpc: true);
 			new MagnaCShurikenProj(maverick.weapon, shootPos.Value, maverick.xDir, new Point(0, -maverick.getYMod()), player, player.getNextActorNetId(), sendRpc: true);
 			new MagnaCShurikenProj(maverick.weapon, shootPos2.Value, maverick.xDir, new Point(maverick.xDir, -maverick.getYMod()), player, player.getNextActorNetId(), sendRpc: true);
 			new MagnaCShurikenProj(maverick.weapon, shootPos3.Value, maverick.xDir, new Point(maverick.xDir, 0), player, player.getNextActorNetId(), sendRpc: true);
@@ -380,7 +380,7 @@ public class MagnaCMagnetMineParent : Actor {
 		Point destPos = maverick.pos.add(originOffset);
 		moveToPos(destPos, speed);
 		if (pos.distanceTo(destPos) < speed * Global.spf * 2 && lerpProgress < 0.25f) {
-			maverick.playSound("magnacConnect", sendRpc: true);
+			//maverick.playSound("magnacConnect", sendRpc: true);
 			maverick.setNoTail(false);
 			destroySelf();
 		}
@@ -409,7 +409,7 @@ public class MagnaCMagnetMineState : MaverickState {
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
 			magnac.magnetMineParent = new MagnaCMagnetMineParent(shootPos.Value, magnac, true);
-			sound = maverick.playSound("magnacMagnetMine", sendRpc: true);
+			//sound = maverick.playSound("magnacMagnetMine", sendRpc: true);
 		}
 
 		if (magnac.magnetMineParent != null) {
@@ -461,7 +461,7 @@ public class MagnaCTeleportState : MaverickState {
 	Actor clone;
 	bool inverted;
 	public MagnaCTeleportState() : base("teleport_out", "") {
-		enterSound = "magnacTeleportOut";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -539,7 +539,7 @@ public class MagnaCTeleportState : MaverickState {
 					if (player.isTagTeam()) Global.level.snapCamPos(player.character.getCamCenterPos(), prevCamPos);
 					maverick.xDir = clone.xDir;
 				}
-				maverick.playSound("magnacTeleportIn", sendRpc: true);
+				//maverick.playSound("magnacTeleportIn", sendRpc: true);
 			}
 		} else if (state == 1) {
 			if (maverick.isAnimOver()) {
@@ -634,7 +634,7 @@ public class MagnaCMagnetPullState : MaverickState {
 		}
 
 		if (proj == null && maverick.getFirstPOI() != null) {
-			pullSound = maverick.playSound("magnacPull", sendRpc: true);
+			//pullSound = maverick.playSound("magnacPull", sendRpc: true);
 			proj = new MagnaCMagnetPullProj(maverick.weapon, maverick.getFirstPOI().Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 		}
 
@@ -716,7 +716,7 @@ public class MagnaCDrainState : MaverickState {
 		soundTime += Global.spf;
 		if (soundTime > 1f) {
 			soundTime = 0;
-			maverick.playSound("magnacDrain", sendRpc: true);
+			//maverick.playSound("magnacDrain", sendRpc: true);
 		}
 
 		if (stateTime > 2f) {

@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class BlastLauncher : AxlWeapon {
 	public BlastLauncher(int altFire) : base(altFire) {
-		shootSounds = new List<string>() { "grenadeShoot", "grenadeShoot", "grenadeShoot", "rocketShoot" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		index = (int)WeaponIds.BlastLauncher;
 		weaponBarBaseIndex = 29;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -75,7 +75,7 @@ public class GrenadeProj : Projectile, IDamagable {
 		}
 
 		if (type == 1) {
-			fadeSound = "explosion";
+			fadeSound = "";
 			fadeSprite = "explosion";
 		}
 
@@ -189,7 +189,7 @@ public class GrenadeProj : Projectile, IDamagable {
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
 
 	public void detonate() {
-		playSound("detonate", sendRpc: true);
+		//playSound("detonate", sendRpc: true);
 		new GrenadeExplosionProj(
 			weapon, pos, xDir, player, type, target, Math.Sign(vel.x), player.getNextActorNetId()
 		);
@@ -215,7 +215,7 @@ public class GrenadeExplosionProj : Projectile {
 		this.type = type;
 		destroyOnHit = false;
 		projId = (int)ProjIds.BlastLauncherSplash;
-		playSound("grenadeExplode");
+		//playSound("grenadeExplode");
 		shouldShieldBlock = false;
 		rands = new List<int>();
 		for (int i = 0; i < 8; i++) {
@@ -363,7 +363,7 @@ public class GreenSpinnerExplosionProj : Projectile {
 		this.directHit = directHit;
 		this.directHitXDir = directHitXDir;
 		destroyOnHit = false;
-		playSound("rocketExplode");
+		//playSound("rocketExplode");
 		projId = (int)ProjIds.GreenSpinnerSplash;
 		shouldShieldBlock = false;
 		if (ownedByLocalPlayer) {

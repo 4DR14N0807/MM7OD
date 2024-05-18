@@ -55,7 +55,7 @@ public class Buster : Weapon {
 	}
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		string shootSound = "buster";
+		string shootSound = "";
 		if (player.character is not MegamanX mmx) {
 			return;
 		}
@@ -64,10 +64,10 @@ public class Buster : Weapon {
 				_ when (
 						mmx.stockedCharge
 				) => "",
-				0 => "buster",
-				1 => "buster2",
-				2 => "buster3",
-				3 => "buster4",
+				0 => "",
+				1 => "",
+				2 => "",
+				3 => "",
 				_ => ""
 			};
 		if (player.hasArmArmor(ArmorId.Giga)) {
@@ -75,9 +75,9 @@ public class Buster : Weapon {
 				_ when (
 					mmx.stockedCharge
 				) => "",
-				0 => "buster",
-				1 => "buster2X2",
-				2 => "buster3X2",
+				0 => "",
+				1 => "",
+				2 => "",
 				3 => "",
 				_ => shootSound
 			};
@@ -89,10 +89,10 @@ public class Buster : Weapon {
 				_ when (
 					mmx.stockedX3Buster
 				) => "",
-				0 => "busterX3",
-				1 => "buster2X3",
-				2 => "buster3X3",
-				3 => "buster3X3",
+				0 => "",
+				1 => "",
+				2 => "",
+				3 => "",
 				_ => shootSound
 			};
 		}
@@ -112,7 +112,7 @@ public class Buster : Weapon {
 		if (isHyperX && chargeLevel > 0) {
 			new BusterUnpoProj(this, pos, xDir, player, netProjId);
 			new Anim(pos, "buster_unpo_muzzle", xDir, null, true);
-			shootSound = "buster2";
+			shootSound = "";
 		} else if (mmx.stockedCharge) {
 			if (player.ownedByLocalPlayer) {
 				player.character.changeState(new X2ChargeShot(1), true);
@@ -133,7 +133,7 @@ public class Buster : Weapon {
 				} else {
 					new Anim(pos.clone(), "buster4_muzzle_flash", xDir, null, true);
 					new BusterPlasmaProj(this, pos, xDir, player, netProjId);
-					shootSound = "plasmaShot";
+					shootSound = "";
 				}
 			} else if (player.hasArmArmor(3)) {
 				if (player.ownedByLocalPlayer) {
@@ -447,19 +447,19 @@ public class X2ChargeShot : CharState {
 					player.weapon, character.getShootPos(), character.getShootXDir(), 1,
 					player, player.getNextActorNetId(), rpc: true
 				);
-				character.playSound("buster4X2", sendRpc: true);
+				//character.playSound("buster4X2", sendRpc: true);
 			} else if (type == 1) {
 				new Buster3Proj(
 					player.weapon, character.getShootPos(), character.getShootXDir(), 2,
 					player, player.getNextActorNetId(), rpc: true
 				);
-				character.playSound("buster4X2", sendRpc: true);
+				//character.playSound("buster4X2", sendRpc: true);
 			} else if (type == 2) {
 				new BusterPlasmaProj(
 					player.weapon, character.getShootPos(), character.getShootXDir(),
 					player, player.getNextActorNetId(), rpc: true
 				);
-				character.playSound("plasmaShot", sendRpc: true);
+				//character.playSound("plasmaShot", sendRpc: true);
 			}
 		}
 		if (character.isAnimOver()) {
@@ -553,21 +553,22 @@ public class X3ChargeShot : CharState {
 						3, player, player.getNextActorNetId(), rpc: true
 					);
 					if (!(player.weapon is HyperBuster)) {
-						character.playSound("buster3X3", sendRpc: true);
+						//character.playSound("buster3X3", sendRpc: true);
 					}
+
 				} else {
 					new Anim(shootPos, "buster4_muzzle_flash", shootDir, null, true);
 					new BusterPlasmaProj(
 						player.weapon, shootPos, shootDir,
 						player, player.getNextActorNetId(), rpc: true
 					);
-					character.playSound("plasmaShot", sendRpc: true);
+					//character.playSound("plasmaShot", sendRpc: true);
 				}
 			} else {
 				if (hyperBusterWeapon != null) {
 					hyperBusterWeapon.ammo -= hyperBusterWeapon.getChipFactoredAmmoUsage(player);
 				}
-				character.playSound("buster3X3", sendRpc: true);
+				//character.playSound("buster3X3", sendRpc: true);
 				float xDir = character.getShootXDir();
 				new BusterX3Proj2(
 					player.weapon, character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 0,

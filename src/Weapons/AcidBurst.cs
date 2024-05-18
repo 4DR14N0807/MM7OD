@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class AcidBurst : Weapon {
 	public AcidBurst() : base() {
-		shootSounds = new List<string>() { "acidBurst", "acidBurst", "acidBurst", "acidBurst" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.5f;
 		index = (int)WeaponIds.AcidBurst;
 		weaponBarBaseIndex = 17;
@@ -46,7 +46,7 @@ public class AcidBurstProj : Projectile {
 		maxTime = 1.5f;
 		projId = (int)ProjIds.AcidBurst;
 		vel = new Point(xDir * 100, -200);
-		fadeSound = "acidBurst";
+		fadeSound = "";
 		checkUnderwater();
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
@@ -124,7 +124,7 @@ public class AcidBurstProjCharged : Projectile {
 		maxTime = 4f;
 		projId = (int)ProjIds.AcidBurstCharged;
 		useGravity = true;
-		fadeSound = "acidBurst";
+		fadeSound = "";
 		if (type == 0) {
 			vel = new Point(xDir * 75, -270);
 		} else if (type == 1) {
@@ -167,7 +167,7 @@ public class AcidBurstProjCharged : Projectile {
 			if (vel.y < -300) vel.y = -300;
 			incPos(new Point(0, 5 * MathF.Sign(vel.y)));
 		}
-		playSound("acidBurst", sendRpc: true);
+		//playSound("acidBurst", sendRpc: true);
 	}
 
 	bool acidSplashOnce;

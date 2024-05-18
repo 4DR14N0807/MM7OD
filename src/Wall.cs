@@ -368,7 +368,7 @@ public class CrackedWall : Actor, IDamagable {
 		foreach (var poi in sprite.frames[0].POIs) {
 			new Anim(pos.addxy(poi.x, poi.y), "explosion", 1, null, true);
 		}
-		playSound("explosion");
+		//playSound("explosion");
 
 		if (!string.IsNullOrEmpty(gibSprite)) {
 			Point centerPos = pos.add(Point.average(sprite.frames[0].POIs));

@@ -49,7 +49,7 @@ public enum TCat {
 
 public enum WeaponIds {
 	// DO NOT change the order of these X weapons
-	Buster,
+	Buster = 500,
 	Torpedo,
 	Sting,
 	RollingShield,
@@ -58,6 +58,7 @@ public enum WeaponIds {
 	ElectricSpark,
 	Boomerang,
 	ShotgunIce,
+
 	CrystalHunter,
 	BubbleSplash,
 	SilkShot,
@@ -74,6 +75,7 @@ public enum WeaponIds {
 	GravityWell,
 	FrostShield,
 	TunnelFang,
+	ShotgunIceAlt,
 	GigaCrush,
 	ItemTracer,
 	XSaber,
@@ -86,8 +88,11 @@ public enum WeaponIds {
 	UPParry,
 	NovaStrike,
 	X6Saber,
+	
 
 	// DO NOT CHANGE THE ORDER OF THESE SIGMA WEAPONS
+	// Adrian: estoy arreglando tu chingadera mamawebo
+	// edit: gud ending si lo arreglé
 	Sigma,
 	ChillPenguin,
 	SparkMandrill,
@@ -279,10 +284,58 @@ public enum WeaponIds {
 	Sigma3KaiserStomp,
 	RideChaserGun,
 	RideChaserHit,
-	DNACore = 250
+	DNACore,
+}
+
+public enum RockWeaponIds
+{
+	MegaBuster,
+	FreezeCracker,
+	ThunderBolt,
+	JunkShield,
+	ScorchWheel,
+	SlashClaw,
+	NoiseCrush,
+	DangerWrap,
+	WildCoil,
+	RushSearch,
+	RushJet,
+	RushCoil,
+	SARocketPunch
+}
+
+public enum RockProjIds 
+{
+	RockBuster,
+	RockBusterMid,
+	RockBusterCharged,
+	FreezeCracker,
+	FreezeCrackerPiece,
+	ThunderBolt,
+	ThunderBoltSplit,
+	JunkShield,
+	JunkShieldPiece,
+	ScorchWheelSpawn,
+	ScorchWheel,
+	ScorchWheelLoop,
+	ScorchWheelMove,
+	ScorchWheelUnderwater,
+	SlashClaw,
+	NoiseCrush,
+	NoiseCrushCharged,
+	DangerWrap,
+	DangerWrapMine,
+	DangerWrapExplosion,
+	DangerWrapBubbleExplosion,
+	WildCoil,
+	WildCoilCharged,
+	SARocketPunch,
+	
 }
 
 public enum ProjIds {
+
+	// Adrián: Some of Rock projectiles IDs have to be here because GM moment
 	Buster,
 	Buster2,
 	Buster3,
@@ -675,7 +728,6 @@ public enum ProjIds {
 	RideChaserHit,
 	RideChaserCrash,
 	DarkHold,
-
 	// PunchyZeroStuff
 	PZeroPunch,
 	PZeroPunch2,
@@ -694,6 +746,10 @@ public enum ProjIds {
 	DZBuster4,
 	DZMelee,
 	DZHadangeki,
+	
+	//Rock stuff
+	SlashClaw,
+	ScorchWheelUnderwater,
 
 	// Special damage types.
 	SelfDmg = 30000,
@@ -704,4 +760,282 @@ public enum ProjIds {
 	// Close to the int16 max value.
 	// Do not add things bellow this.
 	SelfDestruct = 32700,
+
+	
+}
+
+public enum WeaponSlotsIds
+{
+	
+	//X Slots
+	Buster,
+	HomingTorpedo,
+	ChameleonSting,
+	RollingShield,
+	FireWave,
+	StormTornado,
+	ElectricSpark,
+	BoomerangCutter,
+	ShotgunIce,
+	CrystalHunter,
+	BubbleSplash,
+	SilkShot,
+	SpinWheel,
+	SonicSlicer,
+	StrikeChain,
+	MagnetMine,
+	SpeedBurner,
+	AcidBurst,
+	ParasiticBomb,
+	TriadThunder,
+	SpinningBlade,
+	RaySplasher,
+	GravityWell,
+	FrostShield,
+	TunnelFang,
+	ShotgunIceAlt,
+	GigaCrush = 57,
+	HyperBuster,
+	Hadouken,
+	Shoryuken,
+	NovaStrike,
+	FalconGigaAttack,
+	StockBuster,
+	XSaber,
+
+
+	//Zero Slots
+	Rakuhouha,
+	CFlasher,
+	Rekkoha,
+	ShinMessenkou,
+	DarkHold,
+
+
+	//Vile Slots
+	FrontRunner = 72,
+	LongshotGizmo,
+	FatBoy,
+	CherryBlast,
+	DistanceNeedler,
+	BuckshotDance,
+	HumerusCrush,
+	PopcornDemon,
+	ElectricShock,
+	GoGetterRight,
+	InfinityGig,
+	SpoiledBrat,
+	ParasiteSword,
+	QuickHomesick,
+	MaroonedTomahawk,
+	WildHorseKick,
+	DragonsWrath,
+	SeaDragonRage,
+	RumblingBang,
+	FlameRound,
+	SplashHit,
+	ExplosiveRound,
+	SpreadShot,
+	PeaceOutRoller,
+	DashModule,
+	RideArmorSlot = 98,
+	BlackBearRide,
+	KangarroRide,
+	HawkRide,
+	FrogRide,
+	RabbitRide,
+	GoliathRide,
+	DevilBearRide,
+
+
+	//Axl Slots
+	AxlBullet,
+	MetteurCrash,
+	MachineBullets,
+	RevolverBarrel,
+	AncientGun,
+	DoubleBullet,
+	BeastHunter,
+	BoundBlaster,
+	RayGun,
+	SpiralMagnum,
+	GLauncher,
+	IceGattling = 118,
+	FlameBurner,
+	BlackArrow,
+	PlasmaGun,
+	AxlUndisguise = 142,
+	AssassinBullet,
+	WhiteAxl,
+	StealthAxl,
+
+
+	//Sigma Slots
+	ChillPenguin,
+	SparkMandrill,
+	ArmoredArmadillo,
+	LaunchOctopus,
+	BoomerKuwanger,
+	StingChameleon,
+	StormEagle,
+	FlameMammoth,
+	Velguarder,
+	WireSponge,
+	WheelGator,
+	BubbleCrab,
+	FlameStag,
+	MorphMoth,
+	MorphMothCocoon,
+	MagnaCentipede,
+	CrystalSnail,
+	OverdriveOstrich,
+	FakeZero,
+	BlizzardBuffalo,
+	ToxicSeahorse,
+	TunnelRhino,
+	VoltCatfish,
+	CrushCrawfish,
+	NeonTiger,
+	GravityBeetle,
+	BlastHornet,
+	DrDoppler,
+	WolfSigmaHead = 201,
+	WolfSigmaHand,
+	NeoSigmaBall,
+	VirusSigma,
+	CommanderSigmaBall,
+	MechaniloidTiranos,
+	MechaniloidScrewdriver,
+	MechaniloidBird,
+	MechaniloidFish,
+	
+
+	//Characters Slots
+	XSlot,
+	ZeroSlot,
+	VileSlot,
+	AxlSlot,
+	SigmaSlot,
+
+}
+
+public enum RockWeaponSlotIds
+{
+	MegaBuster,
+	FreezeCracker,
+	ThunderBolt,
+	JunkShield,
+	ScorchWheel,
+	SlashClaw,
+	NoiseCrush,
+	DangerWrap,
+	WildCoil,
+	RushSearch,
+	RushJet,
+	RushCoil,
+	SARocketPunch,
+}
+
+public enum WeaponBarsIds
+{	
+	// X Bars
+	Buster,
+	HomingTorpedo,
+	ChameleonSting,
+	RollingShield,
+	FireWave,
+	StormTornado,
+	ElectricSpark,
+	BoomerangCutter,
+	ShotgunIce,
+	CrystalHunter,
+	BubbleSplash,
+	SilkShot,
+	SpinWheel,
+	SonicSlicer,
+	StrikeChain,
+	MagnetMine,
+	SpeedBurner,
+	AcidBurst,
+	ParasiticBomb,
+	TriadThunder,
+	SpinningBlade,
+	RaySplasher,
+	GravityWell,
+	FrostShield,
+	TunnelFang,
+	ShotgunIceAlt,
+	GigaCrush = 57,
+	HyperBuster,
+	NovaStrike,
+	FalconGigaAttack,
+	
+
+	//Zero Bars
+	Rakuhouha,
+	CFlasher,
+	Rekkoha,
+	ShinMessenkou,
+	DarkHold,
+
+
+	//Vile Bar
+	EBar = 68,
+
+
+	//Axl Bars
+	AxlBullet,
+	MetteurCrash,
+	MachineBullets,
+	RevolverBarrel,
+	AncientGun,
+	DoubleBullet,
+	BeastHunter,
+	BoundBlaster,
+	RayGun,
+	SpiralMagnum,
+	GLauncher,
+	IceGattling = 81,
+	FlameBurner,
+	BlackArrow,
+	PlasmaGun,
+	
+
+	//Sigma Bars
+	SigmaBall = 105,
+	Sigma2Ball,
+	SigmaVirus,
+	SparkMSpark,
+	ArmoredARoll,
+	LaunchOTorpedo,
+	BoomerKTeleport,
+	StingCCloak,
+	StormEFlight,
+	BCrabBubbleShield,
+	MorphMFlight,
+	MorphMCScrap,
+	MagnaCTeleport,
+	CSnailShell,
+	FakeZeroBuster,
+	TSeahorseEmerge,
+	VoltCCharge,
+	BHornetFlight,
+	DrDopplerAbsorb,
+	
+}
+
+public enum RockWeaponBarIds
+{
+	MegaBuster,
+	FreezeCracker,
+	ThunderBolt,
+	JunkShield,
+	ScorchWheel,
+	SlashClaw,
+	NoiseCrush,
+	DangerWrap,
+	WildCoil,
+	RushSearch,
+	RushJet,
+	RushCoil
 }

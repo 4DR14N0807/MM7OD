@@ -208,7 +208,7 @@ public class ViralSigmaShoot : CharState {
 		if (poi != null && !once) {
 			player.sigmaAmmo -= mechaniloidWeapon.getAmmoUsage(0);
 			once = true;
-			character.playSound("viralSigmaShoot", sendRpc: true);
+			//character.playSound("viralSigmaShoot", sendRpc: true);
 			proj = new ViralSigmaShootProj(mechaniloidWeapon, poi.Value, xDir, player, player.getNextActorNetId(), rpc: true);
 		}
 
@@ -415,11 +415,11 @@ public class ViralSigmaBeamProj : Projectile {
 		Helpers.decrementTime(ref soundTime);
 		Helpers.decrementTime(ref explosionTime);
 		if (soundTime == 0) {
-			playSound("viralSigmaBeam");
-			soundTime = 0.289f;
+			//playSound("viralSigmaBeam");
+			soundTime = 0.164f;
 		}
 		if (explosionTime == 0) {
-			playSound("explosion");
+			//playSound("explosion");
 			new Anim(new Point(pos.x, bottomY).addRand(10, 10), "explosion", 1, null, true);
 			explosionTime = 0.15f;
 		}

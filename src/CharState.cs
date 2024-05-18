@@ -96,9 +96,9 @@ public class CharState {
 			return;
 		}
 		if (newState is not Dash &&
-			newState is not Jump &&
-			newState is not Fall &&
-			!(newState.useDashJumpSpeed && (!character.grounded || character.vel.y < 0))
+			//newState is not Jump &&
+			//newState is not Fall &&
+			!(newState.useDashJumpSpeed && (character.grounded || character.vel.y < 0))
 		) {
 			character.isDashing = false;
 		}
@@ -114,7 +114,7 @@ public class CharState {
 			character.rideArmorPlatform = null;
 		}
 		if (invincible) {
-			player.delaySubtank();
+			player.delayETank();
 		}
 		character.onExitState(this, newState);
 	}
@@ -403,7 +403,7 @@ public class WarpIn : CharState {
 
 			if (isSigma && player.isSigma2() && character.sprite.frameIndex >= 4 && !sigma2Once) {
 				sigma2Once = true;
-				character.playSound("sigma2start", sendRpc: true);
+				//character.playSound("sigma2start", sendRpc: true);
 			}
 
 			if (character.isAnimOver()) {
@@ -414,7 +414,7 @@ public class WarpIn : CharState {
 
 		if (character.player == Global.level.mainPlayer && !warpSoundPlayed) {
 			warpSoundPlayed = true;
-			character.playSound("warpIn", sendRpc: true);
+			character.playSound("warpin", sendRpc: true);
 		}
 
 		float yInc = Global.spf * 450 * getSigmaRoundsMod(sigmaRounds);
@@ -503,7 +503,7 @@ public class WarpOut : CharState {
 
 		if (character.player == Global.level.mainPlayer && !warpSoundPlayed) {
 			warpSoundPlayed = true;
-			character.playSound("warpOut", forcePlay: true, sendRpc: true);
+			character.playSound("warpin");
 		}
 
 		warpAnim.pos.y -= Global.spf * 1000;
@@ -593,9 +593,14 @@ public class Idle : CharState {
 				}
 			} else {
 				if (!character.sprite.name.Contains("lose")) {
-					string loseSprite = "lose";
-					if (player.isX && character.player.hasArmor(2)) loseSprite = "mmx_lose_x2";
-					if (player.isX && character.player.hasArmor(3)) loseSprite = "mmx_lose_x3";
+					string loseSprite;
+					int spriteNum = Helpers.randomRange(1, 3);
+					switch(spriteNum) {
+						case 2: loseSprite = "lose2"; break;
+						case 3: loseSprite = "lose3"; break;
+						default: loseSprite = "lose"; break;
+					}
+					
 					character.changeSpriteFromName(loseSprite, true);
 				}
 			}
@@ -752,7 +757,7 @@ public class Jump : CharState {
 		accuracy = 5;
 		enterSound = "jump";
 		exitOnLanding = true;
-		useDashJumpSpeed = true;
+		useDashJumpSpeed = false;
 		airMove = true;
 		canStopJump = true;
 		attackCtrl = true;
@@ -785,7 +790,7 @@ public class Fall : CharState {
 	public Fall() : base("fall", "fall_shoot", Options.main.getAirAttack(), "fall_start") {
 		accuracy = 5;
 		exitOnLanding = true;
-		useDashJumpSpeed = true;
+		useDashJumpSpeed = false;
 		airMove = true;
 		canStopJump = false;
 		attackCtrl = true;
@@ -833,7 +838,7 @@ public class Dash : CharState {
 	public Anim dashSpark;
 
 	public Dash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
-		enterSound = "dash";
+		enterSound = "";
 		this.initialDashButton = initialDashButton;
 		accuracy = 10;
 		//exitOnAirborne = true;
@@ -852,18 +857,18 @@ public class Dash : CharState {
 
 		character.isDashing = true;
 		character.globalCollider = character.getDashingCollider();
-		dashSpark = new Anim(
+		/*dashSpark = new Anim(
 			character.getDashSparkEffectPos(initialDashDir),
 			"dash_sparks", initialDashDir, player.getNextActorNetId(),
 			true, sendRpc: true
-		);
+		);*/
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		if (!dashSpark.destroyed) {
+		/*if (!dashSpark.destroyed) {
 			dashSpark.destroySelf();
-		}
+		}*/
 	}
 
 	public static void dashBackwardsCode(Character character, int initialDashDir) {
@@ -958,7 +963,7 @@ public class AirDash : CharState {
 	public bool stop;
 
 	public AirDash(string initialDashButton) : base("dash", "dash_shoot") {
-		enterSound = "dashX2";
+		enterSound = "";
 		this.initialDashButton = initialDashButton;
 		accuracy = 10;
 		attackCtrl = true;
@@ -1065,7 +1070,7 @@ public class UpDash : CharState {
 			once = true;
 			character.vel = new Point(0, -250);
 			new Anim(character.pos.addxy(0, -10), "dash_sparks_up", character.xDir, player.getNextActorNetId(), true, sendRpc: true);
-			character.playSound("dash", sendRpc: true);
+			//character.playSound("dash", sendRpc: true);
 		}
 
 		dashTime += Global.spf;
@@ -1265,10 +1270,12 @@ public class LadderClimb : CharState {
 		}
 		if (character.canClimbLadder()) {
 			if (player.input.isHeld(Control.Up, player)) {
-				character.move(new Point(0, -75));
+				character.move(new Point(0, character.getClimbLadderSpeed() * -1));
+				//character.vel.y = character.getClimbLadderSpeed() * -1;
 				character.frameSpeed = 1;
 			} else if (player.input.isHeld(Control.Down, player)) {
-				character.move(new Point(0, 75));
+				character.move(new Point(0, character.getClimbLadderSpeed()));
+				//character.vel.y = character.getClimbLadderSpeed();
 				character.frameSpeed = 1;
 			}
 		}
@@ -1454,6 +1461,7 @@ public class Hurt : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		character.isDWrapped = false;
 		if (miniFlinchTime == 0) {
 			if (!spiked) character.vel.y = -100;
 		}
@@ -1546,7 +1554,7 @@ public class Frozen : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		if (character.vel.y < 0) character.vel.y = 0;
-		character.playSound("igFreeze");
+		//character.playSound("igFreeze");
 	}
 
 	public override void onExit(CharState newState) {

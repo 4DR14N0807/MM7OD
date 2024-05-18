@@ -213,7 +213,7 @@ public class CannonAttack : CharState {
 		Point shootVel = vile.getVileShootVel(true);
 
 		var player = vile.player;
-		vile.playSound("frontrunner", sendRpc: true);
+		//vile.playSound("frontrunner", sendRpc: true);
 
 		string muzzleSprite = "cannon_muzzle";
 		if (player.cannonWeapon.type == (int)VileCannonType.FatBoy) muzzleSprite += "_fb";

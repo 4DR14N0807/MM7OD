@@ -210,7 +210,7 @@ public class WheelGShootState : MaverickState {
 			Point? shootPos = maverick.getFirstPOI();
 			if (!shotOnce && shootPos != null) {
 				shotOnce = true;
-				maverick.playSound("wheelgSpinWheel", sendRpc: true);
+				//maverick.playSound("wheelgSpinWheel", sendRpc: true);
 				new WheelGSpinWheelProj((maverick as WheelGator).weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			}
 
@@ -223,7 +223,7 @@ public class WheelGShootState : MaverickState {
 			Point? shootPos = maverick.getFirstPOI();
 			if (!shotOnce && shootPos != null) {
 				shotOnce = true;
-				maverick.playSound("wheelgSpinWheel", sendRpc: true);
+				//maverick.playSound("wheelgSpinWheel", sendRpc: true);
 				new WheelGSpinWheelProj((maverick as WheelGator).weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			}
 
@@ -264,7 +264,7 @@ public class WheelGBiteState : MaverickState {
 		}
 
 		if (maverick.frameIndex == 6 && !once) {
-			maverick.playSound("wheelgBite", sendRpc: true);
+			//maverick.playSound("wheelgBite", sendRpc: true);
 			once = true;
 		}
 
@@ -289,7 +289,7 @@ public class WheelGEatState : MaverickState {
 
 		Helpers.decrementTime(ref soundTime);
 		if (soundTime == 0) {
-			maverick.playSound("wheelgBite", sendRpc: true);
+			//maverick.playSound("wheelgBite", sendRpc: true);
 			soundTime = 0.26f;
 		}
 
@@ -327,7 +327,7 @@ public class WheelGSpitState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("wheelgSpit", sendRpc: true);
+			//maverick.playSound("wheelgSpit", sendRpc: true);
 
 			Point moveDir = new Point(maverick.xDir, 0);
 			var targets = Global.level.getTargets(shootPos.Value, maverick.player.alliance, true);
@@ -387,7 +387,7 @@ public class WheelGSpinState : MaverickState {
 			maverick.move(new Point(maverick.xDir * 250, 0));
 			if (soundTime == 0) {
 				soundTime = 0.247f;
-				maverick.playSound("wheelgSpin", sendRpc: true);
+				//maverick.playSound("wheelgSpin", sendRpc: true);
 			}
 
 			if (stateTime > 0.75f) {
@@ -451,7 +451,7 @@ public class WheelGUpBiteState : MaverickState {
 			victim = grabbed;
 			if (maverick.ownedByLocalPlayer) {
 				(maverick as WheelGator).upBiteWeapon.applyDamage(victim, false, maverick, (int)ProjIds.WheelGUpBite, sendRpc: true);
-				maverick.playSound("wheelgBite", sendRpc: true);
+				//maverick.playSound("wheelgBite", sendRpc: true);
 			}
 			return true;
 		}

@@ -84,6 +84,8 @@ public class RPC {
 	public static RPCCheckRCEnter checkRCEnter;
 	public static RPCRCEnter rcEnter;
 	public static RPCUseSubTank useSubtank;
+	public static RPCUseETank useETank;
+	public static RPCUseWTank useWTank;
 	public static RPCPossess possess;
 	public static RPCSyncPossessInput syncPossessInput;
 	public static RPCFeedWheelGator feedWheelGator;
@@ -167,6 +169,8 @@ public class RPC {
 			(checkRCEnter = new RPCCheckRCEnter()),
 			(rcEnter = new RPCRCEnter()),
 			(useSubtank = new RPCUseSubTank()),
+			(useETank = new RPCUseETank()),
+			(useWTank = new RPCUseWTank()),
 			(possess = new RPCPossess()),
 			(syncPossessInput = new RPCSyncPossessInput()),
 			(feedWheelGator = new RPCFeedWheelGator()),
@@ -436,7 +440,11 @@ public class RPCShoot : RPC {
 		int weaponIndex = arguments[9];
 
 		var player = Global.level.getPlayerById(playerId);
-		(player?.character as MegamanX)?.shootRpc(
+		/*(player?.character as MegamanX)?.shootRpc(
+			new Point(xPos, yPos), weaponIndex, xDir, chargeLevel, projNetId, false
+		);*/
+
+		(player?.character as Rock)?.shootRpc(
 			new Point(xPos, yPos), weaponIndex, xDir, chargeLevel, projNetId, false
 		);
 	}
@@ -538,6 +546,8 @@ public enum RPCToggleType {
 	PlayDingSound,
 	StartCrystalize,
 	StopCrystalize,
+	StartDWrap,
+	StopDwrap,
 	StrikeChainReversed,
 	StockCharge,
 	UnstockCharge,
@@ -577,6 +587,10 @@ public class RPCPlayerToggle : RPC {
 			player.character?.crystalizeStart();
 		} else if (toggleId == RPCToggleType.StopCrystalize) {
 			player.character?.crystalizeEnd();
+		} else if (toggleId == RPCToggleType.StartDWrap) {
+			player.character?.dwrapStart();
+		} else if (toggleId == RPCToggleType.StopDwrap) {
+			player.character?.dwrapEnd();
 		} else if (toggleId == RPCToggleType.StrikeChainReversed) {
 			(player?.character as MegamanX)?.strikeChainProj?.reverseDir();
 		} else if (toggleId == RPCToggleType.StockCharge) {
@@ -703,7 +717,7 @@ public class RPCActorToggle : RPC {
 		if (actor == null) return;
 
 		if (toggleId == RPCActorToggleType.SonicSlicerBounce) {
-			actor.playSound("dingX2");
+			//actor.playSound("dingX2");
 			new Anim(actor.pos, "sonicslicer_sparks", actor.xDir, null, true);
 		} else if (toggleId == RPCActorToggleType.StartGravityWell && actor is GravityWellProjCharged gw) {
 			gw.started = true;
@@ -740,7 +754,7 @@ public class RPCActorToggle : RPC {
 			}
 		} else if (toggleId == RPCActorToggleType.AwardCurrency) {
 			if (actor is Character chr) {
-				chr.player.currency += 5;
+				chr.player.currency += 20;
 			}
 		} else if (toggleId == RPCActorToggleType.MorphMothCocoonSelfDestruct) {
 			if (actor is MorphMothCocoon mmc) {
@@ -1243,22 +1257,22 @@ public class RPCAxlShoot : RPC {
 			flash.frameSpeed = 1;
 			if (projId == (int)ProjIds.AxlBullet) {
 				var bullet = new AxlBulletProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
-				player.character.playSound("axlBullet");
+				//player.character.playSound("axlBullet");
 			} else if (projId == (int)ProjIds.MetteurCrash) {
 				//var bullet = new MettaurCrashProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
-				player.character.playSound("mettaurCrash");
+				//player.character.playSound("mettaurCrash");
 			} else if (projId == (int)ProjIds.BeastKiller) {
 				//var bullet = new BeastKillerProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
-				player.character.playSound("beastKiller");
+				//player.character.playSound("beastKiller");
 			} else if (projId == (int)ProjIds.MachineBullets) {
 				//var bullet = new MachineBulletProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
-				player.character.playSound("machineBullets");
+				//player.character.playSound("machineBullets");
 			} else if (projId == (int)ProjIds.RevolverBarrel) {
 				//var bullet = new RevolverBarrelProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
-				player.character.playSound("revolverBarrel");
+				//player.character.playSound("revolverBarrel");
 			} else if (projId == (int)ProjIds.AncientGun) {
 				//var bullet = new AncientGunProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
-				player.character.playSound("ancientGun3");
+				//player.character.playSound("ancientGun3");
 			}
 		} else if (projId == (int)ProjIds.CopyShot) {
 			var pos = new Point(x, y);
@@ -1266,7 +1280,7 @@ public class RPCAxlShoot : RPC {
 			var flash = new Anim(pos, "axl_pistol_flash_charged", 1, null, true);
 			flash.angle = angle;
 			flash.frameSpeed = 3;
-			player.character.playSound("axlBulletCharged");
+			//player.character.playSound("axlBulletCharged");
 		} else if (projId == (int)ProjIds.BlastLauncher) {
 			var pos = new Point(x, y);
 			var bullet = new GrenadeProj(
@@ -1275,7 +1289,7 @@ public class RPCAxlShoot : RPC {
 			var flash = new Anim(pos, "axl_pistol_flash", 1, null, true);
 			flash.angle = angle;
 			flash.frameSpeed = 1;
-			player.character.playSound("grenadeShoot");
+			//player.character.playSound("grenadeShoot");
 		} else if (projId == (int)ProjIds.GreenSpinner) {
 			var pos = new Point(x, y);
 			var bullet = new GreenSpinnerProj(
@@ -1284,13 +1298,13 @@ public class RPCAxlShoot : RPC {
 			var flash = new Anim(pos, "axl_pistol_flash_charged", 1, null, true);
 			flash.angle = angle;
 			flash.frameSpeed = 3;
-			player.character.playSound("rocketShoot");
+			//player.character.playSound("rocketShoot");
 		} else if (projId == (int)ProjIds.RayGun || projId == (int)ProjIds.RayGun2) {
 			var pos = new Point(x, y);
 			Point velDir = Point.createFromAngle(angle);
 			if (projId == (int)ProjIds.RayGun) {
 				var bullet = new RayGunProj(new RayGun(0), pos, xDir, player, velDir, netId);
-				player.character.playSound("raygun");
+				//player.character.playSound("raygun");
 			} else if (projId == (int)ProjIds.RayGun2) {
 				var bullet = Global.level.getActorByNetId(netId) as RayGunAltProj;
 				if (bullet == null) {
@@ -1315,14 +1329,14 @@ public class RPCAxlShoot : RPC {
 			var flash = new Anim(pos, "axl_pistol_flash", 1, null, true);
 			flash.angle = angle;
 			flash.frameSpeed = 1;
-			player.character.playSound("spiralMagnum");
+			//player.character.playSound("spiralMagnum");
 		} else if (projId == (int)ProjIds.IceGattling || projId == (int)ProjIds.IceGattlingHyper) {
 			var pos = new Point(x, y);
 			var bullet = new IceGattlingProj(new IceGattling(0), pos, xDir, player, Point.createFromAngle(angle), netId);
 			var flash = new Anim(pos, "axl_pistol_flash", 1, null, true);
 			flash.angle = angle;
 			flash.frameSpeed = 1;
-			player.character.playSound("iceGattling");
+			//player.character.playSound("iceGattling");
 		} else if (projId == (int)ProjIds.AssassinBullet || projId == (int)ProjIds.AssassinBulletQuick) {
 			var pos = new Point(x, y);
 			var bullet = new AssassinBulletProj(new AssassinBullet(), pos, new Point(), xDir, player, null, null, netId);
@@ -1330,7 +1344,7 @@ public class RPCAxlShoot : RPC {
 			var flash = new Anim(pos, "axl_pistol_flash_charged", 1, null, true);
 			flash.angle = angle;
 			flash.frameSpeed = 3;
-			player.character.playSound("assassinate");
+			//player.character.playSound("assassinate");
 		}
 	}
 
@@ -2366,6 +2380,48 @@ public class RPCUseSubTank : RPC {
 		if (netId == null) return;
 		byte[] netIdBytes = BitConverter.GetBytes(netId.Value);
 		Global.serverClient?.rpc(this, netIdBytes[0], netIdBytes[1], (byte)subtankHealAmount);
+	}
+}
+
+public class RPCUseETank : RPC {
+	public RPCUseETank() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+	}
+
+	public override void invoke(params byte[] arguments) {
+		ushort netId = BitConverter.ToUInt16(new byte[] { arguments[0], arguments[1] }, 0);
+		int etankHealAmount = arguments[2];
+
+		var actor = Global.level.getActorByNetId(netId);
+		if (actor == null) return;
+		if (actor is Character chr) chr.netETankHealAmount = etankHealAmount;
+	}
+
+	public void sendRpc(ushort? netId, int etankHealAmount) {
+		if (netId == null) return;
+		byte[] netIdBytes = BitConverter.GetBytes(netId.Value);
+		Global.serverClient?.rpc(this, netIdBytes[0], netIdBytes[1], (byte)etankHealAmount);
+	}
+}
+
+public class RPCUseWTank : RPC {
+	public RPCUseWTank() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+	}
+
+	public override void invoke(params byte[] arguments) {
+		ushort netId = BitConverter.ToUInt16(new byte[] { arguments[0], arguments[1] }, 0);
+		int wtankAmmoAmount = arguments[2];
+
+		var actor = Global.level.getActorByNetId(netId);
+		if (actor == null) return;
+		if (actor is Character chr) chr.netWTankAmmoAmount = wtankAmmoAmount;
+	}
+
+	public void sendRpc(ushort? netId, int wtankHealAmount) {
+		if (netId == null) return;
+		byte[] netIdBytes = BitConverter.GetBytes(netId.Value);
+		Global.serverClient?.rpc(this, netIdBytes[0], netIdBytes[1], (byte)wtankHealAmount);
 	}
 }
 

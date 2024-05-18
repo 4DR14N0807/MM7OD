@@ -163,19 +163,21 @@ public class PreJoinOrHostMenu : IMainMenu {
 		Global.sprites["cursor"].drawToHUD(0, startX - 10, 73 + (selectY * lineH));
 
 		Fonts.drawText(
-			FontType.Golden, "SELECT OPTION", Global.screenW * 0.5f, 20, Alignment.Center
+			FontType.BlueMenu, "SELECT OPTION", Global.screenW * 0.5f, 20, Alignment.Center
 		);
 
 		if (state == 0) {
-			Fonts.drawText(FontType.DarkBlue, "RELAY", startX, optionPos[2].y, selected: selectY == 2);
+			Fonts.drawText(FontType.Grey, "RELAY", startX, optionPos[2].y, selected: selectY == 0);
 		} else {
-			Fonts.drawText(FontType.DarkBlue, "LOADING...", startX, optionPos[2].y, selected: selectY == 2);
+			Fonts.drawText(FontType.Grey, "LOADING...", startX, optionPos[2].y, selected: selectY == 0);
 		}
 
+		/*
 		int msgPos = 140;
 		DrawWrappers.DrawLine(
 			10, msgPos - 5, Global.screenW - 10, msgPos - 5, Color.White, 1, ZIndex.HUD, isWorldPos: false
 		);
+		
 		Fonts.drawText(
 			FontType.DarkOrange, "NOTICE", Global.halfScreenW,
 			msgPos, Alignment.Center
@@ -191,10 +193,11 @@ public class PreJoinOrHostMenu : IMainMenu {
 		DrawWrappers.DrawLine(
 			10, msgPos + 32, Global.screenW - 10, msgPos + 32, Color.White, 1, ZIndex.HUD, isWorldPos: false
 		);
+		*/
 
-		Fonts.drawText(FontType.DarkBlue, "LAN", startX, optionPos[1].y, selected: selectY == 1);
+		Fonts.drawText(FontType.Grey, "LAN", startX, optionPos[1].y, selected: selectY == 2);
 
-		Fonts.drawText(FontType.DarkBlue, "P2P", startX, optionPos[0].y, selected: selectY == 0);
+		Fonts.drawText(FontType.Grey, "P2P", startX, optionPos[0].y, selected: selectY == 1);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 206, Alignment.Center);
 	}

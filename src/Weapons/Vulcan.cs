@@ -79,7 +79,7 @@ public class Vulcan : Weapon {
 			if (type == (int)VulcanType.BuckshotDance && Global.isOnFrame(3)) {
 				new VulcanProj(this, vile.getShootPos(), vile.getShootXDir(), player, player.getNextActorNetId(), rpc: true);
 			}
-			vile.playSound("vulcan", sendRpc: true);
+			//vile.playSound("vulcan", sendRpc: true);
 			vile.vileLadderShootCooldown = rateOfFire;
 			shootTime = rateOfFire;
 		}

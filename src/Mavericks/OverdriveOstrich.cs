@@ -180,7 +180,7 @@ public class OverdriveOShootState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("overdriveoShoot", sendRpc: true);
+			//maverick.playSound("overdriveoShoot", sendRpc: true);
 			new OverdriveOSonicSlicerProj(maverick.weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 		}
 
@@ -241,7 +241,7 @@ public class OverdriveOShoot2State : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("overdriveoShoot2", sendRpc: true);
+			//maverick.playSound("overdriveoShoot2", sendRpc: true);
 			new OverdriveOSonicSlicerUpProj(maverick.weapon, shootPos.Value, 0, player, player.getNextActorNetId(), rpc: true);
 			new OverdriveOSonicSlicerUpProj(maverick.weapon, shootPos.Value, 1, player, player.getNextActorNetId(), rpc: true);
 			new OverdriveOSonicSlicerUpProj(maverick.weapon, shootPos.Value, 2, player, player.getNextActorNetId(), rpc: true);
@@ -283,7 +283,7 @@ public class OverdriveOJumpKickState : MaverickState {
 public class OverdriveOSkidState : MaverickState {
 	float dustTime;
 	public OverdriveOSkidState() : base("skid", "") {
-		enterSound = "overdriveoSkid";
+		enterSound = "";
 	}
 
 	public override void update() {
@@ -328,7 +328,7 @@ public class OverdriveOSkidState : MaverickState {
 
 public class OverdriveOCrystalizedState : MaverickState {
 	public OverdriveOCrystalizedState() : base("hurt_weakness") {
-		enterSound = "crystalize";
+		enterSound = "";
 	}
 
 	public override bool canEnter(Maverick maverick) {
@@ -345,7 +345,7 @@ public class OverdriveOCrystalizedState : MaverickState {
 
 		if (maverick.isAnimOver()) {
 			Anim.createGibEffect("overdriveo_weakness_glass", maverick.getCenterPos(), player, sendRpc: true);
-			maverick.playSound("freezebreak2", sendRpc: true);
+			//maverick.playSound("freezebreak2", sendRpc: true);
 			maverick.changeToIdleOrFall();
 		}
 	}

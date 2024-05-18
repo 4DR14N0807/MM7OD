@@ -122,7 +122,7 @@ public class XTeleportState : CharState {
 		} else if (frameTime >= 18) {
 			if (!onceTeleportInSound) {
 				onceTeleportInSound = true;
-				character.playSound("boomerkTeleport", sendRpc: true);
+				//character.playSound("boomerkTeleport", sendRpc: true);
 			}
 			character.visible = Global.isOnFrameCycle(5);
 		}
@@ -132,7 +132,7 @@ public class XTeleportState : CharState {
 	}
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.playSound("boomerkTeleport", sendRpc: true);
+		//character.playSound("boomerkTeleport", sendRpc: true);
 		clone = createClone();
 		clone.useGravity = true;
 		cloneG = createClone();

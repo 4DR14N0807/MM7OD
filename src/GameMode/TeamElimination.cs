@@ -17,23 +17,16 @@ public class TeamElimination : GameMode {
 			draw1v1TopHUD();
 			return;
 		}
-		var redPlayersAlive = (
-			level.players.Where(
-				p => !p.isSpectator && p.deaths < playingTo && p.alliance == redAlliance
-			).ToList()
-		);
-		var bluePlayersAlive = (
-			level.players.Where(
-				p => !p.isSpectator && p.deaths < playingTo && p.alliance == blueAlliance
-			).ToList()
-		);
+
+		var fontColor = level.mainPlayer.alliance == GameMode.blueAlliance ? FontType.BlueMenu : FontType.RedMenu;
+		var redPlayersStillAlive = level.players.Where(p => !p.isSpectator && p.deaths < playingTo && p.alliance == redAlliance).ToList();
+		var bluePlayersStillAlive = level.players.Where(p => !p.isSpectator && p.deaths < playingTo && p.alliance == blueAlliance).ToList();
 		int lives = playingTo - level.mainPlayer.deaths;
-		Fonts.drawText(FontType.BlueMenu, "Lives: " + lives.ToString(), 5, 5, Alignment.Left);
-		Fonts.drawText(
-			FontType.BlueMenu,
-			"Alive: " + (redPlayersAlive.Count).ToString() + "/" + (bluePlayersAlive.Count).ToString(),
-			5, 15, Alignment.Left
-		);
+		Fonts.drawText(fontColor, "Lives: " + lives.ToString(), 5, 5);
+		//Fonts.drawText(fontColor, "Alive: ", 5, 17);
+		//Fonts.drawText(FontType.RedMenu,  (redPlayersStillAlive.Count).ToString(), 62, 17);
+		//Fonts.drawText(FontType.BlueMenu, "/" + (bluePlayersStillAlive.Count).ToString(), 70, 17);
+
 		if (virusStarted != 1) {
 			drawTimeIfSet(25);
 		} else {

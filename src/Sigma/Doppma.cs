@@ -47,7 +47,7 @@ public class Doppma : BaseSigma {
 					if (ang != 0 && ang != 180) {
 						upDownDir = 0;
 					}
-					playSound("sigma3shoot", sendRpc: true);
+					//playSound("sigma3shoot", sendRpc: true);
 					new Sigma3FireProj(
 						player.sigmaFireWeapon, shootPOI.Value,
 						ang, upDownDir, player, player.getNextActorNetId(), sendRpc: true

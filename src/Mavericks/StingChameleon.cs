@@ -61,7 +61,7 @@ public class StingChameleon : Maverick {
 				drainAmmo(4);
 				if (ammo <= 0) {
 					uncloakTransitionTime = 1;
-					playSound("stingcCloak", sendRpc: true);
+					//playSound("stingcCloak", sendRpc: true);
 				}
 			} else {
 				rechargeAmmo(1);
@@ -126,11 +126,11 @@ public class StingChameleon : Maverick {
 				deductAmmo(8);
 				isInvisible = true;
 				cloakTransitionTime = 1;
-				playSound("76stingcCloak", sendRpc: true);
+				//playSound("stingcCloak", sendRpc: true);
 			}
 		} else {
 			uncloakTransitionTime = 1;
-			playSound("76stingcCloak", sendRpc: true);
+			//playSound("stingcCloak", sendRpc: true);
 		}
 	}
 
@@ -140,7 +140,7 @@ public class StingChameleon : Maverick {
 
 	public MaverickState getShootState(bool isAI) {
 		var shootState = new MShoot((Point pos, int xDir) => {
-			playSound("stingcSting", sendRpc: true);
+			//playSound("stingcSting", sendRpc: true);
 			new StingCStingProj(new StingCStingWeapon(), pos, xDir, 3, player, player.getNextActorNetId(), rpc: true);
 			new StingCStingProj(new StingCStingWeapon(), pos, xDir, 4, player, player.getNextActorNetId(), rpc: true);
 			new StingCStingProj(new StingCStingWeapon(), pos, xDir, 5, player, player.getNextActorNetId(), rpc: true);
@@ -404,7 +404,7 @@ public class StingCClingShootState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("stingcSting", sendRpc: true);
+			//maverick.playSound("stingcSting", sendRpc: true);
 			new StingCStingProj(new StingCStingWeapon(), shootPos.Value, maverick.xDir, 0, player, player.getNextActorNetId(), rpc: true);
 			new StingCStingProj(new StingCStingWeapon(), shootPos.Value, maverick.xDir, 1, player, player.getNextActorNetId(), rpc: true);
 			new StingCStingProj(new StingCStingWeapon(), shootPos.Value, maverick.xDir, 2, player, player.getNextActorNetId(), rpc: true);
@@ -472,7 +472,7 @@ public class StingCHangState : MaverickState {
 				float randX = Helpers.randomRange(-150, 150);
 				Point pos = new Point(maverick.pos.x + randX, ceilingY);
 				new StingCSpikeProj(new StingCSpikeWeapon(), pos, 1, player, player.getNextActorNetId(), rpc: true);
-				maverick.playSound("stingcSpikeDrop", sendRpc: true);
+				//maverick.playSound("stingcSpikeDrop", sendRpc: true);
 			}
 
 			if (maverick.loopCount > 4) {

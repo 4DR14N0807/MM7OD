@@ -76,7 +76,7 @@ public class StormEagle : Maverick {
 
 	public MaverickState getShootState() {
 		return new MShoot((Point pos, int xDir) => {
-			playSound("tornado", sendRpc: true);
+			//playSound("tornado", sendRpc: true);
 			new TornadoProj(new StormETornadoWeapon(), pos, xDir, true, player, player.getNextActorNetId(), sendRpc: true);
 		}, null);
 	}
@@ -163,7 +163,7 @@ public class StormEEggProj : Projectile {
 		useGravity = true;
 		vel.y = -100;
 		collider.wallOnly = true;
-		fadeSound = "explosion";
+		fadeSound = "";
 		fadeSprite = "explosion";
 
 		if (rpc) {
@@ -199,7 +199,7 @@ public class StormEBirdProj : Projectile, IDamagable {
 		base(weapon, pos, xDir, 0, 3, player, "storme_proj_baby", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
 		projId = (int)ProjIds.StormEBird;
 		maxTime = 1.5f;
-		fadeSound = "explosion";
+		fadeSound = "";
 		fadeSprite = "explosion";
 		vel = startUnitVel.times(50);
 		xDir = MathF.Sign(vel.x);
@@ -375,7 +375,7 @@ public class StormEGustState : MaverickState {
 		soundTime += Global.spf;
 		if (soundTime > 0.4f) {
 			soundTime = 0;
-			if (!maverick.isUnderwater()) maverick.playSound("stormeFlap", sendRpc: true);
+			//if (!maverick.isUnderwater()) maverick.playSound("stormeFlap", sendRpc: true);
 		}
 
 		gustTime += Global.spf;
@@ -444,7 +444,7 @@ public class StormEAirShootState : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			maverick.playSound("tornado", sendRpc: true);
+			//maverick.playSound("tornado", sendRpc: true);
 			new TornadoProj(new StormETornadoWeapon(), shootPos.Value, maverick.xDir, true, player, player.getNextActorNetId(), sendRpc: true);
 		}
 

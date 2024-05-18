@@ -7,7 +7,7 @@ public class AddBotMenu : IMainMenu {
 	public int selectArrowPosY;
 	public IMainMenu previous;
 
-	public static int botCharNum = -1;
+	public static int botCharNum = 5;
 	public static int botTeamNum = -1;
 
 	public List<Point> optionPoses = new List<Point>()
@@ -22,15 +22,15 @@ public class AddBotMenu : IMainMenu {
 	}
 
 	public void update() {
-		Helpers.menuUpDown(ref selectArrowPosY, 0, optionPoses.Count - 1);
+		Helpers.menuUpDown(ref selectArrowPosY, 5, optionPoses.Count - 1);
 
 		if (selectArrowPosY == 0) {
 			if (Global.input.isPressedMenu(Control.MenuLeft)) {
 				botCharNum--;
-				if (botCharNum < -1) botCharNum = -1;
+				if (botCharNum < 5) botCharNum = 5;
 			} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 				botCharNum++;
-				if (botCharNum >= 210) botCharNum = 4;
+				if (botCharNum >= 5) botCharNum = 5;
 			}
 		}
 		if (selectArrowPosY == 1 && teamOptionEnabled()) {
@@ -50,7 +50,7 @@ public class AddBotMenu : IMainMenu {
 				int id = 0;
 				int charNum = botCharNum;
 				int alliance = botTeamNum;
-				if (charNum == -1) charNum = Helpers.randomRange(0, 4);
+				if (charNum == -1) charNum = Helpers.randomRange(5, 5);
 				if (alliance == -1) {
 					if (Global.level.gameMode.isTeamMode) {
 						alliance = Server.getMatchInitAutobalanceTeam(Global.level.players, Global.level.teamNum);
@@ -67,7 +67,7 @@ public class AddBotMenu : IMainMenu {
 					}
 				}
 
-				var cpu = new Player("CPU" + id.ToString(), id, charNum, null, true, true, alliance, new Input(true), null);
+				var cpu = new Player("CPU" + id.ToString(), id, 5, null, true, true, alliance, new Input(true), null);
 				Global.level.players.Add(cpu);
 				Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Added bot " + cpu.name + ".", null, null, true));
 			}
@@ -81,7 +81,8 @@ public class AddBotMenu : IMainMenu {
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
 		Global.sprites["cursor"].drawToHUD(0, 15, optionPoses[selectArrowPosY].y + 5);
 
-		Fonts.drawText(FontType.Orange, "Add Bot", Global.halfScreenW, 15, alignment: Alignment.Center);
+		Fonts.drawText(FontType.BlueMenu, "Add Bot", Global.halfScreenW, 15, Alignment.Center);
+
 
 		string botTeamStr = "(Auto)";
 		if (botTeamNum == GameMode.blueAlliance) botTeamStr = "Blue";
@@ -93,13 +94,14 @@ public class AddBotMenu : IMainMenu {
 		else if (botCharNum == 2) botCharStr = "Vile";
 		else if (botCharNum == 3) botCharStr = "Axl";
 		else if (botCharNum == 4) botCharStr = "Sigma";
+		else if (botCharNum == 5) botCharStr = "Rockman";
 
 		Fonts.drawText(
-			FontType.Blue, "Character: " + botCharStr,
+			FontType.Grey, "CHARACTER: " + botCharStr,
 			optionPoses[0].x, optionPoses[0].y, selected: selectArrowPosY == 0
 		);
 		Fonts.drawText(
-			teamOptionEnabled() ? FontType.Green : FontType.DarkGreen, "Team: " + botTeamStr,
+			teamOptionEnabled() ? FontType.Grey : FontType.Grey, "TEAM: " + botTeamStr,
 			optionPoses[1].x, optionPoses[1].y,
 			selected: selectArrowPosY == 1
 		);

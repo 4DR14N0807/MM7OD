@@ -99,10 +99,10 @@ public class ZeroUppercut : CharState {
 			if (type == RyuenjinType.Shoryuken) ySpeedMod = 1.5f;
 			character.vel.y = -character.getJumpPower() * ySpeedMod;
 			if (!isUnderwater) {
-				if (type == RyuenjinType.Ryuenjin) character.playSound("ryuenjin", sendRpc: true);
-				if (type == RyuenjinType.EBlade) character.playSound("raijingeki", sendRpc: true);
-				if (type == RyuenjinType.Rising) character.playSound("saber1", sendRpc: true);
-				if (type == RyuenjinType.Shoryuken) character.playSound("punch2", sendRpc: true);
+				//if (type == RyuenjinType.Ryuenjin) character.playSound("ryuenjin", sendRpc: true);
+				//if (type == RyuenjinType.EBlade) character.playSound("raijingeki", sendRpc: true);
+				//if (type == RyuenjinType.Rising) character.playSound("saber1", sendRpc: true);
+				//if (type == RyuenjinType.Shoryuken) character.playSound("punch2", sendRpc: true);
 			}
 		}
 

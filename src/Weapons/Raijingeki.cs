@@ -64,7 +64,7 @@ public class Raijingeki : CharState {
 
 		if (character.sprite.frameIndex > 10 && !playedSoundYet) {
 			playedSoundYet = true;
-			character.playSound("raijingeki", sendRpc: true);
+			//character.playSound("raijingeki", sendRpc: true);
 		}
 
 		if (character.isAnimOver()) {
@@ -132,7 +132,7 @@ public class SuiretsusanState : CharState {
 		if (pois != null && pois.Count > 0 && !once) {
 			once = true;
 			new SuiretsusenProj(zero.raijingekiWeapon, character.getFirstPOIOrDefault(), character.xDir, player, player.getNextActorNetId(), sendRpc: true);
-			character.playSound("spear", sendRpc: true);
+			//character.playSound("spear", sendRpc: true);
 		}
 
 		if (character.isAnimOver()) {
@@ -251,7 +251,7 @@ public class TBreakerProj : Projectile {
 	public override void onStart() {
 		base.onStart();
 		shakeCamera(sendRpc: true);
-		playSound("crash", sendRpc: true);
+		//playSound("crash", sendRpc: true);
 	}
 
 	public override void update() {
@@ -303,7 +303,7 @@ public class MegaPunchState : CharState {
 
 		if (character.frameIndex >= 7 && !once) {
 			once = true;
-			character.playSound("megapunch", sendRpc: true);
+			//character.playSound("megapunch", sendRpc: true);
 		}
 
 		if (character.isAnimOver()) {

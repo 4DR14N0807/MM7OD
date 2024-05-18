@@ -35,19 +35,19 @@ public class EnterTextMenu : IMainMenu {
 		float top = Global.screenH * 0.4f;
 
 		DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, Color.Black, 0, ZIndex.HUD, false);
-		Fonts.drawText(FontType.RedishOrange, message, Global.screenW / 2, top, alignment: Alignment.Center);
+		Fonts.drawText(FontType.Grey, message, Global.screenW / 2, top, Alignment.Center);
 
 		float xPos = Global.screenW * 0.33f;
-		Fonts.drawText(FontType.Green, text, xPos, 20 + top, alignment: Alignment.Left);
+		Fonts.drawText(FontType.Grey, text, xPos, 20 + top, Alignment.Left);
+
+
 		if (blinkTime >= 0.5f) {
-			float width = Fonts.measureText(FontType.Green, text);
-			Fonts.drawText(FontType.Green, "|", xPos + width + 3, 20 + top, alignment: Alignment.Left);
+			//float width = Helpers.measureTextStd(TCat.Default, text).x;
+			float width = Fonts.measureText(FontType.Grey, text);
+			Fonts.drawText(FontType.Grey, "<", xPos + width + 3, 20 + top, Alignment.Left);
 		}
 
-		Fonts.drawText(
-			FontType.Grey, "Press Enter to continue",
-			Global.screenW / 2, 40 + top, alignment: Alignment.Center
-		);
+		Fonts.drawText(FontType.Grey, "Press Enter to continue", Global.screenW / 2, 40 + top, Alignment.Center);
 	}
 
 }

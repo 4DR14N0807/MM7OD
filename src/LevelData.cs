@@ -513,6 +513,9 @@ public class LevelData {
 		if (name == "japetribute_1v1") {
 			return "japetribute_1v1";
 		}
+		if (name == "weatherinstitute_1v1") {
+			return "bossroom";
+		}
 		if (isCustomMap) {
 			return name;
 		}

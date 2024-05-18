@@ -137,7 +137,7 @@ public class FakeZero : Maverick {
 
 	public MaverickState getShootState(bool isAI) {
 		var mshoot = new MShoot((Point pos, int xDir) => {
-			playSound("buster2", sendRpc: true);
+			//playSound("zbuster2", sendRpc: true);
 			deductAmmo(2);
 			new FakeZeroBusterProj(weapon, pos, xDir, player, player.getNextActorNetId(), rpc: true);
 		}, null);
@@ -204,7 +204,7 @@ public class FakeZeroShootAirState : MaverickState {
 		if (shootPos != null) {
 			if (!once) {
 				once = true;
-				maverick.playSound("buster2X2", forcePlay: false, sendRpc: true);
+				//maverick.playSound("buster2X2", forcePlay: false, sendRpc: true);
 				maverick.deductAmmo(2);
 				new FakeZeroBusterProj(maverick.weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			}
@@ -230,7 +230,7 @@ public class FakeZeroShootAir2State : MaverickState {
 			if (!once) {
 				once = true;
 				maverick.deductAmmo(8);
-				maverick.playSound("buster3X2", forcePlay: false, sendRpc: true);
+				//maverick.playSound("buster3X2", forcePlay: false, sendRpc: true);
 				new FakeZeroBuster2Proj(maverick.weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			}
 		}
@@ -264,14 +264,14 @@ public class FakeZeroShoot2State : MaverickState {
 		if (shootPos != null && maverick.frameIndex != lastShootFrame) {
 			if (shootNum == 0) {
 				maverick.deductAmmo(8);
-				maverick.playSound("buster3X2", forcePlay: false, sendRpc: true);
+				//maverick.playSound("buster3X2", forcePlay: false, sendRpc: true);
 				new FakeZeroBuster2Proj(maverick.weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			} else if (shootNum == 1) {
 				maverick.deductAmmo(8);
-				maverick.playSound("buster3X2", forcePlay: false, sendRpc: true);
+				//maverick.playSound("buster3X2", forcePlay: false, sendRpc: true);
 				new FakeZeroBuster2Proj(maverick.weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			} else if (shootNum == 2) {
-				maverick.playSound("buster4X2", forcePlay: false, sendRpc: true);
+				//maverick.playSound("buster4X2", forcePlay: false, sendRpc: true);
 				new FakeZeroSwordBeamProj(maverick.weapon, shootPos.Value, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
 			}
 			shootNum++;
@@ -390,7 +390,7 @@ public class FakeZeroGroundPunchState : MaverickState {
 		base.update();
 
 		if (maverick.frameIndex == 3 && !once) {
-			maverick.playSound("crashX2", forcePlay: false, sendRpc: true);
+			//maverick.playSound("crashX2", forcePlay: false, sendRpc: true);
 			maverick.shakeCamera(sendRpc: true);
 			once = true;
 			Weapon w = maverick.weapon;

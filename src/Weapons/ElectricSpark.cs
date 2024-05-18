@@ -10,7 +10,7 @@ public class ElectricSpark : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 6;
 		weaknessIndex = 8;
-		shootSounds = new List<string>() { "electricSpark", "electricSpark", "electricSpark", "electricSpark" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.5f;
 	}
 
@@ -42,7 +42,7 @@ public class ElectricSparkProj : Projectile {
 		}
 
 		fadeSprite = "electric_spark_fade";
-		//this.fadeSound = "explosion";
+		//this.fadeSound = "";
 		this.type = type;
 		if (vel != null) this.vel = (Point)vel;
 		reflectable = true;

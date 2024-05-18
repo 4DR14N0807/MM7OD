@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class SpiralMagnum : AxlWeapon {
 	public SpiralMagnum(int altFire) : base(altFire) {
-		shootSounds = new List<string>() { "spiralMagnum", "spiralMagnum", "spiralMagnum", "sniperMissile" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.75f;
 		altFireCooldown = 2;
 		index = (int)WeaponIds.SpiralMagnum;
@@ -20,7 +20,7 @@ public class SpiralMagnum : AxlWeapon {
 		if (altFire == 1) {
 			sprite = "axl_arm_spiralmagnum";
 			altFireCooldown = 1;
-			shootSounds[1] = "spiralMagnum";
+			shootSounds[1] = "";
 		}
 	}
 
@@ -108,7 +108,7 @@ public class SpiralMagnumShell : Anim {
 		if (other.gameObject is not Wall) return;
 		if (stopped) return;
 		if (MathF.Abs(vel.y) < 1) {
-			playSound("dingX2", sendRpc: true);
+			//playSound("dingX2", sendRpc: true);
 			vel = new Point();
 			stopped = true;
 			return;
@@ -132,7 +132,7 @@ public class SpiralMagnumShell : Anim {
 			if (vel.y < -300) vel.y = -300;
 			incPos(new Point(0, 5 * MathF.Sign(vel.y)));
 		}
-		playSound("dingX2", sendRpc: true);
+		//playSound("dingX2", sendRpc: true);
 	}
 }
 
@@ -199,7 +199,7 @@ public class SpiralMagnumProj : Projectile {
 	public override void update() {
 		if (playZing()) {
 			playedSoundOnce = true;
-			playSound("zing1");
+			//playSound("zing1");
 		}
 
 		if (!ownedByLocalPlayer) {
@@ -217,7 +217,7 @@ public class SpiralMagnumProj : Projectile {
 			damager.applyDamage(hitTarget, false, weapon, this, projId, overrideDamage: overrideDamage);
 
 			if (weakness) {
-				playSound("hurt", sendRpc: true);
+				//playSound("hurt", sendRpc: true);
 			}
 
 			damager.damage = 0;
@@ -273,7 +273,7 @@ public class SpiralMagnumProj : Projectile {
 				vel.y *= -1;
 				weakness = false;
 				time = 0;
-				playSound("m10ding");
+				//playSound("ding");
 				Global.serverClient?.rpc(RPC.playerToggle, (byte)damager.owner.id, (byte)RPCToggleType.PlayDingSound);
 				return;
 			}
@@ -304,7 +304,7 @@ public class SpiralMagnumProj : Projectile {
 				if (hitChar != null) {
 					if (weakness) {
 						hitChar.addDamageText("Headshot!", false);
-						playSound("hurt");
+						//playSound("hurt");
 					}
 				}
 			}
@@ -475,7 +475,7 @@ public class SniperMissileProj : Projectile, IDamagable {
 			return;
 		}
 		if (axl != null && axl.sniperMissileProj == this) {
-			axl.playSound("grenadeExplode");
+			//axl.playSound("grenadeExplode");
 		}
 		new SniperMissileExplosionProj(
 			weapon, pos, xDir,
@@ -517,7 +517,7 @@ public class SniperMissileExplosionProj : Projectile {
 		this.xDir = xDir;
 		destroyOnHit = false;
 		projId = (int)ProjIds.SniperMissileBlast;
-		playSound("grenadeExplode");
+		//playSound("grenadeExplode");
 		shouldShieldBlock = false;
 		axl = (player.character as Axl);
 

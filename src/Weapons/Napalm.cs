@@ -92,7 +92,7 @@ public class NapalmGrenadeProj : Projectile {
 		this.vel = new Point(speed * xDir, -200);
 		useGravity = true;
 		collider.wallOnly = true;
-		fadeSound = "explosion";
+		fadeSound = "";
 		fadeSprite = "explosion";
 		shouldShieldBlock = false;
 	}
@@ -223,7 +223,7 @@ public class NapalmAttack : CharState {
 					if (player.vileNapalmWeapon.type == (int)NapalmType.RumblingBang) {
 						proj = new NapalmGrenadeProj(player.vileNapalmWeapon, character.pos.add(poi), character.xDir, character.player, character.player.getNextActorNetId(), rpc: true);
 					} else if (player.vileNapalmWeapon.type == (int)NapalmType.FireGrenade) {
-						character.playSound("FireNappalmMK2", forcePlay: false, sendRpc: true);
+						//character.playSound("FireNappalmMK2", forcePlay: false, sendRpc: true);
 						proj = new MK2NapalmGrenadeProj(player.vileNapalmWeapon, character.pos.add(poi), character.xDir, character.player, character.player.getNextActorNetId(), rpc: true);
 					} else if (player.vileNapalmWeapon.type == (int)NapalmType.SplashHit) {
 						proj = new SplashHitGrenadeProj(player.vileNapalmWeapon, character.pos.add(poi), character.xDir, character.player, character.player.getNextActorNetId(), rpc: true);
@@ -288,7 +288,7 @@ public class NapalmAttack : CharState {
 					return;
 				}
 				shootTime = 0;
-				character.playSound("flamethrower");
+				//character.playSound("flamethrower");
 				new FlamethrowerProj(player.vileFlamethrowerWeapon, poi.Value, character.xDir, true, player, player.getNextActorNetId(), sendRpc: true);
 			}
 
@@ -319,7 +319,7 @@ public class MK2NapalmGrenadeProj : Projectile {
 		this.vel = new Point(speed * xDir, -200);
 		useGravity = true;
 		collider.wallOnly = true;
-		fadeSound = "explosion";
+		fadeSound = "";
 		fadeSprite = "explosion";
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
@@ -446,7 +446,7 @@ public class SplashHitGrenadeProj : Projectile {
 		this.vel = new Point(speed * xDir, -200);
 		useGravity = true;
 		collider.wallOnly = true;
-		fadeSound = "explosion";
+		fadeSound = "";
 		fadeSprite = "explosion";
 		shouldShieldBlock = false;
 	}

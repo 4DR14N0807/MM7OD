@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class FrostShield : Weapon {
 	public FrostShield() : base() {
-		shootSounds = new List<string>() { "frostShield", "frostShield", "frostShield", "frostShieldCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)WeaponIds.FrostShield;
 		weaponBarBaseIndex = 23;
@@ -138,7 +138,7 @@ public class FrostShieldProjGround : Projectile, IDamagable {
 		projId = (int)ProjIds.FrostShieldGround;
 		destroyOnHit = true;
 		isShield = true;
-		playSound("frostShield");
+		//playSound("frostShield");
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}

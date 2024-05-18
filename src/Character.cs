@@ -12,7 +12,8 @@ public partial class Character : Actor, IDamagable {
 		"Zero",
 		"Vile",
 		"Axl",
-		"Sigma"
+		"Sigma",
+		"Rockman"
 	};
 	public CharState charState;
 	public Player player;
@@ -24,10 +25,10 @@ public partial class Character : Actor, IDamagable {
 	public bool changedStateInFrame;
 	public bool pushedByTornadoInFrame;
 	public float chargeTime;
-	public float charge1Time = 0.5f;
-	public float charge2Time = 1.75f;
-	public float charge3Time = 3f;
-	public float charge4Time = 4.25f;
+	public const float charge1Time = 0.66f;
+	public const float charge2Time = 1.33f;
+	public const float charge3Time = 3f;
+	public const float charge4Time = 4.25f;
 	public float hyperProgress;
 
 	public Point? sigmaHeadGroundCamCenterPos;
@@ -35,12 +36,15 @@ public partial class Character : Actor, IDamagable {
 	public ChargeEffect chargeEffect;
 	public float shootAnimTime = 0;
 	public AI? ai;
-
 	public float headbuttAirTime = 0;
 	public int dashedInAir = 0;
 	public float healAmount = 0;
 	public SubTank? usedSubtank;
+	public ETank? usedEtank;
+	public WTank? usedWtank;
 	public float netSubtankHealAmount;
+	public float netETankHealAmount;
+	public float netWTankAmmoAmount;
 	public bool playHealSound;
 	public float healTime = 0;
 	public float weaponHealAmount = 0;
@@ -50,6 +54,7 @@ public partial class Character : Actor, IDamagable {
 	public Flag? flag;
 	public float stingChargeTime;
 	public bool isCrystalized;
+	public bool isDWrapped;
 	public bool insideCharacter;
 	public float invulnTime = 0;
 	public float parryCooldown;
@@ -87,6 +92,7 @@ public partial class Character : Actor, IDamagable {
 	public float freezeInvulnTime;
 	public float stunInvulnTime;
 	public float crystalizeInvulnTime;
+	public float dwrapInvulnTime;
 	public float grabInvulnTime;
 	public float darkHoldInvulnTime;
 
@@ -292,7 +298,7 @@ public partial class Character : Actor, IDamagable {
 		burnHurtCooldown = 0.5f;
 		burnTime += time;
 		if (oilTime > 0) {
-			playSound("flamemOilBurn", sendRpc: true);
+			//playSound("flamemOilBurn", sendRpc: true);
 			damager.applyDamage(this, false, weapon, this, (int)ProjIds.Burn, overrideDamage: 2, overrideFlinch: Global.defFlinch);
 			burnTime += oilTime;
 			oilTime = 0;
@@ -349,13 +355,13 @@ public partial class Character : Actor, IDamagable {
 			shaders.Add(player.possessedShader);
 		}
 
-		if (isDarkHoldBS.getValue() && player.darkHoldShader != null) {
+		/*if (isDarkHoldBS.getValue() && player.darkHoldShader != null) {
 			// If we are not already being affected by a dark hold shader, apply it. Otherwise for a brief period,
 			// victims will be double color inverted, appearing normal
 			if (!Global.level.darkHoldProjs.Any(dhp => dhp.screenShader != null && dhp.inRange(this))) {
 				shaders.Add(player.darkHoldShader);
 			}
-		}
+		}*/
 
 		if (player.darkHoldShader != null) {
 			// Invert the zero who used a dark hold so he appears to be drawn normally on top of it
@@ -524,6 +530,10 @@ public partial class Character : Actor, IDamagable {
 		return true;
 	}
 
+	public virtual float getClimbLadderSpeed() {
+		return 120f;
+	}
+
 	public virtual bool canCharge() {
 		return true;
 	}
@@ -603,7 +613,7 @@ public partial class Character : Actor, IDamagable {
 		if (flag != null || !isDashing) {
 			return getRunSpeed();
 		}
-		float dashSpeed = 3.45f * 60f;
+		float dashSpeed = 3.5f * 60;
 
 		if (charState is XHover) {
 			dashSpeed *= 1.25f;
@@ -641,6 +651,7 @@ public partial class Character : Actor, IDamagable {
 		if (physicsCollider == null) {
 			return null;
 		}
+		float wSize = 18;
 		float hSize = 30;
 		if (sprite.name.Contains("crouch")) {
 			hSize = 22;
@@ -651,23 +662,39 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			hSize = 20;
 		}
+		if (player.isRock) {
+			hSize = 35;
+			if (sprite.name.Contains("slide")) {
+				wSize = 36;
+				hSize = 12;
+			}
+		}
 		return new Collider(
-			new Rect(0f, 0f, 18, hSize).getPoints(),
+			new Rect(0f, 0f, wSize, hSize).getPoints(),
 			false, this, false, false,
-			HitboxFlag.Hurtbox, new Point(0, 0)
+			HitboxFlag.Hurtbox, Point.zero
 		);
 	}
 
 	public override Collider getGlobalCollider() {
 		var rect = new Rect(0, 0, 18, 34);
+		var offset = new Point (0, 0);
 		if (sprite.name.Contains("_ra_")) {
 			rect.y2 = 20;
 		}
-		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
+		if (player.isRock) {
+			rect = new Rect( 0, 0, 18, 39);	
+		} 
+		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, offset);
 	}
 
 	public virtual Collider getDashingCollider() {
 		var rect = new Rect(0, 0, 18, 22);
+		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
+	}
+
+	public virtual Collider getSlidingCollider() {
+		var rect = new Rect(0, 0, 36, 12);
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
 
@@ -985,6 +1012,9 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref crystalizeInvulnTime);
 		Helpers.decrementTime(ref grabInvulnTime);
 		Helpers.decrementTime(ref darkHoldInvulnTime);
+		Helpers.decrementTime(ref dwrapInvulnTime);
+
+
 
 		if (flag != null && flag.ownedByLocalPlayer) {
 			flag.changePos(getCenterPos());
@@ -1057,6 +1087,7 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		updateParasite();
+		updateBubble();
 
 		if (beeSwarm != null) {
 			beeSwarm.update();
@@ -1073,7 +1104,7 @@ public partial class Character : Actor, IDamagable {
 				stingChargeTime -= Global.spf;
 			}
 			if (stingChargeTime <= 0) {
-				player.delaySubtank();
+				player.delayETank();
 				stingChargeTime = 0;
 			}
 		}
@@ -1093,15 +1124,15 @@ public partial class Character : Actor, IDamagable {
 
 		if (player.health >= player.maxHealth) {
 			healAmount = 0;
-			usedSubtank = null;
+			usedEtank = null;
 		}
 		if (healAmount > 0 && player.health > 0) {
 			healTime += Global.spf;
 			if (healTime > 0.05) {
 				healTime = 0;
 				healAmount--;
-				if (usedSubtank != null) {
-					usedSubtank.health--;
+				if (usedEtank != null) {
+					usedEtank.health--;
 				}
 				player.health = Helpers.clampMax(player.health + 1, player.maxHealth);
 				if (acidTime > 0) {
@@ -1120,8 +1151,8 @@ public partial class Character : Actor, IDamagable {
 			playHealSound = false;
 		}
 
-		if (usedSubtank != null && usedSubtank.health <= 0) {
-			usedSubtank = null;
+		if (usedEtank != null && usedEtank.health <= 0) {
+			usedEtank = null;
 		}
 
 		if (ai != null && !Global.isSkippingFrames) {
@@ -1453,6 +1484,12 @@ public partial class Character : Actor, IDamagable {
 		return true;
 	}
 
+
+	public bool canDWrap() {
+		if (isDWrapped) return false;
+		return true;
+	}
+
 	public virtual void chargeGfx() {
 		if (ownedByLocalPlayer) {
 			chargeEffect.stop();
@@ -1472,7 +1509,7 @@ public partial class Character : Actor, IDamagable {
 				var renderGfx = RenderEffectType.ChargeBlue;
 				renderGfx = level switch {
 					1 => RenderEffectType.ChargeBlue,
-					2 => RenderEffectType.ChargeYellow,
+					2 => RenderEffectType.ChargeGreen,
 					3 when (chargeType == 2) => RenderEffectType.ChargeOrange,
 					3 => RenderEffectType.ChargePink,
 					_ when (chargeType == 1) => RenderEffectType.ChargeGreen,
@@ -1640,6 +1677,24 @@ public partial class Character : Actor, IDamagable {
 			if (player.isWolfSigma()) return pos.addxy(0, -7);
 			else if (player.isViralSigma()) return pos.addxy(0, 0);
 			return pos.addxy(0, -32);
+		}
+		if (player.isRock) {
+			if (charState is LadderClimb || charState is ShootAltLadder) {
+				float offset = 0;
+				if (xDir < 0) return pos.substractxy(offset, 22);
+				return pos.addxy(offset, -22);
+			}
+			if (!grounded) {
+				float offset = -8;
+				if (charState is DWrapped) {
+					offset = 0;
+					if (xDir < 0) return pos.substractxy(offset, 18);
+					return pos.addxy(offset, -18);
+				}
+				if (xDir < 0) return pos.substractxy(offset, 21);
+				return pos.addxy(offset, -21);
+			}
+			return pos.addxy(0, -21);
 		}
 		return pos.addxy(0, -18);
 	}
@@ -1862,13 +1917,13 @@ public partial class Character : Actor, IDamagable {
 			return 0;
 		} else if (chargeTime >= charge1Time && chargeTime < charge2Time) {
 			return 1;
-		} else if (chargeTime >= charge2Time && chargeTime < charge3Time) {
+		} else if (chargeTime >= charge2Time) {
 			return 2;
-		} else if (chargeTime >= charge3Time && chargeTime < charge4Time) {
-			return 3;
+		} /* else if (chargeTime >= charge3Time && chargeTime < charge4Time) {
+			return clampTo2 ? 2 : 3;
 		} else if (chargeTime >= charge4Time) {
 			return clampTo3 ? 3 : 4;
-		}
+		}*/
 		return -1;
 	}
 
@@ -2029,7 +2084,7 @@ public partial class Character : Actor, IDamagable {
 		if (Global.overrideDrawCursorChar) drawCursorChar = true;
 
 		if (!isWarpIn() && drawCursorChar && player.currentMaverick == null) {
-			Global.sprites["cursorchar"].draw(
+			Global.sprites["cursor"].draw(
 				0, pos.x + x, pos.y + y + currentLabelY, 1, 1, null, 1, 1, 1, zIndex + 1
 			);
 			deductLabelY(labelCursorOffY);
@@ -2122,11 +2177,11 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		bool drewSubtankHealing = drawSubtankHealing();
+		bool drewETankHealing = drawETankHealing();
 		if (player.isMainPlayer && !player.isDead) {
 			bool drewStatusProgress = drawStatusProgress();
 
-			if (!drewStatusProgress && !drewSubtankHealing && dropFlagProgress > 0) {
+			if (!drewStatusProgress && !drewETankHealing && dropFlagProgress > 0) {
 				float healthBarInnerWidth = 30;
 
 				float progress = (dropFlagProgress);
@@ -2148,7 +2203,7 @@ public partial class Character : Actor, IDamagable {
 				deductLabelY(labelCooldownOffY);
 			}
 
-			if (!drewStatusProgress && !drewSubtankHealing && hyperProgress > 0) {
+			if (!drewStatusProgress && !drewETankHealing && hyperProgress > 0) {
 				float healthBarInnerWidth = 30;
 
 				float progress = (hyperProgress);
@@ -2167,14 +2222,60 @@ public partial class Character : Actor, IDamagable {
 					topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1,
 					true, Color.Yellow, 0, ZIndex.HUD - 1
 				);
-
-				int label = 125;
-				if (player.isAxl || player.isDisguisedAxl) {
-					label = 123;
-				}
-				Global.sprites["hud_killfeed_weapon"].draw(
+				/*Global.sprites["hud_killfeed_weapon"].draw(
 					label, pos.x, pos.y - 6 + currentLabelY, 1, 1, null, 1, 1, 1, ZIndex.HUD
+				);*/
+				deductLabelY(labelCooldownOffY);
+			}
+		}
+		bool drewWTankHealing = drawWTankHealing();
+		if (player.isMainPlayer && !player.isDead) {
+			bool drewStatusProgress = drawStatusProgress();
+
+			if (!drewStatusProgress && !drewWTankHealing && dropFlagProgress > 0) {
+				float ammoBarInnerWidth = 30;
+
+				float progress = (dropFlagProgress);
+				float width = progress * ammoBarInnerWidth;
+
+				getHealthNameOffsets(out bool shieldDrawn, ref progress);
+
+				Point topLeft = new Point(pos.x - 16, pos.y - 5 + currentLabelY);
+				Point botRight = new Point(pos.x + 16, pos.y + currentLabelY);
+
+				DrawWrappers.DrawRect(topLeft.x, topLeft.y, botRight.x, botRight.y, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
+				DrawWrappers.DrawRect(topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1, true, Color.Yellow, 0, ZIndex.HUD - 1);
+
+				Fonts.drawText(
+					FontType.Grey, "Dropping...",
+					pos.x + 5, pos.y - 15 + currentLabelY,
+					Alignment.Center, true, depth: ZIndex.HUD
 				);
+				deductLabelY(labelCooldownOffY);
+			}
+
+			if (!drewStatusProgress && !drewWTankHealing && hyperProgress > 0) {
+				float ammoBarInnerWidth = 30;
+
+				float progress = (hyperProgress);
+				float width = progress * ammoBarInnerWidth;
+
+				getHealthNameOffsets(out bool shieldDrawn, ref progress);
+
+				Point topLeft = new Point(pos.x - 16, pos.y - 5 + currentLabelY - 2.5f);
+				Point botRight = new Point(pos.x + 16, pos.y + currentLabelY - 2.5f);
+
+				DrawWrappers.DrawRect(
+					topLeft.x, topLeft.y, botRight.x, botRight.y,
+					true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White
+				);
+				DrawWrappers.DrawRect(
+					topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1,
+					true, Color.Yellow, 0, ZIndex.HUD - 1
+				);
+				/*Global.sprites["hud_killfeed_weapon"].draw(
+					label, pos.x, pos.y - 6 + currentLabelY, 1, 1, null, 1, 1, 1, ZIndex.HUD
+				);*/
 				deductLabelY(labelCooldownOffY);
 			}
 		}
@@ -2270,17 +2371,17 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public bool drawSubtankHealing() {
+	public bool drawETankHealing() {
 		if (ownedByLocalPlayer) {
-			if (usedSubtank != null) {
-				drawSubtankHealingInner(usedSubtank.health);
+			if (usedEtank != null) {
+				drawETankHealingInner(usedEtank.health);
 				return true;
 			}
 		} else {
-			if (netSubtankHealAmount > 0) {
-				drawSubtankHealingInner(netSubtankHealAmount);
-				netSubtankHealAmount -= Global.spf * 20;
-				if (netSubtankHealAmount <= 0) netSubtankHealAmount = 0;
+			if (netETankHealAmount > 0) {
+				drawETankHealingInner(netETankHealAmount);
+				netETankHealAmount -= Global.spf * 20;
+				if (netETankHealAmount <= 0) netETankHealAmount = 0;
 				return true;
 			}
 		}
@@ -2288,15 +2389,46 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
-	public void drawSubtankHealingInner(float health) {
+	public bool drawWTankHealing() {
+		if (ownedByLocalPlayer) {
+			if (usedWtank != null)
+				drawWTankHealingInner(usedWtank.ammo);
+				return true;
+			}
+		else {
+			if (netWTankAmmoAmount > 0) {
+				drawWTankHealingInner(netWTankAmmoAmount);
+				netWTankAmmoAmount -= Global.spf * 20;
+				if (netWTankAmmoAmount <= 0) netWTankAmmoAmount = 0;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public void drawETankHealingInner(float health) {
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
 
 		Global.sprites["menu_subtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 14 * (health / SubTank.maxHealth);
-		DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
+		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		float yPos = 14 * (health / ETank.maxHealth);
+		//DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
+
+		deductLabelY(labelSubtankOffY);
+	}
+
+	public void drawWTankHealingInner(float ammo) {
+		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
+		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
+		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
+
+		Global.sprites["menu_subtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		float yPos = 14 * (ammo / WTank.maxAmmo);
+		//DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
 
 		deductLabelY(labelSubtankOffY);
 	}
@@ -2366,7 +2498,13 @@ public partial class Character : Actor, IDamagable {
 			statusIndex = 13;
 			totalMashTime = DarkHoldState.totalStunTime;
 			statusProgress = darkHoldState.stunTime / totalMashTime;
-		} else {
+		} else if (dWrappedTime > 0) {
+			statusIndex = 14;
+			totalMashTime = DWrapped.DWrapMaxTime;
+			statusProgress = dWrapMashTime / totalMashTime;
+
+		}
+		 else {
 			player.lastMashAmount = 0;
 			return false;
 		}
@@ -2619,7 +2757,7 @@ public partial class Character : Actor, IDamagable {
 
 		if (damage > 0 && attacker != null) {
 			if (projId != (int)ProjIds.Burn && projId != (int)ProjIds.AcidBurstPoison) {
-				player.delaySubtank();
+				player.delayETank();
 			}
 		}
 		if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {
@@ -2726,6 +2864,7 @@ public partial class Character : Actor, IDamagable {
 				}
 
 				killer.awardCurrency();
+				//killer.currency += 10;
 			} else if (Global.level.gameMode.level.is1v1()) {
 				// In 1v1 the other player should always be considered a killer to prevent suicide
 				var otherPlayer = Global.level.nonSpecPlayers().Find(p => p.id != player.id);
@@ -2738,7 +2877,8 @@ public partial class Character : Actor, IDamagable {
 				assister.addAssist();
 				assister.addKill();
 
-				assister.awardCurrency();
+				assister.awardCurrency(false);
+				//assister.currency += 5;
 			}
 			//bool isSuicide = killer == null || killer == player;
 			player.addDeath(false);
@@ -2797,9 +2937,9 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void addHealth(float amount, bool fillSubtank = true) {
-		if (player.health >= player.maxHealth && fillSubtank) {
-			player.fillSubtank(amount);
+	public void addHealth(float amount, bool fillEtank = true) {
+		if (player.health >= player.maxHealth && fillEtank) {
+			player.fillETank(amount);
 		}
 		healAmount += amount;
 	}
@@ -2921,19 +3061,20 @@ public partial class Character : Actor, IDamagable {
 			playHealSound = true;
 		}
 		commonHealLogic(healer, healAmount, player.health, player.maxHealth, drawHealText);
-		addHealth(healAmount, fillSubtank: false);
+		addHealth(healAmount, fillEtank: false);
 	}
 
 	public void crystalizeStart() {
 		isCrystalized = true;
 		if (globalCollider != null) globalCollider.isClimbable = true;
 		new Anim(getCenterPos(), "crystalhunter_activate", 1, null, true);
-		playSound("crystalize");
+		//playSound("crystalize");
 	}
 
 	public void crystalizeEnd() {
 		isCrystalized = false;
-		playSound("crystalizeDashingX2");
+		//playSound("CrystalizeDashingX2");
+
 		for (int i = 0; i < 8; i++) {
 			var anim = new Anim(getCenterPos().addxy(Helpers.randomRange(-20, 20), Helpers.randomRange(-20, 20)), "crystalhunter_piece", Helpers.randomRange(0, 1) == 0 ? -1 : 1, null, false);
 			anim.frameIndex = Helpers.randomRange(0, 1);
@@ -2941,6 +3082,18 @@ public partial class Character : Actor, IDamagable {
 			anim.useGravity = true;
 			anim.vel = new Point(Helpers.randomRange(-150, 150), Helpers.randomRange(-300, 25));
 		}
+	}
+
+	public void dwrapStart() {
+		isDWrapped = true;
+		//if (globalCollider != null) globalCollider.isClimbable = true;
+		//new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, null, true);
+		//playSound("hit");
+	}
+
+	public void dwrapEnd() {
+		isDWrapped = false;
+		playSound("hit");
 	}
 
 	// PARASITE SECTION
@@ -3010,7 +3163,7 @@ public partial class Character : Actor, IDamagable {
 			};
 		} else {
 			new Anim(getCenterPos(), "explosion", 1, player.getNextActorNetId(), true, sendRpc: true, ownedByLocalPlayer);
-			playSound("explosion", sendRpc: true);
+			//playSound("explosion", sendRpc: true);
 			if (!carried) parasiteDamager.applyDamage(this, player.weapon is FrostShield, new ParasiticBomb(), this, (int)ProjIds.ParasiticBombExplode, overrideDamage: 4, overrideFlinch: Global.defFlinch);
 		}
 
@@ -3018,6 +3171,60 @@ public partial class Character : Actor, IDamagable {
 		parasiteMashTime = 0;
 		parasiteDamager = null;
 	}
+
+	// DANGER WRAP SECTION
+
+	public Anim bubbleAnim;
+	public bool hasBubble { get { return dWrappedTime > 0; } }
+	public float dWrappedTime;
+	public float dWrapMashTime = DWrapped.DWrapMaxTime;
+	public Damager? dWrapDamager;
+
+	public void addBubble(Player attacker) {
+		if (!ownedByLocalPlayer || dwrapInvulnTime > 0) return;
+
+		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
+		dWrappedTime = Global.spf;
+		dWrapDamager = damager;
+		bubbleAnim = new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, player.getNextActorNetId(), true, true);
+	}
+
+	public void updateBubble() {
+		if (dWrappedTime <= 0) return;
+
+		if (!(charState is DWrapped)) { changeState(new DWrapped(true)); }
+
+		//Point centerPos = getCenterPos();
+		bubbleAnim.changePos(getCenterPos());
+
+		dWrappedTime += Global.spf;
+		float mashValue = player.mashValue();
+		if (mashValue > Global.spf) {
+			dWrapMashTime -= mashValue;
+		}
+		if (dWrapMashTime <= 0 || !isDWrapped) {
+			dWrapMashTime = 0;
+			removeBubble(true);
+		} else if (dWrappedTime > 2 && (charState is DWrapped)) {
+			removeBubble(false);
+		}
+	}
+
+	public void removeBubble(bool ejected) {
+		if (!ownedByLocalPlayer) return;
+		if (dWrapDamager == null) return;
+
+		bubbleAnim?.destroySelf();
+		
+		if (!ejected) dWrapDamager.applyDamage(this, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion, overrideDamage: 4, overrideFlinch: Global.defFlinch);	
+		
+		dWrappedTime = 0;
+		dWrapMashTime = DWrapped.DWrapMaxTime;
+		dWrapDamager = null;
+		isDWrapped = false;
+		if (charState is not Hurt) changeToIdleOrFall();
+	}
+
 
 	public virtual bool isInvisible() {
 		return stingChargeTime > 0 && player.isX;
@@ -3172,7 +3379,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		*/
 
-		if (this is Zero || this is Rock) {
+		if (this is Zero) {
 			player.changeWeaponControls();
 		}
 
@@ -3262,7 +3469,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void addTransformAnim() {
 		transformAnim = new Anim(pos, "axl_transform", xDir, null, true);
-		playSound("transform");
+		//playSound("transform");
 		if (ownedByLocalPlayer) {
 			Global.serverClient?.rpc(RPC.playerToggle, (byte)player.id, (byte)RPCToggleType.AddTransformEffect);
 		}

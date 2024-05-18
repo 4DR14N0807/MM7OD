@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 public class CrystalHunter : Weapon {
 	public CrystalHunter() : base() {
-		shootSounds = new List<string>() { "crystalHunter", "crystalHunter", "crystalHunter", "crystalHunterCharged" };
+		shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1.25f;
 		index = (int)WeaponIds.CrystalHunter;
 		weaponBarBaseIndex = 9;
@@ -105,7 +105,7 @@ public class CrystalHunterCharged : Actor {
 		//if (isSnails) {
 		Helpers.decrementTime(ref soundTime);
 		if (soundTime == 0) {
-			playSound("csnailSlowLoop");
+			//playSound("csnailSlowLoop");
 			soundTime = 1.09f;
 		}
 		//} Why only snail gets the cool sound???

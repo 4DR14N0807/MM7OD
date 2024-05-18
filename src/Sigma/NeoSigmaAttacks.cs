@@ -61,7 +61,7 @@ public class SigmaClawState : CharState {
 			defaultSprite = sprite;
 			character.saberCooldown = neoSigma.sigmaSaberMaxCooldown;
 			character.changeSpriteFromName(sprite, true);
-			character.playSound("sigma2slash", sendRpc: true);
+			//character.playSound("sigma2slash", sendRpc: true);
 			return;
 		}
 
@@ -87,7 +87,7 @@ public class SigmaClawState : CharState {
 		}
 		defaultSprite = sprite;
 		character.changeSprite(sprite, true);
-		character.playSound("sigma2slash", sendRpc: true);
+		//character.playSound("sigma2slash", sendRpc: true);
 	}
 }
 
@@ -121,7 +121,7 @@ public class SigmaElectricBallProj : Projectile {
 public class SigmaElectricBallState : CharState {
 	bool fired;
 	public SigmaElectricBallState() : base("shoot") {
-		enterSound = "sigma2shoot";
+		enterSound = "";
 		invincible = true;
 	}
 
@@ -130,7 +130,7 @@ public class SigmaElectricBallState : CharState {
 
 		if (character.frameIndex > 0 && !fired) {
 			fired = true;
-			character.playSound("sigma2ball", sendRpc: true);
+			//character.playSound("sigma2ball", sendRpc: true);
 			var weapon = new SigmaElectricBallWeapon();
 			Point pos = character.pos.addxy(0, -20);
 			new SigmaElectricBallProj(weapon, pos, 0, player, player.getNextActorNetId(), rpc: true);
@@ -185,7 +185,7 @@ public class SigmaElectricBall2State : CharState {
 
 		if (!sound && character.frameIndex >= 13) {
 			sound = true;
-			character.playSound("neoSigmaESpark", sendRpc: true);
+			//character.playSound("NeoSigmaESpark", sendRpc: true);
 		}
 
 		if (!fired && character.getFirstPOI() != null) {
@@ -218,7 +218,7 @@ public class SigmaUpDownSlashState : CharState {
 	bool isUp;
 	public SigmaUpDownSlashState(bool isUp) : base(isUp ? "upslash" : "downslash", "", "", "") {
 		this.isUp = isUp;
-		enterSound = "sigma2slash";
+		enterSound = "";
 		exitOnLanding = true;
 	}
 

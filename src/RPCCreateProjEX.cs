@@ -41,6 +41,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.WildCoil, WildCoilProj.rpcInvoke },
 		{ (int)RockProjIds.WildCoilCharged, WildCoilChargedProj.rpcInvoke },
 		{ (int)RockProjIds.SARocketPunch, SARocketPunchProj.rpcInvoke },
+		{ (int)RockProjIds.SAArrowSlash, ArrowSlashProj.rpcInvoke },
 		
 		// Buster Zero
 		/*{ (int)ProjIds.DZBuster, DZBusterProj.rpcInvoke },

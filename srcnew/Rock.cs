@@ -252,6 +252,7 @@ public class Rock : Character {
 		if (flag != null) return false;
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
+		if (charState is LegBreakerState) return false;
 		return true;
 	}
 
@@ -483,6 +484,7 @@ public class Rock : Character {
 		return (int)(sprite.name switch {
 			"rock_slashclaw" => MeleeIds.SlashClaw,
 			"rock_slashclaw_air" => MeleeIds.SlashClaw,
+			"rock_ladder_slashclaw" => MeleeIds.SlashClaw,
 			"rock_sa_legbreaker" => MeleeIds.LegBreaker,
 			_ => MeleeIds.None
 		});

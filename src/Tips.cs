@@ -660,22 +660,13 @@ public class Tips {
 			},
 			new string[]
 			{
-				"After respawning, for 2 seconds you cannot attack",
-				"or be attacked.",
+				"After respawning, for 2 seconds you cannot",
+				"attack or be attacked.",
 			},
 			new string[]
 			{
 				"Most weapons have a limited range and won't go",
 				"past one or two screens.",
-			},
-			new string[]
-			{
-				"You cannot be frozen while guarding or using",
-				"a charged up rolling shield barrier."
-			},
-			new string[]
-			{
-				"You can eject from a Ride Armor to reach high spots.",
 			},
 			new string[]
 			{
@@ -717,6 +708,54 @@ public class Tips {
 		new string[]
 		{
 			"You can use slide to dodge some attacks."
+		},
+
+		new string[]
+		{
+			$"(For {Player.superAdaptorCost} {Global.nameCoins}",
+			"you can press COMMAND to use Super Adaptor)."
+		},
+
+		new string[]
+		{
+			"As Super Adaptor, you can press DOWN + SLIDE",
+			"to use Leg Breaker."
+		},
+
+		new string[]
+		{
+			"As Super Adaptor, press DOWN + FOWARD + SHOOT",
+			"to use Arrow Slash."
+		},
+
+		new string[]
+		{
+			"Arrow Slash is not very effective at close range",
+			"Try using it against enemies in the air."
+		},
+
+		new string[]
+		{
+			"You can aim Freeze Cracker",
+			"by pressing UP or DOWN."
+		},
+
+		new string[]
+		{
+			"You can change charged Wild Coil bounce patterns",
+			"by pressing UP or DOWN when shooting it."
+		},
+
+		new string[]
+		{
+			"Charged Wild Coil starts with low damage",
+			"but it gets stronger the more it bounces."
+		},
+
+		new string[]
+		{
+			"Hold SHOOT button to keep Scorch Wheel",
+			"arround you for more time."
 		},
 	};
 

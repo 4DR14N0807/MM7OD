@@ -386,7 +386,7 @@ class Program {
 				yPos = 219;
 			}
 			Fonts.drawText(
-				FontType.BlueMenu, "VFPS:" + vfps.ToString(), Global.screenW - 5, yPos - 10,
+				FontType.LigthGrey, "VFPS:" + vfps.ToString(), Global.screenW - 5, yPos - 10,
 				Alignment.Right
 			);
 			Fonts.drawText(

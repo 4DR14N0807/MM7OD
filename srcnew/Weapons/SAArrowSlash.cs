@@ -4,6 +4,8 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class ArrowSlash : Weapon {
+    
+    public static ArrowSlash netWeapon = new ArrowSlash();
     public ArrowSlash() : base() {
         index = (int)RockWeaponIds.SAArrowSlash;
         killFeedIndex = 0;
@@ -33,6 +35,13 @@ public class ArrowSlashProj : Projectile {
         }
     }
 
+    public static Projectile rpcInvoke(ProjParameters arg) {
+        return new ArrowSlashProj(
+            FreezeCracker.netWeapon, arg.pos, arg.xDir, arg.player,
+            arg.netId
+        );
+    }
+
     
     public override void update(){
         base.update();
@@ -42,7 +51,7 @@ public class ArrowSlashProj : Projectile {
             base.vel.x = 240 * xDir;
         }
 
-        if (timeMoving >= Global.spf * 8 && base.vel.y > -80) base.vel.y -= 10;
+        if (timeMoving >= Global.spf * 8 && base.vel.y > -120) base.vel.y -= 5;
 
         damager.damage = getDamageIncrease();
 

@@ -31,7 +31,8 @@ public class UpgradeMenu : IMainMenu {
 		if (selectArrowPosY >= Global.level.mainPlayer.etanks.Count + 1) {
 			selectArrowPosY = Global.level.mainPlayer.etanks.Count;
 		}
-/* 		if (selectArrowPosY >= Global.level.mainPlayer.wtanks.Count + 1) {
+
+		/* 		if (selectArrowPosY >= Global.level.mainPlayer.wtanks.Count + 1) {
 			selectArrowPosY = Global.level.mainPlayer.wtanks.Count;
 		} */
 	}
@@ -53,6 +54,7 @@ public class UpgradeMenu : IMainMenu {
 	public int getMaxETanks() {
 		return Global.level.server?.customMatchSettings?.maxETanks ?? 2;
 	}
+
 	public int getMaxWTanks() {
 		return Global.level.server?.customMatchSettings?.maxWTanks ?? 2;
 	}
@@ -67,6 +69,57 @@ public class UpgradeMenu : IMainMenu {
 	}
 
 	public void update() {
+		if (updateAdaptorUpgrades(mainPlayer)) return;
+
+		eTankTargets.Clear();
+		if (mainPlayer.isSigma) {
+			if (mainPlayer.isTagTeam()) {
+				if (mainPlayer.currentMaverick != null) {
+					var currentMaverickWeapon = mainPlayer.weapons.FirstOrDefault(
+						w => w is MaverickWeapon mw && mw.maverick == mainPlayer.currentMaverick
+					);
+					if (currentMaverickWeapon != null) {
+						eTankTargets.Add(currentMaverickWeapon);
+					}
+				}
+			} else if (!mainPlayer.isStriker()) {
+				eTankTargets = mainPlayer.weapons.FindAll(
+					w => (w is MaverickWeapon mw && mw.maverick != null) || w is SigmaMenuWeapon
+				).ToList();
+			}
+		}
+
+		if (eTankTargets.Count > 0 && selectArrowPosY >= 1) {
+			Helpers.menuLeftRightInc(ref eTankTargetIndex, 0, eTankTargets.Count - 1);
+		}
+
+		if (!eTankTargets.InRange(eTankTargetIndex)) eTankTargetIndex = 0;
+
+		if (Global.input.isPressedMenu(Control.MenuLeft)) {
+			if (mainPlayer.realCharNum == 0) {
+				if (mainPlayer.canUpgradeXArmor()) {
+					UpgradeArmorMenu.xGame = 3;
+					Menu.change(new UpgradeArmorMenu(prevMenu));
+					onUpgradeMenu = false;
+					return;
+				}
+			}
+		}
+
+		if (Global.input.isPressedMenu(Control.MenuRight)) {
+			if (mainPlayer.realCharNum == 0) {
+				if (mainPlayer.canUpgradeXArmor()) {
+					UpgradeArmorMenu.xGame = 1;
+					Menu.change(new UpgradeArmorMenu(prevMenu));
+					onUpgradeMenu = false;
+					return;
+				}
+			} else if (mainPlayer.realCharNum == 2) {
+				Menu.change(new SelectVileArmorMenu(prevMenu));
+				onUpgradeMenu = false;
+				return;
+			}
+		}
 
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 
@@ -246,7 +299,7 @@ public class UpgradeMenu : IMainMenu {
 			Fonts.drawText(FontType.Grey, "Left/Right: Change Heal Target", Global.halfScreenW, 202, Alignment.Center);
 		}
 
-		//UpgradeArmorMenu.drawHyperArmorUpgrades(mainPlayer, 20);
+		drawAdaptorUpgrades(mainPlayer, 20);
 
 		Fonts.drawTextEX(
 			FontType.Grey, "[MUP]/[MDOWN]: Select Item",
@@ -256,5 +309,74 @@ public class UpgradeMenu : IMainMenu {
 			FontType.Grey, "[OK]: Buy/Use, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 18, Alignment.Center
 		);
+	}
+
+	public static bool updateAdaptorUpgrades(Player mainPlayer) {
+		if (mainPlayer.character == null) return false;
+		if (mainPlayer.character.charState is NovaStrikeState) return false;
+
+		var rock = mainPlayer.character as Rock;
+
+		if (Global.input.isPressedMenu(Control.Special2)) {
+			if (mainPlayer.canGoSuperAdaptor()) {
+				if (!rock.boughtSuperAdaptorOnce) {
+					mainPlayer.currency -= Player.superAdaptorCost;
+					rock.boughtSuperAdaptorOnce = true;
+				}
+				mainPlayer.character.changeState(new CallDownRush(), true);
+				//mainPlayer.setSuperAdaptor(true);
+				//Global.playSound("chingX4");
+				return true;
+			} else Global.playSound("error");
+		}
+		return false;
+	}
+	
+	public static void drawAdaptorUpgrades(Player mainPlayer, int offY) {
+		if (mainPlayer.character == null) return;
+		if (mainPlayer.character.charState is NovaStrikeState) return;
+
+		var rock = mainPlayer.character as Rock;
+
+		string specialText = "[CMD]: Super Adaptor" + 
+			$" ({Player.superAdaptorCost} {Global.nameCoins})";
+		/*specialText = (
+			rock.boughtSuperAdaptorOnce ? "" : "[CMD]: Super Adaptor" + 
+			$" ({Player.superAdaptorCost} {Global.nameCoins})"
+		);*/
+		if (mainPlayer.canGoSuperAdaptor() && mainPlayer.isRock) {
+			
+		} 
+
+
+		float yPosb = Global.halfScreenH + 9;
+		DrawWrappers.DrawRect(
+			5, yPosb + offY, Global.screenW - 5, yPosb + 30 + offY,
+			true, Helpers.MenuBgColor, 0, ZIndex.HUD + 200, false
+		);
+
+		if (!string.IsNullOrEmpty(specialText)) {
+			specialText = specialText.TrimStart('\n');
+			float yOff = specialText.Contains('\n') ? -3 : 0;
+			float yPos = Global.halfScreenH + 9;
+			float extraOffset = mainPlayer.currency >= Player.superAdaptorCost ? 11 : 4;
+			
+			Fonts.drawText(
+				FontType.Grey, Helpers.controlText(specialText).ToUpperInvariant(),
+				Global.halfScreenW, yPos + extraOffset + yOff + offY, Alignment.Center
+			);
+		}
+
+		specialText.ToUpperInvariant();
+
+		if (mainPlayer.currency < Player.superAdaptorCost) {
+			float yOff = specialText.Contains('\n') ? -3 : 0;
+			float yPos = Global.halfScreenH + 9;
+			Fonts.drawText(
+				FontType.Red, Helpers.controlText("(Not enough bolts)").ToUpperInvariant(),
+				Global.halfScreenW, yPos + 18 + yOff + offY, Alignment.Center
+			);
+		}
+	
 	}
 }

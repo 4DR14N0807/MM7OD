@@ -17,6 +17,9 @@ public class Rock : Character {
 	public float noiseCrushAnimTime;
 	public bool usedDoubleJump;
 	public bool boughtSuperAdaptorOnce;
+	public float arrowSlashCooldown;
+	public float legBreakerCooldown;
+
 	public Rock(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
@@ -29,6 +32,9 @@ public class Rock : Character {
 
 	public override void update() {
 		base.update();
+
+		Helpers.decrementTime(ref arrowSlashCooldown);
+		Helpers.decrementTime(ref legBreakerCooldown);
 
 		if (player.weapon.ammo >= player.weapon.maxAmmo) {
 			weaponHealAmount = 0;
@@ -141,10 +147,21 @@ public class Rock : Character {
 				usedDoubleJump = true;
 			}
 
-		}
-
-		else {
+		} else {
 			usedDoubleJump = false;
+			bool arrowSlashInput = player.input.checkHadoken(player, xDir, Control.Shoot);
+
+			if (arrowSlashInput && arrowSlashCooldown <= 0 && charState is not LadderClimb) {
+				changeState(new SAArrowSlashState(), true);
+				arrowSlashCooldown = 90f / 60f;
+			}
+
+			bool legBreakerInput = player.input.isHeld(Control.Down, player);
+
+			if (legBreakerInput && legBreakerCooldown <= 0 && canSlide() && player.dashPressed(out string slideControl)) {
+				changeState(new LegBreakerState(slideControl), true);
+				legBreakerCooldown = 90f / 60f;
+			}
 		}
 	}
 
@@ -234,6 +251,7 @@ public class Rock : Character {
 		if (!grounded) return false;
 		if (flag != null) return false;
 		if (charState is CallDownRush) return false;
+		if (charState is SAArrowSlashState) return false;
 		return true;
 	}
 
@@ -262,6 +280,7 @@ public class Rock : Character {
 		if (charState is Taunt) return false;
 		if (charState is DWrapped) return false;
 		if (charState is CallDownRush) return false;
+		if (charState is SAArrowSlashState) return false;
 		if (isInvulnerableAttack()) return false;
 		if (saRocketPunchProj != null) return false;
 		
@@ -464,6 +483,7 @@ public class Rock : Character {
 		return (int)(sprite.name switch {
 			"rock_slashclaw" => MeleeIds.SlashClaw,
 			"rock_slashclaw_air" => MeleeIds.SlashClaw,
+			"rock_sa_legbreaker" => MeleeIds.LegBreaker,
 			_ => MeleeIds.None
 		});
 	}
@@ -476,6 +496,10 @@ public class Rock : Character {
 				addToLevel: addToLevel
 
 			),
+			(int)MeleeIds.LegBreaker => new GenericMeleeProj(
+				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch,  0.5f,
+				addToLevel: addToLevel
+			),
 			
 		};
 		return proj;
@@ -486,6 +510,7 @@ public class Rock : Character {
 		None = -1,
 		SlashClaw,
 		UnderWaterScorchWheel,
+		LegBreaker,
 	}
 
 	public void removeBusterProjs() {

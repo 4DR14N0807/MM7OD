@@ -596,6 +596,7 @@ public partial class Player {
 				charETanks[key].Add(new ETank());
 			}
 		}
+
 		foreach (var key in charWTanks.Keys) {
 			int wtCount = getStartWTanks();
 			for (int i=0; i < wtCount; i++) {
@@ -1673,8 +1674,8 @@ public partial class Player {
 	}
 
 	public bool canGoSuperAdaptor() {
-		return character != null && isRock && character.charState is not Die && 
-		currency >= superAdaptorCost;
+		return character != null && isRock && character.charState is not Die && character.charState is not CallDownRush &&
+		!hasSuperAdaptor() && currency >= superAdaptorCost;
 	}
 
 	public bool canUpgradeUltimateX() {

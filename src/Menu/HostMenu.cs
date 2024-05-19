@@ -138,7 +138,7 @@ public class HostMenu : IMainMenu {
 	public bool playToDirty;
 	public bool timeLimitDirty;
 
-	public string[] mapSizes = new string[] { "1v1", "Small", "Medium" };
+	public string[] mapSizes = new string[] { "1v1", "Medium", "Large" };
 	public string selectedMapSize {
 		get {
 			if (!mapSizes.InRange(mapSizeIndex)) mapSizeIndex = 0;

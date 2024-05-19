@@ -47,12 +47,12 @@ public class GameMode {
 		"Orange"
 	};
 	public FontType[] teamFonts = {
-		FontType.BlueMenu,
-		FontType.RedMenu,
-		FontType.GreenMenu,
-		FontType.PurpleMenu,
-		FontType.YellowMenu,
-		FontType.OrangeMenu
+		FontType.Blue,
+		FontType.Red,
+		FontType.Green,
+		FontType.Purple,
+		FontType.Yellow,
+		FontType.Orange
 	};
 
 	public VoteKick? currentVoteKick;
@@ -646,6 +646,10 @@ public class GameMode {
 			}
 			if (drawPlayer.character is PunchyZero punchyZero && !drawPlayer.isZBusterZero()) {
 				drawZeroGigaCooldown(punchyZero.gigaAttack);
+			}
+			if (drawPlayer.character is Rock rock && rock.boughtSuperAdaptorOnce) {
+				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown);
+				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown, 27);
 			}
 			if (drawPlayer.character is Axl axl2 && axl2.dodgeRollCooldown > 0) {
 				float cooldown = 1 - Helpers.progress(axl2.dodgeRollCooldown, Axl.maxDodgeRollCooldown);
@@ -2382,6 +2386,11 @@ public class GameMode {
 		}
 	}
 
+	public virtual FontType getPingFont(int? ping) {
+		if (ping < level.server.netcodeModelPing) return FontType.LigthGrey;
+		return FontType.Red;
+	}
+
 	public virtual void drawScoreboard() {
 		int padding = 16;
 		int top = 16;
@@ -2433,6 +2442,7 @@ public class GameMode {
 		for (var i = 0; i < players.Count && i <= 14; i++) {
 			var player = players[i];
 			var color = getCharFont(player);
+			var pingColor = getPingFont(player.getPingOrStartPing());
 
 			if (Global.serverClient != null && player.serverPlayer.isHost) {
 				Fonts.drawText(
@@ -2445,14 +2455,14 @@ public class GameMode {
 			}
 
 			Fonts.drawText(color, player.name, col1x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
-			Fonts.drawText(FontType.Blue, player.kills.ToString(), col3x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
+			Fonts.drawText(color, player.kills.ToString(), col3x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
 			Fonts.drawText(
-				FontType.Blue, player.getDeathScore().ToString(),
+				color, player.getDeathScore().ToString(),
 				col4x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left
 			);
 
 			if (Global.serverClient != null) {
-				Fonts.drawText(FontType.Blue, player.getDisplayPing(), col5x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
+				Fonts.drawText(pingColor, player.getDisplayPing(), col5x + 6, labelTextY + 18 + (i) * rowH, Alignment.Left);
 			}
 
 			//Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, col2x + 4, labelTextY + 18 + i * rowH);
@@ -2460,7 +2470,7 @@ public class GameMode {
 		//drawSpectators();
 	}
 
-	public void drawTeamScoreboard() {
+	public void  drawTeamScoreboard() {
 		int padding = 16;
 		int top = 16;
 		var hPadding = padding + 5;

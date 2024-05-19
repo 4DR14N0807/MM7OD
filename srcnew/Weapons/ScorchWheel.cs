@@ -130,7 +130,7 @@ public class ScorchWheelProj : Projectile {
     bool hasHeld;
 
     public ScorchWheelProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-    base(weapon, pos, xDir, 0, 2, player, "scorch_wheel_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
+    base(weapon, pos, xDir, 0, 2, player, "scorch_wheel_proj", 0, 1f, netProjId, player.ownedByLocalPlayer) {
         
         projId = (int)RockProjIds.ScorchWheel;
         destroyOnHit = false;
@@ -228,7 +228,6 @@ public class ScorchWheelMoveProj : Projectile {
 		projId = (int)RockProjIds.ScorchWheelMove;
         useGravity = true;
         maxTime = 1.25f;
-        fadeOnAutoDestroy = true;
         //destroyOnHit = false;
         canBeLocal = false;
 

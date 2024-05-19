@@ -3,7 +3,6 @@
 public class UpgradeArmorMenu : IMainMenu {
 	public int selectArrowPosY;
 	public IMainMenu prevMenu;
-
 	public Point optionPos1 = new Point(25, 40);
 	public Point optionPos2 = new Point(25, 40 + 36);
 	public Point optionPos3 = new Point(25, 40 + 36 * 2);
@@ -19,7 +18,7 @@ public class UpgradeArmorMenu : IMainMenu {
 	}
 
 	public void update() {
-		//if (updateHyperArmorUpgrades(mainPlayer)) return;
+		//if (updateAdaptorUpgrades(mainPlayer)) return;
 
 		// Should not be able to reach here but preventing upgrades just in case
 		if (!mainPlayer.canUpgradeXArmor()) return;
@@ -393,7 +392,7 @@ public class UpgradeArmorMenu : IMainMenu {
 		if (mainPlayer.hasChip(3)) Global.sprites["menu_chip"].drawToHUD(0, 220 - 38, optionPos3.y);
 		if (mainPlayer.hasChip(0)) Global.sprites["menu_chip"].drawToHUD(0, 220 - 28, optionPos4.y);
 
-		//drawHyperArmorUpgrades(mainPlayer, 0);
+		//drawAdaptorUpgrades(mainPlayer, 0);
 
 		Fonts.drawTextEX(
 			FontType.Grey, "[MLEFT]/[MRIGHT]: Change Armor Set",
@@ -404,79 +403,9 @@ public class UpgradeArmorMenu : IMainMenu {
 			40, Global.screenH - 18
 		);
 	}
-	/*
-	public static bool updateHyperArmorUpgrades(Player mainPlayer) {
-		if (mainPlayer.character == null) return false;
-		if (mainPlayer.character.charState is NovaStrikeState) return false;
-
-		if (Global.input.isPressedMenu(Control.Special1)) {
-			if (mainPlayer.canUpgradeUltimateX()) {
-				if (!mainPlayer.character.boughtUltimateArmorOnce) {
-					mainPlayer.currency -= Player.ultimateArmorCost;
-					mainPlayer.character.boughtUltimateArmorOnce = true;
-				}
-				mainPlayer.setUltimateArmor(true);
-				//Global.playSound("chingX4");
-				return true;
-			} else if (mainPlayer.canUpgradeGoldenX()) {
-				if (!mainPlayer.character.boughtGoldenArmorOnce) {
-					mainPlayer.currency -= Player.goldenArmorCost;
-					mainPlayer.character.boughtGoldenArmorOnce = true;
-				}
-				mainPlayer.setGoldenArmor(true);
-				//Global.playSound("ching");
-				return true;
-			}
-		} else if (Global.input.isPressedMenu(Control.MenuAlt)) {
-			if (mainPlayer.hasUltimateArmor()) {
-				mainPlayer.setUltimateArmor(false);
-				return true;
-			} else if (mainPlayer.hasGoldenArmor()) {
-				mainPlayer.setGoldenArmor(false);
-				return true;
-			}
-		}
-		return false;
-	}
 	
-	public static void drawHyperArmorUpgrades(Player mainPlayer, int offY) {
-		if (mainPlayer.character == null) return;
-		if (mainPlayer.character.charState is NovaStrikeState) return;
-
-		string specialText = "";
-		if (mainPlayer.canUpgradeUltimateX() && mainPlayer.isX && !mainPlayer.isDisguisedAxl) {
-			specialText = ("[SPC]: Ultimate Armor" +
-				(mainPlayer.character.boughtUltimateArmorOnce ? "" : $" (10 {Global.nameCoins})")
-			);
-		} else if (mainPlayer.canUpgradeGoldenX() && mainPlayer.isX && !mainPlayer.isDisguisedAxl) {
-			specialText = (
-				"[SPC]: Hyper Chip" +
-				(mainPlayer.character.boughtGoldenArmorOnce ? "" : $" (5 {Global.nameCoins})")
-			);
-		}
-
-		if (mainPlayer.hasUltimateArmor()) {
-			specialText += "\n[ALT]: Take Off Ultimate Armor";
-		} else if (mainPlayer.hasGoldenArmor()) {
-			specialText += "\n[ALT]: Disable Hyper Chip";
-		}
-
-		if (!string.IsNullOrEmpty(specialText)) {
-			specialText = specialText.TrimStart('\n');
-			float yOff = specialText.Contains('\n') ? -3 : 0;
-			float yPos = Global.halfScreenH + 25;
-			DrawWrappers.DrawRect(
-				5, yPos + offY, Global.screenW - 5, yPos + 30 + offY,
-				true, Helpers.MenuBgColor, 0, ZIndex.HUD + 200, false
-			);
-			Fonts.drawText(
-				FontType.Yellow, Helpers.controlText(specialText).ToUpperInvariant(),
-				Global.halfScreenW, yPos + 11 + yOff + offY, Alignment.Center
-			);
-		}
-
-	}
-	*/
+	
+	
 	public string getHeadArmorMessage() {
 		if (mainPlayer.isHeadArmorPurchased(xGame)) {
 			return mainPlayer.helmetArmorNum == xGame ? " (Active)" : " (Bought)";

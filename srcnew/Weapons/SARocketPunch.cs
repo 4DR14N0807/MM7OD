@@ -59,7 +59,7 @@ public class SARocketPunchProj : Projectile {
         minTime = 0.2f;
         rock = player.character as Rock;
         if (rock != null) rock.saRocketPunchProj = this;
-        maxReverseTime = 0.75f;
+        maxReverseTime = 0.5f;
         this.player = player;
 		shooter = player.character;
 		destroyOnHit = false;
@@ -89,7 +89,7 @@ public class SARocketPunchProj : Projectile {
 
         var targets = Global.level.getTargets(shooter.pos, player.alliance, true);
 		foreach (var t in targets) {
-			if (shooter.isFacing(t) && MathF.Abs(t.pos.y - shooter.pos.y) < 120) {
+			if (shooter.isFacing(t) && MathF.Abs(t.pos.y - shooter.pos.y) < 80) {
 				target = t;					
                 break;    					
             }

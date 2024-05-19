@@ -69,7 +69,6 @@ public class NoiseCrushProj : Projectile {
         maxTime = 0.75f;
         this.type = type;
         this.isMain = isMain;
-        if (type == 0) fadeOnAutoDestroy = true;
         fadeSprite = "rock_buster_fade";
         canBeLocal = false;
         
@@ -125,14 +124,14 @@ public class NoiseCrushChargedProj : Projectile {
         Player player, int type, ushort netProjId, 
         bool rpc = false
     ) : base (
-        weapon, pos, xDir, 240, 4, 
+        weapon, pos, xDir, 240, 3, 
         player, "noise_crush_charged_top", 0, 0.33f, 
         netProjId, player.ownedByLocalPlayer
     ) {
+
         projId = (int)RockProjIds.NoiseCrushCharged;
         maxTime = 1f;
         this.type = type;
-        fadeOnAutoDestroy = true;
 
         if (type == 1) changeSprite("noise_crush_charged_middle", true);
         else if (type == 2) changeSprite("noise_crush_charged_middle2", true);

@@ -1348,6 +1348,11 @@ public class Taunt : CharState {
 	public Taunt() : base("win") {
 	}
 
+	public override bool canEnter(Character character){
+		if (character.charState is Slide) return false;
+		return base.canEnter(character);
+	}
+
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		if (player.charNum == 0) tauntTime = 0.75f;

@@ -301,7 +301,9 @@ public enum RockWeaponIds
 	RushSearch,
 	RushJet,
 	RushCoil,
-	SARocketPunch
+	SARocketPunch,
+	SAArrowSlash,
+	LegBreaker,
 }
 
 public enum RockProjIds 
@@ -330,7 +332,7 @@ public enum RockProjIds
 	WildCoil,
 	WildCoilCharged,
 	SARocketPunch,
-	
+	SAArrowSlash,
 }
 
 public enum ProjIds {
@@ -750,6 +752,7 @@ public enum ProjIds {
 	//Rock stuff
 	SlashClaw,
 	ScorchWheelUnderwater,
+	LegBreaker,
 
 	// Special damage types.
 	SelfDmg = 30000,
@@ -934,6 +937,8 @@ public enum RockWeaponSlotIds
 	RushJet,
 	RushCoil,
 	SARocketPunch,
+	ArrowSlash,
+	LegBreaker,
 }
 
 public enum WeaponBarsIds

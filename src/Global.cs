@@ -523,7 +523,7 @@ public partial class Global {
 	public static List<SoundWrapper> sounds = new List<SoundWrapper>();
 	public static MusicWrapper music = null;
 
-	public static int defaultThresholdPing = 200;
+	public static int defaultThresholdPing = 400;
 	public static Level level;
 	public static ServerClient serverClient;
 	public static Server localServer;

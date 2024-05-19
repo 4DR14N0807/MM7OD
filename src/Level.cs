@@ -771,7 +771,7 @@ public partial class Level {
 						}
 					}
 				} else {
-					charNum = Helpers.randomRange(0, 4);
+					charNum = Helpers.randomRange(5, 5);
 				}
 
 				PlayerCharData playerData = null;
@@ -793,7 +793,7 @@ public partial class Level {
 
 				// CHANGECHARTOZERO, SWITCHCHARTOZERO
 				if (Global.quickStartSameChar != null) {
-					charNum = Global.quickStartSameChar.Value;
+					charNum = 5;
 				}
 
 				var cpu = new Player(

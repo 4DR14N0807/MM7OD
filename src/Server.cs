@@ -833,10 +833,10 @@ public class Server {
 					preferredAlliance = team;
 				}
 				var serverPlayer = new ServerPlayer(
-					"BOT", 0, false, charNum, preferredAlliance, "", im.SenderConnection, host?.startPing
+					"BOT", 0, false, 5, preferredAlliance, "", im.SenderConnection, host?.startPing
 				);
 				if (im.SenderConnection != null) {
-					addPlayer("BOT", serverPlayer, im.SenderConnection, true, overrideCharNum: charNum);
+					addPlayer("BOT", serverPlayer, im.SenderConnection, true, overrideCharNum: 5);
 				}
 				periodicPing(s_server);
 			}

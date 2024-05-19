@@ -22,7 +22,7 @@ public class AddBotMenu : IMainMenu {
 	}
 
 	public void update() {
-		Helpers.menuUpDown(ref selectArrowPosY, 5, optionPoses.Count - 1);
+		Helpers.menuUpDown(ref selectArrowPosY, 5, 5);
 
 		if (selectArrowPosY == 0) {
 			if (Global.input.isPressedMenu(Control.MenuLeft)) {
@@ -50,7 +50,7 @@ public class AddBotMenu : IMainMenu {
 				int id = 0;
 				int charNum = botCharNum;
 				int alliance = botTeamNum;
-				if (charNum == -1) charNum = Helpers.randomRange(5, 5);
+				if (charNum == -1) charNum = 5;
 				if (alliance == -1) {
 					if (Global.level.gameMode.isTeamMode) {
 						alliance = Server.getMatchInitAutobalanceTeam(Global.level.players, Global.level.teamNum);

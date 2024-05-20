@@ -673,7 +673,7 @@ public class RideArmor : Actor, IDamagable {
 				yOff -= (6 - (int)damageTexts[i].time);
 			}
 		}
-		damageTexts.Add(new DamageText(text, 0, pos, new Point(xOff, yOff), false));
+		damageTexts.Add(new DamageText(text, 0, pos, new Point(xOff, yOff), 0));
 	}
 
 	public void playHurtAnim() {

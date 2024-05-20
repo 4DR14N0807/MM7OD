@@ -395,17 +395,18 @@ class Program {
 			);
 		}
 		// TODO: Make this work for errors.
-		if (Global.debug) {
+		//if (Global.debug) {
 			//Draw debug strings
 			//Global.debugString1 = ((int)Math.Round(1.0f / Global.spf2)).ToString();
 			/*if (Global.level != null && Global.level.character != null) {
 				Global.debugString2 = Mathf.Floor(Global.level.character.pos.x / 8).ToString("0") + "," +
 				Mathf.Floor(Global.level.character.pos.y / 8).ToString("0");
 			}*/
-			Fonts.drawText(FontType.Red, Global.debugString1, 20, 20);
+			/*Fonts.drawText(FontType.Red, Global.debugString1, 20, 20);
 			Fonts.drawText(FontType.Red, Global.debugString2, 20, 30);
 			Fonts.drawText(FontType.Red, Global.debugString3, 20, 40);
-		}
+			*/
+		//}
 
 		DevConsole.drawConsole();
 	}
@@ -1083,6 +1084,10 @@ class Program {
 		bool f6Released = true;
 		// WARNING DISABLE THIS FOR NON-DEBUG BUILDS
 		bool frameStepEnabled = true;
+		var clearColor = Color.Black;
+		//if (Global.level?.levelData?.bgColor != null) {
+		//	clearColor = Global.level.levelData.bgColor;
+		//}
 
 		// Main loop itself.
 		while (window.IsOpen) {
@@ -1138,10 +1143,6 @@ class Program {
 			}
 			if (Global.isMouseLocked) {
 				Mouse.SetPosition(new Vector2i((int)Global.halfScreenW, (int)Global.halfScreenH), Global.window);
-			}
-			var clearColor = Color.Black;
-			if (Global.level?.levelData?.bgColor != null) {
-				clearColor = Global.level.levelData.bgColor;
 			}
 			if (!useFrameSkip || isFrameStep) {
 				update();
@@ -1256,6 +1257,7 @@ class Program {
 		decimal lastUpdateTime = 0;
 		decimal fpsLimit = (TimeSpan.TicksPerSecond / 60m);
 		bool exit = false;
+		Color clearColor = Color.Black;
 
 		// Main loop itself.
 		while (window.IsOpen && !exit) {
@@ -1269,7 +1271,6 @@ class Program {
 			} else {
 				continue;
 			}
-			Color clearColor = Color.Black;
 			window.Clear(clearColor);
 			for (int i = 0; i < loadText.Count; i++) {
 				Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);

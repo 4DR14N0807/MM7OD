@@ -890,7 +890,7 @@ public class Dash : CharState {
 
 		base.update();
 
-		if (!player.input.isHeld(initialDashButton, player) && !stop) {
+		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
 			dashTime = 50;
 		}
 		float speedModifier = 1;
@@ -1775,11 +1775,11 @@ public class Die : CharState {
 			anim.xDir = sigma.lastHyperSigmaXDir;
 			anim.frameSpeed = 0;
 		}
-		if (character is Zero zero) {
+		/*if (character is Zero zero) {
 			if (zero.isNightmareZeroBS.getValue()) {
 				character.playSound("zndie", sendRpc: true);
 			}
-		}
+		}*/
 	}
 
 	public override void onExit(CharState newState) {

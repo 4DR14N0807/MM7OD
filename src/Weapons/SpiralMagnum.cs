@@ -303,8 +303,6 @@ public class SpiralMagnumProj : Projectile {
 				damager.applyDamage(victim, false, weapon, this, projId, overrideDamage: overrideDamage);
 				if (hitChar != null) {
 					if (weakness) {
-						hitChar.addDamageText("Headshot!", false);
-						//playSound("hurt");
 					}
 				}
 			}

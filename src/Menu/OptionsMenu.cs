@@ -1525,10 +1525,7 @@ public class OptionsMenu : IMainMenu {
 	}
 
 	public string getWindowedResolution() {
-		uint scale = Options.main.windowScale;
-		if (scale <= 0) throw new Exception ("Invalid window scale");
-		
-		return (Global.screenW * scale) + "x" + (Global.screenH * scale);
+		return $"{Global.screenW * Options.main.windowScale}x{Global.screenH * Options.main.windowScale}";
 	}
 
 	public string helpText = "";

@@ -105,6 +105,9 @@ public class Options {
 	public bool useRandomRockLoadout;
 	public RockLoadout rockLoadout = new RockLoadout();
 	public int gridModeRock;
+	
+	// Punchy Zero
+	public PZeroLoadout pzeroLoadout = new PZeroLoadout();
 
 	private static Options _main;
 

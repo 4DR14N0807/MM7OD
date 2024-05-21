@@ -595,10 +595,12 @@ public partial class Global {
 
 	public static void playSound(string soundKey, bool playIfExists = true) {
 		soundKey = soundKey.ToLowerInvariant();
-		if (!playIfExists && sounds.Any(s => s.soundBuffer.soundKey == soundKey)) return;
-		SoundWrapper sound = new SoundWrapper(soundBuffers[soundKey], null);
-		Global.sounds.Add(sound);
-		sound.sound.Play();
+		if (!playIfExists && sounds.Any(s => s.soundBuffer.soundKey == soundKey)) {
+			return;
+		}
+		SoundWrapper soundWrapper = new SoundWrapper(soundBuffers[soundKey], null);
+		Global.sounds.Add(soundWrapper);
+		soundWrapper.sound.Play();
 	}
 
 	public static void changeMusic(string newMusic) {

@@ -675,8 +675,9 @@ public partial class Player {
 		if (isSigma && isPuppeteer()) bonus = 4;
 		float hpModifier = getHealthModifier();
 		if (hpModifier < 1) {
-			return MathF.Ceiling((16 + bonus) * hpModifier) + heartTanks * getHeartTankModifier();
+			return MathF.Ceiling((20 + bonus) * hpModifier) + heartTanks * getHeartTankModifier();
 		}
+		
 		return MathF.Ceiling((28 + bonus + (heartTanks * getHeartTankModifier())) * hpModifier);
 	}
 

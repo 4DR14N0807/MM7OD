@@ -63,6 +63,8 @@ public partial class MegamanX : Character {
 
 	public float xSaberCooldown;
 	public float stockedChargeFlashTime;
+	
+	public BeeSwarm? beeSwarm;
 
 	public MegamanX(
 		Player player, float x, float y, int xDir,
@@ -123,10 +125,23 @@ public partial class MegamanX : Character {
 			headbuttAirTime += Global.spf;
 		}
 
+		if (isHyperXBS.getValue()) {
+			if (musicSource == null) {
+				addMusicSource("introStageBreisX4_JX", getCenterPos(), true);
+			}
+		} else {
+			destroyMusicSource();
+		}
+
 		if (!ownedByLocalPlayer) {
 			Helpers.decrementTime(ref barrierTime);
 			return;
 		}
+
+		if (beeSwarm != null) {
+			beeSwarm.update();
+		}
+
 		updateBarrier();
 
 		if (hasFgMoveEquipped()) {

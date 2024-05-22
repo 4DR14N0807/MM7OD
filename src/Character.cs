@@ -1137,6 +1137,10 @@ public partial class Character : Actor, IDamagable {
 			healAmount = 0;
 			usedEtank = null;
 		}
+		if (player.weapon.ammo >= player.weapon.maxAmmo) {
+			player.weapon.weaponHealAmount = 0;
+			usedWtank = null;
+		}
 		if (healAmount > 0 && player.health > 0) {
 			healTime += Global.spf;
 			if (healTime > 0.05) {
@@ -1164,6 +1168,10 @@ public partial class Character : Actor, IDamagable {
 
 		if (usedEtank != null && usedEtank.health <= 0) {
 			usedEtank = null;
+		}
+
+		if (usedWtank != null && usedWtank.ammo <= 0) {
+			usedWtank = null;
 		}
 
 		if (ai != null && !Global.isSkippingFrames) {

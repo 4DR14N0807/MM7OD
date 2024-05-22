@@ -88,14 +88,14 @@ public class ThunderBoltProj : Projectile {
 			if (isAnimOver()) {
 				time = 0;
 				new ThunderBoltProj(weapon, pos.clone(), xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), chr, rpc: true);
-				destroySelfNoEffect();
+				destroySelfNoEffect(disableRpc: true, true);
 			}
 		}
 	}
 
 	public void onHit() {
 		if (!ownedByLocalPlayer) {
-			destroySelf();
+			destroySelfNoEffect(disableRpc: true, true);
 			return;
 		}
 		if (type == 1) {
@@ -105,8 +105,9 @@ public class ThunderBoltProj : Projectile {
 
 
 	public override void onHitDamagable(IDamagable damagable) {
-		if (ownedByLocalPlayer) onHit();
 		base.onHitDamagable(damagable);
+		onHit();
+		destroySelf(disableRpc: true);
 	}
 }
 
@@ -171,7 +172,7 @@ public class ThunderBoltSplitProj : Projectile {
 			if (isAnimOver()) {
 				new ThunderBoltSplitProj(weapon, pos.addxy(0, -24), xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
 				new ThunderBoltSplitProj(weapon, pos.addxy(0, 24), xDir, damager.owner, 2, damager.owner.getNextActorNetId(true), rpc: true);
-				destroySelf();
+				destroySelfNoEffect(disableRpc: true, true);
 			}
 		}
 	}

@@ -2446,7 +2446,7 @@ public partial class Character : Actor, IDamagable {
 		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
 
-		Global.sprites["menu_subtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		Global.sprites["menu_wtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		float yPos = 14 * (ammo / WTank.maxAmmo);
 		//DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
@@ -2773,6 +2773,7 @@ public partial class Character : Actor, IDamagable {
 		if (damage > 0 && attacker != null) {
 			if (projId != (int)ProjIds.Burn && projId != (int)ProjIds.AcidBurstPoison) {
 				player.delayETank();
+				player.delayWTank();
 			}
 		}
 		if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {
@@ -2969,6 +2970,10 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual void addPercentAmmo(float amount) {
 		player.weapon?.addAmmoPercentHeal(amount);
+	}
+
+	public virtual void addWTankAddAmmo(int weaponSlot, float amount) {
+		player.weapons?[weaponSlot].addAmmoHeal(amount);
 	}
 
 	public virtual bool canAddAmmo() {

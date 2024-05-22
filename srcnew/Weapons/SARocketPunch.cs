@@ -5,6 +5,7 @@ namespace MMXOnline;
 
 public class SARocketPunch : Weapon {
 
+    public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
     public static SARocketPunch netWeapon = new SARocketPunch();
 
     public SARocketPunch() : base() {
@@ -26,11 +27,26 @@ public class SARocketPunch : Weapon {
                 new RockBusterMidChargeProj (new RockBuster(), pos, xDir, player, 0, netProjId, true);
                 player.character.playSound("buster2", sendRpc: true);
             } else {
-                new RockBusterProj(new RockBuster(), pos, xDir, player, netProjId, true);
+                var proj = new RockBusterProj(new RockBuster(), pos, xDir, player, netProjId, true);
+                lemonsOnField.Add(proj);
                 player.character.playSound("buster", sendRpc: true);
             }
         }
     }
+
+    public override bool canShoot(int chargeLevel, Player player) {
+		if (!base.canShoot(chargeLevel, player)) return false;
+		if (chargeLevel > 1) {
+			return true;
+		}
+		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
+			if (lemonsOnField[i].destroyed) {
+				lemonsOnField.RemoveAt(i);
+				continue;
+			}
+		}
+		return lemonsOnField.Count < 3;
+	}
 }
 
 

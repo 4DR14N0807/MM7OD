@@ -118,7 +118,7 @@ public class JunkShieldProj : Projectile {
 		}
 
 		if (HP <= 0 ||rock == null || rock.charState is Die || (rock.player.weapon is not JunkShield)) {
-			destroySelf();
+			destroySelfNoEffect();
 			return;
 		}
 
@@ -180,7 +180,7 @@ public class JunkShieldProj : Projectile {
 		int hpCount = HP;
 		int extra = HP % 2;
 		int actualCount = (hpCount + extra) / 2;
-		destroySelf();
+		destroySelfNoEffect();
 
 		for (var i = 0; i < actualCount; i++) {
 			var angleToShoot = (int)projAngle + (85*i);

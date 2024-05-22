@@ -115,6 +115,7 @@ public class CharState {
 		}
 		if (invincible) {
 			player.delayETank();
+			player.delayWTank();
 		}
 		character.onExitState(this, newState);
 	}

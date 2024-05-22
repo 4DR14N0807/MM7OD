@@ -375,6 +375,7 @@ public class GameMode {
 		bool isWarpIn = level.mainPlayer.character != null && level.mainPlayer.character.isWarpIn();
 
 		Helpers.decrementTime(ref UpgradeMenu.eTankDelay);
+		Helpers.decrementTime(ref UpgradeMenu.wTankDelay);
 
 		if (!isOver) {
 			if (!Menu.inMenu && ((level.mainPlayer.warpedIn && !isWarpIn) || Global.level.mainPlayer.isSpectator) && Global.input.isPressedMenu(Control.MenuPause) && !chatMenu.recentlyExited) {
@@ -1597,9 +1598,9 @@ public class GameMode {
 			}
 
 			int topLeftX = 10;
-			int topLeftY = 35;
+			int topLeftY = 24;
 			int w = 120;
-			int lineHeight = 4;
+			int lineHeight = 9;
 
 			DrawWrappers.DrawRect(
 				topLeftX - 5, topLeftY - 5, topLeftX + w,

@@ -2624,6 +2624,7 @@ public partial class Player {
 		if (isDead) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
+		if (weapon.ammo == weapon.maxAmmo) return false;
 		if (weapon is not RockBuster) return true;
 		if (weapon is not SARocketPunch) return true;
 		
@@ -2664,6 +2665,12 @@ public partial class Player {
 	public void delayETank() {
 		if (isMainPlayer) {
 			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
+		}
+	}
+
+	public void delayWTank() {
+		if (isMainPlayer) {
+			UpgradeMenu.wTankDelay = UpgradeMenu.maxWTankDelay;
 		}
 	}
 }

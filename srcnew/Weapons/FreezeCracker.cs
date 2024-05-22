@@ -55,7 +55,7 @@ public class FreezeCrackerProj : Projectile {
 
         projId = (int)RockProjIds.FreezeCracker;
         maxTime = 0.6f;
-        fadeOnAutoDestroy = true;
+        //fadeOnAutoDestroy = true;
         fadeSprite = "freeze_cracker_start";
         this.type = type;
         canBeLocal = false;
@@ -101,19 +101,20 @@ public class FreezeCrackerProj : Projectile {
         if (type == 0 && isAnimOver()) {
             time = 0;
             new FreezeCrackerProj(weapon, pos, xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
-            destroySelfNoEffect();
+            destroySelfNoEffect(disableRpc: true, true);
         }
     }
 
     public void onHit() {
         if (!ownedByLocalPlayer) {
-			destroySelf();
+            destroySelf(disableRpc: true);
+			//destroySelfNoEffect(disableRpc: true, true);
 			return;
 		}
         
         if (type == 1) {
             playSound("ding", true, true);
-            destroySelf();
+            destroySelf(disableRpc: true);
 
             for (int i = 0; i < 6; i++) {   
                 new FreezeCrackerPieceProj(weapon, pos, xDir, damager.owner, i, damager.owner.getNextActorNetId(true), rpc: true);
@@ -122,10 +123,18 @@ public class FreezeCrackerProj : Projectile {
     }
 
     public override void onHitWall(CollideData other) {
-		if (!ownedByLocalPlayer) return;
+        //base.onHitWall(other);
+		//if (!ownedByLocalPlayer) return;
 		if (!other.gameObject.collider.isClimbable) return;
 		onHit();
 	}
+
+	public override void onHitDamagable(IDamagable damagable) {
+		base.onHitDamagable(damagable);
+        destroySelf(disableRpc: true);
+	}
+
+	
 
     public static Projectile rpcInvoke(ProjParameters arg) {
         return new FreezeCrackerProj(

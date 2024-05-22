@@ -10,8 +10,9 @@ public class WTank {
 	public WTank() {
 
 	}
-	public void use(Player player, Character character) {
-		character.addAmmo(ammo);
+	public void use(Player player, Character character, int weaponSlot) {
+		//character.addAmmo(ammo);
+		character.addWTankAddAmmo(weaponSlot, ammo);
 		character.usedWtank = this;
 		RPC.useWTank.sendRpc(character.netId, (int)player.weapon.maxAmmo);	
 	}

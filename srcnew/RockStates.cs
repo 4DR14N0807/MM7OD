@@ -360,10 +360,22 @@ public class CallDownRush : CharState {
 
 				case 2: //Rush Jumps and stops above the player
 				//TO DO: Improve this part :derp:
+				var rockPos = character.pos;
+				rockPos.y -= 64;
 				jumpTime += Global.spf;
 				rush.changeSprite("sa_rush_jump", true);
-				if (rush.pos.x != character.pos.x){
-					rush.vel.x = -90 * character.xDir;
+				rush.move(rush.pos.directionToNorm(rockPos).times(300));
+				if (rush.pos.distanceTo(rockPos) < 10) isXAllign = true;
+				//rush.moveToXPos(new Point(character.pos.x, character.pos.y - 32), 60);
+				//rush.moveToPos(new Point(character.pos.x, character.pos.y + 64), 120);
+				if (isXAllign) phase = 3;
+				break;
+
+				
+				/*if (rush.pos.x != character.pos.x){
+					//rush.vel.x = -90 * character.xDir;
+					
+					
 				} else {
 					rush.vel.x = 0;
 					isXAllign = true;
@@ -377,7 +389,7 @@ public class CallDownRush : CharState {
 				}
 
 				if (isXAllign && isYAllign) phase = 3;
-				break;
+				break;*/
 
 				case 3: //Rush transform
 				rush.changeSprite("sa_rush_transform", true);

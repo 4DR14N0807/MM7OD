@@ -7,6 +7,8 @@ namespace MMXOnline;
 
 public class Rock : Character {
 
+	public float lemonTime;
+	public int lemons;
 	public JunkShieldProj? junkShield;
 	public ScorchWheelProj? sWell;
 	public UnderwaterScorchWheelProj? underwaterScorchWheel;
@@ -19,6 +21,7 @@ public class Rock : Character {
 	public bool boughtSuperAdaptorOnce;
 	public float arrowSlashCooldown;
 	public float legBreakerCooldown;
+	public float timeSinceLastShoot;
 
 	public Rock(
 		Player player, float x, float y, int xDir,
@@ -33,8 +36,12 @@ public class Rock : Character {
 	public override void update() {
 		base.update();
 
+		Helpers.decrementTime(ref lemonTime);
 		Helpers.decrementTime(ref arrowSlashCooldown);
 		Helpers.decrementTime(ref legBreakerCooldown);
+
+		timeSinceLastShoot += Global.spf;
+		if (timeSinceLastShoot >= Global.spf * 30) lemons = 0;
 
 		if (player.weapon.ammo >= player.weapon.maxAmmo) {
 			weaponHealAmount = 0;
@@ -303,6 +310,7 @@ public class Rock : Character {
 		}
 
 		shootTime = player.weapon.rateOfFire;
+		timeSinceLastShoot = 0;
 
 		if (player.weapon is NoiseCrush) {
 			if (hasChargedNoiseCrush) {

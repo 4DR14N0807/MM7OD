@@ -22,22 +22,32 @@ public class RockBuster : Weapon {
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
         if (player.character.ownedByLocalPlayer) {
-            if (chargeLevel >= 2) {
-                if (player.character.grounded) {
-                    player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-                } else new RockBusterChargedProj(this, pos, xDir, player, 0, netProjId);
-                player.character.playSound("buster3", sendRpc: true);
-            }
+            if (player.character is Rock rock) {
 
-            else if (chargeLevel == 1) {
-                new RockBusterMidChargeProj(this, pos, xDir, player, 0, netProjId);
-                player.character.playSound("buster2", sendRpc: true);
-            }
+                if (chargeLevel >= 2) {
+                    if (player.character.grounded) {
+                        player.character.changeState(new RockChargeShotState(player.character.grounded), true);
+                    } else new RockBusterChargedProj(this, pos, xDir, player, 0, netProjId);
+                    player.character.playSound("buster3", sendRpc: true);
+                }
+
+                else if (chargeLevel == 1) {
+                    new RockBusterMidChargeProj(this, pos, xDir, player, 0, netProjId);
+                    player.character.playSound("buster2", sendRpc: true);
+                }
         
-            else {
-                var proj = new RockBusterProj(this, pos, xDir, player, netProjId, true);
-                lemonsOnField.Add(proj);
-                player.character.playSound("buster", sendRpc: true);
+                else {
+                    var proj = new RockBusterProj(this, pos, xDir, player, netProjId, true);
+                    lemonsOnField.Add(proj);
+                    rock.lemons++;
+                    player.character.playSound("buster", sendRpc: true);
+
+                    rock.lemonTime += 20f * rock.lemons / 60f;
+                    if (rock.lemonTime >= 1f) {
+                        rock.lemonTime = 0;
+                        rock.shootTime = 30f / 60f;
+                    } 
+                }
             }
         }
 	}

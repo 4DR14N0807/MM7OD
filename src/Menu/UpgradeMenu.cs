@@ -239,7 +239,7 @@ public class UpgradeMenu : IMainMenu {
 								var currentTarget = wTankTargets[wTankTargetIndex];
 							}
 
-							if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
+							if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY], wTankTargets[wTankTargetIndex]))) {
 								mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, wTankTargetIndex);
 								mainPlayer.wtanks.RemoveAt(selectArrowPosY);
 							}
@@ -257,7 +257,7 @@ public class UpgradeMenu : IMainMenu {
 						if (wTankTargets.Count > 0) {
 							var currentTarget = wTankTargets[wTankTargetIndex];
 						}
-						if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
+						if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY], wTankTargets[wTankTargetIndex]))) {
 							mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, wTankTargetIndex);
 							mainPlayer.wtanks.RemoveAt(selectArrowPosY);
 						}
@@ -355,7 +355,7 @@ public class UpgradeMenu : IMainMenu {
 			var optionPos = new Point(optionPositions[1].x, optionPositions[i].y);
 			if (!buyOrUse) {
 				var wtank = mainPlayer.wtanks[i];
-				canUseWtank = mainPlayer.canUseWTank(wtank);
+				//canUseWtank = mainPlayer.canUseWTank(wtank, wTankTargets[0]);
 
 				Global.sprites["menu_wtank"].drawToHUD(0, optionPos.x + 6, optionPos.y - 8);
 				//Global.sprites["menu_"].drawToHUD(0, optionPos.x + 5, optionPos.y - 3);
@@ -379,7 +379,7 @@ public class UpgradeMenu : IMainMenu {
 					var currentTarget = wTankTargets[wTankTargetIndex];
 					
 					float targetXPos = 113;
-					if (wTankTargets.Count > 1) {
+					if (wTankTargets.Count > 1 && isUsingWTank) {
 						Global.sprites["hud_weapon_icon"].drawToHUD(currentTarget.weaponSlotIndex, optionPos.x + targetXPos + 5, optionPos.y);
 						if (Global.frameCount % 60 < 30) {
 							Fonts.drawText(FontType.Grey, "<", optionPos.x + targetXPos - 7, optionPos.y - 4, Alignment.Center);

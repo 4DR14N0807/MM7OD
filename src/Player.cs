@@ -2620,13 +2620,14 @@ public partial class Player {
 		return true;
 	}
 
-	public bool canUseWTank(WTank wtank) {
+	public bool canUseWTank(WTank wtank, Weapon weaponToHeal) {
 		if (isDead) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
-		if (weapon.ammo == weapon.maxAmmo) return false;
-		if (weapon is not RockBuster) return true;
-		if (weapon is not SARocketPunch) return true;
+		if (weaponToHeal.ammo >= weaponToHeal.maxAmmo) return false;
+		//if (weapon.ammo == weapon.maxAmmo) return false;
+		//if (weapon is not RockBuster) return true;
+		// (weapon is not SARocketPunch) return true;
 		
 		return true;
 	}

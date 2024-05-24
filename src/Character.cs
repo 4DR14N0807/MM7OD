@@ -2781,7 +2781,7 @@ public partial class Character : Actor, IDamagable {
 		if (damage > 0 && attacker != null) {
 			if (projId != (int)ProjIds.Burn && projId != (int)ProjIds.AcidBurstPoison) {
 				player.delayETank();
-				player.delayWTank();
+				//player.delayWTank();
 			}
 		}
 		if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {

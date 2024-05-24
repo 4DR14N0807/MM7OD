@@ -1233,7 +1233,7 @@ public class GameMode {
 			twoLayerHealth = player.character.rideArmorPlatform.goliathHealth;
 			frameIndex = player.character.rideArmorPlatform.raNum;
 			baseX = getHUDHealthPosition(position, false).x;
-			if (player.weapon is not Buster) {
+			if (player.weapon.drawAmmo) {
 				baseX += 15;
 			}
 			mechBarExists = false;
@@ -1260,12 +1260,13 @@ public class GameMode {
 		baseY -= 16;
 		int barIndex = 0;
 
-		if (mainPlayer.character is MegamanX mmx &&
+		if (player.character is MegamanX mmx &&
 			(mmx.isHyperX == true || player.character?.charState is XRevive)
 		) {
-			if (mmx.unpoDamageMaxCooldown >= 2) barIndex = 1;
-			else if (mmx.unpoDamageMaxCooldown >= 1) barIndex = 3;
-			else if (mmx.unpoDamageMaxCooldown >= 0.5f) barIndex = 4;
+			float hpPercent = MathF.Floor(player.health / player.maxHealth * 100f);
+			if (hpPercent >= 75) barIndex = 1;
+			else if (hpPercent >= 50) barIndex = 3;
+			else if (hpPercent >= 25) barIndex = 4;
 			else barIndex = 5;
 		}
 
@@ -1326,11 +1327,8 @@ public class GameMode {
 
 	public bool shouldDrawWeaponAmmo(Player player, Weapon weapon) {
 		if (weapon == null) return false;
-		if (weapon.index == 0 && weapon is not Buster) return false;
-		if (weapon is AbsorbWeapon) return false;
-		if (weapon is DNACore) return false;
-		if (weapon is AssassinBullet) return false;
-		if (weapon is UndisguiseWeapon) return false;
+		if (weapon.weaponSlotIndex == 0) return false;
+		if (!player.weapon.drawAmmo) return false;
 		if (weapon is NovaStrike && level.isHyper1v1()) return false;
 		if (weapon is Buster buster) return false;
 		if (weapon is SARocketPunch) return false;
@@ -1346,7 +1344,7 @@ public class GameMode {
 
 		// Small Bars option.
 		float ammoDisplayMultiplier = 1;
-		if (Options.main.enableSmallBars && !forceSmallBarsOff) {
+		if (player.weapon.allowSmallBar && Options.main.enableSmallBars && !forceSmallBarsOff) {
 			ammoDisplayMultiplier = 0.5f;
 		}
 
@@ -1443,7 +1441,7 @@ public class GameMode {
 			for (var i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier); i++) {
 				var floorOrCeiling = Math.Ceiling(weapon.ammo * ammoDisplayMultiplier);
 				// Weapons that cost the whole bar go here, so they don't show up as full but still grayed out
-				if (weapon is RekkohaWeapon || weapon is GigaCrush) {
+				if (weapon.drawRoundedDown || weapon is RekkohaWeapon || weapon is GigaCrush) {
 					floorOrCeiling = Math.Floor(weapon.ammo * ammoDisplayMultiplier);
 				}
 				if (i < floorOrCeiling) {
@@ -1603,11 +1601,14 @@ public class GameMode {
 			int lineHeight = 9;
 
 			DrawWrappers.DrawRect(
-				topLeftX - 5, topLeftY - 5, topLeftX + w,
-				topLeftY + 6 + currentLineH, true, Helpers.MenuBgColor, 1, ZIndex.HUD - 10, isWorldPos: false
+				topLeftX - 2,
+				topLeftY + lineHeight - 2,
+				topLeftX + w,
+				topLeftY + currentLineH + lineHeight - 1,
+				true, Helpers.MenuBgColor, 1, ZIndex.HUD - 10, isWorldPos: false
 			);
 
-			currentLineH = -6;
+			currentLineH = 0;
 
 			bool showNetStats = Global.debug;
 			if (showNetStats) {
@@ -1670,7 +1671,7 @@ public class GameMode {
 				"Sound Count: " + Global.sounds.Count, topLeftX, topLeftY + (currentLineH += lineHeight)
 			);
 
-			Fonts.drawText(
+			/*Fonts.drawText(
 				FontType.Grey,
 				"List Counts: " + Global.level.getListCounts(), topLeftX, topLeftY + (currentLineH += lineHeight)
 			);
@@ -1681,6 +1682,7 @@ public class GameMode {
 				FontType.Grey,
 				"Avg frame process time: " + avgFrameProcessTime.ToString("0.00") + " ms", topLeftX, topLeftY + (currentLineH += lineHeight)
 			);
+			*/
 			//float graphYHeight = 20;
 			//drawDiagnosticsGraph(Global.lastFrameProcessTimes, topLeftX, topLeftY + (currentLineH += lineHeight) + graphYHeight, 1);
 
@@ -2785,7 +2787,7 @@ public class GameMode {
 		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver && level.mainPlayer.canReviveX()) {
 			Fonts.drawTextEX(
 				FontType.Blue, Helpers.controlText("[CMD]: Activate Raging Charge"),
-				Global.screenW / 2, 10 + Global.screenH / 2
+				Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
 			);
 		}
 

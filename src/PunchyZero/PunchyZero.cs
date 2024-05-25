@@ -184,9 +184,9 @@ public class PunchyZero : Character {
 			palette?.SetUniform("palette", paletteNum);
 			palette?.SetUniform("paletteTexture", Global.textures["hyperZeroPalette"]);
 		}
-		if (isViral) {
+		/*if (isViral) {
 			palette = player.nightmareZeroShader;
-		}
+		}*/
 		if (palette != null && hypermodeBlink > 0) {
 			float blinkRate = MathInt.Ceiling(hypermodeBlink / 30f);
 			palette = ((Global.frameCount % (blinkRate * 2) >= blinkRate) ? null : palette);

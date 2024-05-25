@@ -661,7 +661,7 @@ public class Server {
 				) {
 					overrideAlliance = cpuData?.alliance;
 				};
-				addPlayer("BOT", playerContract, im.SenderConnection, true, overrideCharNum, overrideAlliance);
+				addPlayer("BOT", playerContract, im.SenderConnection, true, 5, overrideAlliance);
 			}
 		}
 

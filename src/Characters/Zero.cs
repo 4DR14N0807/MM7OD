@@ -898,13 +898,13 @@ public class Zero : Character {
 					1, 1, null, 1, 1, 1, ZIndex.HUD
 				);
 				deductLabelY(labelKillFeedIconOffY);
-			} else if (isNightmareZeroBS.getValue() && player.nightmareZeroShader == null) {
+			}/* else if (isNightmareZeroBS.getValue() && player.nightmareZeroShader == null) {
 				Global.sprites["hud_killfeed_weapon"].draw(
 					174, pos.x, pos.y - 6 + currentLabelY,
 					1, 1, null, 1, 1, 1, ZIndex.HUD
 				);
 				deductLabelY(labelKillFeedIconOffY);
-			}
+			}*/
 		}
 		base.render(x, y);
 	}
@@ -1056,9 +1056,9 @@ public class Zero : Character {
 			palette?.SetUniform("palette", paletteNum);
 			palette?.SetUniform("paletteTexture", Global.textures["hyperZeroPalette"]);
 		}
-		if (isNightmareZeroBS.getValue()) {
+		/*if (isNightmareZeroBS.getValue()) {
 			palette = player.nightmareZeroShader;
-		}
+		}*/
 		if (isAwakenedZeroBS.getValue()) {
 			palette = player.zeroAzPaletteShader;
 		}

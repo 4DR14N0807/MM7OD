@@ -153,9 +153,9 @@ public class Projectile : Actor {
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
 		if (owner?.character?.isNightmareZeroBS.getValue() == true && Global.shaders.ContainsKey("nightmareZero")) {
-			if (nightmareZeroShader == null) {
+			/*if (nightmareZeroShader == null) {
 				nightmareZeroShader = ownerPlayer.nightmareZeroShader;
-			}
+			}*/
 			shaders.Add(nightmareZeroShader);
 		}
 		if (shaders.Count > 0) {

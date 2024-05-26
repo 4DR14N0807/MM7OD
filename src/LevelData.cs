@@ -540,6 +540,9 @@ public class LevelData {
 		if (name.Contains("sigma4")) {
 			return "bossroom";
 		}
+		if (name.Contains("recyclingplant2")) {
+			return "recyclingplant";
+		}
 		return Helpers.removeMapSuffix(name);
 	}
 

@@ -77,7 +77,7 @@ public partial class Actor {
 			charMask[2] = character.chargeTime > 0;
 			charMask[3] = character.igFreezeProgress > 0;
 			charMask[4] = character.oilTime > 0;
-			charMask[5] = character.infectedTime > 0;
+			charMask[5] = character.burnStateStacks > 0;
 			charMask[6] = character.vaccineTime > 0;
 			charMask[7] = false;
 			byte charMaskByte = Helpers.boolArrayToByte(charMask);
@@ -151,7 +151,7 @@ public partial class Actor {
 				args.Add((byte)(int)(character.oilTime * 20));
 			}
 			if (charMask[6]) {
-				args.Add((byte)(int)(character.infectedTime * 20));
+				args.Add((byte)(int)(character.burnStateStacks * 20));
 			}
 			if (charMask[7]) {
 				args.Add((byte)(int)(character.vaccineTime * 20));
@@ -439,8 +439,8 @@ public class RPCUpdateActor : RPC {
 						character.oilTime = 0;
 					}
 					if (charMaskBools[5]) {
-						byte infectedTime = arguments[i++];
-						character.infectedTime = infectedTime / 20f;
+						byte burnStateStacks = arguments[i++];
+						character.burnStateStacks = burnStateStacks / 20f;
 					} else {
 						character.infectedTime = 0;
 					}

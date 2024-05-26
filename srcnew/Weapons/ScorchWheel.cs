@@ -130,7 +130,7 @@ public class ScorchWheelProj : Projectile {
     bool hasHeld;
 
     public ScorchWheelProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-    base(weapon, pos, xDir, 0, 2, player, "scorch_wheel_proj", 0, 1f, netProjId, player.ownedByLocalPlayer) {
+    base(weapon, pos, xDir, 0, 2, player, "scorch_wheel_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
         
         projId = (int)RockProjIds.ScorchWheel;
         destroyOnHit = false;
@@ -341,4 +341,48 @@ public class UnderwaterScorchWheelProj : Projectile {
             counterSmall++;
         }
     }
+}
+
+public class Burning : CharState {
+	public float burningTime = 2;
+	public Burning() : base("burning") {
+	}
+
+	public override bool canEnter(Character character) {
+		if (!base.canEnter(character) ||
+			character.burnInvulnTime > 0 ||
+			character.isInvulnerable() ||
+			character.charState.stunResistant ||
+			character.grabInvulnTime > 0 ||
+			character.charState.invincible
+		) {
+			return false;
+		}
+		return true;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		if (!character.ownedByLocalPlayer) return;
+		if (character.vel.y < 0) character.vel.y = 0;
+        character.useGravity = false;
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		if (!character.ownedByLocalPlayer) return;
+		character.burnInvulnTime = 2;
+        character.useGravity = true;
+	}
+
+	public override void update() {
+		base.update();
+		if (!character.ownedByLocalPlayer) return;
+
+		burningTime -= Global.spf;
+		if (burningTime <= 0) {
+			burningTime = 0;
+			character.changeToIdleOrFall();
+		}
+	}
 }

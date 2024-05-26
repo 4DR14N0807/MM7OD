@@ -89,12 +89,14 @@ public partial class Character : Actor, IDamagable {
 	public const float maxLastAttackerTime = 5;
 
 	public float igFreezeProgress;
+	public float burnStateStacks;
 	public float freezeInvulnTime;
 	public float stunInvulnTime;
 	public float crystalizeInvulnTime;
 	public float dwrapInvulnTime;
 	public float grabInvulnTime;
 	public float darkHoldInvulnTime;
+	public float burnInvulnTime;
 
 	public float limboRACheckCooldown;
 	public RideArmor? rideArmor;
@@ -346,6 +348,20 @@ public partial class Character : Actor, IDamagable {
 			freeze(freezeTime);
 		}
 	}
+	float burningRecoveryCooldown = 0;
+	public void addBurnStateStacks(float amount) {
+		if (burnInvulnTime > 0) return;
+		if (charState is Burning) return;
+		if (isCCImmune()) return;
+		if (isInvulnerable()) return;
+
+		burnStateStacks += amount;
+		burningRecoveryCooldown = 0;
+		if (burnStateStacks >= 3) {
+			burnStateStacks = 0;
+			burn();
+		}
+	}
 
 	public bool isCStingInvisible() {
 		if (!player.isX) return false;
@@ -416,6 +432,9 @@ public partial class Character : Actor, IDamagable {
 		if (infectedTime > 0 && player.infectedShader != null) {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
+		} if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
+			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / 3);
+			shaders.Add(player.burnStateShader);
 		} else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
 			shaders.Add(player.frozenCastleShader);
 		}
@@ -1022,13 +1041,18 @@ public partial class Character : Actor, IDamagable {
 			igFreezeProgress--;
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
+		burningRecoveryCooldown += Global.spf;
+		if (burningRecoveryCooldown > 1f) {
+			burningRecoveryCooldown = 0;
+			burnStateStacks = 0;
+		}
 		Helpers.decrementTime(ref freezeInvulnTime);
 		Helpers.decrementTime(ref stunInvulnTime);
 		Helpers.decrementTime(ref crystalizeInvulnTime);
 		Helpers.decrementTime(ref grabInvulnTime);
 		Helpers.decrementTime(ref darkHoldInvulnTime);
 		Helpers.decrementTime(ref dwrapInvulnTime);
-
+		Helpers.decrementTime(ref burnInvulnTime);
 
 
 		if (flag != null && flag.ownedByLocalPlayer) {
@@ -1500,6 +1524,12 @@ public partial class Character : Actor, IDamagable {
 		if (charState is Frozen) return;
 
 		changeState(new Frozen(timeToFreeze), true);
+	}
+
+	public void burn() {
+		if (charState is Burning) return;
+
+		changeState(new Burning(), true);
 	}
 
 	public bool canCrystalize() {
@@ -2531,9 +2561,10 @@ public partial class Character : Actor, IDamagable {
 			statusIndex = 14;
 			totalMashTime = DWrapped.DWrapMaxTime;
 			statusProgress = dWrapMashTime / totalMashTime;
-
-		}
-		 else {
+		} else if (charState is Burning burning) {
+			statusIndex = 15;
+			statusProgress = burning.burningTime;
+		} else {
 			player.lastMashAmount = 0;
 			return false;
 		}
@@ -3076,7 +3107,7 @@ public partial class Character : Actor, IDamagable {
 		oilTime = 0;
 		player.possessedTime = 0;
 		igFreezeProgress = 0;
-		infectedTime = 0;
+		burnStateStacks = 0;
 	}
 
 	public bool canBeHealed(int healerAlliance) {

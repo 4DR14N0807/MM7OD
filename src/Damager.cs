@@ -310,7 +310,12 @@ public class Damager {
 			else if (projId == (int)ProjIds.Sigma3Fire) character.addBurnTime(owner, new Sigma3FireWeapon(), 0.5f);
 
 			// Other effects
-			if (projId == (int)ProjIds.IceGattling) {
+			if (projId == (int)RockProjIds.ScorchWheel || 
+				projId == (int)RockProjIds.ScorchWheelLoop ||
+				projId == (int)RockProjIds.ScorchWheelMove
+			) {
+				character.addBurnStateStacks(1);
+			} else if (projId == (int)ProjIds.IceGattling) {
 				character.addIgFreezeProgress(1, 2);
 			} else if (projId == (int)ProjIds.IceGattlingHeadshot) {
 				character.addIgFreezeProgress(2, 2);

@@ -314,9 +314,9 @@ public class Damager {
 				projId == (int)RockProjIds.ScorchWheelLoop
 				//projId == (int)RockProjIds.ScorchWheelMove
 			) {
-				character.addBurnStateStacks(1);
+				character.addBurnStateStacks(1, owner);
 			} else if (projId == (int)RockProjIds.ScorchWheelMove) {
-				character.addBurnStateStacks(2);
+				character.addBurnStateStacks(2, owner);
 			} else if (projId == (int)ProjIds.IceGattling) {
 				character.addIgFreezeProgress(1, 2);
 			} else if (projId == (int)ProjIds.IceGattlingHeadshot) {

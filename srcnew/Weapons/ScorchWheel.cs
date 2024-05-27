@@ -344,7 +344,7 @@ public class Burning : CharState {
     public const int maxStacks = 5;
     float burnDamageCooldown;
 	public Burning() : base("burning") {
-        invincible = true;
+        //invincible = true;
 	}
 
 	public override bool canEnter(Character character) {
@@ -365,12 +365,14 @@ public class Burning : CharState {
 		if (!character.ownedByLocalPlayer) return;
 		if (character.vel.y < 0) character.vel.y = 0;
         character.useGravity = false;
+        character.stopMoving();
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
 		character.burnInvulnTime = 2;
+        character.burnStateStacks = 0;
         character.useGravity = true;
 	}
 
@@ -378,12 +380,12 @@ public class Burning : CharState {
 		base.update();
 		if (!character.ownedByLocalPlayer) return;
 
-        if (burnDamageCooldown > 0) burnDamageCooldown -= Global.spf;
+        /*if (burnDamageCooldown > 0) burnDamageCooldown -= Global.spf;
         if (burnDamageCooldown <= 0) {
             character.applyDamage(player, (int)RockWeaponIds.ScorchWheel, 1, (int)RockProjIds.ScorchWheel);
             Global.playSound("hurt");
             burnDamageCooldown = Global.spf * 45;
-        }
+        }*/
 
 		burningTime -= Global.spf;
 		if (burningTime <= 0) {

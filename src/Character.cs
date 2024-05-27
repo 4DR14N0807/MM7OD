@@ -162,6 +162,7 @@ public partial class Character : Actor, IDamagable {
 	public float burnHurtCooldown;
 	// Burn (MM7)
 	public float burnDamageCooldown;
+	public Damager? burningDamager;
 	// Ice
 	public float slowdownTime;
 	// Parasite.
@@ -351,16 +352,25 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 	float burningRecoveryCooldown = 0;
-	public void addBurnStateStacks(float amount) {
+	public void addBurnStateStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
 		if (charState is Burning) return;
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
+		Damager damager = new Damager(attacker, 0, 0, 0);
+		if (burnStateStacks == 0 || burningDamager == null) {
+			burningDamager = damager;
+		} else if (burningDamager.owner != damager.owner) return;
+		//acidHurtCooldown = 0.5f;
+		//acidTime += time;
+		//oilTime = 0;
+		//if (acidTime > 8) acidTime = 8;
+
 		burnStateStacks += amount;
 		burningRecoveryCooldown = 0;
 		if (burnStateStacks >= Burning.maxStacks) {
-			burnStateStacks = 0;
+			//burnStateStacks = 0;
 			burn();
 		}
 	}
@@ -976,12 +986,12 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		if (charState is Burning) {
-			/*burnDamageCooldown += Global.spf;
+			burnDamageCooldown += Global.spf;
 			if (burnDamageCooldown >= Global.spf * 45) {
 				burnDamageCooldown = 0;
-				burnDamager?.applyDamage(this, false, new ScorchWheel(), this, (int)RockProjIds.ScorchWheel, overrideDamage: 1);
+				burningDamager?.applyDamage(this, false, new ScorchWheel(), this, (int)RockProjIds.ScorchWheel, overrideDamage: 1);
 				Global.playSound("hurt");
-			}*/
+			}
 
 			if (isUnderwater() || charState.invincible || isCCImmune()) {
 				burnStateStacks = 0;

@@ -70,7 +70,7 @@ public partial class Character {
 		isAwakenedGenmuZeroBS = new NetCharBoolState(this, 4, NetCharBoolStateNum.One, (character) => {
 			return (character as Zero)?.isAwakenedGenmuZero() == true;
 		});
-		isInvisibleBS = new NetCharBoolState(this, 5, NetCharBoolStateNum.One, (character) => { return character.isInvisible(); });
+		isInvisibleBS = new NetCharBoolState(this, 5, NetCharBoolStateNum.One, (character) => { return character.isInvisible(); }); 
 		isHyperXBS = new NetCharBoolState(this, 6, NetCharBoolStateNum.One, (character) => {
 			return (character as MegamanX)?.isHyperX == true;
 		});

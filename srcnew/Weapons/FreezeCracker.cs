@@ -15,7 +15,7 @@ public class FreezeCracker : Weapon {
         weaponSlotIndex = (int)RockWeaponSlotIds.FreezeCracker;
         //shootSounds = new List<string>() {"buster2", "buster2", "buster2", ""};
         rateOfFire = 0.75f;
-        maxAmmo = 28;
+        maxAmmo = 16;
         ammo = maxAmmo;
         description = new string[] {"Splits in 6 pieces when hitting a wall.", "Can be aimed up or down."};
     }
@@ -101,13 +101,13 @@ public class FreezeCrackerProj : Projectile {
         if (type == 0 && isAnimOver()) {
             time = 0;
             new FreezeCrackerProj(weapon, pos, xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
-            destroySelfNoEffect(disableRpc: true, true);
+            destroySelfNoEffect();
         }
     }
 
     public void onHit() {
         if (!ownedByLocalPlayer) {
-            destroySelf(disableRpc: true);
+            destroySelf();
 			//destroySelfNoEffect(disableRpc: true, true);
 			return;
 		}

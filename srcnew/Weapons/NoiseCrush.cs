@@ -13,7 +13,7 @@ public class NoiseCrush : Weapon {
         weaponBarBaseIndex = (int)RockWeaponBarIds.NoiseCrush;
         weaponBarIndex = weaponBarBaseIndex;
         killFeedIndex = 0;
-        maxAmmo = 28;
+        maxAmmo = 14;
         ammo = maxAmmo;
         rateOfFire = 0.5f;
         //shootSounds = new List<string>() {"noise_crush", "noise_crush", "", ""};

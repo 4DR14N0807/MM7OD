@@ -1553,7 +1553,7 @@ public class GameMode {
 					weaponIndex < Global.sprites["hud_killfeed_weapon"].frames.Count ? weaponIndex : 0
 				);
 				Global.sprites["hud_killfeed_weapon"].drawToHUD(
-					weaponIndex, fromRight - nameLen - 14, fromTop + (i * yDist) - 2
+					0, fromRight - nameLen - 14, fromTop + (i * yDist) - 2
 				);
 				if (killFeed.maverickKillFeedIndex != null) {
 					Global.sprites["hud_killfeed_weapon"].drawToHUD(

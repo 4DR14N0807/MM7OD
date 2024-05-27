@@ -311,10 +311,12 @@ public class Damager {
 
 			// Other effects
 			if (projId == (int)RockProjIds.ScorchWheel || 
-				projId == (int)RockProjIds.ScorchWheelLoop ||
-				projId == (int)RockProjIds.ScorchWheelMove
+				projId == (int)RockProjIds.ScorchWheelLoop
+				//projId == (int)RockProjIds.ScorchWheelMove
 			) {
 				character.addBurnStateStacks(1);
+			} else if (projId == (int)RockProjIds.ScorchWheelMove) {
+				character.addBurnStateStacks(2);
 			} else if (projId == (int)ProjIds.IceGattling) {
 				character.addIgFreezeProgress(1, 2);
 			} else if (projId == (int)ProjIds.IceGattlingHeadshot) {

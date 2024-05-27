@@ -176,7 +176,7 @@ public class RockBusterChargedProj : Projectile {
     ) {
 
         projId = (int)RockProjIds.RockBusterCharged;
-        maxTime = 0.6f;
+        maxTime = 0.4f;
         fadeOnAutoDestroy = true;
         fadeSprite = "rock_buster2_fade";
         this.type = type;

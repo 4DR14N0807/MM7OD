@@ -15,7 +15,7 @@ public class ThunderBolt : Weapon {
         weaponBarIndex = weaponBarBaseIndex;
 		//shootSounds = new List<string>() {"thunder_bolt", "thunder_bolt", "thunder_bolt", ""};
         killFeedIndex = 0;
-        maxAmmo = 28;
+        maxAmmo = 20;
         ammo = maxAmmo;
         description = new string[] {"Powerful DPS weapon.", "Divides in 2 when hitting an enemy."};
     }
@@ -95,7 +95,7 @@ public class ThunderBoltProj : Projectile {
 
 	public void onHit() {
 		if (!ownedByLocalPlayer) {
-			destroySelfNoEffect(disableRpc: true, true);
+			destroySelfNoEffect();
 			return;
 		}
 		if (type == 1) {
@@ -107,7 +107,7 @@ public class ThunderBoltProj : Projectile {
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		onHit();
-		destroySelf(disableRpc: true);
+		destroySelf();
 	}
 }
 
@@ -172,7 +172,7 @@ public class ThunderBoltSplitProj : Projectile {
 			if (isAnimOver()) {
 				new ThunderBoltSplitProj(weapon, pos.addxy(0, -24), xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
 				new ThunderBoltSplitProj(weapon, pos.addxy(0, 24), xDir, damager.owner, 2, damager.owner.getNextActorNetId(true), rpc: true);
-				destroySelfNoEffect(disableRpc: true, true);
+				destroySelfNoEffect();
 			}
 		}
 	}

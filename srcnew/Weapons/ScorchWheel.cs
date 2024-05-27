@@ -12,7 +12,7 @@ public class ScorchWheel : Weapon {
         weaponBarBaseIndex = (int)RockWeaponBarIds.ScorchWheel;
         weaponBarIndex = weaponBarBaseIndex;
         killFeedIndex = 0;
-        maxAmmo = 28;
+        maxAmmo = 14;
         ammo = maxAmmo;
         rateOfFire = 1f;
         description = new string[] {"A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer."};
@@ -32,10 +32,6 @@ public class ScorchWheel : Weapon {
                 player.character.changeState(new ShootAlt(this, (int)chargeLevel), true);
             }
         }
-    }
-
-    public override float getAmmoUsage(int chargeLevel) {
-        return 2;
     }
 }
 
@@ -130,7 +126,7 @@ public class ScorchWheelProj : Projectile {
     bool hasHeld;
 
     public ScorchWheelProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-    base(weapon, pos, xDir, 0, 2, player, "scorch_wheel_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
+    base(weapon, pos, xDir, 0, 1, player, "scorch_wheel_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
         
         projId = (int)RockProjIds.ScorchWheel;
         destroyOnHit = false;
@@ -179,7 +175,7 @@ public class ScorchWheelProj : Projectile {
             }
 
             
-            if (!hasHeld || holdTime >= 1) {
+            if (!hasHeld || holdTime >= 2) {
                 destroySelf();
                 new ScorchWheelMoveProj(weapon, pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), rpc: true);
                 playSound("scorch_wheel", true, true);
@@ -221,7 +217,7 @@ public class ScorchWheelMoveProj : Projectile {
         Player player, ushort netProjId, 
         bool rpc = false
     ) : base (
-        weapon, pos, xDir, 240, 2, 
+        weapon, pos, xDir, 240, 1, 
         player, "scorch_wheel_grounded_proj", 0, 1, 
         netProjId, player.ownedByLocalPlayer
     ) {
@@ -345,7 +341,10 @@ public class UnderwaterScorchWheelProj : Projectile {
 
 public class Burning : CharState {
 	public float burningTime = 2;
+    public const int maxStacks = 5;
+    float burnDamageCooldown;
 	public Burning() : base("burning") {
+        invincible = true;
 	}
 
 	public override bool canEnter(Character character) {
@@ -378,6 +377,13 @@ public class Burning : CharState {
 	public override void update() {
 		base.update();
 		if (!character.ownedByLocalPlayer) return;
+
+        if (burnDamageCooldown > 0) burnDamageCooldown -= Global.spf;
+        if (burnDamageCooldown <= 0) {
+            character.applyDamage(player, (int)RockWeaponIds.ScorchWheel, 1, (int)RockProjIds.ScorchWheel);
+            Global.playSound("hurt");
+            burnDamageCooldown = Global.spf * 45;
+        }
 
 		burningTime -= Global.spf;
 		if (burningTime <= 0) {

@@ -141,6 +141,11 @@ public class ShootAlt : CharState {
         character.changeSpriteFromName(sprite, true);
 	}
 
+	public override bool canEnter(Character character) {
+		if (character.charState is Burning) return false;
+		return base.canEnter(character);
+	}
+
 	public override void update(){
 		base.update();
 		float offset = character.xDir < 0 ? 20 : 0;

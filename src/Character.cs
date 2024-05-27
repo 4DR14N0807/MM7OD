@@ -154,12 +154,14 @@ public partial class Character : Actor, IDamagable {
 	// Oil
 	public Damager? oilDamager;
 	public float oilTime;
-	// Burn
+	// Burn (MMX)
 	public Damager? burnDamager;
 	public Weapon? burnWeapon;
 	public float burnTime;
 	public float burnEffectTime;
 	public float burnHurtCooldown;
+	// Burn (MM7)
+	public float burnDamageCooldown;
 	// Ice
 	public float slowdownTime;
 	// Parasite.
@@ -357,7 +359,7 @@ public partial class Character : Actor, IDamagable {
 
 		burnStateStacks += amount;
 		burningRecoveryCooldown = 0;
-		if (burnStateStacks >= 3) {
+		if (burnStateStacks >= Burning.maxStacks) {
 			burnStateStacks = 0;
 			burn();
 		}
@@ -433,7 +435,7 @@ public partial class Character : Actor, IDamagable {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
 		} if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
-			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / 3);
+			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
 		} else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
 			shaders.Add(player.frozenCastleShader);
@@ -586,6 +588,11 @@ public partial class Character : Actor, IDamagable {
 		if (isInvulnerableAttack()) {
 			return false;
 		}
+		if (charState is Die) return false;
+		if (charState is Hurt) return false;
+		if (charState is Taunt) return false;
+		if (charState is DWrapped) return false;
+		if (charState is Burning) return false;
 		return true;
 	}
 
@@ -968,6 +975,19 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
+		if (charState is Burning) {
+			/*burnDamageCooldown += Global.spf;
+			if (burnDamageCooldown >= Global.spf * 45) {
+				burnDamageCooldown = 0;
+				burnDamager?.applyDamage(this, false, new ScorchWheel(), this, (int)RockProjIds.ScorchWheel, overrideDamage: 1);
+				Global.playSound("hurt");
+			}*/
+
+			if (isUnderwater() || charState.invincible || isCCImmune()) {
+				burnStateStacks = 0;
+			}
+		}
+
 		if (burnTime > 0) {
 			burnTime -= Global.spf;
 			burnHurtCooldown += Global.spf;
@@ -1042,9 +1062,9 @@ public partial class Character : Actor, IDamagable {
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
 		burningRecoveryCooldown += Global.spf;
-		if (burningRecoveryCooldown > 1f) {
+		if (burningRecoveryCooldown > 1 && burnStateStacks > 0) {
 			burningRecoveryCooldown = 0;
-			burnStateStacks = 0;
+			burnStateStacks--;
 		}
 		Helpers.decrementTime(ref freezeInvulnTime);
 		Helpers.decrementTime(ref stunInvulnTime);

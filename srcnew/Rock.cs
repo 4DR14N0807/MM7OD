@@ -31,6 +31,12 @@ public class Rock : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Rock;
+
+		spriteToCollider["burning"] = null;
+		spriteToCollider["sa_activate_air"] = null;
+		spriteToCollider["sa_activate"] = null;
+		spriteToCollider["sa_activate_end"] = null;
+		spriteToCollider["sa_activate_end_air"] = null;
 	}
 
 	public override void update() {
@@ -260,6 +266,7 @@ public class Rock : Character {
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (charState is LegBreakerState) return false;
+		if (charState is Burning) return false;
 		return true;
 	}
 
@@ -283,10 +290,6 @@ public class Rock : Character {
 		if (sWell != null) return false;
 		if (charState is Slide) 
 			return (player.weapon is RockBuster || player.weapon is WildCoil) && getChargeLevel() == 2;
-		if (charState is Die) return false;
-		if (charState is Hurt) return false;
-		if (charState is Taunt) return false;
-		if (charState is DWrapped) return false;
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (isInvulnerableAttack()) return false;

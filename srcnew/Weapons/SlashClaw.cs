@@ -14,7 +14,7 @@ public class SlashClawWeapon : Weapon {
         weaponSlotIndex = (int)RockWeaponSlotIds.SlashClaw;
         //shootSounds = new List<string>() {"slash_claw", "slash_claw", "slash_claw", ""};
         killFeedIndex = 0;
-        maxAmmo = 28;
+        maxAmmo = 18;
         ammo = maxAmmo;
         rateOfFire = 1f;
         description = new string[] {"Fast melee attack, requires proper spacing.", "No tiene flinch."};
@@ -35,10 +35,6 @@ public class SlashClawWeapon : Weapon {
             player.character.playSound("slash_claw", sendRpc: true);
         }
 	}
-
-    public override float getAmmoUsage(int chargeLevel) {
-        return 1;
-    }
 }
 
 public class SlashClawState : CharState {

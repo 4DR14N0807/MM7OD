@@ -14,7 +14,7 @@ public class WildCoil : Weapon {
         weaponBarIndex = weaponBarBaseIndex;
         //shootSounds = new List<string>() {"buster2", "buster2", "buster3", "buster3"};
         killFeedIndex = 0;
-        maxAmmo = 28;
+        maxAmmo = 20;
         ammo = maxAmmo;
         rateOfFire = 1f;
         description = new string[] {"Throws coils in both sides that","can be charged to reach more height.", "Use Up/Down to change bounce patterns."};
@@ -33,7 +33,7 @@ public class WildCoil : Weapon {
 	}
 
     public override float getAmmoUsage(int chargeLevel) {
-        if (chargeLevel >= 2) return 4;
+        if (chargeLevel >= 2) return 2;
         return 1;
     }
 }

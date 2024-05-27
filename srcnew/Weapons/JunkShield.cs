@@ -17,6 +17,7 @@ public class JunkShield : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.JunkShield;
 		killFeedIndex = 0;
+		maxAmmo = 7;
 		description = new string[] {"Defenseless barrier that gets","damaged after rough use.", "Can be fired in up to 3 directions."};
 	}
 
@@ -42,10 +43,6 @@ public class JunkShield : Weapon {
             }	
 		}					 
 	}
-
-	public override float getAmmoUsage(int chargeLevel) {
-        return 3;
-    }
 }
 
 

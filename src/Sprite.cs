@@ -284,7 +284,7 @@ public class Sprite {
 		Character character = actor as Character;
 		if (character != null) {
 			if (character.isInvisibleBS.getValue() && !Global.shaderWrappers.ContainsKey("invisible")) {
-				alpha = 0.25f;
+				//alpha = 0.25f;
 			}
 			if (character.player.isX) {
 				armors = new int[] { character.player.bootsArmorNum, character.player.bodyArmorNum, character.player.helmetArmorNum, character.player.armArmorNum };

@@ -49,8 +49,8 @@ public class Pickup : Actor {
 				destroySelf(doRpcEvenIfNotOwned: true);
 			} else if (pickupType == PickupType.Ammo) {
 				if (chr.canAddAmmo()) {
-					//chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
-					chr.addAmmo(healAmount);
+					chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
+					//chr.addAmmo(healAmount);
 					destroySelf(doRpcEvenIfNotOwned: true);
 				}
 			}
@@ -141,7 +141,7 @@ public class LargeAmmoPickup : Pickup {
 		owner, pos, "pickup_ammo_large", netId, ownedByLocalPlayer, 
 		NetActorCreateId.LargeAmmo, sendRpc: sendRpc
 	) {
-		healAmount = 7;
+		healAmount = 50;
 		pickupType = PickupType.Ammo;
 	}
 }
@@ -154,7 +154,7 @@ public class SmallAmmoPickup : Pickup {
 		owner, pos, "pickup_ammo_small", netId, ownedByLocalPlayer, 
 		NetActorCreateId.SmallAmmo, sendRpc: sendRpc
 	) {
-		healAmount = 4;
+		healAmount = 25;
 		pickupType = PickupType.Ammo;
 	}
 }

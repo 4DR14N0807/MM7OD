@@ -358,19 +358,10 @@ public partial class Character : Actor, IDamagable {
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
-		Damager damager = new Damager(attacker, 0, 0, 0);
-		if (burnStateStacks == 0 || burningDamager == null) {
-			burningDamager = damager;
-		} else if (burningDamager.owner != damager.owner) return;
-		//acidHurtCooldown = 0.5f;
-		//acidTime += time;
-		//oilTime = 0;
-		//if (acidTime > 8) acidTime = 8;
-
 		burnStateStacks += amount;
 		burningRecoveryCooldown = 0;
 		if (burnStateStacks >= Burning.maxStacks) {
-			//burnStateStacks = 0;
+			burnStateStacks = 0;
 			burn();
 		}
 	}
@@ -441,10 +432,11 @@ public partial class Character : Actor, IDamagable {
 			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 4);
 			shaders.Add(player.igShader);
 		}
-		if (infectedTime > 0 && player.infectedShader != null) {
+		/* if (infectedTime > 0 && player.infectedShader != null) {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
-		} if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
+		}  */
+		if (burnStateStacks > 0 && player.burnStateShader != null) {
 			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
 		} else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
@@ -1075,6 +1067,7 @@ public partial class Character : Actor, IDamagable {
 		if (burningRecoveryCooldown > 1 && burnStateStacks > 0) {
 			burningRecoveryCooldown = 0;
 			burnStateStacks--;
+			if (burnStateStacks < 0) burnStateStacks = 0;
 		}
 		Helpers.decrementTime(ref freezeInvulnTime);
 		Helpers.decrementTime(ref stunInvulnTime);

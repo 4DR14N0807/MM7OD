@@ -341,7 +341,7 @@ public class UnderwaterScorchWheelProj : Projectile {
 
 public class Burning : CharState {
 	public float burningTime = 2;
-    public const int maxStacks = 5;
+    public const float maxStacks = 5;
     float burnDamageCooldown;
 	public Burning() : base("burning") {
         //invincible = true;

@@ -290,6 +290,7 @@ public class RockDoubleJump : CharState {
 	public const float jumpSpeedY = -180;
 
 	public RockDoubleJump() : base("doublejump", "doublejump_shoot", "", "") {
+		enterSound = "super_adaptor_jump";
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -297,7 +298,7 @@ public class RockDoubleJump : CharState {
 		character.useGravity = false;
 		character.vel = new Point(jumpSpeedX * character.xDir, jumpSpeedY);
 		anim = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);
-		Global.playSound("super_adaptor_jump");
+		//Global.playSound("super_adaptor_jump");
 	}
 
 	public override void onExit(CharState oldState) {

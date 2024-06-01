@@ -322,6 +322,7 @@ public enum RockProjIds
 	ScorchWheelLoop,
 	ScorchWheelMove,
 	ScorchWheelUnderwater,
+	ScorchWheelBurn,
 	SlashClaw,
 	NoiseCrush,
 	NoiseCrushCharged,

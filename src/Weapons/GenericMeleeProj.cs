@@ -124,7 +124,7 @@ public class GenericMeleeProj : Projectile {
 			if (projId == (int)ProjIds.SlashClaw) {
 
 				string slashClawFade = "slash_claw_fade";
-				new Anim(hitPoint, slashClawFade, xDir, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+				new Anim(hitPoint, slashClawFade, xDir, Global.level.mainPlayer.getNextActorNetId(), true);
 			} else {
 
 				string swordSparkSprite = projId == (int)ProjIds.ZSaber2 ? "sword_sparks_horizontal" : "sword_sparks_angled";

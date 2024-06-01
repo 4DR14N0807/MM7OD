@@ -458,7 +458,7 @@ public class Damager {
 						//character.punchFlinchCooldown = Global.spf;
 					}
 				} else {
-					if (playHurtSound || weaponKillFeedIndex == 18 ||
+					if (playHurtSound || weaponKillFeedIndex == 18 || projId == (int)RockProjIds.ScorchWheelBurn ||
 						(projId == (int)ProjIds.BlackArrow && damage > 1) ||
 						((projId == (int)ProjIds.SpiralMagnum || projId == (int)ProjIds.SpiralMagnumScoped) && damage > 2) ||
 						((projId == (int)ProjIds.AssassinBullet || projId == (int)ProjIds.AssassinBulletQuick) && damage > 8)) {

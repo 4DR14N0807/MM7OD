@@ -444,10 +444,10 @@ public partial class Character : Actor, IDamagable {
 		if (infectedTime > 0 && player.infectedShader != null) {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
-		} if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
+		} /*if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
 			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
-		} else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
+		}*/ else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
 			shaders.Add(player.frozenCastleShader);
 		}
 
@@ -985,12 +985,34 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
+		if (burnStateStacks > 0 && charState is not Burning) {
+			burnEffectTime += Global.spf;
+			if (burnEffectTime >= Global.spf * 11) {
+				burnEffectTime = 0;
+
+				Point burnPos = getCenterPos();
+
+				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
+
+				if (burnStateStacks >= 2) {
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
+				}
+				if (burnStateStacks >= 3) {
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
+					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -60)};
+				}
+				if (burnStateStacks >= 4) {
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
+					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -120)};
+				}
+			}	
+		}
+
 		if (charState is Burning) {
 			burnDamageCooldown += Global.spf;
 			if (burnDamageCooldown >= Global.spf * 45) {
 				burnDamageCooldown = 0;
-				burningDamager?.applyDamage(this, false, new ScorchWheel(), this, (int)RockProjIds.ScorchWheel, overrideDamage: 1);
-				Global.playSound("hurt");
+				burningDamager?.applyDamage(this, false, new ScorchWheel(), this, (int)RockProjIds.ScorchWheelBurn, overrideDamage: 1);
 			}
 
 			if (isUnderwater() || charState.invincible || isCCImmune()) {
@@ -1559,7 +1581,7 @@ public partial class Character : Actor, IDamagable {
 	public void burn() {
 		if (charState is Burning) return;
 
-		changeState(new Burning(), true);
+		changeState(new Burning(-xDir), true);
 	}
 
 	public bool canCrystalize() {

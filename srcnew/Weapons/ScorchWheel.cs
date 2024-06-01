@@ -342,9 +342,12 @@ public class UnderwaterScorchWheelProj : Projectile {
 public class Burning : CharState {
 	public float burningTime = 2;
     public const int maxStacks = 5;
-    float burnDamageCooldown;
-	public Burning() : base("burning") {
+    public int burnDir;
+    public float burnMoveSpeed;
+	public Burning(int dir) : base("burning") {
         //invincible = true;
+        burnDir = dir;
+        burnMoveSpeed = dir * 100;
 	}
 
 	public override bool canEnter(Character character) {
@@ -379,6 +382,11 @@ public class Burning : CharState {
 	public override void update() {
 		base.update();
 		if (!character.ownedByLocalPlayer) return;
+
+        if (burnMoveSpeed != 0) {
+			burnMoveSpeed = Helpers.toZero(burnMoveSpeed, 400 * Global.spf, burnDir);
+			character.move(new Point(burnMoveSpeed, 0));
+		}
 
         /*if (burnDamageCooldown > 0) burnDamageCooldown -= Global.spf;
         if (burnDamageCooldown <= 0) {

@@ -195,6 +195,9 @@ public class Damager {
 			}
 
 			if (projId == (int)ProjIds.CrystalHunter) damagerMessage = onCrystalDamage(damagable, owner, 2);
+			else if (projId == (int)RockProjIds.ScorchWheel || 
+				projId == (int)RockProjIds.ScorchWheelLoop) damagerMessage = onScorchDamage(damagable, owner, 1);
+			else if (projId == (int)RockProjIds.ScorchWheelMove) damagerMessage = onScorchDamage(damagable, owner, 2);
 			else if (projId == (int)RockProjIds.DangerWrap) damagerMessage = onDWrapDamage(damagable, owner);
 			else if (projId == (int)ProjIds.CSnailCrystalHunter) damagerMessage = onCrystalDamage(damagable, owner, 2);
 			else if (projId == (int)ProjIds.AcidBurst) damagerMessage = onAcidDamage(damagable, owner, 2);
@@ -310,14 +313,14 @@ public class Damager {
 			else if (projId == (int)ProjIds.Sigma3Fire) character.addBurnTime(owner, new Sigma3FireWeapon(), 0.5f);
 
 			// Other effects
-			if (projId == (int)RockProjIds.ScorchWheel || 
+			/* if (projId == (int)RockProjIds.ScorchWheel || 
 				projId == (int)RockProjIds.ScorchWheelLoop
 				//projId == (int)RockProjIds.ScorchWheelMove
 			) {
 				character.addBurnStateStacks(1, owner);
 			} else if (projId == (int)RockProjIds.ScorchWheelMove) {
 				character.addBurnStateStacks(2, owner);
-			} else if (projId == (int)ProjIds.IceGattling) {
+			} else  */if (projId == (int)ProjIds.IceGattling) {
 				character.addIgFreezeProgress(1, 2);
 			} else if (projId == (int)ProjIds.IceGattlingHeadshot) {
 				character.addIgFreezeProgress(2, 2);
@@ -874,6 +877,11 @@ public class Damager {
 
 	public static DamagerMessage? onAcidDamage(IDamagable damagable, Player attacker, float acidTime) {
 		(damagable as Character)?.addAcidTime(attacker, acidTime);
+		return null;
+	}
+
+	public static DamagerMessage? onScorchDamage(IDamagable damageable, Player attacker, float burnStacks) {
+		(damageable as Character)?.addBurnStateStacks(burnStacks, attacker);
 		return null;
 	}
 

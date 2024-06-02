@@ -16,6 +16,7 @@ public enum ArmorP {
 
 public enum SpecialStateIds {
 	None,
+	Burning,
 	AxlRoll,
 	HyorogaStart,
 	XTeleport,

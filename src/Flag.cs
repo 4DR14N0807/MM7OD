@@ -85,11 +85,11 @@ public class Flag : Actor {
 	public float? getUpdraftY() {
 		if (grounded) return null;
 		if (pos.y > Math.Min(Global.level.killY, Global.level.height)) {
-			return Global.level.killY - 175;
+			return Global.level.killY - 250;
 		}
 		var hitKillZones = Global.level.getTriggerList(this, 0, 0, null, new Type[] { typeof(KillZone) });
 		if (hitKillZones.Count > 0 && hitKillZones[0].otherCollider != null && hitKillZones[0].gameObject is KillZone kz && kz.killInvuln) {
-			return hitKillZones[0].otherCollider.shape.minY - 175;
+			return hitKillZones[0].otherCollider.shape.minY - 250;
 		}
 		return null;
 	}
@@ -269,7 +269,7 @@ public class FlagPedestal : Actor {
 			if (chr.ai != null) {
 				chr.ai.changeState(new FindPlayer(chr));
 			}
-			chr.player.currency += 20;
+			chr.player.currency += 50;
 			RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
 
 			var msg = chr.player.name + " scored";

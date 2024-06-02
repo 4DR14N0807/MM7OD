@@ -47,12 +47,12 @@ public class GameMode {
 		"Orange"
 	};
 	public FontType[] teamFonts = {
-		FontType.Blue,
-		FontType.Red,
-		FontType.Green,
-		FontType.Purple,
-		FontType.Yellow,
-		FontType.Orange
+		FontType.BlueMenu,
+		FontType.RedMenu,
+		FontType.GreenMenu,
+		FontType.PurpleMenu,
+		FontType.YellowMenu,
+		FontType.OrangeMenu
 	};
 
 	public VoteKick? currentVoteKick;

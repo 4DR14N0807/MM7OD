@@ -410,7 +410,7 @@ public class Rock : Character {
 		if (player.weapons.Count == 0) return false;
 		if (invulnTime > 0) return false;
 		
-		return true;
+		return base.canCharge();
 	}
 
 	public override bool chargeButtonHeld() {

@@ -582,6 +582,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canCharge() {
+		if (charState is Burning) return false;
 		return true;
 	}
 
@@ -1657,7 +1658,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (!ignoreRideArmorHide && !string.IsNullOrEmpty(sprite?.name) && sprite.name.Contains("ra_hide")) return true;
 		if (specialState == (int)SpecialStateIds.AxlRoll ||
-			specialState == (int)SpecialStateIds.XTeleport
+			specialState == (int)SpecialStateIds.XTeleport || specialState == (int)SpecialStateIds.Burning
 		) {
 			return true;
 		}

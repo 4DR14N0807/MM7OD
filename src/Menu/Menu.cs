@@ -24,6 +24,7 @@ public class Menu {
 	}
 
 	public static void exit() {
+		UpgradeMenu.isUsingWTank = false;
 		mainMenu = null;
 	}
 

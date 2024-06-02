@@ -268,7 +268,8 @@ public class UpgradeMenu : IMainMenu {
 
 			
 		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
-			Menu.change(prevMenu);
+			if (isUsingWTank) isUsingWTank = false;
+			else Menu.change(prevMenu);
 		}
 	}
 
@@ -304,7 +305,7 @@ public class UpgradeMenu : IMainMenu {
 
 				if (!canUseETankInMenu(canUseEtank)) {
 					if (canUseEtank) {
-						GameMode.drawWeaponSlotCooldown(optionPos.x + 6, optionPos.y - 8, eTankDelay / maxETankDelay);
+						GameMode.drawWeaponSlotCooldown(optionPos.x + 14, optionPos.y, eTankDelay / maxETankDelay);
 						if (eTankTargets.Count == 0) {
 							buyOrUseStr = "CANNOT USE E-TANK";
 						}

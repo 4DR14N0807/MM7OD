@@ -344,8 +344,10 @@ public class Burning : CharState {
     public const int maxStacks = 5;
     public int burnDir;
     public float burnMoveSpeed;
+    
 	public Burning(int dir) : base("burning") {
         //invincible = true;
+        superArmor = true;
         burnDir = dir;
         burnMoveSpeed = dir * 100;
 	}
@@ -369,6 +371,8 @@ public class Burning : CharState {
 		if (character.vel.y < 0) character.vel.y = 0;
         character.useGravity = false;
         character.stopMoving();
+        player.delayETank();
+        //character.specialState = (int)SpecialStateIds.Burning;
 	}
 
 	public override void onExit(CharState newState) {
@@ -377,6 +381,8 @@ public class Burning : CharState {
 		character.burnInvulnTime = 2;
         character.burnStateStacks = 0;
         character.useGravity = true;
+        player.delayETank();
+        //character.specialState = (int)SpecialStateIds.None;
 	}
 
 	public override void update() {
@@ -385,7 +391,7 @@ public class Burning : CharState {
 
         if (burnMoveSpeed != 0) {
 			burnMoveSpeed = Helpers.toZero(burnMoveSpeed, 400 * Global.spf, burnDir);
-			character.move(new Point(burnMoveSpeed, 0));
+			character.move(new Point(burnMoveSpeed, -character.getJumpPower() * 0.125f));
 		}
 
         /*if (burnDamageCooldown > 0) burnDamageCooldown -= Global.spf;

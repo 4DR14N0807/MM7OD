@@ -114,10 +114,10 @@ public class CharState {
 			character.rideArmorPlatform = null;
 		}
 		if (invincible) {
-			player.delayETank();
 			//player.delayWTank();
 		}
 		character.onExitState(this, newState);
+		player.delayETank();
 	}
 
 	public virtual void onEnter(CharState oldState) {
@@ -134,6 +134,7 @@ public class CharState {
 			character.stopMoving();
 		}
 		wasGrounded = character.grounded;
+		player.delayETank();
 	}
 
 	public virtual bool canEnter(Character character) {

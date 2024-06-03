@@ -314,6 +314,7 @@ public class Rock : Character {
 
 		shootTime = player.weapon.rateOfFire;
 		timeSinceLastShoot = 0;
+		player.delayETank();
 
 		if (player.weapon is NoiseCrush) {
 			if (hasChargedNoiseCrush) {

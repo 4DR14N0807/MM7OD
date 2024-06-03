@@ -147,7 +147,7 @@ public class Zero : Character {
 		if (!Global.level.isHyper1v1()) {
 			if (isBlackZero()) {
 				if (musicSource == null) {
-					addMusicSource("zero_X1", getCenterPos(), true);
+					//addMusicSource("zero_X1", getCenterPos(), true);
 				}
 			} else if (isAwakenedZero() && ownedByLocalPlayer) {
 				if (musicSource == null) {
@@ -684,7 +684,7 @@ public class Zero : Character {
 		int xDir = getShootXDir();
 		if (isAwakenedZero()) {
 			if (chargeLevel >= 1) {
-				playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
+				//playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
 				new ShingetsurinProj(
 					getShootPos(), xDir,
 					0, player, player.getNextActorNetId(), rpc: true
@@ -729,7 +729,7 @@ public class Zero : Character {
 			} else if (chargeLevel == 2) {
 				currencyUse = 1;
 				zeroLemonCooldown = 0.375f;
-				playSound("buster3", sendRpc: true);
+				//playSound("buster3", sendRpc: true);
 				new ZBuster3Proj(
 						zeroBusterWeapon, shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
 				);

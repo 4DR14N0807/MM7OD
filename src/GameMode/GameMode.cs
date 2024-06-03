@@ -679,21 +679,21 @@ public class GameMode {
 				int yStart = 159;
 				if (punchyZero.isViral) {
 					Global.sprites["hud_killfeed_weapon"].drawToHUD(170, 7, 155);
-					Fonts.drawText(
+					/*Fonts.drawText(
 						FontType.Grey,
 						"x" + punchyZero.freeBusterShots, 16, 152, Alignment.Left
-					);
+					);*/
 					yStart += 12;
 				}
 				if (punchyZero.gigaAttack.shootTime > 0) {
 					drawZeroGigaCooldown(punchyZero.gigaAttack, xStart, yStart);
 					xStart += 15;
 				}
-				if (punchyZero.swingCooldown > 0) {
+				/*if (punchyZero.swingCooldown > 0) {
 					float cooldown = 1 - Helpers.progress(punchyZero.swingCooldown, 60);
 					drawGigaWeaponCooldown(102, cooldown, xStart, yStart);
 					xStart += 15;
-				}
+				}*/
 				if (punchyZero.parryCooldown > 0) {
 					float cooldown = 1 - Helpers.progress(punchyZero.parryCooldown, 30);
 					drawGigaWeaponCooldown(120, cooldown, xStart, yStart);

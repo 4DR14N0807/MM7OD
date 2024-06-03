@@ -1814,6 +1814,24 @@ public partial class Player {
 
 	public void awardCurrency(bool isKiller = true) {
 		if (axlBulletType == (int)AxlBulletWeaponType.AncientGun && isAxl) return;
+
+		// First we fill ST.
+		if (isVile) {
+			fillSubtank(2);
+		} else if (isAxl) {
+			fillSubtank(3);
+		} else {
+			fillSubtank(4);
+		}
+		if (character is Zero zero && zero.isNightmareZero) {
+			zero.freeBusterShots++;
+			return;
+		}
+		if (character is PunchyZero pzero && pzero.isViral) {
+			pzero.freeBusterShots++;
+			return;
+		}
+		// Check for stuff that cannot gain scraps.
 		if (character?.isCCImmuneHyperMode() == true) return;
 		if (character is Zero zero && (zero.isNightmareZero)) return;
 		//if (character != null && character.isBlackZero2()) return;

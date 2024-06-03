@@ -212,10 +212,6 @@ public class Rakuhouha : CharState {
 		}
 	}
 
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-	}
-
 	public override void onExit(CharState newState) {
 		weapon.shootTime = weapon.rateOfFire;
 		base.onExit(newState);
@@ -267,12 +263,7 @@ public class RakuhouhaProj : Projectile {
 		this.byteAngle = byteAngle;
 
 		if (rpc) {
-			rpcCreate(
-				pos, player, netProjId, xDir,
-				new Byte[]{
-					(byte)byteAngle,
-				}
-			);
+			rpcCreateByteAngle(pos, player, netProjId, byteAngle);
 		}
 	}
 

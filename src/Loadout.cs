@@ -405,6 +405,7 @@ public class LoadoutData {
 	[ProtoMember(5)] public AxlLoadout axlLoadout = new AxlLoadout();
 	[ProtoMember(6)] public SigmaLoadout sigmaLoadout = new SigmaLoadout();
 	[ProtoMember(7)] public RockLoadout rockLoadout = new RockLoadout();
+	[ProtoMember(8)] public PZeroLoadout pzeroLoadout = new();
 
 	public static LoadoutData createRandom(int playerId) {
 		return new LoadoutData() {

@@ -1547,7 +1547,11 @@ public partial class Character : Actor, IDamagable {
 		if (isHeadbuttSprite(sprite?.name) && !isHeadbuttSprite(spriteName)) {
 			headbuttAirTime = 0;
 		}
+		List<Trail>? trails = sprite?.lastFiveTrailDraws;
 		base.changeSprite(spriteName, resetFrame);
+		if (trails != null && sprite != null) {
+			sprite.lastFiveTrailDraws = trails;
+		}
 	}
 
 	public bool isHeadbuttSprite(string? sprite) {

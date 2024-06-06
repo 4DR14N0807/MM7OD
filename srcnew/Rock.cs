@@ -22,6 +22,8 @@ public class Rock : Character {
 	public float arrowSlashCooldown;
 	public float legBreakerCooldown;
 	public float timeSinceLastShoot;
+	public bool isSlideColliding;
+	public Rush rush;
 
 	public Rock(
 		Player player, float x, float y, int xDir,
@@ -256,6 +258,12 @@ public class Rock : Character {
 		return base.canMove();
 	}
 
+	public override bool canJump() {
+		if (isSlideColliding) return false;
+
+		return base.canJump();
+	}
+
 	public override bool canDash() {
 		return false;
 	}
@@ -410,6 +418,7 @@ public class Rock : Character {
 		if (isWarpIn()) return false;
 		if (player.weapons.Count == 0) return false;
 		if (invulnTime > 0) return false;
+		//if (junkShield != null) return false;
 		
 		return base.canCharge();
 	}

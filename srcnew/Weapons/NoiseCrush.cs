@@ -20,6 +20,12 @@ public class NoiseCrush : Weapon {
         description = new string[] {"Weak projectile that bounces on walls.", "Catch it to get a stronger shot."};
     }
 
+    public override bool canShoot(int chargeLevel, Player player) {
+        Rock? rock = player.character as Rock;
+        if (rock.hasChargedNoiseCrush) return true;
+        return base.canShoot(chargeLevel, player);
+    }
+
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
 		if (player.character.ownedByLocalPlayer) {

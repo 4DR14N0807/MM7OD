@@ -16,8 +16,9 @@ public class CustomMatchSettings {
 	[ProtoMember(8)] public int maxHeartTanks = 4;
 	[ProtoMember(9)] public int heartTankHp = 1;
 	[ProtoMember(10)] public int startETanks;
-	[ProtoMember(11)] public int maxETanks = 2;
-	[ProtoMember(12)] public int maxWTanks = 2;
+	[ProtoMember(11)] public int startWTanks;
+	[ProtoMember(12)] public int maxETanks = 2;
+	[ProtoMember(13)] public int maxWTanks = 2;
 
 	//[ProtoMember(8)] public int redDamageModifier = 1;
 	//[ProtoMember(6)] public int redHealthModifier = 1;
@@ -155,6 +156,38 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startWTanks, 0, 4, true);
+				},
+				(Point pos, int index) => {
+					Fonts.drawText(
+						FontType.Grey,
+						"START W-TANKS: " +
+						savedMatchSettings.customMatchSettings.startWTanks.ToString(),
+						pos.x, pos.y, selected: selectArrowPosY == 3
+					);
+				}
+			)
+		);
+
+		menuOptions.Add(
+			new MenuOption(startX, currentY += lineH,
+				() => {
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxWTanks, 0, 4, true);
+				},
+				(Point pos, int index) => {
+					Fonts.drawText(
+						FontType.Grey,
+						"MAX W-TANKS: " +
+						savedMatchSettings.customMatchSettings.maxWTanks.ToString(),
+						pos.x, pos.y, selected: selectArrowPosY == 4
+					);
+				}
+			)
+		);
+
+		menuOptions.Add(
+			new MenuOption(startX, currentY += lineH,
+				() => {
 					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.healthModifier, 5, 20);
 				},
 				(Point pos, int index) => {
@@ -163,7 +196,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 						"HEALTH MODIFIER: " +
 						(savedMatchSettings.customMatchSettings.healthModifier * 10).ToString() + 
 						"%",
-						pos.x, pos.y, selected: selectArrowPosY == 3
+						pos.x, pos.y, selected: selectArrowPosY == 5
 					);
 				}
 			)
@@ -195,7 +228,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 						FontType.Grey,
 						"DAMAGE MODIFIER: " +
 						(savedMatchSettings.customMatchSettings.damageModifier * 100).ToString() + "%",
-						pos.x, pos.y, selected: selectArrowPosY == 4
+						pos.x, pos.y, selected: selectArrowPosY == 6
 					);
 				}
 			)
@@ -265,6 +298,10 @@ public class CustomMatchSettingsMenu : IMainMenu {
 
 			if (savedMatchSettings.customMatchSettings.maxETanks < savedMatchSettings.customMatchSettings.startETanks) {
 				Menu.change(new ErrorMenu(new string[] { "Error: Max ETanks can't be", "less than start ETanks." }, this));
+				return;
+			}
+			if (savedMatchSettings.customMatchSettings.maxWTanks < savedMatchSettings.customMatchSettings.startWTanks) {
+				Menu.change(new ErrorMenu(new string[] { "Error: Max WTanks can't be", "less than start WTanks." }, this));
 				return;
 			}
 

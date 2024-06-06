@@ -17,7 +17,7 @@ public class JunkShield : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.JunkShield;
 		killFeedIndex = 0;
-		maxAmmo = 7;
+		maxAmmo = 10;
 		ammo = maxAmmo;
 		description = new string[] {"Defenseless barrier that gets","damaged after rough use.", "Can be fired in up to 3 directions."};
 	}
@@ -156,8 +156,17 @@ public class JunkShieldProj : Projectile {
 
 	
 	public override void onHitDamagable(IDamagable damagable) {
-		if (rock != null) base.onHitDamagable(rock);
-		decHealth(1);
+		//if (rock != null) base.onHitDamagable(rock);
+		//decHealth(1);
+		base.onHitDamagable(damagable);
+
+		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) && 
+				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
+			) {
+				HP--;
+			}
+		}
 	}
 
 

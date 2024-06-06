@@ -200,6 +200,7 @@ public class Weapon {
 				new NoiseCrush(),
 				new DangerWrap(),
 				new WildCoil(),
+				new RushWeapon(),
 		};
 	}
 

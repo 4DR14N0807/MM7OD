@@ -188,12 +188,14 @@ public class WaitMenu : IMainMenu {
 			Fonts.drawText(FontType.BlueMenu, "Match Name: ", col1Pos, headerPos - 20);
 			Fonts.drawText(FontType.OrangeMenu, server.name, col1Pos + 90, headerPos - 20);
 			Fonts.drawText(FontType.BlueMenu, "Map: ", col1Pos, headerPos - 5);
-			Fonts.drawText(FontType.OrangeMenu, server.getMapDisplayName(), col1Pos + 36, headerPos - 5);
+			Fonts.drawText(FontType.OrangeMenu, server.getMapShortName(), col1Pos + 36, headerPos - 5);
+			//Fonts.drawText(FontType.OrangeMenu, server.getMapDisplayName(), col1Pos + 36, headerPos - 5);
 
 		} else {
 			Fonts.drawText(FontType.BlueMenu, "Match Name: " + server.name, col1Pos, headerPos - 20);
 			Fonts.drawText(FontType.BlueMenu, "Match IP: " + server.ip, col1Pos, headerPos - 5);
-			Fonts.drawText(FontType.BlueMenu, "Map: " + server.getMapDisplayName(), col1Pos, headerPos + 10);
+			Fonts.drawText(FontType.BlueMenu, server.getMapShortName(), col1Pos, headerPos + 10);
+			//Fonts.drawText(FontType.BlueMenu, "Map: " + server.getMapDisplayName(), col1Pos, headerPos + 10);
 		}
 
 		Fonts.drawText(FontType.Grey, "PLAYER", col1Pos, headerPos + 10);

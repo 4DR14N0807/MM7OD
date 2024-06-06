@@ -564,6 +564,9 @@ public class LevelData {
 		{ "japetribute", "variableX" },
 		{ "nodetest", "credits_X1" },
 		{ "training", "" },
+
+		// MM7
+		{ "robotmuseum" , "robotmuseum"},
 	};
 
 	public string getMusicKey(List<Player> players) {

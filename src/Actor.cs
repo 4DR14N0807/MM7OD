@@ -863,7 +863,7 @@ public partial class Actor : GameObject {
 			for (int i = damageHistory.Count - 1; i >= 0; i--) {
 				var lastAttacker = damageHistory[i];
 				if (lastAttacker.envKillOnly && weaponIndex != null) continue;
-				if (Global.time - lastAttacker.time > 10) continue;
+				//if (Global.time - lastAttacker.time > 10) continue;
 				killer = lastAttacker.attacker;
 				weaponIndex = lastAttacker.weapon;
 				break;

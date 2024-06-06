@@ -10,6 +10,7 @@ public class Slide : CharState {
 	public int particles = 3;
 	Anim? dust;
 	bool isColliding;
+	Rock? rock;
      
     public Slide(string initialSlideButton) : base("slide", "", "") {
         enterSound = "slide";
@@ -23,6 +24,7 @@ public class Slide : CharState {
 
     public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		rock = character as Rock;
 		initialSlideDir = character.xDir;
 		character.isDashing = true;
 		character.globalCollider = character.getSlidingCollider();	
@@ -38,10 +40,10 @@ public class Slide : CharState {
 		float inputXDir = player.input.getInputDir(player).x;
 		bool cancel = player.input.isPressed(getOppositeDir(initialSlideDir), player);
 
-		if (Global.level.checkCollisionActor(character, 0, -24) != null) isColliding = true;
-		else isColliding = false;
+		if (Global.level.checkCollisionActor(character, 0, -24) != null) rock.isSlideColliding = true;
+		else rock.isSlideColliding = false;
 		
-		if ((slideTime > Global.spf * 30 || stop) && !isColliding) {
+		if ((slideTime > Global.spf * 30 || stop) && !rock.isSlideColliding) {
 			if (!stop) {
 				slideTime = 0;
 				character.frameIndex = 0;
@@ -59,7 +61,7 @@ public class Slide : CharState {
 		character.move(move);
 
 		if (cancel) {
-			if (isColliding) {
+			if (rock.isSlideColliding) {
 				character.xDir *= -1;
 				initialSlideDir *= -1;
 			}

@@ -741,7 +741,7 @@ public class RPCActorToggle : RPC {
 			}
 		} else if (toggleId == RPCActorToggleType.AwardCurrency) {
 			if (actor is Character chr) {
-				chr.player.currency += 20;
+				chr.player.currency += 50;
 			}
 		} else if (toggleId == RPCActorToggleType.MorphMothCocoonSelfDestruct) {
 			if (actor is MorphMothCocoon mmc) {

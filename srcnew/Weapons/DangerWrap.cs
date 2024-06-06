@@ -243,6 +243,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
             new Anim(pos, "generic_explosion", 1, null, true) { vel = new Point(x, y) };
             }
 
+            playSound("danger_wrap_explosion");
             new DangerWrapExplosionProj(weapon, pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
         }
     }

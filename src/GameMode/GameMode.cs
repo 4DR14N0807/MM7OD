@@ -806,15 +806,15 @@ public class GameMode {
 					FontType.BlueMenu, "Now spectating: " + level.specPlayer.name + deadMsg,
 					Global.halfScreenW, 180, Alignment.Center
 				);
-				Fonts.drawText(
+				/*Fonts.drawText(
 					FontType.BlueMenu, "Left/Right: Change Spectated Player",
 					Global.halfScreenW, 190, Alignment.Center
-				);
+				);*/
 			}
 		} else if (level.mainPlayer.aiTakeover) {
 			Fonts.drawText(
 				FontType.OrangeMenu, "AI Takeover active. Press F12 to stop.",
-				Global.halfScreenW, 190, Alignment.Center
+				Global.halfScreenW, 180, Alignment.Center
 			);
 		} else if (
 			level.mainPlayer.isDisguisedAxl &&

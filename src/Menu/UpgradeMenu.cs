@@ -30,6 +30,14 @@ public class UpgradeMenu : IMainMenu {
 		new Point (196, 90),
 	};
 
+	public List<float> optionPositionsX = new List<float>() {
+		20, 196
+	};
+
+	public List<float> optionPositionsY = new List<float>() {
+		70, 90, 110, 130
+	};
+
 	public UpgradeMenu(IMainMenu prevMenu) {
 		this.prevMenu = prevMenu;
 		optionPositions.Add(new Point(startX, 60));
@@ -279,7 +287,7 @@ public class UpgradeMenu : IMainMenu {
 
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
 
-		Global.sprites["cursor"].drawToHUD(0, optionPositions[selectArrowPosX].x, optionPositions[selectArrowPosY].y);
+		Global.sprites["cursor"].drawToHUD(0, optionPositionsX[selectArrowPosX], optionPositionsY[selectArrowPosY]);
 
 		Fonts.drawText(FontType.Grey, "UPGRADE MENU", Global.screenW * 0.5f, 16, Alignment.Center);
 		Fonts.drawText(
@@ -293,7 +301,7 @@ public class UpgradeMenu : IMainMenu {
 			bool canUseEtank = true;
 			bool buyOrUse = mainPlayer.etanks.Count < i + 1;
 			string buyOrUseStr = buyOrUse ? "BUY E-TANK" : "USE E-TANK";
-			var optionPos = new Point(optionPositions[0].x, optionPositions[i].y);
+			var optionPos = new Point(optionPositionsX[0], optionPositionsY[i]);
 			if (!buyOrUse) {
 				var etank = mainPlayer.etanks[i];
 				canUseEtank = mainPlayer.canUseEtank(etank);
@@ -353,7 +361,7 @@ public class UpgradeMenu : IMainMenu {
 			bool canUseWtank = true;
 			bool buyOrUse = mainPlayer.wtanks.Count < i + 1;
 			string buyOrUseStr = buyOrUse ? "BUY W-TANK" : "USE W-TANK";
-			var optionPos = new Point(optionPositions[1].x, optionPositions[i].y);
+			var optionPos = new Point(optionPositionsX[1], optionPositionsY[i]);
 			if (!buyOrUse) {
 				var wtank = mainPlayer.wtanks[i];
 				//canUseWtank = mainPlayer.canUseWTank(wtank, wTankTargets[0]);

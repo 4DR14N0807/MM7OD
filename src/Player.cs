@@ -519,6 +519,9 @@ public partial class Player {
 	}
 
 	public int getStartWTanks() {
+		if (Global.level?.server?.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.startWTanks;
+		}
 		return 0;
 	}
 

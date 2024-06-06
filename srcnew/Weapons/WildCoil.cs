@@ -124,6 +124,9 @@ public class WildCoilChargedProj : Projectile {
     int bounceReq = 1;
     int bounceCounter;
     int bounceBuff;
+    bool bouncedOnce;
+    Anim? outline;
+    bool drawOutline;
 
     public WildCoilChargedProj(
         Weapon weapon, Point pos, int xDir, 
@@ -182,12 +185,28 @@ public class WildCoilChargedProj : Projectile {
                 case 1: 
                 damager.damage = 3;
                 damager.flinch = 4;
+                if (outline != null) outline.changeSprite("wild_coil_outline2", true);
                 break;
 
                 case 2:
                 damager.damage = 3;
                 damager.flinch = Global.halfFlinch;
+                if (outline != null) outline.changeSprite("wild_coil_outline3", true);
                 break;
+            }
+        }
+
+        if (!drawOutline) {
+            outline = new Anim(pos, "wild_coil_outline_start", xDir, null, false);
+            drawOutline = true;
+        }
+        if (outline != null) {
+            outline.pos = pos;
+            outline.frameSpeed = 0;
+            outline.frameIndex = frameIndex;
+
+            if (bouncedOnce) {
+                outline.changeSprite("wild_coil_outline" + bounceBuff + 1.ToString(), true);
             }
         }
     }
@@ -205,6 +224,8 @@ public class WildCoilChargedProj : Projectile {
 			//incPos(new Point(5 * MathF.Sign(vel.x), 0));
 		} else {
             changeSprite("wild_coil_charge_jump", true);
+            bouncedOnce = true;
+
             if (soundCooldown <= 0) {
                 playSound("wild_coil_bounce", true, true);
                 soundCooldown = 6f / 60f;
@@ -226,4 +247,8 @@ public class WildCoilChargedProj : Projectile {
             }
 		}
 	}
+
+    public override void onDestroy() {
+        if (outline != null) outline.destroySelf();
+    }
 }

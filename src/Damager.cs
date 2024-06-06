@@ -109,6 +109,7 @@ public class Damager {
 		}
 
 		damagable.projectileCooldown[key] = hitCooldown;
+		//if (character.usedEtank != null) character.usedEtank.health = 0;
 
 		// Run the RPC on all clients first, before it can modify the parameters, so clients can act accordingly
 		if (sendRpc && victim.netId != null && Global.serverClient?.isLagging() == false) {

@@ -508,7 +508,7 @@ public class Helpers {
 
 	public static void menuLeftRightInc(ref int val, int min, int max, bool wrap = false, bool playSound = false, int valueToAdd = 1) {
 		if (min == max) return;
-		if (Global.input.isPressedMenu(Control.MenuLeft)) {
+		if (Global.input.isPressedOrHeldMenu(Control.MenuLeft)) {
 			val -= valueToAdd;
 			if (val < min) {
 				val = wrap ? max : min;
@@ -516,7 +516,7 @@ public class Helpers {
 			} else {
 				if (playSound) Global.playSound("menu");
 			}
-		} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+		} else if (Global.input.isPressedOrHeldMenu(Control.MenuRight)) {
 			val += valueToAdd;
 			if (val > max) {
 				val = wrap ? min : max;

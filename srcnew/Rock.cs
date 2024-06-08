@@ -549,6 +549,8 @@ public class Rock : Character {
 		if (player.hasSuperAdaptor()) {
 			player.setSuperAdaptor(false);
 		}
+
+		//if (rush != null) rush.destroySelf();
 	}
 }
 

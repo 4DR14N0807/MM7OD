@@ -3,6 +3,53 @@ using System.Collections.Generic;
 
 namespace MMXOnline;
 
+public class RushWarpIn : RushState {
+
+	public Point destY;
+	public Point rockPos;
+	public Anim warpAnim;
+	public Rock rock;
+	
+	public RushWarpIn(bool addInvulnFrames = true) : base("rush_idle") {
+	}
+
+	public override void onEnter(RushState oldState) {
+		base.onEnter(oldState);
+		rush.stopMoving();
+		rush.useGravity = false;
+		rush.frameSpeed = 0;
+		rock = rush.netOwner.character as Rock;
+
+		rockPos = rush.netOwner.character.pos;
+		rush.globalCollider = null;
+		//rush.pos = new Point(rockPos.x + (rush.netOwner.character.xDir * 32), rockPos.y);
+		Point? checkGround = Global.level.getGroundPosNoKillzone(rock.pos);
+		rush.pos = checkGround.GetValueOrDefault();
+		//rush.pos = Global.level.getGroundPosNoKillzone(new Point(rock.pos.x, rock.pos.y));
+		warpAnim = new Anim(new Point(rush.pos.x, rush.pos.y - 200), "rush_warp_beam", 1, null, false);
+		//warpAnim.vel.y = 180;
+		
+	}
+
+	public override void onExit(RushState newState) {
+		base.onExit(newState);
+		rush.visible = true;
+		rush.useGravity = true;
+		rush.splashable = true;
+		/*if (warpAnim != null) {
+			warpAnim.destroySelf();
+		}*/
+	}
+
+	public override void update() {
+		base.update();
+
+		if (warpAnim != null) {
+			warpAnim.move(warpAnim.pos.directionToNorm(rush.pos).times(180));
+		}
+	}
+}
+
 public class RushState {
 	public string sprite;
 	public string defaultSprite;
@@ -76,7 +123,20 @@ public class RushIdle : RushState {
 
 
 	public override void onEnter(RushState oldState) {
-		Global.playSound("ding");
-		rush.changeSprite("rush_idle", true);
+		
+	}
+}
+
+
+public class RushCoil : RushState {
+
+	public RushCoil() : base("rush_coil", "", "", "") {
+
+	}
+
+	public override void update() {
+		base.update();
+
+		if (stateTime >= Global.spf * 90) Global.playSound("ding");
 	}
 }

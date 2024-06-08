@@ -13,12 +13,12 @@ public class Rush : Actor {
 	public RushState rushState;
 	public bool changedStateInFrame;
 
-	public Rush(Point pos, Player player, int xDir, ushort netId, bool ownedByLocalPlayer, bool rpc = false) :
+	public Rush(Point pos, Player owner, int xDir, ushort netId, bool ownedByLocalPlayer, bool rpc = false) :
 	base("rush_warp_beam", pos, netId, ownedByLocalPlayer, false) {
 
-		spriteToCollider["rush_warp_beam"] = null;
-
-		//changeState(new RushIdle(), true);
+		netOwner = owner;
+		//spriteToCollider["rush_warp_beam"] = null;
+		changeState(new RushIdle(), true);
 	}
 
 	public override Collider getTerrainCollider() {
@@ -58,6 +58,8 @@ public class Rush : Actor {
 		}
 		changedStateInFrame = true;
 
+		changeSprite(getSprite(newState.sprite), true);
+
 		RushState? oldState = rushState;
 		oldState?.onExit(newState);
 
@@ -68,6 +70,23 @@ public class Rush : Actor {
 	public override void preUpdate() {
 		base.preUpdate();
 		changedStateInFrame = false;
+	}
+
+	public virtual string getSprite(string spriteName) {
+		return spriteName;
+	}
+
+	public override void onCollision(CollideData other) {
+		base.onCollision(other);
+		var chr = other.otherCollider.actor as Character;
+
+		if (chr == netOwner.character && chr.charState is Fall) {
+			//changeSprite("rush_coil", true);
+			changeState(new RushCoil(), true);
+			chr.vel.y = -chr.getJumpPower();
+		}
+
+		
 	}
 }
 

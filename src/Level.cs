@@ -1506,7 +1506,7 @@ public partial class Level {
 	public void render() {
 		if (Global.level.mainPlayer == null) return;
 
-		if (Global.level.mainPlayer.charNum != 5) Global.sprites["nuh_uh"].drawToHUD(0, 0, 0);
+		if (Global.level.mainPlayer.charNum < 5) Global.sprites["nuh_uh"].drawToHUD(0, 0, 0);
 
 		if (Global.level.joinedLate && !Global.level.mainPlayer.warpedIn && Global.level.mainPlayer.character == null && blackJoinTime < 3) {
 			blackJoinTime += Global.spf;

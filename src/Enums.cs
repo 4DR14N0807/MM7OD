@@ -756,6 +756,10 @@ public enum ProjIds {
 	ScorchWheelUnderwater,
 	LegBreaker,
 
+	//Proto Man stuff
+
+	ShieldBlock,
+
 	// Special damage types.
 	SelfDmg = 30000,
 

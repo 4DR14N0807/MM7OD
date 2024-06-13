@@ -485,7 +485,7 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
-	public bool canTurn() {
+	public virtual bool canTurn() {
 		if (rideArmorPlatform != null) {
 			return false;
 		}
@@ -583,6 +583,8 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual bool canCharge() {
 		if (charState is Burning) return false;
+		if (isInvisibleBS.getValue()) return false;
+		if (invulnTime > 0) return false;
 		return true;
 	}
 
@@ -666,7 +668,11 @@ public partial class Character : Actor, IDamagable {
 		if (flag != null || !isDashing) {
 			return getRunSpeed();
 		}
-		float dashSpeed = 3.5f * 60;
+		float baseSpeed = 3.5f;
+
+		//if (player.isProtoMan) baseSpeed = 3f;
+
+		float dashSpeed = baseSpeed * 60;
 
 		if (charState is XHover) {
 			dashSpeed *= 1.25f;
@@ -1415,6 +1421,14 @@ public partial class Character : Actor, IDamagable {
 				changeState(new AirDash(dashControl));
 				return true;
 			}
+
+			if (!player.hasSuperAdaptor()) {
+				if (player.input.isPressed(Control.Taunt, player)) {
+					changeState(new Taunt());
+					return true;
+				}
+			}
+
 			if (canAirJump()) {
 				if (player.input.isPressed(Control.Jump, player) && canJump()) {
 					lastJumpPressedTime = Global.time;

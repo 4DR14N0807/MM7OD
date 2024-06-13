@@ -504,6 +504,7 @@ public class Projectile : Actor {
 
 		if (damagable != null && !damagedOnce && other.otherCollider.isHurtBox()) {
 			bool canBeDamaged = damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId);
+			bool isDamagableProj = canBeDamaged && damagable is Projectile;
 
 			if (canBeDamaged) {
 				Point? hitPos = other.otherCollider.shape.getIntersectPoint(pos, vel);
@@ -536,7 +537,7 @@ public class Projectile : Actor {
 					}
 				}
 
-				onHitDamagable(damagable);
+				if (other.gameObject is not Projectile) onHitDamagable(damagable);
 			}
 
 			bool isMaverickHealProj = projId == (int)ProjIds.MorphMCScrap || projId == (int)ProjIds.MorphMPowder;
@@ -546,7 +547,7 @@ public class Projectile : Actor {
 				} else {
 					RPC.heal.sendRpc(owner, damagableActor.netId.Value, healAmount);
 				}
-				onHitDamagable(damagable);
+				if (other.gameObject is not Projectile) onHitDamagable(damagable);
 			}
 
 			//bool isNoiseCrush = projId == (int)RockProjIds.NoiseCrush;

@@ -581,9 +581,18 @@ public class Idle : CharState {
 
 		if (Global.level.gameMode.isOver) {
 			if (Global.level.gameMode.playerWon(player)) {
-				if (!character.sprite.name.Contains("_win")) {
-					character.changeSpriteFromName("win", true);
+				if (character.grounded) {
+					/*if (!character.sprite.name.Contains("_win")) {
+						character.changeSpriteFromName("win", true);
+					}*/
+					character.changeState(new Taunt(true), true);
+				} else {
+					/*player.character.stopMoving();
+					player.character.useGravity = false;
+					character.changeSpriteFromName("win_air", true);*/
+					character.changeState(new Taunt(true), true);
 				}
+				
 			} else {
 				if (!character.sprite.name.Contains("lose")) {
 					string loseSprite;
@@ -1310,7 +1319,9 @@ public class LadderEnd : CharState {
 public class Taunt : CharState {
 	float tauntTime = 1;
 	Anim? zeroching;
-	public Taunt() : base("win") {
+	bool finishedMatch;
+	public Taunt(bool finishedMatch = false) : base("win") {
+		this.finishedMatch = finishedMatch;
 	}
 
 	public override bool canEnter(Character character){
@@ -1323,6 +1334,16 @@ public class Taunt : CharState {
 		if (player.charNum == 0) tauntTime = 0.75f;
 		if (player.charNum == 1) tauntTime = 0.7f;
 		if (player.charNum == 3) tauntTime = 0.75f;
+
+		bool air = !character.grounded || character.vel.y < 0;
+        defaultSprite = sprite;
+        landSprite = "win";
+        if (air) {
+			sprite = "win_air";
+			defaultSprite = sprite;
+		}
+        character.changeSpriteFromName(sprite, true);
+		if (air && finishedMatch) character.useGravity = false;
 	}
 
 	public override void onExit(CharState newState) {
@@ -1337,7 +1358,7 @@ public class Taunt : CharState {
 			if (character.isAnimOver()) {
 				character.changeState(new Idle());
 			}
-		} else if (stateTime >= tauntTime) {
+		} else if (stateTime >= tauntTime && !finishedMatch) {
 			character.changeState(new Idle());
 		}
 

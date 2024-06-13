@@ -156,7 +156,8 @@ public partial class Player {
 	public bool isVile { get { return charNum == (int)CharIds.Vile; } }
 	public bool isAxl { get { return charNum == (int)CharIds.Axl; } }
 	public bool isSigma { get { return charNum == (int)CharIds.Sigma; } }
-	public bool isRock { get { return charNum == (int)CharIds.Rock;}}
+	public bool isRock { get { return charNum == (int)CharIds.Rock; } }
+	public bool isProtoMan { get { return charNum == (int)CharIds.ProtoMan; } }
 
 	public float health;
 	public float maxHealth;
@@ -223,6 +224,7 @@ public partial class Player {
 			{ (int)CharIds.Axl, new List<ETank>() },
 			{ (int)CharIds.Sigma, new List<ETank>() },
 			{ (int)CharIds.Rock, new List<ETank>() },
+			{ (int)CharIds.ProtoMan, new List<ETank>() },
 		};
 	public List<ETank> etanks {
 		get {
@@ -256,6 +258,8 @@ public partial class Player {
 		{ (int)CharIds.PunchyZero, 0 },
 		{ (int)CharIds.BusterZero, 0 },
 		{ (int)CharIds.Rock, 0 },
+		{ (int)CharIds.ProtoMan, 0 },
+		
 	};
 	// Getter functions.
 	public int heartTanks {
@@ -1078,6 +1082,11 @@ public partial class Player {
 				}
 			} else if (charNum == (int)CharIds.Rock) {
 				character = new Rock(
+					this, pos.x, pos.y, xDir,
+					false, charNetId, ownedByLocalPlayer
+				);
+			} else if (charNum == (int)CharIds.ProtoMan) {
+				character = new ProtoMan(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);

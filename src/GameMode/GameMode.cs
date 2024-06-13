@@ -1464,6 +1464,22 @@ public class GameMode {
 			return;
 		}
 
+		if (player.character is ProtoMan protoman) {
+			baseY += 25;
+			Global.sprites["hud_weapon_base"].drawToHUD(0, baseX, baseY);
+			baseY -= 16;
+			for (var i = 0; i < MathF.Ceiling(ProtoMan.coreMaxAmmo * ammoDisplayMultiplier); i++) {
+				if (i < Math.Ceiling(protoman.coreAmmo * ammoDisplayMultiplier)) {
+					Global.sprites["hud_weapon_full"].drawToHUD(0, baseX, baseY);
+				} else {
+					Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
+				}
+				baseY -= 2;
+			}
+			Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
+			return;
+		}
+
 		// This runs once per character.
 		Weapon weapon = player.lastHudWeapon;
 		if (player.character != null) {

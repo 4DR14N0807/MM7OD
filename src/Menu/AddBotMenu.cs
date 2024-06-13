@@ -67,7 +67,7 @@ public class AddBotMenu : IMainMenu {
 					}
 				}
 
-				var cpu = new Player("CPU" + id.ToString(), id, 5, null, true, true, alliance, new Input(true), null);
+				var cpu = new Player("CPU" + id.ToString(), id, 6, null, true, true, alliance, new Input(true), null);
 				Global.level.players.Add(cpu);
 				Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Added bot " + cpu.name + ".", null, null, true));
 			}

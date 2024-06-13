@@ -25,12 +25,16 @@ public class PlayerCharData {
 }
 
 public enum CharIds {
+
+	//Adrian: When adding new chars, remember to add them in charHeartTanks and the code crash bomb,
+	//and spawnCharatPoint().
 	X,
 	Zero,
 	Vile,
 	Axl,
 	Sigma,
 	Rock,
+	ProtoMan,
 	PunchyZero,
 	BusterZero,
 	// Non-standart chars start here.
@@ -60,6 +64,7 @@ public class CharSelection {
 			return new List<CharSelection>()
 			{
 					new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
+					new CharSelection("PROTO MAN", 6, 1, 0, "protoman_idle", 0 ),
 			};
 		}
 	}
@@ -69,6 +74,7 @@ public class CharSelection {
 			return new List<CharSelection>()
 			{
 				new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
+				new CharSelection("PROTO MAN", 6, 1, 0, "protoman_idle", 0 ),
 			};
 		}
 	}

@@ -10,7 +10,7 @@ public class JunkShield : Weapon {
 
 	public static JunkShield netWeapon = new JunkShield();
 	public JunkShield() : base() {
-		shootSounds = new List<string>() { "", "", "", "" };
+		shootSounds = new string[] { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)RockWeaponIds.JunkShield;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.JunkShield;

@@ -8,7 +8,7 @@ public class SpeedBurner : Weapon {
 		if (player != null) {
 			damager = new Damager(player, 4, Global.defFlinch, 0.5f);
 		}
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)WeaponIds.SpeedBurner;
 		weaponBarBaseIndex = 16;

@@ -1104,18 +1104,15 @@ public partial class Player {
 				throw new Exception("Error: Non-valid char ID: " + charNum);
 			}
 			// Hyper mode overrides (POST)
-			if (Global.level.isHyper1v1() && ownedByLocalPlayer) {
+			if (Global.level.isHyperMatch() && ownedByLocalPlayer) {
 				if (isX) {
 					setUltimateArmor(true);
 				}
 				if (character is Zero zero) {
 					if (loadout.zeroLoadout.hyperMode == 0) {
-						zero.blackZeroTime = 100000;
-						zero.hyperZeroUsed = true;
+						zero.blackZeroTime = Zero.maxBlackZeroTime;
 					} else {
-						zero.awakenedZeroTime = 0;
-						zero.hyperZeroUsed = true;
-						currency = 9999;
+						zero.awakenedPhase = 1;
 					}
 				}
 				if (character is Axl axl) {
@@ -1418,10 +1415,10 @@ public partial class Player {
 		configureStaticWeapons();
 
 		if (charNum == (int)CharIds.Zero) {
-			weapons.Add(new ZSaber(this));
+			weapons.Add(new ZSaber());
 		}
 		if (charNum == (int)CharIds.BusterZero) {
-			weapons.Add(new KKnuckleWeapon(this));
+			weapons.Add(new KKnuckleWeapon());
 		}
 		if (charNum == (int)CharIds.PunchyZero) {
 			weapons.Add(new ZeroBuster());
@@ -1537,15 +1534,15 @@ public partial class Player {
 		}
 
 		if (character is Zero zero) {
-			zero.zeroGigaAttackWeapon.ammo = dnaCore.rakuhouhaAmmo;
-			zero.zeroDarkHoldWeapon.ammo = dnaCore.rakuhouhaAmmo;
+			zero.gigaAttack.ammo = dnaCore.rakuhouhaAmmo;
+			zero.gigaAttack.ammo = dnaCore.rakuhouhaAmmo;
 
 			if (dnaCore.hyperMode == DNACoreHyperMode.BlackZero) {
-				zero.blackZeroTime = zero.maxHyperZeroTime;
+				zero.blackZeroTime = Zero.maxBlackZeroTime;
 			} else if (dnaCore.hyperMode == DNACoreHyperMode.AwakenedZero) {
-				zero.awakenedZeroTime = 0;
+				zero.awakenedPhase = 1;
 			} else if (dnaCore.hyperMode == DNACoreHyperMode.NightmareZero) {
-				zero.isNightmareZero = true;
+				zero.isViral = true;
 			}
 		} else if (charNum == (int)CharIds.Axl && character is Axl axl) {
 			if (dnaCore.hyperMode == DNACoreHyperMode.WhiteAxl) {
@@ -1568,11 +1565,9 @@ public partial class Player {
 			Global.serverClient?.rpc(RPC.axlDisguise, json);
 
 			if (character is Zero zero) {
-				if (zero.isNightmareZero) {
-					lastDNACore.rakuhouhaAmmo = zero.zeroDarkHoldWeapon.ammo;
-				} else {
-					lastDNACore.rakuhouhaAmmo = zero.zeroGigaAttackWeapon.ammo;
-				}
+				lastDNACore.rakuhouhaAmmo = zero.gigaAttack.ammo;
+			} else if (character is PunchyZero pzero) {
+				lastDNACore.rakuhouhaAmmo = pzero.gigaAttack.ammo;
 			} else if (isSigma) {
 				lastDNACore.rakuhouhaAmmo = sigmaAmmo;
 			}
@@ -1627,11 +1622,9 @@ public partial class Player {
 			Global.serverClient?.rpc(RPC.axlDisguise, json);
 
 			if (character is Zero zero) {
-				if (zero.isNightmareZero) {
-					lastDNACore.rakuhouhaAmmo = zero.zeroDarkHoldWeapon.ammo;
-				} else {
-					lastDNACore.rakuhouhaAmmo = zero.zeroGigaAttackWeapon.ammo;
-				}
+				lastDNACore.rakuhouhaAmmo = zero.gigaAttack.ammo;
+			} else if (character is PunchyZero pzero) {
+				lastDNACore.rakuhouhaAmmo = pzero.gigaAttack.ammo;
 			} else if (isSigma) {
 				lastDNACore.rakuhouhaAmmo = sigmaAmmo;
 			}
@@ -1795,10 +1788,7 @@ public partial class Player {
 				if ((character as MegamanX)?.shotgunIceChargeTime > 0f) {
 					return false;
 				}
-				if (character.charState is Frozen ||
-					character.charState is Stunned ||
-					character.charState is Crystalized
-				) {
+				if (character.charState is GenericStun) {
 					return false;
 				}
 				if (character?.charState is SniperAimAxl) {
@@ -1826,8 +1816,10 @@ public partial class Player {
 
 	public void awardCurrency(bool isKiller = true) {
 		if (axlBulletType == (int)AxlBulletWeaponType.AncientGun && isAxl) return;
+
+		// Check for stuff that cannot gain scraps.
 		if (character?.isCCImmuneHyperMode() == true) return;
-		if (character is Zero zero && (zero.isNightmareZero)) return;
+		//if (character is Zero zero && (zero.isNightmareZero)) return;
 		//if (character != null && character.isBlackZero2()) return;
 		if (character != null && character.rideArmor != null && character.charState is InRideArmor && character.rideArmor.raNum == 4) return;
 		if (isX && hasUltimateArmor()) return;
@@ -2518,18 +2510,6 @@ public partial class Player {
 	public bool showHyperBusterCharge() {
 		if (character?.flag != null) return false;
 		return weapon is HyperBuster hb && hb.canShootIncludeCooldown(this);
-	}
-
-	public bool isZSaber() {
-		return loadout?.zeroLoadout?.melee == 0;
-	}
-
-	public bool hasKnuckle() {
-		return loadout?.zeroLoadout?.melee == 1;
-	}
-
-	public bool isZBusterZero() {
-		return isZero && loadout.zeroLoadout.melee == 2;
 	}
 
 	// Sigma helper functions

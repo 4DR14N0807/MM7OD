@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class SonicSlicer : Weapon {
 	public SonicSlicer() : base() {
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)WeaponIds.SonicSlicer;
 		weaponBarBaseIndex = 13;

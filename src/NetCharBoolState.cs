@@ -47,8 +47,6 @@ public partial class Character {
 	public NetCharBoolState isFrozenCastleActiveBS = null!;
 	public NetCharBoolState isStrikeChainHookedBS = null!;
 	public NetCharBoolState shouldDrawArmBS = null!;
-	public NetCharBoolState isAwakenedZeroBS = null!;
-	public NetCharBoolState isAwakenedGenmuZeroBS = null!;
 	public NetCharBoolState isInvisibleBS = null!;
 	public NetCharBoolState isHyperXBS = null!;
 	public NetCharBoolState isHyperSigmaBS = null!;
@@ -64,13 +62,7 @@ public partial class Character {
 		shouldDrawArmBS = new NetCharBoolState(this, 2, NetCharBoolStateNum.One, (character) => {
 			return (character as Axl)?.shouldDrawArm() == true;
 		});
-		isAwakenedZeroBS = new NetCharBoolState(this, 3, NetCharBoolStateNum.One, (character) => {
-			return (character as Zero)?.isAwakenedZero() == true;
-		});
-		isAwakenedGenmuZeroBS = new NetCharBoolState(this, 4, NetCharBoolStateNum.One, (character) => {
-			return (character as Zero)?.isAwakenedGenmuZero() == true;
-		});
-		isInvisibleBS = new NetCharBoolState(this, 5, NetCharBoolStateNum.One, (character) => { return character.isInvisible(); }); 
+		isInvisibleBS = new NetCharBoolState(this, 5, NetCharBoolStateNum.One, (character) => { return character.isInvisible(); });
 		isHyperXBS = new NetCharBoolState(this, 6, NetCharBoolStateNum.One, (character) => {
 			return (character as MegamanX)?.isHyperX == true;
 		});
@@ -86,8 +78,6 @@ public partial class Character {
 		isFrozenCastleActiveBS.updateValue();
 		isStrikeChainHookedBS.updateValue();
 		shouldDrawArmBS.updateValue();
-		isAwakenedZeroBS.updateValue();
-		isAwakenedGenmuZeroBS.updateValue();
 		isInvisibleBS.updateValue();
 		isHyperXBS.updateValue();
 		isHyperSigmaBS.updateValue();
@@ -106,7 +96,6 @@ public partial class Character {
 	public NetCharBoolState isDefenderFavoredBS = null!;
 	public NetCharBoolState hasSubtankCapacityBS = null!;
 	public NetCharBoolState hasETankCapacityBS = null!;
-	public NetCharBoolState isNightmareZeroBS = null!;
 	public NetCharBoolState isDarkHoldBS = null!;
 
 	public void initNetCharState2() {
@@ -117,11 +106,9 @@ public partial class Character {
 		hasUltimateArmorBS = new NetCharBoolState(this, 3, NetCharBoolStateNum.Two, (character) => { return character.player.hasUltimateArmor(); });
 		isDefenderFavoredBS = new NetCharBoolState(this, 4, NetCharBoolStateNum.Two, (character) => { return character.player.isDefenderFavored; });
 		hasETankCapacityBS = new NetCharBoolState(this, 5, NetCharBoolStateNum.Two, (character) => { return character.player.hasETankCapacity(); });
-		isNightmareZeroBS = new NetCharBoolState(this, 6, NetCharBoolStateNum.Two, (character) => {
-			return (character as Zero)?.isNightmareZero == true;
-		});
-		//isDarkHoldBS = new NetCharBoolState(this, 7, NetCharBoolStateNum.Two, (character) => { return character.charState is DarkHoldState; });
-		hasSuperAdaptorBS = new NetCharBoolState(this, 7, NetCharBoolStateNum.Two, (character) => {return character.player.hasSuperAdaptor(); });
+		hasSuperAdaptorBS = new NetCharBoolState(this, 6, NetCharBoolStateNum.Two, (character) => {return character.player.hasSuperAdaptor(); });
+		isDarkHoldBS = new NetCharBoolState(this, 7, NetCharBoolStateNum.Two, (character) => { return character.charState is DarkHoldState; });
+
 	}
 
 	public byte updateAndGetNetCharState2() {
@@ -131,10 +118,10 @@ public partial class Character {
 		isInvulnBS.updateValue();
 		hasUltimateArmorBS.updateValue();
 		isDefenderFavoredBS.updateValue();
+
 		hasETankCapacityBS.updateValue();
-		isNightmareZeroBS.updateValue();
-		//isDarkHoldBS.updateValue();
 		hasSuperAdaptorBS.updateValue();
+		isDarkHoldBS.updateValue();
 		return netCharState2;
 	}
 }

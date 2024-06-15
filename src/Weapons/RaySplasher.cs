@@ -9,7 +9,7 @@ public class RaySplasher : Weapon {
 	public static RaySplasher netWeapon = new RaySplasher();
 
 	public RaySplasher() : base() {
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1f;
 		index = (int)WeaponIds.RaySplasher;
 		weaponBarBaseIndex = 21;

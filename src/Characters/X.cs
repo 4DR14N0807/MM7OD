@@ -70,8 +70,11 @@ public partial class MegamanX : Character {
 
 	public float xSaberCooldown;
 	public float stockedChargeFlashTime;
-	
+
 	public BeeSwarm? beeSwarm;
+
+	public float parryCooldown;
+	public float maxParryCooldown = 0.5f;
 
 	public MegamanX(
 		Player player, float x, float y, int xDir,
@@ -144,6 +147,7 @@ public partial class MegamanX : Character {
 			Helpers.decrementTime(ref barrierTime);
 			return;
 		}
+		Helpers.decrementTime(ref parryCooldown);
 
 		if (beeSwarm != null) {
 			beeSwarm.update();
@@ -262,7 +266,7 @@ public partial class MegamanX : Character {
 		quickArmorUpgrade();
 
 		if (charState is not Die &&
-			player.input.isPressed(Control.Special2, player) &&
+			player.input.isPressed(Control.Special1, player) &&
 			player.hasAllX3Armor() && !player.hasGoldenArmor()) {
 			if (player.input.isHeld(Control.Down, player)) {
 				player.setChipNum(0, false);
@@ -338,10 +342,10 @@ public partial class MegamanX : Character {
 			if (charState is not XUPGrabState
 				and not XUPParryMeleeState
 				and not XUPParryProjState
-				and not Hurt and not Frozen
+				and not Hurt
+				and not GenericStun
 				and not VileMK2Grabbed
 				and not GenericGrabbedState
-				and not Stunned
 			) {
 				unpoTime += Global.spf;
 				UPDamageCooldown += Global.spf;
@@ -839,7 +843,7 @@ public partial class MegamanX : Character {
 		weapon.getProjectile(pos, xDir, player, chargeLevel, netProjId);
 
 		if (weapon.soundTime == 0) {
-			if (weapon.shootSounds != null && weapon.shootSounds.Count > 0) {
+			if (weapon.shootSounds != null && weapon.shootSounds.Length > 0) {
 				player.character.playSound(weapon.shootSounds[chargeLevel]);
 			}
 			if (weapon is FireWave) {
@@ -882,7 +886,7 @@ public partial class MegamanX : Character {
 
 	// Fast upgrading via command key.
 	public void quickArmorUpgrade() {
-		if (!player.input.isHeld(Control.Special1, player)) {
+		if (!player.input.isHeld(Control.Special2, player)) {
 			hyperProgress = 0;
 			return;
 		}

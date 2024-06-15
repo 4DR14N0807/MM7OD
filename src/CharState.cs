@@ -57,6 +57,7 @@ public class CharState {
 	public bool[] altCtrls = new bool[1];
 	public bool normalCtrl;
 	public bool airMove;
+	public bool canJump;
 	public bool canStopJump;
 	public bool exitOnLanding;
 	public bool exitOnAirborne;
@@ -85,7 +86,7 @@ public class CharState {
 		}
 	}
 
-	public virtual void onExit(CharState? newState) {
+	public virtual void onExit(CharState newState) {
 		if (!useGravity) {
 			character.useGravity = true;
 		}
@@ -103,7 +104,7 @@ public class CharState {
 			character.isDashing = false;
 		}
 		if (newState is Hurt || newState is Die ||
-			newState is Frozen || newState is Crystalized || newState is Stunned
+			newState is GenericStun
 		) {
 			character.onFlinchOrStun(newState);
 		}
@@ -135,6 +136,9 @@ public class CharState {
 		}
 		wasGrounded = character.grounded;
 		player.delayETank();
+		if (this is not Jump and not WallKick && oldState?.canStopJump == false) {
+			canStopJump = false;
+		}
 	}
 
 	public virtual bool canEnter(Character character) {
@@ -1087,9 +1091,6 @@ public class WallSlide : CharState {
 		base.onEnter(oldState);
 		mmx = character as MegamanX;
 		character.dashedInAir = 0;
-		if (character is Zero zero) {
-			zero.quakeBlazerBounces = 0;
-		}
 		if (player.isAI) {
 			character.ai.jumpTime = 0;
 		}
@@ -1378,151 +1379,6 @@ public class Taunt : CharState {
 				destroyOnEnd: true, sendRpc: true
 			);
 		}
-	}
-}
-
-public class KnockedDown : CharState {
-	public int hurtDir;
-	public float hurtSpeed;
-	public float flinchTime;
-	public KnockedDown(int dir) : base("knocked_down") {
-		hurtDir = dir;
-		hurtSpeed = dir * 100;
-		flinchTime = 0.5f;
-	}
-
-	public override bool canEnter(Character character) {
-		if (character.isCCImmune()) return false;
-		if (character.charState.superArmor || character.charState.invincible) return false;
-		if (character.isInvulnerable()) return false;
-		if (character.vaccineTime > 0) return false;
-		return base.canEnter(character);
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.vel.y = -100;
-	}
-
-	public override void update() {
-		base.update();
-		if (hurtSpeed != 0) {
-			hurtSpeed = Helpers.toZero(hurtSpeed, 400 * Global.spf, hurtDir);
-			character.move(new Point(hurtSpeed, 0));
-		}
-
-		if (player.character.canCharge() && player.input.isHeld(Control.Shoot, player)) {
-			player.character.increaseCharge();
-		}
-
-		if (stateTime >= flinchTime) {
-			character.changeState(new Idle());
-		}
-	}
-}
-
-public class Hurt : CharState {
-	public int hurtDir;
-	public float hurtSpeed;
-	public float flinchTime;
-	public float miniFlinchTime;
-	public bool spiked;
-	public Hurt(int dir, int flinchFrames, float miniFlinchTime, bool spiked = false) : base("hurt") {
-		this.miniFlinchTime = miniFlinchTime;
-		if (miniFlinchTime == 0) {
-			hurtDir = dir;
-			hurtSpeed = dir * 100;
-			flinchTime = flinchFrames * (1 / 60f);
-		} else {
-			flinchTime = miniFlinchTime;
-		}
-		this.spiked = spiked;
-	}
-
-	public bool isMiniFlinch() {
-		return miniFlinchTime > 0;
-	}
-
-	public override bool canEnter(Character character) {
-		if (character.isCCImmune()) return false;
-		if (character.vaccineTime > 0) return false;
-		if (character.rideArmorPlatform != null) return false;
-		return base.canEnter(character);
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.isDWrapped = false;
-		if (miniFlinchTime == 0) {
-			if (!spiked) character.vel.y = -100;
-		}
-		if (player.isX && player.hasBodyArmor(1)) {
-			flinchTime *= 0.75f;
-			sprite = "hurt2";
-			character.changeSpriteFromName("hurt2", true);
-		}
-	}
-
-	public override void update() {
-		base.update();
-		if (hurtSpeed != 0) {
-			hurtSpeed = Helpers.toZero(hurtSpeed, 400 * Global.spf, hurtDir);
-			character.move(new Point(hurtSpeed, 0));
-		}
-
-		if (miniFlinchTime > 0) {
-			character.frameSpeed = 0;
-			if (Global.frameCount % 2 == 0) {
-				if (player.charNum == 0) character.frameIndex = 3;
-				if (player.charNum == 1) character.frameIndex = 3;
-				if (player.charNum == 2) character.frameIndex = 0;
-				if (player.charNum == 3) character.frameIndex = 3;
-			} else {
-				if (player.charNum == 0) character.frameIndex = 2;
-				if (player.charNum == 1) character.frameIndex = 2;
-				if (player.charNum == 2) character.frameIndex = 1;
-				if (player.charNum == 3) character.frameIndex = 2;
-			}
-		}
-
-		if (player.character.canCharge() && player.input.isHeld(Control.Shoot, player)) {
-			player.character.increaseCharge();
-		}
-
-		if (stateTime >= flinchTime) {
-			character.changeState(new Idle());
-		}
-	}
-}
-
-public class GoliathDragged : CharState {
-	public RideArmor goliath;
-	public GoliathDragged(RideArmor goliath) : base("hurt") {
-		this.goliath = goliath;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.useGravity = false;
-		character.vel.y = 0;
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-		character.useGravity = true;
-	}
-
-	public override void update() {
-		base.update();
-
-		var goliathDash = goliath.rideArmorState as RADash;
-		if (goliathDash == null || !goliath.isAttacking()) {
-			if (character.grounded) character.changeState(new Idle(), true);
-			else character.changeState(new Fall(), true);
-			return;
-		}
-
-		character.move(goliathDash.getDashVel());
 	}
 }
 

@@ -11,10 +11,13 @@ public class PunchyZero : Character {
 	public bool isBlack;
 	public byte hypermodeBlink;
 	public int hyperMode;
+	public float hyperModeTimer;
+	public int awakenedAuraFrame;
+	public float awakenedAuraAnimTime;
 
 	// Weapons.
 	public PunchyZeroMeleeWeapon meleeWeapon = new();
-	public KKnuckleParry parryWeapon = new();
+	public PZeroParryWeapon parryWeapon = new();
 	public Weapon gigaAttack;
 	
 	// Inputs.
@@ -40,6 +43,193 @@ public class PunchyZero : Character {
 	}
 
 	public override void update() {
+		inputUpdate();
+		//Helpers.decrementFrames(ref donutTimer);
+		//Helpers.decrementFrames(ref swingCooldown);
+		Helpers.decrementFrames(ref parryCooldown);
+		Helpers.decrementFrames(ref dashAttackCooldown);
+		Helpers.decrementFrames(ref diveKickCooldown);
+		Helpers.decrementFrames(ref uppercutCooldown);
+		gigaAttack.update();
+		gigaAttack.charLinkedUpdate(this, true);
+
+		if (isAwakened) {
+			updateAwakenedAura();
+		}
+
+		if (!Global.level.isHyper1v1()) {
+			if (isAwakened && ownedByLocalPlayer) {
+				if (musicSource == null) {
+					addMusicSource("XvsZeroV2_megasfc", getCenterPos(), true);
+				}
+			} else if (isViral && ownedByLocalPlayer) {
+				if (musicSource == null) {
+					addMusicSource("introStageZeroX5_megasfc", getCenterPos(), true);
+				}
+			} else {
+				destroyMusicSource();
+			}
+		}
+
+		base.update();
+
+		// Hypermode timer.
+		if (hyperModeTimer > 0) {
+			hyperModeTimer -= Global.speedMul;
+			if (hyperModeTimer <= 0) {
+				hyperModeTimer = 0;
+				isAwakened = false;
+				isBlack = false;
+			}
+		}
+		// For the shooting animation.
+		if (shootAnimTime > 0) {
+			shootAnimTime -= Global.spf;
+			if (shootAnimTime <= 0) {
+				shootAnimTime = 0;
+				changeSpriteFromName(charState.defaultSprite, false);
+				if (charState is WallSlide) {
+					frameIndex = sprite.frames.Count - 1;
+				}
+			}
+		}
+		// For the donuts.
+		/* if (donutsPending > 0 && donutTimer <= 0) {
+			shootDonutProj(donutsPending * 9);
+			donutsPending--;
+			donutTimer = 9;
+		} */
+		// Charge and release charge logic.
+		if (isAwakened) {
+			chargeLogic(shootDonuts);
+		} else {
+			chargeLogic(shoot);
+		}
+	}
+
+	public override bool canCharge() {
+		//return (player.currency > 0 || freeBusterShots > 0) && donutsPending == 0;
+		return true;
+	}
+
+	public override bool chargeButtonHeld() {
+		return player.input.isHeld(Control.Shoot, player);
+	}
+
+	public void setShootAnim() {
+		string shootSprite = getSprite(charState.shootSprite);
+		if (!Global.sprites.ContainsKey(shootSprite)) {
+			if (grounded) { shootSprite = "zero_shoot"; }
+			else { shootSprite = "zero_fall_shoot"; }
+		}
+		if (shootAnimTime == 0) {
+			changeSprite(shootSprite, false);
+		} else if (charState is Idle) {
+			frameIndex = 0;
+			frameTime = 0;
+		}
+		if (charState is LadderClimb) {
+			if (player.input.isHeld(Control.Left, player)) {
+				this.xDir = -1;
+			} else if (player.input.isHeld(Control.Right, player)) {
+				this.xDir = 1;
+			}
+		}
+		shootAnimTime = 0.3f;
+	}
+
+	public void shoot(int chargeLevel) {
+		//if (player.currency <= 0 && freeBusterShots <= 0) { return; }
+		if (chargeLevel == 0) { return; }
+		int currencyUse = 0;
+
+		// Cancel non-invincible states.
+		if (!charState.attackCtrl && !charState.invincible) {
+			changeToIdleOrFall();
+		}
+		// Shoot anim and vars.
+		setShootAnim();
+		Point shootPos = getShootPos();
+		int xDir = getShootXDir();
+
+		// Shoot stuff.
+		if (chargeLevel == 1) {
+			currencyUse = 1;
+			//playSound("buster2X3", sendRpc: true);
+			new ZBuster2Proj(
+				shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
+			);
+		} else if (chargeLevel == 2) {
+			currencyUse = 1;
+			//playSound("buster3X3", sendRpc: true);
+			new ZBuster3Proj(
+				shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
+			);
+		} else if (chargeLevel == 3 || chargeLevel >= 4) {
+			currencyUse = 1;
+			//playSound("buster4", sendRpc: true);
+			new ZBuster4Proj(
+				shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
+			);
+		}
+		if (currencyUse > 0) {
+			/* if (freeBusterShots > 0) {
+				freeBusterShots--;
+			} else if (player.currency > 0) {
+				player.currency--;
+			} */
+		}
+	}
+
+	public void shootDonuts(int chargeLevel) {
+		//if (player.currency <= 0 && freeBusterShots <= 0) { return; }
+		if (chargeLevel == 0) { return; }
+		int currencyUse = 0;
+
+		// Cancel non-invincible states.
+		if (!charState.attackCtrl && !charState.invincible) {
+			changeToIdleOrFall();
+		}
+		// Shoot anim and vars.
+		setShootAnim();
+		shootDonutProj(0);
+		if (chargeLevel >= 2) {
+			//donutTimer = 9;
+			//donutsPending = (chargeLevel - 1);
+		}
+		currencyUse = 1;
+		if (currencyUse > 0) {
+			if (player.currency > 0) {
+				player.currency--;
+			}
+		}
+	}
+
+	public void shootDonutProj(int time) {
+		setShootAnim();
+		Point shootPos = getShootPos();
+		int xDir = getShootXDir();
+
+		new ShingetsurinProj(
+			shootPos, xDir,
+			time / 60f, player, player.getNextActorNetId(), rpc: true
+		);
+		//playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
+		shootAnimTime = 0.3f;
+	}
+
+	public void updateAwakenedAura() {
+		awakenedAuraAnimTime += Global.speedMul;
+		if (awakenedAuraAnimTime > 4) {
+			awakenedAuraAnimTime = 0;
+			awakenedAuraFrame++;
+			if (awakenedAuraFrame > 3) {
+				awakenedAuraFrame = 0;
+			}
+		}
+	}
+
+	public void inputUpdate() {
 		if (shootPressTime > 0) {
 			shootPressTime--;
 		}
@@ -50,29 +240,19 @@ public class PunchyZero : Character {
 			parryPressTime--;
 		}
 		if (player.input.isPressed(Control.Shoot, player)) {
-			shootPressTime = 10;
+			shootPressTime = 6;
 		}
 		if (player.input.isPressed(Control.Special1, player)) {
-			specialPressTime = 10;
+			specialPressTime = 6;
 		}
 		if (player.input.isPressed(Control.WeaponLeft, player) ||
 			player.input.isPressed(Control.WeaponRight, player)
 		) {
-			parryPressTime = 10;
+			parryPressTime = 6;
 		}
-		Helpers.decrementFrames(ref parryCooldown);
-		Helpers.decrementFrames(ref dashAttackCooldown);
-		Helpers.decrementFrames(ref diveKickCooldown);
-		Helpers.decrementFrames(ref uppercutCooldown);
-		gigaAttack.update();
-		gigaAttack.charLinkedUpdate(this, true);
-		base.update();
-		// Charge and release charge logic.
-		//chargeLogic(shoot);
-	}
-
-	public override bool canCharge() { 
-		return (!isInvulnerableAttack());
+		if (player.input.isPressed(Control.WeaponRight, player) && isAwakened) {
+			//swingPressTime = 6;
+		}
 	}
 
 	public override bool normalCtrl() {
@@ -150,9 +330,17 @@ public class PunchyZero : Character {
 			changeState(new PZeroShoryuken(), true);
 			return true;
 		}
-		if (yDir == 1 && gigaAttack.shootTime == 0) {
-			gigaAttack.addAmmo(-16, player);
-			changeState(new Rakuhouha(gigaAttack), true);
+		if (yDir == 1) {
+			if (gigaAttack.shootTime > 0 || gigaAttack.ammo < gigaAttack.getAmmoUsage(0)) {
+				return false;
+			}
+			if (gigaAttack is RekkohaWeapon) {
+				gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
+				changeState(new Rekkoha(gigaAttack), true);
+			} else {
+				gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
+				changeState(new Rakuhouha(gigaAttack), true);
+			}
 			return true;
 		}
 		if (isDashing) {
@@ -251,15 +439,15 @@ public class PunchyZero : Character {
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.Uppercut => new GenericMeleeProj(
-				meleeWeapon, projPos, ProjIds.PZeroShoryuken, player, 4, Global.defFlinch, 0.25f,
+				ZeroShoryukenWeapon.staticWeapon, projPos, ProjIds.PZeroShoryuken, player, 4, Global.defFlinch, 0.5f,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.StrongPunch => new GenericMeleeProj(
-				meleeWeapon, projPos, ProjIds.PZeroYoudantotsu, player, 6, Global.defFlinch, 0.25f,
+				MegaPunchWeapon.staticWeapon, projPos, ProjIds.PZeroYoudantotsu, player, 6, Global.defFlinch, 0.5f,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.DropKick => new GenericMeleeProj(
-				meleeWeapon, projPos, ProjIds.PZeroEnkoukyaku, player, 4, Global.halfFlinch, 0.25f,
+				DropKickWeapon.staticWeapon, projPos, ProjIds.PZeroEnkoukyaku, player, 4, Global.halfFlinch, 0.5f,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.Parry => new GenericMeleeProj(

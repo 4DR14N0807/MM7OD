@@ -9,7 +9,7 @@ public class BubbleSplash : Weapon {
 	public float hyperChargeDelay;
 
 	public BubbleSplash() : base() {
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.1f;
 		isStream = true;
 		index = (int)WeaponIds.BubbleSplash;
@@ -133,6 +133,11 @@ public class BubbleSplashProjCharged : Projectile {
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
+		}
+
+		isOwnerLinked = true;
+		if (player.character != null) {
+			owningActor = player.character;
 		}
 	}
 

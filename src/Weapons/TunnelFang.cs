@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class TunnelFang : Weapon {
 	public TunnelFang() : base() {
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 1;
 		index = (int)WeaponIds.TunnelFang;
 		weaponBarBaseIndex = 24;

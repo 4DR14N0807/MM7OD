@@ -10,7 +10,7 @@ public class ElectricSpark : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 6;
 		weaknessIndex = 8;
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.5f;
 	}
 
@@ -32,7 +32,7 @@ public class ElectricSparkProj : Projectile {
 		Point? vel = null, bool rpc = false
 	) : base(
 		weapon, pos, xDir, 150, 2, player, "electric_spark",
-		Global.fourFrameFlinch, 0, netProjId, player.ownedByLocalPlayer
+		Global.miniFlinch, 0, netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)ProjIds.ElectricSpark;
 		maxTime = 1.2f;

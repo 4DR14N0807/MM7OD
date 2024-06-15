@@ -13,7 +13,7 @@ public class Boomerang : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 7;
 		weaknessIndex = 1;
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.5f;
 	}
 

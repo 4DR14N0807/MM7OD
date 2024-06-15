@@ -13,7 +13,7 @@ public class ShotgunIce : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 8;
 		weaknessIndex = 4;
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.5f;
 	}
 
@@ -70,7 +70,7 @@ public class ShotgunIceProj : Projectile {
 			vel = new Point(maxSpeed * velOverride.Value.x, maxSpeed * (velOverride.Value.y * 0.5f));
 		}
 		reflectable = true;
-		//this.fadeSound = "";
+		//this.fadeSound = "explosion";
 		if (rpc) {
 			byte[] extraArgs;
 			if (velOverride != null) {
@@ -154,6 +154,11 @@ public class ShotgunIceProjCharged : Projectile {
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
+		}
+
+		isOwnerLinked = true;
+		if (player.character != null) {
+			owningActor = player.character;
 		}
 	}
 

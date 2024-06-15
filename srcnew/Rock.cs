@@ -413,7 +413,7 @@ public class Rock : Character {
 	public override bool canCharge() {
 		Weapon weapon = player.weapon;
 		if (flag != null) return false;
-		if (isInvisibleBS.getValue()) return false;
+		//if (isInvisibleBS.getValue()) return false;
 		if (player.weapons.Count == 0) return false;
 		if (isWarpIn()) return false;
 		if (player.weapons.Count == 0) return false;

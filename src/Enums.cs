@@ -304,6 +304,10 @@ public enum RockWeaponIds
 	SARocketPunch,
 	SAArrowSlash,
 	LegBreaker,
+	GeminiLaser,
+	SearchSnake,
+	PowerStone,
+	GyroAttack,
 }
 
 public enum RockProjIds 
@@ -1048,5 +1052,5 @@ public enum RockWeaponBarIds
 	WildCoil,
 	RushSearch,
 	RushJet,
-	RushCoil
+	RushCoil,
 }

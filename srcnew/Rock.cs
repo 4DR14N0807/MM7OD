@@ -394,11 +394,11 @@ public class Rock : Character {
 		float ammoUsage = 0;
 		weapon.getProjectile(pos, xDir, player, chargeLevel, netProjId);
 		// Lasto: Esta monda no sirve.
-		if (weapon.soundTime == 0) {
+		/* if (weapon.soundTime == 0) {
 			if (weapon.shootSounds != null && weapon.shootSounds.Count > 0) {
 				playSound(weapon.shootSounds[chargeLevel]);
 			}
-		}
+		} */
 		// Only deduct ammo if owned by local player
 		if (ownedByLocalPlayer) {
 			if (weapon is RockBuster buster || weapon is SARocketPunch rocketPunch) {

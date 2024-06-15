@@ -11,7 +11,7 @@ public class Tornado : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 5;
 		weaknessIndex = 2;
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 2f;
 		switchCooldown = 0.5f;
 	}

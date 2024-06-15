@@ -10,7 +10,7 @@ public class RollingShield : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 3;
 		weaknessIndex = 6;
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.75f;
 	}
 

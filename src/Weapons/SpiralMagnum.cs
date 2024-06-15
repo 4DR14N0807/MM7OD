@@ -5,7 +5,7 @@ namespace MMXOnline;
 
 public class SpiralMagnum : AxlWeapon {
 	public SpiralMagnum(int altFire) : base(altFire) {
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.75f;
 		altFireCooldown = 2;
 		index = (int)WeaponIds.SpiralMagnum;

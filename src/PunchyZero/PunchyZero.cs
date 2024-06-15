@@ -44,8 +44,8 @@ public class PunchyZero : Character {
 
 	public override void update() {
 		inputUpdate();
-		Helpers.decrementFrames(ref donutTimer);
-		Helpers.decrementFrames(ref swingCooldown);
+		//Helpers.decrementFrames(ref donutTimer);
+		//Helpers.decrementFrames(ref swingCooldown);
 		Helpers.decrementFrames(ref parryCooldown);
 		Helpers.decrementFrames(ref dashAttackCooldown);
 		Helpers.decrementFrames(ref diveKickCooldown);
@@ -94,11 +94,11 @@ public class PunchyZero : Character {
 			}
 		}
 		// For the donuts.
-		if (donutsPending > 0 && donutTimer <= 0) {
+		/* if (donutsPending > 0 && donutTimer <= 0) {
 			shootDonutProj(donutsPending * 9);
 			donutsPending--;
 			donutTimer = 9;
-		}
+		} */
 		// Charge and release charge logic.
 		if (isAwakened) {
 			chargeLogic(shootDonuts);
@@ -108,7 +108,8 @@ public class PunchyZero : Character {
 	}
 
 	public override bool canCharge() {
-		return (player.currency > 0 || freeBusterShots > 0) && donutsPending == 0;
+		//return (player.currency > 0 || freeBusterShots > 0) && donutsPending == 0;
+		return true;
 	}
 
 	public override bool chargeButtonHeld() {
@@ -138,7 +139,7 @@ public class PunchyZero : Character {
 	}
 
 	public void shoot(int chargeLevel) {
-		if (player.currency <= 0 && freeBusterShots <= 0) { return; }
+		//if (player.currency <= 0 && freeBusterShots <= 0) { return; }
 		if (chargeLevel == 0) { return; }
 		int currencyUse = 0;
 
@@ -172,16 +173,16 @@ public class PunchyZero : Character {
 			);
 		}
 		if (currencyUse > 0) {
-			if (freeBusterShots > 0) {
+			/* if (freeBusterShots > 0) {
 				freeBusterShots--;
 			} else if (player.currency > 0) {
 				player.currency--;
-			}
+			} */
 		}
 	}
 
 	public void shootDonuts(int chargeLevel) {
-		if (player.currency <= 0 && freeBusterShots <= 0) { return; }
+		//if (player.currency <= 0 && freeBusterShots <= 0) { return; }
 		if (chargeLevel == 0) { return; }
 		int currencyUse = 0;
 
@@ -193,8 +194,8 @@ public class PunchyZero : Character {
 		setShootAnim();
 		shootDonutProj(0);
 		if (chargeLevel >= 2) {
-			donutTimer = 9;
-			donutsPending = (chargeLevel - 1);
+			//donutTimer = 9;
+			//donutsPending = (chargeLevel - 1);
 		}
 		currencyUse = 1;
 		if (currencyUse > 0) {
@@ -250,7 +251,7 @@ public class PunchyZero : Character {
 			parryPressTime = 6;
 		}
 		if (player.input.isPressed(Control.WeaponRight, player) && isAwakened) {
-			swingPressTime = 6;
+			//swingPressTime = 6;
 		}
 	}
 

@@ -11,7 +11,7 @@ public class FireWave : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = 4;
 		weaknessIndex = 5;
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.06f;
 		isStream = true;
 		switchCooldown = 0.25f;

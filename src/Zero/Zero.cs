@@ -806,7 +806,7 @@ public class Zero : Character {
 			palette = player.zeroAzPaletteShader;
 		}
 		if (isViral) {
-			palette = player.nightmareZeroShader;
+			//palette = player.nightmareZeroShader;
 		}
 		if (palette != null && hypermodeBlink > 0) {
 			float blinkRate = MathInt.Ceiling(hypermodeBlink / 30f);

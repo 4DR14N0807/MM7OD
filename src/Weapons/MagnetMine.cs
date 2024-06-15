@@ -7,7 +7,7 @@ public class MagnetMine : Weapon {
 	public const int maxMinesPerPlayer = 10;
 
 	public MagnetMine() : base() {
-		shootSounds = new List<string>() { "", "", "", "" };
+		//shootSounds = new List<string>() { "", "", "", "" };
 		rateOfFire = 0.75f;
 		index = (int)WeaponIds.MagnetMine;
 		weaponBarBaseIndex = 15;

@@ -878,7 +878,7 @@ public partial class Actor : GameObject {
 				if (killer != ownPlayer) {
 					if (secondLastAttacker.envKillOnly && weaponIndex != null) continue;
 					if (Damager.unassistable(secondLastAttacker.projId)) continue;
-					if (Global.time - secondLastAttacker.time > 2) continue;
+					if (Global.time - secondLastAttacker.time > 4) continue;
 				}
 				// Suicide case: grant assists liberally to "punish" suicider more
 				else if (Global.time - secondLastAttacker.time > 10) {

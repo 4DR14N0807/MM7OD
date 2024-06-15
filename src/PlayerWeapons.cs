@@ -558,24 +558,15 @@ label:
 		headbuttWeapon = new Headbutt(this);
 
 		if (character is Zero zero) {
-			if (!hasKnuckle()) {
-				zero.raijingekiWeapon = RaijingekiWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.groundSpecial);
-				zero.zeroAirSpecialWeapon = KuuenzanWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.airSpecial);
-				zero.zeroUppercutWeaponA = RyuenjinWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.uppercutA);
-				zero.zeroUppercutWeaponS = RyuenjinWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.uppercutS);
-				zero.zeroDownThrustWeaponA = HyouretsuzanWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.downThrustA);
-				zero.zeroDownThrustWeaponS = HyouretsuzanWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.downThrustS);
-			} else {
-				zero.raijingekiWeapon = new MegaPunchWeapon(this);
-				zero.zeroAirSpecialWeapon = KuuenzanWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.airSpecial);
-				zero.zeroUppercutWeaponA = new ZeroShoryukenWeapon(this);
-				zero.zeroUppercutWeaponS = new ZeroShoryukenWeapon(this);
-				zero.zeroDownThrustWeaponA = new DropKickWeapon(this);
-				zero.zeroDownThrustWeaponS = new DropKickWeapon(this);
-			}
+			zero.groundSpecial = RaijingekiWeapon.getWeaponFromIndex(loadout.zeroLoadout.groundSpecial);
+			zero.airSpecial = KuuenzanWeapon.getWeaponFromIndex(loadout.zeroLoadout.airSpecial);
+			zero.uppercutA = RyuenjinWeapon.getWeaponFromIndex(loadout.zeroLoadout.uppercutA);
+			zero.uppercutS = RyuenjinWeapon.getWeaponFromIndex(loadout.zeroLoadout.uppercutS);
+			zero.downThrustA = HyouretsuzanWeapon.getWeaponFromIndex(loadout.zeroLoadout.downThrustA);
+			zero.downThrustS = HyouretsuzanWeapon.getWeaponFromIndex(loadout.zeroLoadout.downThrustS);
 
-			zero.zeroGigaAttackWeapon = RakuhouhaWeapon.getWeaponFromIndex(this, loadout.zeroLoadout.gigaAttack);
-			zero.zeroHyperMode = loadout.zeroLoadout.hyperMode;
+			zero.gigaAttack = RakuhouhaWeapon.getWeaponFromIndex(loadout.zeroLoadout.gigaAttack);
+			zero.hyperMode = loadout.zeroLoadout.hyperMode;
 		}
 
 		hadoukenWeapon = new HadoukenWeapon(this);
@@ -682,7 +673,13 @@ label:
 		foreach (var weapon in weapons) {
 			weapon.update();
 			if (character != null && health > 0) {
-				weapon.charLinkedUpdate(character, false);
+				bool alwaysOn = false;
+				if (weapon is GigaCrush && Options.main.gigaCrushSpecial ||
+					weapon is NovaStrike && Options.main.novaStrikeSpecial
+				) {
+					alwaysOn = true;
+				}
+				weapon.charLinkedUpdate(character, alwaysOn);
 			}
 		}
 	}

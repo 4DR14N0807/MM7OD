@@ -57,6 +57,7 @@ public class CharState {
 	public bool[] altCtrls = new bool[1];
 	public bool normalCtrl;
 	public bool airMove;
+	public bool canJump;
 	public bool canStopJump;
 	public bool exitOnLanding;
 	public bool exitOnAirborne;
@@ -85,7 +86,7 @@ public class CharState {
 		}
 	}
 
-	public virtual void onExit(CharState? newState) {
+	public virtual void onExit(CharState newState) {
 		if (!useGravity) {
 			character.useGravity = true;
 		}
@@ -103,7 +104,7 @@ public class CharState {
 			character.isDashing = false;
 		}
 		if (newState is Hurt || newState is Die ||
-			newState is Frozen || newState is Crystalized || newState is Stunned
+			newState is GenericStun
 		) {
 			character.onFlinchOrStun(newState);
 		}
@@ -135,6 +136,9 @@ public class CharState {
 		}
 		wasGrounded = character.grounded;
 		player.delayETank();
+		if (this is not Jump and not WallKick && oldState?.canStopJump == false) {
+			canStopJump = false;
+		}
 	}
 
 	public virtual bool canEnter(Character character) {
@@ -1087,9 +1091,6 @@ public class WallSlide : CharState {
 		base.onEnter(oldState);
 		mmx = character as MegamanX;
 		character.dashedInAir = 0;
-		if (character is Zero zero) {
-			zero.quakeBlazerBounces = 0;
-		}
 		if (player.isAI) {
 			character.ai.jumpTime = 0;
 		}

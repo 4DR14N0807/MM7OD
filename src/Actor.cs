@@ -71,6 +71,7 @@ public partial class Actor : GameObject {
 	public float gravityWellModifier = 1;
 	public Dictionary<string, float> projectileCooldown { get; set; } = new Dictionary<string, float>();
 	public Dictionary<int, float> flinchCooldown { get; set; } = new Dictionary<int, float>();
+
 	public MusicWrapper musicSource;
 	public bool checkLadderDown = false;
 	public List<DamageText> damageTexts = new List<DamageText>();
@@ -160,6 +161,8 @@ public partial class Actor : GameObject {
 	public float bigBubbleTime;
 	public float waterTime;
 
+	public float timeStopTime;
+
 	public Actor(string spriteName, Point pos, ushort? netId, bool ownedByLocalPlayer, bool dontAddToLevel) {
 		this.pos = pos;
 		prevPos = pos;
@@ -226,7 +229,9 @@ public partial class Actor : GameObject {
 		string oldSpriteName = sprite?.name ?? "";
 		if (spriteName == null) return;
 		if (sprite != null) {
-			if (sprite.name == spriteName) return;
+			if (sprite.name == spriteName) {	
+				return;
+			}
 		}
 
 		if (!Global.sprites.ContainsKey(spriteName)) return;
@@ -364,70 +369,76 @@ public partial class Actor : GameObject {
 		deltaPos = pos.subtract(prevPos);
 		prevPos = pos;
 
-		if (useFrameProjs) {
-			// Frame-based hitbox projectile section
-			string spriteKey = null;
-			if (sprite != null) {
-				spriteKey = sprite.name + "_" + sprite.frameIndex.ToString();
-				var hitboxes = sprite.getCurrentFrame().hitboxes.ToList();
-				hitboxes.AddRange(sprite.hitboxes);
+		if (!useFrameProjs) {
+			return;
+		}
+		if (sprite == null) {
+			return;
+		}
+		// Frame-based hitbox projectile section
+		string spriteKey = sprite.name + "_" + sprite.frameIndex.ToString();
+		// Frame hitboxes.
+		List<Collider> hitboxes = sprite.getCurrentFrame().hitboxes.ToList();
+		// Global hitboxes.
+		hitboxes.AddRange(sprite.hitboxes);
 
-				if (spriteFrameToProjs.ContainsKey(spriteKey) && spriteFrameToProjs[spriteKey] != null) {
-					foreach (var proj in spriteFrameToProjs[spriteKey]) {
-						proj.incPos(deltaPos);
-						updateProjFromHitbox(proj);
-					}
-				} else if (hitboxes != null) {
-					foreach (var hitbox in hitboxes) {
-						var proj = getProjFromHitboxBase(hitbox);
-						if (proj != null) {
-							if (!spriteFrameToProjs.ContainsKey(spriteKey) || spriteFrameToProjs[spriteKey] == null) {
-								spriteFrameToProjs[spriteKey] = new List<Projectile>();
-							}
-							spriteFrameToProjs[spriteKey].Add(proj);
-						}
+		// Delete old stuff.
+		foreach (string key in spriteFrameToProjs.Keys) {
+			if (key != spriteKey) {
+				if (spriteFrameToProjs[key] != null) {
+					foreach (Projectile proj in spriteFrameToProjs[key]) {
+						proj.destroySelf();
 					}
 				}
+				spriteFrameToProjs.Remove(key);
 			}
-
-			foreach (var key in spriteFrameToProjs.Keys) {
-				if (key != spriteKey) {
-					if (spriteFrameToProjs[key] != null) {
-						foreach (var proj in spriteFrameToProjs[key]) {
-							//proj.destroyFrames = 2;
-							proj.destroySelf();
-						}
-					}
-					spriteFrameToProjs.Remove(key);
-				}
-			}
-
-			// Global hitbox projectile section
-			foreach (var proj in globalProjs) {
+		}
+		// Move if same frame.
+		if (spriteFrameToProjs.GetValueOrDefault(spriteKey) != null) {
+			foreach (var proj in spriteFrameToProjs[spriteKey]) {
 				proj.incPos(deltaPos);
 				updateProjFromHitbox(proj);
 			}
-
-			// Get misc. projectiles based on conditions (i.e. headbutt, awakened zero aura)
-			var projToCreateDict = getGlobalProjs();
-
-			// If the projectile id wasn't returned, remove it from current globalProj list.
-			for (int i = globalProjs.Count - 1; i >= 0; i--) {
-				if (!projToCreateDict.ContainsKey(globalProjs[i].projId)) {
-					//globalProjs[i].destroyFrames = 2;
-					globalProjs[i].destroySelf();
-					globalProjs.RemoveAt(i);
+		}
+		// Get new if new frame.
+		else if (hitboxes != null) {
+			foreach (var hitbox in hitboxes) {
+				Projectile? proj = getProjFromHitboxBase(hitbox);
+				if (proj != null) {
+					if (spriteFrameToProjs.GetValueOrDefault(spriteKey) == null) {
+						spriteFrameToProjs[spriteKey] = new List<Projectile>();
+					}
+					spriteFrameToProjs[spriteKey].Add(proj);
 				}
 			}
+		}
 
-			// For all projectiles to create, add to the global proj list ONLY if the proj id doesn't already exist
-			foreach (var kvp in projToCreateDict) {
-				var projIdToCreate = kvp.Key;
-				var projFunction = kvp.Value;
-				if (!globalProjs.Any(p => p.projId == projIdToCreate)) {
-					var newlyCreatedProj = projFunction();
-					globalProjs.Add(newlyCreatedProj);
-				}
+		// ----------------------------------------
+		// Global hitbox projectile section
+		foreach (var proj in globalProjs) {
+			proj.incPos(deltaPos);
+			updateProjFromHitbox(proj);
+		}
+
+		// Get misc. projectiles based on conditions (i.e. headbutt, awakened zero aura)
+		var projToCreateDict = getGlobalProjs();
+
+		// If the projectile id wasn't returned, remove it from current globalProj list.
+		for (int i = globalProjs.Count - 1; i >= 0; i--) {
+			if (!projToCreateDict.ContainsKey(globalProjs[i].projId)) {
+				//globalProjs[i].destroyFrames = 2;
+				globalProjs[i].destroySelf();
+				globalProjs.RemoveAt(i);
+			}
+		}
+
+		// For all projectiles to create, add to the global proj list ONLY if the proj id doesn't already exist
+		foreach (var kvp in projToCreateDict) {
+			var projIdToCreate = kvp.Key;
+			var projFunction = kvp.Value;
+			if (!globalProjs.Any(p => p.projId == projIdToCreate)) {
+				var newlyCreatedProj = projFunction();
+				globalProjs.Add(newlyCreatedProj);
 			}
 		}
 	}
@@ -481,10 +492,16 @@ public partial class Actor : GameObject {
 		}
 
 		if (!locallyControlled) {
-			//frameSpeed = 0;
+			frameSpeed = 0;
+			timeStopTime = 0;
 			sprite.time += Global.spf;
 		}
-
+		if (timeStopTime > 0) {
+			timeStopTime--;
+			if (timeStopTime <= 0) {
+				timeStopTime = 0;
+			}
+		};
 		if (locallyControlled && sprite != null) {
 			int oldFrameIndex = sprite.frameIndex;
 			sprite?.update();
@@ -1084,6 +1101,7 @@ public partial class Actor : GameObject {
 		if (!shouldRender(x, y)) {
 			return;
 		}
+
 		//console.log(this.pos.x + "," + this.pos.y);
 
 		var drawX = MathF.Round(pos.x);

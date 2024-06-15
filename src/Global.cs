@@ -267,9 +267,9 @@ public partial class Global {
 		if (Global.input.isPressed(Key.F11)) {
 			var ms = Global.level.musicSources.FirstOrDefault();
 			if (ms != null) {
-				ms.setNearEnd();
+				ms.setNearEndCheat();
 			} else {
-				Global.music.setNearEnd();
+				Global.music.setNearEndCheat();
 			}
 		}
 	}
@@ -481,7 +481,7 @@ public partial class Global {
 	public static float currentFPS = 60;
 	public static float logicFPS = 60;
 	public static float speedMul = 1;
-	private static float secondsFrameDuration = 1f / 60f;
+	public static readonly float secondsFrameDuration = 1f / 60f;
 	public static float spf {
 		get {
 			if (speedMul != 1) {
@@ -584,10 +584,10 @@ public partial class Global {
 	public const int maxServers = 5;
 	public static int tickRate = 1;
 
+	public static readonly int superFlinch = 36;
 	public static readonly int defFlinch = 26;
 	public static readonly int halfFlinch = 13;
 	public static readonly int miniFlinch = 6;
-	public static readonly int fourFrameFlinch = 4;
 
 	public static DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 

@@ -74,6 +74,11 @@ public class FlameBurnerProj : Projectile {
 		if (sendRpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+
+		isOwnerLinked = true;
+		if (player?.character != null) {
+			owningActor = player.character;
+		}
 	}
 
 	public override void update() {
@@ -88,7 +93,6 @@ public class FlameBurnerProj : Projectile {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		var character = damagable as Character;
-		character?.unfreezeIfFrozen();
 		if (maxTime < 0.475f) maxTime = 0.475f;
 		stopMoving();
 	}
@@ -219,7 +223,6 @@ public class CircleBlazeProj : Projectile {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		var character = damagable as Character;
-		character?.unfreezeIfFrozen();
 		base.onHitDamagable(damagable);
 		explode();
 	}

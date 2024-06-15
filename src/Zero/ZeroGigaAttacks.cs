@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Globalization;
 using SFML.Graphics;
 
 namespace MMXOnline;
 
-public enum RakuhouhaType {
+public enum ZeroGigaType {
 	Rakuhouha,
 	CFlasher,
 	Rekkoha,
@@ -23,7 +24,7 @@ public class RakuhouhaWeapon : Weapon {
 		weaponBarIndex = 33;
 		killFeedIndex = 16;
 		weaponSlotIndex = 51;
-		type = (int)RakuhouhaType.Rakuhouha;
+		type = (int)ZeroGigaType.Rakuhouha;
 		displayName = "Rakuhouha";
 		description = new string[] { "Channels stored energy in one blast.", "Energy cost: 16" };
 	}
@@ -32,11 +33,11 @@ public class RakuhouhaWeapon : Weapon {
 		return 16;
 	}
 
-	public static Weapon getWeaponFromIndex(Player player, int index) {
+	public static Weapon getWeaponFromIndex(int index) {
 		return index switch {
-			(int)RakuhouhaType.Rakuhouha => new RakuhouhaWeapon(),
-			(int)RakuhouhaType.CFlasher => new CFlasher(),
-			(int)RakuhouhaType.Rekkoha => new RekkohaWeapon(),
+			(int)ZeroGigaType.Rakuhouha => new RakuhouhaWeapon(),
+			(int)ZeroGigaType.CFlasher => new CFlasher(),
+			(int)ZeroGigaType.Rekkoha => new RekkohaWeapon(),
 			_ => throw new Exception("Invalid Zero hyouretsuzan weapon index!")
 		};
 	}
@@ -54,7 +55,7 @@ public class RekkohaWeapon : Weapon {
 		weaponBarIndex = 34;
 		killFeedIndex = 38;
 		weaponSlotIndex = 63;
-		type = (int)RakuhouhaType.Rekkoha;
+		type = (int)ZeroGigaType.Rekkoha;
 		displayName = "Rekkoha";
 		description = new string[] { "Summon down pillars of light energy.", "Energy cost: 32" };
 	}
@@ -76,7 +77,7 @@ public class CFlasher : Weapon {
 		weaponBarIndex = 35;
 		killFeedIndex = 81;
 		weaponSlotIndex = 64;
-		type = (int)RakuhouhaType.CFlasher;
+		type = (int)ZeroGigaType.CFlasher;
 		displayName = "Messenkou";
 		description = new string[] { "A less damaging blast that can pierce enemies.", "Energy cost: 8" };
 	}
@@ -93,7 +94,7 @@ public class ShinMessenkou : Weapon {
 		rateOfFire = 1f;
 		index = (int)WeaponIds.ShinMessenkou;
 		killFeedIndex = 86;
-		type = (int)RakuhouhaType.ShinMessenkou;
+		type = (int)ZeroGigaType.ShinMessenkou;
 		weaponBarBaseIndex = 43;
 		weaponBarIndex = 37;
 		weaponSlotIndex = 64;
@@ -107,7 +108,7 @@ public class ShinMessenkou : Weapon {
 public class Rakuhouha : CharState {
 	public Weapon weapon;
 	Anim? rakuanim;
-	RakuhouhaType type { get { return (RakuhouhaType)weapon.type; } }
+	ZeroGigaType type { get { return (ZeroGigaType)weapon.type; } }
 	bool fired = false;
 	bool fired2 = false;
 	bool fired3 = false;
@@ -116,9 +117,9 @@ public class Rakuhouha : CharState {
 	public Rakuhouha(
 		Weapon weapon
 	) : base(
-		(weapon.type == (int)RakuhouhaType.DarkHold) ? "darkhold" : 
-		weapon.type == (int)RakuhouhaType.CFlasher ||
-		weapon.type == (int)RakuhouhaType.DarkHold ? "cflasher" : "rakuhouha"
+		(weapon.type == (int)ZeroGigaType.DarkHold) ? "darkhold" : 
+		weapon.type == (int)ZeroGigaType.CFlasher ||
+		weapon.type == (int)ZeroGigaType.DarkHold ? "cflasher" : "rakuhouha"
 	) {
 		this.weapon = weapon;
 		invincible = true;
@@ -126,10 +127,10 @@ public class Rakuhouha : CharState {
 
 	public override void update() {
 		base.update();
-		bool isCFlasher = type == RakuhouhaType.CFlasher;
-		bool isRakuhouha = type == RakuhouhaType.Rakuhouha;
-		bool isShinMessenkou = type == RakuhouhaType.ShinMessenkou;
-		bool isDarkHold = type == RakuhouhaType.DarkHold;
+		bool isCFlasher = type == ZeroGigaType.CFlasher;
+		bool isRakuhouha = type == ZeroGigaType.Rakuhouha;
+		bool isShinMessenkou = type == ZeroGigaType.ShinMessenkou;
+		bool isDarkHold = type == ZeroGigaType.DarkHold;
 		if (character.frameIndex == 5 && !once && !isDarkHold) {
 			once = true;
 			/*rakuanim = new Anim(
@@ -165,21 +166,19 @@ public class Rakuhouha : CharState {
 					);
 				}
 			}
-			if (!isCFlasher && !isDarkHold) {
+			if (isRakuhouha) {
 				character.shakeCamera(sendRpc: true);
-				//character.playSound("voltcStrongBolt", sendRpc: true);
-				//character.playSound("morphmCrash", sendRpc: true);
-				//character.playSound("buster2X3", sendRpc: true);
-			} else if (isCFlasher && !isDarkHold) {
+				//character.playSound("rakuhouha", sendRpc: true);
+				//character.playSound("crash", sendRpc: true);
+			} else if (isCFlasher) { 
 				character.shakeCamera(sendRpc: true);
-				//character.playSound("cflasher", sendRpc: true);
-			} else if (!isCFlasher && isDarkHold) {
+				//character.playSound("messenkou", sendRpc: true);
+				//character.playSound("crashX3", sendRpc: true);
+			} else if (isDarkHold) {
 				//character.playSound("darkhold", forcePlay: false, sendRpc: true);
-				/*if (Helpers.randomRange(0, 1) == 0) {
-					character.playSound("znnigerunayo", forcePlay: false, sendRpc: true);
-				} else {
-					character.playSound("znowarida", forcePlay: false, sendRpc: true);
-				}*/
+			} else if (isShinMessenkou) {
+				//character.playSound("crash", forcePlay: false, sendRpc: true);
+				character.shakeCamera(sendRpc: true);
 			}
 		}
 		if (!fired2 && isShinMessenkou && character.frameIndex > 11) {
@@ -403,6 +402,11 @@ public class RekkohaProj : Projectile {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
 		netcodeOverride = NetcodeModel.FavorDefender;
+
+		isOwnerLinked = true;
+		if (player.character != null) {
+			owningActor = player.character;
+		}
 	}
 
 	public override void update() {
@@ -549,9 +553,9 @@ public class RekkohaEffect : Effect {
 public class DarkHoldWeapon : Weapon {
 	public DarkHoldWeapon() : base() {
 		ammo = 0;
-		rateOfFire = 1f;
+		rateOfFire = 3f;
 		index = (int)WeaponIds.DarkHold;
-		type = (int)RakuhouhaType.DarkHold;
+		type = (int)ZeroGigaType.DarkHold;
 		killFeedIndex = 175;
 		weaponBarBaseIndex = 69;
 		weaponBarIndex = 58;
@@ -567,12 +571,14 @@ public class DarkHoldProj : Projectile {
 	public float radius = 10;
 	public float attackRadius => (radius + 15);
 	public ShaderWrapper? screenShader;
+	float timeInFrames;
+
 	public DarkHoldProj(
 		Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
 	) : base(
 		weapon, pos, xDir, 0, 0, player, "empty", 0, 0.5f, netProjId, player.ownedByLocalPlayer
 	) {
-		maxTime = 1.25f;
+		maxTime = 3f;
 		vel = new Point();
 		projId = (int)ProjIds.DarkHold;
 		setIndestructableProperties();
@@ -589,24 +595,50 @@ public class DarkHoldProj : Projectile {
 	public override void update() {
 		base.update();
 		updateShader();
+		timeInFrames++;
 
-		if (time <= 0.5) {
+		if (timeInFrames < 150) {
 			foreach (var gameObject in Global.level.getGameObjectArray()) {
-				if (gameObject is Actor actor &&
-					actor.ownedByLocalPlayer &&
-					gameObject is IDamagable damagable &&
-					damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null) &&
-					inRange(actor)
-				) {
-					damager.applyDamage(damagable, false, weapon, this, projId);
+				if (gameObject != this && gameObject is Actor actor && actor.locallyControlled && inRange(actor)) {
+					// For characters.
+					if (actor is Character chara && chara.darkHoldInvulnTime <= 0) {
+						if (timeInFrames > 30) {
+							continue;
+						}
+						if (chara.canBeDamaged(damager.owner.alliance, damager.owner.id, null)) {
+							chara.addDarkHoldTime(150 - timeInFrames, damager.owner);
+							chara.darkHoldInvulnTime = (150 - timeInFrames) * 60f;
+						}
+						continue;
+					}
+					// For maverick and rides
+					if (actor is RideArmor or Maverick or Mechaniloid) {
+						if (actor.timeStopTime <= 0) {
+							continue;
+						}
+						IDamagable? damagable = actor as IDamagable;
+						if (damagable?.canBeDamaged(damager.owner.alliance, damager.owner.id, null) == true) {
+							continue;
+						}
+						actor.timeStopTime = 160 - timeInFrames;
+					}
+					// For projectiles
+					if (actor is Projectile && actor.timeStopTime <= 0) {
+						if (actor is BCrabSummonBubbleProj or BCrabSummonCrabProj &&
+							(actor as IDamagable)?.canBeDamaged(damager.owner.alliance, damager.owner.id, null) != true
+						) {
+							continue;
+						}
+						actor.timeStopTime = 160 - timeInFrames;
+					}
 				}
 			}
 		}
-		if (time <= 0.5) {
-			radius += Global.spf * 400;
+		if (timeInFrames <= 30) {
+			radius += (1f/60f) * 400;
 		}
-		if (time >= 1 && radius > 0) {
-			radius -= Global.spf * 800;
+		if (timeInFrames >= 150 && radius > 0) {
+			radius -= (1f/60f) * 800;
 			if (radius <= 0) {
 				radius = 0;
 			}
@@ -660,12 +692,14 @@ public class DarkHoldProj : Projectile {
 
 public class DarkHoldState : CharState {
 	public float stunTime = totalStunTime;
-	public const float totalStunTime = 5;
+	public const float totalStunTime = 2.5f * 60;
 	int frameIndex;
 	public bool shouldDrawAxlArm = true;
 	public float lastArmAngle = 0;
-	public DarkHoldState(Character character) : base(character?.sprite?.name ?? "grabbed") {
+
+	public DarkHoldState(Character character, float time) : base(character?.sprite?.name ?? "grabbed") {
 		immuneToWind = true;
+		stunTime = time;
 
 		this.frameIndex = character?.frameIndex ?? 0;
 		if (character is Axl axl) {
@@ -677,19 +711,24 @@ public class DarkHoldState : CharState {
 	public override void update() {
 		base.update();
 		character.stopMoving();
-		stunTime -= player.mashValue();
 		if (stunTime <= 0) {
 			stunTime = 0;
 			character.changeToIdleOrFall();
 		}
+		// Does not stack with other time stops.
+		stunTime -= 1;
 	}
 
 	public override bool canEnter(Character character) {
-		if (!base.canEnter(character)) return false;
-		if (character.darkHoldInvulnTime > 0) return false;
-		if (character.isInvulnerable()) return false;
-		if (character.isVaccinated()) return false;
-		return !character.isCCImmune() && !character.charState.invincible;
+		if (character.darkHoldInvulnTime > 0 ||
+			character.isInvulnerable() ||
+			character.isVaccinated() ||
+			character.isCCImmune() ||
+			character.charState.invincible
+		) {
+			return false;
+		}
+		return base.canEnter(character);
 	}
 
 	public override void onEnter(CharState oldState) {

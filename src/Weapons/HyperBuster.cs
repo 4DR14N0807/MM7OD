@@ -31,7 +31,9 @@ public class HyperBuster : Weapon {
 	}
 
 	public static float getRateofFireMod(Player player) {
-		if (player.weapons[player.hyperChargeSlot] is Buster && !player.hasUltimateArmor()) {
+		if (player != null && player.hyperChargeSlot < player.weapons.Count &&
+			player.weapons[player.hyperChargeSlot] is Buster && !player.hasUltimateArmor()
+		) {
 			return 0.75f;
 		}
 		return 1;

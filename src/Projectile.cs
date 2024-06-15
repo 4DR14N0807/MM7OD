@@ -41,6 +41,7 @@ public class Projectile : Actor {
 
 	public bool isMelee;
 	public int meleeId = -1;
+	public bool isOwnerLinked;
 	public Actor owningActor;
 
 	public Projectile(
@@ -152,12 +153,6 @@ public class Projectile : Actor {
 
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
-		if (owner?.character?.isNightmareZeroBS.getValue() == true && Global.shaders.ContainsKey("nightmareZero")) {
-			/*if (nightmareZeroShader == null) {
-				nightmareZeroShader = ownerPlayer.nightmareZeroShader;
-			}*/
-			shaders.Add(nightmareZeroShader);
-		}
 		if (shaders.Count > 0) {
 			return shaders;
 		} else {
@@ -316,7 +311,7 @@ public class Projectile : Actor {
 		if (attacker.player.alliance == defender.player.alliance) return false;
 		if (!defender.sprite.name.Contains("attack") && !defender.sprite.name.Contains("block")) return false;
 		if (defender.sprite.name.Contains("sigma2")) return false;
-		if ((attacker as Zero)?.isHyperZero() == true) return false;
+		if ((attacker as Zero)?.hypermodeActive() == true) return false;
 
 		// Not facing each other
 		if (attacker.pos.x >= defender.pos.x && (attacker.xDir != -1 || defender.xDir != 1)) return false;
@@ -543,7 +538,7 @@ public class Projectile : Actor {
 			bool isMaverickHealProj = projId == (int)ProjIds.MorphMCScrap || projId == (int)ProjIds.MorphMPowder;
 			if (ownedByLocalPlayer && (damagable != damager.owner.character || isMaverickHealProj) && !damager.owner.mavericks.Contains(damagable as Maverick) && damagable.canBeHealed(damager.owner.alliance) && healAmount > 0) {
 				if (Global.serverClient == null || damagableActor.ownedByLocalPlayer) {
-					damagable.heal(owner, healAmount, allowStacking: false, drawHealText: true);
+					damagable.heal(owner, healAmount, allowStacking: true, drawHealText: true);
 				} else {
 					RPC.heal.sendRpc(owner, damagableActor.netId.Value, healAmount);
 				}

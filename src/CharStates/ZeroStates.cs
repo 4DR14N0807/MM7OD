@@ -3,133 +3,171 @@ using System.Diagnostics.CodeAnalysis;
 using SFML.Graphics;
 
 namespace MMXOnline;
-
 public class HyperZeroStart : CharState {
 	public float radius = 200;
 	public float time;
-	[AllowNull]
-	Anim drWilyAnim;
-	[AllowNull]
-	Zero zero;
+	Zero zero = null!;
+	Anim? virusEffectParts;
+	Anim[] virusAnim = new Anim[3];
+	float[] delayedVirusTimer = {0, 7, 14};
+	string virusAnimName = "";
 
-	public HyperZeroStart(int type) : base(
-		type == 2 ? "hyper_start" : 
-		type == 1 ? "hyper_start2" : "hyper_start", "", "", "") {
+	public HyperZeroStart() : base("hyper_start") {
 		invincible = true;
 	}
 
 	public override void update() {
 		base.update();
+		if (virusAnimName != "") {
+			int animCount = 0;
+			for (int i = 0; i < virusAnim.Length; i++) {
+				if (virusAnim[i] != null) {
+					if (virusAnim[i].pos == character.getCenterPos()) {
+						virusAnim[i].destroySelf();
+					}
+					if (virusAnim[i].destroyed) {
+						character.playSound("shingetsurinx5", true);
+						if (frameTime > 55) {
+							virusAnim[i] = null!;
+							continue;
+						}
+						virusAnim[i] = virusAnim[i] = createVirusAnim();
+					} else {
+						animCount++;
+					}
+					virusAnim[i].moveToPos(character.getCenterPos(), 300);
+					if (virusAnim[i].pos.distanceTo(character.getCenterPos()) < 10) {
+						virusAnim[i].destroySelf();
+					}
+				} else if (delayedVirusTimer[i] > 0) {
+					delayedVirusTimer[i] -= Global.speedMul;
+					if (delayedVirusTimer[i] <= 0) {
+						delayedVirusTimer[i] = 0;
+						virusAnim[i] = createVirusAnim();
+					}
+				}
+				if (animCount == 0 && frameTime > 55 && virusEffectParts != null) {
+					virusEffectParts.destroySelf();
+				}
+			}
+		}
 		if (time == 0) {
 			if (radius >= 0) {
 				radius -= Global.spf * 200;
-			} else if (character is Zero zero) {
+			} else {
 				time = Global.spf;
 				radius = 0;
-				if (zero.zeroHyperMode == 0) {
-					zero.blackZeroTime = zero.maxHyperZeroTime + 1;
-					RPC.setHyperZeroTime.sendRpc(character.player.id, zero.blackZeroTime, 0);
-				} else if (zero.zeroHyperMode == 1) {
-					zero.zeroShinMessenkouWeapon.ammo = zero.zeroGigaAttackWeapon.ammo;
-					zero.awakenedZeroTime = 0;
-					RPC.setHyperZeroTime.sendRpc(character.player.id, zero.awakenedZeroTime, 2);
-				} else if (zero.zeroHyperMode == 2) {
-					zero.zeroDarkHoldWeapon.ammo = zero.zeroGigaAttackWeapon.ammo;
-					zero.isNightmareZero = true;
-				}
+				activateHypermode();
 				//character.playSound("ching");
 				character.fillHealthToMax();
 			}
 		} else {
 			time += Global.spf;
-			if (time > 1) {
-				character.changeState(new Idle(), true);
+			if (time >= 1) {
+				character.changeToIdleOrFall();
 			}
 		}
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		zero = character as Zero;
-
+		zero = character as Zero ?? throw new NullReferenceException();
 		character.useGravity = false;
 		character.vel = new Point();
 		if (zero == null) {
 			throw new NullReferenceException();
 		}
-
-		if (zero.hyperZeroUsed) {
-			return;
+		character.player.currency -= 10;
+		if (zero.hyperMode == 2) {
+			zero.changeSpriteFromName("hyper_viral", true);
+			virusAnimName = "sigmavirushead";
+			virusAnim[0] = createVirusAnim();
 		}
-		if (zero.zeroHyperMode == 0) {
-			drWilyAnim = new Anim(
-				character.pos.addxy(50 * character.xDir, 0f),
-				"LightX3", -character.xDir,
-				player.getNextActorNetId(),
-				destroyOnEnd: false, sendRpc: true
-			);
-			drWilyAnim.fadeIn = true;
-			//character.playSound("BlackZeroEntry", forcePlay: false, sendRpc: true);
-			character.player.currency -= 10;
-		} else if (zero.zeroHyperMode == 1) {
-			drWilyAnim = new Anim(
-				character.pos.addxy(30 * character.xDir, -30), "drwily", -character.xDir,
-				player.getNextActorNetId(), false, sendRpc: true
-			);
-			drWilyAnim.fadeIn = true;
-			drWilyAnim.blink = true;
-			//character.playSound("AwakenedZeroEntry", forcePlay: false, sendRpc: true);
-			character.player.awakenedCurrencyEnd = (character.player.currency - 5);
-		} else if (zero.zeroHyperMode == 2) {
-			/*drWilyAnim = new Anim(
-				character.pos.addxy(30 * character.xDir, -30), "gate", -character.xDir,
-				player.getNextActorNetId(), false, sendRpc: true
-			);
-			drWilyAnim.fadeIn = true;
-			drWilyAnim.blink = true;*/
-			zero.freeBusterShots = 10;
-			character.player.currency -= 10;
-			zero.zeroDarkHoldWeapon.ammo = zero.zeroGigaAttackWeapon.ammo;
+		if (zero.hyperMode == 1) {
+			zero.changeSpriteFromName("hyper_awakened", true);
+			virusAnimName = "zerovirus";
+			virusAnim[0] = createVirusAnim();
+			virusEffectParts = new Anim(character.pos.addxy(0, 4), "viruseffect", -character.xDir, null, false);
+			virusEffectParts.blink = true;
 		}
-		zero.hyperZeroUsed = true;
+		if (zero.hyperMode == 0) {
+			//character.playSound("blackzeroentry", forcePlay: false, sendRpc: true);
+		}
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		character.useGravity = true;
-		drWilyAnim?.destroySelf();
-		character.invulnTime = 0.5f;
-		zero.hyperZeroUsed = false;
+		if (character != null) {
+			character.invulnTime = 0.5f;
+		}
+		if (zero.isAwakened || zero.isBlack) {
+			zero.hyperModeTimer = 20 * 60;
+		}
+		virusEffectParts?.destroySelf();
+		bool playedHitSound = false;
+		for (int i = 0; i < virusAnim.Length; i++) {
+			if (virusAnim[i]?.destroyed == false) {
+				if (!playedHitSound) {
+					character?.playSound("shingetsurinx5", true);
+					playedHitSound = true;
+				}
+				virusAnim[i]?.destroySelf();
+			}
+		}
+	}
 
-		if (zero.zeroHyperMode == 0) {
-			zero.blackZeroTime = zero.maxHyperZeroTime + 0.5f;
-			RPC.setHyperZeroTime.sendRpc(zero.player.id, zero.blackZeroTime, 0);
-		} else if (zero.zeroHyperMode == 1) {
-			zero.awakenedCurrencyTime = -30;
-			RPC.setHyperZeroTime.sendRpc(zero.player.id, zero.awakenedZeroTime, 2);
-		} else if (zero.zeroHyperMode == 2) {
-			zero.isNightmareZero = true;
+	public Anim createVirusAnim() {
+		float newAngle = Helpers.randomRange(0, 359);
+		Point newPos = new(Helpers.cosd(newAngle) * 100, Helpers.sind(newAngle) * 100);
+		float diplayAngle = newAngle;
+		int xDir = -1;
+		if (virusAnimName == "sigmavirushead") {
+			xDir = 1;
+		}
+		if (diplayAngle > 90 && diplayAngle < 270) {
+			diplayAngle = (diplayAngle + 180f) % 360f;
+			xDir *= -1;
+		}
+		return new Anim(
+			character.getCenterPos() + newPos,
+			virusAnimName, xDir,
+			player.getNextActorNetId(), false, sendRpc: true
+		) {
+			angle = diplayAngle
+		};
+	}
+
+	public void activateHypermode() {
+		if (zero.hyperMode == 1) {
+			zero.awakenedPhase = 1;
+			float storedAmmo = zero.gigaAttack.ammo;
+			zero.gigaAttack = new ShinMessenkou();
+			zero.gigaAttack.ammo = storedAmmo;
+		} else if (zero.hyperMode == 2) {
+			zero.isViral = true;
+			float storedAmmo = zero.gigaAttack.ammo;
+			zero.gigaAttack = new DarkHoldWeapon();
+			zero.gigaAttack.ammo = storedAmmo;
 			zero.freeBusterShots = 10;
+		} else {
+			zero.isBlack = true;
 		}
 	}
 
 	public override void render(float x, float y) {
 		base.render(x, y);
 		Point pos = character.getCenterPos();
-		DrawWrappers.DrawCircle(pos.x + x, pos.y + y, radius, false, Color.White, 5, character.zIndex + 1, true, Color.White);
+		if (zero.hyperMode == 0) {
+			DrawWrappers.DrawCircle(
+				pos.x + x, pos.y + y, radius, false, Color.White, 5, character.zIndex + 1, true, Color.White
+			);
+		}
 	}
 }
 
-public class KKnuckleParry : Weapon {
-	public KKnuckleParry() : base() {
-		rateOfFire = 0.75f;
-		index = (int)WeaponIds.KKnuckleParry;
-		killFeedIndex = 172;
-	}
-}
-
-public class KKnuckleParryStartState : CharState {
-	public KKnuckleParryStartState() : base("parry_start", "", "", "") {
+public class SaberParryStartState : CharState {
+	public SaberParryStartState() : base("parry_start", "", "", "") {
 		superArmor = true;
 	}
 
@@ -175,7 +213,6 @@ public class KKnuckleParryStartState : CharState {
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		character.parryCooldown = character.maxParryCooldown;
 	}
 
 	public bool canParry(Actor damagingActor) {
@@ -220,10 +257,5 @@ public class KKnuckleParryMeleeState : CharState {
 		if (counterAttackTarget != null) {
 			counterAttackPos = counterAttackTarget.pos.addxy(character.xDir * 30, 0);
 		}
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-		character.parryCooldown = character.maxParryCooldown;
 	}
 }

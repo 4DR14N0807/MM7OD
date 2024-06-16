@@ -338,6 +338,7 @@ public enum RockProjIds
 	WildCoilCharged,
 	SARocketPunch,
 	SAArrowSlash,
+	ShieldBlock,
 }
 
 public enum ProjIds {

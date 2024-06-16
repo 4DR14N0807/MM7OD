@@ -121,6 +121,11 @@ public class GenericMeleeProj : Projectile {
 				hitPoint = new Point((hitboxCenter.x + hitCenter.x) * 0.5f, (hitboxCenter.y + hitCenter.y) * 0.5f);
 			}
 
+			
+			if (projId == (int)RockProjIds.ShieldBlock) {
+				playSound("ding");
+			}
+
 			if (projId == (int)ProjIds.SlashClaw) {
 
 				string slashClawFade = "slash_claw_fade";

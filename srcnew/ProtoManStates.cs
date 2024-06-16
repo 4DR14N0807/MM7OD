@@ -5,11 +5,25 @@ namespace MMXOnline;
 
 
 public class ProtoBlock : CharState {
+
+    ProtoMan? protoman;
+
     public ProtoBlock() : base("block") {
         immuneToWind = true;
         exitOnAirborne = true;
         //normalCtrl = true;
         //attackCtrl = true;
+    }
+
+    public override void onEnter(CharState oldState) {
+        base.onEnter(oldState);
+        protoman = character as ProtoMan;
+        protoman.isShieldActive = true;
+    }
+
+    public override void onExit(CharState newState) {
+        base.onExit(newState);
+        protoman.isShieldActive = false;
     }
 
 

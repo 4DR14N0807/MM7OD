@@ -15,6 +15,9 @@ public class ProtoMan : Character {
 	public const float coreAmmoMaxCooldown = 30f / 60f;
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+	public bool isShieldActive;
+	public decimal shieldHP = 6;
+	public float healShieldHPCooldown = 1;
    
    public ProtoMan(
     Player player, float x, float y, int xDir,
@@ -74,16 +77,42 @@ public class ProtoMan : Character {
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(6, 0));
 	}*/
 
-    public override Projectile? getProjFromHitbox(Collider collider, Point centerPoint) {
-		Projectile? proj = sprite.name switch {
-            "protoman_block" when collider.isHurtBox() => new GenericMeleeProj(
-				new Weapon(), centerPoint, ProjIds.ShieldBlock, player, 0, 0, 0, isShield: true
-			),
-			
-			_ => null
-        };
+    public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
+		int meleeId = getHitboxMeleeId(hitbox);
+		if (meleeId == -1) {
+			return null;
+		}
+		Projectile? proj = getMeleeProjById(meleeId, centerPoint);
+		if (proj == null) {
+			return null;
+		}
+		// Assing data variables.
+		proj.meleeId = meleeId;
+		proj.owningActor = this;
 
-        return proj;
+		return proj;
+	}
+
+	public enum MeleeIds {
+		None = -1,
+		ShieldBlock,
+	}
+
+	public override int getHitboxMeleeId(Collider hitbox) {
+		return (int)(sprite.name switch {
+			//"protoman_block" => MeleeIds.ShieldBlock,
+			_ => MeleeIds.None
+		});
+	}
+
+	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
+		return id switch {
+			/*(int)MeleeIds.ShieldBlock => new GenericMeleeProj(
+				new Weapon(), projPos, ProjIds.ShieldBlock, player, 0, 0, 0, isShield: true
+			),*/
+
+			_ => null
+		};
 	}
 
     public override bool chargeButtonHeld() {
@@ -101,6 +130,12 @@ public class ProtoMan : Character {
         if (!ownedByLocalPlayer) return;
 
         Helpers.decrementTime(ref lemonCooldown);
+		Helpers.decrementTime(ref healShieldHPCooldown);
+
+		if (healShieldHPCooldown <= 0 && shieldHP < 6 && !isShieldActive) {
+			shieldHP++;
+			healShieldHPCooldown = 2f;
+		}
 		
 		
 		if (isCharging()) {

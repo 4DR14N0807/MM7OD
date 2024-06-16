@@ -137,9 +137,9 @@ public class ProtoMan : Character {
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 
-		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
+		if (healShieldHPCooldown <= 0 && shieldHP < 1) {
 			playSound("heal", forcePlay: true, sendRpc: true);
-			shieldHP++;
+			shieldHP = 1;
 			healShieldHPCooldown = 15;
 			if (shieldHP >= shieldMaxHP) {
 				shieldHP = shieldMaxHP;
@@ -317,6 +317,17 @@ public class ProtoMan : Character {
 		coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 	}
 
+	public bool isShieldFront() {
+		if (!ownedByLocalPlayer) {
+			return isShieldActive;
+		}
+		return (
+			isShieldActive && shieldHP > 0 &&
+			shootAnimTime == 0 &&
+			charState is not Hurt { frameTime: not 0 }
+		);
+	}
+
 	public override void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
 		if (!ownedByLocalPlayer) return;
 		decimal damage = decimal.Parse(fDamage.ToString());
@@ -329,11 +340,14 @@ public class ProtoMan : Character {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 			return;
 		}
+		// Tracker variables.
+		decimal ogShieldHP = shieldHP;
+		float oldHealth = player.health;
+		bool fullyBlocked = false;
+		bool shieldBlocked = false;
 		// Shield front block check.
-		if (isShieldActive && shieldHP > 0 &&
-			shootAnimTime == 0 && charState is not Hurt &&
-			Damager.hitFromFront(this, actor, attacker, projId ?? -1)
-		) {
+		if (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
+			shieldBlocked = true;
 			// 1 damage scenario.
 			// Reduce damage only 50% of the time.
 			if (damage < 2) {
@@ -342,17 +356,23 @@ public class ProtoMan : Character {
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
 					shieldHP--;
+				} else {
+					fullyBlocked = true;
 				}
 			}
 			// High HP scenario.
 			else if (shieldHP + 1 >= damage) {
 				shieldHP -= damage - 1;
+				if (shieldHP <= 0) {
+					shieldHP = 0;
+				}
 				damage = 0;
 			}
 			// Low HP scenario.
 			else {
 				damage -= shieldHP + 1;
 				shieldHP = 0;
+				shieldBlocked = false;
 			}
 			if (shieldHP <= 0) {
 				isShieldActive = false;
@@ -362,27 +382,46 @@ public class ProtoMan : Character {
 			}
 		}
 		// Back shield block check.
-		if ((!isShieldActive || shieldHP <= 0 || shootAnimTime <= 0 || charState is Hurt) &&
-			Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
-		) {
+		else if (!isShieldFront() && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
+			shieldBlocked = true;
 			if (damage < 2) {
 				shieldDamageDebt += damage / 2m;
 				damage = 0;
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
 					damage = 1;
+				} else {
+					fullyBlocked = true;
 				}
 			} else {
 				damage--;
 			}
 		}
 		if (damage > 0) {
-			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
 			addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
 			playSound("hit", sendRpc: true);
 		} else {
-			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
 			playSound("ding", sendRpc: true);
+		}
+		if (fullyBlocked) {
+			addDamageText("0", (int)FontType.Blue);
+			RPC.addDamageText.sendRpc(attacker.id, netId, 0);
+			return;
+		}
+		if (oldHealth > player.health) {
+			int fontColor = (int)FontType.Red;
+			if (shieldBlocked) {
+				fontColor = (int)FontType.Blue;
+			}
+			string damageText = (oldHealth - player.health).ToString();
+			addDamageText(damageText, fontColor);
+			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
+		}
+		if (ogShieldHP > shieldHP) {
+			string damageText = (ogShieldHP - shieldHP).ToString();
+			addDamageText(damageText, (int)FontType.Blue);
+			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
 		}
 	}
 }

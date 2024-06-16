@@ -95,7 +95,7 @@ public class ShieldDash : CharState {
 		}
 		if (dustTimer >= 4) {
 			new Anim(
-				character.getDashDustEffectPos(initialXDir),
+				character.getDashDustEffectPos(initialXDir).addxy(0, 4),
 				"dust", initialXDir, player.getNextActorNetId(), true,
 				sendRpc: true
 			) { vel = new Point(0, -40) };

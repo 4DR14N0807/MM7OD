@@ -306,10 +306,8 @@ public class ProtoMan : Character {
 			}
 			// High HP scenario.
 			else if (shieldHP + 1 >= damage) {
+				shieldHP -= damage - 1;
 				damage = 0;
-				if (damage >= 1) {
-					shieldHP -= damage - 1;
-				}
 			}
 			// Low HP scenario.
 			else {

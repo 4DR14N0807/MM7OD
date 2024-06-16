@@ -200,6 +200,21 @@ public class ProtoMan : Character {
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
 		}
+		if ((player.input.isPressed(Control.WeaponLeft, player) ||
+			player.input.isPressed(Control.WeaponRight, player))
+		) {
+			if (isShieldActive) {
+				isShieldActive = false;
+				if (sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name[..^7], false);
+				}
+			} else if (shieldHP > 0) {
+				isShieldActive = true;
+				if (!sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name + "_shield", false);
+				}
+			}
+		}
 		return base.normalCtrl();
 	}
 

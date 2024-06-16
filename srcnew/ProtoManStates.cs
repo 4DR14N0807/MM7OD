@@ -84,6 +84,7 @@ public class ShieldDash : CharState {
 		if (character.frameIndex >= 1) {
 			if (!soundPlayed) {
 				character.playSound("slide", sendRpc: true);
+				soundPlayed = true;
 			}
 			character.move(move * 60);
 		}

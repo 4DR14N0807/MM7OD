@@ -291,7 +291,9 @@ public class LevelData {
 	}
 
 	public string loadCustomMapSprites() {
-		var customSpriteJsonPaths = Helpers.getFiles(Global.assetPath + "assets/maps_custom/" + name + "/sprites", true, "json");
+		var customSpriteJsonPaths = Helpers.getFiles(
+			Global.assetPath + "assets/maps_custom/" + name + "/sprites", true, "json"
+		);
 		var fileChecksumDict = new SortedDictionary<string, string>();
 		foreach (var customSpriteJsonPath in customSpriteJsonPaths) {
 			string fileName = Path.GetFileNameWithoutExtension(customSpriteJsonPath);

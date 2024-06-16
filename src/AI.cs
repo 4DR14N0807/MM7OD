@@ -245,6 +245,7 @@ public class AI {
 				player.character?.addHealth(player.maxHealth - currentMaxHp);
 			}
 		}
+		/*
 		if (framesChargeHeld > 0) {
 			player.press(Control.Shoot);
 			if (character.chargeTime < maxChargeTime) {
@@ -256,6 +257,7 @@ public class AI {
 				//this.player.release(control.Shoot.key);
 			}
 		}
+		*/
 		if (target != null && target.destroyed) {
 			target = null;
 		}
@@ -384,7 +386,7 @@ public class AI {
 					));
 			}
 		}
-
+		/*
 		//Always do as AI
 		if (character is MegamanX mmx4) {
 			dommxAI(mmx4);
@@ -443,7 +445,7 @@ public class AI {
 			}
 		}
 		//End of AI should attack
-
+		*/
 		//The AI should dodge if a projectile is close to him
 		/*
 		if (aiState.shouldDodge && target != null) {
@@ -468,7 +470,7 @@ public class AI {
 		}
 		*/
 		//End of The AI Dodging
-
+		/*
 		//The AI should randomly charge weapon?
 		//I truly wonder why GM19 made only X charge weapons	
 		if (aiState.randomlyChargeWeapon && character is MegamanX or Axl &&
@@ -486,7 +488,7 @@ public class AI {
 			}
 		}
 		//End of Randomly Charge Weapon
-
+		*/
 		if (aiState.randomlyChangeState && character != null) {
 			if (Helpers.randomRange(0, 100) < 1) {
 				var randAmount = Helpers.randomRange(-100, 100);
@@ -494,7 +496,7 @@ public class AI {
 				return;
 			}
 		}
-
+		/*
 		if (aiState.randomlyDash && character != null &&
 			character.charState is not WallKick &&
 			character.grounded &&
@@ -506,6 +508,7 @@ public class AI {
 				new Dash(Control.Dash)
 			);
 		}
+		*/
 
 		if (aiState.randomlyJump && !inNodeTransition && stuckTime == 0) {
 			if (Helpers.randomRange(0, 650) < 3) {

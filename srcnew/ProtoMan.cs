@@ -15,9 +15,9 @@ public class ProtoMan : Character {
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 	public bool isShieldActive = true;
-	public decimal shieldHP = 12;
-	public int shieldMaxHP = 12;
-	public float healShieldHPCooldown = 60;
+	public decimal shieldHP = 18;
+	public int shieldMaxHP = 18;
+	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 
 	public ProtoMan(
@@ -122,15 +122,15 @@ public class ProtoMan : Character {
 
 	public override void update() {
 		base.update();
-
 		if (!ownedByLocalPlayer) return;
 
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 
-		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP && !isShieldActive) {
+		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
+			playSound("heal", forcePlay: true, sendRpc: true);
 			shieldHP++;
-			healShieldHPCooldown = 60;
+			healShieldHPCooldown = 15;
 			if (shieldHP >= shieldMaxHP) {
 				shieldHP = shieldMaxHP;
 			}
@@ -314,6 +314,7 @@ public class ProtoMan : Character {
 				damage -= shieldHP + 1;
 				shieldHP = 0;
 			}
+			healShieldHPCooldown = 120;
 		}
 		// Back shield block check.
 		if ((!isShieldActive || shieldHP <= 0) && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {

@@ -1342,7 +1342,9 @@ public class GameMode {
 		bool allowSmall = true
 	) {
 		baseY += 25;
-		Global.sprites["hud_weapon_base"].drawToHUD(baseIndex, baseX, baseY);
+		if (baseIndex >= 0) {
+			Global.sprites["hud_weapon_base"].drawToHUD(baseIndex, baseX, baseY);
+		}
 		baseY -= 16;
 
 		// Puppeteer small energy bars.
@@ -1464,8 +1466,8 @@ public class GameMode {
 		}
 
 		if (player.character is ProtoMan protoman) {
-			renderAmmo(baseX, baseY, 0, 1, MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP);
-			renderAmmo(baseX + 15, baseY, 0, 4, protoman.coreAmmo, maxAmmo: protoman.coreMaxAmmo);
+			renderAmmo(baseX - 15, baseY - 41, -1, 1, MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP);
+			renderAmmo(baseX, baseY, 0, 4, protoman.coreAmmo, maxAmmo: protoman.coreMaxAmmo);
 			return;
 		}
 

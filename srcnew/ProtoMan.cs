@@ -62,11 +62,9 @@ public class ProtoMan : Character {
 	}
 
 	public bool canShieldDash() {
-		if (
-			charState is ShieldDash ||
-			!grounded
-		) return false;
-
+		if (charState is ShieldDash) {
+			return false;
+		}
 		return true;
 	}
 

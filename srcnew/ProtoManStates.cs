@@ -64,37 +64,33 @@ public class ShieldDash : CharState {
 		this.initialSlideButton = initialSlideButton;
 		accuracy = 10;
 		enterSound = "slide";
+		useGravity = false;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		initialXDir = character.xDir;
 		character.isDashing = true;
+		character.vel.y = 0;
 	}
-
 
 	public override void update() {
 		base.update();
-
-		character.vel.y = 0;
-
-		if (stateTime > Global.spf * 40) {
-			character.frameIndex = 0;
-			character.sprite.frameTime = 0;
-			character.sprite.animTime = 0;
-			character.sprite.frameSpeed = 0.1f;
-
-			character.changeState(new Idle(), true);
+		if (frameTime >= 40) {
+			character.changeToIdleOrFall();
 			return;
 		}
-
 		var move = new Point(0, 0);
-		move.x = character.getDashSpeed() * initialXDir;
-		if (character.frameIndex >= 2) character.move(move);
-
-		dustTimer += Global.spf;
-
-		if (dustTimer >= Global.spf * 4) {
+		move.x = 3.5f * initialXDir;
+		if (character.frameIndex >= 1) {
+			character.move(move * 60);
+		}
+		if (character.grounded) {
+			dustTimer += Global.speedMul;
+		} else {
+			dustTimer = 0;
+		}
+		if (dustTimer >= 4) {
 			new Anim(
 				character.getDashDustEffectPos(initialXDir),
 				"dust", initialXDir, player.getNextActorNetId(), true,

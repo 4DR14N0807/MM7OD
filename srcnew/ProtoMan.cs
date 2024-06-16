@@ -361,7 +361,7 @@ public class ProtoMan : Character {
 				damage = 0;
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
-					shieldHP--;
+					damage = 1;
 				}
 			} else {
 				damage--;

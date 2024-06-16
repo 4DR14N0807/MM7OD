@@ -62,10 +62,7 @@ public class ProtoMan : Character {
 	}
 
 	public bool canShieldDash() {
-		if (charState is ShieldDash) {
-			return false;
-		}
-		return true;
+		return (charState is not ShieldDash && shieldHP > 0);
 	}
 
 	public override string getSprite(string spriteName) {
@@ -138,7 +135,7 @@ public class ProtoMan : Character {
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 
 		if (healShieldHPCooldown <= 0 && shieldHP < 1) {
-			playSound("heal", forcePlay: true, sendRpc: true);
+			playSound("heal");
 			shieldHP = 1;
 			healShieldHPCooldown = 15;
 			if (shieldHP >= shieldMaxHP) {
@@ -190,17 +187,21 @@ public class ProtoMan : Character {
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
-		if (newState is Hurt) addCoreAmmo(3);
+		if (newState is Hurt) {
+			addCoreAmmo(3);
+		}
 		base.onFlinchOrStun(newState);
 	}
 
 	public override bool normalCtrl() {
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
+			isShieldActive = true;
 			changeState(new ShieldDash(slideControl), true);
 		}
-		if ((player.input.isPressed(Control.WeaponLeft, player) ||
-			player.input.isPressed(Control.WeaponRight, player))
-		) {
+		if (charState is not ShieldDash &&
+			(player.input.isPressed(Control.WeaponLeft, player) ||
+			player.input.isPressed(Control.WeaponRight, player)
+		)) {
 			if (isShieldActive) {
 				isShieldActive = false;
 				if (sprite.name.EndsWith("_shield")) {

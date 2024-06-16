@@ -55,7 +55,7 @@ public class ProtoBlock : CharState {
 
 
 public class ShieldDash : CharState {
-
+	bool soundPlayed;
 	string initialSlideButton;
 	int initialXDir;
 	float dustTimer;
@@ -63,7 +63,6 @@ public class ShieldDash : CharState {
 	public ShieldDash(string initialSlideButton) : base("shield_dash") {
 		this.initialSlideButton = initialSlideButton;
 		accuracy = 10;
-		enterSound = "slide";
 		useGravity = false;
 	}
 
@@ -83,6 +82,9 @@ public class ShieldDash : CharState {
 		var move = new Point(0, 0);
 		move.x = 3.5f * initialXDir;
 		if (character.frameIndex >= 1) {
+			if (!soundPlayed) {
+				character.playSound("slide", sendRpc: true);
+			}
 			character.move(move * 60);
 		}
 		if (character.grounded) {

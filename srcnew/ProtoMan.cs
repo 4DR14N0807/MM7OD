@@ -301,7 +301,7 @@ public class ProtoMan : Character {
 				damage = 0;
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
-					damage = 1;
+					shieldHP--;
 				}
 			}
 			// High HP scenario.
@@ -332,6 +332,8 @@ public class ProtoMan : Character {
 		}
 		if (damage > 0) {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+		} else {
+			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
 		}
 	}
 }

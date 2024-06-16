@@ -297,7 +297,7 @@ public class ProtoMan : Character {
 			// 1 damage scenario.
 			// Reduce damage only 50% of the time.
 			if (damage < 2) {
-				shieldDamageDebt = damage / 2m;
+				shieldDamageDebt += damage / 2m;
 				damage = 0;
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;

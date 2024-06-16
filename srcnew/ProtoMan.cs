@@ -15,6 +15,7 @@ public class ProtoMan : Character {
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 	public bool isShieldActive = true;
+	public bool overheating;
 	public decimal shieldHP = 18;
 	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
@@ -135,12 +136,18 @@ public class ProtoMan : Character {
 				shieldHP = shieldMaxHP;
 			}
 		}
+		if (coreAmmo >= coreMaxAmmo) {
+			overheating = true;
+		}
 		if (isCharging()) {
 			coreAmmoIncreaseCooldown += Global.speedMul;
 			coreAmmoDecreaseCooldown = 15;
 		} else {
+			coreAmmoIncreaseCooldown = 0;
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
-			Helpers.decrementFrames(ref coreAmmoIncreaseCooldown);
+			if (overheating) {
+				Helpers.decrementFrames(ref coreAmmoIncreaseCooldown);
+			}
 		}
 		if (coreAmmoIncreaseCooldown >= 15) {
 			if (coreAmmo < coreMaxAmmo) {
@@ -148,9 +155,12 @@ public class ProtoMan : Character {
 			}
 			coreAmmoIncreaseCooldown = 0;
 		}
-
 		if (coreAmmoDecreaseCooldown <= 0) {
-			if (coreAmmo > 0) coreAmmo--;
+			coreAmmo--;
+			if (coreAmmo <= 0) {
+				overheating = false;
+				coreAmmo = 0;
+			}
 			coreAmmoDecreaseCooldown = 15;
 		}
 		// For the shooting animation.
@@ -287,6 +297,10 @@ public class ProtoMan : Character {
 	public override void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
 		if (!ownedByLocalPlayer) return;
 		decimal damage = decimal.Parse(fDamage.ToString());
+		// Disable shield on any damage.
+		if (damage > 0) {
+			healShieldHPCooldown = 180;
+		}
 		// Do shield checks only if damage exists and a actor too.
 		if (actor == null || attacker == null) {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
@@ -314,7 +328,6 @@ public class ProtoMan : Character {
 				damage -= shieldHP + 1;
 				shieldHP = 0;
 			}
-			healShieldHPCooldown = 120;
 		}
 		// Back shield block check.
 		if ((!isShieldActive || shieldHP <= 0) && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {

@@ -1467,7 +1467,11 @@ public class GameMode {
 
 		if (player.character is ProtoMan protoman) {
 			renderAmmo(baseX - 15, baseY - 41, -1, 1, MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP);
-			renderAmmo(baseX, baseY, 0, 4, protoman.coreAmmo, maxAmmo: protoman.coreMaxAmmo);
+			int coreAmmoColor = 5;
+			if (protoman.overheating && Global.frameCount % 6 >= 3) {
+				coreAmmoColor = 6;
+			}
+			renderAmmo(baseX, baseY, 0, coreAmmoColor, protoman.coreAmmo, maxAmmo: protoman.coreMaxAmmo);
 			return;
 		}
 

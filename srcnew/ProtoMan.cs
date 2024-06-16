@@ -74,6 +74,17 @@ public class ProtoMan : Character {
 		return "protoman_" + spriteName;
 	}
 
+	public override void changeSprite(string spriteName, bool resetFrame) {
+		if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
+			spriteName += "_shield";
+		}
+		List<Trail>? trails = sprite?.lastFiveTrailDraws;
+		base.changeSprite(spriteName, resetFrame);
+		if (trails != null && sprite != null) {
+			sprite.lastFiveTrailDraws = trails;
+		}
+	}
+
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
 		int meleeId = getHitboxMeleeId(hitbox);
 		if (meleeId == -1) {
@@ -184,7 +195,6 @@ public class ProtoMan : Character {
 		if (newState is Hurt) addCoreAmmo(3);
 		base.onFlinchOrStun(newState);
 	}
-
 
 	public override bool normalCtrl() {
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {

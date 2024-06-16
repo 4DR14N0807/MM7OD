@@ -357,11 +357,11 @@ public class ProtoMan : Character {
 		// Back shield block check.
 		if ((!isShieldActive || shieldHP <= 0) && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
 			if (damage < 2) {
-				shieldDamageDebt = damage / 2m;
+				shieldDamageDebt += damage / 2m;
 				damage = 0;
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
-					damage = 1;
+					shieldHP--;
 				}
 			} else {
 				damage--;

@@ -9,15 +9,16 @@ namespace MMXOnline;
 public class ProtoMan : Character {
 	public List<ProtoBusterProj> lemonsOnField = new();
 	public float lemonCooldown;
-	public const int coreMaxAmmo = 28;
+	public int coreMaxAmmo = 28;
 	public int coreAmmo;
 	public const float coreAmmoMaxCooldown = 30;
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 	public bool isShieldActive = true;
 	public decimal shieldHP = 12;
-	public decimal shieldMaxHP = 12;
+	public int shieldMaxHP = 12;
 	public float healShieldHPCooldown = 60;
+	public decimal shieldDamageDebt;
 
 	public ProtoMan(
 	 Player player, float x, float y, int xDir,
@@ -229,6 +230,7 @@ public class ProtoMan : Character {
 				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 			);
 			lemonsOnField.Add(lemon);
+			playSound("buster", sendRpc: true);
 			resetCoreCooldown();
 			lemonCooldown = 18;
 		} else if (chargeLevel >= 2) {
@@ -239,6 +241,7 @@ public class ProtoMan : Character {
 					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 				);
 				addCoreAmmo(-2);
+				playSound("buster3", sendRpc: true);
 				lemonCooldown = 18;
 			}
 		}
@@ -247,11 +250,14 @@ public class ProtoMan : Character {
 	public void setShootAnim() {
 		string shootSprite = getSprite(charState.shootSprite);
 		if (!Global.sprites.ContainsKey(shootSprite)) {
-			if (grounded) { shootSprite = "shoot"; }
-			else { shootSprite = "fall_shoot"; }
+			if (grounded) {
+				shootSprite = "protoman_shoot";
+			} else {
+				shootSprite = "protoman_jump_shoot";
+			}
 		}
 		if (shootAnimTime == 0) {
-			changeSpriteFromName(shootSprite, false);
+			changeSprite(shootSprite, false);
 		} else if (charState is Idle) {
 			frameIndex = 0;
 			frameTime = 0;
@@ -276,5 +282,56 @@ public class ProtoMan : Character {
 	public void resetCoreCooldown() {
 		coreAmmoIncreaseCooldown = 0;
 		coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+	}
+
+	public override void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
+		if (!ownedByLocalPlayer) return;
+		decimal damage = decimal.Parse(fDamage.ToString());
+		// Do shield checks only if damage exists and a actor too.
+		if (actor == null || attacker == null) {
+			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+			return;
+		}
+		// Shield front block check.
+		if (isShieldActive && shieldHP > 0 && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
+			// 1 damage scenario.
+			// Reduce damage only 50% of the time.
+			if (damage < 2) {
+				shieldDamageDebt = damage / 2m;
+				damage = 0;
+				if (shieldDamageDebt >= 1) {
+					shieldDamageDebt--;
+					damage = 1;
+				}
+			}
+			// High HP scenario.
+			else if (shieldHP + 1 >= damage) {
+				damage = 0;
+				if (damage >= 1) {
+					shieldHP -= damage - 1;
+				}
+			}
+			// Low HP scenario.
+			else {
+				damage -= shieldHP + 1;
+				shieldHP = 0;
+			}
+		}
+		// Back shield block check.
+		if ((!isShieldActive || shieldHP <= 0) && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
+			if (damage < 2) {
+				shieldDamageDebt = damage / 2m;
+				damage = 0;
+				if (shieldDamageDebt >= 1) {
+					shieldDamageDebt--;
+					damage = 1;
+				}
+			} else {
+				damage--;
+			}
+		}
+		if (damage > 0) {
+			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+		}
 	}
 }

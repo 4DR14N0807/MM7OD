@@ -1337,7 +1337,7 @@ public class GameMode {
 
 	const int grayAmmoIndex = 30;
 	public void renderAmmo(
-		float baseX, ref float baseY, int baseIndex,
+		float baseX, float baseY, int baseIndex,
 		int barIndex, float ammo, float grayAmmo = 0, float maxAmmo = 32,
 		bool allowSmall = true
 	) {
@@ -1402,7 +1402,7 @@ public class GameMode {
 				player.currentMaverick.canFly && player.currentMaverick.flyBar < player.currentMaverick.maxFlyBar
 			) {
 				renderAmmo(
-					baseX, ref baseY,
+					baseX, baseY,
 					player.currentMaverick.flyBarIndexes.icon,
 					player.currentMaverick.flyBarIndexes.units,
 					MathF.Ceiling((player.currentMaverick.flyBar / player.currentMaverick.maxFlyBar) * 28),
@@ -1411,7 +1411,7 @@ public class GameMode {
 			}
 			if (player.currentMaverick != null && player.isMainPlayer && player.currentMaverick.usesAmmo) {
 				renderAmmo(
-					baseX, ref baseY,
+					baseX, baseY,
 					player.currentMaverick.barIndexes.icon,
 					player.currentMaverick.barIndexes.units,
 					player.currentMaverick.ammo,
@@ -1420,7 +1420,7 @@ public class GameMode {
 				);
 			}
 			if (player.isSigma2() && player.character.isHyperSigmaBS.getValue() && player.currentMaverick == null) {
-				renderAmmo(baseX, ref baseY, 61, 50, player.sigmaAmmo, grayAmmo: player.weapon.getAmmoUsage(0));
+				renderAmmo(baseX, baseY, 61, 50, player.sigmaAmmo, grayAmmo: player.weapon.getAmmoUsage(0));
 			} else if (player.isMainPlayer && player.currentMaverick == null) {
 				int hudWeaponBaseIndex = 50;
 				int hudWeaponFullIndex = 39;
@@ -1464,18 +1464,8 @@ public class GameMode {
 		}
 
 		if (player.character is ProtoMan protoman) {
-			baseY += 25;
-			Global.sprites["hud_weapon_base"].drawToHUD(0, baseX, baseY);
-			baseY -= 16;
-			for (var i = 0; i < MathF.Ceiling(ProtoMan.coreMaxAmmo * ammoDisplayMultiplier); i++) {
-				if (i < Math.Ceiling(protoman.coreAmmo * ammoDisplayMultiplier)) {
-					Global.sprites["hud_weapon_full"].drawToHUD(0, baseX, baseY);
-				} else {
-					Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
-				}
-				baseY -= 2;
-			}
-			Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
+			renderAmmo(baseX, baseY, 0, 1, MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP);
+			renderAmmo(baseX + 15, baseY, 0, 4, protoman.coreAmmo, maxAmmo: protoman.coreMaxAmmo);
 			return;
 		}
 

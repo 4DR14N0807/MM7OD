@@ -679,14 +679,19 @@ public partial class Player {
 		if (Global.level.is1v1()) {
 			return MathF.Ceiling(28 * getHealthModifier());
 		}
+		int baseHP = 28;
 		int bonus = 0;
-		if (isSigma && isPuppeteer()) bonus = 4;
-		float hpModifier = getHealthModifier();
-		if (hpModifier < 1) {
-			return MathF.Ceiling((20 + bonus) * hpModifier) + heartTanks * getHeartTankModifier();
+		if (isSigma && isPuppeteer()) {
+			bonus = 4;
 		}
-		
-		return MathF.Ceiling((28 + bonus + (heartTanks * getHeartTankModifier())) * hpModifier);
+		float hpModifier = getHealthModifier();
+		if (isProtoMan) {
+			baseHP = 20;
+		}
+		if (hpModifier < 1) {
+			return MathF.Ceiling((baseHP + bonus) * hpModifier) + heartTanks * getHeartTankModifier();
+		}
+		return MathF.Ceiling((baseHP + bonus + heartTanks * getHeartTankModifier()) * hpModifier);
 	}
 
 	public void creditHealing(float healAmount) {

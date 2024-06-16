@@ -179,7 +179,7 @@ public class ProtoMan : Character {
 			shootAnimTime -= Global.spf;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
-				if (sprite.name.EndsWith("shoot")) {
+				if (sprite.name.EndsWith("_shoot") || sprite.name.EndsWith("_shoot_shield")) {
 					changeSpriteFromName(charState.defaultSprite, false);
 					if (charState is WallSlide) {
 						frameIndex = sprite.frames.Count - 1;
@@ -332,7 +332,10 @@ public class ProtoMan : Character {
 			return;
 		}
 		// Shield front block check.
-		if (isShieldActive && shieldHP > 0 && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
+		if (isShieldActive && shieldHP > 0 &&
+			shootAnimTime == 0 && charState is not Hurt &&
+			Damager.hitFromFront(this, actor, attacker, projId ?? -1)
+		) {
 			// 1 damage scenario.
 			// Reduce damage only 50% of the time.
 			if (damage < 2) {
@@ -353,9 +356,17 @@ public class ProtoMan : Character {
 				damage -= shieldHP + 1;
 				shieldHP = 0;
 			}
+			if (shieldHP <= 0) {
+				isShieldActive = false;
+				if (sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name[..^7], false);
+				}
+			}
 		}
 		// Back shield block check.
-		if ((!isShieldActive || shieldHP <= 0) && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
+		if ((!isShieldActive || shieldHP <= 0 || shootAnimTime <= 0 || charState is Hurt) &&
+			Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
+		) {
 			if (damage < 2) {
 				shieldDamageDebt += damage / 2m;
 				damage = 0;
@@ -369,8 +380,11 @@ public class ProtoMan : Character {
 		}
 		if (damage > 0) {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+			addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+			playSound("hit", sendRpc: true);
 		} else {
 			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
+			playSound("ding", sendRpc: true);
 		}
 	}
 }

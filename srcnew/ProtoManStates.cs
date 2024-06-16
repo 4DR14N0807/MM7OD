@@ -63,6 +63,7 @@ public class ShieldDash : CharState {
 	public ShieldDash(string initialSlideButton) : base("shield_dash") {
 		this.initialSlideButton = initialSlideButton;
 		accuracy = 10;
+		enterSound = "slide";
 	}
 
 	public override void onEnter(CharState oldState) {

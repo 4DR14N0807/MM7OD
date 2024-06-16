@@ -2876,7 +2876,7 @@ public partial class Character : Actor, IDamagable {
 		deductLabelY(labelNameOffY);
 	}
 
-	public void applyDamage(Player attacker, int? weaponIndex, float fDamage, int? projId) {
+	public virtual void applyDamage(Player attacker, int? weaponIndex, float fDamage, int? projId) {
 		if (!ownedByLocalPlayer) return;
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
@@ -2885,35 +2885,6 @@ public partial class Character : Actor, IDamagable {
 		Axl? axl = this as Axl;
 		MegamanX? mmx = this as MegamanX;
 		ProtoMan? protoman = this as ProtoMan;
-
-		if (charState is ProtoBlock && protoman.isShieldActive 
-		) {
-			// 1 damage scenario.
-			// Reduce damage only 50% of the time.
-			decimal shieldDamageDebt;
-
-			if (damage < 2) {
-				shieldDamageDebt = damage / 2m;
-				damage = 0;
-				if (shieldDamageDebt >= 1) {
-					shieldDamageDebt--;
-					damage = 1;
-				}
-			}
-			// High HP scenario.
-			else if (protoman.shieldHP + 1 >= damage) {
-				damage = 0;
-				if (damage >= 1) {
-					protoman.shieldHP -= damage - 1;
-				}
-			}
-			// Low HP scenario.
-			else {
-				damage -= protoman.shieldHP + 1;
-				protoman.shieldHP = 0;
-			}	
-				playSound("ding");
-		}
 
 		// For Dark Hold break.
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.frameTime > 10 && !Damager.isDot(projId)) {

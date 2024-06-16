@@ -7,40 +7,40 @@ namespace MMXOnline;
 
 
 public class ProtoMan : Character {
-
-    public List<ProtoBusterProj> protoLemonsOnField = new();
-    public float lemonCooldown;
+	public List<ProtoBusterProj> lemonsOnField = new();
+	public float lemonCooldown;
 	public const int coreMaxAmmo = 28;
 	public int coreAmmo;
-	public const float coreAmmoMaxCooldown = 30f / 60f;
+	public const float coreAmmoMaxCooldown = 30;
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
-	public bool isShieldActive;
-	public decimal shieldHP = 6;
-	public float healShieldHPCooldown = 1;
-   
-   public ProtoMan(
-    Player player, float x, float y, int xDir,
-	bool isVisible, ushort? netId, bool ownedByLocalPlayer,
-	bool isWarpIn = true
-    ) : base(
-    player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
-    ) {
-        charId = CharIds.ProtoMan;
-    }
+	public bool isShieldActive = true;
+	public decimal shieldHP = 12;
+	public decimal shieldMaxHP = 12;
+	public float healShieldHPCooldown = 60;
 
-    public override bool canTurn() {
+	public ProtoMan(
+	 Player player, float x, float y, int xDir,
+	 bool isVisible, ushort? netId, bool ownedByLocalPlayer,
+	 bool isWarpIn = true
+	 ) : base(
+	 player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
+	 ) {
+		charId = CharIds.ProtoMan;
+	}
+
+	public override bool canTurn() {
 		if (charState is ProtoAirShoot) return false;
 		return base.canTurn();
 	}
-	
-	public override bool canDash() {
-        return false;
-    }
 
-    public override bool canAirDash() {
-        return false;
-    }
+	public override bool canDash() {
+		return false;
+	}
+
+	public override bool canAirDash() {
+		return false;
+	}
 
 	public override bool canWallClimb() {
 		return false;
@@ -55,9 +55,9 @@ public class ProtoMan : Character {
 		return base.canCharge();
 	}
 
-    public bool canBlock() {
-        return true;
-    }
+	public bool canBlock() {
+		return true;
+	}
 
 	public bool canShieldDash() {
 		if (
@@ -68,16 +68,11 @@ public class ProtoMan : Character {
 		return true;
 	}
 
-    public override string getSprite(string spriteName) {
-        return "protoman_" + spriteName;
-    }
+	public override string getSprite(string spriteName) {
+		return "protoman_" + spriteName;
+	}
 
-    /*public override Collider getBlockCollider() {
-		Rect rect = Rect.createFromWH(0, 0, 23, 55);
-		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(6, 0));
-	}*/
-
-    public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
+	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
 		int meleeId = getHitboxMeleeId(hitbox);
 		if (meleeId == -1) {
 			return null;
@@ -115,84 +110,79 @@ public class ProtoMan : Character {
 		};
 	}
 
-    public override bool chargeButtonHeld() {
+	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
 	}
+
 	public override void increaseCharge() {
 		float factor = 0.75f;
 		chargeTime += Global.spf * factor;
 	}
 
+	public override void update() {
+		base.update();
 
-    public override void update() {
-        base.update();
+		if (!ownedByLocalPlayer) return;
 
-        if (!ownedByLocalPlayer) return;
+		Helpers.decrementFrames(ref lemonCooldown);
+		Helpers.decrementFrames(ref healShieldHPCooldown);
 
-        Helpers.decrementTime(ref lemonCooldown);
-		Helpers.decrementTime(ref healShieldHPCooldown);
-
-		if (healShieldHPCooldown <= 0 && shieldHP < 6 && !isShieldActive) {
+		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP && !isShieldActive) {
 			shieldHP++;
-			healShieldHPCooldown = 2f;
+			healShieldHPCooldown = 60;
+			if (shieldHP >= shieldMaxHP) {
+				shieldHP = shieldMaxHP;
+			}
 		}
-		
-		
 		if (isCharging()) {
-			coreAmmoIncreaseCooldown += Global.spf;
-			coreAmmoDecreaseCooldown = Global.spf * 15;
-		} 
-		else {
-			Helpers.decrementTime(ref coreAmmoDecreaseCooldown);
-			Helpers.decrementTime(ref coreAmmoIncreaseCooldown);
-		} 
-
-		if (coreAmmoIncreaseCooldown >= Global.spf * 15) {
-			if (coreAmmo < coreMaxAmmo) coreAmmo++;
+			coreAmmoIncreaseCooldown += Global.speedMul;
+			coreAmmoDecreaseCooldown = 15;
+		} else {
+			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
+			Helpers.decrementFrames(ref coreAmmoIncreaseCooldown);
+		}
+		if (coreAmmoIncreaseCooldown >= 15) {
+			if (coreAmmo < coreMaxAmmo) {
+				coreAmmo++;
+			}
 			coreAmmoIncreaseCooldown = 0;
 		}
 
 		if (coreAmmoDecreaseCooldown <= 0) {
 			if (coreAmmo > 0) coreAmmo--;
-			coreAmmoDecreaseCooldown = Global.spf * 15;
+			coreAmmoDecreaseCooldown = 15;
 		}
-
-        if (shootAnimTime > 0) {
+		// For the shooting animation.
+		if (shootAnimTime > 0) {
 			shootAnimTime -= Global.spf;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
-				changeSpriteFromName(charState.defaultSprite, false);
+				if (sprite.name.EndsWith("shoot")) {
+					changeSpriteFromName(charState.defaultSprite, false);
+					if (charState is WallSlide) {
+						frameIndex = sprite.frames.Count - 1;
+					}
+				}
 			}
 		}
-       
-        chargeLogic(shoot);
-
-		if (isCharging() && grounded && charState is ProtoBlock) changeState(new ProtoCharging(), true);
-
-
-    }
+		// Shoot logic.
+		chargeLogic(shoot);
+	}
 
 	public override void onFlinchOrStun(CharState newState) {
-			if (newState is Hurt) addCoreAmmo(3);
-			base.onFlinchOrStun(newState);
-		}
+		if (newState is Hurt) addCoreAmmo(3);
+		base.onFlinchOrStun(newState);
+	}
 
 
-    public override bool normalCtrl() {
-        bool isGuarding = player.input.isHeld(Control.Down, player);
-
-        if (isGuarding && canBlock()) {
-            changeState(new ProtoBlock(), true);
-        }
-
-		if (player.dashPressed(out string slideControl) && canShieldDash() ) {
+	public override bool normalCtrl() {
+		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
 		}
+		return base.normalCtrl();
+	}
 
-        return base.normalCtrl();
-    }
-
-    public override bool attackCtrl() {
+	public override bool attackCtrl() {
 		bool shootPressed = player.input.isPressed(Control.Shoot, player);
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
 		if (specialPressed) {
@@ -216,21 +206,52 @@ public class ProtoMan : Character {
 		return base.attackCtrl();
 	}
 
-    public void shoot(int chargeLevel) {
+	public void shoot(int chargeLevel) {
 		if (chargeLevel == 0) {
-			for (int i = protoLemonsOnField.Count - 1; i >= 0; i--) {
-				if (protoLemonsOnField[i].destroyed) {
-					protoLemonsOnField.RemoveAt(i);
+			for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
+				if (lemonsOnField[i].destroyed) {
+					lemonsOnField.RemoveAt(i);
 				}
 			}
-			if (protoLemonsOnField.Count >= 3) { return; }
+			if (lemonsOnField.Count >= 3) { return; }
 		}
+		// Cancel non-invincible states.
+		if (!charState.attackCtrl && !charState.invincible) {
+			changeToIdleOrFall();
+		}
+		// Shoot anim and vars.
+		setShootAnim();
+		Point shootPos = getShootPos();
+		int xDir = getShootXDir();
+
+		if (chargeLevel < 2) {
+			var lemon = new ProtoBusterProj(
+				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+			);
+			lemonsOnField.Add(lemon);
+			resetCoreCooldown();
+			lemonCooldown = 18;
+		} else if (chargeLevel >= 2) {
+			if (player.input.isHeld(Control.Up, player)) {
+				changeState(new ProtoStrike(), true);
+			} else {
+				new ProtoBusterChargedProj(
+					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+				);
+				addCoreAmmo(-2);
+				lemonCooldown = 18;
+			}
+		}
+	}
+
+	public void setShootAnim() {
 		string shootSprite = getSprite(charState.shootSprite);
 		if (!Global.sprites.ContainsKey(shootSprite)) {
-			if (grounded) { shootSprite = "protoman_shoot"; } else { shootSprite = "protoman_jump_shoot"; }
+			if (grounded) { shootSprite = "shoot"; }
+			else { shootSprite = "fall_shoot"; }
 		}
 		if (shootAnimTime == 0) {
-			changeSprite(shootSprite, false);
+			changeSpriteFromName(shootSprite, false);
 		} else if (charState is Idle) {
 			frameIndex = 0;
 			frameTime = 0;
@@ -243,34 +264,6 @@ public class ProtoMan : Character {
 			}
 		}
 		shootAnimTime = 0.3f;
-		Point shootPos = getShootPos();
-		int xDir = getShootXDir();
-
-		if (chargeLevel == 0 || chargeLevel == 1) {
-			var lemon = new ProtoBusterProj( 
-				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
-			);
-			protoLemonsOnField.Add(lemon);
-			resetCoreCooldown();
-			lemonCooldown = 0.3f;
-		} /*else if (chargeLevel == 1) {
-			new DZBuster2Proj(
-				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
-			);
-			lemonCooldown = 22f / 60f;
-		}*/else if (chargeLevel == 2) {
-			if (player.input.isHeld(Control.Up, player)) changeState(new ProtoStrike(), true);
-			else {
-				new ProtoBusterChargedProj(
-					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
-				);
-				addCoreAmmo(-2);
-				lemonCooldown = 0.3f;
-			}
-		}
-		/*if (chargeLevel >= 1) {
-			stopCharge();
-		}*/
 	}
 
 	public void addCoreAmmo(int amount) {

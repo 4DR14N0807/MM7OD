@@ -195,11 +195,9 @@ public class ProtoMan : Character {
 
 	public override bool normalCtrl() {
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
-			isShieldActive = true;
 			changeState(new ShieldDash(slideControl), true);
 		}
-		if (charState is not ShieldDash &&
-			(player.input.isPressed(Control.WeaponLeft, player) ||
+		if ((player.input.isPressed(Control.WeaponLeft, player) ||
 			player.input.isPressed(Control.WeaponRight, player)
 		)) {
 			if (isShieldActive) {
@@ -323,7 +321,8 @@ public class ProtoMan : Character {
 			return isShieldActive;
 		}
 		return (
-			isShieldActive && shieldHP > 0 &&
+			(isShieldActive || charState is ShieldDash) &&
+			shieldHP > 0 &&
 			shootAnimTime == 0 &&
 			charState is not Hurt { frameTime: not 0 }
 		);

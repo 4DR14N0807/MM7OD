@@ -7,11 +7,19 @@ public class Weapon {
 	public string[] shootSounds = { "" };
 	public float ammo;
 	public float maxAmmo;
-	public float rateOfFire;
+	public float rateOfFire {
+		get => fireRateFrames / 60f;
+		set => fireRateFrames = value * 60f;
+	}
+	public float fireRateFrames;
 	public float? switchCooldown;
 	public float soundTime = 0;
 	public bool isStream = false;
-	public float shootTime;
+	public float shootTime {
+		get => shootCooldown / 60f;
+		set => shootCooldown = value * 60f;
+	}
+	public float shootCooldown;
 	public float altShootTime;
 	public float streamTime;
 	public string displayName = "";
@@ -388,7 +396,7 @@ public class Weapon {
 		if (soundTime > 0) {
 			soundTime = Helpers.clampMin(soundTime - Global.spf, 0);
 		}
-		Helpers.decrementTime(ref shootTime);
+		Helpers.decrementFrames(ref shootCooldown);
 		Helpers.decrementTime(ref altShootTime);
 		if (timeSinceLastShoot != null) {
 			timeSinceLastShoot += Global.spf;

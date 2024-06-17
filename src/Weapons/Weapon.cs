@@ -204,8 +204,13 @@ public class Weapon {
 	public static List<Weapon> getAllProtoManWeapons() {
 		return new List<Weapon>() 
 		{
-				new GyroAttack(),
+				new GeminiLaser(),
+				new HardKnuckle(),
+				new SearchSnake(),
+				new SparkShock(),
 				new PowerStone(),
+				new GyroAttack(),
+				new StarCrash(),
 		};
 	}
 

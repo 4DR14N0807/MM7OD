@@ -19,7 +19,7 @@ public class ProtoManWeaponCursor {
 	}
 
 	public int numWeapons() {
-		return 2;
+		return 7;
 	}
 
 	/*public void cycleLeft() {
@@ -42,8 +42,13 @@ public class SelectProtoManWeaponMenu : IMainMenu {
 	public int maxCols = 9;
 	public static List<string> weaponNames = new List<string>()
 	{
-			"GYRO ATTACK",
+			"GEMINI LASER",
+			"HARD KNUCKLE",
+			"SEARCH SNAKE",
+			"SPARK SHOCK",
 			"POWER STONE",
+			"GYRO ATTACK",
+			"STAR CRASH",
 		};
 
 	public List<int> selectedWeaponIndices;
@@ -76,11 +81,11 @@ public class SelectProtoManWeaponMenu : IMainMenu {
 		if (selCursorIndex < 3) {
 			if (Global.input.isPressedMenu(Control.MenuLeft)) {
 				cursors[selCursorIndex].index--;
-				if (cursors[selCursorIndex].index == -1) cursors[selCursorIndex].index = 1; //8;
+				if (cursors[selCursorIndex].index == -1) cursors[selCursorIndex].index = 6; //8;
 				Global.playSound("menu");
 			} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 				cursors[selCursorIndex].index++;
-				if (cursors[selCursorIndex].index == 2) cursors[selCursorIndex].index = 0; //0;
+				if (cursors[selCursorIndex].index == 7) cursors[selCursorIndex].index = 0; //0;
 				Global.playSound("menu");
 			}
 		} else {

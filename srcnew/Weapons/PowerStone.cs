@@ -41,7 +41,7 @@ public class PowerStoneProj : Projectile {
     float radius = 10;
     int type;
     public PowerStoneProj(Weapon weapon, Point pos, int xDir, Player player, int type, ushort? netId, bool rpc = false) : 
-    base(weapon, pos, xDir, 0, 2 ,player, "power_stone_proj", 0, 0.5f, netId, player.ownedByLocalPlayer) {
+    base(weapon, pos, xDir, 0, 2 ,player, "power_stone_proj", 0, 0.25f, netId, player.ownedByLocalPlayer) {
         //projId = (int)RockProjIds.PowerStone;
         maxTime = 1;
 
@@ -57,7 +57,7 @@ public class PowerStoneProj : Projectile {
         base.pos.x = character.getCenterPos().x + (Helpers.cosd(stoneAngle) * radius);
         base.pos.y = character.getCenterPos().y + (Helpers.sind(stoneAngle) * radius);
 
-        stoneAngle += 5;
+        stoneAngle += 8;
         if (stoneAngle >= 360) stoneAngle = 0;
 
         radius += 1.25f;    

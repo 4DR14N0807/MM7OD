@@ -45,8 +45,13 @@ public class ProtoBlock : CharState {
 		}
 
 		bool isGuarding = player.input.isHeld(Control.Down, player);
+		bool isCharging = character.chargeButtonHeld();
 
-		if (!isGuarding) {
+		if (isCharging) {
+			character.changeState(new ProtoCharging(), true);
+		}
+
+		else if (!isGuarding) {
 			character.changeState(new Idle(), true);
 			return;
 		}
@@ -153,9 +158,11 @@ public class ProtoCharging : CharState {
 		base.update();
 
 		chargeLvl = character.getChargeLevel();
-		isCharging = player.input.isHeld(Control.Shoot, player);
+		isCharging = character.chargeButtonHeld();
 
 		if (!isCharging && chargeLvl >= 2) character.changeState(new ProtoChargeShotState(), true);
+		else if (!isCharging) character.changeState(new Idle(), true);
+		
 	}
 }
 
@@ -261,5 +268,27 @@ public class ProtoStrikeEnd : CharState {
 		base.update();
 
 		if (character.isAnimOver()) character.changeState(new Idle(), true);
+	}
+}
+
+
+public class OverHeat : CharState {
+
+	ProtoMan? protoman;
+
+	public OverHeat() : base("hurt") {
+
+	}
+
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		protoman = character as ProtoMan;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (!protoman.overheating) character.changeToIdleOrFall();
 	}
 }

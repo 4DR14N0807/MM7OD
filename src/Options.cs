@@ -105,6 +105,11 @@ public class Options {
 	public bool useRandomRockLoadout;
 	public RockLoadout rockLoadout = new RockLoadout();
 	public int gridModeRock;
+
+	//ProtoMan
+	public bool useRandomProtoManLoadout;
+	public ProtoManLoadout protomanLoadout = new ProtoManLoadout();
+	public int gridModeProtoman;
 	
 	// Punchy Zero
 	public PZeroLoadout pzeroLoadout = new PZeroLoadout();
@@ -156,6 +161,7 @@ public class Options {
 		axlLoadout.validate();
 		sigmaLoadout.validate();
 		rockLoadout.validate();
+		protomanLoadout.validate();
 	}
 
 	public static bool isValidLANIP(string LANIPPrefix) {

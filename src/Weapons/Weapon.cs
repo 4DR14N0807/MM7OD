@@ -200,6 +200,15 @@ public class Weapon {
 		};
 	}
 
+
+	public static List<Weapon> getAllProtoManWeapons() {
+		return new List<Weapon>() 
+		{
+				new GyroAttack(),
+				new PowerStone(),
+		};
+	}
+
 	public static List<Weapon> getAllMM7Weapons() {
 		return new List<Weapon>() 
 		{
@@ -311,9 +320,9 @@ public class Weapon {
 	// Gacel:
 	// This is to be used locally to get projectiles.
 	// A replacement of the above. Remeber to send RPCs when using this one.
-	public virtual void shoot(Character character, int[] args) {
+	public virtual void shoot(Character character, params int[] args) {
 	}
-	public virtual void shoot(Actor actor, int[] args) {
+	public virtual void shoot(Actor actor, params int[] args) {
 	}
 
 	// ToDo: Remove default values from this.

@@ -21,7 +21,6 @@ public class ProtoMan : Character {
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 	public Weapon specialWeapon;
-	public List<Weapon> weaponsList = new List<Weapon>();
 
 	public ProtoMan(
 	 Player player, float x, float y, int xDir,
@@ -31,11 +30,17 @@ public class ProtoMan : Character {
 	 player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	 ) {
 		charId = CharIds.ProtoMan;
-
 		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
-		weaponsList = Weapon.getAllProtoManWeapons();
 
-		specialWeapon = weaponsList[protomanLoadout];
+		specialWeapon = protomanLoadout switch {
+			0 => new GeminiLaser(),
+			1 => new HardKnuckle(),
+			2 => new SearchSnake(),
+			3 => new SparkShock(),
+			4 => new PowerStone(),
+			5 => new GyroAttack(),
+			_ => new StarCrash(),
+		};
 	}
 
 	public override float getRunSpeed() {

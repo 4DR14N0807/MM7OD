@@ -71,12 +71,7 @@ public class ProtoMan : Character {
 	}
 
 	public bool canShieldDash() {
-		if (
-			charState is ShieldDash ||
-			!grounded
-		) return false;
-
-		return true;
+		return (charState is not ShieldDash && shieldHP > 0);
 	}
 
 	public bool canShootPoderzinho() {
@@ -90,6 +85,17 @@ public class ProtoMan : Character {
 
 	public override string getSprite(string spriteName) {
 		return "protoman_" + spriteName;
+	}
+
+	public override void changeSprite(string spriteName, bool resetFrame) {
+		if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
+			spriteName += "_shield";
+		}
+		List<Trail>? trails = sprite?.lastFiveTrailDraws;
+		base.changeSprite(spriteName, resetFrame);
+		if (trails != null && sprite != null) {
+			sprite.lastFiveTrailDraws = trails;
+		}
 	}
 
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
@@ -147,9 +153,9 @@ public class ProtoMan : Character {
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 		Helpers.decrementFrames(ref poderzinhoCooldown);
 
-		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
-			playSound("heal", forcePlay: true, sendRpc: true);
-			shieldHP++;
+		if (healShieldHPCooldown <= 0 && shieldHP < 1) {
+			playSound("heal");
+			shieldHP = 1;
 			healShieldHPCooldown = 15;
 			if (shieldHP >= shieldMaxHP) {
 				shieldHP = shieldMaxHP;
@@ -188,7 +194,7 @@ public class ProtoMan : Character {
 			shootAnimTime -= Global.spf;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
-				if (sprite.name.EndsWith("shoot")) {
+				if (sprite.name.EndsWith("_shoot") || sprite.name.EndsWith("_shoot_shield")) {
 					changeSpriteFromName(charState.defaultSprite, false);
 					if (charState is WallSlide) {
 						frameIndex = sprite.frames.Count - 1;
@@ -201,10 +207,11 @@ public class ProtoMan : Character {
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
-		if (newState is Hurt) addCoreAmmo(3);
+		if (newState is Hurt) {
+			addCoreAmmo(3);
+		}
 		base.onFlinchOrStun(newState);
 	}
-
 
 	public override bool normalCtrl() {
 		bool isGuarding = player.input.isPressed(Control.Down, player);
@@ -215,6 +222,21 @@ public class ProtoMan : Character {
 
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
+		}
+		if ((player.input.isPressed(Control.WeaponLeft, player) ||
+			player.input.isPressed(Control.WeaponRight, player)
+		)) {
+			if (isShieldActive) {
+				isShieldActive = false;
+				if (sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name[..^7], false);
+				}
+			} else if (shieldHP > 0) {
+				isShieldActive = true;
+				if (!sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name + "_shield", false);
+				}
+			}
 		}
 		return base.normalCtrl();
 	}
@@ -344,6 +366,18 @@ public class ProtoMan : Character {
 		coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 	}
 
+	public bool isShieldFront() {
+		if (!ownedByLocalPlayer) {
+			return isShieldActive;
+		}
+		return (
+			(isShieldActive || charState is ShieldDash) &&
+			shieldHP > 0 &&
+			shootAnimTime == 0 &&
+			charState is not Hurt { frameTime: not 0 }
+		);
+	}
+
 	public override void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
 		if (!ownedByLocalPlayer) return;
 		decimal damage = decimal.Parse(fDamage.ToString());
@@ -356,8 +390,14 @@ public class ProtoMan : Character {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 			return;
 		}
+		// Tracker variables.
+		decimal ogShieldHP = shieldHP;
+		float oldHealth = player.health;
+		bool fullyBlocked = false;
+		bool shieldBlocked = false;
 		// Shield front block check.
-		if (isShieldActive && shieldHP > 0 && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
+		if (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
+			shieldBlocked = true;
 			// 1 damage scenario.
 			// Reduce damage only 50% of the time.
 			if (damage < 2) {
@@ -366,37 +406,72 @@ public class ProtoMan : Character {
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
 					shieldHP--;
+				} else {
+					fullyBlocked = true;
 				}
 			}
 			// High HP scenario.
 			else if (shieldHP + 1 >= damage) {
 				shieldHP -= damage - 1;
+				if (shieldHP <= 0) {
+					shieldHP = 0;
+				}
 				damage = 0;
 			}
 			// Low HP scenario.
 			else {
 				damage -= shieldHP + 1;
 				shieldHP = 0;
+				shieldBlocked = false;
+			}
+			if (shieldHP <= 0) {
+				isShieldActive = false;
+				if (sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name[..^7], false);
+				}
 			}
 		}
 		// Back shield block check.
-		if ((!isShieldActive || shieldHP <= 0) && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
+		else if (!isShieldFront() && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
+			shieldBlocked = true;
 			if (damage < 2) {
-				shieldDamageDebt = damage / 2m;
+				shieldDamageDebt += damage / 2m;
 				damage = 0;
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
 					damage = 1;
+				} else {
+					fullyBlocked = true;
 				}
 			} else {
 				damage--;
 			}
 		}
 		if (damage > 0) {
-			if (overheating) changeState(new OverHeat(), true);
-			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
+			addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+			playSound("hit", sendRpc: true);
 		} else {
-			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
+			playSound("ding", sendRpc: true);
+		}
+		if (fullyBlocked) {
+			addDamageText("0", (int)FontType.Blue);
+			RPC.addDamageText.sendRpc(attacker.id, netId, 0);
+			return;
+		}
+		if (oldHealth > player.health) {
+			int fontColor = (int)FontType.Red;
+			if (shieldBlocked) {
+				fontColor = (int)FontType.Blue;
+			}
+			string damageText = (oldHealth - player.health).ToString();
+			addDamageText(damageText, fontColor);
+			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
+		}
+		if (ogShieldHP > shieldHP) {
+			string damageText = (ogShieldHP - shieldHP).ToString();
+			addDamageText(damageText, (int)FontType.Blue);
+			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
 		}
 	}
 }

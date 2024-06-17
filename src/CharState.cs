@@ -1532,7 +1532,7 @@ public class Die : CharState {
 		character.useGravity = false;
 		character.stopMoving();
 		character.stopCharge();
-		new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
+		//new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
 		character.stingChargeTime = 0;
 		if (mmx != null) {
 			mmx.removeBarrier();

@@ -238,6 +238,7 @@ public partial class Player {
 	public Dictionary<int, List<WTank>> charWTanks = new Dictionary<int, List<WTank>>()
 	{
 			{ (int)CharIds.Rock, new List<WTank>() },
+			{ (int)CharIds.ProtoMan, new List<WTank>() },
 			//{ (int)CharIds.Bass, new List<WTank>()},
 		};
 	public List<WTank> wtanks {

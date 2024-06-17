@@ -1015,7 +1015,7 @@ public class Maverick : Actor, IDamagable {
 		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
 
-		Global.sprites["menu_subtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		float yPos = 14 * (health / SubTank.maxHealth);
 		DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);

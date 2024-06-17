@@ -26,7 +26,7 @@ public class PreLoadoutMenu : IMainMenu {
 	}
 
 	public void update() {
-		Helpers.menuUpDown(ref selectY, 0, 0);
+		Helpers.menuUpDown(ref selectY, 0, 1);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			/*if (selectY == 0) {
 				Menu.change(new SelectWeaponMenu(this, false));
@@ -45,6 +45,9 @@ public class PreLoadoutMenu : IMainMenu {
 			}*/
 			if (selectY == 0) {
 				Menu.change(new SelectRockWeaponMenu(this, false));
+			}
+			if (selectY == 1) {
+				Menu.change(new SelectProtoManWeaponMenu(this, false));
 			}
 			if (selectY == (int)CharIds.PunchyZero) {
 				Menu.change(new SelectPunchyZeroWeaponMenu(this, false));

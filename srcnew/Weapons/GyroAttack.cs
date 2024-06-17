@@ -9,10 +9,17 @@ public class GyroAttack : Weapon {
         rateOfFire = 1f;
 
     }
+    
+    public override float getAmmoUsage(int chargeLevel) {
+        return 2;
+    }
 
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+        Point shootPos = character.getShootPos();
+        int xDir = character.getShootXDir();
 
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
+        new GyroAttackProj(this, shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
 	}
 }
 

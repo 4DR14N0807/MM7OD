@@ -596,6 +596,8 @@ public partial class Character : Actor, IDamagable {
 		if (charState is Burning) return false;
 		if (isInvisibleBS.getValue()) return false;
 		if (invulnTime > 0) return false;
+		if (flag != null) return false;
+		if (isWarpIn()) return false;
 		return true;
 	}
 
@@ -660,6 +662,7 @@ public partial class Character : Actor, IDamagable {
 
 	public float getRunDebuffs() {
 		float runSpeed = 1;
+		if (charState is ProtoBlock) runSpeed *= 0.5f;
 		if (slowdownTime > 0) runSpeed *= 0.75f;
 		if (igFreezeProgress >= 3) runSpeed *= 0.25f;
 		else if (igFreezeProgress >= 2) runSpeed *= 0.75f;
@@ -2615,7 +2618,7 @@ public partial class Character : Actor, IDamagable {
 		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
 
-		Global.sprites["menu_subtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		float yPos = 14 * (health / ETank.maxHealth);
 		//DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
@@ -3744,7 +3747,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool chargeButtonHeld() {
-		return false;
+		return player.input.isHeld(Control.Shoot, player);;
 	}
 
 

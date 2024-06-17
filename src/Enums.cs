@@ -305,9 +305,12 @@ public enum RockWeaponIds
 	SAArrowSlash,
 	LegBreaker,
 	GeminiLaser,
+	HardKnuckle,
 	SearchSnake,
+	SparkShock,
 	PowerStone,
 	GyroAttack,
+	StarCrash,
 }
 
 public enum RockProjIds 

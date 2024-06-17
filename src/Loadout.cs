@@ -395,6 +395,38 @@ public class RockLoadout {
 
 
 [ProtoContract]
+public class ProtoManLoadout {
+	[ProtoMember(1)] public int weapon1;    //0 indexed
+
+	public List<int> getProtoManWeaponIndices() {
+		return new List<int>() { weapon1 };
+	}
+
+	public void validate() {
+		if (weapon1 < 0 || weapon1 > 9) weapon1 = 0;
+	}
+
+	public List<Weapon> getWeaponsFromLoadout(Player player) {
+		var indices = new List<byte>();
+		indices.Add((byte)weapon1);
+
+		return indices.Select(index => {
+			return Weapon.getAllProtoManWeapons().Find(w => w.index == index).clone();
+		}).ToList();
+	}
+
+	/*public static ProtoManLoadout createRandom() {
+		/*var randomRockWeapons = Weapon.getRandomProtoManWeapons();
+		return new RockLoadout() {
+			weapon1 = randomRockWeapons[0],
+			weapon2 = randomRockWeapons[1],
+			weapon3 = randomRockWeapons[2],
+		};
+	}*/
+}
+
+
+[ProtoContract]
 public class LoadoutData {
 	[ProtoMember(1)] public int playerId;
 	[ProtoMember(2)] public XLoadout xLoadout = new XLoadout();
@@ -403,7 +435,8 @@ public class LoadoutData {
 	[ProtoMember(5)] public AxlLoadout axlLoadout = new AxlLoadout();
 	[ProtoMember(6)] public SigmaLoadout sigmaLoadout = new SigmaLoadout();
 	[ProtoMember(7)] public RockLoadout rockLoadout = new RockLoadout();
-	[ProtoMember(8)] public PZeroLoadout pzeroLoadout = new();
+	[ProtoMember(8)] public ProtoManLoadout protomanLoadout = new ProtoManLoadout();
+	[ProtoMember(9)] public PZeroLoadout pzeroLoadout = new();
 
 	public static LoadoutData createRandom(int playerId) {
 		return new LoadoutData() {
@@ -426,6 +459,7 @@ public class LoadoutData {
 			axlLoadout = Helpers.cloneProtobuf(Options.main.axlLoadout),
 			sigmaLoadout = Helpers.cloneProtobuf(Options.main.sigmaLoadout),
 			rockLoadout = Helpers.cloneProtobuf(Options.main.rockLoadout),
+			protomanLoadout = Helpers.cloneProtobuf(Options.main.protomanLoadout),
 		};
 	}
 }

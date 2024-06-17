@@ -29,7 +29,10 @@ public class InGameMainMenu : IMainMenu {
 				if (isSelWepDisabled()) return;
 				if (Global.level.mainPlayer.realCharNum == 5) {
 					Menu.change(new SelectRockWeaponMenu(this, true));
-				} else if (Global.level.mainPlayer.realCharNum == 4) {
+				}  else if (Global.level.mainPlayer.realCharNum == 6) {
+					Menu.change(new SelectProtoManWeaponMenu(this, true));
+				}
+				 else if (Global.level.mainPlayer.realCharNum == 4) {
 					Menu.change(new SelectSigmaWeaponMenu(this, true));
 				} else if (Global.level.mainPlayer.realCharNum == 3) {
 					Menu.change(new SelectAxlWeaponMenu(this, true));

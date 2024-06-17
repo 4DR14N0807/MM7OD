@@ -14,12 +14,15 @@ public class ProtoMan : Character {
 	public const float coreAmmoMaxCooldown = 30;
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
-	public bool isShieldActive = true;
+	public bool isShieldActive;
 	public bool overheating;
 	public decimal shieldHP = 18;
 	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
+	public Weapon poderzinho;
+	public List<Weapon> weaponsList = new List<Weapon>();
+	public float poderzinhoCooldown;
 
 	public ProtoMan(
 	 Player player, float x, float y, int xDir,
@@ -29,6 +32,11 @@ public class ProtoMan : Character {
 	 player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	 ) {
 		charId = CharIds.ProtoMan;
+
+		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
+		weaponsList = Weapon.getAllProtoManWeapons();
+
+		poderzinho = weaponsList[protomanLoadout];
 	}
 
 	public override float getRunSpeed() {
@@ -74,11 +82,21 @@ public class ProtoMan : Character {
 	}
 
 	public bool canBlock() {
+		if (!grounded) return false;
 		return true;
 	}
 
 	public bool canShieldDash() {
 		return (charState is not ShieldDash && shieldHP > 0);
+	}
+
+	public bool canShootPoderzinho() {
+		if (
+			poderzinhoCooldown > 0 ||
+			isCharging()
+		) return false;
+
+		return true;
 	}
 
 	public override string getSprite(string spriteName) {
@@ -149,6 +167,7 @@ public class ProtoMan : Character {
 
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
+		Helpers.decrementFrames(ref poderzinhoCooldown);
 
 		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");
@@ -160,6 +179,7 @@ public class ProtoMan : Character {
 		}
 		if (coreAmmo >= coreMaxAmmo) {
 			overheating = true;
+			stopCharge();
 		}
 		if (isCharging()) {
 			coreAmmoIncreaseCooldown += Global.speedMul;
@@ -210,6 +230,12 @@ public class ProtoMan : Character {
 	}
 
 	public override bool normalCtrl() {
+		bool isGuarding = player.input.isPressed(Control.Down, player);
+
+		if (canBlock() && isGuarding) {
+			changeState(new ProtoBlock(), true);
+		}
+
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
 		}
@@ -234,12 +260,22 @@ public class ProtoMan : Character {
 	public override bool attackCtrl() {
 		bool shootPressed = player.input.isPressed(Control.Shoot, player);
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
+		bool downHeld = player.input.isHeld(Control.Down, player);
+
 		if (specialPressed) {
-			if (!grounded) {
+			/*if (!grounded) {
 				changeState(new ProtoAirShoot(), true);
 				return true;
-			}
+			}*/
+			if (canShootPoderzinho()) shootPoderzinho(getChargeLevel());
+			return true;
 		}
+
+		if (shootPressed && downHeld && !grounded) {
+			changeState(new ProtoAirShoot(), true);
+			return true;
+		}
+
 		if (!isCharging()) {
 			if (shootPressed) {
 				lastShootPressed = Global.frameCount;
@@ -295,6 +331,20 @@ public class ProtoMan : Character {
 		}
 	}
 
+	public void shootPoderzinho(int chargeLevel) {
+		if (!charState.attackCtrl && !charState.invincible) {
+			changeToIdleOrFall();
+		}
+		// Shoot anim and vars.
+		setShootAnim();
+		Point shootPos = getShootPos();
+		int xDir = getShootXDir();
+
+		if (poderzinho != null) poderzinho.shoot(this, chargeLevel);
+		poderzinhoCooldown = poderzinho.rateOfFire * 60;
+		addCoreAmmo((int)poderzinho.getAmmoUsage(chargeLevel));
+	}
+ 
 	public void setShootAnim() {
 		string shootSprite = getSprite(charState.shootSprite);
 		if (!Global.sprites.ContainsKey(shootSprite)) {

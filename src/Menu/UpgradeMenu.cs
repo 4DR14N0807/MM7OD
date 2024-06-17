@@ -306,7 +306,7 @@ public class UpgradeMenu : IMainMenu {
 				var etank = mainPlayer.etanks[i];
 				canUseEtank = mainPlayer.canUseEtank(etank);
 
-				Global.sprites["menu_subtank"].drawToHUD(0, optionPos.x + 6, optionPos.y - 8);
+				Global.sprites["menu_etank"].drawToHUD(0, optionPos.x + 6, optionPos.y - 8);
 				//Global.sprites["menu_"].drawToHUD(0, optionPos.x + 5, optionPos.y - 3);
 				float yPos = 14 * (etank.health / ETank.maxHealth);
 				//DrawWrappers.DrawRect(optionPos.x + 5, optionPos.y - 3, optionPos.x + 9, optionPos.y + 11 - yPos, true, Color.Black, 1, ZIndex.HUD, isWorldPos: false);
@@ -318,7 +318,7 @@ public class UpgradeMenu : IMainMenu {
 							buyOrUseStr = "CANNOT USE E-TANK";
 						}
 					} else {
-						Global.sprites["menu_subtank"].drawToHUD(2, optionPos.x + 6, optionPos.y - 8, 0.5f);
+						Global.sprites["menu_etank"].drawToHUD(2, optionPos.x + 6, optionPos.y - 8, 0.5f);
 					}
 				}
 
@@ -337,7 +337,7 @@ public class UpgradeMenu : IMainMenu {
 					}
 				}
 			} else {
-				Global.sprites["menu_subtank"].drawToHUD(1, optionPos.x + 6, optionPos.y - 8);
+				Global.sprites["menu_etank"].drawToHUD(1, optionPos.x + 6, optionPos.y - 8);
 			}
 			if (!buyOrUse) {
 				if (!canUseEtank && eTankTargets.Count == 0) buyOrUseStr = "CANNOT USE E-TANK";

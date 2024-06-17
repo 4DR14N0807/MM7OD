@@ -20,9 +20,8 @@ public class ProtoMan : Character {
 	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
-	public Weapon poderzinho;
+	public Weapon specialWeapon;
 	public List<Weapon> weaponsList = new List<Weapon>();
-	public float poderzinhoCooldown;
 
 	public ProtoMan(
 	 Player player, float x, float y, int xDir,
@@ -36,7 +35,7 @@ public class ProtoMan : Character {
 		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
 		weaponsList = Weapon.getAllProtoManWeapons();
 
-		poderzinho = weaponsList[protomanLoadout];
+		specialWeapon = weaponsList[protomanLoadout];
 	}
 
 	public override float getRunSpeed() {
@@ -90,12 +89,10 @@ public class ProtoMan : Character {
 		return (charState is not ShieldDash && shieldHP > 0);
 	}
 
-	public bool canShootPoderzinho() {
-		if (
-			poderzinhoCooldown > 0 ||
-			isCharging()
-		) return false;
-
+	public bool canShootSpecial() {
+		if (isCharging() || specialWeapon.shootCooldown > 0) {
+			return false;
+		}
 		return true;
 	}
 
@@ -167,7 +164,6 @@ public class ProtoMan : Character {
 
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
-		Helpers.decrementFrames(ref poderzinhoCooldown);
 
 		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");
@@ -263,11 +259,7 @@ public class ProtoMan : Character {
 		bool downHeld = player.input.isHeld(Control.Down, player);
 
 		if (specialPressed) {
-			/*if (!grounded) {
-				changeState(new ProtoAirShoot(), true);
-				return true;
-			}*/
-			if (canShootPoderzinho()) shootPoderzinho(getChargeLevel());
+			if (canShootSpecial()) shootPoderzinho(getChargeLevel());
 			return true;
 		}
 
@@ -332,6 +324,9 @@ public class ProtoMan : Character {
 	}
 
 	public void shootPoderzinho(int chargeLevel) {
+		if (specialWeapon == null) {
+			return;
+		}
 		if (!charState.attackCtrl && !charState.invincible) {
 			changeToIdleOrFall();
 		}
@@ -339,10 +334,10 @@ public class ProtoMan : Character {
 		setShootAnim();
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
-
-		if (poderzinho != null) poderzinho.shoot(this, chargeLevel);
-		poderzinhoCooldown = poderzinho.rateOfFire * 60;
-		addCoreAmmo((int)poderzinho.getAmmoUsage(chargeLevel));
+		
+		specialWeapon.shoot(this, chargeLevel);
+		specialWeapon.shootCooldown = specialWeapon.fireRateFrames;
+		addCoreAmmo(MathInt.Ceiling(specialWeapon.getAmmoUsage(chargeLevel)));
 	}
  
 	public void setShootAnim() {

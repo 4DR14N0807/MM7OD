@@ -662,7 +662,6 @@ public partial class Character : Actor, IDamagable {
 
 	public float getRunDebuffs() {
 		float runSpeed = 1;
-		if (charState is ProtoBlock) runSpeed *= 0.5f;
 		if (slowdownTime > 0) runSpeed *= 0.75f;
 		if (igFreezeProgress >= 3) runSpeed *= 0.25f;
 		else if (igFreezeProgress >= 2) runSpeed *= 0.75f;
@@ -3747,7 +3746,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool chargeButtonHeld() {
-		return player.input.isHeld(Control.Shoot, player);;
+		return false;
 	}
 
 

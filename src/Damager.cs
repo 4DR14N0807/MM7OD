@@ -43,7 +43,6 @@ public class Damager {
 		var newFlinch = (overrideFlinch != null ? (int)overrideFlinch : flinch);
 
 		var chr = victim as Character;
-		var isWeak = chr.charState is ProtoBlock or ProtoChargeShotState or OverHeat;
 
 		if (chr != null) {
 			if (chr.isCCImmune()) {
@@ -51,7 +50,7 @@ public class Damager {
 				weakness = false;
 			}
 
-			if ((chr.player.isAxl || isWeak) && newFlinch > 0) {
+			if ((chr.player.isAxl) && newFlinch > 0) {
 				if (newFlinch < 4) {
 					newFlinch = 4;
 				} else if (newFlinch < 12) {

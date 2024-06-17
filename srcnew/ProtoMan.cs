@@ -23,6 +23,7 @@ public class ProtoMan : Character {
 	public Weapon poderzinho;
 	public List<Weapon> weaponsList = new List<Weapon>();
 	public float poderzinhoCooldown;
+	public StarCrashProj starCrash;
 
 	public ProtoMan(
 	 Player player, float x, float y, int xDir,
@@ -81,6 +82,12 @@ public class ProtoMan : Character {
 		) return false;
 
 		return true;
+	}
+
+	public void destroyStarCrash() {
+		if (starCrash != null) starCrash.destroySelf();
+		starCrash = null;
+		gravityModifier = 1;
 	}
 
 	public override string getSprite(string spriteName) {

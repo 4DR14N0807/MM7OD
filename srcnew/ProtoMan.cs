@@ -31,6 +31,22 @@ public class ProtoMan : Character {
 		charId = CharIds.ProtoMan;
 	}
 
+	public override float getRunSpeed() {
+		float runSpeed = Physics.WalkSpeed;
+		if (isShieldActive) {
+			runSpeed *= 0.75f;
+		}
+		return runSpeed * getRunDebuffs();
+	}
+
+	public override float getJumpPower() {
+		float jumpSpeed = Physics.JumpSpeed;
+		if (isShieldActive) {
+			jumpSpeed *= 0.875f;
+		}
+		return jumpSpeed * getJumpModifier();
+	}
+
 	public override bool canTurn() {
 		if (charState is ProtoAirShoot) return false;
 		return base.canTurn();
@@ -134,10 +150,10 @@ public class ProtoMan : Character {
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 
-		if (healShieldHPCooldown <= 0 && shieldHP < 1) {
+		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");
-			shieldHP = 1;
-			healShieldHPCooldown = 15;
+			shieldHP++;
+			healShieldHPCooldown = 6;
 			if (shieldHP >= shieldMaxHP) {
 				shieldHP = shieldMaxHP;
 			}

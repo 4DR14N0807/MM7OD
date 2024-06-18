@@ -71,13 +71,6 @@ public class ShieldDash : CharState {
 		useGravity = false;
 	}
 
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		initialXDir = character.xDir;
-		character.isDashing = true;
-		character.vel.y = 0;
-	}
-
 	public override void update() {
 		base.update();
 		if (frameTime >= 40) {
@@ -106,6 +99,20 @@ public class ShieldDash : CharState {
 			) { vel = new Point(0, -40) };
 			dustTimer = 0;
 		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		initialXDir = character.xDir;
+		character.isDashing = true;
+		character.vel.y = 0;
+	}
+
+	public override void onExit(CharState newState) {
+		if (!character.grounded) {
+			character.dashedInAir++;
+		}
+		base.onExit(newState);
 	}
 }
 

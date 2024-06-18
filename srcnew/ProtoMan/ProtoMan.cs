@@ -97,7 +97,11 @@ public class ProtoMan : Character {
 	}
 
 	public bool canShieldDash() {
-		return (charState is not ShieldDash && shieldHP > 0);
+		return (
+			(grounded || dashedInAir == 0) &&
+			charState is not ShieldDash &&
+			!overheating && shieldHP > 0
+		);
 	}
 
 	public bool canShootSpecial() {
@@ -272,9 +276,6 @@ public class ProtoMan : Character {
 	}
 
 	public override bool normalCtrl() {
-		if (player.dashPressed(out string slideControl) && canShieldDash()) {
-			changeState(new ShieldDash(slideControl), true);
-		}
 		if ((player.input.isPressed(Control.WeaponLeft, player) ||
 			player.input.isPressed(Control.WeaponRight, player)
 		)) {
@@ -292,6 +293,11 @@ public class ProtoMan : Character {
 					changeSprite(sprite.name + "_shield", false);
 				}
 			}
+		}
+		if (player.dashPressed(out string slideControl) && canShieldDash()) {
+			changeState(new ShieldDash(slideControl), true);
+			addCoreAmmo(2);
+			return true;
 		}
 		return base.normalCtrl();
 	}

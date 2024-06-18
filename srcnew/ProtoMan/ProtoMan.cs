@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace MMXOnline;
 
-
 public class ProtoMan : Character {
 	public List<ProtoBusterProj> lemonsOnField = new();
 	public float lemonCooldown;

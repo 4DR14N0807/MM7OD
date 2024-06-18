@@ -13,7 +13,6 @@ public class PowerStone : Weapon {
         return 5;
     }
 
-
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
 		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
 
@@ -33,9 +32,7 @@ public class PowerStone : Weapon {
 	}
 }
 
-
 public class PowerStoneProj : Projectile {
-
     Character character;
     int stoneAngle = 120;
     float radius = 10;
@@ -59,8 +56,9 @@ public class PowerStoneProj : Projectile {
         base.pos.y = character.getCenterPos().y + (Helpers.sind(stoneAngle) * radius);
 
         stoneAngle += 8;
-        if (stoneAngle >= 360) stoneAngle = 0;
-
-        radius += 1.25f;    
+        if (stoneAngle >= 360) {
+			stoneAngle = 0;
+		}
+        radius += 1.25f;
     }
 }

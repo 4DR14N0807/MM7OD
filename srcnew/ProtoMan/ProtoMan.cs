@@ -11,9 +11,9 @@ public class ProtoMan : Character {
 	public float lemonCooldown;
 	public int coreMaxAmmo = 28;
 	public int coreAmmo;
-	public const float coreAmmoMaxCooldown = 30;
+	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoIncreaseCooldown;
-	public float coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+	public float coreAmmoDecreaseCooldown;
 	public bool isShieldActive;
 	public bool overheating;
 	public decimal shieldHP = 18;
@@ -117,7 +117,9 @@ public class ProtoMan : Character {
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
-		if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
+		if (isShieldActive && spriteName == "protoman_idle" && getChargeLevel() >= 2) {
+			spriteName = "protoman_charge";
+		} else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
 		}
 		List<Trail>? trails = sprite?.lastFiveTrailDraws;
@@ -195,8 +197,12 @@ public class ProtoMan : Character {
 			stopCharge();
 		}
 		if (isCharging()) {
-			coreAmmoIncreaseCooldown += Global.speedMul;
-			coreAmmoDecreaseCooldown = 15;
+			if (chargeTime <= charge2Time) {
+				coreAmmoIncreaseCooldown += Global.speedMul;
+				if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
+					coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+				}
+			}
 		} else {
 			coreAmmoIncreaseCooldown = 0;
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
@@ -233,6 +239,10 @@ public class ProtoMan : Character {
 		}
 		// Shoot logic.
 		chargeLogic(shoot);
+
+		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == "protoman_idle_shield") {
+			changeSpriteFromName("charge", true);
+		}
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
@@ -243,12 +253,6 @@ public class ProtoMan : Character {
 	}
 
 	public override bool normalCtrl() {
-		bool isGuarding = player.input.isPressed(Control.Down, player);
-
-		if (canBlock() && isGuarding) {
-			changeState(new ProtoBlock(), true);
-		}
-
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
 		}
@@ -333,7 +337,7 @@ public class ProtoMan : Character {
 				new ProtoBusterChargedProj(
 					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 				);
-				addCoreAmmo(-2);
+				resetCoreCooldown();
 				playSound("buster3", sendRpc: true);
 				lemonCooldown = 18;
 			}
@@ -391,7 +395,9 @@ public class ProtoMan : Character {
 
 	public void resetCoreCooldown() {
 		coreAmmoIncreaseCooldown = 0;
-		coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+		if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
+			coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+		}
 	}
 
 	public bool isShieldFront() {
@@ -495,6 +501,8 @@ public class ProtoMan : Character {
 			string damageText = (oldHealth - player.health).ToString();
 			addDamageText(damageText, fontColor);
 			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
+			coreAmmo += MathInt.Ceiling(oldHealth - player.health);
+			coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 		}
 		if (ogShieldHP > shieldHP) {
 			string damageText = (ogShieldHP - shieldHP).ToString();

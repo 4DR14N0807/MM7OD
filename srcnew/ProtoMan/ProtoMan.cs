@@ -14,8 +14,9 @@ public class ProtoMan : Character {
 	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown;
-	public bool isShieldActive;
+	public bool isShieldActive = true;
 	public bool overheating;
+	public float overheatEffectTime;
 	public decimal shieldHP = 18;
 	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
@@ -46,7 +47,9 @@ public class ProtoMan : Character {
 
 	public override float getRunSpeed() {
 		float runSpeed = Physics.WalkSpeed;
-		if (isShieldActive) {
+		if (overheating) {
+			runSpeed *= 0.5f;
+		} else if (isShieldActive) {
 			runSpeed *= 0.75f;
 		}
 		return runSpeed * getRunDebuffs();
@@ -54,8 +57,10 @@ public class ProtoMan : Character {
 
 	public override float getJumpPower() {
 		float jumpSpeed = Physics.JumpSpeed;
-		if (isShieldActive) {
-			jumpSpeed *= 0.8f;
+		if (overheating) {
+			jumpSpeed *= 0.75f;
+		} else if (isShieldActive) {
+			jumpSpeed *= 0.85f;
 		}
 		return jumpSpeed * getJumpModifier();
 	}
@@ -243,6 +248,19 @@ public class ProtoMan : Character {
 		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == "protoman_idle_shield") {
 			changeSpriteFromName("charge", true);
 		}
+
+		if (overheating) {
+			overheatEffectTime += Global.speedMul;
+			if (overheatEffectTime >= 3) {
+				overheatEffectTime = 0;
+				Point burnPos = pos.addxy(xDir * 2, -15);
+
+				Anim tempAnim = new Anim(burnPos.addRand(14, 15), "dust", 1, null, true, host: this);
+				tempAnim.vel.y = -120;
+				tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 2);
+			}
+			addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 0.1f);
+		}
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
@@ -263,6 +281,9 @@ public class ProtoMan : Character {
 				isShieldActive = false;
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
+				}
+				if (sprite.name == "protoman_charge") {
+					changeSpriteFromName("idle", true);
 				}
 			} else if (shieldHP > 0) {
 				isShieldActive = true;
@@ -462,6 +483,9 @@ public class ProtoMan : Character {
 				isShieldActive = false;
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
+				}
+				if (sprite.name == "protoman_charge") {
+					changeSpriteFromName("idle", true);
 				}
 			}
 		}

@@ -1298,7 +1298,7 @@ public partial class Character : Actor, IDamagable {
 
 	public override void statePostUpdate() {
 		base.statePostUpdate();
-		charState.frameTime += 1f * Global.speedMul;
+		charState.stateFrames += 1f * Global.speedMul;
 	}
 
 	public virtual bool updateCtrl() {
@@ -2889,7 +2889,7 @@ public partial class Character : Actor, IDamagable {
 		ProtoMan? protoman = this as ProtoMan;
 
 		// For Dark Hold break.
-		if (damage > 0 && charState is DarkHoldState dhs && dhs.frameTime > 10 && !Damager.isDot(projId)) {
+		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
 		}
 
@@ -3276,7 +3276,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		if (charState is Hurt hurtState) {
-			if (hurtState.frameTime <= flinchFrames) {
+			if (hurtState.stateFrames <= flinchFrames) {
 				// You can probably add a check here that sets "hurtState.yStartPos" to null if you.
 				// Want to add a flinch attack that pushes up on chain-flinch.
 				changeState(new Hurt(dir, flinchFrames, false, hurtState.flinchYPos), true);

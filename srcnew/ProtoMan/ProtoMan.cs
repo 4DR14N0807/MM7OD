@@ -436,7 +436,7 @@ public class ProtoMan : Character {
 			(isShieldActive || charState is ShieldDash) &&
 			shieldHP > 0 &&
 			shootAnimTime == 0 &&
-			charState is not Hurt { frameTime: not 0 }
+			charState is not Hurt { stateFrames: not 0 }
 		);
 	}
 

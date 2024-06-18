@@ -73,7 +73,7 @@ public class ShieldDash : CharState {
 
 	public override void update() {
 		base.update();
-		if (frameTime >= 40) {
+		if (stateFrames >= 40) {
 			character.changeToIdleOrFall();
 			return;
 		}
@@ -106,6 +106,7 @@ public class ShieldDash : CharState {
 		initialXDir = character.xDir;
 		character.isDashing = true;
 		character.vel.y = 0;
+		stateFrames
 	}
 
 	public override void onExit(CharState newState) {

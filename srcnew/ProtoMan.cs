@@ -54,7 +54,7 @@ public class ProtoMan : Character {
 	public override float getJumpPower() {
 		float jumpSpeed = Physics.JumpSpeed;
 		if (isShieldActive) {
-			jumpSpeed *= 0.875f;
+			jumpSpeed *= 0.8f;
 		}
 		return jumpSpeed * getJumpModifier();
 	}

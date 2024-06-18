@@ -197,8 +197,9 @@ public class ProtoMan : Character {
 				shieldHP = shieldMaxHP;
 			}
 		}
-		if (coreAmmo >= coreMaxAmmo) {
+		if (coreAmmo >= coreMaxAmmo && !overheating) {
 			overheating = true;
+			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
 		if (isCharging()) {

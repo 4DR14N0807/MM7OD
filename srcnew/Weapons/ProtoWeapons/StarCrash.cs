@@ -10,7 +10,6 @@ public class StarCrash : Weapon {
         fireRateFrames = 60;
     }
 
-    
     public override float getAmmoUsage(int chargeLevel) {
         return 0;
     }

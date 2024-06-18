@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace MMXOnline;
 
-
 public class SearchSnake : Weapon {
     public SearchSnake() : base() {
         index = (int)RockWeaponIds.SearchSnake;

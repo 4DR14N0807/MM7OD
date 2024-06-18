@@ -39,10 +39,10 @@ public class Damager {
 		if (weapon is ItemTracer) return false;
 		if (projId == (int)ProjIds.GravityWellCharged) return false;
 
-		var newDamage = (overrideDamage != null ? (float)overrideDamage : damage);
-		var newFlinch = (overrideFlinch != null ? (int)overrideFlinch : flinch);
+		float newDamage = (overrideDamage != null ? (float)overrideDamage : damage);
+		int newFlinch = (overrideFlinch != null ? (int)overrideFlinch : flinch);
 
-		var chr = victim as Character;
+		Character? chr = victim as Character;
 
 		if (chr != null) {
 			if (chr.isCCImmune()) {

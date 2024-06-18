@@ -29,7 +29,7 @@ public class HardKnuckleProj : Projectile {
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
         maxTime = 1f;
-        projId = (int)RockProjIds.HardKnuckle;
+        projId = (int)BluesProjIds.HardKnuckle;
         this.player =  player;
         canBeLocal = false;
     }
@@ -40,27 +40,27 @@ public class HardKnuckleProj : Projectile {
 			changeSprite("hard_knuckle_proj", true);
 			vel.x = 200 * xDir;
         }
+        if(sprite.name != "generic_explosion"){
 		int inputYDir = player.input.getYDir(player);
-		vel.y = 100f * inputYDir;
+		vel.y = 100f * inputYDir;}
     }
+     //TODO: ADD RPC CODE.
 }
 
 public class HardKnuckleShoot : CharState {
 	bool fired;
 
-	public HardKnuckleShoot() : base("shoot", "", "","") {
+	public HardKnuckleShoot() : base("hardknuckle", "", "","") {
 		airMove = true;
-		landSprite = "shoot";
-		airSprite = "shootAir";
 		useGravity = false;
 	}
 	public override void update() {
         base.update();
 
-        if (!fired) {
+        if (!fired && character.frameIndex == 1) {
             fired = true;
             new HardKnuckleProj(
-				character.getCenterPos(), character.xDir,
+				character.getShootPos(), character.xDir,
 				player, player.getNextActorNetId(), true
 			);
         } 
@@ -72,6 +72,16 @@ public class HardKnuckleShoot : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
         character.stopMovingWeak();
+        bool air = !character.grounded;
+        sprite = "hardknuckle";
+        defaultSprite = sprite;
+        landSprite = "hardknuckle_air";
+        if (air) {
+			sprite = "hardknuckle_air";
+			defaultSprite = sprite;
+		}
+        character.changeSpriteFromName(sprite, true);
         character.useGravity = false;
+        
 	}
 }

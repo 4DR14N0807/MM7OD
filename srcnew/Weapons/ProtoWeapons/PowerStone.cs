@@ -44,7 +44,7 @@ public class PowerStoneProj : Projectile {
     base(weapon, pos, xDir, 0, 2 ,player, "power_stone_proj", 0, 0.25f, netId, player.ownedByLocalPlayer) {
         //projId = (int)RockProjIds.PowerStone;
         maxTime = 1;
-        projId = (int)RockProjIds.PowerStone;
+        projId = (int)BluesProjIds.PowerStone;
 
         character = player.character;
         this.type = type;

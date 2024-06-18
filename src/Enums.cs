@@ -312,7 +312,17 @@ public enum RockWeaponIds
 	GyroAttack,
 	StarCrash,
 }
-
+public enum BluesProjIds 
+{
+	ShieldBlock,
+	GeminiLaser,
+	HardKnuckle,
+	SearchSnake,
+	SparkShock,
+	PowerStone,
+	GyroAttack,
+	StarCrash,
+}
 public enum RockProjIds 
 {
 	RockBuster,
@@ -341,14 +351,7 @@ public enum RockProjIds
 	WildCoilCharged,
 	SARocketPunch,
 	SAArrowSlash,
-	ShieldBlock,
-	GeminiLaser,
-	HardKnuckle,
-	SearchSnake,
-	SparkShock,
-	PowerStone,
-	GyroAttack,
-	StarCrash,
+
 }
 
 public enum ProjIds {
@@ -771,10 +774,6 @@ public enum ProjIds {
 	SlashClaw,
 	ScorchWheelUnderwater,
 	LegBreaker,
-
-	//Proto Man stuff
-
-	ShieldBlock,
 
 	// Special damage types.
 	SelfDmg = 30000,

@@ -43,7 +43,7 @@ public class StarCrashProj : Projectile {
 
     public StarCrashProj(Weapon weapon, Point pos, int xDir, Player player, ushort? netId, bool sendRpc = false) :
     base(weapon, pos, xDir, 0, 0, player, "empty", 0, 0, netId, player.ownedByLocalPlayer) {
-        projId = (int)RockProjIds.StarCrash;
+        projId = (int)BluesProjIds.StarCrash;
         protoman = player.character as ProtoMan;
         protoman.starCrash = this; 
         protoman.gravityModifier = 0.625f;

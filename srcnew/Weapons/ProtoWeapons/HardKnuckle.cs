@@ -38,12 +38,10 @@ public class HardKnuckleProj : Projectile {
         base.update();
         if (isAnimOver() && sprite.name == "generic_explosion") {
 			changeSprite("hard_knuckle_proj", true);
-			vel.x = 180f * xDir;
+			vel.x = 200 * xDir;
         }
-		xDir = player.input.getXDir(player);
-		if (xDir != 0) {
-			vel.y = 100f * xDir;
-		}
+		int inputYDir = player.input.getYDir(player);
+		vel.y = 100f * inputYDir;
     }
 }
 

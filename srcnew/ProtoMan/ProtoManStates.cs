@@ -106,7 +106,6 @@ public class ShieldDash : CharState {
 		initialXDir = character.xDir;
 		character.isDashing = true;
 		character.vel.y = 0;
-		stateFrames
 	}
 
 	public override void onExit(CharState newState) {

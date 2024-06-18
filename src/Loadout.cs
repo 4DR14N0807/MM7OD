@@ -396,7 +396,7 @@ public class RockLoadout {
 
 [ProtoContract]
 public class ProtoManLoadout {
-	[ProtoMember(1)] public int weapon1;    //0 indexed
+	[ProtoMember(1)] public int weapon1;
 
 	public List<int> getProtoManWeaponIndices() {
 		return new List<int>() { weapon1 };

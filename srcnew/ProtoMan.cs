@@ -20,10 +20,8 @@ public class ProtoMan : Character {
 	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
-	public Weapon poderzinho;
-	public List<Weapon> weaponsList = new List<Weapon>();
-	public float poderzinhoCooldown;
 	public StarCrashProj starCrash;
+	public Weapon specialWeapon;
 
 	public ProtoMan(
 	 Player player, float x, float y, int xDir,
@@ -33,11 +31,33 @@ public class ProtoMan : Character {
 	 player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	 ) {
 		charId = CharIds.ProtoMan;
-
 		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
-		weaponsList = Weapon.getAllProtoManWeapons();
 
-		poderzinho = weaponsList[protomanLoadout];
+		specialWeapon = protomanLoadout switch {
+			0 => new GeminiLaser(),
+			1 => new HardKnuckle(),
+			2 => new SearchSnake(),
+			3 => new SparkShock(),
+			4 => new PowerStone(),
+			5 => new GyroAttack(),
+			_ => new StarCrash(),
+		};
+	}
+
+	public override float getRunSpeed() {
+		float runSpeed = Physics.WalkSpeed;
+		if (isShieldActive) {
+			runSpeed *= 0.75f;
+		}
+		return runSpeed * getRunDebuffs();
+	}
+
+	public override float getJumpPower() {
+		float jumpSpeed = Physics.JumpSpeed;
+		if (isShieldActive) {
+			jumpSpeed *= 0.875f;
+		}
+		return jumpSpeed * getJumpModifier();
 	}
 
 	public override bool canTurn() {
@@ -75,19 +95,21 @@ public class ProtoMan : Character {
 		return (charState is not ShieldDash && shieldHP > 0);
 	}
 
-	public bool canShootPoderzinho() {
-		if (
-			poderzinhoCooldown > 0 ||
-			isCharging()
-		) return false;
-
+	public bool canShootSpecial() {
+		if (isCharging() || 
+			specialWeapon.shootCooldown > 0 ||
+			starCrash != null) {
+			return false;
+		}
 		return true;
 	}
 
 	public void destroyStarCrash() {
+		StarCrash sa = new StarCrash();
 		if (starCrash != null) starCrash.destroySelf();
 		starCrash = null;
 		gravityModifier = 1;
+		if (specialWeapon != null) specialWeapon.shootCooldown = sa.fireRateFrames;
 	}
 
 	public override string getSprite(string spriteName) {
@@ -158,12 +180,12 @@ public class ProtoMan : Character {
 
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
-		Helpers.decrementFrames(ref poderzinhoCooldown);
+		if (specialWeapon != null) Helpers.decrementFrames(ref specialWeapon.shootCooldown);
 
-		if (healShieldHPCooldown <= 0 && shieldHP < 1) {
+		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");
-			shieldHP = 1;
-			healShieldHPCooldown = 15;
+			shieldHP++;
+			healShieldHPCooldown = 6;
 			if (shieldHP >= shieldMaxHP) {
 				shieldHP = shieldMaxHP;
 			}
@@ -254,11 +276,7 @@ public class ProtoMan : Character {
 		bool downHeld = player.input.isHeld(Control.Down, player);
 
 		if (specialPressed) {
-			/*if (!grounded) {
-				changeState(new ProtoAirShoot(), true);
-				return true;
-			}*/
-			if (canShootPoderzinho()) shootPoderzinho(getChargeLevel());
+			if (canShootSpecial()) shootPoderzinho(getChargeLevel());
 			return true;
 		}
 
@@ -323,6 +341,9 @@ public class ProtoMan : Character {
 	}
 
 	public void shootPoderzinho(int chargeLevel) {
+		if (specialWeapon == null) {
+			return;
+		}
 		if (!charState.attackCtrl && !charState.invincible) {
 			changeToIdleOrFall();
 		}
@@ -330,10 +351,10 @@ public class ProtoMan : Character {
 		setShootAnim();
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
-
-		if (poderzinho != null) poderzinho.shoot(this, chargeLevel);
-		poderzinhoCooldown = poderzinho.rateOfFire * 60;
-		addCoreAmmo((int)poderzinho.getAmmoUsage(chargeLevel));
+		
+		specialWeapon.shoot(this, chargeLevel);
+		specialWeapon.shootCooldown = specialWeapon.fireRateFrames;
+		addCoreAmmo(MathInt.Ceiling(specialWeapon.getAmmoUsage(chargeLevel)));
 	}
  
 	public void setShootAnim() {

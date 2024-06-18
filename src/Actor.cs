@@ -24,8 +24,26 @@ public partial class Actor : GameObject {
 	public List<Projectile> globalProjs = new List<Projectile>();
 	public Dictionary<string, string> spriteFrameToSounds = new Dictionary<string, string>();
 
-	public int xDir; //-1 or 1
-	public int yDir;
+	private int internal_xDir = 1;
+	private int internal_yDir = 1;
+	public int xDir {
+		get => internal_xDir;
+		set {
+			if (value == 0) {
+				throw new Exception("Object xDir cannot be 0");
+			}
+			internal_xDir = value;
+		}
+	}
+	public int yDir	{
+		get => internal_yDir;
+		set {
+			if (value == 0) {
+				throw new Exception("Object yDir cannot be 0");
+			}
+			internal_yDir = value;
+		}
+	}
 	public Point pos; //Current location
 	public Point prevPos;
 	public Point deltaPos;

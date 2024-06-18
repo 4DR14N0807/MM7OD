@@ -132,7 +132,7 @@ public class CharState {
 		}
 		if (!useGravity) {
 			character.useGravity = false;
-			character.stopMoving();
+			character.stopMovingWeak();
 		}
 		wasGrounded = character.grounded;
 		player.delayETank();

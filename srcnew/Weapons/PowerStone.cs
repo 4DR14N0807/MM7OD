@@ -6,7 +6,7 @@ namespace MMXOnline;
 public class PowerStone : Weapon {
     public PowerStone() : base() {
         index = (int)RockWeaponIds.PowerStone;
-        rateOfFire = 1.5f;
+        fireRateFrames = 90;
     }
 
     public override float getAmmoUsage(int chargeLevel) {
@@ -44,6 +44,7 @@ public class PowerStoneProj : Projectile {
     base(weapon, pos, xDir, 0, 2 ,player, "power_stone_proj", 0, 0.25f, netId, player.ownedByLocalPlayer) {
         //projId = (int)RockProjIds.PowerStone;
         maxTime = 1;
+        projId = (int)RockProjIds.PowerStone;
 
         character = player.character;
         this.type = type;

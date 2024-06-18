@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class SearchSnake : Weapon {
     public SearchSnake() : base() {
         index = (int)RockWeaponIds.SearchSnake;
-        rateOfFire = 0.75f;
+        fireRateFrames = 45;
     }
 
 

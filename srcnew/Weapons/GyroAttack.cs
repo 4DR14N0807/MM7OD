@@ -6,7 +6,7 @@ namespace MMXOnline;
 public class GyroAttack : Weapon {
     public GyroAttack() : base() {
         index = (int)RockWeaponIds.GyroAttack;
-        rateOfFire = 1f;
+        fireRateFrames = 60;
 
     }
     
@@ -34,6 +34,7 @@ public class GyroAttackProj : Projectile {
     public GyroAttackProj(Weapon weapon, Point pos, int xDir, Player player, ushort? netId, bool rpc = false) : 
     base(weapon, pos, xDir, projSpeed, 2, player, "gyro_attack_proj", 0, 0, netId, player.ownedByLocalPlayer) {
         maxTime = 1f;
+        projId = (int)RockProjIds.GyroAttack;
         this.player =  player;
         canBeLocal = false;
         

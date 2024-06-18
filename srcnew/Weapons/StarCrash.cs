@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class StarCrash : Weapon {
     public StarCrash() : base() {
         index = (int)RockWeaponIds.StarCrash;
-        rateOfFire = 1f;
+        fireRateFrames = 60;
     }
 
     
@@ -39,12 +39,15 @@ public class StarCrashProj : Projectile {
     float starAngle;
     int radius = 30;
     int coreCooldown;
+    Player player;
 
     public StarCrashProj(Weapon weapon, Point pos, int xDir, Player player, ushort? netId, bool sendRpc = false) :
     base(weapon, pos, xDir, 0, 0, player, "empty", 0, 0, netId, player.ownedByLocalPlayer) {
+        projId = (int)RockProjIds.StarCrash;
         protoman = player.character as ProtoMan;
         protoman.starCrash = this; 
-        protoman.gravityModifier = 0.625f;  
+        protoman.gravityModifier = 0.625f;
+        this.player = player;
     }
 
 
@@ -63,6 +66,8 @@ public class StarCrashProj : Projectile {
             }
             coreCooldown--;
         }
+
+        if (player.input.isPressed(Control.Special1, player)) destroySelf();
     }
 
 

@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class HardKnuckle : Weapon {
     public HardKnuckle() : base() {
         index = (int)RockWeaponIds.HardKnuckle;
-        rateOfFire = 1.25f;
+        fireRateFrames = 75;
     }
 
 

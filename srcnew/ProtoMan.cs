@@ -20,6 +20,7 @@ public class ProtoMan : Character {
 	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
+	public StarCrashProj starCrash;
 	public Weapon specialWeapon;
 
 	public ProtoMan(
@@ -95,10 +96,20 @@ public class ProtoMan : Character {
 	}
 
 	public bool canShootSpecial() {
-		if (isCharging() || specialWeapon.shootCooldown > 0) {
+		if (isCharging() || 
+			specialWeapon.shootCooldown > 0 ||
+			starCrash != null) {
 			return false;
 		}
 		return true;
+	}
+
+	public void destroyStarCrash() {
+		StarCrash sa = new StarCrash();
+		if (starCrash != null) starCrash.destroySelf();
+		starCrash = null;
+		gravityModifier = 1;
+		if (specialWeapon != null) specialWeapon.shootCooldown = sa.fireRateFrames;
 	}
 
 	public override string getSprite(string spriteName) {
@@ -169,6 +180,7 @@ public class ProtoMan : Character {
 
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
+		if (specialWeapon != null) Helpers.decrementFrames(ref specialWeapon.shootCooldown);
 
 		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");

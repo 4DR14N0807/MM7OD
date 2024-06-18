@@ -342,6 +342,13 @@ public enum RockProjIds
 	SARocketPunch,
 	SAArrowSlash,
 	ShieldBlock,
+	GeminiLaser,
+	HardKnuckle,
+	SearchSnake,
+	SparkShock,
+	PowerStone,
+	GyroAttack,
+	StarCrash,
 }
 
 public enum ProjIds {

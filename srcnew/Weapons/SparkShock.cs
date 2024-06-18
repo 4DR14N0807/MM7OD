@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class SparkShock : Weapon {
     public SparkShock() : base() {
         index = (int)RockWeaponIds.SparkShock;
-        rateOfFire = 1f;
+        fireRateFrames = 60;
     }
 
 

@@ -63,6 +63,9 @@ public class StarCrashProj : Projectile {
 		starAngle += 4;
 		if (starAngle >= 360) starAngle -= 360;
 		if (blues == null) {
+			if (ownedByLocalPlayer) {
+				destroySelf();
+			}
 			return;
 		}
 		// Sync poses with protoman.
@@ -74,7 +77,7 @@ public class StarCrashProj : Projectile {
 			return;
 		}
 		// Destroy if not linked with Protoman anymore.
-		if (blues.starCrash != this || !blues.starCrashActive || blues.overheating) {
+		if (blues.destroyed || blues.starCrash != this || !blues.starCrashActive || blues.overheating) {
 			destroySelf();
 		}
 		// Ammo reduction.

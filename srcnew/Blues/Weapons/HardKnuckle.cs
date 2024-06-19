@@ -12,7 +12,7 @@ public class HardKnuckle : Weapon {
     }
 
 	public override float getAmmoUsage(int chargeLevel) {
-		return 2;
+		return 3;
 	}
 
     public override void shoot(Character character, params int[] args) {
@@ -52,10 +52,14 @@ public class HardKnuckleProj : Projectile {
 			forceNetUpdateNextFrame = true;
 		}
     }
+	public override void onStart() {
+		base.onStart();
+	}
 }
 
 public class HardKnuckleShoot : CharState {
 	bool fired;
+	bool effectCreated;
 
 	public HardKnuckleShoot() : base("hardknuckle") {
 		airSprite = "hardknuckle_air";
@@ -64,13 +68,20 @@ public class HardKnuckleShoot : CharState {
 
 	public override void update() {
         base.update();
-
+		if (!effectCreated) {
+			new Anim(
+				character.getShootPos().addxy((character.xDir * -6), 0),
+				"generic_explosion", character.xDir, player.getNextActorNetId(), true,
+				sendRpc: true, host: character, zIndex: ZIndex.Default + 1
+			);
+			effectCreated = true;
+		}
         if (!fired && character.frameIndex == 1) {
-            fired = true;
             new HardKnuckleProj(
 				character.getShootPos(), character.xDir,
 				player, player.getNextActorNetId(), true
 			);
+            fired = true;
         } 
         if (character.isAnimOver()) {
 			character.changeToIdleOrFall();

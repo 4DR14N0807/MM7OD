@@ -301,13 +301,29 @@ public struct Point {
 	public static Point operator% (Point l, Point r) {
 		return new Point(l.x % r.x, l.y % r.y);
 	}
-	public static Point operator* (Point l, float r) {
-		return new Point(l.x * r, l.y * r);
-	}
 	public static bool operator== (Point l, Point r) {
 		return l.x == r.x && l.y == r.y;
 	}
 	public static bool operator!= (Point l, Point r) {
 		return l.x != r.x || l.y != r.y;
+	}
+
+	public static Point operator* (float l, Point r) {
+		return new Point(r.x * l, r.y * l);
+	}
+	public static Point operator* (Point l, float r) {
+		return new Point(r * l.x, r * l.y);
+	}
+	public static Point operator/ (float l, Point r) {
+		return new Point(l / r.x, l / r.y );
+	}
+	public static Point operator/ (Point l, float r) {
+		return new Point(l.x / r, l.y / r);
+	}
+	public static Point operator% (float l, Point r) {
+		return new Point(l % r.x, l % r.y );
+	}
+	public static Point operator% (Point l, float r) {
+		return new Point(l.x % r, l.y % r);
 	}
 }

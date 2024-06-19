@@ -504,7 +504,7 @@ public class Damager {
 						) {
 							victim?.playSound("hurt");
 					} else {
-						if (victim is not ProtoMan) {
+						if (victim is not Blues) {
 							victim?.playSound("hit");
 						}
 					}
@@ -707,7 +707,7 @@ public class Damager {
 		}
 
 
-		if (damage > 0 && victim is not ProtoMan) {
+		if (damage > 0 && victim is not Blues) {
 			victim?.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
 		} 
 

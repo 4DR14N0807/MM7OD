@@ -1008,11 +1008,11 @@ public class Projectile : Actor {
 
 	public void checkBigAcidUnderwater() {
 		if (isUnderwater() && ownedByLocalPlayer) {
-			new BubbleAnim(pos, "bigbubble1", null, false) { vel = new Point(0, -75) };
+			//new BubbleAnim(pos, "bigbubble1", null, false) { vel = new Point(0, -75) };
 			Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos, "bigbubble2", null, false) { vel = new Point(0, -75) }; }, 0.1f));
 
-			new BubbleAnim(pos.addxy(5, -5), "bigbubble1", null, false) { vel = new Point(0, -75) };
-			Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos.addxy(5, -5), "bigbubble2", null, false) { vel = new Point(0, -75) }; }, 0.1f));
+			//new BubbleAnim(pos.addxy(5, -5), "bigbubble1", null, false) { vel = new Point(0, -75) };
+			//Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos.addxy(5, -5), "bigbubble2", null, false) { vel = new Point(0, -75) }; }, 0.1f));
 
 			destroySelf();
 		}

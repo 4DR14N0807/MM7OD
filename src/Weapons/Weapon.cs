@@ -55,6 +55,7 @@ public class Weapon {
 	
 	// For double buster shenanigans.
 	public bool forceDefaultXShot = false;
+	public bool hasCustomAnim = false;
 
 	// HUD related stuff.
 	public bool drawCooldown = true;

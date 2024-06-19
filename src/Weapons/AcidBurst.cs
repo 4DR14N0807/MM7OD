@@ -65,8 +65,8 @@ public class AcidBurstProj : Projectile {
 
 	public void checkUnderwater() {
 		if (isUnderwater()) {
-			new BubbleAnim(pos, "bigbubble1") { vel = new Point(0, -75) };
-			Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos, "bigbubble2") { vel = new Point(0, -75) }; }, 0.1f));
+			//new BubbleAnim(pos, "bigbubble1") { vel = new Point(0, -75) };
+			//Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos, "bigbubble2") { vel = new Point(0, -75) }; }, 0.1f));
 			destroySelf();
 			return;
 		}

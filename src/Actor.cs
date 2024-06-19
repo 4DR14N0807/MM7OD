@@ -136,7 +136,7 @@ public partial class Actor : GameObject {
 	public Anim waterWade {
 		get {
 			if (_waterWade == null) {
-				_waterWade = new Anim(pos, "wade", 1, null, false);
+				_waterWade = new Anim(pos, "splash", 1, null, false); //"wade"
 			}
 			return _waterWade;
 		}
@@ -760,9 +760,9 @@ public partial class Actor : GameObject {
 			if (wading && !underwater) {
 				waterWade.visible = true;
 				if (waterWade.pos.x != pos.x) {
-					waterWade.changeSprite("wade_move", false);
+					waterWade.changeSprite("splash", false); //wade_move
 				} else {
-					waterWade.changeSprite("wade", false);
+					waterWade.changeSprite("splash", false); // wade
 				}
 				waterWade.pos = new Point(pos.x, lastWaterY);
 			} else {
@@ -783,7 +783,7 @@ public partial class Actor : GameObject {
 					if (bigBubbleTime <= 0) {
 						bigBubbleTime = 0.08f;
 						var points = globalCollider?.shape.points;
-						if (points != null && points.Count >= 1) new BubbleAnim(new Point(pos.x, points[0].y), "bigbubble" + ((Global.frameCount % 3) + 1));
+						//if (points != null && points.Count >= 1) new BubbleAnim(new Point(pos.x, points[0].y), "bigbubble" + ((Global.frameCount % 3) + 1));
 					}
 				}
 			} else {

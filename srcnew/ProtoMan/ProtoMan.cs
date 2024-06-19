@@ -98,7 +98,7 @@ public class ProtoMan : Character {
 
 	public bool canShieldDash() {
 		return (
-			(grounded || dashedInAir == 0) &&
+			grounded &&
 			charState is not ShieldDash &&
 			!overheating && shieldHP > 0
 		);

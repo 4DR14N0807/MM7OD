@@ -130,6 +130,8 @@ public class RushIdle : RushState {
 
 public class RushCoil : RushState {
 
+	int time;
+
 	public RushCoil() : base("rush_coil", "", "", "") {
 
 	}
@@ -137,6 +139,31 @@ public class RushCoil : RushState {
 	public override void update() {
 		base.update();
 
-		if (stateTime >= Global.spf * 90) Global.playSound("ding");
+		time++;
+
+		if (time >= 90) Global.playSound("ding");
+	}
+}
+
+
+public class RushJetState : RushState {
+	public RushJetState() : base("rush_jet") {
+
+	}
+
+
+	public override void onEnter(RushState oldState) {
+		base.onEnter(oldState);
+		rush.isPlatform = true;
+		rush.globalCollider = rush.getJetCollider();
+		//rush.physicsCollider = rush.getJetCollider();
+		rush.vel.x = rush.xDir * 60;
+		rush.useGravity = false;
+	}
+
+	public override void onExit(RushState newState) {
+		base.onExit(newState);
+		rush.isPlatform = false;
+		rush.stopMoving();
 	}
 }

@@ -194,7 +194,12 @@ public class WildCoilChargedProj : Projectile {
                 if (outline != null) outline.changeSprite("wild_coil_outline3", true);
                 break;
             }
-        }
+        }   
+    }
+
+
+    public override void postUpdate() {
+		base.postUpdate();
 
         if (!drawOutline) {
             outline = new Anim(pos, "wild_coil_outline_start", xDir, null, false);
@@ -206,10 +211,10 @@ public class WildCoilChargedProj : Projectile {
             outline.frameIndex = frameIndex;
 
             if (bouncedOnce) {
-                outline.changeSprite("wild_coil_outline" + bounceBuff + 1.ToString(), true);
+                outline.changeSprite("wild_coil_outline" + bounceBuff + 1.ToString(), false);
             }
         }
-    }
+	}
 
     
 	public override void onHitWall(CollideData other) {
@@ -241,7 +246,7 @@ public class WildCoilChargedProj : Projectile {
 			
 			incPos(new Point(0, 5 * MathF.Sign(vel.y)));
 
-            if (animCooldown <= 0 && frameIndex > 0) {
+            if (frameIndex > 0) {
                 frameIndex = 0;
                 animCooldown = 0.06f;
             }
@@ -249,6 +254,7 @@ public class WildCoilChargedProj : Projectile {
 	}
 
     public override void onDestroy() {
+        base.onDestroy();
         if (outline != null) outline.destroySelf();
     }
 }

@@ -32,6 +32,16 @@ public class FreezeCracker : Weapon {
             player.character.playSound("buster2", sendRpc: true);
         }
 	}
+
+
+    public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+        Point shootPos = character.getShootPos();
+        int xDir = character.getShootXDir();
+
+        new FreezeCrackerProj(this, shootPos, xDir, character.player, 0, character.player.getNextActorNetId(), true);
+        character.playSound("buster2", sendRpc: true);
+	}
 }
 
 

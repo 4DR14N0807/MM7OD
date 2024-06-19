@@ -428,7 +428,7 @@ public class Rock : Character {
 	}
 
 	public void rockCharge() {
-		if (chargeButtonHeld() && canCharge()) {
+		if (chargeButtonHeld() && canCharge() && (!player.isAI || chargeTime <= charge2Time + 0.4f)) {
 			increaseCharge();
 		} else {
 			if (isCharging()) {

@@ -2928,13 +2928,13 @@ public partial class Character : Actor, IDamagable {
 				damageSavings -= decDamage;
 			}
 			// If damage is over one we add it to damagedebt.
-			else if (damage >= 1) {
+			else /*if (damage >= 1)*/ {
 				damageDebt += decDamage;
 			}
 			// If is under 1 we just apply it as is.
-			else {
-				damage += decDamage;
-			}
+			//else {
+			//	damage += decDamage;
+			//}
 		}
 		// First we apply debt then savings.
 		// This is done before defense calculation to allow to defend from debt.

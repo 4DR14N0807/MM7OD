@@ -311,11 +311,12 @@ public enum RockWeaponIds
 	PowerStone,
 	GyroAttack,
 	StarCrash,
+	NeedleCannon,
 }
 
 public enum RockProjIds 
 {
-	RockBuster,
+	RockBuster = 500,
 	RockBusterMid,
 	RockBusterCharged,
 	FreezeCracker,
@@ -341,7 +342,8 @@ public enum RockProjIds
 	WildCoilCharged,
 	SARocketPunch,
 	SAArrowSlash,
-	ShieldBlock,
+	ProtoLemon,
+	ProtoLemonAngled,
 	GeminiLaser,
 	HardKnuckle,
 	SearchSnake,
@@ -349,6 +351,7 @@ public enum RockProjIds
 	PowerStone,
 	GyroAttack,
 	StarCrash,
+	NeedleCannon,
 }
 
 public enum ProjIds {

@@ -8,13 +8,19 @@ public class HardKnuckle : Weapon {
     public HardKnuckle() : base() {
         index = (int)RockWeaponIds.HardKnuckle;
         fireRateFrames = 75;
+		hasCustomAnim = true;
     }
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 2;
+	}
 
     public override void shoot(Character character, params int[] args) {
 	    base.shoot(character, args);
         Point shootPos = character.getShootPos();
         int xDir = character.getShootXDir();
         character.changeState(new HardKnuckleShoot(), true);
+		character.playSound("super_adaptor_punch", sendRpc: true);
 	}
 }
 
@@ -25,24 +31,31 @@ public class HardKnuckleProj : Projectile {
     public HardKnuckleProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
-		HardKnuckle.netWeapon, pos, xDir, 0, 2, player, "generic_explosion",
-		0, 0, netId, player.ownedByLocalPlayer
+		HardKnuckle.netWeapon, pos, xDir, 200, 2, player, "hard_knuckle_proj",
+		Global.halfFlinch, 0, netId, player.ownedByLocalPlayer
 	) {
         maxTime = 1f;
         projId = (int)RockProjIds.HardKnuckle;
         this.player =  player;
-        canBeLocal = false;
+		fadeSprite = "generic_explosion";
+		fadeOnAutoDestroy = true;
     }
 
     public override void update() {
         base.update();
-        if (isAnimOver() && sprite.name == "generic_explosion") {
-			changeSprite("hard_knuckle_proj", true);
-			vel.x = 200 * xDir;
-        }
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		int inputYDir = player.input.getYDir(player);
 		vel.y = 100f * inputYDir;
+		if (inputYDir != 0) {
+			forceNetUpdateNextFrame = true;
+		}
     }
+
+	public override void onStart() {
+		base.onStart();
+	}
 }
 
 public class HardKnuckleShoot : CharState {

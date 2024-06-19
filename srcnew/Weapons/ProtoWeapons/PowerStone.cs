@@ -7,6 +7,7 @@ public class PowerStone : Weapon {
     public PowerStone() : base() {
         index = (int)RockWeaponIds.PowerStone;
         fireRateFrames = 90;
+		hasCustomAnim = true;
     }
 
     public override float getAmmoUsage(int chargeLevel) {

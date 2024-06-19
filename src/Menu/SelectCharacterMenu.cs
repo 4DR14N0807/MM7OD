@@ -64,7 +64,7 @@ public class CharSelection {
 			return new List<CharSelection>()
 			{
 					new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
-					new CharSelection("PROTO MAN", 6, 1, 0, "protoman_idle", 0 ),
+					new CharSelection("PROTO MAN", 6, 1, 0, "blues_idle", 0 ),
 			};
 		}
 	}
@@ -74,7 +74,7 @@ public class CharSelection {
 			return new List<CharSelection>()
 			{
 				new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
-				new CharSelection("PROTO MAN", 6, 1, 0, "protoman_idle", 0 ),
+				new CharSelection("PROTO MAN", 6, 1, 0, "blues_idle", 0 ),
 			};
 		}
 	}

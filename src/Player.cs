@@ -1092,7 +1092,7 @@ public partial class Player {
 					false, charNetId, ownedByLocalPlayer
 				);
 			} else if (charNum == (int)CharIds.ProtoMan) {
-				character = new ProtoMan(
+				character = new Blues(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);

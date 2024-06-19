@@ -21,10 +21,10 @@ public class StarCrash : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		ProtoMan protoman = character as ProtoMan ?? throw new NullReferenceException();
+		Blues blues = character as Blues ?? throw new NullReferenceException();
 
-		if (activeProj?.destroyed == false || protoman.starCrash != null || protoman.starCrashActive) {
-			protoman.destroyStarCrash();
+		if (activeProj?.destroyed == false || blues.starCrash != null || blues.starCrashActive) {
+			blues.destroyStarCrash();
 			activeProj?.destroySelf();
 			activeProj = null;
 		} else {
@@ -32,16 +32,16 @@ public class StarCrash : Weapon {
 				this, character.getCenterPos(), character.xDir, character.player,
 				character.player.getNextActorNetId(), true
 			);
-			protoman.starCrash = activeProj;
-			protoman.starCrashActive = true;
-			protoman.gravityModifier = 0.625f;
+			blues.starCrash = activeProj;
+			blues.starCrashActive = true;
+			blues.gravityModifier = 0.625f;
 			shootCooldown = 0;
 		}
 	}
 }
 
 public class StarCrashProj : Projectile {
-	ProtoMan? protoman;
+	Blues? blues;
 	float starAngle;
 	int radius = 30;
 	int coreCooldown = 50;
@@ -54,7 +54,7 @@ public class StarCrashProj : Projectile {
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.StarCrash;
-		protoman = player.character as ProtoMan;
+		blues = player.character as Blues;
 		canBeLocal = false;
 	}
 
@@ -62,25 +62,25 @@ public class StarCrashProj : Projectile {
 		base.update();
 		starAngle += 4;
 		if (starAngle >= 360) starAngle -= 360;
-		if (protoman == null) {
+		if (blues == null) {
 			return;
 		}
 		// Sync poses with protoman.
-		pos = protoman.getCenterPos().round();
-		xDir = protoman.xDir;
+		pos = blues.getCenterPos().round();
+		xDir = blues.xDir;
 
 		// Local player ends here.
 		if (!ownedByLocalPlayer) {
 			return;
 		}
 		// Destroy if not linked with Protoman anymore.
-		if (protoman.starCrash != this || !protoman.starCrashActive || protoman.overheating) {
+		if (blues.starCrash != this || !blues.starCrashActive || blues.overheating) {
 			destroySelf();
 		}
 		// Ammo reduction.
 		if (coreCooldown <= 0) {
 			coreCooldown = 50;
-			protoman.addCoreAmmo(1);
+			blues.addCoreAmmo(1);
 		} else {
 			coreCooldown--;
 		}
@@ -88,7 +88,7 @@ public class StarCrashProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		protoman?.destroyStarCrash();
+		blues?.destroyStarCrash();
 	}
 
 	public override void render(float x, float y) {

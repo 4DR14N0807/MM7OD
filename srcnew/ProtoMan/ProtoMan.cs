@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MMXOnline;
 
-public class ProtoMan : Character {
+public class Blues : Character {
 	public float lemonCooldown;
 	public float[] unchargedLemonCooldown = new float[3];
 	public float coreMaxAmmo = 28;
@@ -25,7 +25,7 @@ public class ProtoMan : Character {
 	public StarCrashProj? starCrash;
 	public Weapon specialWeapon;
 
-	public ProtoMan(
+	public Blues(
 	 Player player, float x, float y, int xDir,
 	 bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 	 bool isWarpIn = true
@@ -128,12 +128,12 @@ public class ProtoMan : Character {
 	}
 
 	public override string getSprite(string spriteName) {
-		return "protoman_" + spriteName;
+		return "blues_" + spriteName;
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
-		if (isShieldActive && spriteName == "protoman_idle" && getChargeLevel() >= 2) {
-			spriteName = "protoman_charge";
+		if (isShieldActive && spriteName ==  getSprite("idle") && getChargeLevel() >= 2) {
+			spriteName = getSprite("charge");
 		} else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
 		}
@@ -167,7 +167,6 @@ public class ProtoMan : Character {
 
 	public override int getHitboxMeleeId(Collider hitbox) {
 		return (int)(sprite.name switch {
-			//"protoman_block" => MeleeIds.ShieldBlock,
 			_ => MeleeIds.None
 		});
 	}
@@ -177,7 +176,6 @@ public class ProtoMan : Character {
 			/*(int)MeleeIds.ShieldBlock => new GenericMeleeProj(
 				new Weapon(), projPos, ProjIds.ShieldBlock, player, 0, 0, 0, isShield: true
 			),*/
-
 			_ => null
 		};
 	}
@@ -268,7 +266,7 @@ public class ProtoMan : Character {
 		}
 		// Shoot logic.
 		chargeLogic(shoot);
-		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == "protoman_idle_shield") {
+		if (isShieldActive && getChargeLevel() >= 2 && sprite.name ==  getSprite("idle_shield")) {
 			changeSpriteFromName("charge", true);
 		}
 
@@ -302,7 +300,7 @@ public class ProtoMan : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-				if (sprite.name == "protoman_charge") {
+				if (sprite.name == getSprite("charge")) {
 					changeSpriteFromName("idle", true);
 				}
 			} else if (shieldHP > 0) {
@@ -414,9 +412,9 @@ public class ProtoMan : Character {
 		string shootSprite = getSprite(charState.shootSprite);
 		if (!Global.sprites.ContainsKey(shootSprite)) {
 			if (grounded) {
-				shootSprite = "protoman_shoot";
+				shootSprite =  getSprite("shoot");
 			} else {
-				shootSprite = "protoman_jump_shoot";
+				shootSprite =  getSprite("jump_shoot");
 			}
 		}
 		if (shootAnimTime == 0) {
@@ -523,7 +521,7 @@ public class ProtoMan : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-				if (sprite.name == "protoman_charge") {
+				if (sprite.name ==  getSprite("charge")) {
 					changeSpriteFromName("idle", true);
 				}
 			}

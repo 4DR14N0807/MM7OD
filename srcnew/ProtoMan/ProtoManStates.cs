@@ -63,7 +63,7 @@ public class ShieldDash : CharState {
 public class ProtoAirShoot : CharState {
 	int shotAngle = 64;
 	int shotLastFrame = 10;
-	ProtoMan protoman = null!;
+	Blues blues = null!;
 
 	public ProtoAirShoot() : base("jump_shoot2") {
 		airMove = true;
@@ -72,14 +72,14 @@ public class ProtoAirShoot : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan ?? throw new NullReferenceException();
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
 		base.update();
 		if (character.frameIndex != shotLastFrame) {
 			int angleOffset = 1;
-			int shootDir = protoman.getShootXDir();
+			int shootDir = blues.getShootXDir();
 			if (shootDir == -1) {
 				angleOffset = 128;
 			}
@@ -87,8 +87,8 @@ public class ProtoAirShoot : CharState {
 				character.getShootPos(), (shotAngle + angleOffset) * shootDir,
 				player, player.getNextActorNetId(), rpc: true
 			);
-			protoman.playSound("buster", sendRpc: true);
-			protoman.addCoreAmmo(0.5f);
+			blues.playSound("buster", sendRpc: true);
+			blues.addCoreAmmo(0.5f);
 
 			shotAngle -= 16;
 			shotLastFrame = character.frameIndex;
@@ -101,7 +101,7 @@ public class ProtoAirShoot : CharState {
 
 public class ProtoChargeShotState : CharState {
 	bool fired;
-	ProtoMan protoman = null!;
+	Blues blues = null!;
 
 	public ProtoChargeShotState() : base("chargeshot") {
 		airMove = true;
@@ -113,7 +113,7 @@ public class ProtoChargeShotState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan ?? throw new NullReferenceException();
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 
@@ -137,7 +137,7 @@ public class ProtoChargeShotState : CharState {
 
 public class ProtoGenericShotState : CharState {
 	bool fired;
-	ProtoMan protoman = null!;
+	Blues blues = null!;
 	Weapon weapon;
 
 	public ProtoGenericShotState(Weapon weapon) : base("chargeshot") {
@@ -151,14 +151,14 @@ public class ProtoGenericShotState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan ?? throw new NullReferenceException();
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
 		base.update();
 
 		if (!fired && character.frameIndex == 3) {
-			weapon.shoot(protoman, 0);
+			weapon.shoot(blues, 0);
 		}
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();
@@ -167,7 +167,7 @@ public class ProtoGenericShotState : CharState {
 }
 
 public class ProtoStrike : CharState {
-	ProtoMan protoman;
+	Blues blues = null!;
 	bool isUsingPStrike;
 	bool shot;
 	float coreCooldown;
@@ -180,7 +180,7 @@ public class ProtoStrike : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan;
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 
@@ -205,7 +205,7 @@ public class ProtoStrike : CharState {
 				var shootPos = character.getShootPos();
 				pStrike = new GenericMeleeProj(new Weapon(), shootPos, 0, player, 3, Global.halfFlinch, 1f);
 				if (!didUseAmmo) {
-					protoman.addCoreAmmo(-3);
+					blues.addCoreAmmo(-3);
 					didUseAmmo = true;
 				}
 				var rect = new Rect(0, 0, 32, 24);
@@ -217,7 +217,7 @@ public class ProtoStrike : CharState {
 
 		if (coreCooldown >= Global.spf * 15) {
 			coreCooldown = 0;
-			protoman.addCoreAmmo(1);
+			blues.addCoreAmmo(1);
 		}
 	}
 }

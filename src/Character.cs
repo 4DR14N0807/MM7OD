@@ -675,17 +675,7 @@ public partial class Character : Actor, IDamagable {
 		if (flag != null || !isDashing) {
 			return getRunSpeed();
 		}
-		float baseSpeed = 3.5f;
-
-		//if (player.isProtoMan) baseSpeed = 3f;
-
-		float dashSpeed = baseSpeed * 60;
-
-		if (charState is XHover) {
-			dashSpeed *= 1.25f;
-		} else if (player.isVile && player.speedDevil) {
-			dashSpeed *= 1.1f;
-		}
+		float dashSpeed = 3.5f * 60;
 		return dashSpeed * getRunDebuffs();
 	}
 
@@ -2888,7 +2878,7 @@ public partial class Character : Actor, IDamagable {
 		decimal decimalHP = originalHP;
 		Axl? axl = this as Axl;
 		MegamanX? mmx = this as MegamanX;
-		ProtoMan? protoman = this as ProtoMan;
+		Blues? blues = this as Blues;
 
 		// For Dark Hold break.
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {

@@ -63,8 +63,8 @@ public class CharSelection {
 		get {
 			return new List<CharSelection>()
 			{
-					new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
-					new CharSelection("PROTO MAN", 6, 1, 0, "blues_idle", 0 ),
+					new CharSelection("Mega Man", 5, 1, 0, "rock_idle", 0),
+					new CharSelection("Proto Man", 6, 1, 0, "blues_idle", 0 ),
 			};
 		}
 	}
@@ -73,8 +73,8 @@ public class CharSelection {
 		get {
 			return new List<CharSelection>()
 			{
-				new CharSelection("MEGACARAJITO", 5, 1, 0, "rock_idle", 0),
-				new CharSelection("PROTO MAN", 6, 1, 0, "blues_idle", 0 ),
+				new CharSelection("Mega Man", 5, 1, 0, "rock_idle", 0),
+				new CharSelection("Proto Man", 6, 1, 0, "blues_idle", 0 ),
 			};
 		}
 	}
@@ -257,51 +257,54 @@ public class SelectCharacterMenu : IMainMenu {
 		}
 
 		// Draw character + box
-
 		var charPosX1 = Global.halfScreenW;
 		var charPosY1 = 85;
 		Global.sprites["playerbox"].drawToHUD(0, charPosX1, charPosY1);
 		string sprite = charSelection.sprite;
 		int frameIndex = charSelection.frameIndex;
-		float yOff = sprite.EndsWith("_idle") ? (Global.sprites[sprite].frames[0].rect.h() * 0.5f) : 0;
+		float yOff = Global.sprites[sprite].frames[0].offset.y;
+		float xOff = Global.sprites[sprite].frames[0].offset.x;
 		Global.sprites[sprite].drawToHUD(
 			frameIndex,
-			charPosX1 + charSelection.offset.x,
-			charPosY1 + yOff + charSelection.offset.y
+			charPosX1 + xOff,
+			charPosY1 + yOff + 23
 		);
 
 		// Draw text
 
 		if (Global.frameCount % 60 < 30) {
 			Fonts.drawText(
-				FontType.Grey, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
+				FontType.LigthGrey, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
 				Alignment.Center
 			);
 			Fonts.drawText(
-				FontType.Grey, ">", Global.halfScreenW + 60, Global.halfScreenH + 22,
+				FontType.LigthGrey, ">", Global.halfScreenW + 60, Global.halfScreenH + 22,
 				Alignment.Center
 			);
 		}
 		Fonts.drawText(
-			FontType.Grey, charSelection.name, Global.halfScreenW, Global.halfScreenH + 22,
+			FontType.LigthGrey, charSelection.name, Global.halfScreenW, Global.halfScreenH + 22,
 			alignment: Alignment.Center
 		);
 
 		string[] description = playerData.charNum switch {
 			(int)CharIds.Rock => new string[]{
-				"MEGACARAJITO"
+				"A versatile character\nthat can do a variety of roles\nthanks to his Variable Weapon System.",
+			},
+			(int)CharIds.ProtoMan =>  new string[]{
+				"Mid range character who has\ngood attack and defense\nBut it's limited by it's unstable core."
 			},
 			_ => new string[] { "ERROR" }
 		};
 		if (description.Length > 0) {
 			DrawWrappers.DrawRect(
-				25, startY + 98, Global.screenW - 25, startY + 127,
-				true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
+				25, startY + 98, Global.screenW - 25, startY + 137,
+				true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, false, outlineColor: new Color(255, 255, 255, 200)
 			);
 			for (int i = 0; i < description.Length; i++) {
 				Fonts.drawText(
-					FontType.LigthGrey, description[i],
-					Global.halfScreenW, startY + 94 + (10 * (i + 1)), alignment: Alignment.Center
+					FontType.Grey, description[i],
+					Global.halfScreenW, startY + 93 + (10 * (i + 1)), alignment: Alignment.Center
 				);
 			}
 		}

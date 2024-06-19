@@ -49,26 +49,26 @@ public class Blues : Character {
 		float runSpeed = Physics.WalkSpeed;
 		if (overheating) {
 			runSpeed *= 0.5f;
-		} else if (starCrashActive) {
+		} /*else if (starCrashActive) {
 			if (!isShieldActive) {
 				runSpeed *= 1.25f;
 			}
-		} else if (isShieldActive) {
+		}*/ else if (isShieldActive) {
 			runSpeed *= 0.75f;
 		}
 		return runSpeed * getRunDebuffs();
 	}
 
 	public float getShieldDashSpeed() {
-		float runSpeed = 3f * 60;
+		float runSpeed = 3.25f * 60;
 		if (overheating) {
 			runSpeed *= 0.5f;
-		} else if (starCrashActive) {
+		} /*else if (starCrashActive) {
 			if (!isShieldActive) {
 				runSpeed *= 1.25f;
 			}
-		} else if (isShieldActive) {
-			runSpeed *= 0.75f;
+		}*/ else if (isShieldActive) {
+			runSpeed *= 0.8f;
 		}
 		return runSpeed * getRunDebuffs();
 	}

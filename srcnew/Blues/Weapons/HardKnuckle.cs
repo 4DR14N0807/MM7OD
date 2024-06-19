@@ -57,10 +57,11 @@ public class HardKnuckleProj : Projectile {
 public class HardKnuckleShoot : CharState {
 	bool fired;
 
-	public HardKnuckleShoot() : base("hardknuckle", "", "","") {
-		airMove = true;
-		useGravity = false;
+	public HardKnuckleShoot() : base("hardknuckle") {
+		airSprite = "hardknuckle_air";
+		landSprite = "hardknuckle";
 	}
+
 	public override void update() {
         base.update();
 
@@ -79,16 +80,12 @@ public class HardKnuckleShoot : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
         character.stopMovingWeak();
-        bool air = !character.grounded;
-        sprite = "hardknuckle";
-        defaultSprite = sprite;
-        landSprite = "hardknuckle_air";
-        if (air) {
-			sprite = "hardknuckle_air";
-			defaultSprite = sprite;
+		if (!character.grounded) {
+			character.changeSpriteFromName(airSprite, true);
+        	character.vel.y = -Physics.JumpSpeed * 0.6f;
+			character.slideVel = -character.xDir * 2.5f * 60f;
+		} else {
+			character.slideVel = -character.xDir * 2f * 60f;
 		}
-        character.changeSpriteFromName(sprite, true);
-        character.useGravity = false;
-        
 	}
 }

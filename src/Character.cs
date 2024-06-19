@@ -511,8 +511,6 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) {
 			return false;
 		}
-		if(charState is HardKnuckleShoot){
-			return false;}
 		// TODO: Move this to axl.cs
 		if (isAimLocked()) {
 			return false;

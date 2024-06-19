@@ -36,7 +36,7 @@ public class GeminiLaserProj : Projectile {
     public GeminiLaserProj(Weapon weapon, Point pos, int xDir, Player player, ushort netId, bool rpc = false) :
     base(weapon, pos, xDir, 0, 2, player, "gemini_laser_mid_proj", 0, 0.5f, netId, player.ownedByLocalPlayer) {
         maxTime = 2;
-        projId = (int)RockProjIds.GeminiLaser;
+        projId = (int)BluesProjIds.GeminiLaser;
         canBeLocal = false;
         destroyOnHit = false;
 

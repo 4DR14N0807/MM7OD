@@ -72,6 +72,7 @@ public class ProtoMan : Character {
 
 	public override bool canTurn() {
 		if (charState is ProtoAirShoot) return false;
+		if (charState is HardKnuckleShoot) return false;
 		return base.canTurn();
 	}
 

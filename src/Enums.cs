@@ -313,7 +313,17 @@ public enum RockWeaponIds
 	StarCrash,
 	NeedleCannon,
 }
-
+public enum BluesProjIds 
+{
+	ShieldBlock,
+	GeminiLaser,
+	HardKnuckle,
+	SearchSnake,
+	SparkShock,
+	PowerStone,
+	GyroAttack,
+	StarCrash,
+}
 public enum RockProjIds 
 {
 	RockBuster = 500,
@@ -774,10 +784,6 @@ public enum ProjIds {
 	SlashClaw,
 	ScorchWheelUnderwater,
 	LegBreaker,
-
-	//Proto Man stuff
-
-	ShieldBlock,
 
 	// Special damage types.
 	SelfDmg = 30000,

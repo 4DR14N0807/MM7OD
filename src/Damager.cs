@@ -199,6 +199,9 @@ public class Damager {
 				case (int)ProjIds.CrystalHunter:
 					character?.crystalize();
 					break;
+				case (int)BluesProjIds.SparkShock:
+					character?.root();
+					break;
 				case (int)RockProjIds.ScorchWheel:
 					damagerMessage = onScorchDamage(damagable, owner, 1);
 					break;

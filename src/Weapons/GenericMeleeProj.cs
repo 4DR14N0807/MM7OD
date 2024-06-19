@@ -120,6 +120,12 @@ public class GenericMeleeProj : Projectile {
 				var hitCenter = collider.shape.getRect().center();
 				hitPoint = new Point((hitboxCenter.x + hitCenter.x) * 0.5f, (hitboxCenter.y + hitCenter.y) * 0.5f);
 			}
+
+			
+			if (projId == (int)BluesProjIds.ShieldBlock) {
+				playSound("ding");
+			}
+
 			if (projId == (int)ProjIds.SlashClaw) {
 				string slashClawFade = "slash_claw_fade";
 				new Anim(hitPoint, slashClawFade, xDir, Global.level.mainPlayer.getNextActorNetId(), true);

@@ -8,6 +8,7 @@ public class ShieldDash : CharState {
 	string initialSlideButton;
 	int initialXDir;
 	float dustTimer;
+	Blues blues = null!;
 
 	public ShieldDash(string initialSlideButton) : base("shield_dash") {
 		this.initialSlideButton = initialSlideButton;
@@ -22,13 +23,13 @@ public class ShieldDash : CharState {
 			return;
 		}
 		var move = new Point(0, 0);
-		move.x = 3.5f * initialXDir;
+		move.x = blues.getShieldDashSpeed() * initialXDir;
 		if (character.frameIndex >= 1) {
 			if (!soundPlayed) {
 				character.playSound("slide", sendRpc: true);
 				soundPlayed = true;
 			}
-			character.move(move * 60);
+			character.move(move);
 		}
 		if (character.grounded) {
 			dustTimer += Global.speedMul;
@@ -47,6 +48,7 @@ public class ShieldDash : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
 		initialXDir = character.xDir;
 		character.isDashing = true;
 		character.vel.y = 0;

@@ -20,7 +20,7 @@ public class ProtoBusterProj : Projectile {
 		"proto_buster_proj", 0, 0, netId, player.ownedByLocalPlayer
 	) {
 		maxTime = 0.425f;
-		projId = (int)RockProjIds.ProtoLemon;
+		projId = (int)BluesProjIds.Lemon;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -53,7 +53,7 @@ public class ProtoBusterAngledProj : Projectile {
 		byteAngle = byteAngle % 256;
 
 		maxTime = 0.425f;
-		projId = (int)RockProjIds.ProtoLemonAngled;
+		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
 		if (byteAngle >= 64 && byteAngle <= 192) {

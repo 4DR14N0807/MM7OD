@@ -53,7 +53,7 @@ public class StarCrashProj : Projectile {
 		weapon, pos, xDir, 0, 0, player, "empty",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
-		projId = (int)RockProjIds.StarCrash;
+		projId = (int)BluesProjIds.StarCrash;
 		protoman = player.character as ProtoMan;
 		canBeLocal = false;
 	}

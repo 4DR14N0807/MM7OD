@@ -36,6 +36,6 @@ public class NeedleCannonProj : Projectile {
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
         maxTime = 0.25f;
-        projId = (int)RockProjIds.NeedleCannon;
+        projId = (int)BluesProjIds.NeedleCannon;
     }
 }

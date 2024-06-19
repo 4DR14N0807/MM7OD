@@ -287,8 +287,7 @@ public enum WeaponIds {
 	DNACore,
 }
 
-public enum RockWeaponIds
-{
+public enum RockWeaponIds {
 	MegaBuster,
 	FreezeCracker,
 	ThunderBolt,
@@ -313,9 +312,10 @@ public enum RockWeaponIds
 	StarCrash,
 	NeedleCannon,
 }
-public enum BluesProjIds 
-{
-	ShieldBlock,
+public enum BluesProjIds  {
+	Lemon = 600,
+	LemonAngled,
+	ChargedBuster,
 	GeminiLaser,
 	HardKnuckle,
 	SearchSnake,
@@ -323,9 +323,10 @@ public enum BluesProjIds
 	PowerStone,
 	GyroAttack,
 	StarCrash,
+	NeedleCannon,
 }
-public enum RockProjIds 
-{
+
+public enum RockProjIds  {
 	RockBuster = 500,
 	RockBusterMid,
 	RockBusterCharged,
@@ -352,16 +353,6 @@ public enum RockProjIds
 	WildCoilCharged,
 	SARocketPunch,
 	SAArrowSlash,
-	ProtoLemon,
-	ProtoLemonAngled,
-	GeminiLaser,
-	HardKnuckle,
-	SearchSnake,
-	SparkShock,
-	PowerStone,
-	GyroAttack,
-	StarCrash,
-	NeedleCannon,
 }
 
 public enum ProjIds {

@@ -3,62 +3,6 @@ using System.Collections.Generic;
 
 namespace MMXOnline;
 
-
-public class ProtoBlock : CharState {
-
-	ProtoMan? protoman;
-
-	public ProtoBlock() : base("block") {
-		immuneToWind = true;
-		exitOnAirborne = true;
-		//normalCtrl = true;
-		//attackCtrl = true;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		protoman = character as ProtoMan;
-		protoman.isShieldActive = true;
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-		protoman.isShieldActive = false;
-	}
-
-
-	public override void update() {
-		base.update();
-
-		var move = new Point(0, 0);
-		float moveSpeed = character.getRunSpeed();
-
-		if (player.input.isHeld(Control.Left, player)) {
-			character.xDir = -1;
-			if (player.character.canMove()) move.x = -moveSpeed;
-		} else if (player.input.isHeld(Control.Right, player)) {
-			character.xDir = 1;
-			if (player.character.canMove()) move.x = moveSpeed;
-		}
-		if (move.magnitude > 0 && player.input.isLeftOrRightHeld(player)) {
-			character.move(move);
-		}
-
-		bool isGuarding = player.input.isHeld(Control.Down, player);
-		bool isCharging = character.chargeButtonHeld();
-
-		if (isCharging) {
-			character.changeState(new ProtoCharging(), true);
-		}
-
-		else if (!isGuarding) {
-			character.changeState(new Idle(), true);
-			return;
-		}
-	}
-}
-
-
 public class ShieldDash : CharState {
 	bool soundPlayed;
 	string initialSlideButton;
@@ -116,11 +60,11 @@ public class ShieldDash : CharState {
 	}
 }
 
-
 public class ProtoAirShoot : CharState {
-	int shotAngle = 90;
+	int shotAngle = 64;
 	int shotLastFrame = 10;
-	ProtoMan protoman = null!;
+	Blues blues = null!;
+
 	public ProtoAirShoot() : base("jump_shoot2") {
 		airMove = true;
 		exitOnLanding = true;
@@ -128,86 +72,102 @@ public class ProtoAirShoot : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan ?? throw new NullReferenceException();
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
 		base.update();
 		if (character.frameIndex != shotLastFrame) {
-			float lemonSpeedX = ProtoBusterProj.projSpeed * Helpers.cosd(shotAngle) * character.xDir;
-			float lemonSpeedY = ProtoBusterProj.projSpeed * Helpers.sind(shotAngle);
-			Point lemonSpeed = new Point(lemonSpeedX, lemonSpeedY);
-
-			new ProtoBusterProj(
-				character.getShootPos(), character.getShootXDir(),
-				player, player.getNextActorNetId(), lemonSpeed, true
+			int angleOffset = 1;
+			int shootDir = blues.getShootXDir();
+			if (shootDir == -1) {
+				angleOffset = 128;
+			}
+			new ProtoBusterAngledProj(
+				character.getShootPos(), (shotAngle + angleOffset) * shootDir,
+				player, player.getNextActorNetId(), rpc: true
 			);
-			protoman.playSound("buster", sendRpc: true);
-			protoman.resetCoreCooldown();
+			blues.playSound("buster", sendRpc: true);
+			blues.addCoreAmmo(0.5f);
 
-			shotAngle -= 18;
+			shotAngle -= 16;
 			shotLastFrame = character.frameIndex;
+		}
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
 		}
 	}
 }
 
-
-public class ProtoCharging : CharState {
-
-	int chargeLvl;
-	bool isCharging;
-
-	public ProtoCharging() : base("charge") {
-
-	}
-
-	public override void update() {
-		base.update();
-
-		chargeLvl = character.getChargeLevel();
-		isCharging = character.chargeButtonHeld();
-
-		if (!isCharging && chargeLvl >= 2) character.changeState(new ProtoChargeShotState(), true);
-		else if (!isCharging) character.changeState(new Idle(), true);
-		
-	}
-}
-
-
 public class ProtoChargeShotState : CharState {
-
 	bool fired;
-	ProtoMan protoman;
+	Blues blues = null!;
 
 	public ProtoChargeShotState() : base("chargeshot") {
-
+		airMove = true;
+		canStopJump = true;
+		canJump = true;
+		//landSprite = "chargeshot";
+		//airSprite = "jump_chargeshot";
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan;
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
+
+	public override void update() {
+		base.update();
+
+		if (!fired && character.frameIndex >= 3) {
+			new ProtoBusterChargedProj(
+				character.getShootPos(), character.getShootXDir(),
+				player, player.getNextActorNetId(), true
+			);
+			fired = true;
+			character.playSound("buster3", sendRpc: true);
+			character.stopCharge();
+		}
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		}
+	}
+}
+
+public class ProtoGenericShotState : CharState {
+	bool fired;
+	Blues blues = null!;
+	Weapon weapon;
+
+	public ProtoGenericShotState(Weapon weapon) : base("chargeshot") {
+		airMove = true;
+		canStopJump = true;
+		canJump = true;
+		this.weapon = weapon;
+		landSprite = "chargeshot";
+		airSprite = "jump_chargeshot";
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+	}
 
 	public override void update() {
 		base.update();
 
 		if (!fired && character.frameIndex == 3) {
-
-			new ProtoBusterChargedProj(character.getShootPos(), character.getShootXDir(), player, player.getNextActorNetId(), true);
-			fired = true;
-			protoman.addCoreAmmo(-2);
-			character.stopCharge();
+			weapon.shoot(blues, 0);
 		}
-
-		if (character.isAnimOver()) character.changeState(new Idle(), true);
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		}
 	}
 }
 
-
 public class ProtoStrike : CharState {
-
-	ProtoMan protoman;
+	Blues blues = null!;
 	bool isUsingPStrike;
 	bool shot;
 	float coreCooldown;
@@ -218,10 +178,9 @@ public class ProtoStrike : CharState {
 
 	}
 
-
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan;
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 
@@ -246,25 +205,22 @@ public class ProtoStrike : CharState {
 				var shootPos = character.getShootPos();
 				pStrike = new GenericMeleeProj(new Weapon(), shootPos, 0, player, 3, Global.halfFlinch, 1f);
 				if (!didUseAmmo) {
-					protoman.addCoreAmmo(-3);
+					blues.addCoreAmmo(-3);
 					didUseAmmo = true;
 				}
 				var rect = new Rect(0, 0, 32, 24);
 				pStrike.globalCollider = new Collider(rect.getPoints(), false, pStrike, false, false, 0, new Point());
 				shot = true;
 			}
-
 			coreCooldown += Global.spf;
-
 		}
 
 		if (coreCooldown >= Global.spf * 15) {
 			coreCooldown = 0;
-			protoman.addCoreAmmo(1);
+			blues.addCoreAmmo(1);
 		}
 	}
 }
-
 
 public class ProtoStrikeEnd : CharState {
 	public ProtoStrikeEnd() : base("protostrike_end") {
@@ -273,29 +229,26 @@ public class ProtoStrikeEnd : CharState {
 
 	public override void update() {
 		base.update();
-
-		if (character.isAnimOver()) character.changeState(new Idle(), true);
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		}
 	}
 }
 
 
-public class OverHeat : CharState {
-
-	ProtoMan? protoman;
-
-	public OverHeat() : base("hurt") {
+public class OverheatStunned : CharState {
+	public OverheatStunned() : base("hurt") {
 
 	}
 
-
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		protoman = character as ProtoMan;
 	}
 
 	public override void update() {
 		base.update();
-
-		if (!protoman.overheating) character.changeToIdleOrFall();
+		if (stateFrames >= 26) {
+			character.changeToIdleOrFall();
+		}
 	}
 }

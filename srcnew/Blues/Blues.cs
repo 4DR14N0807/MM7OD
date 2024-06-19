@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace MMXOnline;
 
-
-public class ProtoMan : Character {
-	public List<ProtoBusterProj> lemonsOnField = new();
+public class Blues : Character {
 	public float lemonCooldown;
-	public int coreMaxAmmo = 28;
-	public int coreAmmo;
+	public float[] unchargedLemonCooldown = new float[3];
+	public float coreMaxAmmo = 28;
+	public float coreAmmo;
 	public float coreAmmoMaxCooldown = 60;
+	public float coreAmmoDamageCooldown = 120;
 	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown;
 	public bool isShieldActive = true;
@@ -21,10 +21,11 @@ public class ProtoMan : Character {
 	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
-	public StarCrashProj starCrash;
+	public bool starCrashActive;
+	public StarCrashProj? starCrash;
 	public Weapon specialWeapon;
 
-	public ProtoMan(
+	public Blues(
 	 Player player, float x, float y, int xDir,
 	 bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 	 bool isWarpIn = true
@@ -49,6 +50,10 @@ public class ProtoMan : Character {
 		float runSpeed = Physics.WalkSpeed;
 		if (overheating) {
 			runSpeed *= 0.5f;
+		} else if (starCrashActive) {
+			if (!isShieldActive) {
+				runSpeed *= 1.25f;
+			}
 		} else if (isShieldActive) {
 			runSpeed *= 0.75f;
 		}
@@ -67,6 +72,7 @@ public class ProtoMan : Character {
 
 	public override bool canTurn() {
 		if (charState is ProtoAirShoot) return false;
+		if (charState is HardKnuckleShoot) return false;
 		return base.canTurn();
 	}
 
@@ -87,13 +93,10 @@ public class ProtoMan : Character {
 	}
 
 	public override bool canCharge() {
-		if (charState is ProtoStrike) return false;
+		if (overheating || charState is ProtoStrike) {
+			return false;
+		}
 		return base.canCharge();
-	}
-
-	public bool canBlock() {
-		if (!grounded) return false;
-		return true;
 	}
 
 	public bool canShieldDash() {
@@ -105,29 +108,32 @@ public class ProtoMan : Character {
 	}
 
 	public bool canShootSpecial() {
-		if (isCharging() || 
-			specialWeapon.shootCooldown > 0 ||
-			starCrash != null) {
+		if (isCharging() || overheating || specialWeapon.shootCooldown > 0) {
 			return false;
 		}
 		return true;
 	}
 
 	public void destroyStarCrash() {
-		StarCrash sa = new StarCrash();
-		if (starCrash != null) starCrash.destroySelf();
+		if (starCrash != null) {
+			starCrash.destroySelf();
+		}
 		starCrash = null;
 		gravityModifier = 1;
-		if (specialWeapon != null) specialWeapon.shootCooldown = sa.fireRateFrames;
+		starCrashActive = false;
+
+		if (specialWeapon is StarCrash) {
+			specialWeapon.shootCooldown = specialWeapon.fireRateFrames;
+		}
 	}
 
 	public override string getSprite(string spriteName) {
-		return "protoman_" + spriteName;
+		return "blues_" + spriteName;
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
-		if (isShieldActive && spriteName == "protoman_idle" && getChargeLevel() >= 2) {
-			spriteName = "protoman_charge";
+		if (isShieldActive && spriteName ==  getSprite("idle") && getChargeLevel() >= 2) {
+			spriteName = getSprite("charge");
 		} else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
 		}
@@ -161,7 +167,6 @@ public class ProtoMan : Character {
 
 	public override int getHitboxMeleeId(Collider hitbox) {
 		return (int)(sprite.name switch {
-			//"protoman_block" => MeleeIds.ShieldBlock,
 			_ => MeleeIds.None
 		});
 	}
@@ -171,7 +176,6 @@ public class ProtoMan : Character {
 			/*(int)MeleeIds.ShieldBlock => new GenericMeleeProj(
 				new Weapon(), projPos, ProjIds.ShieldBlock, player, 0, 0, 0, isShield: true
 			),*/
-
 			_ => null
 		};
 	}
@@ -187,12 +191,21 @@ public class ProtoMan : Character {
 
 	public override void update() {
 		base.update();
+		// For non-local players.
+		if (overheating) {
+			addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 0.1f);
+		}
 		if (!ownedByLocalPlayer) return;
 
+		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
-		if (specialWeapon != null) Helpers.decrementFrames(ref specialWeapon.shootCooldown);
+		specialWeapon.update();
+		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
+			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
+		}
 
+		// Shield HP.
 		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");
 			shieldHP++;
@@ -203,6 +216,7 @@ public class ProtoMan : Character {
 		}
 		if (coreAmmo >= coreMaxAmmo && !overheating) {
 			overheating = true;
+			setHurt(-xDir, 12, false);
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
@@ -233,6 +247,9 @@ public class ProtoMan : Character {
 				coreAmmo = 0;
 			}
 			coreAmmoDecreaseCooldown = 15;
+			if (overheating) {
+				coreAmmoDecreaseCooldown = 12;
+			}
 		}
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
@@ -249,11 +266,11 @@ public class ProtoMan : Character {
 		}
 		// Shoot logic.
 		chargeLogic(shoot);
-
-		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == "protoman_idle_shield") {
+		if (isShieldActive && getChargeLevel() >= 2 && sprite.name ==  getSprite("idle_shield")) {
 			changeSpriteFromName("charge", true);
 		}
 
+		// Overheating effects-
 		if (overheating) {
 			overheatEffectTime += Global.speedMul;
 			if (overheatEffectTime >= 3) {
@@ -264,7 +281,6 @@ public class ProtoMan : Character {
 				tempAnim.vel.y = -120;
 				tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 2);
 			}
-			addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 0.1f);
 		}
 	}
 
@@ -284,7 +300,7 @@ public class ProtoMan : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-				if (sprite.name == "protoman_charge") {
+				if (sprite.name == getSprite("charge")) {
 					changeSpriteFromName("idle", true);
 				}
 			} else if (shieldHP > 0) {
@@ -308,11 +324,13 @@ public class ProtoMan : Character {
 		bool downHeld = player.input.isHeld(Control.Down, player);
 
 		if (specialPressed) {
-			if (canShootSpecial()) shootPoderzinho(getChargeLevel());
-			return true;
+			if (canShootSpecial()) {
+				shootPoderzinho(getChargeLevel());
+				return true;
+			}
 		}
 
-		if (shootPressed && downHeld && !grounded) {
+		if (shootPressed && downHeld && !overheating && !grounded) {
 			changeState(new ProtoAirShoot(), true);
 			return true;
 		}
@@ -333,13 +351,17 @@ public class ProtoMan : Character {
 	}
 
 	public void shoot(int chargeLevel) {
-		if (chargeLevel == 0) {
-			for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
-				if (lemonsOnField[i].destroyed) {
-					lemonsOnField.RemoveAt(i);
+		int lemonNum = -1;
+		if (chargeLevel < 2) {
+			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
+				if (unchargedLemonCooldown[i] <= 0) {
+					lemonNum = i;
+					break;
 				}
 			}
-			if (lemonsOnField.Count >= 3) { return; }
+			if (lemonNum == -1) {
+				return;
+			}
 		}
 		// Cancel non-invincible states.
 		if (!charState.attackCtrl && !charState.invincible) {
@@ -354,21 +376,16 @@ public class ProtoMan : Character {
 			var lemon = new ProtoBusterProj(
 				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 			);
-			lemonsOnField.Add(lemon);
 			playSound("buster", sendRpc: true);
-			resetCoreCooldown();
-			lemonCooldown = 18;
+			resetCoreCooldown(45);
+			lemonCooldown = 8;
+			unchargedLemonCooldown[lemonNum] = 50;
 		} else if (chargeLevel >= 2) {
-			if (player.input.isHeld(Control.Up, player)) {
-				changeState(new ProtoStrike(), true);
-			} else {
-				new ProtoBusterChargedProj(
-					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
-				);
-				resetCoreCooldown();
-				playSound("buster3", sendRpc: true);
-				lemonCooldown = 18;
-			}
+			new ProtoBusterChargedProj(
+				shootPos, xDir, player, player.getNextActorNetId(), true
+			);
+			playSound("buster3", sendRpc: true);
+			lemonCooldown = 12;
 		}
 	}
 
@@ -380,22 +397,24 @@ public class ProtoMan : Character {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
-		setShootAnim();
+		if (!specialWeapon.hasCustomAnim) {
+			setShootAnim();
+		}
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
-		
-		specialWeapon.shoot(this, chargeLevel);
+
 		specialWeapon.shootCooldown = specialWeapon.fireRateFrames;
-		addCoreAmmo(MathInt.Ceiling(specialWeapon.getAmmoUsage(chargeLevel)));
+		specialWeapon.shoot(this, chargeLevel);
+		addCoreAmmo(specialWeapon.getAmmoUsage(chargeLevel));
 	}
  
 	public void setShootAnim() {
 		string shootSprite = getSprite(charState.shootSprite);
 		if (!Global.sprites.ContainsKey(shootSprite)) {
 			if (grounded) {
-				shootSprite = "protoman_shoot";
+				shootSprite =  getSprite("shoot");
 			} else {
-				shootSprite = "protoman_jump_shoot";
+				shootSprite =  getSprite("jump_shoot");
 			}
 		}
 		if (shootAnimTime == 0) {
@@ -414,17 +433,28 @@ public class ProtoMan : Character {
 		shootAnimTime = 0.3f;
 	}
 
-	public void addCoreAmmo(int amount) {
+	public void addCoreAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
+		if (!forceAdd && overheating && amount >= 0) {
+			return;
+		}
 		coreAmmo += amount;
-		if (coreAmmo > coreMaxAmmo) coreAmmo = coreMaxAmmo;
-		if (coreAmmo < 0) coreAmmo = 0;
-		resetCoreCooldown();
+		if (coreAmmo > coreMaxAmmo) { coreAmmo = coreMaxAmmo; }
+		if (coreAmmo < 0) { coreAmmo = 0; }
+		if (resetCooldown) {
+			resetCoreCooldown();
+		}
 	}
 
-	public void resetCoreCooldown() {
+	public void resetCoreCooldown(float? time = null, bool force = false) {
 		coreAmmoIncreaseCooldown = 0;
-		if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
-			coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+		if (!force && overheating) {
+			return;
+		}
+		if (time == null) {
+			time = coreAmmoMaxCooldown;
+		}
+		if (coreAmmoDecreaseCooldown < time) {
+			coreAmmoDecreaseCooldown = time.Value;
 		}
 	}
 
@@ -491,7 +521,7 @@ public class ProtoMan : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-				if (sprite.name == "protoman_charge") {
+				if (sprite.name ==  getSprite("charge")) {
 					changeSpriteFromName("idle", true);
 				}
 			}
@@ -532,8 +562,10 @@ public class ProtoMan : Character {
 			string damageText = (oldHealth - player.health).ToString();
 			addDamageText(damageText, fontColor);
 			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
-			coreAmmo += MathInt.Ceiling(oldHealth - player.health);
-			coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
+			addCoreAmmo(MathInt.Ceiling(oldHealth - player.health), false);
+			if (!overheating) {
+				coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
+			}
 		}
 		if (ogShieldHP > shieldHP) {
 			string damageText = (ogShieldHP - shieldHP).ToString();

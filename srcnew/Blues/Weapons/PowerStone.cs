@@ -7,12 +7,12 @@ public class PowerStone : Weapon {
     public PowerStone() : base() {
         index = (int)RockWeaponIds.PowerStone;
         fireRateFrames = 90;
+		hasCustomAnim = true;
     }
 
     public override float getAmmoUsage(int chargeLevel) {
         return 5;
     }
-
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
 		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
@@ -33,9 +33,7 @@ public class PowerStone : Weapon {
 	}
 }
 
-
 public class PowerStoneProj : Projectile {
-
     Character character;
     int stoneAngle = 120;
     float radius = 10;
@@ -44,7 +42,7 @@ public class PowerStoneProj : Projectile {
     base(weapon, pos, xDir, 0, 2 ,player, "power_stone_proj", 0, 0.25f, netId, player.ownedByLocalPlayer) {
         //projId = (int)RockProjIds.PowerStone;
         maxTime = 1;
-        projId = (int)RockProjIds.PowerStone;
+        projId = (int)BluesProjIds.PowerStone;
 
         character = player.character;
         this.type = type;
@@ -59,8 +57,9 @@ public class PowerStoneProj : Projectile {
         base.pos.y = character.getCenterPos().y + (Helpers.sind(stoneAngle) * radius);
 
         stoneAngle += 8;
-        if (stoneAngle >= 360) stoneAngle = 0;
-
-        radius += 1.25f;    
+        if (stoneAngle >= 360) {
+			stoneAngle = 0;
+		}
+        radius += 1.25f;
     }
 }

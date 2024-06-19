@@ -287,8 +287,7 @@ public enum WeaponIds {
 	DNACore,
 }
 
-public enum RockWeaponIds
-{
+public enum RockWeaponIds {
 	MegaBuster,
 	FreezeCracker,
 	ThunderBolt,
@@ -311,11 +310,24 @@ public enum RockWeaponIds
 	PowerStone,
 	GyroAttack,
 	StarCrash,
+	NeedleCannon,
+}
+public enum BluesProjIds  {
+	Lemon = 600,
+	LemonAngled,
+	ChargedBuster,
+	GeminiLaser,
+	HardKnuckle,
+	SearchSnake,
+	SparkShock,
+	PowerStone,
+	GyroAttack,
+	StarCrash,
+	NeedleCannon,
 }
 
-public enum RockProjIds 
-{
-	RockBuster,
+public enum RockProjIds  {
+	RockBuster = 500,
 	RockBusterMid,
 	RockBusterCharged,
 	FreezeCracker,
@@ -341,14 +353,6 @@ public enum RockProjIds
 	WildCoilCharged,
 	SARocketPunch,
 	SAArrowSlash,
-	ShieldBlock,
-	GeminiLaser,
-	HardKnuckle,
-	SearchSnake,
-	SparkShock,
-	PowerStone,
-	GyroAttack,
-	StarCrash,
 }
 
 public enum ProjIds {
@@ -771,10 +775,6 @@ public enum ProjIds {
 	SlashClaw,
 	ScorchWheelUnderwater,
 	LegBreaker,
-
-	//Proto Man stuff
-
-	ShieldBlock,
 
 	// Special damage types.
 	SelfDmg = 30000,

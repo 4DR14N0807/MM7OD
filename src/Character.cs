@@ -511,6 +511,8 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) {
 			return false;
 		}
+		if(charState is HardKnuckleShoot){
+			return false;}
 		// TODO: Move this to axl.cs
 		if (isAimLocked()) {
 			return false;
@@ -673,17 +675,7 @@ public partial class Character : Actor, IDamagable {
 		if (flag != null || !isDashing) {
 			return getRunSpeed();
 		}
-		float baseSpeed = 3.5f;
-
-		//if (player.isProtoMan) baseSpeed = 3f;
-
-		float dashSpeed = baseSpeed * 60;
-
-		if (charState is XHover) {
-			dashSpeed *= 1.25f;
-		} else if (player.isVile && player.speedDevil) {
-			dashSpeed *= 1.1f;
-		}
+		float dashSpeed = 3.5f * 60;
 		return dashSpeed * getRunDebuffs();
 	}
 
@@ -2886,7 +2878,7 @@ public partial class Character : Actor, IDamagable {
 		decimal decimalHP = originalHP;
 		Axl? axl = this as Axl;
 		MegamanX? mmx = this as MegamanX;
-		ProtoMan? protoman = this as ProtoMan;
+		Blues? blues = this as Blues;
 
 		// For Dark Hold break.
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
@@ -2928,13 +2920,13 @@ public partial class Character : Actor, IDamagable {
 				damageSavings -= decDamage;
 			}
 			// If damage is over one we add it to damagedebt.
-			else if (damage >= 1) {
+			else /*if (damage >= 1)*/ {
 				damageDebt += decDamage;
 			}
 			// If is under 1 we just apply it as is.
-			else {
-				damage += decDamage;
-			}
+			//else {
+			//	damage += decDamage;
+			//}
 		}
 		// First we apply debt then savings.
 		// This is done before defense calculation to allow to defend from debt.

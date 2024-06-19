@@ -12,6 +12,7 @@ public class Rush : Actor {
 	public Player? player { get { return character?.player; } }
 	public RushState rushState;
 	public bool changedStateInFrame;
+	public bool usedCoil;
 
 	public Rush(Point pos, Player owner, int xDir, ushort netId, bool ownedByLocalPlayer, bool rpc = false) :
 	base("rush_warp_beam", pos, netId, ownedByLocalPlayer, false) {
@@ -25,11 +26,19 @@ public class Rush : Actor {
 		if (physicsCollider == null) {
 			return null;
 		}
+
+		if (rushState is RushJetState) return getJetCollider();
+
 		return new Collider(
 			new Rect(0f, 0f, 26, 38).getPoints(),
 			false, this, false, false,
 			HitboxFlag.Hurtbox, new Point(0, 0)
 		);
+	}
+
+	public virtual Collider getJetCollider() {
+		var rect = new Rect(0, 0, 40, 15);
+		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
 
 	public override Collider getGlobalCollider() {
@@ -72,6 +81,10 @@ public class Rush : Actor {
 		changedStateInFrame = false;
 	}
 
+	public override void update() {
+		base.update();
+	}
+
 	public virtual string getSprite(string spriteName) {
 		return spriteName;
 	}
@@ -80,10 +93,15 @@ public class Rush : Actor {
 		base.onCollision(other);
 		var chr = other.otherCollider.actor as Character;
 
-		if (chr == netOwner.character && chr.charState is Fall) {
+		if (chr == null || chr.charState is Die) return;
+
+		if (chr == netOwner.character && chr.charState is Fall &&
+			chr != null && !usedCoil) {
 			//changeSprite("rush_coil", true);
 			changeState(new RushCoil(), true);
-			chr.vel.y = -chr.getJumpPower();
+			chr.vel.y = -chr.getJumpPower() * 1.75f;
+			chr.changeState(new Jump(), true);
+			usedCoil = true;
 		}
 
 		

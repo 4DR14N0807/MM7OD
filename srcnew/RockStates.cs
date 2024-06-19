@@ -27,7 +27,7 @@ public class Slide : CharState {
 		rock = character as Rock;
 		initialSlideDir = character.xDir;
 		character.isDashing = true;
-		character.globalCollider = character.getSlidingCollider();	
+		character.globalCollider = rock.getSlidingCollider();	
 	}
 
     public override void onExit(CharState newState) {

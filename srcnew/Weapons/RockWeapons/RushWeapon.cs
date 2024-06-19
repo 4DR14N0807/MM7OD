@@ -12,7 +12,7 @@ public class RushWeapon : Weapon {
 
 	public override bool canShoot(int chargeLevel, Player player) {
 		Rock? rock = player.character as Rock;
-        if (rock.rush != null) return false;
+        if (rock.rush != null || rock == null) return false;
         return true;
 	}
 
@@ -21,6 +21,7 @@ public class RushWeapon : Weapon {
 		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
         if (player.character is Rock rock) {
             rock.rush = new Rush(pos, player, xDir, netProjId, true, true);
+            rock.rush.changeState(new RushJetState(), true);
         }
 	}
 }

@@ -636,14 +636,10 @@ public class LevelData {
 			return "stageClear_X3";
 		}
 		if (isCustomMap) {
-			return Helpers.randomRange(0, 2) switch {
-				1 => "stageClear_X2",
-				2 => "stageClear_X3",
-				_ => "stageClear_X1"
-			};
+			return "win";
 		}
 
-		return "stageClear_X1";
+		return "win";
 	}
 
 	public Texture getMapThumbnail() {

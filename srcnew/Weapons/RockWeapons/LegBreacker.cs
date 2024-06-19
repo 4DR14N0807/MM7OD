@@ -21,6 +21,7 @@ public class LegBreakerState : CharState {
     Anim? dust;
 	Anim? effect;
     int particles = 3;
+	Rock? rock;
     public LegBreakerState(string initialSlideButton) : base("sa_legbreaker", "","","") {
         enterSound = "slide";
         this.initialSlideButton = initialSlideButton;
@@ -33,9 +34,10 @@ public class LegBreakerState : CharState {
 
     public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		rock = character as Rock;
 		initialSlideDir = character.xDir;
 		character.isDashing = true;
-		character.globalCollider = character.getSlidingCollider();
+		character.globalCollider = rock.getSlidingCollider();
 		effect = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);
 	}
 

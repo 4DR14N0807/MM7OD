@@ -536,6 +536,11 @@ public class Rock : Character {
 		LegBreaker,
 	}
 
+	public virtual Collider getSlidingCollider() {
+		var rect = new Rect(0, 0, 36, 12);
+		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
+	}
+
 	public void removeBusterProjs() {
 		sWell = null;
 	}

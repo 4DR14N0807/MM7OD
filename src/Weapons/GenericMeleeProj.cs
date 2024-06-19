@@ -122,7 +122,7 @@ public class GenericMeleeProj : Projectile {
 			}
 
 			
-			if (projId == (int)RockProjIds.ShieldBlock) {
+			if (projId == (int)BluesProjIds.ShieldBlock) {
 				playSound("ding");
 			}
 

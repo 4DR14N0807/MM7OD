@@ -156,6 +156,8 @@ public partial class Character : Actor, IDamagable {
 	public Damager? burnDamager;
 	public Weapon? burnWeapon;
 	public float burnTime;
+	public float rootTime;
+	public float rootCooldown;
 	public float burnEffectTime;
 	public float burnHurtCooldown;
 	// Burn (MM7)
@@ -517,6 +519,7 @@ public partial class Character : Actor, IDamagable {
 		if (isAimLocked()) {
 			return false;
 		}
+		if (rootTime > 0) return false;
 		if (isSoftLocked()) {
 			return false;
 		}
@@ -534,6 +537,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual bool canJump() {
 		if (rideArmorPlatform != null) return false;
+		if (rootTime > 0) return false;
 		if (isSoftLocked()) return false;
 		return true;
 	}
@@ -1023,7 +1027,14 @@ public partial class Character : Actor, IDamagable {
 				burnStateStacks = 0;
 			}
 		}
-
+		if (rootTime > 0) {
+			rootTime -= Global.spf;
+			if (rootTime < 0){
+				rootTime = 0;
+				useGravity = true;
+				}
+			rootCooldown = 2f;
+			}
 		if (burnTime > 0) {
 			burnTime -= Global.spf;
 			burnHurtCooldown += Global.spf;
@@ -1107,6 +1118,7 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref darkHoldInvulnTime);
 		Helpers.decrementTime(ref dwrapInvulnTime);
 		Helpers.decrementTime(ref burnInvulnTime);
+		Helpers.decrementTime(ref rootCooldown);
 
 
 		if (flag != null && flag.ownedByLocalPlayer) {
@@ -1625,6 +1637,12 @@ public partial class Character : Actor, IDamagable {
 		if (charState is Burning) return;
 
 		changeState(new Burning(-xDir), true);
+	}
+	public void root() {
+		rootTime = 1f;
+		stopMoving();
+		//rootAnim = new Anim(getCenterPos(), "root", 1, null, true, host: this);
+		useGravity = false;
 	}
 
 	public void paralize(float timeToParalize = 120) {
@@ -3450,6 +3468,7 @@ public partial class Character : Actor, IDamagable {
 	// DANGER WRAP SECTION
 
 	public Anim bubbleAnim;
+
 	public bool hasBubble { get { return dWrappedTime > 0; } }
 	public float dWrappedTime;
 	public float dWrapMashTime = DWrapped.DWrapMaxTime;

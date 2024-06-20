@@ -776,6 +776,7 @@ public enum ProjIds {
 	SlashClaw,
 	ScorchWheelUnderwater,
 	LegBreaker,
+	ProtoStrike,
 
 	// Special damage types.
 	SelfDmg = 30000,

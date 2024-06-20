@@ -113,7 +113,7 @@ public class Blues : Character {
 	}
 
 	public bool canShieldDash() {
-		return (grounded && charState is not ShieldDash && !overheating);
+		return (grounded && charState is not ShieldDash && !overheating && rootTime <= 0);
 	}
 
 	public bool canShootSpecial() {
@@ -172,21 +172,27 @@ public class Blues : Character {
 	public enum MeleeIds {
 		None = -1,
 		ShieldBlock,
+		ProtoStrike,
 	}
 
 	public override int getHitboxMeleeId(Collider hitbox) {
 		return (int)(sprite.name switch {
+			"blues_protostrike" => MeleeIds.ProtoStrike,
 			_ => MeleeIds.None
 		});
 	}
 
-	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
-		return id switch {
-			/*(int)MeleeIds.ShieldBlock => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.ShieldBlock, player, 0, 0, 0, isShield: true
-			),*/
-			_ => null
+	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
+		Point projPos = pos ?? new Point(0, 0);
+		Projectile? proj = id switch {
+			(int)MeleeIds.ProtoStrike => new GenericMeleeProj(
+				new Weapon(), projPos, ProjIds.ProtoStrike, player, 3, Global.halfFlinch, 1f,
+				addToLevel: addToLevel
+
+			)	
 		};
+		return proj;
+
 	}
 
 	public override bool chargeButtonHeld() {
@@ -301,23 +307,44 @@ public class Blues : Character {
 	}
 
 	public override bool normalCtrl() {
-		if ((player.input.isPressed(Control.WeaponLeft, player) ||
-			player.input.isPressed(Control.WeaponRight, player)
-		)) {
-			if (isShieldActive) {
-				isShieldActive = false;
-				if (sprite.name.EndsWith("_shield")) {
-					changeSprite(sprite.name[..^7], false);
-				}
-				if (sprite.name == getSprite("charge")) {
-					changeSpriteFromName("idle", true);
-				}
-			} else if (shieldHP > 0) {
-				isShieldActive = true;
-				if (!sprite.name.EndsWith("_shield")) {
-					changeSprite(sprite.name + "_shield", false);
+		bool isShieldPressed = Options.main.protoShieldHoldOrToggle ?
+			player.input.isWeaponLeftOrRightPressed(player) : player.input.isWeaponLeftOrRightHeld(player);
+
+		if (Options.main.protoShieldHoldOrToggle) {
+			if (isShieldPressed) {
+				if (isShieldActive) {
+					isShieldActive = false;
+					if (sprite.name.EndsWith("_shield")) {
+						changeSprite(sprite.name[..^7], false);
+					}
+					if (sprite.name == getSprite("charge")) {
+						changeSpriteFromName("idle", true);
+					}
+				} else if (shieldHP > 0) {
+					isShieldActive = true;
+					if (!sprite.name.EndsWith("_shield")) {
+						changeSprite(sprite.name + "_shield", false);
+					}
 				}
 			}
+		} else {
+			if (isShieldPressed) isShieldActive = true;
+			else isShieldActive = false;
+
+			if (!isShieldActive || shieldHP <= 0) {
+					//isShieldActive = false;
+					if (sprite.name.EndsWith("_shield")) {
+						changeSprite(sprite.name[..^7], false);
+					}
+					if (sprite.name == getSprite("charge")) {
+						changeSpriteFromName("idle", true);
+					}
+				} else if (shieldHP > 0 && isShieldActive) {
+					//isShieldActive = true;
+					if (!sprite.name.EndsWith("_shield")) {
+						changeSprite(sprite.name + "_shield", false);
+					}
+				}
 		}
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
@@ -390,11 +417,14 @@ public class Blues : Character {
 			lemonCooldown = 8;
 			unchargedLemonCooldown[lemonNum] = 50;
 		} else if (chargeLevel >= 2) {
-			new ProtoBusterChargedProj(
+			if (player.input.isHeld(Control.Up, player)) changeState(new ProtoStrike(), true);
+			else {
+				new ProtoBusterChargedProj(
 				shootPos, xDir, player, player.getNextActorNetId(), true
 			);
 			playSound("buster3", sendRpc: true);
 			lemonCooldown = 12;
+			}
 		}
 	}
 

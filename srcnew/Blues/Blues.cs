@@ -21,16 +21,19 @@ public class Blues : Character {
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 	public bool starCrashActive;
-	public StarCrashProj? starCrash;
-	public Weapon specialWeapon;
 
+	// Special weapon stuff
+	public Weapon specialWeapon;
+	public StarCrashProj? starCrash;
+	public HardKnuckleProj? hardKnuckleProj;
+
+	// Creation code.
 	public Blues(
-	 Player player, float x, float y, int xDir,
-	 bool isVisible, ushort? netId, bool ownedByLocalPlayer,
-	 bool isWarpIn = true
-	 ) : base(
-	 player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
-	 ) {
+		Player player, float x, float y, int xDir, bool isVisible,
+		ushort? netId, bool ownedByLocalPlayer, bool isWarpIn = true
+	) : base(
+		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
+	) {
 		charId = CharIds.ProtoMan;
 		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
 
@@ -117,7 +120,7 @@ public class Blues : Character {
 	}
 
 	public bool canShootSpecial() {
-		if (isCharging() || overheating || specialWeapon.shootCooldown > 0) {
+		if (isCharging() || overheating || specialWeapon.shootCooldown > 0 || !specialWeapon.canShoot(0, this)) {
 			return false;
 		}
 		return true;
@@ -141,7 +144,7 @@ public class Blues : Character {
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
-		if (isShieldActive && spriteName ==  getSprite("idle") && getChargeLevel() >= 2) {
+		if (isShieldActive && spriteName == getSprite("idle") && getChargeLevel() >= 2) {
 			spriteName = getSprite("charge");
 		} else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
@@ -281,7 +284,7 @@ public class Blues : Character {
 		}
 		// Shoot logic.
 		chargeLogic(shoot);
-		if (isShieldActive && getChargeLevel() >= 2 && sprite.name ==  getSprite("idle_shield")) {
+		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == getSprite("idle_shield")) {
 			changeSpriteFromName("charge", true);
 		}
 
@@ -446,14 +449,14 @@ public class Blues : Character {
 		specialWeapon.shoot(this, chargeLevel);
 		addCoreAmmo(specialWeapon.getAmmoUsage(chargeLevel));
 	}
- 
+
 	public void setShootAnim() {
 		string shootSprite = getSprite(charState.shootSprite);
 		if (!Global.sprites.ContainsKey(shootSprite)) {
 			if (grounded) {
-				shootSprite =  getSprite("shoot");
+				shootSprite = getSprite("shoot");
 			} else {
-				shootSprite =  getSprite("jump_shoot");
+				shootSprite = getSprite("jump_shoot");
 			}
 		}
 		if (shootAnimTime == 0) {
@@ -560,7 +563,7 @@ public class Blues : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-				if (sprite.name ==  getSprite("charge")) {
+				if (sprite.name == getSprite("charge")) {
 					changeSpriteFromName("idle", true);
 				}
 			}

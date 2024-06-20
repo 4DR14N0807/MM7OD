@@ -378,6 +378,14 @@ public class Weapon {
 		return ammo > 0;
 	}
 
+	public virtual bool canShoot(int chargeLevel, Character character) {
+		return ammo > 0;
+	}
+
+	public virtual bool canShoot(int chargeLevel, Actor actor) {
+		return ammo > 0;
+	}
+
 	public virtual bool applyDamage(
 		IDamagable victim, bool weakness, Actor actor,
 		int projId, float? overrideDamage = null,

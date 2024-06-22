@@ -95,18 +95,7 @@ public class SelectCharacterMenu : IMainMenu {
 
 	public Action completeAction;
 
-	private static PlayerCharData _playerData;
-	public static PlayerCharData playerData {
-		get {
-			if (_playerData == null) {
-				_playerData = new PlayerCharData(Options.main.preferredCharacter);
-			}
-			return _playerData;
-		}
-		set {
-			_playerData = value;
-		}
-	}
+	public static PlayerCharData playerData = new PlayerCharData(Options.main.preferredCharacter);
 
 	public SelectCharacterMenu(PlayerCharData playerData) {
 		SelectCharacterMenu.playerData = playerData;

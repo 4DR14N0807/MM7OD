@@ -53,31 +53,17 @@ public class CharSelection {
 	public int frameIndex;
 	public Point offset = new Point(0, 0);
 
-	public static int sigmaIndex {
-		get {
-			return Options.main?.sigmaLoadout?.sigmaForm ?? 0;
-		}
-	}
+	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
-	public static List<CharSelection> selections {
-		get {
-			return new List<CharSelection>()
-			{
-					new CharSelection("Mega Man", 5, 1, 0, "rock_idle", 0),
-					new CharSelection("Proto Man", 6, 1, 0, "blues_idle", 0 ),
-			};
-		}
-	}
+	public static CharSelection[] selections = [
+		new("Mega Man", 5, 1, 0, "rock_idle", 0),
+		new("Proto Man", 6, 1, 0, "blues_idle", 0 ),
+	];
 
-	public static List<CharSelection> selections1v1 {
-		get {
-			return new List<CharSelection>()
-			{
-				new CharSelection("Mega Man", 5, 1, 0, "rock_idle", 0),
-				new CharSelection("Proto Man", 6, 1, 0, "blues_idle", 0 ),
-			};
-		}
-	}
+	public static CharSelection[] selections1v1 = [
+		new("Mega Man", 5, 1, 0, "rock_idle", 0),
+		new("Proto Man", 6, 1, 0, "blues_idle", 0 ),
+	];
 
 	public CharSelection(
 		string name, int mappedCharNum, int mappedCharArmor,
@@ -130,7 +116,7 @@ public class SelectCharacterMenu : IMainMenu {
 		SelectCharacterMenu.playerData = new PlayerCharData(charNum);
 	}
 
-	public List<CharSelection> charSelections;
+	public CharSelection[] charSelections;
 
 	public SelectCharacterMenu(
 		IMainMenu prevMenu, bool is1v1, bool isOffline, bool isInGame,
@@ -149,9 +135,13 @@ public class SelectCharacterMenu : IMainMenu {
 		playerData.charNum = isInGame ? Global.level.mainPlayer.newCharNum : Options.main.preferredCharacter;
 
 		if (is1v1) {
-			playerData.uiSelectedCharIndex = charSelections.FindIndex(c => c.mappedCharNum == playerData.charNum && c.mappedCharArmor == playerData.armorSet);
+			playerData.uiSelectedCharIndex = Array.FindIndex(
+				charSelections, c => c.mappedCharNum == playerData.charNum && c.mappedCharArmor == playerData.armorSet
+			);
 		} else {
-			playerData.uiSelectedCharIndex = charSelections.FindIndex(c => c.mappedCharNum == playerData.charNum);
+			playerData.uiSelectedCharIndex = Array.FindIndex(
+				charSelections, c => c.mappedCharNum == playerData.charNum
+			);
 		}
 	}
 
@@ -177,7 +167,7 @@ public class SelectCharacterMenu : IMainMenu {
 			return;
 		}
 
-		Helpers.menuLeftRightInc(ref playerData.uiSelectedCharIndex, 0, charSelections.Count - 1, true, playSound: true);
+		Helpers.menuLeftRightInc(ref playerData.uiSelectedCharIndex, 0, charSelections.Length - 1, true, playSound: true);
 		try {
 			playerData.charNum = charSelections[playerData.uiSelectedCharIndex].mappedCharNum;
 			playerData.armorSet = charSelections[playerData.uiSelectedCharIndex].mappedCharArmor;

@@ -791,6 +791,29 @@ public class OptionsMenu : IMainMenu {
 					"Hold WEAPON L/R and use a directon to switch weapon."
 				),
 			};
+		} else if (charNum == 6) {
+			menuOptions = new List<MenuOption>() {
+				// Shield Toggle/Hold
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.protoShieldHoldOrToggle);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							FontType.Grey,
+							"SHIELD BEHAVIOUR:",
+							pos.x, pos.y
+						);
+
+						Fonts.drawText(
+							FontType.Grey, Options.main.protoShieldHoldOrToggle ? "TOGGLE" : "HOLD",
+							pos.x + 200, pos.y
+						);
+					},
+					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
+				),
+			};
 		}
 		
 		

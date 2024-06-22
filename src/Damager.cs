@@ -392,7 +392,13 @@ public class Damager {
 				if (character.grounded && character.ownedByLocalPlayer) {
 					character.changeState(new KnockedDown(character.pos.x < damagingActor?.pos.x ? -1 : 1), true);
 				}
-			} else if (projId == (int)ProjIds.MechFrogGroundPound) {
+			} else if (projId == (int)ProjIds.ProtoStrike) {
+				if (damagingActor != null) {
+					character.xPushVel = 240 * damagingActor.xDir;
+				}
+			} 
+			
+			 else if (projId == (int)ProjIds.MechFrogGroundPound) {
 				if (!character.grounded) {
 					character.vel.y += 300;
 					spiked = true;

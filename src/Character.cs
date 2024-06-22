@@ -158,6 +158,7 @@ public partial class Character : Actor, IDamagable {
 	public float burnTime;
 	public float rootTime;
 	public float rootCooldown;
+	public Anim? rootAnim;
 	public float burnEffectTime;
 	public float burnHurtCooldown;
 	// Burn (MM7)
@@ -1012,9 +1013,11 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (rootTime > 0) {
 			rootTime -= Global.spf;
+			rootAnim = new Anim(getCenterPos(), "dust", 1, null, true, host: this);
 			if (rootTime < 0){
 				rootTime = 0;
 				useGravity = true;
+				if (rootAnim != null) rootAnim.destroySelf();
 				}
 			rootCooldown = 2f;
 			}
@@ -1622,9 +1625,9 @@ public partial class Character : Actor, IDamagable {
 		changeState(new Burning(-xDir), true);
 	}
 	public void root() {
+		if (rootCooldown > 0) return;
 		rootTime = 1f;
 		stopMoving();
-		//rootAnim = new Anim(getCenterPos(), "root", 1, null, true, host: this);
 		useGravity = false;
 	}
 

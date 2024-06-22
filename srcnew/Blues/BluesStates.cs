@@ -173,7 +173,6 @@ public class ProtoStrike : CharState {
 	bool isUsingPStrike;
 	bool shot;
 	float coreCooldown;
-	GenericMeleeProj pStrike;
 	bool didUseAmmo;
 
 	public ProtoStrike() : base("protostrike") {
@@ -196,7 +195,6 @@ public class ProtoStrike : CharState {
 				character.frameIndex = 3;
 			} else character.changeState(new ProtoStrikeEnd(), true);
 			shot = false;
-			if (pStrike != null) pStrike.destroySelf();
 		}
 
 		if (character.frameIndex >= 3) isUsingPStrike = true;
@@ -205,13 +203,10 @@ public class ProtoStrike : CharState {
 		if (isUsingPStrike) {
 			if (!shot) {
 				var shootPos = character.getShootPos();
-				pStrike = new GenericMeleeProj(new Weapon(), shootPos, 0, player, 3, Global.halfFlinch, 1f);
 				if (!didUseAmmo) {
 					blues.addCoreAmmo(-3);
 					didUseAmmo = true;
 				}
-				var rect = new Rect(0, 0, 32, 24);
-				pStrike.globalCollider = new Collider(rect.getPoints(), false, pStrike, false, false, 0, new Point());
 				shot = true;
 			}
 			coreCooldown += Global.spf;

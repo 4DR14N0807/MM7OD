@@ -21,11 +21,9 @@ public class SparkShockProj : Projectile {
 
 
     public SparkShockProj(Weapon weapon, Point pos, int xDir, Player player, ushort? netId, bool rpc = false) : 
-    base(weapon, pos, xDir, 100, 2, player, "hard_knuckle_proj", 0, 0, netId, player.ownedByLocalPlayer) {
-        maxTime = 1f;
+    base(weapon, pos, xDir, 180, 2, player, "spark_shock_proj", 0, 0, netId, player.ownedByLocalPlayer) {
+        maxTime = 0.75f;
         projId = (int)BluesProjIds.SparkShock;
-        canBeLocal = false;
-        
     }
 
 

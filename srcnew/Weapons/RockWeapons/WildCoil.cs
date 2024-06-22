@@ -119,7 +119,6 @@ public class WildCoilChargedProj : Projectile {
 
     public int bounceSpeed = 330;
     public float bouncePower  = 1;
-    public float animCooldown = 0.06f;
     float soundCooldown;
     int bounceReq = 1;
     int bounceCounter;
@@ -148,13 +147,17 @@ public class WildCoilChargedProj : Projectile {
         if (player.input.isHeld(Control.Up, player)) bounceSpeed = 480;
         else if (player.input.isHeld(Control.Down, player)) {
             bounceReq = 6;
-            bounceSpeed = 30;
+            bounceSpeed = 60;
         } 
         else bouncePower = 1f;
 
         vel.y = -200;
         if (type == 0) vel.x = speed * xDir;
 		else vel.x = -speed * xDir;
+
+        outline = new Anim(pos, "wild_coil_outline1", xDir, player.getNextActorNetId(), false, true);
+        outline.frameIndex = 3;
+        outline.frameSpeed = 0;
 
         if (rpc) {
             byte[] extraArgs = new byte[] { (byte)type };
@@ -175,46 +178,28 @@ public class WildCoilChargedProj : Projectile {
         base.update();
 
         if (!ownedByLocalPlayer) return;
-        if (animCooldown > 0) Helpers.decrementTime(ref animCooldown);
         if (soundCooldown > 0) Helpers.decrementTime(ref soundCooldown);
 
         bounceBuff = (int)bounceCounter / bounceReq;
+        outline?.changePos(pos);
+        if (bouncedOnce) outline.frameIndex = frameIndex;
 
         if (bounceBuff < 3) {
             switch (bounceBuff) {
                 case 1: 
                 damager.damage = 3;
                 damager.flinch = 4;
-                if (outline != null) outline.changeSprite("wild_coil_outline2", true);
+                outline?.changeSprite("wild_coil_outline2", false);
                 break;
 
                 case 2:
                 damager.damage = 3;
                 damager.flinch = Global.halfFlinch;
-                if (outline != null) outline.changeSprite("wild_coil_outline3", true);
+                outline?.changeSprite("wild_coil_outline3", false);
                 break;
             }
         }   
     }
-
-
-    public override void postUpdate() {
-		base.postUpdate();
-
-        if (!drawOutline) {
-            outline = new Anim(pos, "wild_coil_outline_start", xDir, null, false);
-            drawOutline = true;
-        }
-        if (outline != null) {
-            outline.pos = pos;
-            outline.frameSpeed = 0;
-            outline.frameIndex = frameIndex;
-
-            if (bouncedOnce) {
-                outline.changeSprite("wild_coil_outline" + bounceBuff + 1.ToString(), false);
-            }
-        }
-	}
 
     
 	public override void onHitWall(CollideData other) {
@@ -248,7 +233,7 @@ public class WildCoilChargedProj : Projectile {
 
             if (frameIndex > 0) {
                 frameIndex = 0;
-                animCooldown = 0.06f;
+                outline.frameIndex = 0;
             }
 		}
 	}

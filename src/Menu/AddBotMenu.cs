@@ -27,10 +27,14 @@ public class AddBotMenu : IMainMenu {
 		if (selectArrowPosY == 0) {
 			if (Global.input.isPressedMenu(Control.MenuLeft)) {
 				botCharNum--;
-				if (botCharNum < 5) botCharNum = 5;
+				if (botCharNum <= 5) {
+					botCharNum = 5;
+				}
 			} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 				botCharNum++;
-				if (botCharNum >= 5) botCharNum = 5;
+				if (botCharNum >= 6) {
+					botCharNum = 6;
+				}
 			}
 		}
 		if (selectArrowPosY == 1 && teamOptionEnabled()) {
@@ -95,6 +99,7 @@ public class AddBotMenu : IMainMenu {
 		else if (botCharNum == 3) botCharStr = "Axl";
 		else if (botCharNum == 4) botCharStr = "Sigma";
 		else if (botCharNum == 5) botCharStr = "Rockman";
+		else if (botCharNum == 6) botCharStr = "Protoman";
 
 		Fonts.drawText(
 			FontType.Grey, "CHARACTER: " + botCharStr,

@@ -109,13 +109,12 @@ public class Options {
 	//ProtoMan
 	public bool useRandomProtoManLoadout;
 	public ProtoManLoadout protomanLoadout = new ProtoManLoadout();
-	public int gridModeProtoman;
-	public bool protoShieldHoldOrToggle;
+	public bool protoShieldHold;
 	
 	// Punchy Zero
 	public PZeroLoadout pzeroLoadout = new PZeroLoadout();
 
-	private static Options _main;
+	private static Options _main = null!;
 
 	public static Options main {
 		get {

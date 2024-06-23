@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 [ProtoContract]
 public class PlayerCharData {
-	[ProtoMember(1)] public int charNum;
+	[ProtoMember(1)] public int charNum = 5;
 	[ProtoMember(2)] public int armorSet = 1;
 	[ProtoMember(3)] public int alliance = -1;
 	[ProtoMember(4)] public bool isRandom;
@@ -56,13 +56,13 @@ public class CharSelection {
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
 	public static CharSelection[] selections => [
-		new("Mega Man", 5, 1, 0, "rock_idle", 0),
-		new("Proto Man", 6, 1, 0, "blues_idle", 0 ),
+		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
 	];
 
 	public static CharSelection[] selections1v1 => [
-		new("Mega Man", 5, 1, 0, "rock_idle", 0),
-		new("Proto Man", 6, 1, 0, "blues_idle", 0 ),
+		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
 	];
 
 	public CharSelection(

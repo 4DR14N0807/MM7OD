@@ -16,8 +16,8 @@ public class Blues : Character {
 	public bool isShieldActive = true;
 	public bool overheating;
 	public float overheatEffectTime;
-	public decimal shieldHP = 18;
-	public int shieldMaxHP = 18;
+	public decimal shieldHP = 20;
+	public int shieldMaxHP = 20;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 	public bool starCrashActive;
@@ -195,7 +195,7 @@ public class Blues : Character {
 				new Weapon(), projPos, ProjIds.ProtoStrike, player, 3, Global.halfFlinch, 1f,
 				addToLevel: addToLevel
 
-			)	
+			)
 		};
 		return proj;
 
@@ -313,44 +313,34 @@ public class Blues : Character {
 	}
 
 	public override bool normalCtrl() {
-		bool isShieldPressed = Options.main.protoShieldHoldOrToggle ?
-			player.input.isWeaponLeftOrRightPressed(player) : player.input.isWeaponLeftOrRightHeld(player);
-
-		if (Options.main.protoShieldHoldOrToggle) {
-			if (isShieldPressed) {
-				if (isShieldActive) {
-					isShieldActive = false;
-					if (sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name[..^7], false);
-					}
-					if (sprite.name == getSprite("charge")) {
-						changeSpriteFromName("idle", true);
-					}
-				} else if (shieldHP > 0) {
-					isShieldActive = true;
-					if (!sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name + "_shield", false);
-					}
+		// For keeping track of shield change.
+		bool lastShieldMode = isShieldActive;
+		// Shield switch.
+		if (shieldHP > 0 && grounded && vel.y >= 0 && shootAnimTime <= 0) {
+			if (Options.main.protoShieldHold) {
+				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
+			} else {
+				if (player.input.isWeaponLeftOrRightPressed(player)) {
+					isShieldActive = !isShieldActive;
 				}
 			}
-		} else {
-			if (isShieldPressed) isShieldActive = true;
-			else isShieldActive = false;
-
+		}
+		// Change sprite is shield mode changed.
+		if (lastShieldMode != isShieldActive) {
 			if (!isShieldActive || shieldHP <= 0) {
-					//isShieldActive = false;
-					if (sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name[..^7], false);
-					}
-					if (sprite.name == getSprite("charge")) {
-						changeSpriteFromName("idle", true);
-					}
-				} else if (shieldHP > 0 && isShieldActive) {
-					//isShieldActive = true;
-					if (!sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name + "_shield", false);
-					}
+				isShieldActive = false;
+				if (sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name[..^7], false);
 				}
+				if (sprite.name == getSprite("charge")) {
+					changeSpriteFromName("idle", true);
+				}
+			} else {
+				isShieldActive = true;
+				if (!sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name + "_shield", false);
+				}
+			}
 		}
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
@@ -428,8 +418,8 @@ public class Blues : Character {
 				new ProtoBusterChargedProj(
 				shootPos, xDir, player, player.getNextActorNetId(), true
 			);
-			playSound("buster3", sendRpc: true);
-			lemonCooldown = 12;
+				playSound("buster3", sendRpc: true);
+				lemonCooldown = 12;
 			}
 		}
 	}

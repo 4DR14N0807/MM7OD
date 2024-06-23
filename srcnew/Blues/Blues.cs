@@ -28,6 +28,7 @@ public class Blues : Character {
 	public HardKnuckleProj? hardKnuckleProj;
 
 	// AI variables.
+	public float aiSpecialUseTimer = 0;
 
 	// Creation code.
 	public Blues(
@@ -46,7 +47,7 @@ public class Blues : Character {
 			3 => new SparkShock(),
 			4 => new PowerStone(),
 			5 => new GyroAttack(),
-			7 => new NeedleCannon(),
+			6 => new NeedleCannon(),
 			_ => new StarCrash(),
 		};
 	}
@@ -613,22 +614,30 @@ public class Blues : Character {
 	}
 
 	public override void aiAttack(Actor target) {
+		if (AI.trainingBehavior != 0) {
+			return;
+		}
+		Helpers.decrementFrames(ref aiSpecialUseTimer);
 		if (!isFacing(target)) {
-			if (!charState.normalCtrl) {
+			if (charState.normalCtrl && grounded) {
 				isShieldActive = false;
 			}
-			increaseCharge();
+			if (canCharge() && shootAnimTime == 0) {
+				increaseCharge();
+			}
 			return;
 		}
 		if (!charState.attackCtrl) {
 			return;
 		}
-		if (charState.normalCtrl) {
+		if (charState.normalCtrl && grounded) {
 			isShieldActive = true;
 		}
-		if (specialWeapon is not StarCrash && canShootSpecial() &&
-			coreMaxAmmo - coreAmmo > specialWeapon.getAmmoUsage(0)
+		if (aiSpecialUseTimer == 0 &&
+			specialWeapon is not StarCrash && canShootSpecial() &&
+			coreMaxAmmo - coreAmmo > specialWeapon.getAmmoUsage(0) * 2
 		) {
+			aiSpecialUseTimer = 60;
 			shootSpecial(0);
 			return;
 		}

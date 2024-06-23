@@ -25,6 +25,9 @@ public class Rock : Character {
 	public bool isSlideColliding;
 	public Rush rush;
 
+	// AI Stuff.
+	public float aiWeaponSwitchCooldown = 120;
+
 	public Rock(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
@@ -557,6 +560,32 @@ public class Rock : Character {
 		}
 
 		//if (rush != null) rush.destroySelf();
+	}
+
+	public override void aiAttack(Actor target) {
+		if (AI.trainingBehavior != 0) {
+			return;
+		}
+		if (player.weapon == null) {
+			return;
+		}
+		Helpers.decrementFrames(ref aiWeaponSwitchCooldown);
+		if (aiWeaponSwitchCooldown == 0) {
+			player.weaponRight();
+			aiWeaponSwitchCooldown = 120;
+		}
+		if (!isFacing(target)) {
+			if (canCharge() && shootAnimTime == 0) {
+				increaseCharge();
+			}
+			return;
+		}
+		if (canShoot() && player.weapon.canShoot(0, player)) {
+			shoot(true);
+			stopCharge();
+		} else if (canCharge() && shootAnimTime == 0) {
+			increaseCharge();
+		}
 	}
 }
 

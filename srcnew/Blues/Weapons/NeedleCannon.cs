@@ -5,10 +5,10 @@ namespace MMXOnline;
 public class NeedleCannon : Weapon {
 	public static NeedleCannon netWeapon = new();
 
-    public NeedleCannon() : base() {
+	public NeedleCannon() : base() {
 		// Tecnical data.
 		index = (int)RockWeaponIds.NeedleCannon;
-        fireRateFrames = 6;
+		fireRateFrames = 6;
 		defaultAmmoUse = 1.4f;
 
 		// Display data.
@@ -22,14 +22,14 @@ public class NeedleCannon : Weapon {
 
 		// Ammo use text.
 		string ammoUseText = chpsString + " per second.";
-    }
+	}
 
-    public override void shoot(Character character, params int[] args) {
-	    base.shoot(character, args);
-        Point shootPos = character.getShootPos();
-        int xDir = character.getShootXDir();
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
 		Player player = character.player;
-        var temp = new NeedleCannonProj(shootPos, xDir, player, player.getNextActorNetId(), true) {
+		var temp = new NeedleCannonProj(shootPos, xDir, player, player.getNextActorNetId(), true) {
 			owningActor = character
 		};
 		temp.vel.y = Helpers.randomRange(0, 500) - 250;
@@ -43,14 +43,14 @@ public class NeedleCannon : Weapon {
 }
 
 public class NeedleCannonProj : Projectile {
-    public NeedleCannonProj(
+	public NeedleCannonProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
 		NeedleCannon.netWeapon, pos, xDir, 400, 0.5f, player, "needle_cannon_proj",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
-        maxTime = 0.25f;
+		maxTime = 0.25f;
 		fadeSprite = "needle_cannon_proj_fade";
-        projId = (int)BluesProjIds.NeedleCannon;
-    }
+		projId = (int)BluesProjIds.NeedleCannon;
+	}
 }

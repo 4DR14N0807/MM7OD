@@ -21,6 +21,7 @@ public class ProtoBusterProj : Projectile {
 	) {
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.Lemon;
+		fadeSprite = "proto_buster_proj_fade";
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -56,7 +57,7 @@ public class ProtoBusterAngledProj : Projectile {
 		"proto_buster_proj", 0, 0, netId, player.ownedByLocalPlayer
 	) {
 		byteAngle = byteAngle % 256;
-
+		fadeSprite = "proto_buster_proj_fade";
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
@@ -91,6 +92,8 @@ public class ProtoBusterChargedProj : Projectile {
 		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
 		"proto_chargeshot_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
+		fadeSprite = "proto_chargeshot_proj_fade";
+		fadeOnAutoDestroy = true;
 		maxTime = 0.5f;
 		projId = (int)BluesProjIds.ChargedBuster;
 

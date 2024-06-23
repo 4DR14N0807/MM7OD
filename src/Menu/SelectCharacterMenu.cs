@@ -34,7 +34,7 @@ public enum CharIds {
 	Axl,
 	Sigma,
 	Rock,
-	ProtoMan,
+	Blues,
 	PunchyZero,
 	BusterZero,
 	// Non-standart chars start here.
@@ -55,12 +55,12 @@ public class CharSelection {
 
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
-	public static CharSelection[] selections = [
+	public static CharSelection[] selections => [
 		new("Mega Man", 5, 1, 0, "rock_idle", 0),
 		new("Proto Man", 6, 1, 0, "blues_idle", 0 ),
 	];
 
-	public static CharSelection[] selections1v1 = [
+	public static CharSelection[] selections1v1 => [
 		new("Mega Man", 5, 1, 0, "rock_idle", 0),
 		new("Proto Man", 6, 1, 0, "blues_idle", 0 ),
 	];
@@ -270,7 +270,7 @@ public class SelectCharacterMenu : IMainMenu {
 			(int)CharIds.Rock => new string[]{
 				"A versatile character\nthat can do a variety of roles\nthanks to his Variable Weapon System.",
 			},
-			(int)CharIds.ProtoMan =>  new string[]{
+			(int)CharIds.Blues =>  new string[]{
 				"Mid range character who has\ngood attack and defense\nBut it's limited by it's unstable core."
 			},
 			_ => new string[] { "ERROR" }

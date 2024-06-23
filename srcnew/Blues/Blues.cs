@@ -34,7 +34,7 @@ public class Blues : Character {
 	) : base(
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
-		charId = CharIds.ProtoMan;
+		charId = CharIds.Blues;
 		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
 
 		specialWeapon = protomanLoadout switch {

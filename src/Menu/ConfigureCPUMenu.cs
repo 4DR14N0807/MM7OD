@@ -28,7 +28,7 @@ public class ConfigureCPUMenu : IMainMenu {
 	public bool isTeamMode;
 	public bool isHost;
 
-	public List<CharSelection> charSelections;
+	public CharSelection[] charSelections;
 
 	public ConfigureCPUMenu(IMainMenu prevMenu, int cpuCount, bool is1v1, bool isOffline, bool isInGame, bool isInGameEndSelect, bool isTeamMode, bool isHost) {
 		this.prevMenu = prevMenu;
@@ -54,12 +54,15 @@ public class ConfigureCPUMenu : IMainMenu {
 		}
 
 		charSelections = is1v1 ? CharSelection.selections1v1 : CharSelection.selections;
-		charSelections = new List<CharSelection>(charSelections);
-		charSelections.Insert(0, new CharSelection("Random", 0, 1, 0, "", 0));
+		charSelections = [.. charSelections, new CharSelection("Random", 0, 1, 0, "", 0)];
 
 		for (int i = 0; i < savedMatchSettings.extraCpuCharData.cpuDatas.Count; i++) {
 			var cpuData = savedMatchSettings.extraCpuCharData.cpuDatas[i];
-			cpuData.uiSelectedCharIndex = 5; //Helpers.clamp(cpuData.uiSelectedCharIndex, 5, 5);
+			cpuData.uiSelectedCharIndex = Helpers.clamp(
+				cpuData.uiSelectedCharIndex,
+				(int)CharIds.Rock,
+				(int)CharIds.Blues
+			);
 
 			bool forceEnable = (isOffline && i == 0);
 			int iCopy = i;

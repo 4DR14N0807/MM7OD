@@ -46,10 +46,11 @@ public class NeedleCannonProj : Projectile {
     public NeedleCannonProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
-		NeedleCannon.netWeapon, pos, xDir, 400, 0.5f, player, "rock_buster_proj",
+		NeedleCannon.netWeapon, pos, xDir, 400, 0.5f, player, "needle_cannon_proj",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
         maxTime = 0.25f;
+		fadeSprite = "needle_cannon_proj_fade";
         projId = (int)BluesProjIds.NeedleCannon;
     }
 }

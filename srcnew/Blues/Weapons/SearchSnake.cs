@@ -21,8 +21,8 @@ public class SearchSnake : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-        Point shootPos = character.getShootPos();
-        int xDir = character.getShootXDir();
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
 		new SearchSnakeProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
 		character.playSound("buster", sendRpc: true);
 	}
@@ -37,6 +37,8 @@ public class SearchSnakeProj : Projectile {
 		projId = (int)BluesProjIds.SearchSnake;
 		wallCrawlSpeed = 120;
 		destroyOnHit = true;
+		fadeSprite = "generic_explosion";
+		fadeOnAutoDestroy = true;
 		//useGravity = true;
 		setupWallCrawl(new Point(xDir, yDir));
 		wallCrawlUpdateAngle = true;

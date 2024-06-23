@@ -415,14 +415,12 @@ public class ProtoManLoadout {
 		}).ToList();
 	}
 
-	/*public static ProtoManLoadout createRandom() {
-		/*var randomRockWeapons = Weapon.getRandomProtoManWeapons();
-		return new RockLoadout() {
-			weapon1 = randomRockWeapons[0],
-			weapon2 = randomRockWeapons[1],
-			weapon3 = randomRockWeapons[2],
+	public static ProtoManLoadout createRandom() {
+		int[] weapons = { 1, 4, 4 };
+		return new ProtoManLoadout() {
+			weapon1 = weapons[Helpers.randomRange(0, weapons.Length - 1)]
 		};
-	}*/
+	}
 }
 
 
@@ -447,6 +445,7 @@ public class LoadoutData {
 			axlLoadout = AxlLoadout.createRandom(),
 			sigmaLoadout = SigmaLoadout.createRandom(),
 			rockLoadout = RockLoadout.createRandom(),
+			protomanLoadout = ProtoManLoadout.createRandom(),
 		};
 	}
 

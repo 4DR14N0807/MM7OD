@@ -601,7 +601,7 @@ public class Blues : Character {
 			string damageText = (oldHealth - player.health).ToString();
 			addDamageText(damageText, fontColor);
 			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
-			addCoreAmmo(MathInt.Ceiling(oldHealth - player.health), false);
+			//addCoreAmmo(MathInt.Ceiling(oldHealth - player.health), false);
 			if (!overheating) {
 				coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
 			}

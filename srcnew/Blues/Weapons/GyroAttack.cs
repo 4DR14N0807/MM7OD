@@ -33,7 +33,7 @@ public class GyroAttackProj : Projectile {
 
     public GyroAttackProj(Weapon weapon, Point pos, int xDir, Player player, ushort? netId, bool rpc = false) : 
     base(weapon, pos, xDir, projSpeed, 2, player, "gyro_attack_proj", 0, 0, netId, player.ownedByLocalPlayer) {
-        maxTime = 1f;
+        maxTime = 0.625f;
         projId = (int)BluesProjIds.GyroAttack;
         this.player =  player;
         canBeLocal = false;
@@ -47,10 +47,12 @@ public class GyroAttackProj : Projectile {
         if (!changedDir) {
             if (player.input.isPressed(Control.Up, player)) {
                 base.vel = new Point(0, -projSpeed);
+                time = 0;
                 changedDir = true;
             }
             else if (player.input.isPressed(Control.Down, player)) {
                 base.vel = new Point(0, projSpeed);
+                time = 0;
                 changedDir = true;
             } 
         }

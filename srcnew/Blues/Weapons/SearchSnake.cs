@@ -23,6 +23,8 @@ public class SearchSnakeProj : Projectile {
 		projId = (int)BluesProjIds.SearchSnake;
         wallCrawlSpeed = 120;
 		destroyOnHit = true;
+		fadeSprite = "generic_explosion";
+		fadeOnAutoDestroy = true;
 	   // useGravity = true;
 		setupWallCrawl(new Point(xDir, yDir));
         wallCrawlUpdateAngle = true;

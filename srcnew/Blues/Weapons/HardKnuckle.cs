@@ -85,6 +85,8 @@ public class HardKnuckleProj : Projectile {
 			string keyName = enemyActor.GetType().ToString() + "_" + enemyActor.netId;
 			if (bounceCooldowns.GetValueOrDefault(keyName) == 0) {
 				bounceCooldowns[keyName] = 60;
+		//	new Anim(pos,"hard_knuckle_proj_hit",xDir, netId, true, true);
+
 				bounce();
 			}
 		}
@@ -94,6 +96,8 @@ public class HardKnuckleProj : Projectile {
 		if (deflected) {
 			return;
 		}
+			new Anim(pos,"hard_knuckle_proj_hit",xDir, netId, true, true);
+
 		vel.x = xDir * (-2 * 60);
 		if (canControl) {
 			vel.y = 0;

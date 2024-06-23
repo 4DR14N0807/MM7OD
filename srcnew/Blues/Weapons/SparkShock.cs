@@ -14,7 +14,7 @@ public class SparkShock : Weapon {
         Point shootPos = character.getShootPos();
         int xDir = character.getShootXDir();
         new SparkShockProj(this, shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
-
+        character.playSound("spark_shock", true);
 	}
 }
 public class SparkShockProj : Projectile {

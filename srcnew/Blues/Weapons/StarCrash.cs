@@ -56,6 +56,8 @@ public class StarCrashProj : Projectile {
 		projId = (int)BluesProjIds.StarCrash;
 		blues = player.character as Blues;
 		canBeLocal = false;
+		//fadeSprite = "star_crash_fade";
+		//fadeOnAutoDestroy = true;
 	}
 
 	public override void update() {

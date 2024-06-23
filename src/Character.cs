@@ -1013,7 +1013,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (rootTime > 0) {
 			rootTime -= Global.spf;
-			rootAnim = new Anim(getCenterPos(), "dust", 1, null, true, host: this);
+			rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
 			if (rootTime < 0){
 				rootTime = 0;
 				useGravity = true;

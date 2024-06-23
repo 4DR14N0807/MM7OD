@@ -141,7 +141,7 @@ public class BluesWeaponMenu : IMainMenu {
 		);
 		DrawWrappers.DrawRect(
 			25, wsy - 4, Global.screenW - 25, wsy + 11, true, new Color(0, 0, 0, 100), 1,
-			ZIndex.HUD, false, outlineColor:  Helpers.LoadoutBorderColor
+			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
 		);
 		// Draw descriptions.
 		float titleY1 = 124;

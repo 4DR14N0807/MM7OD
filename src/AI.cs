@@ -403,9 +403,11 @@ public class AI {
 		} else if (character is BusterZero bzero) {
 			doBusterZeroAI(bzero);
 		}
-
+		*/
 		//Should AI Attack?
 		if (aiState.shouldAttack && target != null) {
+			character.aiAttack(target);
+			/*
 			if (shootTime == 0) {
 				if (character is MegamanX mmx2) {
 					mmxAIAttack(mmx2);
@@ -443,9 +445,10 @@ public class AI {
 			if (shootTime > 0.08) {
 				shootTime = 0;
 			}
+			*/
 		}
 		//End of AI should attack
-		*/
+
 		//The AI should dodge if a projectile is close to him
 		/*
 		if (aiState.shouldDodge && target != null) {

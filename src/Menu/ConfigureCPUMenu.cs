@@ -71,8 +71,12 @@ public class ConfigureCPUMenu : IMainMenu {
 			menuOptions.Add(
 				new MenuOption(60, currentY += lineH,
 					() => {
-						Helpers.menuLeftRightInc(ref cpuData.uiSelectedCharIndex, 5, 5);
-						cpuData.charNum = 5; //charSelections[cpuData.uiSelectedCharIndex].mappedCharNum;
+						Helpers.menuLeftRightInc(
+							ref cpuData.uiSelectedCharIndex,
+							(int)CharIds.Rock,
+							(int)CharIds.Blues
+						);
+						cpuData.charNum = charSelections[cpuData.uiSelectedCharIndex].mappedCharNum;
 						cpuData.armorSet = charSelections[cpuData.uiSelectedCharIndex].mappedCharArmor;
 						cpuData.isRandom = charSelections[cpuData.uiSelectedCharIndex].name == "Random";
 					},

@@ -27,6 +27,8 @@ public class Blues : Character {
 	public StarCrashProj? starCrash;
 	public HardKnuckleProj? hardKnuckleProj;
 
+	// AI variables.
+
 	// Creation code.
 	public Blues(
 		Player player, float x, float y, int xDir, bool isVisible,
@@ -44,6 +46,7 @@ public class Blues : Character {
 			3 => new SparkShock(),
 			4 => new PowerStone(),
 			5 => new GyroAttack(),
+			7 => new NeedleCannon(),
 			_ => new StarCrash(),
 		};
 	}
@@ -364,7 +367,7 @@ public class Blues : Character {
 
 		if (specialPressed) {
 			if (canShootSpecial()) {
-				shootPoderzinho(getChargeLevel());
+				shootSpecial(0);
 				return true;
 			}
 		}
@@ -431,7 +434,7 @@ public class Blues : Character {
 		}
 	}
 
-	public void shootPoderzinho(int chargeLevel) {
+	public void shootSpecial(int chargeLevel) {
 		if (specialWeapon == null) {
 			return;
 		}
@@ -613,6 +616,32 @@ public class Blues : Character {
 			string damageText = (ogShieldHP - shieldHP).ToString();
 			addDamageText(damageText, (int)FontType.Blue);
 			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
+		}
+	}
+
+	public override void aiAttack(Actor target) {
+		if (!isFacing(target)) {
+			if (!charState.normalCtrl) {
+				isShieldActive = false;
+			}
+			increaseCharge();
+			return;
+		}
+		if (!charState.attackCtrl) {
+			return;
+		}
+		if (charState.normalCtrl) {
+			isShieldActive = true;
+		}
+		if (specialWeapon is not StarCrash && canShootSpecial() &&
+			coreMaxAmmo - coreAmmo > specialWeapon.getAmmoUsage(0)
+		) {
+			shootSpecial(0);
+			return;
+		}
+		if (canShoot() && lemonCooldown == 0) {
+			shoot(getChargeLevel());
+			return;
 		}
 	}
 }

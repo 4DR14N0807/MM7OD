@@ -1466,8 +1466,11 @@ public class GameMode {
 		}
 
 		if (player.character is Blues protoman) {
-			renderAmmo(baseX - 15, baseY - 41, -1, 1, MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP);
-			int coreAmmoColor = 5;
+			renderAmmo(
+				baseX - 15, baseY - 5 - player.maxHealth * 2, -1, 1,
+				MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP
+			);
+			int coreAmmoColor = 4;
 			if (protoman.overheating && Global.frameCount % 6 >= 3) {
 				coreAmmoColor = 6;
 			}

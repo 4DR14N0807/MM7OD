@@ -3779,6 +3779,10 @@ public partial class Character : Actor, IDamagable {
 		}
 		chargeGfx();
 	}
+
+	public virtual void aiAttack(Actor target) {
+
+	}
 }
 
 public struct DamageEvent {

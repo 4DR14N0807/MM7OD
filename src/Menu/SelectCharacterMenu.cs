@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 [ProtoContract]
 public class PlayerCharData {
-	[ProtoMember(1)] public int charNum;
+	[ProtoMember(1)] public int charNum = 5;
 	[ProtoMember(2)] public int armorSet = 1;
 	[ProtoMember(3)] public int alliance = -1;
 	[ProtoMember(4)] public bool isRandom;
@@ -34,7 +34,7 @@ public enum CharIds {
 	Axl,
 	Sigma,
 	Rock,
-	ProtoMan,
+	Blues,
 	PunchyZero,
 	BusterZero,
 	// Non-standart chars start here.
@@ -53,31 +53,17 @@ public class CharSelection {
 	public int frameIndex;
 	public Point offset = new Point(0, 0);
 
-	public static int sigmaIndex {
-		get {
-			return Options.main?.sigmaLoadout?.sigmaForm ?? 0;
-		}
-	}
+	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
-	public static List<CharSelection> selections {
-		get {
-			return new List<CharSelection>()
-			{
-					new CharSelection("Mega Man", 5, 1, 0, "rock_idle", 0),
-					new CharSelection("Proto Man", 6, 1, 0, "blues_idle", 0 ),
-			};
-		}
-	}
+	public static CharSelection[] selections => [
+		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
+	];
 
-	public static List<CharSelection> selections1v1 {
-		get {
-			return new List<CharSelection>()
-			{
-				new CharSelection("Mega Man", 5, 1, 0, "rock_idle", 0),
-				new CharSelection("Proto Man", 6, 1, 0, "blues_idle", 0 ),
-			};
-		}
-	}
+	public static CharSelection[] selections1v1 => [
+		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
+	];
 
 	public CharSelection(
 		string name, int mappedCharNum, int mappedCharArmor,
@@ -109,18 +95,7 @@ public class SelectCharacterMenu : IMainMenu {
 
 	public Action completeAction;
 
-	private static PlayerCharData _playerData;
-	public static PlayerCharData playerData {
-		get {
-			if (_playerData == null) {
-				_playerData = new PlayerCharData(Options.main.preferredCharacter);
-			}
-			return _playerData;
-		}
-		set {
-			_playerData = value;
-		}
-	}
+	public static PlayerCharData playerData = new PlayerCharData(Options.main.preferredCharacter);
 
 	public SelectCharacterMenu(PlayerCharData playerData) {
 		SelectCharacterMenu.playerData = playerData;
@@ -130,7 +105,7 @@ public class SelectCharacterMenu : IMainMenu {
 		SelectCharacterMenu.playerData = new PlayerCharData(charNum);
 	}
 
-	public List<CharSelection> charSelections;
+	public CharSelection[] charSelections;
 
 	public SelectCharacterMenu(
 		IMainMenu prevMenu, bool is1v1, bool isOffline, bool isInGame,
@@ -149,9 +124,13 @@ public class SelectCharacterMenu : IMainMenu {
 		playerData.charNum = isInGame ? Global.level.mainPlayer.newCharNum : Options.main.preferredCharacter;
 
 		if (is1v1) {
-			playerData.uiSelectedCharIndex = charSelections.FindIndex(c => c.mappedCharNum == playerData.charNum && c.mappedCharArmor == playerData.armorSet);
+			playerData.uiSelectedCharIndex = Array.FindIndex(
+				charSelections, c => c.mappedCharNum == playerData.charNum && c.mappedCharArmor == playerData.armorSet
+			);
 		} else {
-			playerData.uiSelectedCharIndex = charSelections.FindIndex(c => c.mappedCharNum == playerData.charNum);
+			playerData.uiSelectedCharIndex = Array.FindIndex(
+				charSelections, c => c.mappedCharNum == playerData.charNum
+			);
 		}
 	}
 
@@ -177,7 +156,7 @@ public class SelectCharacterMenu : IMainMenu {
 			return;
 		}
 
-		Helpers.menuLeftRightInc(ref playerData.uiSelectedCharIndex, 0, charSelections.Count - 1, true, playSound: true);
+		Helpers.menuLeftRightInc(ref playerData.uiSelectedCharIndex, 0, charSelections.Length - 1, true, playSound: true);
 		try {
 			playerData.charNum = charSelections[playerData.uiSelectedCharIndex].mappedCharNum;
 			playerData.armorSet = charSelections[playerData.uiSelectedCharIndex].mappedCharArmor;
@@ -291,7 +270,7 @@ public class SelectCharacterMenu : IMainMenu {
 			(int)CharIds.Rock => new string[]{
 				"A versatile character\nthat can do a variety of roles\nthanks to his Variable Weapon System.",
 			},
-			(int)CharIds.ProtoMan =>  new string[]{
+			(int)CharIds.Blues =>  new string[]{
 				"Mid range character who has\ngood attack and defense\nBut it's limited by it's unstable core."
 			},
 			_ => new string[] { "ERROR" }

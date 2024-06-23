@@ -157,7 +157,7 @@ public partial class Player {
 	public bool isAxl { get { return charNum == (int)CharIds.Axl; } }
 	public bool isSigma { get { return charNum == (int)CharIds.Sigma; } }
 	public bool isRock { get { return charNum == (int)CharIds.Rock; } }
-	public bool isProtoMan { get { return charNum == (int)CharIds.ProtoMan; } }
+	public bool isProtoMan { get { return charNum == (int)CharIds.Blues; } }
 
 	public float health;
 	public float maxHealth;
@@ -224,7 +224,7 @@ public partial class Player {
 			{ (int)CharIds.Axl, new List<ETank>() },
 			{ (int)CharIds.Sigma, new List<ETank>() },
 			{ (int)CharIds.Rock, new List<ETank>() },
-			{ (int)CharIds.ProtoMan, new List<ETank>() },
+			{ (int)CharIds.Blues, new List<ETank>() },
 		};
 	public List<ETank> etanks {
 		get {
@@ -238,7 +238,7 @@ public partial class Player {
 	public Dictionary<int, List<WTank>> charWTanks = new Dictionary<int, List<WTank>>()
 	{
 			{ (int)CharIds.Rock, new List<WTank>() },
-			{ (int)CharIds.ProtoMan, new List<WTank>() },
+			{ (int)CharIds.Blues, new List<WTank>() },
 			//{ (int)CharIds.Bass, new List<WTank>()},
 		};
 	public List<WTank> wtanks {
@@ -259,7 +259,7 @@ public partial class Player {
 		{ (int)CharIds.PunchyZero, 0 },
 		{ (int)CharIds.BusterZero, 0 },
 		{ (int)CharIds.Rock, 0 },
-		{ (int)CharIds.ProtoMan, 0 },
+		{ (int)CharIds.Blues, 0 },
 		
 	};
 	// Getter functions.
@@ -687,7 +687,7 @@ public partial class Player {
 		}
 		float hpModifier = getHealthModifier();
 		if (isProtoMan) {
-			baseHP = 18;
+			baseHP = 16;
 		}
 		if (hpModifier < 1) {
 			return MathF.Ceiling((baseHP + bonus) * hpModifier) + heartTanks * getHeartTankModifier();
@@ -1091,7 +1091,7 @@ public partial class Player {
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
-			} else if (charNum == (int)CharIds.ProtoMan) {
+			} else if (charNum == (int)CharIds.Blues) {
 				character = new Blues(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer

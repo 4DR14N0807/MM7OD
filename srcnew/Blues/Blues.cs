@@ -16,8 +16,8 @@ public class Blues : Character {
 	public bool isShieldActive = true;
 	public bool overheating;
 	public float overheatEffectTime;
-	public decimal shieldHP = 18;
-	public int shieldMaxHP = 18;
+	public decimal shieldHP = 20;
+	public int shieldMaxHP = 20;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 	public bool starCrashActive;
@@ -27,6 +27,9 @@ public class Blues : Character {
 	public StarCrashProj? starCrash;
 	public HardKnuckleProj? hardKnuckleProj;
 
+	// AI variables.
+	public float aiSpecialUseTimer = 0;
+
 	// Creation code.
 	public Blues(
 		Player player, float x, float y, int xDir, bool isVisible,
@@ -34,16 +37,17 @@ public class Blues : Character {
 	) : base(
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
-		charId = CharIds.ProtoMan;
+		charId = CharIds.Blues;
 		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
 
 		specialWeapon = protomanLoadout switch {
-			0 => new GeminiLaser(),
+			0 => new NeedleCannon(),
 			1 => new HardKnuckle(),
 			2 => new SearchSnake(),
 			3 => new SparkShock(),
 			4 => new PowerStone(),
 			5 => new GyroAttack(),
+			6 => new NeedleCannon(),
 			_ => new StarCrash(),
 		};
 	}
@@ -192,7 +196,7 @@ public class Blues : Character {
 				new Weapon(), projPos, ProjIds.ProtoStrike, player, 3, Global.halfFlinch, 1f,
 				addToLevel: addToLevel
 
-			)	
+			)
 		};
 		return proj;
 
@@ -238,12 +242,10 @@ public class Blues : Character {
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
-		if (isCharging()) {
-			if (chargeTime <= charge2Time) {
-				coreAmmoIncreaseCooldown += Global.speedMul;
-				if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
-					coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
-				}
+		if (isCharging() && chargeTime <= charge2Time) {
+			coreAmmoIncreaseCooldown += Global.speedMul;
+			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
+				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
 		} else {
 			coreAmmoIncreaseCooldown = 0;
@@ -310,44 +312,34 @@ public class Blues : Character {
 	}
 
 	public override bool normalCtrl() {
-		bool isShieldPressed = Options.main.protoShieldHoldOrToggle ?
-			player.input.isWeaponLeftOrRightPressed(player) : player.input.isWeaponLeftOrRightHeld(player);
-
-		if (Options.main.protoShieldHoldOrToggle) {
-			if (isShieldPressed) {
-				if (isShieldActive) {
-					isShieldActive = false;
-					if (sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name[..^7], false);
-					}
-					if (sprite.name == getSprite("charge")) {
-						changeSpriteFromName("idle", true);
-					}
-				} else if (shieldHP > 0) {
-					isShieldActive = true;
-					if (!sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name + "_shield", false);
-					}
+		// For keeping track of shield change.
+		bool lastShieldMode = isShieldActive;
+		// Shield switch.
+		if (shieldHP > 0 && grounded && vel.y >= 0 && shootAnimTime <= 0) {
+			if (Options.main.protoShieldHold) {
+				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
+			} else {
+				if (player.input.isWeaponLeftOrRightPressed(player)) {
+					isShieldActive = !isShieldActive;
 				}
 			}
-		} else {
-			if (isShieldPressed) isShieldActive = true;
-			else isShieldActive = false;
-
+		}
+		// Change sprite is shield mode changed.
+		if (lastShieldMode != isShieldActive) {
 			if (!isShieldActive || shieldHP <= 0) {
-					//isShieldActive = false;
-					if (sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name[..^7], false);
-					}
-					if (sprite.name == getSprite("charge")) {
-						changeSpriteFromName("idle", true);
-					}
-				} else if (shieldHP > 0 && isShieldActive) {
-					//isShieldActive = true;
-					if (!sprite.name.EndsWith("_shield")) {
-						changeSprite(sprite.name + "_shield", false);
-					}
+				isShieldActive = false;
+				if (sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name[..^7], false);
 				}
+				if (sprite.name == getSprite("charge")) {
+					changeSpriteFromName("idle", true);
+				}
+			} else {
+				isShieldActive = true;
+				if (!sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name + "_shield", false);
+				}
+			}
 		}
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
@@ -364,7 +356,7 @@ public class Blues : Character {
 
 		if (specialPressed) {
 			if (canShootSpecial()) {
-				shootPoderzinho(getChargeLevel());
+				shootSpecial(0);
 				return true;
 			}
 		}
@@ -407,6 +399,7 @@ public class Blues : Character {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
+		float oldShootAnimTime = shootAnimTime;
 		setShootAnim();
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
@@ -416,22 +409,26 @@ public class Blues : Character {
 				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 			);
 			playSound("buster", sendRpc: true);
-			resetCoreCooldown(45);
-			lemonCooldown = 8;
+			//resetCoreCooldown(45);
+			lemonCooldown = 12;
 			unchargedLemonCooldown[lemonNum] = 50;
+			if (oldShootAnimTime <= 0.25f) {
+				shootAnimTime = 0.25f;
+			}
 		} else if (chargeLevel >= 2) {
 			if (player.input.isHeld(Control.Up, player)) changeState(new ProtoStrike(), true);
 			else {
 				new ProtoBusterChargedProj(
-				shootPos, xDir, player, player.getNextActorNetId(), true
-			);
-			playSound("buster3", sendRpc: true);
-			lemonCooldown = 12;
+					shootPos, xDir, player, player.getNextActorNetId(), true
+				);
+				resetCoreCooldown();
+				playSound("buster3", sendRpc: true);
+				lemonCooldown = 12;
 			}
 		}
 	}
 
-	public void shootPoderzinho(int chargeLevel) {
+	public void shootSpecial(int chargeLevel) {
 		if (specialWeapon == null) {
 			return;
 		}
@@ -604,7 +601,7 @@ public class Blues : Character {
 			string damageText = (oldHealth - player.health).ToString();
 			addDamageText(damageText, fontColor);
 			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
-			addCoreAmmo(MathInt.Ceiling(oldHealth - player.health), false);
+			//addCoreAmmo(MathInt.Ceiling(oldHealth - player.health), false);
 			if (!overheating) {
 				coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
 			}
@@ -613,6 +610,40 @@ public class Blues : Character {
 			string damageText = (ogShieldHP - shieldHP).ToString();
 			addDamageText(damageText, (int)FontType.Blue);
 			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
+		}
+	}
+
+	public override void aiAttack(Actor target) {
+		if (AI.trainingBehavior != 0) {
+			return;
+		}
+		Helpers.decrementFrames(ref aiSpecialUseTimer);
+		if (!isFacing(target)) {
+			if (charState.normalCtrl && grounded) {
+				isShieldActive = false;
+			}
+			if (canCharge() && shootAnimTime == 0) {
+				increaseCharge();
+			}
+			return;
+		}
+		if (!charState.attackCtrl) {
+			return;
+		}
+		if (charState.normalCtrl && grounded) {
+			isShieldActive = true;
+		}
+		if (aiSpecialUseTimer == 0 &&
+			specialWeapon is not StarCrash && canShootSpecial() &&
+			coreMaxAmmo - coreAmmo > specialWeapon.getAmmoUsage(0) * 2
+		) {
+			aiSpecialUseTimer = 60;
+			shootSpecial(0);
+			return;
+		}
+		if (canShoot() && lemonCooldown == 0) {
+			shoot(getChargeLevel());
+			return;
 		}
 	}
 }

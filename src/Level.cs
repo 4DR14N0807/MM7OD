@@ -771,7 +771,7 @@ public partial class Level {
 						}
 					}
 				} else {
-					charNum = Helpers.randomRange(5, 5);
+					charNum = Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Blues);
 				}
 
 				PlayerCharData playerData = null;
@@ -793,11 +793,11 @@ public partial class Level {
 
 				// CHANGECHARTOZERO, SWITCHCHARTOZERO
 				if (Global.quickStartSameChar != null) {
-					charNum = 5;
+					//charNum = 5;
 				}
 
 				var cpu = new Player(
-					"CPU" + (i + 1).ToString(), id, 5,
+					"CPU" + (i + 1).ToString(), id, charNum,
 					playerData, true, true, alliance, new Input(true), null
 				);
 				players.Add(cpu);

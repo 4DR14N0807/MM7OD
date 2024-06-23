@@ -14,7 +14,8 @@ public class SearchSnake : Weapon {
 		base.shoot(character, args);
         Point shootPos = character.getShootPos();
         int xDir = character.getShootXDir();
-			new SearchSnakeProj(this, shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
+		new SearchSnakeProj(this, shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
+		character.playSound("buster", sendRpc: true);
 	}
 }
 public class SearchSnakeProj : Projectile {

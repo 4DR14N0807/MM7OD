@@ -797,7 +797,7 @@ public class OptionsMenu : IMainMenu {
 				new MenuOption(
 					30, startY,
 					() => {
-						Helpers.menuLeftRightBool(ref Options.main.protoShieldHoldOrToggle);
+						Helpers.menuLeftRightBool(ref Options.main.protoShieldHold);
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
@@ -807,7 +807,7 @@ public class OptionsMenu : IMainMenu {
 						);
 
 						Fonts.drawText(
-							FontType.Grey, Options.main.protoShieldHoldOrToggle ? "TOGGLE" : "HOLD",
+							FontType.Grey, Options.main.protoShieldHold ? "HOLD" : "TOGGLE",
 							pos.x + 200, pos.y
 						);
 					},

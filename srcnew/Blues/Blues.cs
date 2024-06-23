@@ -41,7 +41,7 @@ public class Blues : Character {
 		int protomanLoadout = player.loadout.protomanLoadout.specialWeapon;
 
 		specialWeapon = protomanLoadout switch {
-			0 => new GeminiLaser(),
+			0 => new NeedleCannon(),
 			1 => new HardKnuckle(),
 			2 => new SearchSnake(),
 			3 => new SparkShock(),

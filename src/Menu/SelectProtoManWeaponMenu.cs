@@ -42,7 +42,7 @@ public class SelectProtoManWeaponMenu : IMainMenu {
 	public int maxCols = 9;
 	public static List<string> weaponNames = new List<string>()
 	{
-			"GEMINI LASER",
+			"NEEDLE CANNON",
 			"HARD KNUCKLE",
 			"SEARCH SNAKE",
 			"SPARK SHOCK",

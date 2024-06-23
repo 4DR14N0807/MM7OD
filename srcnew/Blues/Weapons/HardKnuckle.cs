@@ -7,13 +7,17 @@ public class HardKnuckle : Weapon {
 	public static HardKnuckle netWeapon = new();
 
 	public HardKnuckle() : base() {
+		displayName = "Hard Knuckle";
+		descriptionV2 = "Fires out a large missile shaped like a fist.\nCan damage more than one target.";
+		defaultAmmoUse = 4;
+
 		index = (int)RockWeaponIds.HardKnuckle;
 		fireRateFrames = 40;
 		hasCustomAnim = true;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
-		return 4;
+		return defaultAmmoUse;
 	}
 
 	public override bool canShoot(int chargeLevel, Character character) {

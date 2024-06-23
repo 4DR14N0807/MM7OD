@@ -6,7 +6,11 @@ public class NeedleCannon : Weapon {
 	public static NeedleCannon netWeapon = new();
 
     public NeedleCannon() : base() {
-        index = (int)RockWeaponIds.NeedleCannon;
+		displayName = "Needle Cannon";
+		descriptionV2 = "Rapid fire cannon that deals fast damage.\nHas high heat generation.";
+		ammoUseText = "14 per second.";
+
+		index = (int)RockWeaponIds.NeedleCannon;
         fireRateFrames = 6;
     }
 

@@ -255,7 +255,14 @@ public class Anim : Actor {
 		return base.getShaders();
 	}
 
-	public static void createGibEffect(string spriteName, Point centerPos, Player player, GibPattern gibPattern = GibPattern.Radial, float randVelStart = 100, float randVelEnd = 200, float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false) {
+	public static void createGibEffect(
+		string spriteName, Point centerPos, Player? player,
+		GibPattern gibPattern = GibPattern.Radial, float randVelStart = 100,
+		float randVelEnd = 200, float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false
+	) {
+		if (player == null) {
+			sendRpc = false;
+		}
 		var sprite = Global.sprites[spriteName];
 		float startAngle = 0;
 		for (int i = 0; i < sprite.frames.Count; i++) {
@@ -269,7 +276,10 @@ public class Anim : Actor {
 			float randDist = Helpers.randomRange(randDistStart, randDistEnd);
 			float compX = Helpers.cosd(angle);
 			float compY = Helpers.sind(angle);
-			var anim = new Anim(centerPos.addxy(compX * randDist, compY * randDist), spriteName, 1, sendRpc ? player.getNextActorNetId() : null, false, sendRpc: sendRpc);
+			var anim = new Anim(
+				centerPos.addxy(compX * randDist, compY * randDist), spriteName,
+				1, sendRpc && player != null ? player.getNextActorNetId() : null, false, sendRpc: sendRpc
+			);
 
 			anim.useGravity = true;
 			anim.ttl = 0.75f;

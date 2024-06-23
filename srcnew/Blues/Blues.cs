@@ -38,7 +38,7 @@ public class Blues : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Blues;
-		int protomanLoadout = player.loadout.protomanLoadout.weapon1;
+		int protomanLoadout = player.loadout.protomanLoadout.specialWeapon;
 
 		specialWeapon = protomanLoadout switch {
 			0 => new GeminiLaser(),
@@ -305,9 +305,7 @@ public class Blues : Character {
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
-		if (newState is Hurt) {
-			addCoreAmmo(3);
-		}
+		coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
 		base.onFlinchOrStun(newState);
 	}
 

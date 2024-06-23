@@ -22,8 +22,13 @@ public class Weapon {
 	public float shootCooldown;
 	public float altShootTime;
 	public float streamTime;
+
 	public string displayName = "";
 	public string[] description = {""};
+	public string descriptionV2 = "";
+	public float defaultAmmoUse = 0;
+	public string ammoUseText = "";
+
 	public Damager? damager;
 	public int type; // For "swappable category" weapons, like techniques, vile weapon sections, etc.
 	public int streams;

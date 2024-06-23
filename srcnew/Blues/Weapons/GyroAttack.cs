@@ -5,13 +5,17 @@ namespace MMXOnline;
 
 public class GyroAttack : Weapon {
     public GyroAttack() : base() {
+		displayName = "Gyro Attack";
+		descriptionV2 = "Temp.";
+		defaultAmmoUse = 2;
+
         index = (int)RockWeaponIds.GyroAttack;
         fireRateFrames = 60;
 
     }
-    
+
     public override float getAmmoUsage(int chargeLevel) {
-        return 2;
+        return defaultAmmoUse;
     }
 
 	public override void shoot(Character character, params int[] args) {

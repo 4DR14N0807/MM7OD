@@ -393,37 +393,6 @@ public class RockLoadout {
 	}
 }
 
-
-[ProtoContract]
-public class ProtoManLoadout {
-	[ProtoMember(1)] public int weapon1;
-
-	public List<int> getProtoManWeaponIndices() {
-		return new List<int>() { weapon1 };
-	}
-
-	public void validate() {
-		if (weapon1 < 0 || weapon1 > 9) weapon1 = 0;
-	}
-
-	public List<Weapon> getWeaponsFromLoadout(Player player) {
-		var indices = new List<byte>();
-		indices.Add((byte)weapon1);
-
-		return indices.Select(index => {
-			return Weapon.getAllProtoManWeapons().Find(w => w.index == index).clone();
-		}).ToList();
-	}
-
-	public static ProtoManLoadout createRandom() {
-		int[] weapons = { 1, 4, 4 };
-		return new ProtoManLoadout() {
-			weapon1 = weapons[Helpers.randomRange(0, weapons.Length - 1)]
-		};
-	}
-}
-
-
 [ProtoContract]
 public class LoadoutData {
 	[ProtoMember(1)] public int playerId;

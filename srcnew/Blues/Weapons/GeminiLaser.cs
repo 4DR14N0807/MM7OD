@@ -5,12 +5,16 @@ namespace MMXOnline;
 
 public class GeminiLaser : Weapon {
     public GeminiLaser() : base() {
+		displayName = "Gemini Laser";
+		descriptionV2 = "Temp.";
+		defaultAmmoUse = 3;
+
         index = (int)RockWeaponIds.GeminiLaser;
         fireRateFrames = 60;
     }
 
     public override float getAmmoUsage(int chargeLevel) {
-        return 3;
+        return defaultAmmoUse;
     }
 
 

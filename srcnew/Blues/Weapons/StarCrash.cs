@@ -4,9 +4,15 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class StarCrash : Weapon {
+	public static StarCrash netWeapon = new();
+
 	public StarCrashProj? activeProj;
 
 	public StarCrash() : base() {
+		displayName = "Star Crash";
+		descriptionV2 = "An aura that reduces gravity.";
+		ammoUseText = "1 per second.";
+
 		index = (int)RockWeaponIds.StarCrash;
 		fireRateFrames = 60;
 		hasCustomAnim = true;
@@ -29,7 +35,7 @@ public class StarCrash : Weapon {
 			activeProj = null;
 		} else {
 			activeProj = new StarCrashProj(
-				this, character.getCenterPos(), character.xDir, character.player,
+				character.getCenterPos(), character.xDir, character.player,
 				character.player.getNextActorNetId(), true
 			);
 			blues.starCrash = activeProj;
@@ -47,10 +53,10 @@ public class StarCrashProj : Projectile {
 	int coreCooldown = 50;
 
 	public StarCrashProj(
-		Weapon weapon, Point pos, int xDir,
+		Point pos, int xDir,
 		Player player, ushort? netId, bool sendRpc = false
 	) : base(
-		weapon, pos, xDir, 0, 0, player, "empty",
+		StarCrash.netWeapon, pos, xDir, 0, 0, player, "empty",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.StarCrash;

@@ -125,7 +125,7 @@ public class SelectProtoManWeaponMenu : IMainMenu {
 			}
             */
 
-				Options.main.protomanLoadout.weapon1 = selectedWeaponIndices[0];
+				Options.main.protomanLoadout.specialWeapon = selectedWeaponIndices[0];
 				shouldSave = true;
 				if (inGame) {
 					if (Options.main.killOnLoadoutChange) {

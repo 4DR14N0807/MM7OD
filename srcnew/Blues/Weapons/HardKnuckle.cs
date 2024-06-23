@@ -48,6 +48,16 @@ public class HardKnuckleProj : Projectile {
 		fadeOnAutoDestroy = true;
 		destroyOnHit = false;
 		spawnPointX = pos.x;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new HardKnuckleProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 
 	public override void update() {

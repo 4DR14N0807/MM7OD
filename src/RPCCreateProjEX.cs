@@ -42,6 +42,19 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.WildCoilCharged, WildCoilChargedProj.rpcInvoke },
 		{ (int)RockProjIds.SARocketPunch, SARocketPunchProj.rpcInvoke },
 		{ (int)RockProjIds.SAArrowSlash, ArrowSlashProj.rpcInvoke },
+
+		//Blues
+		{ (int)BluesProjIds.Lemon, ProtoBusterProj.rpcInvoke },
+		{ (int)BluesProjIds.LemonAngled, ProtoBusterAngledProj.rpcInvoke },
+		{ (int)BluesProjIds.ChargedBuster, ProtoBusterChargedProj.rpcInvoke },
+		{ (int)BluesProjIds.NeedleCannon, NeedleCannonProj.rpcInvoke },
+		{ (int)BluesProjIds.HardKnuckle, HardKnuckleProj.rpcInvoke },
+		{ (int)BluesProjIds.SearchSnake, SearchSnakeProj.rpcInvoke },
+		{ (int)BluesProjIds.SparkShock, SparkShockProj.rpcInvoke },
+		{ (int)BluesProjIds.PowerStone, PowerStoneProj.rpcInvoke },
+		{ (int)BluesProjIds.GyroAttack, GyroAttackProj.rpcInvoke },
+		{ (int)BluesProjIds.StarCrash, StarCrashProj.rpcInvoke },
+
 		
 		// Buster Zero
 		/*{ (int)ProjIds.DZBuster, DZBusterProj.rpcInvoke },

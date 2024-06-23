@@ -5,6 +5,7 @@ namespace MMXOnline;
 
 public class StarCrash : Weapon {
 	public StarCrashProj? activeProj;
+	public static StarCrash netWeapon = new();
 
 	public StarCrash() : base() {
 		index = (int)RockWeaponIds.StarCrash;
@@ -29,7 +30,7 @@ public class StarCrash : Weapon {
 			activeProj = null;
 		} else {
 			activeProj = new StarCrashProj(
-				this, character.getCenterPos(), character.xDir, character.player,
+				character.getCenterPos(), character.xDir, character.player,
 				character.player.getNextActorNetId(), true
 			);
 			blues.starCrash = activeProj;
@@ -47,15 +48,25 @@ public class StarCrashProj : Projectile {
 	int coreCooldown = 50;
 
 	public StarCrashProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, ushort? netId, bool sendRpc = false
+		Point pos, int xDir, Player player, 
+		ushort? netId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 0, player, "empty",
+		StarCrash.netWeapon, pos, xDir, 0, 0, player, "empty",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.StarCrash;
 		blues = player.character as Blues;
 		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new StarCrashProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 
 	public override void update() {

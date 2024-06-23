@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SparkShock : Weapon {
+    public static SparkShock netWeapon = new();
     public SparkShock() : base() {
         index = (int)RockWeaponIds.SparkShock;
         fireRateFrames = 60;
@@ -13,18 +14,28 @@ public class SparkShock : Weapon {
 		base.shoot(character, args);
         Point shootPos = character.getShootPos();
         int xDir = character.getShootXDir();
-        new SparkShockProj(this, shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
+        new SparkShockProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
         character.playSound("spark_shock", sendRpc: true);
 	}
 }
 public class SparkShockProj : Projectile {
 
 
-    public SparkShockProj(Weapon weapon, Point pos, int xDir, Player player, ushort? netId, bool rpc = false) : 
-    base(weapon, pos, xDir, 180, 2, player, "spark_shock_proj", 0, 0, netId, player.ownedByLocalPlayer) {
+    public SparkShockProj(Point pos, int xDir, Player player, ushort? netId, bool rpc = false) : 
+    base(SparkShock.netWeapon, pos, xDir, 180, 2, player, "spark_shock_proj", 0, 0, netId, player.ownedByLocalPlayer) {
         maxTime = 0.75f;
         projId = (int)BluesProjIds.SparkShock;
+
+        if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
     }
+
+    public static Projectile rpcInvoke(ProjParameters args) {
+		return new SparkShockProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
 
 
     public override void update() {

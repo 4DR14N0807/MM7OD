@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SearchSnake : Weapon {
+	public static SearchSnake netWeapon = new();
     public SearchSnake() : base() {
         index = (int)RockWeaponIds.SearchSnake;
         fireRateFrames = 45;
@@ -14,13 +15,13 @@ public class SearchSnake : Weapon {
 		base.shoot(character, args);
         Point shootPos = character.getShootPos();
         int xDir = character.getShootXDir();
-		new SearchSnakeProj(this, shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
+		new SearchSnakeProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
 		character.playSound("buster", sendRpc: true);
 	}
 }
 public class SearchSnakeProj : Projectile {
-	public SearchSnakeProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-		base(weapon, pos, xDir, 0, 2, player, "search_snake_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
+	public SearchSnakeProj(Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
+		base(SearchSnake.netWeapon, pos, xDir, 0, 2, player, "search_snake_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
 		projId = (int)BluesProjIds.SearchSnake;
         wallCrawlSpeed = 120;
 		destroyOnHit = true;
@@ -30,6 +31,12 @@ public class SearchSnakeProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new SearchSnakeProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 
 	public override void update() {

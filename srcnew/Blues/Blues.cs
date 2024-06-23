@@ -47,7 +47,6 @@ public class Blues : Character {
 			3 => new SparkShock(),
 			4 => new PowerStone(),
 			5 => new GyroAttack(),
-			6 => new NeedleCannon(),
 			_ => new StarCrash(),
 		};
 	}

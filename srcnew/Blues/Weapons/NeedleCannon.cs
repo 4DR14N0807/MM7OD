@@ -6,12 +6,22 @@ public class NeedleCannon : Weapon {
 	public static NeedleCannon netWeapon = new();
 
     public NeedleCannon() : base() {
-		displayName = "Needle Cannon";
-		descriptionV2 = "Rapid fire cannon that deals fast damage.\nHas high heat generation.";
-		ammoUseText = "14 per second.";
-
+		// Tecnical data.
 		index = (int)RockWeaponIds.NeedleCannon;
         fireRateFrames = 6;
+		defaultAmmoUse = 1.4f;
+
+		// Display data.
+		displayName = "Needle Cannon";
+		descriptionV2 = "Rapid fire cannon that deals fast damage.\nHas high heat generation.";
+
+		// Auto-calculation for ammo per second text.
+		decimal ammoUseDec = Decimal.Parse(defaultAmmoUse.ToString());
+		decimal chps = ammoUseDec * (60m / (decimal)fireRateFrames);
+		string chpsString = Math.Ceiling(chps).ToString("#");
+
+		// Ammo use text.
+		string ammoUseText = chpsString + " per second.";
     }
 
     public override void shoot(Character character, params int[] args) {
@@ -28,7 +38,7 @@ public class NeedleCannon : Weapon {
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
-		return 1.4f;
+		return defaultAmmoUse;
 	}
 }
 

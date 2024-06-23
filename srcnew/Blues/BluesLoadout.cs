@@ -7,7 +7,7 @@ namespace MMXOnline;
 [ProtoContract]
 public class ProtoManLoadout {
 	[ProtoMember(1)]
-	public int specialWeapon;
+	public int specialWeapon = 4;
 
 	public List<int> getProtoManWeaponIndices() {
 		return new List<int>() { specialWeapon };

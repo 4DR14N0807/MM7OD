@@ -241,12 +241,10 @@ public class Blues : Character {
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
-		if (isCharging()) {
-			if (chargeTime <= charge2Time) {
-				coreAmmoIncreaseCooldown += Global.speedMul;
-				if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
-					coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
-				}
+		if (isCharging() && chargeTime <= charge2Time) {
+			coreAmmoIncreaseCooldown += Global.speedMul;
+			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
+				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
 		} else {
 			coreAmmoIncreaseCooldown = 0;
@@ -400,6 +398,7 @@ public class Blues : Character {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
+		float oldShootAnimTime = shootAnimTime;
 		setShootAnim();
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
@@ -409,15 +408,19 @@ public class Blues : Character {
 				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 			);
 			playSound("buster", sendRpc: true);
-			resetCoreCooldown(45);
-			lemonCooldown = 8;
+			//resetCoreCooldown(45);
+			lemonCooldown = 12;
 			unchargedLemonCooldown[lemonNum] = 50;
+			if (oldShootAnimTime <= 0.25f) {
+				shootAnimTime = 0.25f;
+			}
 		} else if (chargeLevel >= 2) {
 			if (player.input.isHeld(Control.Up, player)) changeState(new ProtoStrike(), true);
 			else {
 				new ProtoBusterChargedProj(
-				shootPos, xDir, player, player.getNextActorNetId(), true
-			);
+					shootPos, xDir, player, player.getNextActorNetId(), true
+				);
+				resetCoreCooldown();
 				playSound("buster3", sendRpc: true);
 				lemonCooldown = 12;
 			}

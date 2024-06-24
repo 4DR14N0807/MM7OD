@@ -107,8 +107,8 @@ public class Options {
 	public int gridModeRock;
 
 	//ProtoMan
-	public bool useRandomProtoManLoadout;
-	public ProtoManLoadout protomanLoadout = new ProtoManLoadout();
+	public bool useRandomBluesLoadout;
+	public BluesLoadout bluesLoadout = new BluesLoadout();
 	public bool protoShieldHold;
 	
 	// Punchy Zero
@@ -161,7 +161,7 @@ public class Options {
 		axlLoadout.validate();
 		sigmaLoadout.validate();
 		rockLoadout.validate();
-		protomanLoadout.validate();
+		bluesLoadout.validate();
 	}
 
 	public static bool isValidLANIP(string LANIPPrefix) {

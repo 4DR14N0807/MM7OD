@@ -8,8 +8,8 @@ public class SparkShock : Weapon {
 
 	public SparkShock() : base() {
 		displayName = "Spark Shock";
-		descriptionV2 = "Generates an energy ball that can short-circuit" + "\n" +
-						"electronic components, temporarily paralyzing enemies.";
+		descriptionV2 = "Generates an energy ball that can shortcircuit" + "\n" +
+						"electronics, temporarily paralyzing enemies.";
 		defaultAmmoUse = 3;
 
 		index = (int)RockWeaponIds.SparkShock;

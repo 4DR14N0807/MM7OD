@@ -60,7 +60,7 @@ public class SelectProtoManWeaponMenu : IMainMenu {
 			weaponPositions.Add(new Point(80, 42 + (i * 18)));
 		}
 
-		selectedWeaponIndices = Options.main.protomanLoadout.getProtoManWeaponIndices();
+		selectedWeaponIndices = Options.main.bluesLoadout.getProtoManWeaponIndices();
 		this.inGame = inGame;
 
 		cursors = new List<ProtoManWeaponCursor>();
@@ -125,7 +125,7 @@ public class SelectProtoManWeaponMenu : IMainMenu {
 			}
             */
 
-				Options.main.protomanLoadout.specialWeapon = selectedWeaponIndices[0];
+				Options.main.bluesLoadout.specialWeapon = selectedWeaponIndices[0];
 				shouldSave = true;
 				if (inGame) {
 					if (Options.main.killOnLoadoutChange) {

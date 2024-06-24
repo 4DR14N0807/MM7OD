@@ -10,8 +10,9 @@ public class StarCrash : Weapon {
 
 	public StarCrash() : base() {
 		displayName = "Star Crash";
-		descriptionV2 = "An aura that reduces gravity.";
-		ammoUseText = "1 per second.";
+		descriptionV2 = "Creates a star-shaped energy barrier\nthat reduces gravity.";
+		decimal coreCooldown = 50;
+		ammoUseText = (1 /coreCooldown * 60).ToGBString() + " per second";
 
 		index = (int)RockWeaponIds.StarCrash;
 		fireRateFrames = 60;

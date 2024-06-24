@@ -5,7 +5,7 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 [ProtoContract]
-public class ProtoManLoadout {
+public class BluesLoadout {
 	[ProtoMember(1)]
 	public int specialWeapon = 4;
 
@@ -17,9 +17,10 @@ public class ProtoManLoadout {
 		if (specialWeapon < 0 || specialWeapon > 9) specialWeapon = 0;
 	}
 
-	public static ProtoManLoadout createRandom() {
-		int[] weapons = { 1, 4, 4 };
-		return new ProtoManLoadout() {
+	public static BluesLoadout createRandom() {
+		// Star Crash not here for AI reasons.
+		int[] weapons = { 0, 1, 2, 3, 4, 5, 6 };
+		return new BluesLoadout() {
 			specialWeapon = weapons[Helpers.randomRange(0, weapons.Length - 1)]
 		};
 	}
@@ -30,25 +31,26 @@ public class BluesWeaponMenu : IMainMenu {
 	public IMainMenu prevMenu;
 	public int cursorRow;
 	bool inGame;
-	public ProtoManLoadout targetLoadout = Options.main.protomanLoadout;
+	public BluesLoadout targetLoadout = Options.main.bluesLoadout;
 
 	// Loadout items.
 	public int specialWeapon;
 
 	public int[][] weaponIcons = [
-		[0, 0, 0, 0, 0, 0, 0]
+		[4, 5, 6, 7, 8, 9, 10, 11]
 	];
 	public string[] categoryNames = [
 		"Special Weapon"
 	];
 	public Weapon[] specialWeapons = [
-		PowerStone.netWeapon,
-		PowerStone.netWeapon,
-		PowerStone.netWeapon,
-		PowerStone.netWeapon,
-		PowerStone.netWeapon,
-		PowerStone.netWeapon,
-		PowerStone.netWeapon,
+		new NeedleCannon(),
+		new HardKnuckle(),
+		new SearchSnake(),
+		new SparkShock(),
+		new PowerStone(),
+		new WaterWave(),
+		new GyroAttack(),
+		new StarCrash(),
 	];
 
 	public BluesWeaponMenu(IMainMenu prevMenu, bool inGame) {
@@ -63,11 +65,15 @@ public class BluesWeaponMenu : IMainMenu {
 		//Helpers.menuUpDown(ref cursorRow, 0, 1);
 
 		if (cursorRow == 0) {
-			Helpers.menuLeftRightInc(ref specialWeapon, 0, 2, playSound: true);
+			Helpers.menuLeftRightInc(ref specialWeapon, 0, specialWeapons.Length - 1, true, playSound: true);
 		}
 
 		if (okPressed || backPressed && !inGame) {
 			bool isChanged = false;
+			// Temportally disables water wave.
+			if (specialWeapon == 5) {
+				specialWeapon = 0;
+			}
 			if (targetLoadout.specialWeapon != specialWeapon) {
 				targetLoadout.specialWeapon = specialWeapon;
 				isChanged = true;
@@ -93,7 +99,7 @@ public class BluesWeaponMenu : IMainMenu {
 
 		int startY = 55;
 		int startX = 30;
-		int startX2 = 128;
+		int startX2 = 160;
 		int wepW = 18;
 		int wepH = 20;
 		Global.sprites["cursor"].drawToHUD(0, startX, startY + cursorRow * wepH);
@@ -103,14 +109,14 @@ public class BluesWeaponMenu : IMainMenu {
 			float yPos = startY - 6 + (i * wepH);
 			// Current variable.
 			int selectVar = i switch {
-				_ => 0
+				_ => specialWeapon
 			};
 			// Category name.
-			Fonts.drawText(FontType.Blue, categoryNames[i], 40, yPos + 2, selected: cursorRow == i);
+			Fonts.drawText(FontType.LigthGrey, categoryNames[i], 40, yPos + 2);
 			// Icons.
 			for (int j = 0; j < weaponIcons[i].Length; j++) {
 				// Draw icon sprite.
-				Global.sprites["hud_weapon_icon"].drawToHUD(
+				Global.sprites["hud_blues_weapon_icon"].drawToHUD(
 					weaponIcons[i][j], startX2 + (j * wepW), startY + (i * wepH)
 				);
 				// Darken non-selected icons.
@@ -128,10 +134,15 @@ public class BluesWeaponMenu : IMainMenu {
 		string weaponDescription = "";
 		string weaponSubDescription = "";
 		if (cursorRow == 0) {
-			menuTitle = "Giga Attack";
-			weaponTitle = "";
-			weaponDescription = "";
-			weaponSubDescription = "";
+			Weapon currentWeapon = specialWeapons[specialWeapon];
+			menuTitle = "Special Weapon";
+			weaponTitle = currentWeapon.displayName;;
+			weaponDescription = currentWeapon.descriptionV2;;
+			if (currentWeapon.ammoUseText != "") {
+				weaponSubDescription = $"Heat generation: {currentWeapon.ammoUseText}";
+			} else {
+				weaponSubDescription = $"Heat generation: {currentWeapon.defaultAmmoUse}";
+			}
 		}
 		// Draw rectangle.
 		int wsy = 124;
@@ -144,10 +155,10 @@ public class BluesWeaponMenu : IMainMenu {
 			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
 		);
 		// Draw descriptions.
-		float titleY1 = 124;
-		float titleY2 = 140;
-		float row1Y = 153;
-		float row2Y = 181;
+		float titleY1 = wsy;
+		float titleY2 = titleY1 + 16;
+		float row1Y = titleY2 + 13;
+		float row2Y = row1Y + 28;
 		Fonts.drawText(
 			FontType.Purple, menuTitle,
 			Global.halfScreenW, titleY1, Alignment.Center
@@ -157,11 +168,11 @@ public class BluesWeaponMenu : IMainMenu {
 			Global.halfScreenW, titleY2, Alignment.Center
 		);
 		Fonts.drawText(
-			FontType.Green, weaponDescription,
+			FontType.Grey, weaponDescription,
 			Global.halfScreenW, row1Y, Alignment.Center
 		);
 		Fonts.drawText(
-			FontType.Blue, weaponSubDescription,
+			FontType.Green, weaponSubDescription,
 			Global.halfScreenW, row2Y, Alignment.Center
 		);
 	}

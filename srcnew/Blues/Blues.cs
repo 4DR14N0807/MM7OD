@@ -38,7 +38,7 @@ public class Blues : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Blues;
-		int protomanLoadout = player.loadout.protomanLoadout.specialWeapon;
+		int protomanLoadout = player.loadout.bluesLoadout.specialWeapon;
 
 		specialWeapon = protomanLoadout switch {
 			0 => new NeedleCannon(),
@@ -46,8 +46,10 @@ public class Blues : Character {
 			2 => new SearchSnake(),
 			3 => new SparkShock(),
 			4 => new PowerStone(),
-			5 => new GyroAttack(),
-			_ => new StarCrash(),
+			5 => new WaterWave(),
+			6 => new GyroAttack(),
+			7 => new StarCrash(),
+			_ => new PowerStone(),
 		};
 	}
 

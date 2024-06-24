@@ -395,15 +395,16 @@ public class RockLoadout {
 
 [ProtoContract]
 public class LoadoutData {
-	[ProtoMember(1)] public int playerId;
-	[ProtoMember(2)] public XLoadout xLoadout = new XLoadout();
-	[ProtoMember(3)] public ZeroLoadout zeroLoadout = new ZeroLoadout();
-	[ProtoMember(4)] public VileLoadout vileLoadout = new VileLoadout();
-	[ProtoMember(5)] public AxlLoadout axlLoadout = new AxlLoadout();
-	[ProtoMember(6)] public SigmaLoadout sigmaLoadout = new SigmaLoadout();
-	[ProtoMember(7)] public RockLoadout rockLoadout = new RockLoadout();
-	[ProtoMember(8)] public ProtoManLoadout protomanLoadout = new ProtoManLoadout();
-	[ProtoMember(9)] public PZeroLoadout pzeroLoadout = new();
+	[JsonIgnore] public int playerId;
+	[JsonIgnore] public XLoadout xLoadout = new XLoadout();
+	[JsonIgnore] public ZeroLoadout zeroLoadout = new ZeroLoadout();
+	[JsonIgnore] public VileLoadout vileLoadout = new VileLoadout();
+	[JsonIgnore] public AxlLoadout axlLoadout = new AxlLoadout();
+	[JsonIgnore] public SigmaLoadout sigmaLoadout = new SigmaLoadout();
+	[JsonIgnore] public PZeroLoadout pzeroLoadout = new();
+
+	[ProtoMember(1)] public RockLoadout rockLoadout = new RockLoadout();
+	[ProtoMember(2)] public BluesLoadout bluesLoadout = new BluesLoadout();
 
 	public static LoadoutData createRandom(int playerId) {
 		return new LoadoutData() {
@@ -414,7 +415,7 @@ public class LoadoutData {
 			axlLoadout = AxlLoadout.createRandom(),
 			sigmaLoadout = SigmaLoadout.createRandom(),
 			rockLoadout = RockLoadout.createRandom(),
-			protomanLoadout = ProtoManLoadout.createRandom(),
+			bluesLoadout = BluesLoadout.createRandom(),
 		};
 	}
 
@@ -427,7 +428,7 @@ public class LoadoutData {
 			axlLoadout = Helpers.cloneProtobuf(Options.main.axlLoadout),
 			sigmaLoadout = Helpers.cloneProtobuf(Options.main.sigmaLoadout),
 			rockLoadout = Helpers.cloneProtobuf(Options.main.rockLoadout),
-			protomanLoadout = Helpers.cloneProtobuf(Options.main.protomanLoadout),
+			bluesLoadout = Helpers.cloneProtobuf(Options.main.bluesLoadout),
 		};
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -189,4 +190,14 @@ public static class Extensions {
 
 		return bytes;
 	}
+
+	public static string ToGBString(this double value)  {
+        return value.ToString(CultureInfo.GetCultureInfo("en-GB"));
+    }
+	public static string ToGBString(this float value)  {
+        return value.ToString(CultureInfo.GetCultureInfo("en-GB"));
+    }
+	public static string ToGBString(this decimal value)  {
+        return value.ToString(CultureInfo.GetCultureInfo("en-GB"));
+    }
 }

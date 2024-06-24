@@ -308,6 +308,7 @@ public enum RockWeaponIds {
 	SearchSnake,
 	SparkShock,
 	PowerStone,
+	WaterWave,
 	GyroAttack,
 	StarCrash,
 	NeedleCannon,

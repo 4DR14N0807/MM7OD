@@ -4,14 +4,15 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class GyroAttack : Weapon {
+	public static GyroAttack netWeapon = new();
+
     public GyroAttack() : base() {
 		displayName = "Gyro Attack";
-		descriptionV2 = "Temp.";
+		descriptionV2 = "A propeller weapon that can\nbe aimed in 3 diferent directions.";
 		defaultAmmoUse = 2;
 
         index = (int)RockWeaponIds.GyroAttack;
         fireRateFrames = 60;
-
     }
 
     public override float getAmmoUsage(int chargeLevel) {
@@ -26,8 +27,6 @@ public class GyroAttack : Weapon {
         new GyroAttackProj(this, shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
 	}
 }
-
-
 
 public class GyroAttackProj : Projectile {
 

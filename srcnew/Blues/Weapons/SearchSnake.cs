@@ -12,7 +12,7 @@ public class SearchSnake : Weapon {
 		defaultAmmoUse = 2;
 
 		index = (int)RockWeaponIds.SearchSnake;
-		fireRateFrames = 30;
+		fireRateFrames = 45;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -45,6 +45,12 @@ public class SearchSnakeProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new SearchSnakeProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 
 	public override void update() {

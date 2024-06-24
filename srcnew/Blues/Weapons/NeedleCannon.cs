@@ -52,5 +52,15 @@ public class NeedleCannonProj : Projectile {
 		maxTime = 0.25f;
 		fadeSprite = "needle_cannon_proj_fade";
 		projId = (int)BluesProjIds.NeedleCannon;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new NeedleCannonProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 }

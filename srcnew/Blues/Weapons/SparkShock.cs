@@ -22,10 +22,10 @@ public class SparkShock : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-        Point shootPos = character.getShootPos();
-        int xDir = character.getShootXDir();
-        new SparkShockProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
-        character.playSound("spark_shock", sendRpc: true);
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
+		new SparkShockProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
+		character.playSound("spark_shock", sendRpc: true);
 	}
 }
 
@@ -39,9 +39,15 @@ public class SparkShockProj : Projectile {
 	) {
 		maxTime = 0.75f;
 		projId = (int)BluesProjIds.SparkShock;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
 	}
 
-	public override void update() {
-		base.update();
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new SparkShockProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 }

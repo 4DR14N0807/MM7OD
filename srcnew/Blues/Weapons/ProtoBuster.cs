@@ -28,6 +28,11 @@ public class ProtoBusterProj : Projectile {
 		}
 	}
 
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoBusterProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
 	public override void update() {
 		base.update();
 		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 300) {
@@ -65,6 +70,12 @@ public class ProtoBusterAngledProj : Projectile {
 		}
 	}
 
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoBusterAngledProj(
+			args.pos, args.byteAngle, args.player, args.netId
+		);
+	}
+
 	public override void onReflect() {
 		xDir *= -1;
 		vel.x *= -1;
@@ -84,5 +95,17 @@ public class ProtoBusterChargedProj : Projectile {
 		fadeSprite = "proto_chargeshot_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.5f;
+		projId = (int)BluesProjIds.ChargedBuster;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoBusterChargedProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 }

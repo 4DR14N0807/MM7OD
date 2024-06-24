@@ -5,14 +5,13 @@ namespace MMXOnline;
 
 public class StarCrash : Weapon {
 	public static StarCrash netWeapon = new();
-
 	public StarCrashProj? activeProj;
 
 	public StarCrash() : base() {
 		displayName = "Star Crash";
 		descriptionV2 = "Creates a star-shaped energy barrier\nthat reduces gravity.";
 		decimal coreCooldown = 50;
-		ammoUseText = (1 /coreCooldown * 60).ToGBString() + " per second";
+		ammoUseText = (1 / coreCooldown * 60).ToGBString() + " per second";
 
 		index = (int)RockWeaponIds.StarCrash;
 		fireRateFrames = 60;
@@ -55,7 +54,7 @@ public class StarCrashProj : Projectile {
 
 	public StarCrashProj(
 		Point pos, int xDir,
-		Player player, ushort? netId, bool sendRpc = false
+		Player player, ushort? netId, bool rpc = false
 	) : base(
 		StarCrash.netWeapon, pos, xDir, 0, 0, player, "empty",
 		0, 0, netId, player.ownedByLocalPlayer
@@ -63,8 +62,16 @@ public class StarCrashProj : Projectile {
 		projId = (int)BluesProjIds.StarCrash;
 		blues = player.character as Blues;
 		canBeLocal = false;
-		//fadeSprite = "star_crash_fade";
-		//fadeOnAutoDestroy = true;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new StarCrashProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 
 	public override void update() {

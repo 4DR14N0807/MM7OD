@@ -73,6 +73,9 @@ public class Sprite {
 		}
 
 		string textureName = Path.GetFileNameWithoutExtension(spritesheetPath);
+		if (!Global.textures.ContainsKey(textureName)) {
+			throw new Exception("Missing texture \"" + textureName + "\" for sprite \"" + name + "\"");
+		}
 		bitmap = Global.textures[textureName];
 
 		if (textureName == "XDefault") {

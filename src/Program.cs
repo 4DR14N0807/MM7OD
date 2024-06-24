@@ -186,9 +186,9 @@ class Program {
 			loadText[loadText.Count - 1] = "Masterserver OK.";
 		}
 
-		loadText.Add("Deleting MMX Characters..."); //Loading Sprites...
+		loadText.Add("Deleting MMX Sprites..."); //Loading Sprites...
 		loadMultiThread(loadText, window, loadImages);
-		loadText[loadText.Count - 1] = "MMX Chars Deleted."; //Loaded Sprites.
+		loadText[loadText.Count - 1] = "MMX Sprites Deleted."; //Loaded Sprites.
 
 		loadText.Add("Deleting Walljump..."); //Loading Sprite JSONS...
 		loadMultiThread(loadText, window, loadSprites);
@@ -198,10 +198,10 @@ class Program {
 		loadMultiThread(loadText, window, loadLevels);
 		loadText[loadText.Count - 1] = "Maps Replaced."; // Maps Loaded.
 
-		loadText.Add("Downloading MEGAMARI..."); //Loading SFX...
+		loadText.Add("Downloading MEGAMARI Sounds..."); //Loading SFX...
 		loadMultiThread(loadText, window, loadSounds);
 
-		loadText[loadText.Count - 1] = $"MEGAMARI Downloaded."; //Loaded {Global.soundCount} SFX files."; SFX Loaded
+		loadText[loadText.Count - 1] = $"MEGAMARI Sounds Downloaded."; //Loaded {Global.soundCount} SFX files."; SFX Loaded
 
 		loadText.Add("Adding Fumos..."); //Loading Music...
 		loadMultiThread(loadText, window, loadMusics);
@@ -798,16 +798,17 @@ class Program {
 				spriteFilePaths[(fileSplit*5)..],
 			};
 			string[] fileChecksums = new string[6];
-			List<Thread> threads = new();
+			List<Task> threads = new();
 			for (int i = 0; i < treadedFilePaths.Length; i++) {
 				int j = i;
-				Thread tempThread = new Thread(() => { fileChecksums[j] = loadSpritesSub(treadedFilePaths[j]); });
+				Task tempThread = new Task(() => { fileChecksums[j] = loadSpritesSub(treadedFilePaths[j]); });
 				threads.Add(tempThread);
+				tempThread.ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
 				tempThread.Start();
 			}
 			while (threads.Count > 0) {
 				for (int i = 0; i < threads.Count; i++) {
-					if (threads[i].ThreadState == System.Threading.ThreadState.Stopped) {
+					if (threads[i].Status >= TaskStatus.RanToCompletion) {
 						threads.Remove(threads[i]);
 						i = 0;
 					}
@@ -1290,9 +1291,7 @@ class Program {
 	}
 
 	public static void loadMultiThread(List<String> loadText, RenderWindow window, Action loadFunct) {
-		Task loadTread = new Task(loadFunct);
-		loadTread.ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
-		loadTread.Start();
+		Task loadTread = Task.Run(loadFunct).ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
 		loadLoop(loadText, window, loadTread);
 	}
 

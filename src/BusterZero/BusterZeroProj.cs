@@ -125,7 +125,7 @@ public class DZHadangekiProj : Projectile {
 		maxTime = 0.5f;
 		if (isBZ) {
 			damager.damage = 4;
-			genericShader = player.zeroPaletteShader;
+			//genericShader = player.zeroPaletteShader;
 		}
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir, (isBZ ? (byte)0 : (byte)1));

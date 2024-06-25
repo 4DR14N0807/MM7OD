@@ -791,8 +791,9 @@ public class Zero : Character {
 			}
 		}
 	}
-	
+
 	// Shader and display.
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -821,7 +822,7 @@ public class Zero : Character {
 		shaders.AddRange(baseShaders);
 		return shaders;
 	}
-	
+	*/
 	public override void render(float x, float y) {
 		if (isViral && visible) {
 			addRenderEffect(RenderEffectType.Trail);

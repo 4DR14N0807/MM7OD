@@ -376,19 +376,6 @@ public class Sprite {
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeRed)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_red");
 			}
-			else if (renderEffects.Contains(RenderEffectType.RBlueCharge)) {
-				//shader = Global.shaderWrappers.GetValueOrDefault("rockbluecharge");
-				var shaderList = new List<ShaderWrapper>();
-				ShaderWrapper rockCharge = Global.shaderWrappers["chargeBlue"];
-				rockCharge.SetUniform("paletteTexture", Global.textures["rock_charge_texture"]);
-				shaderList.Add(rockCharge);
-			}
-			else if (renderEffects.Contains(RenderEffectType.RGreenCharge)) {
-				var shaderList = new List<ShaderWrapper>();
-				ShaderWrapper rockCharge = Global.shaderWrappers["chargeGreen"];
-				rockCharge.SetUniform("paletteTexture", Global.textures["rock_charge2_texture"]);
-				shaderList.Add(rockCharge);
-			}
 			if (shader != null) {
 				shaders.Add(shader);
 			}
@@ -525,7 +512,7 @@ public class Sprite {
 
 				var shaderList = new List<ShaderWrapper>();
 
-				var speedDevilShader = character.player.speedDevilShader;
+				var speedDevilShader = character.player.speedTrailShader;
 				shaderList.Add(speedDevilShader);
 
 				if (character.lastFiveTrailDraws.Count > 1) character.lastFiveTrailDraws.PopFirst();

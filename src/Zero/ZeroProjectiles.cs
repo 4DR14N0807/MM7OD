@@ -116,10 +116,10 @@ public class ZSaberProj : Projectile {
 		projId = (int)ProjIds.ZSaberProj;
 		if (player.character is Zero zero) {
 			if (zero.isBlack == true) {
-				genericShader = player.zeroPaletteShader;
+				//genericShader = player.zeroPaletteShader;
 			}
 			if (zero.isAwakened == true) {
-				genericShader = player.zeroAzPaletteShader;
+				//genericShader = player.zeroAzPaletteShader;
 			}
 		}
 		

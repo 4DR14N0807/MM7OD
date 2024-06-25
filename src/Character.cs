@@ -399,37 +399,6 @@ public partial class Character : Actor, IDamagable {
 		ShaderWrapper? palette = null;
 
 		// TODO: Send this to the respective classes.
-		if (player.isViralSigma()) {
-			int paletteNum = 6 - MathInt.Ceiling((player.health / player.maxHealth) * 6);
-			if (sprite.name.Contains("_enter")) paletteNum = 0;
-			palette = player.viralSigmaShader;
-			palette?.SetUniform("palette", paletteNum);
-			palette?.SetUniform("paletteTexture", Global.textures["paletteViralSigma"]);
-		}
-		if (palette != null) shaders.Add(palette);
-
-		if (player.isPossessed() && player.possessedShader != null) {
-			player.possessedShader.SetUniform("palette", 1);
-			player.possessedShader.SetUniform("paletteTexture", Global.textures["palettePossessed"]);
-			shaders.Add(player.possessedShader);
-		}
-
-		/*if (isDarkHoldBS.getValue() && player.darkHoldShader != null) {
-			// If we are not already being affected by a dark hold shader, apply it. Otherwise for a brief period,
-			// victims will be double color inverted, appearing normal
-			if (!Global.level.darkHoldProjs.Any(dhp => dhp.screenShader != null && dhp.inRange(this))) {
-				shaders.Add(player.darkHoldShader);
-			}
-		}*/
-
-		if (player.darkHoldShader != null) {
-			// Invert the zero who used a dark hold so he appears to be drawn normally on top of it
-			var myDarkHold = Global.level.darkHoldProjs.FirstOrDefault(dhp => dhp.owner == player);
-			if (myDarkHold != null && myDarkHold.inRange(this)) {
-				shaders.Add(player.darkHoldShader);
-			}
-		}
-
 		if (acidTime > 0 && player.acidShader != null) {
 			player.acidShader.SetUniform("acidFactor", 0.25f + (acidTime / 8f) * 0.75f);
 			shaders.Add(player.acidShader);
@@ -438,25 +407,27 @@ public partial class Character : Actor, IDamagable {
 			player.oilShader.SetUniform("oilFactor", 0.25f + (oilTime / 8f) * 0.75f);
 			shaders.Add(player.oilShader);
 		}
+		/*
 		if (vaccineTime > 0 && player.vaccineShader != null) {
 			player.vaccineShader.SetUniform("vaccineFactor", vaccineTime / 8f);
 			//vaccineShader?.SetUniform("vaccineFactor", 1f);
 			shaders.Add(player.vaccineShader);
 		}
+		*/
 		if (igFreezeProgress > 0 && !sprite.name.Contains("frozen") && player.igShader != null) {
 			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 4);
 			shaders.Add(player.igShader);
 		}
-		/* if (infectedTime > 0 && player.infectedShader != null) {
+		/*
+		if (infectedTime > 0 && player.infectedShader != null) {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
-		} /*if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
+		} if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
 			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
-		}*/ else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
+		} else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
 			shaders.Add(player.frozenCastleShader);
 		}
-
 		if (!isCStingInvisibleGraphics() && player.invisibleShader != null) {
 			if (renderEffects.ContainsKey(RenderEffectType.Invisible) && alpha == 1) {
 				player.invisibleShader.SetUniform("alpha", 0.33f);
@@ -468,7 +439,7 @@ public partial class Character : Actor, IDamagable {
 				shaders.Add(player.invisibleShader);
 			}
 		}
-
+		*/
 		return shaders;
 	}
 

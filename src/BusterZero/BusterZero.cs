@@ -269,6 +269,7 @@ public class BusterZero : Character {
 		return dashedInAir == 0 || (dashedInAir == 1 && isBlackZero);
 	}
 
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -288,4 +289,5 @@ public class BusterZero : Character {
 		shaders.AddRange(baseShaders);
 		return shaders;
 	}
+	*/
 }

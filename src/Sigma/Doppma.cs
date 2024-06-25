@@ -127,7 +127,7 @@ public class Doppma : BaseSigma {
 		ShaderWrapper? palette = null;
 
 		if (Global.isOnFrameCycle(8)) {
-			palette = player.sigmaShieldShader;
+			//palette = player.sigmaShieldShader;
 		}
 		if (palette != null) {
 			shaders.Add(palette);

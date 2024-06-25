@@ -1600,6 +1600,7 @@ public class Axl : Character {
 	}
 
 	// New data starts here.
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
 		ShaderWrapper? palette = null;
@@ -1621,6 +1622,7 @@ public class Axl : Character {
 
 		return shaders;
 	}
+	*/
 
 	public override bool isSoftLocked() {
 		if (isAnyZoom() || sniperMissileProj != null) {

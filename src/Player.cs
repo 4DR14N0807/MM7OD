@@ -415,28 +415,25 @@ public partial class Player {
 	}
 
 	// Shaders
-	public ShaderWrapper rockPaletteShader = Helpers.cloneShaderSafe("rockPalette");
-	public ShaderWrapper MM7chargeShader = Helpers.cloneShaderSafe("chargeBlue");
-	public ShaderWrapper MM7charge2Shader = Helpers.cloneShaderSafe("chargeGreen");
 	public ShaderWrapper xPaletteShader = Helpers.cloneShaderSafe("palette");
 	public ShaderWrapper invisibleShader = Helpers.cloneShaderSafe("invisible");
-	public ShaderWrapper zeroPaletteShader = Helpers.cloneGenericPaletteShader("hyperZeroPalette");
+	//public ShaderWrapper zeroPaletteShader = Helpers.cloneGenericPaletteShader("hyperZeroPalette");
 	//public ShaderWrapper nightmareZeroShader = Helpers.cloneGenericPaletteShader("paletteViralZero");
-	public ShaderWrapper zeroAzPaletteShader = Helpers.cloneGenericPaletteShader("paletteAwakenedZero");
-	public ShaderWrapper axlPaletteShader = Helpers.cloneShaderSafe("hyperaxl");
-	public ShaderWrapper viralSigmaShader = Helpers.cloneShaderSafe("viralsigma");
-	public ShaderWrapper viralSigmaShader2 = Helpers.cloneShaderSafe("viralsigma");
-	public ShaderWrapper sigmaShieldShader = Helpers.cloneGenericPaletteShader("paletteSigma3Shield");
+	//public ShaderWrapper zeroAzPaletteShader = Helpers.cloneGenericPaletteShader("paletteAwakenedZero");
+	//public ShaderWrapper axlPaletteShader = Helpers.cloneShaderSafe("hyperaxl");
+	//public ShaderWrapper viralSigmaShader = Helpers.cloneShaderSafe("viralsigma");
+	//public ShaderWrapper viralSigmaShader2 = Helpers.cloneShaderSafe("viralsigma");
+	//public ShaderWrapper sigmaShieldShader = Helpers.cloneGenericPaletteShader("paletteSigma3Shield");
 	public ShaderWrapper acidShader = Helpers.cloneShaderSafe("acid");
 	public ShaderWrapper oilShader = Helpers.cloneShaderSafe("oil");
 	public ShaderWrapper igShader = Helpers.cloneShaderSafe("igIce");
 	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
 	public ShaderWrapper infectedShader = Helpers.cloneShaderSafe("infected");
-	public ShaderWrapper frozenCastleShader = Helpers.cloneShaderSafe("frozenCastle");
-	public ShaderWrapper possessedShader = Helpers.cloneShaderSafe("possessed");
-	public ShaderWrapper vaccineShader = Helpers.cloneShaderSafe("vaccine");
-	public ShaderWrapper darkHoldShader = Helpers.cloneShaderSafe("darkhold");
-	public ShaderWrapper speedDevilShader = Helpers.cloneShaderSafe("speedDevilTrail");
+	//public ShaderWrapper frozenCastleShader = Helpers.cloneShaderSafe("frozenCastle");
+	//public ShaderWrapper possessedShader = Helpers.cloneShaderSafe("possessed");
+	//public ShaderWrapper vaccineShader = Helpers.cloneShaderSafe("vaccine");
+	//public ShaderWrapper darkHoldShader = Helpers.cloneShaderSafe("darkhold");
+	public ShaderWrapper speedTrailShader = Helpers.cloneShaderSafe("speedTrail");
 
 	// Maverick shaders.
 	// Duplicated mavericks are not a thing so this should not be a problem.
@@ -448,6 +445,10 @@ public partial class Player {
 	public ShaderWrapper timeSlowShader = Helpers.cloneShaderSafe("timeslow");
 	public ShaderWrapper darkHoldScreenShader = Helpers.cloneShaderSafe("darkHoldScreen");
 
+	// New shaders.
+	public ShaderWrapper rockPaletteShader = Helpers.cloneGenericPaletteShader("rock_palette_texture");
+	public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
+	public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
 
 	// Character specific data populated on RPC request
 	public ushort? charNetId;

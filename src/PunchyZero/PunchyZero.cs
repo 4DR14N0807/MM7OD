@@ -357,7 +357,7 @@ public class PunchyZero : Character {
 	public override string getSprite(string spriteName) {
 		return "zero_" + spriteName;
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -372,9 +372,9 @@ public class PunchyZero : Character {
 			palette?.SetUniform("palette", paletteNum);
 			palette?.SetUniform("paletteTexture", Global.textures["hyperZeroPalette"]);
 		}
-		/*if (isViral) {
+		if (isViral) {
 			palette = player.nightmareZeroShader;
-		}*/
+		}
 		if (palette != null && hypermodeBlink > 0) {
 			float blinkRate = MathInt.Ceiling(hypermodeBlink / 30f);
 			palette = ((Global.frameCount % (blinkRate * 2) >= blinkRate) ? null : palette);
@@ -388,7 +388,7 @@ public class PunchyZero : Character {
 		shaders.AddRange(baseShaders);
 		return shaders;
 	}
-
+	*/
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
 		int meleeId = getHitboxMeleeId(hitbox);
 		if (meleeId == -1) {

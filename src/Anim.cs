@@ -239,19 +239,6 @@ public class Anim : Actor {
 			}
 			return new List<ShaderWrapper>() { fadeBlackShader };
 		}
-		if (sprite.name.Contains("sigma2_viral_") &&
-			Global.shaderWrappers.ContainsKey("viralsigma") &&
-			host is Character chara
-		) {
-			if (viralSigmaShader == null) {
-				viralSigmaShader = chara.player.viralSigmaShader2;
-			}
-			if (viralSigmaShader != null) {
-				viralSigmaShader.SetUniform("palette", 6);
-				viralSigmaShader.SetUniform("paletteTexture", Global.textures["paletteViralSigma"]);
-				return new List<ShaderWrapper>() { viralSigmaShader };
-			}
-		}
 		return base.getShaders();
 	}
 

@@ -65,7 +65,7 @@ public class Blues : Character {
 	}
 
 	public float getShieldDashSpeed() {
-		float runSpeed = 3.25f * 60;
+		float runSpeed = 3f * 60;
 		if (overheating) {
 			runSpeed *= 0.5f;
 		}
@@ -336,7 +336,7 @@ public class Blues : Character {
 		}
 		if (player.dashPressed(out string slideControl) && canShieldDash()) {
 			changeState(new ShieldDash(slideControl), true);
-			addCoreAmmo(2);
+			//addCoreAmmo(2);
 			return true;
 		}
 		return base.normalCtrl();

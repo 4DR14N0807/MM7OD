@@ -232,7 +232,7 @@ public class Blues : Character {
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
-		if (isCharging() && chargeTime <= charge2Time) {
+		if (isCharging() && chargeTime <= charge3Time + 10) {
 			coreAmmoIncreaseCooldown += Global.speedMul;
 			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
@@ -244,7 +244,7 @@ public class Blues : Character {
 				Helpers.decrementFrames(ref coreAmmoIncreaseCooldown);
 			}
 		}
-		if (coreAmmoIncreaseCooldown >= 15) {
+		if (coreAmmoIncreaseCooldown >= 20) {
 			if (coreAmmo < coreMaxAmmo) {
 				coreAmmo++;
 			}

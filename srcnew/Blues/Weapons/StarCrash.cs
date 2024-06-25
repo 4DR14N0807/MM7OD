@@ -10,7 +10,7 @@ public class StarCrash : Weapon {
 	public StarCrash() : base() {
 		displayName = "Star Crash";
 		descriptionV2 = "Creates a star-shaped energy barrier\nthat reduces gravity.";
-		decimal coreCooldown = 50;
+		decimal coreCooldown = 20;
 		ammoUseText = (1 / coreCooldown * 60).ToGBString() + " per second";
 
 		index = (int)RockWeaponIds.StarCrash;
@@ -20,7 +20,7 @@ public class StarCrash : Weapon {
 
 	public override float getAmmoUsage(int chargeLevel) {
 		if (activeProj?.destroyed == false) {
-			return 1;
+			return 4;
 		}
 		return 0;
 	}
@@ -98,7 +98,7 @@ public class StarCrashProj : Projectile {
 		}
 		// Ammo reduction.
 		if (coreCooldown <= 0) {
-			coreCooldown = 50;
+			coreCooldown = 20;
 			blues.addCoreAmmo(1);
 		} else {
 			coreCooldown--;

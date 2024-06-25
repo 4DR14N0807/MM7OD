@@ -418,14 +418,16 @@ public partial class Character : Actor, IDamagable {
 			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 4);
 			shaders.Add(player.igShader);
 		}
-		/*
 		if (infectedTime > 0 && player.infectedShader != null) {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
-		} if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
+		}
+		if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
 			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
-		} else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
+		}
+		/*
+		else if (player.isVile && isFrozenCastleActiveBS.getValue() && player.frozenCastleShader != null) {
 			shaders.Add(player.frozenCastleShader);
 		}
 		if (!isCStingInvisibleGraphics() && player.invisibleShader != null) {

@@ -426,7 +426,7 @@ public partial class Player {
 	//public ShaderWrapper sigmaShieldShader = Helpers.cloneGenericPaletteShader("paletteSigma3Shield");
 	public ShaderWrapper acidShader = Helpers.cloneShaderSafe("acid");
 	public ShaderWrapper oilShader = Helpers.cloneShaderSafe("oil");
-	public ShaderWrapper igShader = Helpers.cloneShaderSafe("igIce");
+	public ShaderWrapper igShader = Helpers.cloneShaderSafe("freezeSlow");
 	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
 	public ShaderWrapper infectedShader = Helpers.cloneShaderSafe("infected");
 	//public ShaderWrapper frozenCastleShader = Helpers.cloneShaderSafe("frozenCastle");

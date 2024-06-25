@@ -869,7 +869,8 @@ public class Projectile : Actor {
 			angle = dirToDest.angle;
 		}
 
-		if (pos.distanceTo(destPoint) < 5) {
+		if (pos.distanceTo(destPoint) <= wallCrawlSpeed / 60f) {
+			pos = destPoint;
 			currentNode = nextNode;
 		}
 	}

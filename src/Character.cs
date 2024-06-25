@@ -25,10 +25,10 @@ public partial class Character : Actor, IDamagable {
 	public bool changedStateInFrame;
 	public bool pushedByTornadoInFrame;
 	public float chargeTime;
-	public const float charge1Time = 0.66f;
-	public const float charge2Time = 1.33f;
-	public const float charge3Time = 3f;
-	public const float charge4Time = 4.25f;
+	public float charge1Time = 30;
+	public float charge2Time = 105;
+	public float charge3Time = 180;
+	public float charge4Time = 255;
 	public float hyperProgress;
 
 	public Point? sigmaHeadGroundCamCenterPos;
@@ -1685,28 +1685,17 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (isCharging()) {
 			chargeSound.play();
-			int chargeType = 0;
-			if (this is BusterZero) {
-				chargeType = 1;
-			} else if (player.isX && player.hasArmArmor(3)) {
-				if (player.hasGoldenArmor()) {
-					chargeType = 2;
-				}
-			}
 			if (!sprite.name.Contains("ra_hide")) {
 				int level = getChargeLevel();
 				var renderGfx = RenderEffectType.ChargeBlue;
 				renderGfx = level switch {
 					1 => RenderEffectType.ChargeBlue,
 					2 => RenderEffectType.ChargeGreen,
-					3 when (chargeType == 2) => RenderEffectType.ChargeOrange,
-					3 => RenderEffectType.ChargePink,
-					_ when (chargeType == 1) => RenderEffectType.ChargeGreen,
-					_ => RenderEffectType.ChargeOrange
+					3 => RenderEffectType.ChargeYellow
 				};
 				addRenderEffect(renderGfx, 0.033333f, 0.1f);
 			}
-			chargeEffect.update(getChargeLevel(), chargeType);
+			chargeEffect.update(getChargeLevel(), 0);
 		}
 	}
 
@@ -3233,8 +3222,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual void increaseCharge() {
-		float factor = 1;
-		chargeTime += Global.spf * factor;
+		chargeTime += Global.speedMul;
 	}
 
 	public void dropFlag() {

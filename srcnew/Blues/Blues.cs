@@ -201,11 +201,6 @@ public class Blues : Character {
 		return player.input.isHeld(Control.Shoot, player);
 	}
 
-	public override void increaseCharge() {
-		float factor = 0.75f;
-		chargeTime += Global.spf * factor;
-	}
-
 	public override void update() {
 		base.update();
 		// For non-local players.
@@ -400,7 +395,7 @@ public class Blues : Character {
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
-		if (chargeLevel < 2) {
+		if (chargeLevel <= 1) {
 			var lemon = new ProtoBusterProj(
 				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 			);
@@ -411,10 +406,18 @@ public class Blues : Character {
 			if (oldShootAnimTime <= 0.25f) {
 				shootAnimTime = 0.25f;
 			}
-		} else if (chargeLevel >= 2) {
-			if (player.input.isHeld(Control.Up, player)) changeState(new ProtoStrike(), true);
-			else {
-				new ProtoBusterChargedProj(
+		} else if (chargeLevel <= 2) {
+			new ProtoBusterChargedProj(
+				shootPos, xDir, player, player.getNextActorNetId(), true
+			);
+			resetCoreCooldown();
+			playSound("buster3", sendRpc: true);
+			lemonCooldown = 12;
+		} else if (chargeLevel >= 3) {
+			if (player.input.isHeld(Control.Up, player)) {
+				changeState(new ProtoStrike(), true);
+			} else {
+				new ProtoBusterLv3Proj(
 					shootPos, xDir, player, player.getNextActorNetId(), true
 				);
 				resetCoreCooldown();

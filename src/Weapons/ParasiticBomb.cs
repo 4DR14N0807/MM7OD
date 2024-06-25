@@ -262,7 +262,7 @@ public class BeeCursorAnim : Anim {
 				destroySelf();
 				if (!target!.destroyed) {
 					if (character != null) {
-						character.chargeTime = Character.charge3Time;
+						character.chargeTime = character.charge3Time;
 						character.shoot(true);
 						character.chargeTime = 0;
 						new ParasiticBombProjCharged(new ParasiticBomb(), character.getShootPos(), character.pos.x - target.getCenterPos().x < 0 ? 1 : -1, character.player, character.player.getNextActorNetId(), target, rpc: true);

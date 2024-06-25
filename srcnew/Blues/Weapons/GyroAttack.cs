@@ -12,7 +12,7 @@ public class GyroAttack : Weapon {
 		defaultAmmoUse = 2;
 
 		index = (int)RockWeaponIds.GyroAttack;
-		fireRateFrames = 60;
+		fireRateFrames = 50;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

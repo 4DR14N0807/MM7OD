@@ -11,7 +11,7 @@ public class WaterWave : Weapon {
 		defaultAmmoUse = 4;
 
         index = (int)RockWeaponIds.WaterWave;
-        fireRateFrames = 60;
+        fireRateFrames = 50;
     }
 
     public override float getAmmoUsage(int chargeLevel) {

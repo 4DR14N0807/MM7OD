@@ -9,7 +9,7 @@ public class NeedleCannon : Weapon {
 		// Tecnical data.
 		index = (int)RockWeaponIds.NeedleCannon;
 		fireRateFrames = 6;
-		defaultAmmoUse = 1.4f;
+		defaultAmmoUse = 1.2f;
 
 		// Display data.
 		displayName = "Needle Cannon";
@@ -29,10 +29,19 @@ public class NeedleCannon : Weapon {
 		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
 		Player player = character.player;
-		var temp = new NeedleCannonProj(shootPos, xDir, player, player.getNextActorNetId(), true) {
+		float shootAngle = 0;
+		if (character.grounded) {
+			shootAngle = Helpers.randomRange(-30, 20);
+		} else {
+			shootAngle = Helpers.randomRange(-25, 25);
+		}
+		if (xDir == -1) {
+			shootAngle = -shootAngle + 128;
+		}
+		
+		new NeedleCannonProj(shootPos, shootAngle, player, player.getNextActorNetId(), true) {
 			owningActor = character
 		};
-		temp.vel.y = Helpers.randomRange(0, 500) - 250;
 		character.playSound("buster");
 		character.xPushVel = 60 * -xDir;
 	}
@@ -44,23 +53,26 @@ public class NeedleCannon : Weapon {
 
 public class NeedleCannonProj : Projectile {
 	public NeedleCannonProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+		Point pos, float byteAngle, Player player, ushort? netId, bool rpc = false
 	) : base(
-		NeedleCannon.netWeapon, pos, xDir, 400, 0.5f, player, "needle_cannon_proj",
+		NeedleCannon.netWeapon, pos, 1, 0, 0.5f, player, "needle_cannon_proj",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
+		byteAngle = MathF.Round(byteAngle);
 		maxTime = 0.25f;
 		fadeSprite = "needle_cannon_proj_fade";
 		projId = (int)BluesProjIds.NeedleCannon;
+		this.byteAngle = byteAngle;
+		vel = Point.createFromByteAngle(byteAngle) * 400;
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreateByteAngle(pos, player, netId, byteAngle);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new NeedleCannonProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.pos, args.byteAngle, args.player, args.netId
 		);
 	}
 }

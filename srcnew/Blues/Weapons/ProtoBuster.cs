@@ -90,11 +90,11 @@ public class ProtoBusterChargedProj : Projectile {
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
-		"proto_chargeshot_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_chargeshot_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		fadeSprite = "proto_chargeshot_proj_fade";
 		fadeOnAutoDestroy = true;
-		maxTime = 0.5f;
+		maxTime = 0.475f;
 		projId = (int)BluesProjIds.ChargedBuster;
 
 		if (rpc) {
@@ -102,6 +102,32 @@ public class ProtoBusterChargedProj : Projectile {
 		}
 	}
 
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoBusterChargedProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
+}
+
+public class ProtoBusterLv3Proj : Projectile {
+	public ProtoBusterLv3Proj(
+		Point pos, int xDir, Player player,
+		ushort? netId, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
+		"rock_buster2_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+	) {
+		fadeSprite = "rock_buster2_fade";
+		fadeOnAutoDestroy = true;
+		maxTime = 0.5f;
+		projId = (int)BluesProjIds.ChargedBuster;
+		addRenderEffect(RenderEffectType.ChargeOrange, 0, 100);
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterChargedProj(

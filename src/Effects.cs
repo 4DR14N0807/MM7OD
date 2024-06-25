@@ -88,10 +88,10 @@ public class ChargeEffect {
 			if (part.time > 0) {
 				//part.pos.x = Helpers.moveTo(part.pos.x, 0, Global.spf * 70);
 				//part.pos.y = Helpers.moveTo(part.pos.y, 0, Global.spf * 70);
-				part.pos.y -= 4;
+				part.pos.y -= Global.speedMul * 4;
 			}
 			var chargePart = "charge_part_" + chargeLevel.ToString();
-			if (chargeType != 1 && chargeLevel >= 4) {
+			if (chargeType != 1 && chargeLevel >= 3) {
 				chargePart = "hypercharge_part_1";
 			}
 			part.changeSprite(chargePart, true);

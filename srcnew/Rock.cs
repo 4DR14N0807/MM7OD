@@ -42,6 +42,8 @@ public class Rock : Character {
 		spriteToCollider["sa_activate"] = null;
 		spriteToCollider["sa_activate_end"] = null;
 		spriteToCollider["sa_activate_end_air"] = null;
+
+		charge2Time = 80;
 	}
 
 	public override void update() {

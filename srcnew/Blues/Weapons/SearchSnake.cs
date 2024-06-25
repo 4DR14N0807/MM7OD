@@ -28,10 +28,13 @@ public class SearchSnake : Weapon {
 	}
 }
 public class SearchSnakeProj : Projectile {
+	bool groundedOnce;
+	bool startAngleDrawing;
+
 	public SearchSnakeProj(
 		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
 	) : base(
-		SearchSnake.netWeapon, pos, xDir, 0, 2, player, "search_snake_proj",
+		SearchSnake.netWeapon, pos, xDir, 120, 2, player, "search_snake_proj_air",
 		0, 0.5f, netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.SearchSnake;
@@ -39,9 +42,8 @@ public class SearchSnakeProj : Projectile {
 		destroyOnHit = true;
 		fadeSprite = "generic_explosion";
 		fadeOnAutoDestroy = true;
-		//useGravity = true;
-		setupWallCrawl(new Point(xDir, yDir));
-		wallCrawlUpdateAngle = true;
+		useGravity = true;
+		maxTime = 2;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
@@ -55,6 +57,35 @@ public class SearchSnakeProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (!groundedOnce) {
+			if (grounded) {
+				vel.x = 0;
+				vel.y = 0;
+				setupWallCrawl(new Point(xDir, 1));
+				changeSprite("search_snake_proj", true);
+				groundedOnce = true;
+				useGravity = false;
+			}
+			return;
+		}
 		updateWallCrawl();
+		if (!startAngleDrawing) {
+			startAngleDrawing = true;
+			return;
+		}
+	}
+
+	public override void render(float x, float y) {
+		if (startAngleDrawing) {
+			int deltaDirY = MathF.Sign(deltaPos.y);
+			if (deltaDirY == -1) {
+				byteAngle = -64 * xDir;
+			} else if (deltaDirY == 1) {
+				byteAngle = 64 * xDir;
+			} else {
+				byteAngle = 0;
+			}
+		}
+		base.render(x, y);
 	}
 }

@@ -258,7 +258,8 @@ public class Anim : Actor {
 	public static void createGibEffect(
 		string spriteName, Point centerPos, Player? player,
 		GibPattern gibPattern = GibPattern.Radial, float randVelStart = 100,
-		float randVelEnd = 200, float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false
+		float randVelEnd = 200, float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false,
+		long? zIndex = null
 	) {
 		if (player == null) {
 			sendRpc = false;
@@ -278,7 +279,8 @@ public class Anim : Actor {
 			float compY = Helpers.sind(angle);
 			var anim = new Anim(
 				centerPos.addxy(compX * randDist, compY * randDist), spriteName,
-				1, sendRpc && player != null ? player.getNextActorNetId() : null, false, sendRpc: sendRpc
+				1, sendRpc && player != null ? player.getNextActorNetId() : null, false, sendRpc: sendRpc,
+				zIndex: zIndex
 			);
 
 			anim.useGravity = true;

@@ -24,6 +24,7 @@ public class PowerStone : Weapon {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
+		(character as Blues)?.resetCoreCooldown(fireRateFrames + 10);
 
 		new PowerStoneProj(shootPos, xDir, character.player, 0, character.player.getNextActorNetId(), true);
 		new PowerStoneProj(shootPos, xDir, character.player, 1, character.player.getNextActorNetId(), true);
@@ -36,6 +37,7 @@ public class PowerStoneProj : Projectile {
 	int stoneAngle = 120;
 	float radius = 10;
 	int type;
+
 	public PowerStoneProj(
 		Point pos, int xDir, Player player, int type, ushort? netId, bool rpc = false
 	) : base(
@@ -48,6 +50,12 @@ public class PowerStoneProj : Projectile {
 		character = player.character;
 		this.type = type;
 		stoneAngle = type * 120;
+		zIndex = ZIndex.Character - 10;
+
+		changePos(new Point(
+			character.getCenterPos().x + Helpers.cosd(stoneAngle) * radius,
+			character.getCenterPos().y + Helpers.sind(stoneAngle) * radius
+		));
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir, (byte)type);
@@ -63,8 +71,8 @@ public class PowerStoneProj : Projectile {
 	public override void update() {
 		base.update();
 
-		base.pos.x = character.getCenterPos().x + (Helpers.cosd(stoneAngle) * radius);
-		base.pos.y = character.getCenterPos().y + (Helpers.sind(stoneAngle) * radius);
+		pos.x = character.getCenterPos().x + Helpers.cosd(stoneAngle) * radius;
+		pos.y = character.getCenterPos().y + Helpers.sind(stoneAngle) * radius;
 
 		stoneAngle += 8;
 		if (stoneAngle >= 360) {
@@ -75,6 +83,6 @@ public class PowerStoneProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		Anim.createGibEffect("power_stone_pieces_big", pos, null);
+		Anim.createGibEffect("power_stone_pieces_big", pos, null, zIndex: zIndex);
 	}
 }

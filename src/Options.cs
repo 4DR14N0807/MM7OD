@@ -108,7 +108,7 @@ public class Options {
 
 	//ProtoMan
 	public bool useRandomBluesLoadout;
-	public BluesLoadout bluesLoadout = new BluesLoadout();
+	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;
 	
 	// Punchy Zero

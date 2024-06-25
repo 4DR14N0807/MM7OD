@@ -7,14 +7,20 @@ namespace MMXOnline;
 [ProtoContract]
 public class BluesLoadout {
 	[ProtoMember(1)]
-	public int specialWeapon = 4;
+	public int specialWeapon;
+
+	public static BluesLoadout createDefault() {
+		return new BluesLoadout() {
+			specialWeapon = 4
+		};
+	}
 
 	public List<int> getProtoManWeaponIndices() {
 		return new List<int>() { specialWeapon };
 	}
 
 	public void validate() {
-		if (specialWeapon < 0 || specialWeapon > 9) {
+		if (specialWeapon is < 0 or > 9) {
 			specialWeapon = 4;
 		}
 	}
@@ -81,8 +87,10 @@ public class BluesWeaponMenu : IMainMenu {
 				targetLoadout.specialWeapon = specialWeapon;
 				isChanged = true;
 			}
-			if (inGame && Global.level != null && isChanged && Options.main.killOnLoadoutChange) {
-				Global.level.mainPlayer.forceKill();
+			if (inGame && Global.level != null) {
+				if (isChanged && Options.main.killOnLoadoutChange) {
+					Global.level.mainPlayer.forceKill();
+				}
 			}
 			Menu.change(prevMenu);
 			return;

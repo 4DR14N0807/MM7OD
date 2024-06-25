@@ -106,7 +106,7 @@ public class Options {
 	public RockLoadout rockLoadout = new RockLoadout();
 	public int gridModeRock;
 
-	//ProtoMan
+	// ProtoMan
 	public bool useRandomBluesLoadout;
 	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;

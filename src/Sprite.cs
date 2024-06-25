@@ -557,7 +557,20 @@ public class Sprite {
 			extraYOff = 6;
 			bitmap = Global.textures["rock_superadaptor"];
 		}
-		DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1 - extraXOff, currentFrame.rect.y1 - extraYOff, currentFrame.rect.w() + extraXOff, currentFrame.rect.h() + extraYOff, x + frameOffsetX - (extraXOff * xDirArg), y + frameOffsetY - extraYOff, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
+		DrawWrappers.DrawTexture(
+			bitmap,
+			currentFrame.rect.x1 - extraXOff,
+			currentFrame.rect.y1 - extraYOff,
+			currentFrame.rect.w() + extraXOff,
+			currentFrame.rect.h() + extraYOff,
+			x - (extraXOff * xDirArg),
+			y - extraYOff,
+			zIndex,
+			cx - frameOffsetX * xDirArg,
+			cy - frameOffsetY * yDirArg,
+			xDirArg, yDirArg,
+			angle, alpha, shaders, true
+		);
 
 		if (isUPX) {
 			var upShaders = new List<ShaderWrapper>(shaders);

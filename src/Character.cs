@@ -2094,34 +2094,33 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
+	public virtual int maxChargeLevel() {
+		return 3;
+	}
+
 	public int getChargeLevel() {
-		bool clampTo3 = true;
-		switch (this) {
-			case MegamanX mmx:
-				clampTo3 = !mmx.isHyperX;
-				break;
-			case Zero zero:
-				clampTo3 = !zero.isBlack;
-				break;
-			case Vile vile:
-				clampTo3 = !vile.isVileMK5;
-				break;
-			case BusterZero:
-				clampTo3 = false;
-				break;
+		int chargeLevel = 0;
+		int maxCharge = maxChargeLevel();
+	
+		if (chargeTime >= charge4Time) {
+			chargeLevel = 4;
 		}
-		if (chargeTime < charge1Time) {
-			return 0;
-		} else if (chargeTime >= charge1Time && chargeTime < charge2Time) {
-			return 1;
-		} else if (chargeTime >= charge2Time) {
-			return 2;
-		} /* else if (chargeTime >= charge3Time && chargeTime < charge4Time) {
-			return clampTo2 ? 2 : 3;
-		} else if (chargeTime >= charge4Time) {
-			return clampTo3 ? 3 : 4;
-		}*/
-		return -1;
+		else if (chargeTime >= charge3Time) {
+			chargeLevel = 3;
+		}
+		else if (chargeTime >= charge2Time) {
+			chargeLevel = 2;
+		}
+		else if (chargeTime >= charge1Time) {
+			chargeLevel = 1;
+		}
+		else {
+			chargeLevel = 0;
+		}
+		if (chargeLevel > maxCharge) {
+			chargeLevel = maxCharge;
+		}
+		return chargeLevel;
 	}
 
 	public virtual void changeToIdleOrFall() {

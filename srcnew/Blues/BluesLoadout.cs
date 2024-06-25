@@ -14,7 +14,9 @@ public class BluesLoadout {
 	}
 
 	public void validate() {
-		if (specialWeapon < 0 || specialWeapon > 9) specialWeapon = 0;
+		if (specialWeapon < 0 || specialWeapon > 9) {
+			specialWeapon = 4;
+		}
 	}
 
 	public static BluesLoadout createRandom() {
@@ -31,7 +33,7 @@ public class BluesWeaponMenu : IMainMenu {
 	public IMainMenu prevMenu;
 	public int cursorRow;
 	bool inGame;
-	public BluesLoadout targetLoadout = Options.main.bluesLoadout;
+	public BluesLoadout targetLoadout;
 
 	// Loadout items.
 	public int specialWeapon;
@@ -56,6 +58,7 @@ public class BluesWeaponMenu : IMainMenu {
 	public BluesWeaponMenu(IMainMenu prevMenu, bool inGame) {
 		this.prevMenu = prevMenu;
 		this.inGame = inGame;
+		targetLoadout = Options.main.bluesLoadout;
 		specialWeapon = targetLoadout.specialWeapon;
 	}
 

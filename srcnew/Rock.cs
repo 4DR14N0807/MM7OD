@@ -481,6 +481,10 @@ public class Rock : Character {
 		return hasEmptyAmmo;
 	}
 
+	public override int maxChargeLevel() {
+		return 2;
+	}
+
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 

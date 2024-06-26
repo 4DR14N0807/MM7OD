@@ -51,7 +51,7 @@ public class ScorchWheelSpawn : Projectile {
     ) {
         projId = (int)RockProjIds.ScorchWheelSpawn;
         rock = (player.character as Rock);
-        rock.sWellSpawn = this;
+        if (rock != null) rock.sWellSpawn = this;
 		useGravity = false;
         maxTime = 1;
         destroyOnHit = false;
@@ -89,7 +89,7 @@ public class ScorchWheelSpawn : Projectile {
             destroySelf();
             new ScorchWheelMoveProj(weapon, pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
             playSound("scorch_wheel", true, true);
-            rock.shootTime = 1f;
+            if (rock != null) rock.shootTime = 1f;
         }
 
 	}
@@ -302,7 +302,7 @@ public class UnderwaterScorchWheelProj : Projectile {
         maxTime = 1.5f;
         destroyOnHit = false;
         rock = player.character as Rock;
-        rock.sWellU = this;
+        if (rock != null) rock.sWellU = this;
         if (rock != null) rock.underwaterScorchWheel = this;
         
         bubblesAmount = Helpers.randomRange(2, 8);
@@ -322,12 +322,12 @@ public class UnderwaterScorchWheelProj : Projectile {
         base.update();
         if (!ownedByLocalPlayer) return;
 
-        Point centerPos = rock.getCenterPos();
+        Point centerPos = rock?.getCenterPos() ?? new Point(0, 0);
 
         if (counter < bubblesAmount) {
             int xOffset = Helpers.randomRange(-12, 12);
             int yOffset = Helpers.randomRange(-12, 12);
-            centerPos = rock.getCenterPos();
+            centerPos = rock?.getCenterPos() ?? new Point(0, 0);
             Global.level.delayedActions.Add(new DelayedAction( () => { 
                 new BubbleAnim(new Point(centerPos.x + xOffset, centerPos.y + yOffset), "bubbles") { vel = new Point(0, -60)}; },
                 0.1f * counter));
@@ -337,7 +337,7 @@ public class UnderwaterScorchWheelProj : Projectile {
         if (counterSmall < bubblesSmallAmount) {
             int xOffset = Helpers.randomRange(-12, 12);
             int yOffset = Helpers.randomRange(-12, 12);
-            centerPos = rock.getCenterPos();
+            centerPos = rock?.getCenterPos() ?? new Point(0, 0);
             Global.level.delayedActions.Add(new DelayedAction( () => { 
                 new BubbleAnim(new Point(centerPos.x + xOffset, centerPos.y + yOffset), "bubbles_small") { vel = new Point(0, -60)}; },
                 0.1f * counterSmall));
@@ -347,7 +347,7 @@ public class UnderwaterScorchWheelProj : Projectile {
 
      public override void onDestroy() {
 		base.onDestroy();
-		if (rock != null) rock.sWellU = null;
+		if (rock != null) rock.sWellU = null!;
 	}
 }
 
@@ -370,7 +370,8 @@ public class Burning : CharState {
 			character.isInvulnerable() ||
 			character.charState.stunResistant ||
 			character.grabInvulnTime > 0 ||
-			character.charState.invincible
+			character.charState.invincible ||
+            character.isCCImmune()
 		) {
 			return false;
 		}

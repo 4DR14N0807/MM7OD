@@ -123,13 +123,12 @@ public class BigBangStrikeStart : CharState {
     Anim? particle2;
     int particle2Time;
 	public BigBangStrikeStart() : base("charge") {
-
+		superArmor = true;
 	}
 
 	public override void onEnter(CharState oldState) {
 		blues = character as Blues ?? throw new NullReferenceException();
-		character.stopMoving();
-        var centerPos = character.getCenterPos();
+		blues.isShieldActive = true;
 
         if (character.ownedByLocalPlayer && player == Global.level.mainPlayer) {
 			new BigBangStrikeBackwall(character.pos, character);
@@ -165,6 +164,8 @@ public class BigBangStrikeStart : CharState {
             particle2.gravityModifier = -0.8f;
         }*/
 
+		if (blues != null) blues.coreAmmo = blues.coreMaxAmmo;
+
 		if (stateFrames >= 120) {
 			character.changeState(new BigBangStrikeState(), true);
 		}
@@ -175,13 +176,22 @@ public class BigBangStrikeStart : CharState {
 public class BigBangStrikeState : CharState {
 
 	bool fired;
+	Blues? blues;
 	public BigBangStrikeState() : base("chargeshot") {
+		superArmor = true;
+	}
 
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+		blues.isShieldActive = false;
 	}
 
 
 	public override void update() {
 		base.update();
+
+		if (blues != null) blues.coreAmmo = blues.coreMaxAmmo;
 
 		if (!fired && character.frameIndex >= 3) {
 			new BigBangStrikeProj(

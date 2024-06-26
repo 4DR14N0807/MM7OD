@@ -193,7 +193,7 @@ public class ProtoStrike : CharState {
 		if (chargeLv >= 3) blues.overridePSDamage = true;
 
 		if (character.isAnimOver()) {
-			if (isShooting) {
+			if (isShooting || stateFrames < 20) {
 				character.frameIndex = 3;
 			} else character.changeState(new ProtoStrikeEnd(), true);
 			shot = false;
@@ -238,9 +238,9 @@ public class ProtoStrikeEnd : CharState {
 
 public class OverheatStunned : CharState {
 
-	Blues blues;
+	Blues? blues;
 	public OverheatStunned() : base("hurt") {
-
+		superArmor = true;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -249,12 +249,12 @@ public class OverheatStunned : CharState {
 		blues.coreAmmo = blues.coreMaxAmmo;
 	}
 
-	public override bool canExit(Character character, CharState newState) {
+	/*public override bool canExit(Character character, CharState newState) {
 		return !blues.overheating;
-	}
+	}*/
 	public override void update() {
 		base.update();
-		if (!blues.overheating) {
+		if (blues != null && !blues.overheating) {
 			character.changeToIdleOrFall();
 		}
 	}

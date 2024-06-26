@@ -1706,7 +1706,7 @@ public partial class Character : Actor, IDamagable {
 		//if (isAwakenedZeroBS.getValue() && isAwakenedGenmuZeroBS.getValue()) return true;
 		//if (isHyperSigmaBS.getValue()) return true;
 		//return false;
-		return isCCImmuneHyperMode();
+		return isCCImmuneHyperMode() || charState is OverheatStunned;
 	}
 
 	public bool isCCImmuneHyperMode() {
@@ -2668,12 +2668,12 @@ public partial class Character : Actor, IDamagable {
 			}
 			if (hasDrawn) {
 				for(int i = 0; i < iconsToDraw.Count; i++) {
-					Global.sprites["hud_status_icon"].draw(
+					/*Global.sprites["hud_status_icon"].draw(
 						iconsToDraw[i],
 						pos.x - (iconsToDraw.Count - 1) * 6 + i * 12,
 						pos.y - 7 + currentLabelY,
 						1, 1, null, 1, 1, 1, ZIndex.HUD
-					);
+					);*/
 				}
 				deductLabelY(15);
 				return true;
@@ -2741,7 +2741,7 @@ public partial class Character : Actor, IDamagable {
 
 		Point topLeft = new Point(pos.x - 16, pos.y - 5 + currentLabelY);
 		Point botRight = new Point(pos.x + 16, pos.y + currentLabelY);
-		Global.sprites["hud_status_icon"].draw(statusIndex, pos.x, topLeft.y - 7, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		//Global.sprites["hud_status_icon"].draw(statusIndex, pos.x, topLeft.y - 7, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 
 		DrawWrappers.DrawRect(
 			topLeft.x, topLeft.y, botRight.x, botRight.y, true,

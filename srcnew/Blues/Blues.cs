@@ -21,6 +21,7 @@ public class Blues : Character {
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 	public bool starCrashActive;
+	public bool overridePSDamage;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
@@ -51,6 +52,11 @@ public class Blues : Character {
 			7 => new StarCrash(),
 			_ => new PowerStone(),
 		};
+	}
+
+	public override bool canAddAmmo() {
+		if (coreAmmo > 0) return true;
+		return base.canAddAmmo();
 	}
 
 	public override float getRunSpeed() {
@@ -119,10 +125,15 @@ public class Blues : Character {
 	}
 
 	public bool canShootSpecial() {
-		if (isCharging() || overheating || specialWeapon.shootCooldown > 0 || !specialWeapon.canShoot(0, this)) {
+		if (isCharging() || overheating || specialWeapon.shootCooldown > 0 ||
+		 !specialWeapon.canShoot(0, this) || invulnTime > 0) {
 			return false;
 		}
 		return true;
+	}
+
+	public bool canUseBigBangStrike() {
+		return grounded && overheating;
 	}
 
 	public void destroyStarCrash() {
@@ -186,9 +197,11 @@ public class Blues : Character {
 
 	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
 		Point projPos = pos ?? new Point(0, 0);
+		ProjIds projId = overridePSDamage ? ProjIds.ProtoStrikeLvl2 : ProjIds.ProtoStrike;
+		float overrideDamage = overridePSDamage ? 4 : 3;
 		Projectile? proj = id switch {
 			(int)MeleeIds.ProtoStrike => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.ProtoStrike, player, 3, Global.halfFlinch, 1f,
+				new Weapon(), projPos, projId, player, overrideDamage, Global.halfFlinch, 1f,
 				addToLevel: addToLevel
 
 			)
@@ -349,6 +362,9 @@ public class Blues : Character {
 			if (canShootSpecial()) {
 				shootSpecial(0);
 				return true;
+			} else if (canUseBigBangStrike()) {
+				changeState(new BigBangStrikeStart(), true);
+				return true;
 			}
 		}
 
@@ -407,15 +423,19 @@ public class Blues : Character {
 				shootAnimTime = 0.25f;
 			}
 		} else if (chargeLevel <= 2) {
-			new ProtoBusterChargedProj(
-				shootPos, xDir, player, player.getNextActorNetId(), true
-			);
-			resetCoreCooldown();
-			playSound("buster3", sendRpc: true);
-			lemonCooldown = 12;
+			if (player.input.isHeld(Control.Up, player)) {
+				changeState(new ProtoStrike(2), true);
+			} else {
+				new ProtoBusterChargedProj(
+					shootPos, xDir, player, player.getNextActorNetId(), true
+				);
+				resetCoreCooldown();
+				playSound("buster3", sendRpc: true);
+				lemonCooldown = 12;
+			}	
 		} else if (chargeLevel >= 3) {
 			if (player.input.isHeld(Control.Up, player)) {
-				changeState(new ProtoStrike(), true);
+				changeState(new ProtoStrike(3), true);
 			} else {
 				new ProtoBusterLv3Proj(
 					shootPos, xDir, player, player.getNextActorNetId(), true

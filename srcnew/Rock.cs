@@ -10,7 +10,9 @@ public class Rock : Character {
 	public float lemonTime;
 	public int lemons;
 	public JunkShieldProj? junkShield;
+	public ScorchWheelSpawn? sWellSpawn;
 	public ScorchWheelProj? sWell;
+	public UnderwaterScorchWheelProj sWellU;
 	public UnderwaterScorchWheelProj? underwaterScorchWheel;
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
@@ -302,6 +304,8 @@ public class Rock : Character {
 
 	public override bool canShoot() {
 		if (sWell != null) return false;
+		if (sWellSpawn != null) return false;
+		if (sWellU != null) return false;
 		if (charState is Slide) 
 			return (player.weapon is RockBuster || player.weapon is WildCoil) && getChargeLevel() == 2;
 		if (charState is CallDownRush) return false;
@@ -424,7 +428,8 @@ public class Rock : Character {
 		if (isWarpIn()) return false;
 		if (player.weapons.Count == 0) return false;
 		if (invulnTime > 0) return false;
-		//if (junkShield != null) return false;
+		if (junkShield != null) return false;
+		if (sWell != null) return false;
 		
 		return base.canCharge();
 	}

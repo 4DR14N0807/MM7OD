@@ -394,7 +394,11 @@ public class Damager {
 				}
 			} else if (projId == (int)ProjIds.ProtoStrike) {
 				if (damagingActor != null) {
-					character.xPushVel = 240 * damagingActor.xDir;
+					character.xPushVel = 150 * damagingActor.xDir;
+				}
+			} else if (projId == (int)ProjIds.ProtoStrikeLvl2) {
+				if (damagingActor != null) {
+					character.xPushVel = 300 * damagingActor.xDir;
 				}
 			} 
 			

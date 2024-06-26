@@ -1014,7 +1014,7 @@ public partial class Character : Actor, IDamagable {
 		if (rootTime > 0) {
 			rootTime -= Global.spf;
 			if (rootAnim == null) rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
-			if (rootTime < 0){
+			if (rootTime <= 0){
 				rootTime = 0;
 				useGravity = true;
 				if (rootAnim != null) {
@@ -1022,7 +1022,7 @@ public partial class Character : Actor, IDamagable {
 					rootAnim = null;
 				} 
 				}
-			rootCooldown = 2f;
+			rootCooldown = 120;
 			}
 		if (burnTime > 0) {
 			burnTime -= Global.spf;
@@ -1107,7 +1107,7 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref darkHoldInvulnTime);
 		Helpers.decrementTime(ref dwrapInvulnTime);
 		Helpers.decrementTime(ref burnInvulnTime);
-		Helpers.decrementTime(ref rootCooldown);
+		Helpers.decrementFrames(ref rootCooldown);
 
 
 		if (flag != null && flag.ownedByLocalPlayer) {

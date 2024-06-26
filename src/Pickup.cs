@@ -14,6 +14,7 @@ public enum PickupTypeRpc {
 
 public class Pickup : Actor {
 	public float healAmount = 0;
+	public float coreHealAmount = 0;
 	public PickupType pickupType;
 	public Pickup(Player owner, Point pos, string sprite, ushort? netId, bool ownedByLocalPlayer, NetActorCreateId netActorCreateId, bool sendRpc = false) :
 		base(sprite, pos, netId, ownedByLocalPlayer, false) {
@@ -49,8 +50,12 @@ public class Pickup : Actor {
 				destroySelf(doRpcEvenIfNotOwned: true);
 			} else if (pickupType == PickupType.Ammo) {
 				if (chr.canAddAmmo()) {
-					chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
-					//chr.addAmmo(healAmount);
+					if (chr is Blues blues) {
+						blues.addCoreAmmo(-coreHealAmount);
+					} else {
+						chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
+						//chr.addAmmo(healAmount);
+					}
 					destroySelf(doRpcEvenIfNotOwned: true);
 				}
 			}
@@ -142,6 +147,7 @@ public class LargeAmmoPickup : Pickup {
 		NetActorCreateId.LargeAmmo, sendRpc: sendRpc
 	) {
 		healAmount = 50;
+		coreHealAmount = 8;
 		pickupType = PickupType.Ammo;
 	}
 }
@@ -155,6 +161,7 @@ public class SmallAmmoPickup : Pickup {
 		NetActorCreateId.SmallAmmo, sendRpc: sendRpc
 	) {
 		healAmount = 25;
+		coreHealAmount = 4;
 		pickupType = PickupType.Ammo;
 	}
 }

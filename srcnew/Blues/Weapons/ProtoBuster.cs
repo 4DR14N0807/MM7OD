@@ -115,7 +115,7 @@ public class ProtoBusterLv3Proj : Projectile {
 		Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
+		ProtoBuster.netWeapon, pos, xDir, 325, 4, player,
 		"rock_buster2_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		fadeSprite = "rock_buster2_fade";

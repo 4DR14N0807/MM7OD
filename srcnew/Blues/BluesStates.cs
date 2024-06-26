@@ -174,9 +174,10 @@ public class ProtoStrike : CharState {
 	bool shot;
 	float coreCooldown;
 	bool didUseAmmo;
+	int chargeLv;
 
-	public ProtoStrike() : base("protostrike") {
-
+	public ProtoStrike(int chargeLv) : base("protostrike") {
+		this.chargeLv = chargeLv;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -189,12 +190,14 @@ public class ProtoStrike : CharState {
 		base.update();
 
 		bool isShooting = player.input.isHeld(Control.Shoot, player);
+		if (chargeLv >= 3) blues.overridePSDamage = true;
 
 		if (character.isAnimOver()) {
 			if (isShooting) {
 				character.frameIndex = 3;
 			} else character.changeState(new ProtoStrikeEnd(), true);
 			shot = false;
+			blues.overridePSDamage = false;
 		}
 
 		if (character.frameIndex >= 3) isUsingPStrike = true;
@@ -203,10 +206,10 @@ public class ProtoStrike : CharState {
 		if (isUsingPStrike) {
 			if (!shot) {
 				var shootPos = character.getShootPos();
-				if (!didUseAmmo) {
+				/*if (!didUseAmmo) {
 					blues.addCoreAmmo(-3);
 					didUseAmmo = true;
-				}
+				}*/
 				shot = true;
 			}
 			coreCooldown += Global.spf;
@@ -234,17 +237,24 @@ public class ProtoStrikeEnd : CharState {
 
 
 public class OverheatStunned : CharState {
+
+	Blues blues;
 	public OverheatStunned() : base("hurt") {
 
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+		blues.coreAmmo = blues.coreMaxAmmo;
 	}
 
+	public override bool canExit(Character character, CharState newState) {
+		return !blues.overheating;
+	}
 	public override void update() {
 		base.update();
-		if (stateFrames >= 26) {
+		if (!blues.overheating) {
 			character.changeToIdleOrFall();
 		}
 	}

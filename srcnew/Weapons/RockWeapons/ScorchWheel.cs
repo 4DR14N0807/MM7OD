@@ -51,6 +51,7 @@ public class ScorchWheelSpawn : Projectile {
     ) {
         projId = (int)RockProjIds.ScorchWheelSpawn;
         rock = (player.character as Rock);
+        rock.sWellSpawn = this;
 		useGravity = false;
         maxTime = 1;
         destroyOnHit = false;
@@ -102,6 +103,11 @@ public class ScorchWheelSpawn : Projectile {
             xDir = rock.getShootXDir();
             pos = rock.getCenterPos();
         }
+	}
+
+     public override void onDestroy() {
+		base.onDestroy();
+		if (rock != null) rock.sWellSpawn = null;
 	}
     
     /*public void moveWell(){
@@ -296,6 +302,7 @@ public class UnderwaterScorchWheelProj : Projectile {
         maxTime = 1.5f;
         destroyOnHit = false;
         rock = player.character as Rock;
+        rock.sWellU = this;
         if (rock != null) rock.underwaterScorchWheel = this;
         
         bubblesAmount = Helpers.randomRange(2, 8);
@@ -337,6 +344,11 @@ public class UnderwaterScorchWheelProj : Projectile {
             counterSmall++;
         }
     }
+
+     public override void onDestroy() {
+		base.onDestroy();
+		if (rock != null) rock.sWellU = null;
+	}
 }
 
 public class Burning : CharState {

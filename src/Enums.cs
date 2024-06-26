@@ -326,6 +326,8 @@ public enum BluesProjIds  {
 	StarCrash,
 	ShieldBlock,
 	NeedleCannon,
+	BigBangStrike,
+	BigBangStrikeExplosion,
 }
 
 public enum RockProjIds  {
@@ -778,6 +780,7 @@ public enum ProjIds {
 	ScorchWheelUnderwater,
 	LegBreaker,
 	ProtoStrike,
+	ProtoStrikeLvl2,
 
 	// Special damage types.
 	SelfDmg = 30000,

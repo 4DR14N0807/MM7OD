@@ -34,7 +34,7 @@ public class SparkShockProj : Projectile {
 		Point pos, int xDir,
 		Player player, ushort? netId, bool rpc = false
 	) : base(
-		SparkShock.netWeapon, pos, xDir, 3 * 60, 2, player, "spark_shock_proj",
+		SparkShock.netWeapon, pos, xDir, 3 * 60, 1, player, "spark_shock_proj",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		maxTime = 0.75f;

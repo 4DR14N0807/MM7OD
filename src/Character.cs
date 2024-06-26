@@ -1013,11 +1013,14 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (rootTime > 0) {
 			rootTime -= Global.spf;
-			rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+			if (rootAnim == null) rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
 			if (rootTime < 0){
 				rootTime = 0;
 				useGravity = true;
-				if (rootAnim != null) rootAnim.destroySelf();
+				if (rootAnim != null) {
+					rootAnim.destroySelf();
+					rootAnim = null;
+				} 
 				}
 			rootCooldown = 2f;
 			}

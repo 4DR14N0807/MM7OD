@@ -5,13 +5,11 @@ namespace MMXOnline;
 
 public class ShieldDash : CharState {
 	bool soundPlayed;
-	string initialSlideButton;
 	int initialXDir;
 	float dustTimer;
 	Blues blues = null!;
 
-	public ShieldDash(string initialSlideButton) : base("shield_dash") {
-		this.initialSlideButton = initialSlideButton;
+	public ShieldDash() : base("dash") {
 		accuracy = 10;
 		useGravity = false;
 	}
@@ -62,12 +60,59 @@ public class ShieldDash : CharState {
 	}
 }
 
-public class ProtoAirShoot : CharState {
+public class BluesSlide : CharState {
+	public float slideTime = 0;
+	public int initialSlideDir;
+	public int particles = 3;
+	Blues blues = null!;
+	Anim? dust;
+
+	public BluesSlide() : base("slide") {
+		enterSound = "slide";
+		accuracy = 10;
+		exitOnAirborne = true;
+		attackCtrl = true;
+		normalCtrl = true;
+	}
+
+	public override void update() {
+		base.update();
+		if (player.input.getXDir(player) == -initialSlideDir ||
+			slideTime >= Global.spf * 30 ||
+			Global.level.checkCollisionActor(character, 24 * character.xDir, 0) != null
+		) {
+			character.changeToIdleOrFall();
+			return;
+		}
+		Point move = new(blues.getSlideSpeed() * initialSlideDir, 0);
+		character.move(move);
+
+		slideTime += Global.spf;
+		if (stateTime >= Global.spf * 3 && particles > 0) {
+			stateTime = 0;
+			particles--;
+			dust = new Anim(
+				character.getDashDustEffectPos(initialSlideDir),
+				"dust", initialSlideDir, player.getNextActorNetId(), true,
+				sendRpc: true
+			);
+			dust.vel.y = (-particles - 1) * 20;
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		initialSlideDir = character.xDir;
+		blues = character as Blues ?? throw new NullReferenceException();
+	}
+}
+
+public class BluesSpreadShoot : CharState {
 	int shotAngle = 64;
 	int shotLastFrame = 10;
 	Blues blues = null!;
 
-	public ProtoAirShoot() : base("jump_shoot2") {
+	public BluesSpreadShoot() : base("spreadshoot_air") {
 		airMove = true;
 		exitOnLanding = true;
 	}
@@ -123,7 +168,7 @@ public class ProtoChargeShotState : CharState {
 		base.update();
 
 		if (!fired && character.frameIndex >= 3) {
-			new ProtoBusterChargedProj(
+			new ProtoBusterLv3Proj(
 				character.getShootPos(), character.getShootXDir(),
 				player, player.getNextActorNetId(), true
 			);
@@ -235,18 +280,11 @@ public class ProtoStrikeEnd : CharState {
 	}
 }
 
+public class OverheatShutdown : CharState {
+	Blues blues = null!;
 
-public class OverheatStunned : CharState {
-
-	Blues blues;
-	public OverheatStunned() : base("hurt") {
-
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
-		blues.coreAmmo = blues.coreMaxAmmo;
+	public OverheatShutdown() : base("shutdown") {
+		superArmor = true;
 	}
 
 	public override bool canExit(Character character, CharState newState) {
@@ -257,5 +295,13 @@ public class OverheatStunned : CharState {
 		if (!blues.overheating) {
 			character.changeToIdleOrFall();
 		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+		blues.coreAmmo = blues.coreMaxAmmo;
+		blues.coreAmmoDecreaseCooldown = 10;
+		blues.playSound("danger_wrap_explosion", sendRpc: true);
 	}
 }

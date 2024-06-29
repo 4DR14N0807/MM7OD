@@ -598,5 +598,15 @@ public class Rock : Character {
 			increaseCharge();
 		}
 	}
+
+	public virtual void chargeGfx() {
+		if (ownedByLocalPlayer) {
+			chargeEffect.stop();
+		}
+		if (isCharging()) {
+			chargeSound.play();
+			chargeEffect.update(getChargeLevel(), 0);
+		}
+	}
 }
 

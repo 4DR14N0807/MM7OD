@@ -1466,15 +1466,21 @@ public class GameMode {
 		}
 
 		if (player.character is Blues protoman) {
+			int offset = -15;
+			if (position is HUDHealthPosition.Right or HUDHealthPosition.TopRight or HUDHealthPosition.TopRight) {
+				offset = 15;
+			}
 			renderAmmo(
-				baseX - 15, baseY - 5 - player.maxHealth * 2, -1, 1,
+				baseX + offset, baseY - 5 - player.maxHealth * 2, -1, 1,
 				MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP
 			);
 			int coreAmmoColor = 4;
 			if (protoman.overheating && Global.frameCount % 6 >= 3) {
 				coreAmmoColor = 6;
 			}
-			renderAmmo(baseX, baseY, 0, coreAmmoColor, protoman.coreAmmo, maxAmmo: protoman.coreMaxAmmo);
+			renderAmmo(
+				baseX, baseY, 0, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo), maxAmmo: protoman.coreMaxAmmo
+			);
 			return;
 		}
 

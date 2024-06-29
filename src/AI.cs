@@ -236,6 +236,7 @@ public class AI {
 				player.currency -= Vile.speedDevilCost;
 			}
 		}
+		/*
 		if (!player.isMainPlayer) {
 			if (player.heartTanks < 8 && player.currency >= 2) {
 				player.currency -= 2;
@@ -245,7 +246,6 @@ public class AI {
 				player.character?.addHealth(player.maxHealth - currentMaxHp);
 			}
 		}
-		/*
 		if (framesChargeHeld > 0) {
 			player.press(Control.Shoot);
 			if (character.chargeTime < maxChargeTime) {

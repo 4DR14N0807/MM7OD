@@ -5,15 +5,18 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class BigBangStrikeProj : Projectile {
-
     Anim? trail1;
     int trail1Time;
     Anim? trail2;
     int trail2Time;
     Player player;
 
-    public BigBangStrikeProj(Point pos, int xDir, Player player, ushort? netId, bool rpc = false) :
-    base(ProtoBuster.netWeapon, pos, xDir, 240, 6, player, "big_bang_strike_proj", Global.defFlinch, 3, netId, player.ownedByLocalPlayer) {
+    public BigBangStrikeProj(
+		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 240, 6, player, "big_bang_strike_proj",
+		Global.defFlinch, 3, netId, player.ownedByLocalPlayer
+	) {
         projId = (int)BluesProjIds.BigBangStrike;
         maxTime = 0.75f;
         shouldShieldBlock = false;
@@ -40,7 +43,9 @@ public class BigBangStrikeProj : Projectile {
         //Yellow particles behaviour
         if (trail1Time >= 15) {
             trail1Time = 0;
-            trail1 = new Anim(pos.addRand(6,12), "big_bang_strike_trail", xDir, player.getNextActorNetId(), true, true);
+            trail1 = new Anim(
+				pos.addRand(6,12), "big_bang_strike_trail", xDir, player.getNextActorNetId(), true, true
+			);
             trail1.useGravity = true;
             trail1.gravityModifier = -0.4f;
         }
@@ -48,7 +53,9 @@ public class BigBangStrikeProj : Projectile {
         //Green particles behaviour
         if (trail2Time >= 6) {
             trail2Time = 0;
-            trail2 = new Anim(pos.addRand(2,2), "big_bang_strike_trail2", xDir, player.getNextActorNetId(), true, true);
+            trail2 = new Anim(
+				pos.addRand(2,2), "big_bang_strike_trail2", xDir, player.getNextActorNetId(), true, true
+			);
             trail2.useGravity = true;
             trail2.gravityModifier = -0.7f;
         }
@@ -56,18 +63,20 @@ public class BigBangStrikeProj : Projectile {
 
     public override void onDestroy() {
         base.onDestroy();
-
         new BigBangStrikeExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
     }
 }
 
 
 public class BigBangStrikeExplosionProj : Projectile {
-
     float radius;
 
-    public BigBangStrikeExplosionProj(Point pos, int xDir, Player player, ushort? netId, bool rpc = false) :
-    base(ProtoBuster.netWeapon, pos, xDir, 0, 4, player, "empty", Global.halfFlinch, 2, netId, player.ownedByLocalPlayer) {
+    public BigBangStrikeExplosionProj(
+		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 0, 4, player, "empty",
+		Global.halfFlinch, 2, netId, player.ownedByLocalPlayer
+	) {
         projId = (int)BluesProjIds.BigBangStrikeExplosion;
         destroyOnHit = false;
 
@@ -83,7 +92,6 @@ public class BigBangStrikeExplosionProj : Projectile {
 			args.pos, args.xDir, args.player, args.netId
 		);
 	}
-
 
     public override void update() {
         base.update();
@@ -116,87 +124,64 @@ public class BigBangStrikeExplosionProj : Projectile {
 
 
 public class BigBangStrikeStart : CharState {
+	Blues blues = null!;
 
-	Blues? blues;
-    Anim? particle1;
-    int particle1Time;
-    Anim? particle2;
-    int particle2Time;
-	public BigBangStrikeStart() : base("charge") {
+	public BigBangStrikeStart() : base("idle_chargeshield") {
+		superArmor = true;
+	}
 
+	public override void update() {
+		base.update();
+		blues.coreAmmo = blues.coreMaxAmmo;
+		blues.coreAmmoDecreaseCooldown = 10;
+
+		if (stateFrames >= 120) {
+			character.changeState(new BigBangStrikeState(), true);
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
 		blues = character as Blues ?? throw new NullReferenceException();
-		character.stopMoving();
-        var centerPos = character.getCenterPos();
+		character.stopMovingWeak();
+		blues.isShieldActive = false;
 
         if (character.ownedByLocalPlayer && player == Global.level.mainPlayer) {
 			new BigBangStrikeBackwall(character.pos, character);
-		}
-	}
-
-    public override void onExit(CharState newState) {
-        base.onExit(newState);
-        //if (particle1 != null) particle1.destroySelf();
-        //if (particle2 != null) particle2.destroySelf();
-    }
-
-
-	public override void update() {
-		base.update();
-
-        /*particle1Time++;
-        particle2Time++;
-
-        if (particle1Time >= 10) {
-            particle1Time = 0;
-            particle1 = new Anim(character.getCenterPos().addRand(10, 7), "big_bang_strike_trail",
-                character.xDir, player.getNextActorNetId(true), true, true);
-            particle1.useGravity = true;
-            particle1.gravityModifier = -0.5f;
-        }
-
-        if (particle2Time >= 3) {
-            particle2Time = 0;
-            particle2 = new Anim(character.getCenterPos().addRand(7, 10), "big_bang_strike_trail2",
-                character.xDir, player.getNextActorNetId(true), true, true);
-            particle2.useGravity = true;
-            particle2.gravityModifier = -0.8f;
-        }*/
-
-		if (stateFrames >= 120) {
-			character.changeState(new BigBangStrikeState(), true);
 		}
 	}
 }
 
 
 public class BigBangStrikeState : CharState {
-
 	bool fired;
-	public BigBangStrikeState() : base("chargeshot") {
+	Blues blues = null!;
 
+	public BigBangStrikeState() : base("strikeattack") {
+		superArmor = true;
 	}
-
 
 	public override void update() {
 		base.update();
+		blues.coreAmmo = blues.coreMaxAmmo;
+		blues.coreAmmoDecreaseCooldown = 10;
 
 		if (!fired && character.frameIndex >= 3) {
-			new BigBangStrikeProj(
+			/*new BigBangStrikeProj(
 				character.getShootPos(), character.getShootXDir(),
 				player, player.getNextActorNetId(), true
-			);
+			);*/
 			fired = true;
 			character.playSound("buster3", sendRpc: true);
 		}
 		if (stateFrames >= 60) {
-			character.changeState(new OverheatStunned(), true);
+			character.changeState(new OverheatShutdown(), true);
 		}
 	}
-}
 
+	public override void onEnter(CharState oldState) {
+		blues = character as Blues ?? throw new NullReferenceException();
+	}
+}
 
 public class BigBangStrikeBackwall : Effect {
 	public Character rootChar;

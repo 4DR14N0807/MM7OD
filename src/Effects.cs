@@ -91,8 +91,8 @@ public class ChargeEffect {
 				part.pos.y -= Global.speedMul * 4;
 			}
 			var chargePart = "charge_part_" + chargeLevel.ToString();
-			if (chargeType != 1 && chargeLevel >= 3) {
-				chargePart = "hypercharge_part_1";
+			if (chargeLevel >= 3) {
+				chargePart = "noise_crush_charge_part";
 			}
 			part.changeSprite(chargePart, true);
 			part.time += Global.spf * 20;

@@ -316,7 +316,9 @@ public enum RockWeaponIds {
 public enum BluesProjIds  {
 	Lemon = 600,
 	LemonAngled,
-	ChargedBuster,
+	BusterLV2,
+	BusterLV3,
+	BusterLV4,
 	GeminiLaser,
 	HardKnuckle,
 	SearchSnake,

@@ -55,28 +55,38 @@ public class Blues : Character {
 	}
 
 	public override bool canAddAmmo() {
-		if (coreAmmo > 0) return true;
-		return base.canAddAmmo();
+		return false;//(coreAmmo > 0);
 	}
 
 	public override float getRunSpeed() {
 		float runSpeed = Physics.WalkSpeed;
 		if (overheating) {
 			runSpeed *= 0.5f;
+			if (isShieldActive) {
+				runSpeed *= 0.9375f;
+			}
 		}
-		if (isShieldActive) {
+		else if (isShieldActive) {
 			runSpeed *= 0.75f;
 		}
 		return runSpeed * getRunDebuffs();
 	}
 
 	public float getShieldDashSpeed() {
-		float runSpeed = 3f * 60;
+		float runSpeed = 3.25f * 60;
 		if (overheating) {
 			runSpeed *= 0.5f;
 		}
-		if (isShieldActive) {
-			runSpeed *= 0.75f;
+		else if (isShieldActive) {
+			runSpeed = 2.75f * 60;
+		}
+		return runSpeed * getRunDebuffs();
+	}
+
+	public float getSlideSpeed() {
+		float runSpeed = 3f * 60;
+		if (overheating) {
+			runSpeed *= 0.5f;
 		}
 		return runSpeed * getRunDebuffs();
 	}
@@ -85,15 +95,17 @@ public class Blues : Character {
 		float jumpSpeed = Physics.JumpSpeed;
 		if (overheating) {
 			jumpSpeed *= 0.75f;
-		} else if (isShieldActive) {
+		}
+		else if (isShieldActive) {
 			jumpSpeed *= 0.85f;
 		}
 		return jumpSpeed * getJumpModifier();
 	}
 
 	public override bool canTurn() {
-		if (charState is ProtoAirShoot) return false;
-		if (charState is HardKnuckleShoot) return false;
+		if (charState is BluesSpreadShoot or HardKnuckleShoot) {
+			return false;
+		}
 		return base.canTurn();
 	}
 
@@ -121,7 +133,19 @@ public class Blues : Character {
 	}
 
 	public bool canShieldDash() {
-		return (grounded && charState is not ShieldDash && !overheating && rootTime <= 0);
+		return (
+			(grounded || dashedInAir == 0) &&
+			charState is not ShieldDash &&
+			!overheating && rootTime <= 0
+		);
+	}
+
+	public bool canSlide() {
+		return (
+			grounded && vel.y >= 0 &&
+			charState is not BluesSlide and not ShieldDash &&
+			!overheating && rootTime <= 0
+		);
 	}
 
 	public bool canShootSpecial() {
@@ -155,7 +179,7 @@ public class Blues : Character {
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
 		if (isShieldActive && spriteName == getSprite("idle") && getChargeLevel() >= 2) {
-			spriteName = getSprite("charge");
+			spriteName = getSprite("idle_chargeshield");
 		} else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
 		}
@@ -253,9 +277,6 @@ public class Blues : Character {
 		} else {
 			coreAmmoIncreaseCooldown = 0;
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
-			if (overheating) {
-				Helpers.decrementFrames(ref coreAmmoIncreaseCooldown);
-			}
 		}
 		if (coreAmmoIncreaseCooldown >= 20) {
 			if (coreAmmo < coreMaxAmmo) {
@@ -290,7 +311,7 @@ public class Blues : Character {
 		// Shoot logic.
 		chargeLogic(shoot);
 		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == getSprite("idle_shield")) {
-			changeSpriteFromName("charge", true);
+			changeSpriteFromName("idle_chargeshield", true);
 		}
 
 		// Overheating effects-
@@ -327,12 +348,20 @@ public class Blues : Character {
 		}
 		// Change sprite is shield mode changed.
 		if (lastShieldMode != isShieldActive) {
-			if (!isShieldActive || shieldHP <= 0) {
+			if (shootTime == 0 && charState is Idle idleState) {
+				idleState.transitionSprite = getSprite("idle_swap");
+				if (isShieldActive) {
+					idleState.transitionSprite += "_shield";
+				}
+				idleState.sprite = idleState.transitionSprite;
+				changeSprite(idleState.sprite, true);
+			}
+			else if (!isShieldActive || shieldHP <= 0) {
 				isShieldActive = false;
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-				if (sprite.name == getSprite("charge")) {
+				if (sprite.name == getSprite("idle_chargeshield")) {
 					changeSpriteFromName("idle", true);
 				}
 			} else {
@@ -342,9 +371,16 @@ public class Blues : Character {
 				}
 			}
 		}
-		if (player.dashPressed(out string slideControl) && canShieldDash()) {
-			changeState(new ShieldDash(slideControl), true);
-			//addCoreAmmo(2);
+		if (player.input.isPressed(Control.Jump, player) &&
+			player.input.isHeld(Control.Down, player) &&
+			canSlide()
+		) {
+			changeState(new BluesSlide(), true);
+			return true;
+		}
+		if (player.input.isPressed(Control.Dash, player) && canShieldDash()) {
+			addCoreAmmo(2);
+			changeState(new ShieldDash(), true);
 			return true;
 		}
 		return base.normalCtrl();
@@ -353,7 +389,7 @@ public class Blues : Character {
 	public override bool attackCtrl() {
 		bool shootPressed = player.input.isPressed(Control.Shoot, player);
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
-		if (specialWeapon is NeedleCannon) {
+		if (!overheating && specialWeapon is NeedleCannon) {
 			specialPressed = player.input.isHeld(Control.Special1, player);
 		}
 		bool downHeld = player.input.isHeld(Control.Down, player);
@@ -369,7 +405,7 @@ public class Blues : Character {
 		}
 
 		if (shootPressed && downHeld && !overheating && !grounded) {
-			changeState(new ProtoAirShoot(), true);
+			changeState(new BluesSpreadShoot(), true);
 			return true;
 		}
 
@@ -402,7 +438,7 @@ public class Blues : Character {
 			}
 		}
 		// Cancel non-invincible states.
-		if (!charState.attackCtrl && !charState.invincible) {
+		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide) {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
@@ -426,18 +462,18 @@ public class Blues : Character {
 			if (player.input.isHeld(Control.Up, player)) {
 				changeState(new ProtoStrike(2), true);
 			} else {
-				new ProtoBusterChargedProj(
+				new ProtoBusterLv3Proj(
 					shootPos, xDir, player, player.getNextActorNetId(), true
 				);
 				resetCoreCooldown();
 				playSound("buster3", sendRpc: true);
 				lemonCooldown = 12;
-			}	
+			}
 		} else if (chargeLevel >= 3) {
 			if (player.input.isHeld(Control.Up, player)) {
 				changeState(new ProtoStrike(3), true);
 			} else {
-				new ProtoBusterLv3Proj(
+				new ProtoBusterLv4Proj(
 					shootPos, xDir, player, player.getNextActorNetId(), true
 				);
 				resetCoreCooldown();
@@ -477,9 +513,11 @@ public class Blues : Character {
 		}
 		if (shootAnimTime == 0) {
 			changeSprite(shootSprite, false);
-		} else if (charState is Idle) {
+		}
+		if (shootSprite == getSprite("shoot") || shootSprite == getSprite("shoot_shield")) {
 			frameIndex = 0;
 			frameTime = 0;
+			animTime = 0;
 		}
 		if (charState is LadderClimb) {
 			if (player.input.isHeld(Control.Left, player)) {
@@ -503,6 +541,24 @@ public class Blues : Character {
 		}
 	}
 
+	public override void chargeGfx() {
+		if (ownedByLocalPlayer) {
+			chargeEffect.stop();
+		}
+		if (isCharging()) {
+			chargeSound.play();
+			int level = getChargeLevel();
+			var renderGfx = RenderEffectType.ChargeBlue;
+			renderGfx = level switch {
+				1 => RenderEffectType.ChargeBlue,
+				2 => RenderEffectType.ChargeGreen,
+				3 => RenderEffectType.ChargePink,
+			};
+			addRenderEffect(renderGfx, 0.033333f, 0.1f);
+			chargeEffect.update(getChargeLevel(), 0);
+		}
+	}
+
 	public void resetCoreCooldown(float? time = null, bool force = false) {
 		coreAmmoIncreaseCooldown = 0;
 		if (!force && overheating) {
@@ -521,7 +577,7 @@ public class Blues : Character {
 			return isShieldActive;
 		}
 		return (
-			(isShieldActive || charState is ShieldDash) &&
+			(isShieldActive && charState is not BluesSlide) &&
 			shieldHP > 0 &&
 			shootAnimTime == 0 &&
 			charState is not Hurt { stateFrames: not 0 }
@@ -579,7 +635,7 @@ public class Blues : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-				if (sprite.name == getSprite("charge")) {
+				if (sprite.name == getSprite("idle_chargeshield")) {
 					changeSpriteFromName("idle", true);
 				}
 			}

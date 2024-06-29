@@ -371,6 +371,8 @@ public class Sprite {
 				shader = Global.shaderWrappers.GetValueOrDefault("chargeYellow");
 			} else if (renderEffects.Contains(RenderEffectType.ChargeBlue)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("chargeBlue");
+			} else if (renderEffects.Contains(RenderEffectType.ChargePurple)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargePurple");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeBlue)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_blue");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeRed)) {

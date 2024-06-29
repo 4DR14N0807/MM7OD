@@ -1658,16 +1658,15 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (isCharging()) {
 			chargeSound.play();
-			if (!sprite.name.Contains("ra_hide")) {
-				int level = getChargeLevel();
-				var renderGfx = RenderEffectType.ChargeBlue;
-				renderGfx = level switch {
-					1 => RenderEffectType.ChargeBlue,
-					2 => RenderEffectType.ChargeGreen,
-					3 => RenderEffectType.ChargeYellow
-				};
-				addRenderEffect(renderGfx, 0.033333f, 0.1f);
-			}
+			int level = getChargeLevel();
+			var renderGfx = RenderEffectType.ChargeBlue;
+			renderGfx = level switch {
+				1 => RenderEffectType.ChargeBlue,
+				2 => RenderEffectType.ChargeYellow,
+				3 => RenderEffectType.ChargePink,
+				4 => RenderEffectType.ChargeOrange
+			};
+			addRenderEffect(renderGfx, 0.033333f, 0.1f);
 			chargeEffect.update(getChargeLevel(), 0);
 		}
 	}

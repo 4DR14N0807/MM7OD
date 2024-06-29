@@ -25,9 +25,6 @@ public class HardKnuckle : Weapon {
 	}
 
 	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
 		character.changeState(new HardKnuckleShoot(), true);
 		character.playSound("super_adaptor_punch", sendRpc: true);
 	}
@@ -99,8 +96,6 @@ public class HardKnuckleProj : Projectile {
 			string keyName = enemyActor.GetType().ToString() + "_" + enemyActor.netId;
 			if (bounceCooldowns.GetValueOrDefault(keyName) == 0) {
 				bounceCooldowns[keyName] = 60;
-		//	new Anim(pos,"hard_knuckle_proj_hit",xDir, netId, true, true);
-
 				bounce();
 			}
 		}
@@ -110,7 +105,7 @@ public class HardKnuckleProj : Projectile {
 		if (deflected) {
 			return;
 		}
-			new Anim(pos,"hard_knuckle_proj_hit",xDir, netId, true, true);
+		new Anim(pos, "hard_knuckle_proj_hit", xDir, netId, true, true);
 
 		vel.x = xDir * (-2 * 60);
 		if (canControl) {
@@ -132,16 +127,16 @@ public class HardKnuckleShoot : CharState {
 	bool effectCreated;
 	Blues blues = null!;
 
-	public HardKnuckleShoot() : base("hardknuckle") {
-		airSprite = "hardknuckle_air";
-		landSprite = "hardknuckle";
+	public HardKnuckleShoot() : base("knuckle") {
+		airSprite = "knuckle_air";
+		landSprite = "knuckle";
 	}
 
 	public override void update() {
 		base.update();
 		if (!effectCreated) {
 			new Anim(
-				character.getShootPos().addxy((character.xDir * -6), 0),
+				character.getShootPos(),
 				"generic_explosion", character.xDir, player.getNextActorNetId(), true,
 				sendRpc: true, host: character, zIndex: ZIndex.Default + 1
 			);
@@ -149,7 +144,7 @@ public class HardKnuckleShoot : CharState {
 		}
 		if (!fired && character.frameIndex == 1) {
 			blues.hardKnuckleProj = new HardKnuckleProj(
-				character.getShootPos(), character.xDir,
+				character.getShootPos().addxy(character.xDir * 8, 0), character.xDir,
 				player, player.getNextActorNetId(), true
 			);
 			fired = true;

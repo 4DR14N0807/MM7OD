@@ -1678,7 +1678,7 @@ public partial class Character : Actor, IDamagable {
 		//if (isAwakenedZeroBS.getValue() && isAwakenedGenmuZeroBS.getValue()) return true;
 		//if (isHyperSigmaBS.getValue()) return true;
 		//return false;
-		return isCCImmuneHyperMode() || charState is OverheatStunned;
+		return isCCImmuneHyperMode();
 	}
 
 	public bool isCCImmuneHyperMode() {

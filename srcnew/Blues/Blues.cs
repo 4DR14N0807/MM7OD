@@ -148,6 +148,14 @@ public class Blues : Character {
 		);
 	}
 
+	public bool canUseShield() {
+		if (charState is BigBangStrikeState ||
+			charState is BigBangStrikeStart ||
+			charState is OverheatStunned) return false;
+		
+		return true;
+	}
+
 	public bool canShootSpecial() {
 		if (isCharging() || overheating || specialWeapon.shootCooldown > 0 ||
 		 !specialWeapon.canShoot(0, this) || invulnTime > 0) {
@@ -228,10 +236,10 @@ public class Blues : Character {
 				new Weapon(), projPos, projId, player, overrideDamage, Global.halfFlinch, 1f,
 				addToLevel: addToLevel
 
-			)
+			),
+			_ => null
 		};
 		return proj;
-
 	}
 
 	public override bool chargeButtonHeld() {
@@ -330,6 +338,7 @@ public class Blues : Character {
 
 	public override void onFlinchOrStun(CharState newState) {
 		coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
+		if (newState is Hurt) addCoreAmmo(3);
 		base.onFlinchOrStun(newState);
 	}
 
@@ -337,7 +346,7 @@ public class Blues : Character {
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
-		if (shieldHP > 0 && grounded && vel.y >= 0 && shootAnimTime <= 0) {
+		if (shieldHP > 0 && grounded && vel.y >= 0 && shootAnimTime <= 0 && canUseShield()) {
 			if (Options.main.protoShieldHold) {
 				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
 			} else {

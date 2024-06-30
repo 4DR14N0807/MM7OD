@@ -165,6 +165,8 @@ public class BigBangStrikeState : CharState {
 		blues.coreAmmo = blues.coreMaxAmmo;
 		blues.coreAmmoDecreaseCooldown = 10;
 
+		if (blues != null) blues.coreAmmo = blues.coreMaxAmmo;
+
 		if (!fired && character.frameIndex >= 3) {
 			/*new BigBangStrikeProj(
 				character.getShootPos(), character.getShootXDir(),
@@ -174,7 +176,7 @@ public class BigBangStrikeState : CharState {
 			character.playSound("buster3", sendRpc: true);
 		}
 		if (stateFrames >= 60) {
-			character.changeState(new OverheatShutdown(), true);
+			character.changeState(new OverheatShutdownStart(), true);
 		}
 	}
 

@@ -238,7 +238,7 @@ public class ProtoStrike : CharState {
 		if (chargeLv >= 3) blues.overridePSDamage = true;
 
 		if (character.isAnimOver()) {
-			if (isShooting) {
+			if (isShooting || stateFrames < 20) {
 				character.frameIndex = 3;
 			} else character.changeState(new ProtoStrikeEnd(), true);
 			shot = false;
@@ -280,20 +280,23 @@ public class ProtoStrikeEnd : CharState {
 	}
 }
 
-public class OverheatShutdown : CharState {
+
+public class OverheatShutdownStart : CharState {
 	Blues blues = null!;
 
-	public OverheatShutdown() : base("shutdown") {
+	public OverheatShutdownStart() : base("hurt") {
 		superArmor = true;
 	}
 
-	public override bool canExit(Character character, CharState newState) {
-		return !blues.overheating;
-	}
 	public override void update() {
 		base.update();
-		if (!blues.overheating) {
-			character.changeToIdleOrFall();
+		if (stateFrames >= 30 && character.grounded) {
+			if (!blues.overheating) {
+				character.changeToIdleOrFall();
+				return;
+			}
+			character.changeState(new OverheatShutdownStart(), true);
+			return;
 		}
 	}
 
@@ -303,5 +306,28 @@ public class OverheatShutdown : CharState {
 		blues.coreAmmo = blues.coreMaxAmmo;
 		blues.coreAmmoDecreaseCooldown = 10;
 		blues.playSound("danger_wrap_explosion", sendRpc: true);
+		character.vel.y = -4.25f * 60;
+		character.slideVel = 1.75f * 60 * -character.xDir;
+	}
+}
+
+
+public class OverheatShutdown : CharState {
+	Blues blues = null!;
+
+	public OverheatShutdown() : base("shutdown") {
+		superArmor = true;
+	}
+
+	public override void update() {
+		base.update();
+		if (blues != null && !blues.overheating) {
+			character.changeToIdleOrFall();
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
 	}
 }

@@ -9,7 +9,7 @@ public class BigBangStrikeProj : Projectile {
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 0, 3, player, "big_bang_strike_proj",
-		Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		Global.superFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
 		maxTime = 1.5f;
@@ -58,6 +58,7 @@ public class BigBangStrikeProj : Projectile {
 
 public class BigBangStrikeExplosionProj : Projectile {
 	float radius = 38;
+	float absorbRadius = 120;
 
 	public BigBangStrikeExplosionProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
@@ -91,10 +92,15 @@ public class BigBangStrikeExplosionProj : Projectile {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable &&
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null) &&
-				actor.getCenterPos().distanceTo(pos) <= radius
+				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
 			) {
-				damager.applyDamage(damagable, false, weapon, this, projId);
+				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
+					float direction = MathF.Sign(pos.x - actor.pos.x);
+					actor.move(new Point(direction * 60, 0));
+				}
+				if (actor.getCenterPos().distanceTo(pos) <= radius) {
+					damager.applyDamage(damagable, false, weapon, this, projId);
+				}
 			}
 		}
 	}
@@ -105,6 +111,7 @@ public class BigBangStrikeStart : CharState {
 	float shieldLossCD = 3;
 	float shootTimer = 120;
 	Blues blues = null!;
+	BigBangStrikeBackwall bgEffect = null!;
 
 	public BigBangStrikeStart() : base("idle_chargeshield") {
 		superArmor = true;
@@ -137,9 +144,13 @@ public class BigBangStrikeStart : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 		character.stopMovingWeak();
 		blues.isShieldActive = false;
+		bgEffect = new BigBangStrikeBackwall(character.pos, character);
+	}
 
-		if (character.ownedByLocalPlayer && player == Global.level.mainPlayer) {
-			new BigBangStrikeBackwall(character.pos, character);
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		if (bgEffect.effectTime < 2) {
+			bgEffect.effectTime = 2;
 		}
 	}
 }
@@ -190,7 +201,7 @@ public class BigBangStrikeBackwall : Effect {
 	public override void update() {
 		base.update();
 
-		if (effectTime >= 2.2) {
+		if (effectTime >= 3.2) {
 			destroySelf();
 		}
 	}
@@ -200,8 +211,8 @@ public class BigBangStrikeBackwall : Effect {
 		if (effectTime < 0.2) {
 			transparecy = effectTime * 500f;
 		}
-		if (effectTime > 2.2) {
-			transparecy = 100f - ((effectTime - 2.2f) * 500f);
+		if (effectTime > 3f) {
+			transparecy = 100f - ((effectTime - 3f) * 500f);
 		}
 
 		DrawWrappers.DrawRect(

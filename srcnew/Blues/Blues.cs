@@ -9,6 +9,8 @@ public class Blues : Character {
 	public float[] unchargedLemonCooldown = new float[3];
 	public float coreMaxAmmo = 28;
 	public float coreAmmo;
+	public float corePendingAmmo;
+	public float lastChargeLevel;
 	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoDamageCooldown = 120;
 	public float coreAmmoIncreaseCooldown;
@@ -40,9 +42,9 @@ public class Blues : Character {
 	) {
 		charId = CharIds.Blues;
 		int protomanLoadout = player.loadout.bluesLoadout.specialWeapon;
-		charge1Time = 30;
-		charge2Time = 95;
-		charge3Time = 160;
+		charge1Time = 40;
+		charge2Time = 105;
+		charge3Time = 170;
 
 		specialWeapon = protomanLoadout switch {
 			0 => new NeedleCannon(),
@@ -137,7 +139,7 @@ public class Blues : Character {
 
 	public bool canShieldDash() {
 		return (
-			(grounded || dashedInAir == 0) &&
+			grounded &&
 			charState is not ShieldDash &&
 			!overheating && rootTime <= 0
 		);
@@ -280,19 +282,12 @@ public class Blues : Character {
 			stopCharge();
 		}
 		if (isCharging() && chargeTime <= charge3Time + 10) {
-			coreAmmoIncreaseCooldown += Global.speedMul;
 			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
 		} else {
-			coreAmmoIncreaseCooldown = 0;
+			corePendingAmmo = 0;
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
-		}
-		if (coreAmmoIncreaseCooldown >= 20) {
-			if (coreAmmo < coreMaxAmmo) {
-				coreAmmo++;
-			}
-			coreAmmoIncreaseCooldown = 0;
 		}
 		if (coreAmmoDecreaseCooldown <= 0) {
 			coreAmmo--;
@@ -473,24 +468,25 @@ public class Blues : Character {
 			new ProtoBusterLv2Proj(
 				shootPos, xDir, player, player.getNextActorNetId(), true
 			);
-			resetCoreCooldown();
+			addCoreAmmo(getChargeShotAmmoUse(2));
 			playSound("buster2", sendRpc: true);
 			lemonCooldown = 12;
 		} else if (chargeLevel == 2) {
 			new ProtoBusterLv3Proj(
 				shootPos, xDir, player, player.getNextActorNetId(), true
 			);
-			resetCoreCooldown();
+			addCoreAmmo(getChargeShotAmmoUse(3));
 			playSound("buster3", sendRpc: true);
 			lemonCooldown = 12;
 		} else {
 			if (player.input.isHeld(Control.Up, player)) {
+				resetCoreCooldown();
 				changeState(new ProtoStrike(3), true);
 			} else {
 				new ProtoBusterLv4Proj(
 					shootPos, xDir, player, player.getNextActorNetId(), true
 				);
-				resetCoreCooldown();
+				addCoreAmmo(getChargeShotAmmoUse(3));
 				playSound("buster3", sendRpc: true);
 				lemonCooldown = 12;
 			}
@@ -574,7 +570,6 @@ public class Blues : Character {
 	}
 
 	public void resetCoreCooldown(float? time = null, bool force = false) {
-		coreAmmoIncreaseCooldown = 0;
 		if (!force && overheating) {
 			return;
 		}
@@ -584,6 +579,36 @@ public class Blues : Character {
 		if (coreAmmoDecreaseCooldown < time) {
 			coreAmmoDecreaseCooldown = time.Value;
 		}
+	}
+
+	public int getChargeShotCorePendingAmmo() {
+		int ammoUse = 0;
+		float[] chargeAmmoTimes = [
+			charge1Time / 2,
+			charge1Time,
+			(charge2Time - charge1Time) / 2 + charge1Time,
+			charge2Time,
+			(charge3Time - charge2Time) / 2 + charge2Time,
+			charge3Time,
+		];
+		for (int i = 0; i < chargeAmmoTimes.Length; i++) {
+			if (chargeTime >= chargeAmmoTimes[i]) {
+				ammoUse++;
+			} else {
+				break;
+			}
+		}
+		return ammoUse;
+	}
+
+	public int getChargeShotAmmoUse(int chargeLevel) {
+		return chargeLevel switch {
+			0 => 0,
+			1 => 2,
+			2 => 4,
+			3 => 6,
+			_ => 6
+		};
 	}
 
 	public bool isShieldFront() {

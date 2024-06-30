@@ -1481,6 +1481,20 @@ public class GameMode {
 			renderAmmo(
 				baseX, baseY, 0, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo), maxAmmo: protoman.coreMaxAmmo
 			);
+			if (!protoman.overheating && protoman.ownedByLocalPlayer) {
+				int yPos = MathInt.Ceiling(9 + baseY - MathF.Ceiling(protoman.coreAmmo) * 2);
+
+				int ammoAmmount = protoman.getChargeShotCorePendingAmmo();
+				int actualUse = protoman.getChargeShotAmmoUse(protoman.getChargeLevel());
+				for (var i = 0; i < ammoAmmount; i++) {
+					int color = 0;
+					if (i < actualUse) {
+						color = coreAmmoColor;
+					}
+					Global.sprites["hud_weapon_full"].drawToHUD(color, baseX, yPos);
+					yPos -= 2;
+				}
+			}
 			return;
 		}
 

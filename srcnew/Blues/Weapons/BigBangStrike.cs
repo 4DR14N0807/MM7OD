@@ -9,10 +9,10 @@ public class BigBangStrikeProj : Projectile {
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 0, 3, player, "big_bang_strike_proj",
-		Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
-		maxTime = 2f;
+		maxTime = 1.5f;
 		shouldShieldBlock = false;
 		reflectable = false;
 
@@ -102,6 +102,8 @@ public class BigBangStrikeExplosionProj : Projectile {
 
 
 public class BigBangStrikeStart : CharState {
+	float shieldLossCD = 3;
+	float shootTimer = 120;
 	Blues blues = null!;
 
 	public BigBangStrikeStart() : base("idle_chargeshield") {
@@ -112,10 +114,23 @@ public class BigBangStrikeStart : CharState {
 		base.update();
 		blues.coreAmmo = blues.coreMaxAmmo;
 		blues.coreAmmoDecreaseCooldown = 10;
-
-		if (stateFrames >= 120) {
+		blues.healShieldHPCooldown = 180;
+		if (shieldLossCD <= 0 && blues.shieldHP > 0) {
+			blues.playSound("tick", true);
+			blues.shieldHP--;
+			if (blues.shieldHP <= 0) {
+				blues.shieldHP = 0;
+				blues.shieldDamageDebt = 0;
+			}
+			shieldLossCD = 3;
+			shootTimer -= 2;
+		} else {
+			shieldLossCD -= Global.speedMul;
+		}
+		if (shootTimer <= 0) {
 			character.changeState(new BigBangStrikeState(), true);
 		}
+		shootTimer -= Global.speedMul;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -175,8 +190,7 @@ public class BigBangStrikeBackwall : Effect {
 	public override void update() {
 		base.update();
 
-		effectFrames++;
-		if (effectFrames > 180) {
+		if (effectTime >= 2.2) {
 			destroySelf();
 		}
 	}
@@ -186,8 +200,8 @@ public class BigBangStrikeBackwall : Effect {
 		if (effectTime < 0.2) {
 			transparecy = effectTime * 500f;
 		}
-		if (effectTime > 2.6) {
-			transparecy = 100f - ((effectTime - 2.6f) * 500f);
+		if (effectTime > 2.2) {
+			transparecy = 100f - ((effectTime - 2.2f) * 500f);
 		}
 
 		DrawWrappers.DrawRect(

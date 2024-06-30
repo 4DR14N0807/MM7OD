@@ -89,19 +89,18 @@ public class ProtoBusterLv2Proj : Projectile {
 		Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
-		"rock_buster1_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		ProtoBuster.netWeapon, pos, xDir, 325, 2, player,
+		"rock_buster1_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		fadeSprite = "rock_buster1_fade";
 		fadeOnAutoDestroy = true;
-		maxTime = 0.475f;
+		maxTime = 0.4125f;
 		projId = (int)BluesProjIds.BusterLV2;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
 		}
 	}
-
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterLv2Proj(
@@ -121,7 +120,7 @@ public class ProtoBusterLv3Proj : Projectile {
 	) {
 		fadeSprite = "rock_buster2_fade";
 		fadeOnAutoDestroy = true;
-		maxTime = 0.475f;
+		maxTime = 0.45f;
 		projId = (int)BluesProjIds.BusterLV4;
 
 		if (rpc) {

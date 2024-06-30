@@ -40,6 +40,9 @@ public class Blues : Character {
 	) {
 		charId = CharIds.Blues;
 		int protomanLoadout = player.loadout.bluesLoadout.specialWeapon;
+		charge1Time = 30;
+		charge2Time = 95;
+		charge3Time = 160;
 
 		specialWeapon = protomanLoadout switch {
 			0 => new NeedleCannon(),
@@ -455,7 +458,7 @@ public class Blues : Character {
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
-		if (chargeLevel <= 1) {
+		if (chargeLevel <= 0) {
 			var lemon = new ProtoBusterProj(
 				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 			);
@@ -466,18 +469,21 @@ public class Blues : Character {
 			if (oldShootAnimTime <= 0.25f) {
 				shootAnimTime = 0.25f;
 			}
-		} else if (chargeLevel <= 2) {
-			if (player.input.isHeld(Control.Up, player)) {
-				changeState(new ProtoStrike(2), true);
-			} else {
-				new ProtoBusterLv3Proj(
-					shootPos, xDir, player, player.getNextActorNetId(), true
-				);
-				resetCoreCooldown();
-				playSound("buster3", sendRpc: true);
-				lemonCooldown = 12;
-			}
-		} else if (chargeLevel >= 3) {
+		} else if (chargeLevel == 1) {
+			new ProtoBusterLv2Proj(
+				shootPos, xDir, player, player.getNextActorNetId(), true
+			);
+			resetCoreCooldown();
+			playSound("buster2", sendRpc: true);
+			lemonCooldown = 12;
+		} else if (chargeLevel == 2) {
+			new ProtoBusterLv3Proj(
+				shootPos, xDir, player, player.getNextActorNetId(), true
+			);
+			resetCoreCooldown();
+			playSound("buster3", sendRpc: true);
+			lemonCooldown = 12;
+		} else {
 			if (player.input.isHeld(Control.Up, player)) {
 				changeState(new ProtoStrike(3), true);
 			} else {
@@ -559,11 +565,11 @@ public class Blues : Character {
 			var renderGfx = RenderEffectType.ChargeBlue;
 			renderGfx = level switch {
 				1 => RenderEffectType.ChargeBlue,
-				2 => RenderEffectType.ChargeGreen,
-				3 => RenderEffectType.ChargePink,
+				2 => RenderEffectType.ChargePink,
+				3 => RenderEffectType.ChargeGreen,
 			};
 			addRenderEffect(renderGfx, 0.033333f, 0.1f);
-			chargeEffect.update(getChargeLevel(), 0);
+			chargeEffect.update(getChargeLevel(), 1);
 		}
 	}
 

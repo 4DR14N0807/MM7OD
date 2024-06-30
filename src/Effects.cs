@@ -90,9 +90,16 @@ public class ChargeEffect {
 				//part.pos.y = Helpers.moveTo(part.pos.y, 0, Global.spf * 70);
 				part.pos.y -= Global.speedMul * 4;
 			}
-			var chargePart = "charge_part_" + chargeLevel.ToString();
-			if (chargeLevel >= 3) {
-				chargePart = "noise_crush_charge_part";
+			string chargePart = chargeLevel switch {
+				>2 => "charge_part_1",
+				_ => "charge_part_1"
+			};
+			if (chargeType == 1) {
+				chargePart = chargeLevel switch {
+					2 => "noise_crush_charge_part",
+					>3 => "charge_part_2",
+					_ => "charge_part_1"
+				};
 			}
 			part.changeSprite(chargePart, true);
 			part.time += Global.spf * 20;

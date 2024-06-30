@@ -5,102 +5,78 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class BigBangStrikeProj : Projectile {
-    Anim? trail1;
-    int trail1Time;
-    Anim? trail2;
-    int trail2Time;
-    Player player;
+	Anim? trail1;
+	int trail1Time;
+	Anim? trail2;
+	int trail2Time;
+	Player player;
 
-    public BigBangStrikeProj(
+	public BigBangStrikeProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 240, 6, player, "big_bang_strike_proj",
 		Global.defFlinch, 3, netId, player.ownedByLocalPlayer
 	) {
-        projId = (int)BluesProjIds.BigBangStrike;
-        maxTime = 0.75f;
-        shouldShieldBlock = false;
-        this.player = player;
+		projId = (int)BluesProjIds.BigBangStrike;
+		maxTime = 0.75f;
+		shouldShieldBlock = false;
+		this.player = player;
 
-        if (rpc) {
+		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
 		}
-    }
+	}
 
-    public static Projectile rpcInvoke(ProjParameters args) {
+	public static Projectile rpcInvoke(ProjParameters args) {
 		return new BigBangStrikeProj(
 			args.pos, args.xDir, args.player, args.netId
 		);
 	}
 
+	public override void update() {
+		base.update();
+	}
 
-    public override void update() {
-        base.update();
-
-        trail1Time++;
-        trail2Time++;
-
-        //Yellow particles behaviour
-        if (trail1Time >= 15) {
-            trail1Time = 0;
-            trail1 = new Anim(
-				pos.addRand(6,12), "big_bang_strike_trail", xDir, player.getNextActorNetId(), true, true
-			);
-            trail1.useGravity = true;
-            trail1.gravityModifier = -0.4f;
-        }
-
-        //Green particles behaviour
-        if (trail2Time >= 6) {
-            trail2Time = 0;
-            trail2 = new Anim(
-				pos.addRand(2,2), "big_bang_strike_trail2", xDir, player.getNextActorNetId(), true, true
-			);
-            trail2.useGravity = true;
-            trail2.gravityModifier = -0.7f;
-        }
-    }
-
-    public override void onDestroy() {
-        base.onDestroy();
-        new BigBangStrikeExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
-    }
+	public override void onDestroy() {
+		base.onDestroy();
+		new BigBangStrikeExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
+	}
 }
 
 
 public class BigBangStrikeExplosionProj : Projectile {
-    float radius;
+	float radius;
 
-    public BigBangStrikeExplosionProj(
+	public BigBangStrikeExplosionProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 0, 4, player, "empty",
 		Global.halfFlinch, 2, netId, player.ownedByLocalPlayer
 	) {
-        projId = (int)BluesProjIds.BigBangStrikeExplosion;
-        destroyOnHit = false;
+		projId = (int)BluesProjIds.BigBangStrikeExplosion;
+		destroyOnHit = false;
 
-        if (rpc) {
+		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
 		}
 
-        projId = (int)BluesProjIds.BigBangStrike;
-    }
+		projId = (int)BluesProjIds.BigBangStrike;
+	}
 
-    public static Projectile rpcInvoke(ProjParameters args) {
+	public static Projectile rpcInvoke(ProjParameters args) {
 		return new BigBangStrikeExplosionProj(
 			args.pos, args.xDir, args.player, args.netId
 		);
 	}
 
-    public override void update() {
-        base.update();
+	public override void update() {
+		base.update();
 
-        if (radius <= 60) {
-            radius += 2;
-        } else destroySelf();
+		if (radius <= 60) {
+			radius += 2;
+		} else destroySelf();
 
-        foreach (var gameObject in Global.level.getGameObjectArray()) {
+		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable &&
@@ -110,9 +86,9 @@ public class BigBangStrikeExplosionProj : Projectile {
 				damager.applyDamage(damagable, false, weapon, this, projId);
 			}
 		}
-    }
+	}
 
-    public override void render(float x, float y) {
+	public override void render(float x, float y) {
 		base.render(x, y);
 		double transparency = (time) / (0.4);
 		if (transparency < 0) { transparency = 0; }
@@ -145,7 +121,7 @@ public class BigBangStrikeStart : CharState {
 		character.stopMovingWeak();
 		blues.isShieldActive = false;
 
-        if (character.ownedByLocalPlayer && player == Global.level.mainPlayer) {
+		if (character.ownedByLocalPlayer && player == Global.level.mainPlayer) {
 			new BigBangStrikeBackwall(character.pos, character);
 		}
 	}
@@ -187,7 +163,7 @@ public class BigBangStrikeState : CharState {
 
 public class BigBangStrikeBackwall : Effect {
 	public Character rootChar;
-    public int effectFrames;
+	public int effectFrames;
 
 	public BigBangStrikeBackwall(Point pos, Character character) : base(pos) {
 		rootChar = character;
@@ -196,7 +172,7 @@ public class BigBangStrikeBackwall : Effect {
 	public override void update() {
 		base.update();
 
-        effectFrames++;
+		effectFrames++;
 		if (effectFrames > 180) {
 			destroySelf();
 		}

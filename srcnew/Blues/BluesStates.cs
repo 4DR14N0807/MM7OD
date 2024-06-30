@@ -295,7 +295,7 @@ public class OverheatShutdownStart : CharState {
 				character.changeToIdleOrFall();
 				return;
 			}
-			character.changeState(new OverheatShutdownStart(), true);
+			character.changeState(new OverheatShutdown(), true);
 			return;
 		}
 	}

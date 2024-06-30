@@ -215,14 +215,11 @@ public class ProtoGenericShotState : CharState {
 
 public class ProtoStrike : CharState {
 	Blues blues = null!;
-	bool isUsingPStrike;
-	bool shot;
-	float coreCooldown;
-	bool didUseAmmo;
-	int chargeLv;
+	float startTime;
+	bool fired;
+	float coreCooldown = 60;
 
-	public ProtoStrike(int chargeLv) : base("protostrike") {
-		this.chargeLv = chargeLv;
+	public ProtoStrike() : base("strikeattack") {
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -230,38 +227,29 @@ public class ProtoStrike : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
-
 	public override void update() {
 		base.update();
+		blues.resetCoreCooldown();
+		bool isShooting = blues.chargeButtonHeld();
 
-		bool isShooting = player.input.isHeld(Control.Shoot, player);
-		if (chargeLv >= 3) blues.overridePSDamage = true;
-
-		if (character.isAnimOver()) {
-			if (isShooting || stateFrames < 20) {
-				character.frameIndex = 3;
-			} else character.changeState(new ProtoStrikeEnd(), true);
-			shot = false;
-			blues.overridePSDamage = false;
+		if (!fired && character.frameIndex >= 3) {
+			Point shootPos = character.getShootPos();
+			new ProtoStrikeProj(
+				shootPos, character.xDir, player, player.getNextActorNetId(), true
+			);
+			fired = true;
+			startTime = stateFrames;
 		}
-
-		if (character.frameIndex >= 3) isUsingPStrike = true;
-		else isUsingPStrike = false;
-
-		if (isUsingPStrike) {
-			if (!shot) {
-				var shootPos = character.getShootPos();
-				/*if (!didUseAmmo) {
-					blues.addCoreAmmo(-3);
-					didUseAmmo = true;
-				}*/
-				shot = true;
-			}
-			coreCooldown += Global.spf;
+		if (!fired) {
+			return;
 		}
-
-		if (coreCooldown >= Global.spf * 15) {
-			coreCooldown = 0;
+		if (!isShooting && stateFrames >= startTime + 60 || stateFrames >= startTime + 180) {
+			character.changeToIdleOrFall();
+			return;
+		}
+		coreCooldown -= Global.speedMul;
+		if (coreCooldown <= 0) {
+			coreCooldown = 20;
 			blues.addCoreAmmo(1);
 		}
 	}

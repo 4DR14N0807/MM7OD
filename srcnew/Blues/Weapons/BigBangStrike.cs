@@ -55,7 +55,6 @@ public class BigBangStrikeProj : Projectile {
 	}
 }
 
-
 public class BigBangStrikeExplosionProj : Projectile {
 	float radius = 38;
 	float absorbRadius = 120;
@@ -64,10 +63,10 @@ public class BigBangStrikeExplosionProj : Projectile {
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 0, 2, player, "big_bang_strike_explosion",
-		Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrikeExplosion;
-		maxTime = 2f;
+		maxTime = 3f;
 		fadeSprite = "big_bang_strike_fade";
 		destroyOnHit = false;
 		fadeOnAutoDestroy = true;
@@ -96,7 +95,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
-					actor.move(new Point(direction * 60, 0));
+					actor.move(new Point(direction * 30, 0));
 				}
 				if (actor.getCenterPos().distanceTo(pos) <= radius) {
 					damager.applyDamage(damagable, false, weapon, this, projId);
@@ -106,6 +105,65 @@ public class BigBangStrikeExplosionProj : Projectile {
 	}
 }
 
+public class ProtoStrikeProj : Projectile {
+	Player player;
+	float radius = 38;
+	float absorbRadius = 80;
+
+	public ProtoStrikeProj(
+		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 0, 2, player, "big_bang_strike_explosion",
+		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+	) {
+		this.player = player;
+		projId = (int)BluesProjIds.ProtoStrike;
+		maxTime = 3f;
+		fadeSprite = "big_bang_strike_fade";
+		destroyOnHit = false;
+		fadeOnAutoDestroy = true;
+		zIndex = ZIndex.Character + 10;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoStrikeProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
+
+	public override void update() {
+		base.update();
+		if (ownedByLocalPlayer) {
+			if (player.character?.charState is not ProtoStrike) {
+				destroySelf();
+			}
+		}
+
+		foreach (var gameObject in Global.level.getGameObjectArray()) {
+			if (gameObject is Actor actor &&
+				actor.ownedByLocalPlayer &&
+				gameObject is IDamagable damagable &&
+				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+			) {
+				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
+					float direction = MathF.Sign(pos.x - actor.pos.x);
+					actor.move(new Point(direction * 60, 0));
+				}
+				if (actor.getCenterPos().distanceTo(pos) <= radius) {
+					damager.applyDamage(damagable, false, weapon, this, projId);
+				}
+			}
+		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+	}
+}
 
 public class BigBangStrikeStart : CharState {
 	float shieldLossCD = 3;

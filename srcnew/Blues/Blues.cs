@@ -224,28 +224,6 @@ public class Blues : Character {
 		ProtoStrike,
 	}
 
-	public override int getHitboxMeleeId(Collider hitbox) {
-		return (int)(sprite.name switch {
-			"blues_protostrike" => MeleeIds.ProtoStrike,
-			_ => MeleeIds.None
-		});
-	}
-
-	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
-		Point projPos = pos ?? new Point(0, 0);
-		ProjIds projId = overridePSDamage ? ProjIds.ProtoStrikeLvl2 : ProjIds.ProtoStrike;
-		float overrideDamage = overridePSDamage ? 4 : 3;
-		Projectile? proj = id switch {
-			(int)MeleeIds.ProtoStrike => new GenericMeleeProj(
-				new Weapon(), projPos, projId, player, overrideDamage, Global.halfFlinch, 1f,
-				addToLevel: addToLevel
-
-			),
-			_ => null
-		};
-		return proj;
-	}
-
 	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
 	}
@@ -480,8 +458,8 @@ public class Blues : Character {
 			lemonCooldown = 12;
 		} else {
 			if (player.input.isHeld(Control.Up, player)) {
-				resetCoreCooldown();
-				changeState(new ProtoStrike(3), true);
+				addCoreAmmo(4);
+				changeState(new ProtoStrike(), true);
 			} else {
 				new ProtoBusterLv4Proj(
 					shootPos, xDir, player, player.getNextActorNetId(), true

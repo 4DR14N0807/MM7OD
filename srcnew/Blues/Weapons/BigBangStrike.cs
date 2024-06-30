@@ -5,22 +5,17 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class BigBangStrikeProj : Projectile {
-	Anim? trail1;
-	int trail1Time;
-	Anim? trail2;
-	int trail2Time;
-	Player player;
 
 	public BigBangStrikeProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 240, 6, player, "big_bang_strike_proj",
+		ProtoBuster.netWeapon, pos, xDir, 0, 6, player, "big_bang_strike_proj",
 		Global.defFlinch, 3, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
-		maxTime = 0.75f;
+		maxTime = 1.5f;
 		shouldShieldBlock = false;
-		this.player = player;
+		reflectable = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -35,26 +30,44 @@ public class BigBangStrikeProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 240) {
+			vel.x += Global.spf * xDir * 100f;
+			if (System.MathF.Abs(vel.x) >= 240) {
+				vel.x = (float)xDir * 240;
+			}
+		}
+	}
+
+	public override void onHitDamagable(IDamagable damagable) {
+		base.onHitDamagable(damagable);
+		if (ownedByLocalPlayer) {
+			destroySelf();
+		}
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
-		new BigBangStrikeExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
+		if (ownedByLocalPlayer) {
+			new BigBangStrikeExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
+		}
 	}
 }
 
 
 public class BigBangStrikeExplosionProj : Projectile {
-	float radius;
+	float radius = 38;
 
 	public BigBangStrikeExplosionProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 4, player, "empty",
+		ProtoBuster.netWeapon, pos, xDir, 0, 4, player, "big_bang_strike_explosion",
 		Global.halfFlinch, 2, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrikeExplosion;
+		maxTime = 1f;
+		fadeSprite = "big_bang_strike_fade";
 		destroyOnHit = false;
+		fadeOnAutoDestroy = true;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -72,29 +85,16 @@ public class BigBangStrikeExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		if (radius <= 60) {
-			radius += 2;
-		} else destroySelf();
-
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable &&
 				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null) &&
-				actor.pos.distanceTo(pos) <= radius
+				actor.getCenterPos().distanceTo(pos) <= radius
 			) {
 				damager.applyDamage(damagable, false, weapon, this, projId);
 			}
 		}
-	}
-
-	public override void render(float x, float y) {
-		base.render(x, y);
-		double transparency = (time) / (0.4);
-		if (transparency < 0) { transparency = 0; }
-		Color col1 = new(0, 0, 0, 64);
-		Color col2 = new(255, 255, 255, (byte)(255.0 - 255.0 * (transparency)));
-		DrawWrappers.DrawCircle(pos.x + x, pos.y + y, radius, filled: true, col1, 5f, zIndex - 10, isWorldPos: true);
 	}
 }
 
@@ -144,10 +144,10 @@ public class BigBangStrikeState : CharState {
 		if (blues != null) blues.coreAmmo = blues.coreMaxAmmo;
 
 		if (!fired && character.frameIndex >= 3) {
-			/*new BigBangStrikeProj(
+			new BigBangStrikeProj(
 				character.getShootPos(), character.getShootXDir(),
 				player, player.getNextActorNetId(), true
-			);*/
+			);
 			fired = true;
 			character.playSound("buster3", sendRpc: true);
 		}

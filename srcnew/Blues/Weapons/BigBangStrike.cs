@@ -5,7 +5,6 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class BigBangStrikeProj : Projectile {
-
 	public BigBangStrikeProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
@@ -30,10 +29,10 @@ public class BigBangStrikeProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 240) {
+		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 350) {
 			vel.x += Global.spf * xDir * 100f;
-			if (System.MathF.Abs(vel.x) >= 240) {
-				vel.x = (float)xDir * 240;
+			if (System.MathF.Abs(vel.x) >= 350) {
+				vel.x = (float)xDir * 350;
 			}
 		}
 	}

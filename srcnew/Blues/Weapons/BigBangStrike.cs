@@ -8,11 +8,11 @@ public class BigBangStrikeProj : Projectile {
 	public BigBangStrikeProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 6, player, "big_bang_strike_proj",
-		Global.defFlinch, 3, netId, player.ownedByLocalPlayer
+		ProtoBuster.netWeapon, pos, xDir, 0, 3, player, "big_bang_strike_proj",
+		Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
-		maxTime = 1.5f;
+		maxTime = 2f;
 		shouldShieldBlock = false;
 		reflectable = false;
 
@@ -29,10 +29,10 @@ public class BigBangStrikeProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 350) {
-			vel.x += Global.spf * xDir * 100f;
-			if (System.MathF.Abs(vel.x) >= 350) {
-				vel.x = (float)xDir * 350;
+		if (System.MathF.Abs(vel.x) < 1000) {
+			vel.x += Global.spf * xDir * 250f;
+			if (System.MathF.Abs(vel.x) >= 1000) {
+				vel.x = (float)xDir * 1000;
 			}
 		}
 	}
@@ -47,7 +47,10 @@ public class BigBangStrikeProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
-			new BigBangStrikeExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
+			var proj = new BigBangStrikeExplosionProj(
+				pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true
+			);
+			proj.playSound("danger_wrap_explosion", true, true);
 		}
 	}
 }
@@ -59,11 +62,11 @@ public class BigBangStrikeExplosionProj : Projectile {
 	public BigBangStrikeExplosionProj(
 		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 4, player, "big_bang_strike_explosion",
-		Global.halfFlinch, 2, netId, player.ownedByLocalPlayer
+		ProtoBuster.netWeapon, pos, xDir, 0, 2, player, "big_bang_strike_explosion",
+		Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrikeExplosion;
-		maxTime = 1f;
+		maxTime = 2f;
 		fadeSprite = "big_bang_strike_fade";
 		destroyOnHit = false;
 		fadeOnAutoDestroy = true;
@@ -143,8 +146,9 @@ public class BigBangStrikeState : CharState {
 		if (blues != null) blues.coreAmmo = blues.coreMaxAmmo;
 
 		if (!fired && character.frameIndex >= 3) {
+			int shootDir = character.getShootXDir();
 			new BigBangStrikeProj(
-				character.getShootPos(), character.getShootXDir(),
+				character.getShootPos().addxy(shootDir * 10, 0), shootDir,
 				player, player.getNextActorNetId(), true
 			);
 			fired = true;

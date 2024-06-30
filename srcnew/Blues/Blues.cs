@@ -149,10 +149,9 @@ public class Blues : Character {
 	}
 
 	public bool canUseShield() {
-		if (charState is BigBangStrikeState ||
-			charState is BigBangStrikeStart ||
-			charState is OverheatStunned) return false;
-		
+		if (!charState.normalCtrl || charState is Slide) {
+			return false;
+		}
 		return true;
 	}
 

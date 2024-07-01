@@ -4,19 +4,29 @@ using ProtoBuf;
 
 namespace MMXOnline;
 
+public enum BassWeaponIds {
+	BassBuster,
+	IceWall,
+	CopyVision,
+	SpreadDrill,
+	WaveBurner,
+	RemoteMine,
+	LightingBolt,
+	TenguBlade,
+	MagicCard,
+}
+
 [ProtoContract]
 public class BassLoadout {
-	
-	[ProtoMember(1)] public int weapon1;    //0 indexed
+	[ProtoMember(1)] public int weapon1;
 	[ProtoMember(2)] public int weapon2;
 	[ProtoMember(3)] public int weapon3;
-
 
 	public List<int> getBassWeaponIndices() {
 		return new List<int>() { weapon1, weapon2, weapon3 };
 	}
 
-    public static BassLoadout createDefault() {
+	public static BassLoadout createDefault() {
 		return new BassLoadout() {
 			weapon1 = 0, weapon2 = 1, weapon3 = 2
 		};

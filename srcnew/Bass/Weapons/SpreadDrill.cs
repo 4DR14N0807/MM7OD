@@ -7,16 +7,17 @@ public class SpreadDrill : Weapon {
 
 	public static SpreadDrill netWeapon = new();
 	public SpreadDrill() : base() {
-		index = (int)RockWeaponIds.SpreadDrill;
-        weaponSlotIndex = 3;
-        weaponBarBaseIndex = 0;
-        //weaponBarIndex = (int)RockWeaponBarIds.SpreadDrill;
-        killFeedIndex = 0;
-        maxAmmo = 7;
-        ammo = maxAmmo;
-        rateOfFire = 1.5f;
-        //shootSounds = new List<string>() {"", "", "", ""};
-        description = new string[] {"Shoots a drill that spread by pressing SPECIAL.", "Slowdown on hit, the smaller the drill the faster the drill."};
+		index = (int)BassWeaponIds.SpreadDrill;
+		weaponSlotIndex = 3;
+		weaponBarBaseIndex = 0;
+		killFeedIndex = 0;
+		maxAmmo = 7;
+		ammo = maxAmmo;
+		rateOfFire = 1.5f;
+		descriptionV2 = (
+			"Shoots a drill that spread by pressing SPECIAL." + "\n" +
+			"Slowdown on hit, the smaller the drill the faster the drill."
+		);
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
@@ -30,8 +31,8 @@ public class SpreadDrill : Weapon {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
-        Bass? bass = character as Bass;
-		
+		Bass? bass = character as Bass;
+
 		new SpreadDrillProj(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
 	}
 }
@@ -64,7 +65,7 @@ public class SpreadDrillProj : Projectile {
 		if (bass == null) return;
 
 		timeTouseGravity += Global.spf;
-		if(timeTouseGravity >= 1f){useGravity = true;}
+		if (timeTouseGravity >= 1f) { useGravity = true; }
 
 		if (ownedByLocalPlayer) {
 			if (owner.input.isPressed(Control.Shoot, owner)) {
@@ -81,7 +82,7 @@ public class SpreadDrillProj : Projectile {
 		if (anim != null) anim.pos = getFirstPOI(0).Value;
 		if (anim2 != null) anim2.pos = getFirstPOI(1).Value;
 	}
-	
+
 	public override void onDestroy() {
 		base.onDestroy();
 		if (bass != null) bass.sDrill = null;
@@ -113,12 +114,13 @@ public class SpreadDrillMediumProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if(ownedByLocalPlayer){
-		if (owner.input.isPressed(Control.Shoot, owner)) {
-			new SpreadDrillSmallProj(pos.addxy(0, 15), xDir, owner, owner.getNextActorNetId(), rpc: true);
-			new SpreadDrillSmallProj(pos.addxy(0, -15), xDir, owner, owner.getNextActorNetId(), rpc: true);
-			destroySelf();
-		}}
+		if (ownedByLocalPlayer) {
+			if (owner.input.isPressed(Control.Shoot, owner)) {
+				new SpreadDrillSmallProj(pos.addxy(0, 15), xDir, owner, owner.getNextActorNetId(), rpc: true);
+				new SpreadDrillSmallProj(pos.addxy(0, -15), xDir, owner, owner.getNextActorNetId(), rpc: true);
+				destroySelf();
+			}
+		}
 		Helpers.decrementTime(ref sparksCooldown);
 
 		if (anim != null) anim.pos = getFirstPOI(0).Value;

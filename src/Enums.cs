@@ -312,15 +312,6 @@ public enum RockWeaponIds {
 	GyroAttack,
 	StarCrash,
 	NeedleCannon,
-	BassBuster,
-	IceWall,
-	CopyVision,
-	SpreadDrill,
-	WaveBurner,
-	RemoteMine,
-	LightingBolt,
-	TenguBlade,
-	MagicCard,
 }
 
 public enum BassProjIds {
@@ -1072,11 +1063,9 @@ public enum WeaponBarsIds
 	VoltCCharge,
 	BHornetFlight,
 	DrDopplerAbsorb,
-	
 }
 
-public enum RockWeaponBarIds
-{
+public enum RockWeaponBarIds {
 	MegaBuster,
 	FreezeCracker,
 	ThunderBolt,
@@ -1090,3 +1079,5 @@ public enum RockWeaponBarIds
 	RushJet,
 	RushCoil,
 }
+
+

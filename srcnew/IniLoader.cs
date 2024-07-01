@@ -59,20 +59,17 @@ public class IniParser {
 					throw new Exception("INI Error: Line ended before variable asigment.");
 				}
 				if (data[i].token == Token.Assigment) {
-					i++; 
+					i++;
 					if (data[i].token == Token.Number) {
 						currentLevel[key] = Decimal.Parse(
 							data[i].value, NumberStyles.Any, CultureInfo.InvariantCulture
 						);
-					}
-					else if (data[i].token is Token.Literal or Token.String) {
+					} else if (data[i].token is Token.Literal or Token.String) {
 						currentLevel[key] = data[i].value;
-					}
-					else {
+					} else {
 						throw new Exception("INI Error: Invalid expression term.");
 					}
-				}
-				else {
+				} else {
 					throw new Exception("INI Error: Variable assigment unfinished.");
 				}
 				i++;
@@ -100,14 +97,14 @@ public class IniParser {
 			// WhiteSpace
 			else if (Char.IsWhiteSpace(fileText[pos]) && fileText[pos] != '\n') {
 				while (pos + 1 < fileText.Length &&
-					Char.IsWhiteSpace(fileText[pos+1]) && fileText[pos+1] != '\n'
+					Char.IsWhiteSpace(fileText[pos + 1]) && fileText[pos + 1] != '\n'
 				) {
 					pos++;
 				}
 			}
 			// Comments
 			else if (fileText[pos] == ';') {
-				while (pos + 1 < fileText.Length && fileText[pos+1] != '\n') {
+				while (pos + 1 < fileText.Length && fileText[pos + 1] != '\n') {
 					pos++;
 				}
 			}

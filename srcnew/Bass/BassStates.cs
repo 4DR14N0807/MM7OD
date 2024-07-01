@@ -15,8 +15,13 @@ public class BassShoot : CharState {
 
 	public override void update() {
 		base.update();
+		if (player.dashPressed(out string dashControl)) {
+			bass.changeState(new Dash(dashControl), true);
+			return;
+		} 
 		if (stateFrames >= 16) {
-			character.changeToIdleOrFall();
+			bass.changeToIdleOrFall();
+			return;
 		}
 	}
 

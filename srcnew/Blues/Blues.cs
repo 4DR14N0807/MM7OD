@@ -107,7 +107,7 @@ public class Blues : Character {
 	}
 
 	public override bool canTurn() {
-		if (charState is BluesSpreadShoot or HardKnuckleShoot) {
+		if (charState is BluesSpreadShoot) {
 			return false;
 		}
 		return base.canTurn();
@@ -130,7 +130,7 @@ public class Blues : Character {
 	}
 
 	public override bool canCharge() {
-		if (overheating || charState is ProtoStrike) {
+		if (!charState.attackCtrl || overheating || charState is ProtoStrike) {
 			return false;
 		}
 		return base.canCharge();

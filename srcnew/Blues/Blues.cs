@@ -547,6 +547,7 @@ public class Blues : Character {
 				1 => RenderEffectType.ChargeBlue,
 				2 => RenderEffectType.ChargePink,
 				3 => RenderEffectType.ChargeGreen,
+				_ => RenderEffectType.ChargeBlue,
 			};
 			addRenderEffect(renderGfx, 0.033333f, 0.1f);
 			chargeEffect.update(getChargeLevel(), 1);

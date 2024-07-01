@@ -99,7 +99,7 @@ public class CharState {
 		if (newState is not Dash &&
 			newState is not Jump &&
 			newState is not Fall &&
-			!(newState.useDashJumpSpeed && (character.grounded || character.vel.y < 0))
+			(!newState.useDashJumpSpeed && (!character.grounded || character.vel.y < 0))
 		) {
 			character.isDashing = false;
 		}

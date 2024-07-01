@@ -156,9 +156,12 @@ public partial class Character : Actor, IDamagable {
 	public Damager? burnDamager;
 	public Weapon? burnWeapon;
 	public float burnTime;
+
+	//Spark Shock root
 	public float rootTime;
 	public float rootCooldown;
 	public Anim? rootAnim;
+
 	public float burnEffectTime;
 	public float burnHurtCooldown;
 	// Burn (MM7)
@@ -377,7 +380,7 @@ public partial class Character : Actor, IDamagable {
 		burningRecoveryCooldown = 0;
 		if (burnStateStacks >= Burning.maxStacks) {
 			burnStateStacks = 0;
-			burn();
+			burn(attacker);
 		}
 	}
 
@@ -972,31 +975,19 @@ public partial class Character : Actor, IDamagable {
 				}
 			}	
 		}
-
-		if (charState is Burning) {
-			burnDamageCooldown += Global.spf;
-			if (burnDamageCooldown >= Global.spf * 45) {
-				burnDamageCooldown = 0;
-				burningDamager?.applyDamage(this, false, new ScorchWheel(), this, (int)RockProjIds.ScorchWheelBurn, overrideDamage: 1);
-			}
-
-			if (isUnderwater() || charState.invincible || isCCImmune()) {
-				burnStateStacks = 0;
-			}
-		}
 		if (rootTime > 0) {
-			rootTime -= Global.spf;
+			rootTime--;
 			if (rootAnim == null) rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
-			if (rootTime <= 0){
+			if (rootTime <= 0) {
 				rootTime = 0;
 				useGravity = true;
 				if (rootAnim != null) {
 					rootAnim.destroySelf();
 					rootAnim = null;
 				} 
-				}
-			rootCooldown = 120;
 			}
+			rootCooldown = 120;
+		}
 		if (burnTime > 0) {
 			burnTime -= Global.spf;
 			burnHurtCooldown += Global.spf;
@@ -1079,7 +1070,7 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref grabInvulnTime);
 		Helpers.decrementTime(ref darkHoldInvulnTime);
 		Helpers.decrementTime(ref dwrapInvulnTime);
-		Helpers.decrementTime(ref burnInvulnTime);
+		Helpers.decrementFrames(ref burnInvulnTime);
 		Helpers.decrementFrames(ref rootCooldown);
 
 
@@ -1595,14 +1586,14 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public void burn() {
+	public void burn(Player attacker) {
 		if (charState is Burning) return;
 
-		changeState(new Burning(-xDir), true);
+		changeState(new Burning(-xDir, attacker), true);
 	}
 	public void root() {
 		if (rootCooldown > 0) return;
-		rootTime = 1f;
+		rootTime = 60f;
 		stopMoving();
 		useGravity = false;
 	}

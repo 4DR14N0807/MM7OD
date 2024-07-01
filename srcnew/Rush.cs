@@ -100,14 +100,15 @@ public class Rush : Actor {
 
 	public override void statePreUpdate() {
 		rushState.stateFrames += Global.speedMul;
+		rushState.preUpdate();
 	}
 
 	public override void stateUpdate() {
-
+		rushState.update();
 	}
 
 	public override void statePostUpdate() {
-
+		rushState.postUpdate();
 	}
 
 	public virtual string getSprite(string spriteName) {

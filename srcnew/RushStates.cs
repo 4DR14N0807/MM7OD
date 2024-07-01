@@ -22,7 +22,9 @@ public class RushState {
 
 	public virtual void onEnter(RushState oldState) { }
 
+	public virtual void preUpdate() { }
 	public virtual void update() { }
+	public virtual void postUpdate() { }
 
 	public virtual bool canEnter(Rush rush) {
 		return true;

@@ -12,7 +12,7 @@ public class SpreadDrill : Weapon {
         weaponBarBaseIndex = 0;
         //weaponBarIndex = (int)RockWeaponBarIds.SpreadDrill;
         killFeedIndex = 0;
-        maxAmmo = 28;
+        maxAmmo = 7;
         ammo = maxAmmo;
         rateOfFire = 1.5f;
         //shootSounds = new List<string>() {"", "", "", ""};
@@ -22,7 +22,7 @@ public class SpreadDrill : Weapon {
 	public override bool canShoot(int chargeLevel, Player player) {
 		if (!base.canShoot(chargeLevel, player)) return false;
 		Bass? bass = Global.level.mainPlayer.character as Bass;
-		return bass.sDrill == null;
+		return bass?.sDrill == null;
 	}
 
 
@@ -50,7 +50,7 @@ public class SpreadDrillProj : Projectile {
 		projId = (int)ProjIds.TunnelFang;
 		destroyOnHit = false;
 		bass = player.character as Bass;
-		bass.sDrill = this;
+		if (bass != null) bass.sDrill = this;
 
 		anim = new Anim(getFirstPOI(0).Value, "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
 		anim2 = new Anim(getFirstPOI(1).Value, "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
@@ -84,7 +84,7 @@ public class SpreadDrillProj : Projectile {
 	
 	public override void onDestroy() {
 		base.onDestroy();
-		bass.sDrill = null;
+		if (bass != null) bass.sDrill = null;
 		if (anim != null) anim.destroySelf();
 		if (anim2 != null) anim2.destroySelf();
 		new Anim(pos, "spread_drill_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
@@ -181,7 +181,7 @@ public class SpreadDrillSmallProj : Projectile {
 		base.update();
 		Helpers.decrementTime(ref sparksCooldown);
 
-		if (anim != null) anim.pos =getFirstPOI(0).Value;
+		if (anim != null) anim.pos = getFirstPOI(0).Value;
 	}
 
 	public override void onHitDamagable(IDamagable damagable) {

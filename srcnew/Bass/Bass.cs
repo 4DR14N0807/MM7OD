@@ -7,15 +7,9 @@ namespace MMXOnline;
 public class Bass : Character {
 
 	float weaponCooldown;
-	int shootAngle;
-	string angleSprite;
-	public CopyVisionClone cVclone;
-	public SpreadDrillProj sDrill;
-	public SpreadDrillMediumProj sDrillM;
-	public Weapon specialWeapon;
-	public List<Weapon> weaponsList = new();
-	int weaponCursor;
-
+	public CopyVisionClone? cVclone;
+	public SpreadDrillProj? sDrill;
+	public SpreadDrillMediumProj? sDrillM;
     public Bass(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
@@ -24,8 +18,6 @@ public class Bass : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
         charId = CharIds.Bass;
-		weaponsList = getAllWeapons();
-		specialWeapon = weaponsList[0];
     }
 
     public override bool canCrouch() {
@@ -94,7 +86,7 @@ public class Bass : Character {
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
 		bool downHeld = player.input.isHeld(Control.Down, player);
 
-		var shootCommand = player.weapon is BassBuster ? shootHeld : shootPressed;
+		var shootCommand = player.weapon.isStream ? shootHeld : shootPressed;
 
 		if (!isCharging()) {
 			if (shootCommand) {
@@ -167,6 +159,7 @@ public class Bass : Character {
 			shootAnimTime = 0.25f;
 		}
 		weaponCooldown = player.weapon.fireRateFrames;
+		player.weapon.addAmmo(-player.weapon.getAmmoUsage(0), player);
 	}
 
 	public int getShootAngle() {

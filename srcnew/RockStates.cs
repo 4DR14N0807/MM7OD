@@ -26,7 +26,7 @@ public class Slide : CharState {
 		base.onEnter(oldState);
 		rock = character as Rock;
 		initialSlideDir = character.xDir;
-		character.globalCollider = rock.getSlidingCollider();	
+		if (rock != null) character.globalCollider = rock.getSlidingCollider();	
 	}
 
     public override void onExit(CharState newState) {
@@ -39,10 +39,10 @@ public class Slide : CharState {
 		float inputXDir = player.input.getInputDir(player).x;
 		bool cancel = player.input.isPressed(getOppositeDir(initialSlideDir), player);
 
-		if (Global.level.checkCollisionActor(character, 0, -24) != null) rock.isSlideColliding = true;
-		else rock.isSlideColliding = false;
+		if (Global.level.checkCollisionActor(character, 0, -24) != null && rock != null) rock.isSlideColliding = true;
+		else if (rock != null) rock.isSlideColliding = false;
 		
-		if ((slideTime > Global.spf * 30 || stop) && !rock.isSlideColliding) {
+		if ((slideTime > Global.spf * 30 || stop) && rock != null && !rock.isSlideColliding) {
 			if (!stop) {
 				slideTime = 0;
 				character.frameIndex = 0;
@@ -60,7 +60,7 @@ public class Slide : CharState {
 		character.move(move);
 
 		if (cancel) {
-			if (rock.isSlideColliding) {
+			if (rock != null && rock.isSlideColliding) {
 				character.xDir *= -1;
 				initialSlideDir *= -1;
 			}

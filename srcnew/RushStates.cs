@@ -79,7 +79,7 @@ public class RushCoil : RushState {
 
 	public override void update() {
 		base.update();
-		if (stateFrames >= 90) {
+		if (stateTime >= 90) {
 			Global.playSound("ding");
 		}
 	}

@@ -21,7 +21,7 @@ public class RushWeapon : Weapon {
 		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
         if (player.character is Rock rock) {
             rock.rush = new Rush(pos, player, xDir, netProjId, true, true);
-            rock.rush.changeState(new RushJetState(), true);
+            rock.rush.changeState(new RushJetState());
         }
 	}
 }

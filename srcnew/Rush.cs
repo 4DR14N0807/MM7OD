@@ -99,7 +99,7 @@ public class Rush : Actor {
 	}
 
 	public override void statePreUpdate() {
-		rushState.stateFrames += Global.speedMul;
+		rushState.stateTime += Global.speedMul;
 		rushState.preUpdate();
 	}
 

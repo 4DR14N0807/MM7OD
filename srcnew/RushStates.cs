@@ -8,8 +8,8 @@ public class RushState {
 	public string defaultSprite;
 	public Rush rush = null!;
 	public Character character = null!;
-	public float stateTime => stateFrames / Global.secondsFrameDuration;
-	public float stateFrames;
+	public float stateTime;
+	public float stateSeconds => stateTime / Global.secondsFrameDuration;
 
 	public RushState(string sprite) {
 		this.sprite = sprite;

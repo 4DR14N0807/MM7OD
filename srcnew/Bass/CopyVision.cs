@@ -71,7 +71,7 @@ public class CopyVisionClone : Actor {
 	public CopyVisionClone(Point pos, Player player, int xDir, ushort netId, bool ownedByLocalPlayer, bool rpc = false) :
 		base("copy_vision_start", pos, netId, ownedByLocalPlayer, false) {
 		bass = player.character as Bass;
-		bass.cVclone = this;
+		if (bass != null) bass.cVclone = this;
 		useGravity = false;
 		this.xDir = xDir;
 		netOwner = player;
@@ -111,7 +111,7 @@ public class CopyVisionClone : Actor {
 				pos.clone(), "copy_vision_exit",xDir,
 				netOwner.getNextActorNetId(), true, sendRpc: true
 			);
-		if (bass != null) bass.cVclone = null;
+		if (bass != null) bass.cVclone = null!;
 	}
 	
 }

@@ -405,6 +405,7 @@ public class LoadoutData {
 
 	[ProtoMember(1)] public RockLoadout rockLoadout = new RockLoadout();
 	[ProtoMember(2)] public BluesLoadout bluesLoadout = new BluesLoadout();
+	[ProtoMember(3)] public BassLoadout bassLoadout = new BassLoadout();
 
 	public static LoadoutData createRandom(int playerId) {
 		return new LoadoutData() {
@@ -429,6 +430,7 @@ public class LoadoutData {
 			sigmaLoadout = Helpers.cloneProtobuf(Options.main.sigmaLoadout),
 			rockLoadout = Helpers.cloneProtobuf(Options.main.rockLoadout),
 			bluesLoadout = Helpers.cloneProtobuf(Options.main.bluesLoadout),
+			bassLoadout = Helpers.cloneProtobuf(Options.main.bassLoadout),
 		};
 	}
 }

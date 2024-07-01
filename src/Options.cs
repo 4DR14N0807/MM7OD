@@ -110,6 +110,9 @@ public class Options {
 	public bool useRandomBluesLoadout;
 	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;
+
+	// Bass
+	public BassLoadout bassLoadout = BassLoadout.createDefault();
 	
 	// Punchy Zero
 	public PZeroLoadout pzeroLoadout = new PZeroLoadout();

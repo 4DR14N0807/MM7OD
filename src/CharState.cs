@@ -97,8 +97,8 @@ public class CharState {
 			return;
 		}
 		if (newState is not Dash &&
-			//newState is not Jump &&
-			//newState is not Fall &&
+			newState is not Jump &&
+			newState is not Fall &&
 			!(newState.useDashJumpSpeed && (character.grounded || character.vel.y < 0))
 		) {
 			character.isDashing = false;
@@ -751,7 +751,7 @@ public class Jump : CharState {
 		accuracy = 5;
 		enterSound = "jump";
 		exitOnLanding = true;
-		useDashJumpSpeed = false;
+		useDashJumpSpeed = true;
 		airMove = true;
 		canStopJump = true;
 		attackCtrl = true;
@@ -776,7 +776,7 @@ public class Fall : CharState {
 	public Fall() : base("fall", "fall_shoot", Options.main.getAirAttack(), "fall_start") {
 		accuracy = 5;
 		exitOnLanding = true;
-		useDashJumpSpeed = false;
+		useDashJumpSpeed = true;
 		airMove = true;
 		canStopJump = false;
 		attackCtrl = true;
@@ -828,7 +828,7 @@ public class Dash : CharState {
 		this.initialDashButton = initialDashButton;
 		accuracy = 10;
 		//exitOnAirborne = true;
-		attackCtrl = true;
+		//attackCtrl = true;
 		normalCtrl = true;
 	}
 
@@ -843,6 +843,7 @@ public class Dash : CharState {
 
 		character.isDashing = true;
 		character.globalCollider = character.getDashingCollider();
+		character.shootAnimTime = 0;
 		/*dashSpark = new Anim(
 			character.getDashSparkEffectPos(initialDashDir),
 			"dash_sparks", initialDashDir, player.getNextActorNetId(),

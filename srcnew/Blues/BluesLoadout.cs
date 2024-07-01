@@ -87,11 +87,21 @@ public class BluesWeaponMenu : IMainMenu {
 				targetLoadout.specialWeapon = specialWeapon;
 				isChanged = true;
 			}
-			if (inGame && Global.level != null) {
-				if (isChanged && Options.main.killOnLoadoutChange) {
-					Global.level.mainPlayer.forceKill();
+			if (isChanged) {
+				if (inGame && Global.level != null) {
+					if (Options.main.killOnLoadoutChange) {
+						Global.level.mainPlayer.forceKill();
+					} else {
+						Global.level.gameMode.setHUDErrorMessage(
+							Global.level.mainPlayer,
+							"Loadout change will apply on the next respawn",
+							playSound: false
+						);
+					}
 				}
+				Options.main.saveToFile();
 			}
+			
 			Menu.change(prevMenu);
 			return;
 		}

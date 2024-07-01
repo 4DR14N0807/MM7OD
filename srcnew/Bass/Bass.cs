@@ -48,6 +48,7 @@ public class Bass : Character {
 	}
 
 	public void shoot() {
+		turnToInput(player.input, player);
 		changeState(new BassShoot(), true);
 		player.weapon.shoot(this, 0);
 		weaponCooldown = player.weapon.fireRateFrames;

@@ -824,7 +824,7 @@ public class Dash : CharState {
 	public Anim dashSpark;
 
 	public Dash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
-		enterSound = "";
+		enterSound = "slide";
 		this.initialDashButton = initialDashButton;
 		accuracy = 10;
 		//exitOnAirborne = true;

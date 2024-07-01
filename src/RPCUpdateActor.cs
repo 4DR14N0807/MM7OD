@@ -60,7 +60,7 @@ public partial class Actor {
 		}
 		// add angle
 		if (mask[4]) {
-			byte[] angleBytes = BitConverter.GetBytes((float)byteAngle);
+			byte[] angleBytes = BitConverter.GetBytes(byteAngle ?? 0);
 			args.AddRange(angleBytes);
 		}
 
@@ -112,6 +112,15 @@ public partial class Actor {
 			if (character is MegamanX mmx) {
 				byte[] armorBytes = BitConverter.GetBytes(character.player.armorFlag);
 				args.AddRange(armorBytes);
+			}
+			if (character is Blues blues) {
+				ammo = MathInt.Floor(blues.coreAmmo);
+				args.Add((byte)MathInt.Ceiling(blues.shieldHP));
+				bool[] flags = [
+					blues.isShieldFront(),
+					blues.overheating
+				];
+				args.Add(Helpers.boolArrayToByte(flags));
 			}
 			if (character is Zero zero) {
 				ammo = MathInt.Ceiling(zero.gigaAttack.ammo);
@@ -370,6 +379,14 @@ public class RPCUpdateActor : RPC {
 					character.netCharState2 = (byte)netCharState2;
 					character.player.currency = currency;
 
+					if (character is Blues blues) {
+						blues.coreAmmo = ammo;
+						blues.shieldHP = arguments[i++];
+						bool[] flags = Helpers.byteToBoolArray(arguments[i++]);
+
+						blues.isShieldActive = flags[0];
+						blues.overheating = flags[1];
+					}
 					// X section.
 					if (character.player.isX && character is MegamanX mmx) {
 						character.player.weapon.ammo = ammo;

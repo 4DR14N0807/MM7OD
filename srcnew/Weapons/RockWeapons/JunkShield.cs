@@ -19,7 +19,7 @@ public class JunkShield : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 10;
 		ammo = maxAmmo;
-		description = new string[] {"Defenseless barrier that gets","damaged after rough use.", "Can be fired in up to 3 directions."};
+		description = new string[] { "Defenseless barrier that gets", "damaged after rough use.", "Can be fired in up to 3 directions." };
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
@@ -36,13 +36,13 @@ public class JunkShield : Weapon {
 		if (player.character.ownedByLocalPlayer) {
 			/*if (chargeLevel >= 2 && player.hasBusterLoadout()) {
             player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-        	} else*/ 
+        	} else*/
 			if (player.character.charState is LadderClimb) {
-                player.character.changeState(new ShootAltLadder(this, (int)chargeLevel), true);
-            } else {
-                player.character.changeState(new ShootAlt(this, (int)chargeLevel), true);
-            }	
-		}					 
+				player.character.changeState(new ShootAltLadder(this, (int)chargeLevel), true);
+			} else {
+				player.character.changeState(new ShootAlt(this, (int)chargeLevel), true);
+			}
+		}
 	}
 }
 
@@ -63,8 +63,8 @@ public class JunkShieldProj : Projectile {
 	LoopingSound sound;
 
 	public JunkShieldProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-	base(weapon, pos, xDir, 0, 1, player, "junk_shield_proj", 0, 0.25f, netProjId, player.ownedByLocalPlayer ) {
-		
+	base(weapon, pos, xDir, 0, 1, player, "junk_shield_proj", 0, 0.25f, netProjId, player.ownedByLocalPlayer) {
+
 		projId = (int)RockProjIds.JunkShield;
 		destroyOnHit = false;
 		rock = player.character as Rock;
@@ -82,7 +82,7 @@ public class JunkShieldProj : Projectile {
 
 		for (var i = 0; i < otherProjsCount; i++) {
 			var otherProjSprite = Global.sprites["junk_shield_pieces"].clone();
-			randomPieces.Add(Helpers.randomRange(0,4));
+			randomPieces.Add(Helpers.randomRange(0, 4));
 			otherProjSprite.frameSpeed = 0;
 			otherProjs.Add(otherProjSprite);
 		}
@@ -91,13 +91,13 @@ public class JunkShieldProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-        return new JunkShieldProj(
-            JunkShield.netWeapon, arg.pos, arg.xDir, arg.player,
-            arg.netId
-        );
-    }
+		return new JunkShieldProj(
+			JunkShield.netWeapon, arg.pos, arg.xDir, arg.player,
+			arg.netId
+		);
+	}
 
-	public override void update(){
+	public override void update() {
 		base.update();
 
 		if (projAngle >= 256) projAngle = 0;
@@ -115,7 +115,7 @@ public class JunkShieldProj : Projectile {
 			if (healthDecCooldown > damager.hitCooldown) healthDecCooldown = 0;
 		}
 
-		if (HP <= 0 ||rock == null || rock.charState is Die || (rock.player.weapon is not JunkShield)) {
+		if (HP <= 0 || rock == null || rock.charState is Die || (rock.player.weapon is not JunkShield)) {
 			destroySelfNoEffect();
 			return;
 		}
@@ -123,19 +123,19 @@ public class JunkShieldProj : Projectile {
 		if (time >= Global.spf * 15 && player.input.isPressed(Control.Shoot, player)) {
 			shootProjs();
 			rock.shootTime = 1f;
-		} 
+		}
 	}
 
-	public override void render(float x, float y){
+	public override void render(float x, float y) {
 		base.render(x, y);
 		if (rock != null) centerPos = rock.getCenterPos();
 		float hpCount = HP;
 		float extra = HP % 2;
 		mainProjsCount = (int)(hpCount + extra) / 2;
-		
+
 		//main pieces render
 		for (var i = 0; i < mainProjsCount; i++) {
-			float extraAngle = projAngle + i*85;
+			float extraAngle = projAngle + i * 85;
 			if (extraAngle >= 256) extraAngle -= 256;
 			float xPlus = Helpers.cosd(extraAngle * 1.40625f) * radius;
 			float yPlus = Helpers.sind(extraAngle * 1.40625f) * radius;
@@ -145,7 +145,7 @@ public class JunkShieldProj : Projectile {
 
 		//small pieces render
 		for (var i = 0; i < HP; i++) {
-			float extraAngle = (projAngle + i*42.5f) - 10;
+			float extraAngle = (projAngle + i * 42.5f) - 10;
 			if (extraAngle >= 256) extraAngle -= 256;
 			float xPlus = Helpers.cosd(extraAngle * 1.40625f) * radius;
 			float yPlus = Helpers.sind(extraAngle * 1.40625f) * radius;
@@ -154,14 +154,14 @@ public class JunkShieldProj : Projectile {
 		}
 	}
 
-	
+
 	public override void onHitDamagable(IDamagable damagable) {
 		//if (rock != null) base.onHitDamagable(rock);
 		//decHealth(1);
 		base.onHitDamagable(damagable);
 
 		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
-			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) && 
+			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
 				HP--;
@@ -177,7 +177,7 @@ public class JunkShieldProj : Projectile {
 		}
 	}
 
-	public override void onDestroy(){
+	public override void onDestroy() {
 		base.onDestroy();
 		sound.stop();
 		if (rock != null) rock.junkShield = null;
@@ -190,7 +190,7 @@ public class JunkShieldProj : Projectile {
 		destroySelfNoEffect();
 
 		for (var i = 0; i < actualCount; i++) {
-			var angleToShoot = (int)projAngle + (85*i);
+			var angleToShoot = (int)projAngle + (85 * i);
 			if (angleToShoot >= 256) angleToShoot -= 256;
 			//float x = 180 * Helpers.cosd(angleToShoot * 1.40625f);
 			//float y = 180 * Helpers.sind(angleToShoot * 1.40625f);
@@ -202,7 +202,7 @@ public class JunkShieldProj : Projectile {
 
 
 public class JunkShieldShootProj : Projectile {
-	
+
 	int shootAngle;
 	const int projSpeed = 180;
 	Rock? rock;
@@ -222,7 +222,7 @@ public class JunkShieldShootProj : Projectile {
 			int angleFix;
 			if (shootAngle <= 128) angleFix = 128 - shootAngle;
 			else angleFix = (256 - shootAngle) + 128;
-			
+
 			shootAngle = angleFix;
 		}
 
@@ -235,18 +235,18 @@ public class JunkShieldShootProj : Projectile {
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)angle };
 
-            rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, player, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-        return new JunkShieldShootProj(
-            JunkShield.netWeapon, arg.pos, arg.xDir, arg.player,
-            arg.extraData[0], arg.netId
-        );
-    }
+		return new JunkShieldShootProj(
+			JunkShield.netWeapon, arg.pos, arg.xDir, arg.player,
+			arg.extraData[0], arg.netId
+		);
+	}
 
-	public override void update(){
+	public override void update() {
 		base.update();
 		if (!ownedByLocalPlayer) return;
 	}
@@ -255,36 +255,36 @@ public class JunkShieldShootProj : Projectile {
 
 public class JunkShieldState : CharState {
 	bool fired;
-	public JunkShieldState(bool grounded) : base("shoot2", "", "","") {
+	public JunkShieldState(bool grounded) : base("shoot2", "", "", "") {
 		airMove = true;
 	}
 
 	public override void update() {
-        base.update();
+		base.update();
 
-        if (!fired && character.frameIndex == 2) {
-            
-            fired = true;
-            new JunkShieldProj(new JunkShield(), character.getCenterPos(), character.xDir, player, player.getNextActorNetId(), true);
-        } 
+		if (!fired && character.frameIndex == 2) {
 
-        if (character.isAnimOver()) {
+			fired = true;
+			new JunkShieldProj(new JunkShield(), character.getCenterPos(), character.xDir, player, player.getNextActorNetId(), true);
+		}
+
+		if (character.isAnimOver()) {
 			if (character.grounded) character.changeState(new Idle(), true);
 			else character.changeState(new Fall(), true);
 		}
-    }
+	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-        bool air = !character.grounded || character.vel.y < 0;
-        sprite = "shoot2";
-        defaultSprite = sprite;
-        landSprite = "shoot2";
-        if (air) {
+		bool air = !character.grounded || character.vel.y < 0;
+		sprite = "shoot2";
+		defaultSprite = sprite;
+		landSprite = "shoot2";
+		if (air) {
 			sprite = "shoot2_air";
 			defaultSprite = sprite;
 		}
-        character.changeSpriteFromName(sprite, true);
+		character.changeSpriteFromName(sprite, true);
 	}
 
 	public override void onExit(CharState newState) {

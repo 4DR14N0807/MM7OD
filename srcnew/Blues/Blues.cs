@@ -9,24 +9,23 @@ public class Blues : Character {
 	public float[] unchargedLemonCooldown = new float[3];
 	public float coreMaxAmmo = 28;
 	public float coreAmmo;
-	public float corePendingAmmo;
-	public float lastChargeLevel;
 	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoDamageCooldown = 120;
-	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown;
 	public bool isShieldActive = true;
 	public bool overheating;
 	public float overheatEffectTime;
+
+	// Shield vars.
 	public decimal shieldHP = 20;
 	public int shieldMaxHP = 20;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
-	public bool starCrashActive;
-	public bool overridePSDamage;
+	public bool? shieldCustomState = null;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
+	public bool starCrashActive;
 	public StarCrashProj? starCrash;
 	public HardKnuckleProj? hardKnuckleProj;
 
@@ -108,7 +107,7 @@ public class Blues : Character {
 	}
 
 	public override bool canTurn() {
-		if (charState is BluesSpreadShoot or HardKnuckleShoot) {
+		if (charState is BluesSpreadShoot) {
 			return false;
 		}
 		return base.canTurn();
@@ -131,7 +130,7 @@ public class Blues : Character {
 	}
 
 	public override bool canCharge() {
-		if (overheating || charState is ProtoStrike) {
+		if (!charState.attackCtrl || overheating || charState is ProtoStrike) {
 			return false;
 		}
 		return base.canCharge();
@@ -202,6 +201,14 @@ public class Blues : Character {
 		}
 	}
 
+	public override void changeState(CharState newState, bool forceChange = false) {
+		shieldCustomState = null;
+		base.changeState(newState, forceChange);
+		if (!newState.attackCtrl || !newState.normalCtrl) {
+			shootAnimTime = 0;
+		}
+	}
+
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
 		int meleeId = getHitboxMeleeId(hitbox);
 		if (meleeId == -1) {
@@ -264,7 +271,6 @@ public class Blues : Character {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
 		} else {
-			corePendingAmmo = 0;
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 		}
 		if (coreAmmoDecreaseCooldown <= 0) {
@@ -541,6 +547,7 @@ public class Blues : Character {
 				1 => RenderEffectType.ChargeBlue,
 				2 => RenderEffectType.ChargePink,
 				3 => RenderEffectType.ChargeGreen,
+				_ => RenderEffectType.ChargeBlue,
 			};
 			addRenderEffect(renderGfx, 0.033333f, 0.1f);
 			chargeEffect.update(getChargeLevel(), 1);
@@ -593,8 +600,17 @@ public class Blues : Character {
 		if (!ownedByLocalPlayer) {
 			return isShieldActive;
 		}
+		bool canShieldBeActive = false;
+		if (shieldCustomState != null) {
+			canShieldBeActive = shieldCustomState.Value;
+		} else {
+			canShieldBeActive = (
+				charState.attackCtrl || charState.attackCtrl
+			);
+		}
 		return (
-			(isShieldActive && charState is not BluesSlide) &&
+			isShieldActive &&
+			canShieldBeActive &&
 			shieldHP > 0 &&
 			shootAnimTime == 0 &&
 			charState is not Hurt { stateFrames: not 0 }

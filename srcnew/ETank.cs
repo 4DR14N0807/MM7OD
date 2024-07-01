@@ -2,7 +2,6 @@ namespace MMXOnline;
 
 
 public class ETank {
-
 	public const int maxHealth = 28;
 	public float health = 28;
 	public bool inUse;
@@ -15,7 +14,7 @@ public class ETank {
 		//player.health = player.maxHealth;
 		character.addHealth(health);
 		character.usedEtank = this;
-		RPC.useETank.sendRpc(character.netId, (int)player.maxHealth);	
+		RPC.useETank.sendRpc(character.netId, (int)player.maxHealth);
 	}
 
 	public void use(Maverick maverick) {

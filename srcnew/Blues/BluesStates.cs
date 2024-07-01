@@ -104,6 +104,7 @@ public class BluesSlide : CharState {
 		base.onEnter(oldState);
 		initialSlideDir = character.xDir;
 		blues = character as Blues ?? throw new NullReferenceException();
+		blues.shieldCustomState = false;
 	}
 }
 
@@ -139,42 +140,6 @@ public class BluesSpreadShoot : CharState {
 
 			shotAngle -= 16;
 			shotLastFrame = character.frameIndex;
-		}
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
-	}
-}
-
-public class ProtoChargeShotState : CharState {
-	bool fired;
-	Blues blues = null!;
-
-	public ProtoChargeShotState() : base("chargeshot") {
-		airMove = true;
-		canStopJump = true;
-		canJump = true;
-		//landSprite = "chargeshot";
-		//airSprite = "jump_chargeshot";
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
-	}
-
-
-	public override void update() {
-		base.update();
-
-		if (!fired && character.frameIndex >= 3) {
-			new ProtoBusterLv3Proj(
-				character.getShootPos(), character.getShootXDir(),
-				player, player.getNextActorNetId(), true
-			);
-			fired = true;
-			character.playSound("buster3", sendRpc: true);
-			character.stopCharge();
 		}
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();
@@ -256,20 +221,6 @@ public class ProtoStrike : CharState {
 	}
 }
 
-public class ProtoStrikeEnd : CharState {
-	public ProtoStrikeEnd() : base("protostrike_end") {
-
-	}
-
-	public override void update() {
-		base.update();
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
-	}
-}
-
-
 public class OverheatShutdownStart : CharState {
 	Blues blues = null!;
 
@@ -299,7 +250,6 @@ public class OverheatShutdownStart : CharState {
 		character.slideVel = 1.75f * 60 * -character.xDir;
 	}
 }
-
 
 public class OverheatShutdown : CharState {
 	Blues blues = null!;

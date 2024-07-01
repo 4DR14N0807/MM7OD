@@ -38,7 +38,7 @@ public class NeedleCannon : Weapon {
 		if (xDir == -1) {
 			shootAngle = -shootAngle + 128;
 		}
-		
+
 		new NeedleCannonProj(shootPos, shootAngle, player, player.getNextActorNetId(), true) {
 			owningActor = character
 		};

@@ -2145,7 +2145,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		changedStateInFrame = true;
-		if (shootAnimTime > 0 && newState.canShoot() == true) {
+		if (shootAnimTime > 0 && newState.canShoot()) {
 			changeSprite(getSprite(newState.shootSprite), true);
 		} else {
 			string spriteName = sprite?.name ?? "";

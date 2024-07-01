@@ -119,10 +119,7 @@ public class ProtoStrikeProj : Projectile {
 		this.player = player;
 		projId = (int)BluesProjIds.ProtoStrike;
 		maxTime = 3f;
-		fadeSprite = "big_bang_strike_fade";
 		destroyOnHit = false;
-		fadeOnAutoDestroy = true;
-		zIndex = ZIndex.Character + 10;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -162,6 +159,71 @@ public class ProtoStrikeProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (ownedByLocalPlayer) {
+			new ProtoStrikePushProj(pos, xDir, player, player.getNextActorNetId(), rpc: true);
+		}
+	}
+
+	public override void render(float x, float y) {
+		long lastZIndex = zIndex;
+		alpha = 0.5f;
+		base.render(x, y);
+		alpha = 1;
+		zIndex = ZIndex.Character - 1000;
+		base.render(x, y);
+		zIndex = lastZIndex;
+	}
+}
+
+
+public class ProtoStrikePushProj : Projectile {
+	Player player;
+	float radius = 40;
+
+	public ProtoStrikePushProj(
+		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 0, 1, player, "big_bang_strike_fade",
+		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+	) {
+		this.player = player;
+		projId = (int)BluesProjIds.ProtoStrike;
+		destroyOnHit = false;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoStrikeProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
+
+	public override void update() {
+		base.update();
+		if (isAnimOver()) {
+			destroySelf();
+		}
+		foreach (var gameObject in Global.level.getGameObjectArray()) {
+			if (gameObject is Actor actor &&
+				actor.ownedByLocalPlayer &&
+				gameObject is IDamagable damagable &&
+				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+			) {
+				if (actor.getCenterPos().distanceTo(pos) <= radius) {
+					damager.applyDamage(damagable, false, weapon, this, projId);
+
+					float direction = MathF.Sign(pos.x - actor.pos.x);
+					actor.stopMovingWeak();
+					actor.xPushVel = xDir * 200;
+					if (actor is Character chara) {
+						chara.setHurt(xDir, Global.defFlinch, false);
+					}
+				}
+			}
+		}
 	}
 }
 

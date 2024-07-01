@@ -244,7 +244,8 @@ public class ProtoStrike : CharState {
 			return;
 		}
 		if (!isShooting && stateFrames >= startTime + 60 || stateFrames >= startTime + 180) {
-			character.changeToIdleOrFall();
+			character.setHurt(-character.xDir, Global.halfFlinch, false);
+			character.slideVel = 200 * -character.xDir;
 			return;
 		}
 		coreCooldown -= Global.speedMul;

@@ -48,20 +48,19 @@ public class Bass : Character {
 	}
 
 	public void shoot() {
+		changeState(new BassShoot(), true);
 		player.weapon.shoot(this, 0);
 		weaponCooldown = player.weapon.fireRateFrames;
 		player.weapon.addAmmo(-player.weapon.getAmmoUsage(0), player);
-		if (charState.attackCtrl) {
-			changeState(new BassShoot());
-		}
 	}
 
 	public int getShootYDir() {
+		int dir = player.input.getYDir(player);
 		int multiplier = 2;
-		if (player.input.getXDir(player) != 0) {
+		if (dir == 2 || player.input.getXDir(player) != 0) {
 			multiplier = 1;
 		}
-		return player.input.getYDir(player) * multiplier;
+		return dir * multiplier;
 	}
 
 	public int getShootAngle() {

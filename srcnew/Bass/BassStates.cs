@@ -6,18 +6,16 @@ namespace MMXOnline;
 public class BassShoot : CharState {
 	Bass bass = null!;
 
-	public BassShoot() : base("shoot") {
+	public BassShoot() : base("not_a_real_sprite") {
 		attackCtrl = true;
 		airMove = true;
 		useDashJumpSpeed = true;
 		canJump = true;
-		landSprite = "shoot";
-		airSprite = "jump_shoot";
 	}
 
 	public override void update() {
 		base.update();
-		if (character.isAnimOver()) {
+		if (stateFrames >= 16) {
 			character.changeToIdleOrFall();
 		}
 	}
@@ -25,14 +23,16 @@ public class BassShoot : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
-		
-		landSprite = getShootSprite(bass.getShootYDir());
-		airSprite = "jump_" + landSprite;
-		sprite = landSprite;
+
+		sprite = getShootSprite(bass.getShootYDir());
+		landSprite = sprite;
+		airSprite = "jump_" + sprite;
+
 		if (!bass.grounded) {
-			sprite = airSprite;
+			bass.changeSpriteFromName(airSprite, false);
+		} else {
+			bass.changeSpriteFromName(sprite, true);
 		}
-		bass.changeSprite(sprite, true);
 	}
 
 	public static string getShootSprite(int dir) {
@@ -40,8 +40,7 @@ public class BassShoot : CharState {
 			-2 => "shoot_up",
 			-1 => "shoot_up_diag",
 			0 => "shoot",
-			1 => "shoot_down_diag",
-			2 => "shoot",
+			1 or 2 => "shoot_down_diag",
 			_ => "shoot"
 		};
 	}

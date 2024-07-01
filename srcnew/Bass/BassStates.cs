@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class BassShoot : CharState {
+	bool isFalling;
 	Bass bass = null!;
 
 	public BassShoot() : base("not_a_real_sprite") {
@@ -11,6 +12,8 @@ public class BassShoot : CharState {
 		airMove = true;
 		useDashJumpSpeed = true;
 		canJump = true;
+		canStopJump = true;
+		airSpriteReset = true;
 	}
 
 	public override void update() {
@@ -18,7 +21,7 @@ public class BassShoot : CharState {
 		if (player.dashPressed(out string dashControl)) {
 			bass.changeState(new Dash(dashControl), true);
 			return;
-		} 
+		}
 		if (stateFrames >= 16) {
 			bass.changeToIdleOrFall();
 			return;
@@ -32,11 +35,20 @@ public class BassShoot : CharState {
 		sprite = getShootSprite(bass.getShootYDir());
 		landSprite = sprite;
 		airSprite = "jump_" + sprite;
+		fallSprite = "fall_" + sprite;
 
-		if (!bass.grounded) {
-			bass.changeSpriteFromName(airSprite, false);
+		if (!bass.grounded || bass.vel.y < 0) {
+			string tempSprite = airSprite;
+			if (bass.vel.y >= 0) {
+				isFalling = true;
+				tempSprite = fallSprite;
+			}
+			if (bass.sprite.name != bass.getSprite("tempSprite")) {
+				bass.changeSpriteFromName(tempSprite, false);
+			}
 		} else {
 			bass.changeSpriteFromName(sprite, true);
+			bass.sprite.restart();
 		}
 	}
 

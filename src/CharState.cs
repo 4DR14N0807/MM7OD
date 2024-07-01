@@ -9,8 +9,10 @@ public class CharState {
 	public string attackSprite;
 	public string shootSprite;
 	public string transitionSprite;
-	public string landSprite;
-	public string airSprite;
+	public string landSprite = "";
+	public string airSprite = "";
+	public string fallSprite = "";
+	public bool airSpriteReset;
 	public bool wasGrounded = true;
 	public Point busterOffset;
 	public Character character;
@@ -134,7 +136,7 @@ public class CharState {
 			character.useGravity = false;
 			character.stopMovingWeak();
 		}
-		wasGrounded = character.grounded;
+		wasGrounded = character.grounded && character.vel.y >= 0;
 		player.delayETank();
 		if (this is not Jump and not WallKick && oldState?.canStopJump == false) {
 			canStopJump = false;
@@ -249,24 +251,52 @@ public class CharState {
 		}
 
 		airTrasition();
-		wasGrounded = character.grounded;
+		wasGrounded = character.grounded && character.vel.y >= 0;
 	}
 
 	public virtual void airTrasition() {
-		if (airSprite != null && !character.grounded && wasGrounded && sprite != airSprite) {
+		bool isGrounded = character.grounded && character.vel.y >= 0;
+
+		if (airSprite != "" && !isGrounded && wasGrounded &&
+			(landSprite == "" || character.sprite.name == character.getSprite(landSprite)) &&
+			character.sprite.name != character.getSprite(airSprite) &&
+			character.sprite.name != character.getSprite(fallSprite)
+		) {
 			sprite = airSprite;
+			if (character.vel.y >= 0 && fallSprite != "") {
+				sprite = fallSprite;
+			}
 			int oldFrameIndex = character.sprite.frameIndex;
 			float oldFrameTime = character.sprite.frameTime;
-			character.changeSprite(sprite, false);
-			character.sprite.frameIndex = oldFrameIndex;
-			character.sprite.frameTime = oldFrameTime;
-		} else if (landSprite != null && character.grounded && !wasGrounded && sprite != landSprite) {
+			character.changeSpriteFromName(sprite, airSpriteReset);
+			if (!airSpriteReset) {
+				character.sprite.frameIndex = oldFrameIndex;
+				character.sprite.frameTime = oldFrameTime;
+			}
+		}
+		else if (
+			landSprite != "" && isGrounded && !wasGrounded &&
+			(airSprite == "" || character.sprite.name == character.getSprite(airSprite)
+			|| character.sprite.name == character.getSprite(fallSprite)) &&
+			character.sprite.name != character.getSprite(landSprite)
+		) {
 			sprite = landSprite;
 			int oldFrameIndex = character.sprite.frameIndex;
 			float oldFrameTime = character.sprite.frameTime;
-			character.changeSpriteFromName(sprite, false);
-			character.sprite.frameIndex = oldFrameIndex;
-			character.sprite.frameTime = oldFrameTime;
+			character.changeSpriteFromName(sprite, airSpriteReset);
+			if (!airSpriteReset) {
+				character.sprite.frameIndex = oldFrameIndex;
+				character.sprite.frameTime = oldFrameTime;
+			}
+			character.playSound("land", sendRpc: true);
+		}
+		else if (
+			fallSprite != "" &&
+			character.sprite.name == character.getSprite(airSprite) &&
+			character.vel.y >= 0
+		) {
+			sprite = fallSprite;
+			character.changeSpriteFromName(sprite, true);
 		}
 	}
 

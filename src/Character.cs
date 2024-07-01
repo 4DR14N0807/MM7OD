@@ -2149,9 +2149,15 @@ public partial class Character : Actor, IDamagable {
 			changeSprite(getSprite(newState.shootSprite), true);
 		} else {
 			string spriteName = sprite?.name ?? "";
+			if (newState.sprite == newState.transitionSprite &&
+				!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
+			) {
+				newState.sprite = newState.defaultSprite;
+			}
 			changeSprite(getSprite(newState.sprite), true);
-
-			if (sprite != null && spriteName == sprite.name && this is not MegamanX) {
+			if (Global.sprites.ContainsKey(getSprite(newState.sprite)) &&
+				sprite != null && spriteName == sprite.name && this is not MegamanX
+			) {
 				sprite.frameIndex = 0;
 				sprite.frameTime = 0;
 				sprite.time = 0;

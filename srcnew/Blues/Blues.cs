@@ -9,11 +9,8 @@ public class Blues : Character {
 	public float[] unchargedLemonCooldown = new float[3];
 	public float coreMaxAmmo = 28;
 	public float coreAmmo;
-	public float corePendingAmmo;
-	public float lastChargeLevel;
 	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoDamageCooldown = 120;
-	public float coreAmmoIncreaseCooldown;
 	public float coreAmmoDecreaseCooldown;
 	public bool isShieldActive = true;
 	public bool overheating;
@@ -23,7 +20,6 @@ public class Blues : Character {
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 	public bool starCrashActive;
-	public bool overridePSDamage;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
@@ -264,7 +260,6 @@ public class Blues : Character {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
 		} else {
-			corePendingAmmo = 0;
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 		}
 		if (coreAmmoDecreaseCooldown <= 0) {

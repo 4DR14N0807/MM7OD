@@ -15,14 +15,17 @@ public class Blues : Character {
 	public bool isShieldActive = true;
 	public bool overheating;
 	public float overheatEffectTime;
+
+	// Shield vars.
 	public decimal shieldHP = 20;
 	public int shieldMaxHP = 20;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
-	public bool starCrashActive;
+	public bool? shieldCustomState = null;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
+	public bool starCrashActive;
 	public StarCrashProj? starCrash;
 	public HardKnuckleProj? hardKnuckleProj;
 
@@ -195,6 +198,14 @@ public class Blues : Character {
 		base.changeSprite(spriteName, resetFrame);
 		if (trails != null && sprite != null) {
 			sprite.lastFiveTrailDraws = trails;
+		}
+	}
+
+	public override void changeState(CharState newState, bool forceChange = false) {
+		shieldCustomState = null;
+		base.changeState(newState, forceChange);
+		if (!newState.attackCtrl || !newState.normalCtrl) {
+			shootAnimTime = 0;
 		}
 	}
 
@@ -588,8 +599,17 @@ public class Blues : Character {
 		if (!ownedByLocalPlayer) {
 			return isShieldActive;
 		}
+		bool canShieldBeActive = false;
+		if (shieldCustomState != null) {
+			canShieldBeActive = shieldCustomState.Value;
+		} else {
+			canShieldBeActive = (
+				charState.attackCtrl || charState.attackCtrl
+			);
+		}
 		return (
-			(isShieldActive && charState is not BluesSlide) &&
+			isShieldActive &&
+			canShieldBeActive &&
 			shieldHP > 0 &&
 			shootAnimTime == 0 &&
 			charState is not Hurt { stateFrames: not 0 }

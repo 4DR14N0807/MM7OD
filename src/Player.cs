@@ -158,6 +158,8 @@ public partial class Player {
 	public bool isSigma { get { return charNum == (int)CharIds.Sigma; } }
 	public bool isRock { get { return charNum == (int)CharIds.Rock; } }
 	public bool isProtoMan { get { return charNum == (int)CharIds.Blues; } }
+	public bool isBass { get { return charNum == (int)CharIds.Bass; } }
+
 
 	public float health;
 	public float maxHealth;
@@ -225,6 +227,7 @@ public partial class Player {
 			{ (int)CharIds.Sigma, new List<ETank>() },
 			{ (int)CharIds.Rock, new List<ETank>() },
 			{ (int)CharIds.Blues, new List<ETank>() },
+			{ (int)CharIds.Bass, new List<ETank>() },
 		};
 	public List<ETank> etanks {
 		get {
@@ -239,7 +242,7 @@ public partial class Player {
 	{
 			{ (int)CharIds.Rock, new List<WTank>() },
 			{ (int)CharIds.Blues, new List<WTank>() },
-			//{ (int)CharIds.Bass, new List<WTank>()},
+			{ (int)CharIds.Bass, new List<WTank>()},
 		};
 	public List<WTank> wtanks {
 		get {
@@ -260,6 +263,7 @@ public partial class Player {
 		{ (int)CharIds.BusterZero, 0 },
 		{ (int)CharIds.Rock, 0 },
 		{ (int)CharIds.Blues, 0 },
+		{ (int)CharIds.Bass, 0 },
 		
 	};
 	// Getter functions.
@@ -1094,6 +1098,11 @@ public partial class Player {
 				);
 			} else if (charNum == (int)CharIds.Blues) {
 				character = new Blues(
+					this, pos.x, pos.y, xDir,
+					false, charNetId, ownedByLocalPlayer
+				);
+			} else if (charNum == (int)CharIds.Bass) {
+				character = new Bass(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);

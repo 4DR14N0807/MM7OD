@@ -26,7 +26,6 @@ public class Slide : CharState {
 		base.onEnter(oldState);
 		rock = character as Rock;
 		initialSlideDir = character.xDir;
-		character.isDashing = true;
 		character.globalCollider = rock.getSlidingCollider();	
 	}
 

@@ -1245,7 +1245,7 @@ public class GameMode {
 			damageSavings = 0;
 		}
 
-		int frameIndex = player.charNum;
+		int frameIndex = 0;
 		if (player.charNum == (int)CharIds.PunchyZero) {
 			frameIndex = 1;
 		}
@@ -1965,6 +1965,7 @@ public class GameMode {
 	}
 
 	public void drawWeaponSlot(Weapon weapon, float x, float y, bool selected = false) {
+		string jsonName = mainPlayer.isBass ? "hud_weapon_icon_bass" : "hud_weapon_icon";
 		if (weapon is MechMenuWeapon && !mainPlayer.isSpectator && level.mainPlayer.character?.startRideArmor != null) {
 			int index = 37 + level.mainPlayer.character.startRideArmor.raNum;
 			if (index == 42) index = 119;
@@ -1972,7 +1973,7 @@ public class GameMode {
 		} else if (weapon is MechMenuWeapon && level.mainPlayer.isSelectingRA()) {
 			return;
 		} else if (weapon is not AbsorbWeapon) {
-			Global.sprites["hud_weapon_icon"].drawToHUD(weapon.weaponSlotIndex, x, y);
+			Global.sprites[jsonName].drawToHUD(weapon.weaponSlotIndex, x, y);
 		}
 		if (selected) {
 			if (!weapon.canShoot(0, mainPlayer)) {

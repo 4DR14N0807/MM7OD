@@ -35,6 +35,7 @@ public enum CharIds {
 	Sigma,
 	Rock,
 	Blues,
+	Bass,
 	PunchyZero,
 	BusterZero,
 	// Non-standart chars start here.
@@ -58,11 +59,13 @@ public class CharSelection {
 	public static CharSelection[] selections => [
 		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
 		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
+		new CharSelection("Bass", 7, 0, 0, "bass_idle", 0),
 	];
 
 	public static CharSelection[] selections1v1 => [
 		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
 		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
+		new CharSelection("Bass", 7, 0, 0, "bass_idle", 0),
 	];
 
 	public CharSelection(

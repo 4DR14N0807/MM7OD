@@ -312,7 +312,21 @@ public enum RockWeaponIds {
 	GyroAttack,
 	StarCrash,
 	NeedleCannon,
+	BassBuster,
+	IceWall,
+	CopyVision,
+	SpreadDrill,
+	WaveBurner,
+	RemoteMine,
+	LightingBolt,
+	TenguBlade,
+	MagicCard,
 }
+
+public enum BassProjIds {
+	BassLemon = 700,
+}
+
 public enum BluesProjIds  {
 	Lemon = 600,
 	LemonAngled,

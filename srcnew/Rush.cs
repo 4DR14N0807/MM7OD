@@ -39,7 +39,7 @@ public class Rush : Actor {
 	}
 
 	public override Collider? getTerrainCollider() {
-		if (physicsCollider == null && sprite.name != "rush_warp_beam") {
+		if (physicsCollider == null) {
 			return null;
 		}
 		if (sprite.name == "rush_jet") {

@@ -5,34 +5,34 @@ namespace MMXOnline;
 
 
 public class LegBreaker : Weapon {
-    public LegBreaker(Player player) : base() {
-        damager = new Damager(player, 2, 0, 0.5f);
-        index = (int)RockWeaponIds.LegBreaker;
-        killFeedIndex = 0;
-    }
+	public LegBreaker(Player player) : base() {
+		damager = new Damager(player, 2, 0, 0.5f);
+		index = (int)RockWeaponIds.LegBreaker;
+		killFeedIndex = 0;
+	}
 }
 
 
 public class LegBreakerState : CharState {
 
-    public string initialSlideButton;
+	public string initialSlideButton;
 	public int initialSlideDir;
-    bool isColliding;
-    Anim? dust;
+	bool isColliding;
+	Anim? dust;
 	Anim? effect;
-    int particles = 3;
+	int particles = 3;
 	Rock? rock;
-    public LegBreakerState(string initialSlideButton) : base("sa_legbreaker", "","","") {
-        enterSound = "slide";
-        this.initialSlideButton = initialSlideButton;
+	public LegBreakerState(string initialSlideButton) : base("sa_legbreaker", "", "", "") {
+		enterSound = "slide";
+		this.initialSlideButton = initialSlideButton;
 		accuracy = 10;
 		exitOnAirborne = true;
 		attackCtrl = true;
 		normalCtrl = true;
-        useDashJumpSpeed = false;
-    }
+		useDashJumpSpeed = false;
+	}
 
-    public override void onEnter(CharState oldState) {
+	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		rock = character as Rock;
 		initialSlideDir = character.xDir;
@@ -46,32 +46,32 @@ public class LegBreakerState : CharState {
 		effect?.destroySelf();
 	}
 
-    public override void update() {
-        base.update();
+	public override void update() {
+		base.update();
 
 		Point charPos = character.pos;
 		charPos.x -= character.xDir * 3f;
 		charPos.y += 16f;
 		if (effect != null) effect.changePos(charPos);
 
-        float inputXDir = player.input.getInputDir(player).x;
+		float inputXDir = player.input.getInputDir(player).x;
 		bool cancel = player.input.isPressed(getOppositeDir(initialSlideDir), player);
 
-        if (Global.level.checkCollisionActor(character, 0, -24) != null) isColliding = true;
+		if (Global.level.checkCollisionActor(character, 0, -24) != null) isColliding = true;
 		else isColliding = false;
 
-        if (stateTime >= Global.spf * 30 && !isColliding) {
-            stateTime = 0;
+		if (stateTime >= Global.spf * 30 && !isColliding) {
+			stateTime = 0;
 			character.frameIndex = 0;
 			character.sprite.frameTime = 0;
 			character.sprite.animTime = 0;
 			character.sprite.frameSpeed = 0.1f;
 
-            character.changeState(new SlideEnd(), true);
+			character.changeState(new SlideEnd(), true);
 			return;
-        }
+		}
 
-        var move = new Point(0, 0);
+		var move = new Point(0, 0);
 		move.x = character.getDashSpeed() * initialSlideDir;
 		character.move(move);
 
@@ -79,11 +79,10 @@ public class LegBreakerState : CharState {
 			if (isColliding) {
 				character.xDir *= -1;
 				initialSlideDir *= -1;
-			}
-			else character.changeState(new SlideEnd(), true);
+			} else character.changeState(new SlideEnd(), true);
 		}
 
-        if (stateTime >= Global.spf * 3 && particles > 0) {
+		if (stateTime >= Global.spf * 3 && particles > 0) {
 			stateTime = 0;
 			particles--;
 			dust = new Anim(
@@ -93,9 +92,9 @@ public class LegBreakerState : CharState {
 			);
 			dust.vel.y = (-particles - 1) * 20;
 		}
-    }
+	}
 
-    string getOppositeDir(float inputX) {
+	string getOppositeDir(float inputX) {
 		if (inputX == -1) return Control.Right;
 		else return Control.Left;
 	}

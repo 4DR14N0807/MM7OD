@@ -39,7 +39,7 @@ public class RushWarpIn : RushState {
 	public Point destY;
 	public Point rockPos;
 	public Anim warpAnim = null!;
-	
+
 	public RushWarpIn(bool addInvulnFrames = true) : base("empty") { }
 
 	public override void onEnter(RushState oldState) {

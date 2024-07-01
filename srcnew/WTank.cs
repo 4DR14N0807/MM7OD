@@ -14,6 +14,6 @@ public class WTank {
 		//character.addAmmo(ammo);
 		character.addWTankAddAmmo(weaponSlot, ammo);
 		character.usedWtank = this;
-		RPC.useWTank.sendRpc(character.netId, (int)player.weapon.maxAmmo);	
+		RPC.useWTank.sendRpc(character.netId, (int)player.weapon.maxAmmo);
 	}
 }

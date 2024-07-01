@@ -70,7 +70,7 @@ public class Rock : Character {
 			var center = getCenterPos();
 			sWheel = new GenericMeleeProj(new ScorchWheel(), center, ProjIds.ScorchWheelUnderwater, player, 2, 0, 1);
 
-			var rect = new Rect(0, 0 ,32, 39);
+			var rect = new Rect(0, 0, 32, 39);
 			sWheel.globalCollider = new Collider(rect.getPoints(), false, sWheel, false, false, 0, new Point());
 			spawnedSWheelHitbox = true;
 		}
@@ -78,16 +78,15 @@ public class Rock : Character {
 		if (sWheel != null) {
 			sWheel.pos = getCenterPos();
 			if (!sprite.name.Contains("shoot2") &&
-			!sprite.name.Contains("shoot2_air") && !sprite.name.Contains("ladder_shoot2")) 
-			{
+			!sprite.name.Contains("shoot2_air") && !sprite.name.Contains("ladder_shoot2")) {
 				sWheel.destroySelfNoEffect();
 				spawnedSWheelHitbox = false;
-			} 
+			}
 		}
 
 		//======================================================================================================
 
-		
+
 		if (weaponHealAmount > 0 && player.health > 0) {
 			weaponHealTime += Global.spf;
 			if (weaponHealTime > 0.05) {
@@ -130,9 +129,9 @@ public class Rock : Character {
 			framesSinceLastShootReleased > Global.normalizeFrames(30)) ||
 			(shootHeld && player.weapon.isStream && chargeTime < charge1Time)
 		);
-		if (offCooldown && 
+		if (offCooldown &&
 			shootCondition && canShoot()) {
-				shoot(false);
+			shoot(false);
 		}
 
 		rockCharge();
@@ -141,7 +140,7 @@ public class Rock : Character {
 		//changeSprite("rock_" + charState.shootSprite, true);
 		chargeGfx();
 
-		if (player.dashPressed(out string slideControl) && canSlide() 
+		if (player.dashPressed(out string slideControl) && canSlide()
 			&& charState is not Slide && charState is not RockChargeShotState
 			&& charState is not ShootAlt
 		) {
@@ -157,7 +156,7 @@ public class Rock : Character {
 				changeState(new RockDoubleJump(), true);
 				usedDoubleJump = true;
 			}*/
-		
+
 		if (player.hasSuperAdaptor()) superAdaptorControls();
 	}
 
@@ -213,7 +212,7 @@ public class Rock : Character {
 				boughtSuperAdaptorOnce = true;
 			}
 			player.character.changeState(new CallDownRush(), true);
-			
+
 			return;
 		}
 		if (hyperProgress < 1) {
@@ -274,7 +273,7 @@ public class Rock : Character {
 	public override bool canDash() {
 		return false;
 	}
-	
+
 	public bool canSlide() {
 		if (!grounded) return false;
 		if (flag != null) return false;
@@ -306,13 +305,13 @@ public class Rock : Character {
 		if (sWell != null) return false;
 		if (sWellSpawn != null) return false;
 		if (sWellU != null) return false;
-		if (charState is Slide) 
+		if (charState is Slide)
 			return (player.weapon is RockBuster || player.weapon is WildCoil) && getChargeLevel() == 2;
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (isInvulnerableAttack()) return false;
 		if (saRocketPunchProj != null) return false;
-		
+
 		return base.canShoot();
 	}
 
@@ -323,7 +322,7 @@ public class Rock : Character {
 
 	public void shoot(bool doCharge) {
 		int chargeLevel = getChargeLevel();
-		
+
 		if (!doCharge && chargeLevel >= 2) return;
 
 		if (!player.weapon.canShoot(chargeLevel, player)) {
@@ -430,7 +429,7 @@ public class Rock : Character {
 		if (invulnTime > 0) return false;
 		if (junkShield != null) return false;
 		if (sWell != null) return false;
-		
+
 		return base.canCharge();
 	}
 
@@ -451,7 +450,7 @@ public class Rock : Character {
 			} else if (!(charState is Hurt)) {
 				stopCharge();
 			}
-		} 
+		}
 	}
 
 	public override List<ShaderWrapper> getShaders() {
@@ -535,10 +534,10 @@ public class Rock : Character {
 
 			),
 			(int)MeleeIds.LegBreaker => new GenericMeleeProj(
-				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch,  0.5f,
+				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f,
 				addToLevel: addToLevel
 			),
-			
+
 		};
 		return proj;
 

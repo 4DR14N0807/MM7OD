@@ -1,24 +1,24 @@
 using System;
 using System.Collections.Generic;
 
-namespace  MMXOnline;
+namespace MMXOnline;
 
 public class ThunderBolt : Weapon {
 
 	public static ThunderBolt netWeapon = new ThunderBolt();
 
-    public ThunderBolt() : base() {
-        index = (int)RockWeaponIds.ThunderBolt;
-        rateOfFire = 0.625f;
-        weaponSlotIndex = (int)RockWeaponSlotIds.ThunderBolt;
-        weaponBarBaseIndex = (int)RockWeaponBarIds.ThunderBolt;
-        weaponBarIndex = weaponBarBaseIndex;
+	public ThunderBolt() : base() {
+		index = (int)RockWeaponIds.ThunderBolt;
+		rateOfFire = 0.625f;
+		weaponSlotIndex = (int)RockWeaponSlotIds.ThunderBolt;
+		weaponBarBaseIndex = (int)RockWeaponBarIds.ThunderBolt;
+		weaponBarIndex = weaponBarBaseIndex;
 		//shootSounds = new List<string>() {"thunder_bolt", "thunder_bolt", "thunder_bolt", ""};
-        killFeedIndex = 0;
-        maxAmmo = 20;
-        ammo = maxAmmo;
-        description = new string[] {"Powerful DPS weapon.", "Divides in 2 when hitting an enemy."};
-    }
+		killFeedIndex = 0;
+		maxAmmo = 20;
+		ammo = maxAmmo;
+		description = new string[] { "Powerful DPS weapon.", "Divides in 2 when hitting an enemy." };
+	}
 
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
@@ -42,15 +42,15 @@ public class ThunderBoltProj : Projectile {
 	float projSpeed = 300;
 
 	public ThunderBoltProj(
-		Weapon weapon, Point pos, int xDir, 
-		Player player, int type, ushort netProjId, 
+		Weapon weapon, Point pos, int xDir,
+		Player player, int type, ushort netProjId,
 		Character? hitChar = null, bool rpc = false
-	) : base ( 
-		weapon, pos, xDir, 0, 2, 
-		player, "thunder_bolt_start", 0, 0.5f, 
+	) : base(
+		weapon, pos, xDir, 0, 2,
+		player, "thunder_bolt_start", 0, 0.5f,
 		netProjId, player.ownedByLocalPlayer
 	) {
-		
+
 		projId = (int)RockProjIds.ThunderBolt;
 		maxTime = 0.45f;
 		fadeSound = "thunder_bolt_hit";
@@ -58,7 +58,7 @@ public class ThunderBoltProj : Projectile {
 		this.hitChar = hitChar;
 		fadeSprite = "thunder_bolt_fade2";
 		this.type = type;
-		
+
 		if (type == 1) {
 			vel.x = projSpeed * xDir;
 			var sprite = "thunder_bolt_proj";
@@ -66,18 +66,18 @@ public class ThunderBoltProj : Projectile {
 		}
 
 		if (rpc) {
-            byte[] extraArgs = new byte[] { (byte)type };
+			byte[] extraArgs = new byte[] { (byte)type };
 
-            rpcCreate(pos, player, netProjId, xDir, extraArgs);
-        }
+			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-        return new ThunderBoltProj(
-            ThunderBolt.netWeapon, arg.pos, arg.xDir, arg.player,
-            arg.extraData[0], arg.netId
-        );
-    }
+		return new ThunderBoltProj(
+			ThunderBolt.netWeapon, arg.pos, arg.xDir, arg.player,
+			arg.extraData[0], arg.netId
+		);
+	}
 
 	public override void update() {
 		base.update();
@@ -100,7 +100,8 @@ public class ThunderBoltProj : Projectile {
 		}
 		if (type == 1) {
 			//destroySelf(fadeSprite);
-		new ThunderBoltSplitProj(weapon, pos.clone(), xDir, damager.owner, 0, damager.owner.getNextActorNetId(true), true);		}
+			new ThunderBoltSplitProj(weapon, pos.clone(), xDir, damager.owner, 0, damager.owner.getNextActorNetId(true), true);
+		}
 	}
 
 
@@ -117,21 +118,21 @@ public class ThunderBoltSplitProj : Projectile {
 	float projSpeed = 300;
 	Player player;
 	public ThunderBoltSplitProj(
-		Weapon weapon, Point pos, int xDir, 
-		Player player, int type, 
+		Weapon weapon, Point pos, int xDir,
+		Player player, int type,
 		ushort netProjId, bool rpc = false
-	) : base (
-	weapon, pos, xDir, 0, 2, 
-	player, "thunder_bolt_fade", 4, 0.5f, 
+	) : base(
+	weapon, pos, xDir, 0, 2,
+	player, "thunder_bolt_fade", 4, 0.5f,
 	netProjId, player.ownedByLocalPlayer
 	) {
-		
+
 		projId = (int)RockProjIds.ThunderBoltSplit;
 		maxTime = 0.75f;
 		this.type = type;
 		destroyOnHit = false;
 		this.player = player;
-		
+
 		if (type >= 1) {
 			var sprite = "thunder_bolt_divide_proj";
 			changeSprite(sprite, false);
@@ -144,29 +145,29 @@ public class ThunderBoltSplitProj : Projectile {
 		}
 
 		if (rpc) {
-            byte[] extraArgs = new byte[] { (byte)type };
+			byte[] extraArgs = new byte[] { (byte)type };
 
-            rpcCreate(pos, player, netProjId, xDir, extraArgs);
-        }
-		projId = (int)RockProjIds.ThunderBolt; 
+			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+		}
+		projId = (int)RockProjIds.ThunderBolt;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-        return new ThunderBoltSplitProj(
-            ThunderBolt.netWeapon, arg.pos, arg.xDir, arg.player,
-            arg.extraData[0], arg.netId
-        );
-    }
+		return new ThunderBoltSplitProj(
+			ThunderBolt.netWeapon, arg.pos, arg.xDir, arg.player,
+			arg.extraData[0], arg.netId
+		);
+	}
 
 	public override void update() {
 		base.update();
 		if (!ownedByLocalPlayer) return;
-		if (type != 0){
+		if (type != 0) {
 			sparkleTime += Global.spf;
-		if (sparkleTime > 0.05) {
-			sparkleTime = 0;
-			new Anim(pos, "thunder_bolt_divide_trail", 1, player.getNextActorNetId(), true, true);
-		}
+			if (sparkleTime > 0.05) {
+				sparkleTime = 0;
+				new Anim(pos, "thunder_bolt_divide_trail", 1, player.getNextActorNetId(), true, true);
+			}
 		}
 		if (type == 0) {
 			if (isAnimOver()) {

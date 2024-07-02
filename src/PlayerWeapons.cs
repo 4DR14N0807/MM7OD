@@ -322,7 +322,7 @@ label:
 				if (ws < 0) ws = 0;
 			}
 		}
-		if ((weapons.ElementAtOrDefault(ws) is GigaCrush && Options.main.gigaCrushSpecial) || (weapons.ElementAtOrDefault(ws) is NovaStrike && Options.main.novaStrikeSpecial)) {
+		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is NovaStrike && Options.main.novaStrikeSpecial)) {
 			ws--;
 			goto label;
 		}
@@ -339,7 +339,7 @@ label:
 		if (ws >= max) {
 			ws = 0;
 		}
-		if ((weapons.ElementAtOrDefault(ws) is GigaCrush && Options.main.gigaCrushSpecial) || (weapons.ElementAtOrDefault(ws) is NovaStrike && Options.main.novaStrikeSpecial)) {
+		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is NovaStrike && Options.main.novaStrikeSpecial)) {
 			ws++;
 			goto label;
 		}
@@ -530,6 +530,8 @@ label:
 				  else {
 					weapons = loadout.rockLoadout.getWeaponsFromLoadout(this);
 				}
+				weapons.Add(new RushWeapon());
+
 			} else if (isBass) {
 				weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();
 			}

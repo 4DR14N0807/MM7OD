@@ -26,6 +26,7 @@ public class Rock : Character {
 	public float timeSinceLastShoot;
 	public bool isSlideColliding;
 	public Rush rush;
+	public RushWeapon rushWeapon;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -46,6 +47,10 @@ public class Rock : Character {
 		spriteToCollider["sa_activate_end_air"] = null;
 
 		charge2Time = 80;
+
+		foreach (var w in player.weapons) {
+			if (w is RushWeapon rw) rushWeapon = rw;
+		}
 	}
 
 	public override void update() {
@@ -109,6 +114,13 @@ public class Rock : Character {
 
 		bool shootPressed = player.input.isPressed(Control.Shoot, player);
 		bool shootHeld = player.input.isHeld(Control.Shoot, player);
+		bool specialPressed = player.input.isPressed(Control.Special1, player);
+
+		if (specialPressed && rushWeapon != null && rushWeapon.canShoot(getChargeLevel(), player)
+			&& Options.main.rushSpecial) {
+			
+			rushWeapon.shoot(this, 0);
+		}
 
 		player.busterWeapon.update();
 
@@ -495,9 +507,20 @@ public class Rock : Character {
 		base.onCollision(other);
 
 		var wall = other.gameObject as Wall;
+		var rush = other.gameObject as Rush;
+		var isGHit = other.hitData?.normal != null && other.hitData.normal.Value.isGroundNormal();
 
 		if (charState is RockDoubleJump && wall != null) {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
+		}
+
+		if (rush != null && (rush.rushState is RushIdle || rush.rushState is RushSleep ) && 
+			isGHit && charState is Fall) {
+				
+			rush.changeState(new RushCoil());
+			vel.y = getJumpPower() * -1.5f;
+			changeState(new Jump(), true);
+			rushWeapon.addAmmo(-1, player);
 		}
 	}
 

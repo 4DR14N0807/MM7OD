@@ -447,3 +447,25 @@ public class CallDownRush : CharState {
 		character.useGravity = true;
 	}
 }
+
+
+public class CoilJump : CharState {
+	public CoilJump() : base("jump", "jump_shoot") {
+		accuracy = 5;
+		enterSound = "jump";
+		exitOnLanding = true;
+		useDashJumpSpeed = true;
+		airMove = true;
+		canStopJump = false;
+		attackCtrl = true;
+		normalCtrl = true;
+	}
+
+	public override void update() {
+		base.update();
+		if (character.vel.y > 0) {
+			character.changeState(new Fall());
+			return;
+		}
+	}
+}

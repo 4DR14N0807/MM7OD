@@ -531,10 +531,7 @@ label:
 					weapons = loadout.rockLoadout.getWeaponsFromLoadout(this);
 				}
 			} else if (isBass) {
-				weapons = [
-					new BassBuster()
-				];
-				//weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();
+				weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();
 			}
 		} else {
 			foreach (var weapon in Weapon.getAllSwitchableWeapons(loadout.axlLoadout)) {

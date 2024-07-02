@@ -51,7 +51,13 @@ public class AI {
 		}
 	}
 
-	public void doJump(float jumpTime = 0.75f) {
+	public void doJump(float jumpTime = 0.75f, bool platformJump = false) {
+		if (platformJump) {
+			if (character is Blues blues) {
+				blues.isShieldActive = false;
+				blues.aiActivateShieldOnLand = true;
+			}
+		}
 		if (this.jumpTime == 0) {
 			//this.player.release(Control.Jump);
 			player.press(Control.Jump);
@@ -309,7 +315,7 @@ public class AI {
 						}
 
 						if (character.charState is not LadderClimb) {
-							doJump();
+							doJump(platformJump: true);
 							jumpZoneTime += Global.spf;
 							if (jumpZoneTime > 2 && character.player.isVile) {
 								jumpZoneTime = 0;
@@ -2058,7 +2064,7 @@ public class InJumpZone : AIState {
 	public override void update() {
 		base.update();
 		time += Global.spf;
-		ai.doJump();
+		ai.doJump(platformJump: true);
 		ai.jumpZoneTime += Global.spf;
 
 		if (jumpZoneDir == -1) {

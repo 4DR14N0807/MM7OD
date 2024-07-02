@@ -353,16 +353,19 @@ public class UnderwaterScorchWheelProj : Projectile {
 }
 
 public class Burning : CharState {
-	public float burningTime = 2;
-	public const int maxStacks = 5;
+	public float burningTime = 120;
+	public const int maxStacks = 4;
 	public int burnDir;
 	public float burnMoveSpeed;
+	public int burnDamageCooldown = 45;
+	Player attacker;
 
-	public Burning(int dir) : base("burning") {
+	public Burning(int dir, Player attacker) : base("burning") {
 		//invincible = true;
 		superArmor = true;
 		burnDir = dir;
 		burnMoveSpeed = dir * 100;
+		this.attacker = attacker;
 	}
 
 	public override bool canEnter(Character character) {
@@ -392,7 +395,7 @@ public class Burning : CharState {
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
-		character.burnInvulnTime = 2;
+		character.burnInvulnTime = 120;
 		character.burnStateStacks = 0;
 		character.useGravity = true;
 		player.delayETank();
@@ -408,14 +411,14 @@ public class Burning : CharState {
 			character.move(new Point(burnMoveSpeed, -character.getJumpPower() * 0.125f));
 		}
 
-		/*if (burnDamageCooldown > 0) burnDamageCooldown -= Global.spf;
+		if (burnDamageCooldown > 0) burnDamageCooldown--;
         if (burnDamageCooldown <= 0) {
-            character.applyDamage(player, (int)RockWeaponIds.ScorchWheel, 1, (int)RockProjIds.ScorchWheel);
+            character.applyDamage(1, attacker, character, (int)RockWeaponIds.ScorchWheel, (int)RockProjIds.ScorchWheelBurn);
             Global.playSound("hurt");
-            burnDamageCooldown = Global.spf * 45;
-        }*/
+            burnDamageCooldown = 45;
+        }
 
-		burningTime -= Global.spf;
+		burningTime--;
 		if (burningTime <= 0) {
 			burningTime = 0;
 			character.changeToIdleOrFall();

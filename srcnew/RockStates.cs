@@ -42,7 +42,7 @@ public class Slide : CharState {
 		if (Global.level.checkCollisionActor(character, 0, -24) != null && rock != null) rock.isSlideColliding = true;
 		else if (rock != null) rock.isSlideColliding = false;
 		
-		if ((slideTime > Global.spf * 30 || stop) && rock != null && !rock.isSlideColliding) {
+		if ((slideTime > 30 || stop) && rock != null && !rock.isSlideColliding) {
 			if (!stop) {
 				slideTime = 0;
 				character.frameIndex = 0;
@@ -56,7 +56,7 @@ public class Slide : CharState {
 		}
 
 		var move = new Point(0, 0);
-		move.x = character.getDashSpeed() * initialSlideDir;
+		if (rock != null) move.x = rock.getSlideSpeed() * initialSlideDir;
 		character.move(move);
 
 		if (cancel) {
@@ -66,9 +66,9 @@ public class Slide : CharState {
 			} else character.changeState(new SlideEnd(), true);
 		}
 
-		slideTime += Global.spf;
-		if (stateTime >= Global.spf * 3 && particles > 0) {
-			stateTime = 0;
+		slideTime++;
+		if (stateFrames >= 3 && particles > 0) {
+			stateFrames = 0;
 			particles--;
 			dust = new Anim(
 				character.getDashDustEffectPos(initialSlideDir),
@@ -106,7 +106,7 @@ public class SlideEnd : CharState {
 		bool canMove = character.player.input.isHeld(Control.Left, player) ||
 		character.player.input.isHeld(Control.Right, player);
 
-		if (stateTime > Global.spf * 5 || canMove) {
+		if (stateFrames >= 5 || canMove) {
 			character.changeToIdleOrFall();
 			return;
 		}
@@ -321,7 +321,7 @@ public class RockDoubleJump : CharState {
 		}
 
 		time += Global.spf;
-		if (time >= 0.5f || (time >= 0.1f && character.player.input.isPressed(Control.Jump, character.player))) {
+		if (stateFrames > 30 || (stateFrames > 6 && character.player.input.isPressed(Control.Jump, character.player))) {
 			character.changeState(new Fall(), true);
 		}
 	}
@@ -346,7 +346,7 @@ public class CallDownRush : CharState {
 	public override void update() {
 		base.update();
 
-		if (stateTime >= 5) character.changeState(new Idle(), true);
+		if (stateFrames >= 240) character.changeState(new Idle(), true);
 
 		if (rush != null) {
 
@@ -368,7 +368,7 @@ public class CallDownRush : CharState {
 						//TO DO: Improve this part :derp:
 					var rockPos = character.pos;
 					rockPos.y -= 64;
-					jumpTime += Global.spf;
+					jumpTime++;
 					rush.changeSprite("sa_rush_jump", true);
 					rush.move(rush.pos.directionToNorm(rockPos).times(300));
 					if (rush.pos.distanceTo(rockPos) < 10) isXAllign = true;
@@ -408,9 +408,9 @@ public class CallDownRush : CharState {
 
 				case 4:
 					rush.vel.y = 420;
-					jumpTime += Global.spf;
+					jumpTime++;
 
-					if (jumpTime >= Global.spf * 12) {
+					if (jumpTime >= 12) {
 						rush.destroySelf();
 						new Anim(character.pos, "sa_activate_effect", 1, null, true, true);
 						string endSprite = character.grounded ? "rock_sa_activate_end" : "rock_sa_activate_end_air";

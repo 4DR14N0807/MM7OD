@@ -555,6 +555,14 @@ public class Rock : Character {
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
 
+	public virtual float getSlideSpeed() {
+		if (flag != null) {
+			return getRunSpeed();
+		}
+		float dashSpeed = 3.5f * 60;
+		return dashSpeed * getRunDebuffs();
+	}
+
 	public void removeBusterProjs() {
 		sWell = null;
 	}

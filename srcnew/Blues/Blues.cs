@@ -31,6 +31,7 @@ public class Blues : Character {
 
 	// AI variables.
 	public float aiSpecialUseTimer = 0;
+	public bool aiActivateShieldOnLand;
 
 	// Creation code.
 	public Blues(
@@ -327,7 +328,7 @@ public class Blues : Character {
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
-		if (shieldHP > 0 && grounded && vel.y >= 0 && shootAnimTime <= 0 && canUseShield()) {
+		if (!player.isAI && shieldHP > 0 && grounded && vel.y >= 0 && shootAnimTime <= 0 && canUseShield()) {
 			if (Options.main.protoShieldHold) {
 				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
 			} else {
@@ -722,14 +723,17 @@ public class Blues : Character {
 	}
 
 	public override void aiAttack(Actor target) {
+		if (grounded) {
+			if (shieldHP >= 1 && (shieldHP >= shieldMaxHP || aiActivateShieldOnLand)) {
+				isShieldActive = true;
+			}
+			aiActivateShieldOnLand = false;
+		}
 		if (AI.trainingBehavior != 0) {
 			return;
 		}
 		Helpers.decrementFrames(ref aiSpecialUseTimer);
 		if (!isFacing(target)) {
-			if (charState.normalCtrl && grounded) {
-				isShieldActive = false;
-			}
 			if (canCharge() && shootAnimTime == 0) {
 				increaseCharge();
 			}
@@ -737,9 +741,6 @@ public class Blues : Character {
 		}
 		if (!charState.attackCtrl) {
 			return;
-		}
-		if (charState.normalCtrl && grounded) {
-			isShieldActive = true;
 		}
 		if (aiSpecialUseTimer == 0 &&
 			specialWeapon is not StarCrash && canShootSpecial() &&

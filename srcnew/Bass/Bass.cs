@@ -4,10 +4,14 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class Bass : Character {
+	// Weapons.
 	float weaponCooldown;
 	public CopyVisionClone? cVclone;
 	public SpreadDrillProj? sDrill;
 	public SpreadDrillMediumProj? sDrillM;
+	
+	// AI Stuff.
+	public float aiWeaponSwitchCooldown = 120;
 
 	public Bass(
 		Player player, float x, float y, int xDir,
@@ -120,6 +124,26 @@ public class Bass : Character {
 
 	public override bool canWallClimb() {
 		return false;
+	}
+
+	public override void aiAttack(Actor target) {
+		if (AI.trainingBehavior != 0) {
+			return;
+		}
+		if (player.weapon == null) {
+			return;
+		}
+		Helpers.decrementFrames(ref aiWeaponSwitchCooldown);
+		if (aiWeaponSwitchCooldown == 0) {
+			player.weaponRight();
+			aiWeaponSwitchCooldown = 120;
+		}
+		if (!isFacing(target)) {
+			return;
+		}
+		if (canShoot()) {
+			shoot();
+		}
 	}
 }
 

@@ -616,7 +616,7 @@ public class Blues : Character {
 			canShieldBeActive &&
 			shieldHP > 0 &&
 			shootAnimTime == 0 &&
-			charState is not Hurt { stateFrames: <= 1 } and not GenericStun { stateFrames: <= 1 }
+			charState is not Hurt { stateFrames: >= 2 } and not GenericStun { stateFrames: >= 2 }
 		);
 	}
 
@@ -699,11 +699,11 @@ public class Blues : Character {
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
 			customDamageDisplayOn = false;
 			addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
-			if (charState is not Hurt { stateFrames: 0 }) {
+			if (charState is not Hurt { stateFrames: >= 1 }) {
 				playSound("hit", sendRpc: true);
 			}
 		} else {
-			if (charState is not Hurt { stateFrames: 0 }) {
+			if (charState is not Hurt { stateFrames: >= 1 }) {
 				playSound("ding", sendRpc: true);
 			}
 		}

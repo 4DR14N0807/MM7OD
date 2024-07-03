@@ -790,6 +790,27 @@ public class OptionsMenu : IMainMenu {
 					"For weapon switch in certain or all modes.\n" +
 					"Hold WEAPON L/R and use a directon to switch weapon."
 				),
+
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.rushSpecial);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							FontType.Grey,
+							"SPECIAL KEY RUSH:",
+							pos.x, pos.y
+						);
+
+						Fonts.drawText(
+							FontType.Grey, Helpers.boolYesNo(Options.main.rushSpecial),
+							pos.x + 200, pos.y
+						);
+					},
+					"Allows to call Rush by pressing SPECIAL,\n" +
+					"but you lose the ability to switch to it."
+				),
 			};
 		} else if (charNum == 6) {
 			menuOptions = new List<MenuOption>() {

@@ -24,6 +24,7 @@ public class Rush : Actor {
 		netOwner = owner;
 		this.character = owner.character;
 		spriteToCollider["empty"] = null;
+		spriteToCollider["warp_beam"] = null;
 		// Forcefull change sprite to something before we crash.
 		sprite = Global.sprites["empty"].clone();
 		// We do this to manually call the state change.
@@ -46,7 +47,7 @@ public class Rush : Actor {
 			return getJetCollider();
 		}
 		return new Collider(
-			new Rect(0f, 0f, 26, 38).getPoints(),
+			new Rect(0f, 0f, 26, 22).getPoints(),
 			false, this, false, false,
 			HitboxFlag.Hurtbox, new Point(0, 0)
 		);
@@ -58,7 +59,7 @@ public class Rush : Actor {
 	}
 
 	public override Collider getGlobalCollider() {
-		int yHeight = 38;
+		int yHeight = 22;
 		var rect = new Rect(0, 0, 26, yHeight);
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
@@ -92,6 +93,8 @@ public class Rush : Actor {
 
 	public override void update() {
 		base.update();
+
+		if (character == null || character.charState is Die) changeState(new RushWarpOut());
 	}
 
 	public override void postUpdate() {
@@ -117,18 +120,17 @@ public class Rush : Actor {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		var chr = other.otherCollider.actor as Character;
+		var chr = other.otherCollider.actor as Rock;
 
-		if (chr == null || chr.charState is Die) return;
+		/*if (chr == null || chr.charState is Die) return;
 
 		if (chr == netOwner.character && chr.charState is Fall &&
-			chr != null && !usedCoil) {
-			//changeSprite("rush_coil", true);
+			chr != null && !usedCoil && rushState is RushIdle) {
 			changeState(new RushCoil());
 			chr.vel.y = -chr.getJumpPower() * 1.75f;
 			chr.changeState(new Jump(), true);
 			usedCoil = true;
-		}
+		}*/
 	}
 }
 

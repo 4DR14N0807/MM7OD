@@ -116,9 +116,8 @@ public class Rock : Character {
 		bool shootHeld = player.input.isHeld(Control.Shoot, player);
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
 
-		if (specialPressed && rushWeapon != null && rushWeapon.canShoot(getChargeLevel(), player)
+		if (!player.isAI && specialPressed && rushWeapon != null && rushWeapon.canShoot(getChargeLevel(), player)
 			&& Options.main.rushSpecial) {
-			
 			rushWeapon.shoot(this, 0);
 		}
 
@@ -611,7 +610,7 @@ public class Rock : Character {
 			return;
 		}
 		Helpers.decrementFrames(ref aiWeaponSwitchCooldown);
-		if (player.weapon is RushWeapon || aiWeaponSwitchCooldown == 0) {
+		if (aiWeaponSwitchCooldown == 0) {
 			player.weaponRight();
 			aiWeaponSwitchCooldown = 120;
 		}

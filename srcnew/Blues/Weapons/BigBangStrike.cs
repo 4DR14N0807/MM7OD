@@ -187,7 +187,7 @@ public class ProtoStrikePushProj : Projectile {
 		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		this.player = player;
-		projId = (int)BluesProjIds.ProtoStrike;
+		projId = (int)BluesProjIds.ProtoStrikePush;
 		destroyOnHit = false;
 
 		if (rpc) {
@@ -196,7 +196,7 @@ public class ProtoStrikePushProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
-		return new ProtoStrikeProj(
+		return new ProtoStrikePushProj(
 			args.pos, args.xDir, args.player, args.netId
 		);
 	}

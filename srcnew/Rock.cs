@@ -588,7 +588,7 @@ public class Rock : Character {
 			return;
 		}
 		Helpers.decrementFrames(ref aiWeaponSwitchCooldown);
-		if (aiWeaponSwitchCooldown == 0) {
+		if (player.weapon is RushWeapon || aiWeaponSwitchCooldown == 0) {
 			player.weaponRight();
 			aiWeaponSwitchCooldown = 120;
 		}

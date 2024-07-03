@@ -699,11 +699,11 @@ public class Blues : Character {
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
 			customDamageDisplayOn = false;
 			addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
-			if (charState is not Hurt { stateFrames: >= 1 }) {
+			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("hit", sendRpc: true);
 			}
 		} else {
-			if (charState is not Hurt { stateFrames: >= 1 }) {
+			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("ding", sendRpc: true);
 			}
 		}

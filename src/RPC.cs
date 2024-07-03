@@ -1941,6 +1941,10 @@ public class RPCAddDamageText : RPC {
 		ushort netId = BitConverter.ToUInt16(new byte[] { arguments[0], arguments[1] }, 0);
 		short damage = BitConverter.ToInt16(new byte[] { arguments[2], arguments[3] }, 0);
 		int attackerId = arguments[4];
+		int? color = null;
+		if (arguments[5] != 255) {
+			color = arguments[5];
+		}
 
 		if (Global.level?.mainPlayer == null) return;
 		if (Global.level.mainPlayer.id != attackerId) return;
@@ -1949,14 +1953,14 @@ public class RPCAddDamageText : RPC {
 
 		float floatDamage = damage / 10f;
 
-		actor.addDamageText(floatDamage);
+		actor.addDamageText(floatDamage, color);
 
 		if (floatDamage < 0) {
 			Global.level.mainPlayer.creditHealing(-floatDamage);
 		}
 	}
 
-	public void sendRpc(int attackerId, ushort? netId, float damage) {
+	public void sendRpc(int attackerId, ushort? netId, float damage, int color = 255) {
 		if (netId == null) return;
 		if (Global.serverClient == null) return;
 
@@ -1965,7 +1969,12 @@ public class RPCAddDamageText : RPC {
 		short damageShort = (short)MathF.Round(damage * 10);
 
 		byte[] damageBytes = BitConverter.GetBytes(damageShort);
-		Global.serverClient?.rpc(this, netIdBytes[0], netIdBytes[1], damageBytes[0], damageBytes[1], (byte)attackerId);
+		Global.serverClient?.rpc(
+			this, netIdBytes[0], netIdBytes[1],
+			damageBytes[0], damageBytes[1],
+			(byte)attackerId,
+			(byte)color
+		);
 	}
 }
 

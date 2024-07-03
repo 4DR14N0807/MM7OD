@@ -1170,7 +1170,7 @@ public partial class Actor : GameObject {
 		}
 	}
 
-	public void addDamageText(float damage) {
+	public void addDamageText(float damage, int? color = null) {
 		int xOff = 0;
 		int yOff = 0;
 		for (int i = damageTexts.Count - 1; i >= 0; i--) {
@@ -1179,10 +1179,12 @@ public partial class Actor : GameObject {
 			}
 		}
 		string text = damage.ToString();
-		FontType color = FontType.Red;
-		if (damage < 0) {
-			text = (damage * -1).ToString();
-			color = FontType.Green;
+		if (color == null) {
+			color = (int)FontType.Red;
+			if (damage < 0) {
+				text = (damage * -1).ToString();
+				color = (int)FontType.Green;
+			}
 		}
 		if (damage != 0 && damage < 1 && damage > -1) {
 			text = text[1..];

@@ -2989,7 +2989,9 @@ public partial class Character : Actor, IDamagable {
 				//player.delayWTank();
 			}
 		}
-		if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {
+		if (this is not Blues { customDamageDisplayOn: true } &&
+			originalHP > 0 && (originalDamage > 0 || damage > 0)
+		) {
 			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
 		}
 		if (player.health > 0 && (originalDamage > 0 || damage > 0) && ownedByLocalPlayer) {

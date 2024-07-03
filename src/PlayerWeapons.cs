@@ -526,8 +526,7 @@ label:
 				} else if (Global.level.is1v1()) {
 					weapons = Weapon.getAllMM7Weapons().Select(w => w.clone()).ToList();
 				}
-
-				  else {
+				else {
 					weapons = loadout.rockLoadout.getWeaponsFromLoadout(this);
 				}
 			} else if (isBass) {

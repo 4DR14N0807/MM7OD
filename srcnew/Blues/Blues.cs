@@ -22,6 +22,7 @@ public class Blues : Character {
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageDebt;
 	public bool? shieldCustomState = null;
+	public bool customDamageDisplayOn;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
@@ -606,7 +607,8 @@ public class Blues : Character {
 			canShieldBeActive = shieldCustomState.Value;
 		} else {
 			canShieldBeActive = (
-				charState.attackCtrl || charState.attackCtrl
+				charState.attackCtrl || charState.attackCtrl ||
+				charState is Hurt || charState is GenericStun
 			);
 		}
 		return (
@@ -614,7 +616,7 @@ public class Blues : Character {
 			canShieldBeActive &&
 			shieldHP > 0 &&
 			shootAnimTime == 0 &&
-			charState is not Hurt { stateFrames: not 0 }
+			charState is not Hurt { stateFrames: <= 1 } and not GenericStun { stateFrames: <= 1 }
 		);
 	}
 
@@ -635,6 +637,7 @@ public class Blues : Character {
 		float oldHealth = player.health;
 		bool fullyBlocked = false;
 		bool shieldBlocked = false;
+		bool bodyDamaged = false;
 		// Shield front block check.
 		if (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
 			shieldBlocked = true;
@@ -691,34 +694,38 @@ public class Blues : Character {
 			}
 		}
 		if (damage > 0) {
+			bodyDamaged = true;
+			customDamageDisplayOn = true;
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
+			customDamageDisplayOn = false;
 			addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
-			playSound("hit", sendRpc: true);
+			if (charState is not Hurt { stateFrames: 0 }) {
+				playSound("hit", sendRpc: true);
+			}
 		} else {
-			playSound("ding", sendRpc: true);
+			if (charState is not Hurt { stateFrames: 0 }) {
+				playSound("ding", sendRpc: true);
+			}
 		}
 		if (fullyBlocked) {
 			addDamageText("0", (int)FontType.Blue);
-			RPC.addDamageText.sendRpc(attacker.id, netId, 0);
+			RPC.addDamageText.sendRpc(attacker.id, netId, 0, (int)FontType.Blue);
 			return;
 		}
-		if (oldHealth > player.health) {
+		if (oldHealth > player.health || bodyDamaged) {
 			int fontColor = (int)FontType.Red;
 			if (shieldBlocked) {
 				fontColor = (int)FontType.Blue;
 			}
-			string damageText = (oldHealth - player.health).ToString();
+			float damageText = float.Parse((oldHealth - player.health).ToString());
 			addDamageText(damageText, fontColor);
-			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
-			//addCoreAmmo(MathInt.Ceiling(oldHealth - player.health), false);
-			if (!overheating) {
-				coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
-			}
+			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
 		if (ogShieldHP > shieldHP) {
-			string damageText = (ogShieldHP - shieldHP).ToString();
+			float damageText = float.Parse((ogShieldHP - shieldHP).ToString());
 			addDamageText(damageText, (int)FontType.Blue);
-			RPC.addDamageText.sendRpc(attacker.id, netId, float.Parse(damageText));
+			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, (int)FontType.Blue);
 		}
 	}
 

@@ -374,7 +374,8 @@ public class RPCApplyDamage : RPC {
 				weaponKillFeedIndex,
 				actor,
 				projId,
-				sendRpc: false);
+				sendRpc: false
+			);
 		}
 	}
 

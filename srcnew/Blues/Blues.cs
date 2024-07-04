@@ -132,7 +132,7 @@ public class Blues : Character {
 	}
 
 	public override bool canCharge() {
-		if (!charState.attackCtrl || overheating || charState is ProtoStrike) {
+		if (flag != null || !charState.attackCtrl || overheating || charState is ProtoStrike) {
 			return false;
 		}
 		return base.canCharge();
@@ -140,6 +140,7 @@ public class Blues : Character {
 
 	public bool canShieldDash() {
 		return (
+			flag == null &&
 			grounded &&
 			charState is not ShieldDash &&
 			!overheating && rootTime <= 0
@@ -148,6 +149,7 @@ public class Blues : Character {
 
 	public bool canSlide() {
 		return (
+			flag == null &&
 			grounded && vel.y >= 0 &&
 			charState is not BluesSlide and not ShieldDash &&
 			!overheating && rootTime <= 0
@@ -162,8 +164,12 @@ public class Blues : Character {
 	}
 
 	public bool canShootSpecial() {
-		if (isCharging() || overheating || specialWeapon.shootCooldown > 0 ||
-		 !specialWeapon.canShoot(0, this) || invulnTime > 0) {
+		if (flag != null ||
+			isCharging() || overheating ||
+			specialWeapon.shootCooldown > 0 ||
+			!specialWeapon.canShoot(0, this) ||
+			invulnTime > 0
+		) {
 			return false;
 		}
 		return true;
@@ -630,6 +636,7 @@ public class Blues : Character {
 		// Do shield checks only if damage exists and a actor too.
 		if (actor == null || attacker == null) {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+			playSound("hit", sendRpc: true);
 			return;
 		}
 		// Tracker variables.

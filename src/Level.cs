@@ -11,6 +11,7 @@ public partial class Level {
 	#region dynamic lists
 	// Any list that can grow over time should be put here for memory leak investigation
 	public HashSet<GameObject> gameObjects = new HashSet<GameObject>();
+	public Dictionary<long, Actor> actorsById = new();
 	public List<Actor> mapSprites = new List<Actor>();
 	public List<List<HashSet<GameObject>>> grid = new List<List<HashSet<GameObject>>>();
 	public HashSet<HashSet<GameObject>> occupiedGridSets = new HashSet<HashSet<GameObject>>();

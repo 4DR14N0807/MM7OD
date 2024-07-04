@@ -11,7 +11,8 @@ public partial class Level {
 	#region dynamic lists
 	// Any list that can grow over time should be put here for memory leak investigation
 	public HashSet<GameObject> gameObjects = new HashSet<GameObject>();
-	public Dictionary<long, Actor> actorsById = new();
+	public Dictionary<ushort, Actor> actorsById = new();
+	public Dictionary<ushort, Actor> destroyedActorsById = new();
 	public List<Actor> mapSprites = new List<Actor>();
 	public List<List<HashSet<GameObject>>> grid = new List<List<HashSet<GameObject>>>();
 	public HashSet<HashSet<GameObject>> occupiedGridSets = new HashSet<HashSet<GameObject>>();
@@ -2256,6 +2257,14 @@ public partial class Level {
 		var players = Global.level?.server?.players;
 		if (players == null || players.Count == 0) return 0;
 		return players.Max(p => p.kills);
+	}
+
+	public void clearOldActors() {
+		foreach ((long actorId, Actor actor) in destroyedActorsById) {
+			if (frameCount - actor.destroyedOnFrame is > 360 or < 0) {
+				destroyedActorsById.Remove(actorId);
+			}
+		}
 	}
 }
 

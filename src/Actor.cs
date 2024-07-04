@@ -79,6 +79,7 @@ public partial class Actor : GameObject {
 	public bool visible = true;
 	public bool timeSlow;
 	public bool destroyed;
+	public long destroyedOnFrame;
 	public ShaderWrapper? genericShader;
 	public virtual List<ShaderWrapper>? getShaders() { return genericShader != null ? new List<ShaderWrapper> { genericShader } : null; }
 	public float alpha = 1;
@@ -206,6 +207,10 @@ public partial class Actor : GameObject {
 		zIndex = ++Global.level.autoIncActorZIndex;
 		changeSprite(spriteName, true);
 		lastNetUpdate = Global.time;
+
+		if (netId is not 0 and not null) {
+			Global.level.actorsById[netId.Value] = this;
+		}
 
 		if (!dontAddToLevel) {
 			Global.level.addGameObject(this);
@@ -1295,6 +1300,13 @@ public partial class Actor : GameObject {
 
 		if (!destroyed) {
 			destroyed = true;
+			destroyedOnFrame = Global.frameCount;
+			if (netId is not null and not 0 && Global.level.actorsById.ContainsKey(netId.Value)) {
+				if (Global.level.actorsById[netId.Value] == this) {
+					Global.level.actorsById.Remove(netId.Value);
+					Global.level.destroyedActorsById[netId.Value] = this;
+				}
+			}
 			onDestroy();
 		} else {
 			return;

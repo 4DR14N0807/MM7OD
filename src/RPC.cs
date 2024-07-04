@@ -342,6 +342,12 @@ public class RPCApplyDamage : RPC {
 		// For when the projectile was a melee without a NetID.
 		if (isLinkedMelee) {
 			Actor mainActor = Global.level.getActorByNetId(actorId);
+			if (mainActor == null && actorId != 0 && Global.level.actorsById.ContainsKey(actorId)) {
+				mainActor = Global.level.actorsById[actorId];
+			}
+			if (mainActor == null && actorId != 0 && Global.level.destroyedActorsById.ContainsKey(actorId)) {
+				mainActor = Global.level.destroyedActorsById[actorId];
+			}
 			List<Projectile> projs = new();
 			if (mainActor != null) {
 				// We try to search anything with a matching MeleeID.
@@ -360,6 +366,12 @@ public class RPCApplyDamage : RPC {
 		// For normal projectiles.
 		else {
 			actor = (actorId == 0 ? null : Global.level.getActorByNetId(actorId));
+			if (actor == null && actorId != 0 && Global.level.actorsById.ContainsKey(actorId)) {
+				actor = Global.level.actorsById[actorId];
+			}
+			if (actor == null && actorId != 0 && Global.level.destroyedActorsById.ContainsKey(actorId)) {
+				actor = Global.level.destroyedActorsById[actorId];
+			}
 		}
 
 		if (player != null && victim != null) {

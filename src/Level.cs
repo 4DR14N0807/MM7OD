@@ -103,8 +103,8 @@ public partial class Level {
 	public int startGridCount;
 	public int flaggerCount;
 
-	public const ushort maxReservedNetId = 50;
-	public const ushort maxReservedCharNetId = 50;
+	public const ushort maxReservedNetId = firstNormalNetId - 1;
+	public const ushort firstNormalNetId = 50;
 	public const ushort redFlagNetId = 10;
 	public const ushort blueFlagNetId = 11;
 	public const ushort redFlagPedNetId = 12;

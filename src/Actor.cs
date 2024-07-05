@@ -208,7 +208,7 @@ public partial class Actor : GameObject {
 		changeSprite(spriteName, true);
 		lastNetUpdate = Global.time;
 
-		if (netId is not null and > Level.maxReservedNetId) {
+		if (netId is not null and >= Level.firstNormalNetId) {
 			Global.level.actorsById[netId.Value] = this;
 		}
 
@@ -1301,7 +1301,7 @@ public partial class Actor : GameObject {
 		if (!destroyed) {
 			destroyed = true;
 			destroyedOnFrame = Global.frameCount;
-			if (netId is not null and > Level.maxReservedNetId &&
+			if (netId is not null and >= Level.firstNormalNetId &&
 				Global.level.actorsById.ContainsKey(netId.Value)
 			) {
 				if (Global.level.actorsById[netId.Value] == this) {

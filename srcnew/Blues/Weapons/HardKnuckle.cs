@@ -92,7 +92,7 @@ public class HardKnuckleProj : Projectile {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
-		if (damagable is Actor enemyActor && enemyActor.netId is not null and > Level.maxReservedNetId) {
+		if (damagable is Actor enemyActor && enemyActor.netId is not null and > Level.firstNormalNetId) {
 			string keyName = enemyActor.GetType().ToString() + "_" + enemyActor.netId;
 			if (bounceCooldowns.GetValueOrDefault(keyName) == 0) {
 				bounceCooldowns[keyName] = 60;

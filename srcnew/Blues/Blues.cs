@@ -402,7 +402,7 @@ public class Blues : Character {
 			}
 		}
 
-		if (shootPressed && downHeld && !overheating && !grounded) {
+		if (shootPressed && downHeld && !grounded) {
 			changeState(new BluesSpreadShoot(), true);
 			return true;
 		}

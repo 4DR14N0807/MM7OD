@@ -947,12 +947,21 @@ public partial class Level {
 		}
 	}
 
-	public Actor getActorByNetId(ushort netId) {
+	public Actor? getActorByNetId(ushort netId, bool getDestroyed = false) {
+		/*
 		foreach (var go in gameObjects) {
 			var actor = go as Actor;
 			if (actor?.netId == netId) {
 				return actor;
 			}
+		}
+		return null;
+		*/
+		if (Global.level.actorsById.ContainsKey(netId)) {
+			return Global.level.actorsById[netId];
+		}
+		if (getDestroyed && Global.level.destroyedActorsById.ContainsKey(netId)) {
+			return Global.level.destroyedActorsById[netId];
 		}
 		return null;
 	}
@@ -1384,7 +1393,7 @@ public partial class Level {
 			for (int i = bufferedDestroyActors.Count - 1; i >= 0; i--) {
 				var bufferedDestroyedActor = bufferedDestroyActors[i];
 				bufferedDestroyedActor.time += Global.spf;
-				var actor = getActorByNetId(bufferedDestroyedActor.netId);
+				Actor? actor = getActorByNetId(bufferedDestroyedActor.netId);
 				if (actor != null) {
 					actor.destroySelf(bufferedDestroyedActor.destroySprite, bufferedDestroyedActor.destroySound, disableRpc: true);
 					bufferedDestroyActors.RemoveAt(i);

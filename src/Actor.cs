@@ -185,14 +185,17 @@ public partial class Actor : GameObject {
 	public Actor(string spriteName, Point pos, ushort? netId, bool ownedByLocalPlayer, bool dontAddToLevel) {
 		this.pos = pos;
 		prevPos = pos;
-
-		if (Global.debug && Global.serverClient != null && netId != null && Global.level.getActorByNetId(netId.Value) != null) {
+		/*
+		if (Global.debug && Global.serverClient != null &&
+			netId != null && Global.level.getActorByNetId(netId.Value) != null
+		) {
 			string netIdDump = Global.level.getNetIdDump();
 			Helpers.WriteToFile("netIdDump.txt", netIdDump);
-			//Global.logToConsole("The netId " + netId.ToString() + " (sprite " + spriteName + " ) was already used", showConsole: true);
-			throw new Exception("The netId " + netId.ToString() + " (sprite " + spriteName + " ) was already used.");
+			throw new Exception(
+				"The netId " + netId.ToString() + " (sprite " + spriteName + " ) was already used."
+			);
 		}
-
+		*/
 		this.netId = netId;
 		this.ownedByLocalPlayer = ownedByLocalPlayer;
 		vel = new Point(0, 0);

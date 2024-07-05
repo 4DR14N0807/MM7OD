@@ -197,7 +197,7 @@ public partial class Character : Actor, IDamagable {
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 		bool isWarpIn = true, bool mk2VileOverride = false, bool mk5VileOverride = false
 	) : base(
-		null!, new Point(x, y), netId, ownedByLocalPlayer, dontAddToLevel: true
+		"empty", new Point(x, y), netId, ownedByLocalPlayer, dontAddToLevel: true
 	) {
 		this.player = player;
 		this.xDir = xDir;
@@ -697,7 +697,7 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			hSize = 20;
 		}
-		if (player.isRock) {
+		if (this is Rock) {
 			hSize = 35;
 			if (sprite.name.Contains("slide")) {
 				wSize = 36;
@@ -717,8 +717,8 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			rect.y2 = 20;
 		}
-		if (player.isRock) {
-			rect = new Rect( 0, 0, 18, 39);	
+		if (this is Rock) {
+			rect = new Rect(0, 0, 18, 39);	
 		} 
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, offset);
 	}
@@ -1830,7 +1830,7 @@ public partial class Character : Actor, IDamagable {
 			else if (player.isViralSigma()) return pos.addxy(0, 0);
 			return pos.addxy(0, -32);
 		}
-		if (player.isRock) {
+		if (this is Rock) {
 			if (charState is LadderClimb || charState is ShootAltLadder) {
 				float offset = 0;
 				if (xDir < 0) return pos.substractxy(offset, 22);

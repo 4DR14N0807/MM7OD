@@ -12,7 +12,7 @@ public class BigBangStrikeProj : Projectile {
 		Global.superFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
-		maxTime = 1.5f;
+		maxTime = 1.425f;
 		shouldShieldBlock = false;
 		reflectable = false;
 
@@ -30,7 +30,7 @@ public class BigBangStrikeProj : Projectile {
 	public override void update() {
 		base.update();
 		if (System.MathF.Abs(vel.x) < 1000) {
-			vel.x += Global.spf * xDir * 250f;
+			vel.x += frameTime * 4 * 60 * Global.speedMul * xDir;
 			if (System.MathF.Abs(vel.x) >= 1000) {
 				vel.x = (float)xDir * 1000;
 			}
@@ -160,7 +160,8 @@ public class ProtoStrikeProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
-			new ProtoStrikePushProj(pos, xDir, player, player.getNextActorNetId(), rpc: true);
+			var proj = new ProtoStrikePushProj(pos, xDir, player, player.getNextActorNetId(), rpc: true);
+			proj.playSound("danger_wrap_explosion", true, true);
 		}
 	}
 

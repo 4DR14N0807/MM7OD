@@ -204,6 +204,7 @@ public class ProtoStrike : CharState {
 			new ProtoStrikeProj(
 				shootPos, character.xDir, player, player.getNextActorNetId(), true
 			);
+			blues.playSound("danger_wrap_explosion", true, true);
 			fired = true;
 			startTime = stateFrames;
 		}

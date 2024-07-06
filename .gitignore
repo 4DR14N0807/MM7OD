@@ -1,5 +1,6 @@
 # VSCode
 .vscode/*
+.vs/*
 
 # C-Sharp
 [Bb]in/*

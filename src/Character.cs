@@ -46,9 +46,11 @@ public partial class Character : Actor, IDamagable {
 	public float netETankHealAmount;
 	public float netWTankAmmoAmount;
 	public bool playHealSound;
-	public float healTime = 0;
+	public int healTime = 0;
 	public float weaponHealAmount = 0;
 	public float weaponHealTime = 0;
+	public int eTankHealTime = 0; // Etank heal stuff
+	public int eTankHealAmount;	  //
 	public float healthBarInnerWidth;
 	public float slideVel = 0;
 	public Flag? flag;
@@ -329,7 +331,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void addBurnTime(Player? attacker, Weapon weapon, float time) {
+	public void addBurnTime(Player attacker, Weapon weapon, float time) {
 		if (!ownedByLocalPlayer) return;
 		if ((this as MegamanX)?.chargedRollingShieldProj != null) return;
 		if (isInvulnerable()) return;
@@ -344,7 +346,10 @@ public partial class Character : Actor, IDamagable {
 		burnTime += time;
 		if (oilTime > 0) {
 			//playSound("flamemOilBurn", sendRpc: true);
-			damager.applyDamage(this, false, weapon, this, (int)ProjIds.Burn, overrideDamage: 2, overrideFlinch: Global.defFlinch);
+			damager.applyDamage(
+				this, false, weapon, this, (int)ProjIds.Burn,
+				overrideDamage: 2, overrideFlinch: Global.defFlinch
+			);
 			burnTime += oilTime;
 			oilTime = 0;
 		}
@@ -399,7 +404,6 @@ public partial class Character : Actor, IDamagable {
 
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
-		ShaderWrapper? palette = null;
 
 		// TODO: Send this to the respective classes.
 		if (acidTime > 0 && player.acidShader != null) {
@@ -697,7 +701,7 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			hSize = 20;
 		}
-		if (player.isRock) {
+		if (this is Rock) {
 			hSize = 35;
 			if (sprite.name.Contains("slide")) {
 				wSize = 36;
@@ -717,8 +721,8 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			rect.y2 = 20;
 		}
-		if (player.isRock) {
-			rect = new Rect( 0, 0, 18, 39);	
+		if (this is Rock) {
+			rect = new Rect(0, 0, 18, 39);	
 		} 
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, offset);
 	}
@@ -1184,9 +1188,11 @@ public partial class Character : Actor, IDamagable {
 			player.weapon.weaponHealAmount = 0;
 			usedWtank = null;
 		}
+
+		//HP Capsules heal
 		if (healAmount > 0 && player.health > 0) {
-			healTime += Global.spf;
-			if (healTime > 0.05) {
+			healTime++;
+			if (healTime >= 3) {
 				healTime = 0;
 				healAmount--;
 				if (usedEtank != null) {
@@ -1204,6 +1210,24 @@ public partial class Character : Actor, IDamagable {
 						playSound("goldenHelmetHP", forcePlay: true, sendRpc: true);
 					}
 				}
+			}
+		}
+		
+		//ETanks heal
+		if (eTankHealAmount > 0 && player.health > 0) {
+			eTankHealTime++;
+			if (eTankHealTime >= 8) {
+				eTankHealTime = 0;
+				eTankHealAmount--;
+				if (usedEtank != null) {
+					usedEtank.health--;
+				}
+
+				if (player == Global.level.mainPlayer || playHealSound) {
+					if (player.health < player.maxHealth) playSound("heal", forcePlay: true, sendRpc: true);
+				}
+
+				player.health = Helpers.clampMax(player.health + 1, player.maxHealth);
 			}
 		} else {
 			playHealSound = false;
@@ -1765,7 +1789,9 @@ public partial class Character : Actor, IDamagable {
 			projId == (int)ProjIds.GreenSpinnerSplash ||
 			projId == (int)ProjIds.NecroBurst ||
 			projId == (int)ProjIds.SniperMissileBlast ||
-			projId == (int)ProjIds.SpeedBurnerRecoil;
+			projId == (int)ProjIds.SpeedBurnerRecoil ||
+			projId == (int)RockProjIds.RSBomb ||
+			projId == (int)RockProjIds.RSBombExplosion;
 
 		if (isSelfDamaging && damagerPlayerId == player.id) {
 			return true;
@@ -1830,7 +1856,7 @@ public partial class Character : Actor, IDamagable {
 			else if (player.isViralSigma()) return pos.addxy(0, 0);
 			return pos.addxy(0, -32);
 		}
-		if (player.isRock) {
+		if (this is Rock) {
 			if (charState is LadderClimb || charState is ShootAltLadder) {
 				float offset = 0;
 				if (xDir < 0) return pos.substractxy(offset, 22);
@@ -2579,6 +2605,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void drawETankHealingInner(float health) {
+		if (eTankHealAmount <= 0) return;
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
@@ -2986,6 +3013,7 @@ public partial class Character : Actor, IDamagable {
 		if (damage > 0 && attacker != null) {
 			if (projId != (int)ProjIds.Burn && projId != (int)ProjIds.AcidBurstPoison) {
 				player.delayETank();
+				player.stopETankHeal();
 				//player.delayWTank();
 			}
 		}
@@ -3173,6 +3201,13 @@ public partial class Character : Actor, IDamagable {
 			player.fillETank(amount);
 		}
 		healAmount += amount;
+	}
+
+	public void addETankHealth(float amount, bool fillEtank = true) {
+		if (player.health >= player.maxHealth && fillEtank) {
+			player.fillETank(amount);
+		}
+		eTankHealAmount += (int)amount;
 	}
 
 	public void fillHealthToMax() {

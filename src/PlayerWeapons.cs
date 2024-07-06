@@ -519,6 +519,7 @@ label:
 					}
 				}
 			} else if (isRock) {
+				Rock rock = character as Rock;
 				if (Global.level.isTraining() && !Global.level.server.useLoadout) {
 					weapons = Weapon.getAllRockWeapons().Select(w => w.clone()).ToList();
 				}  else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomRockLoadout) {
@@ -528,8 +529,8 @@ label:
 				}
 				else {
 					weapons = loadout.rockLoadout.getWeaponsFromLoadout(this);
+					//weapons.Add(loadout.rockLoadout.getRushFromLoadout(this));
 				}
-				weapons.Add(new RushWeapon());
 
 			} else if (isBass) {
 				weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();

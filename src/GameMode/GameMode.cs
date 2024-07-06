@@ -1972,6 +1972,8 @@ public class GameMode {
 			Global.sprites["hud_weapon_icon"].drawToHUD(index, x, y);
 		} else if (weapon is MechMenuWeapon && level.mainPlayer.isSelectingRA()) {
 			return;
+		} else if (weapon is RushWeapon rw) {
+			Global.sprites[jsonName].drawToHUD(rw.weaponSlotIndex, x, y);
 		} else if (weapon is not AbsorbWeapon) {
 			Global.sprites[jsonName].drawToHUD(weapon.weaponSlotIndex, x, y);
 		}

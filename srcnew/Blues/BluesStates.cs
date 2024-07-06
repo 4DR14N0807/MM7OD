@@ -128,16 +128,18 @@ public class BluesSpreadShoot : CharState {
 		if (character.frameIndex != shotLastFrame) {
 			int angleOffset = 1;
 			int shootDir = blues.getShootXDir();
+			int type = (blues.overheating ? 0 : 1);
 			if (shootDir == -1) {
 				angleOffset = 128;
 			}
 			new ProtoBusterAngledProj(
-				character.getShootPos(), (shotAngle + angleOffset) * shootDir,
+				character.getShootPos(), (shotAngle + angleOffset) * shootDir, type,
 				player, player.getNextActorNetId(), rpc: true
 			);
+			if (type == 1) {
+				blues.addCoreAmmo(0.5f);
+			}
 			blues.playSound("buster", sendRpc: true);
-			blues.addCoreAmmo(0.5f);
-
 			shotAngle -= 16;
 			shotLastFrame = character.frameIndex;
 		}
@@ -202,6 +204,7 @@ public class ProtoStrike : CharState {
 			new ProtoStrikeProj(
 				shootPos, character.xDir, player, player.getNextActorNetId(), true
 			);
+			blues.playSound("danger_wrap_explosion", true, true);
 			fired = true;
 			startTime = stateFrames;
 		}

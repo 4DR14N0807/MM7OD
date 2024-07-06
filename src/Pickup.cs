@@ -2,7 +2,8 @@
 
 public enum PickupType {
 	Health,
-	Ammo
+	Ammo,
+	Bolts
 }
 
 public enum PickupTypeRpc {
@@ -16,8 +17,12 @@ public class Pickup : Actor {
 	public float healAmount = 0;
 	public float coreHealAmount = 0;
 	public PickupType pickupType;
-	public Pickup(Player owner, Point pos, string sprite, ushort? netId, bool ownedByLocalPlayer, NetActorCreateId netActorCreateId, bool sendRpc = false) :
-		base(sprite, pos, netId, ownedByLocalPlayer, false) {
+	public Pickup(
+		Player owner, Point pos, string sprite, ushort? netId,
+		bool ownedByLocalPlayer, NetActorCreateId netActorCreateId, bool sendRpc = false
+	) : base(
+		sprite, pos, netId, ownedByLocalPlayer, false
+	) {
 		netOwner = owner;
 		collider.wallOnly = true;
 		collider.isTrigger = false;
@@ -40,6 +45,8 @@ public class Pickup : Actor {
 		base.onCollision(other);
 		if (other.otherCollider.flag == (int)HitboxFlag.Hitbox) return;
 
+		if (other.gameObject is Wall) vel.x = 0;
+
 		if (other.gameObject is Character chr) {
 			if (!chr.ownedByLocalPlayer) return;
 			if (chr.isHyperSigmaBS.getValue()) return;
@@ -58,6 +65,11 @@ public class Pickup : Actor {
 					}
 					destroySelf(doRpcEvenIfNotOwned: true);
 				}
+			} else if (pickupType == PickupType.Bolts) {
+				if (chr.player == netOwner) {
+					chr.player.currency += (int)healAmount;
+					destroySelf(doRpcEvenIfNotOwned: true);
+				}	
 			}
 		} else if (other.gameObject is RideArmor rideArmor) {
 			if (!rideArmor.ownedByLocalPlayer) return;
@@ -163,5 +175,31 @@ public class SmallAmmoPickup : Pickup {
 		healAmount = 25;
 		coreHealAmount = 4;
 		pickupType = PickupType.Ammo;
+	}
+}
+
+public class LargeBoltPickup : Pickup {
+	public LargeBoltPickup(
+		Player owner, Point pos, ushort? netId,
+		bool ownedByLocalPlayer, bool sendRpc = false
+	) : base(
+		owner, pos, "pickup_bolt_large", netId, ownedByLocalPlayer,
+		NetActorCreateId.LargeBolt, sendRpc: sendRpc
+	) {
+		healAmount = 10;
+		pickupType = PickupType.Bolts;
+	}
+}
+
+public class SmallBoltPickup : Pickup {
+	public SmallBoltPickup(
+		Player owner, Point pos, ushort? netId,
+		bool ownedByLocalPlayer, bool sendRpc = false
+	) : base(
+		owner, pos, "pickup_bolt_small", netId, ownedByLocalPlayer,
+		NetActorCreateId.SmallBolt, sendRpc: sendRpc
+	) {
+		healAmount = 5;
+		pickupType = PickupType.Bolts;
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using ProtoBuf;
 using SFML.Graphics;
 
@@ -38,7 +37,7 @@ public enum CharIds {
 	Bass,
 	PunchyZero,
 	BusterZero,
-	// Non-standart chars start here.
+	// Non-standard chars start here.
 	WolfSigma = 100,
 	ViralSigma,
 	KaiserSigma,
@@ -159,7 +158,9 @@ public class SelectCharacterMenu : IMainMenu {
 			return;
 		}
 
-		Helpers.menuLeftRightInc(ref playerData.uiSelectedCharIndex, 0, charSelections.Length - 1, true, playSound: true);
+		Helpers.menuLeftRightInc(
+			ref playerData.uiSelectedCharIndex, 0, charSelections.Length - 1, true, playSound: true
+		);
 		try {
 			playerData.charNum = charSelections[playerData.uiSelectedCharIndex].mappedCharNum;
 			playerData.armorSet = charSelections[playerData.uiSelectedCharIndex].mappedCharArmor;

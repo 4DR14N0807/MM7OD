@@ -22,6 +22,8 @@ public enum NetActorCreateId {
 	SmallHealth,
 	LargeAmmo,
 	SmallAmmo,
+	LargeBolt,
+	SmallBolt,
 	MechaniloidTank,
 	MechaniloidFish,
 	MechaniloidHopper,
@@ -65,7 +67,7 @@ public class RPCCreateActor : RPC {
 		var player = Global.level.getPlayerById(playerId);
 		if (player == null) return;
 
-		Actor actor = Global.level.getActorByNetId(netProjByte);
+		Actor? actor = Global.level.getActorByNetId(netProjByte);
 		if (actor != null && (int)actor.netActorCreateId == createId) return;
 		if (Global.level.recentlyDestroyedNetActors.ContainsKey(netProjByte)) return;
 		Point pos = new Point(xPos, yPos);
@@ -104,6 +106,10 @@ public class RPCCreateActor : RPC {
 			new LargeAmmoPickup(player, pos, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.SmallAmmo) {
 			new SmallAmmoPickup(player, pos, netProjByte, false);
+		} else if (createId == (int)NetActorCreateId.LargeBolt) {
+			new LargeBoltPickup(player, pos, netProjByte, false);
+		} else if (createId == (int)NetActorCreateId.SmallBolt) {
+			new SmallBoltPickup(player, pos, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.WireSponge) {
 			new WireSponge(player, pos, pos, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.WheelGator) {

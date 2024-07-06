@@ -101,12 +101,12 @@ public class SelectRockWeaponMenu : IMainMenu {
 				Global.playSound("menu");
 			}
 		} else {
-			Helpers.menuLeftRightInc(ref cursors[selCursorIndex].index, 0, 1, playSound: true);
+			Helpers.menuLeftRightInc(ref cursors[selCursorIndex].index, 0, 2, playSound: true);
 		}
 
-		Helpers.menuUpDown(ref selCursorIndex, 0, 2);
+		Helpers.menuUpDown(ref selCursorIndex, 0, 3);
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			selectedWeaponIndices[i] = cursors[i].index;
 		}
 
@@ -132,22 +132,14 @@ public class SelectRockWeaponMenu : IMainMenu {
 				return;
 			}
 
-			bool shouldSave = false;
-			/*
-            if (cursors[3].index != Options.main.xLoadout.melee) {
-				Options.main.xLoadout.melee = cursors[3].index;
-				if (Global.level?.mainPlayer != null) {
-					Global.level.mainPlayer.loadout.xLoadout.melee = cursors[3].index;
-					Global.level.mainPlayer.syncLoadout();
-				}
-				shouldSave = true;
-			}
-            */
+			bool shouldSave = false; 
 
 			if (!areWeaponArrSame(selectedWeaponIndices, Options.main.rockLoadout.getRockWeaponIndices())) {
+					
 				Options.main.rockLoadout.weapon1 = selectedWeaponIndices[0];
 				Options.main.rockLoadout.weapon2 = selectedWeaponIndices[1];
 				Options.main.rockLoadout.weapon3 = selectedWeaponIndices[2];
+				Options.main.rockLoadout.rushLoadout = selectedWeaponIndices[3];
 				shouldSave = true;
 				if (inGame) {
 					if (Options.main.killOnLoadoutChange) {
@@ -190,20 +182,38 @@ public class SelectRockWeaponMenu : IMainMenu {
 		float leftArrowPos = startX2 - 15;
 
 		Global.sprites["cursor"].drawToHUD(0, startX, startY + (selCursorIndex * wepH));
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			float yPos = startY - 6 + (i * wepH);
-
-			Fonts.drawText(FontType.BlueMenu,"Slot " + (i + 1).ToString(), 40, yPos, selected: selCursorIndex == i);
 
 			if (Global.frameCount % 60 < 30) {
 				Fonts.drawText(
-					FontType.BlueMenu, ">", cursors[i].index < 9 ? rightArrowPos : rightArrowPos - 18, yPos - 1,
+					FontType.BlueMenu, ">", i < 3 ? rightArrowPos : rightArrowPos - 108, yPos - 1,
 					Alignment.Center, selected: selCursorIndex == i
 				);
 				Fonts.drawText(
 					FontType.BlueMenu, "<", leftArrowPos, yPos - 1 , Alignment.Center, selected: selCursorIndex == i
 				);
 			}
+
+			if (i == 3) {
+				Fonts.drawText(FontType.BlueMenu, "RUSH ", 40, yPos, selected: selCursorIndex == i);
+
+				for (int j = 0; j < 3; j++) {
+					
+					Global.sprites["hud_weapon_icon"].drawToHUD(j + 9, startX2 + (j * wepW), startY + (i * wepH));
+				
+					if (cursors[3].index != j) {
+						DrawWrappers.DrawRectWH(
+							startX2 + (j * wepW) - 7, startY + (i * wepH) - 7, 14, 14,
+							true, Helpers.FadedIconColor, 1, ZIndex.HUD, false
+						);
+					}
+				}
+				break;
+			}
+
+			Fonts.drawText(FontType.BlueMenu,"Slot " + (i + 1).ToString(), 40, yPos, selected: selCursorIndex == i);
+
 
 			for (int j = 0; j < cursors[i].numWeapons(); j++) {
 				int jIndex = j + cursors[i].startOffset();
@@ -223,7 +233,18 @@ public class SelectRockWeaponMenu : IMainMenu {
 		DrawWrappers.DrawRect(25, wsy - 41, Global.screenW - 25, wsy + 30, true, new Color(0, 0, 0, 100), 0.5f, ZIndex.HUD, false, outlineColor: outlineColor);
 		DrawWrappers.DrawRect(25, wsy - 41, Global.screenW - 25, wsy - 24, true, new Color(0, 0, 0, 100), 0.5f, ZIndex.HUD, false, outlineColor: outlineColor);
 
-		if (selCursorIndex >= 3) {} 
+		if (selCursorIndex >= 3) {
+			int wi = selectedWeaponIndices[selCursorIndex];
+			var rush = Rock.getAllRushWeapons()[wi];
+
+			Fonts.drawText(FontType.BlueMenu, "Rush Adaptor", Global.halfScreenW, 128, Alignment.Center);
+			Fonts.drawText(FontType.Grey, rush.displayName, Global.halfScreenW, 149, Alignment.Center);
+
+			if (rush.description?.Length == 1) Fonts.drawText(FontType.LigthGrey, rush.description[0], 30, wsy + 2);
+			else if (rush.description?.Length > 0) Fonts.drawText(FontType.LigthGrey, rush.description[0], 30, wsy - 2);
+			if (rush.description?.Length > 1) Fonts.drawText(FontType.LigthGrey, rush.description[1], 30, wsy + 7);
+			if (rush.description?.Length > 2) Fonts.drawText(FontType.LigthGrey, rush.description[2], 30, wsy + 16);
+		} 
 		else 
 		{
 			int wi = selectedWeaponIndices[selCursorIndex];

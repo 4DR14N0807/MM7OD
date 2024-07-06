@@ -19,6 +19,10 @@ public class Damager {
 	{
 		//{ (int)ProjIds.SlashClaw, 1.5f},
 	};
+
+	public static readonly Dictionary<int, int> multiHitLimit = new() {
+		{ (int)BluesProjIds.LemonAngled, 3 },
+	};
 	
 
 	public Damager(Player owner, float damage, int flinch, float hitCooldown, float knockback = 0) {
@@ -98,12 +102,25 @@ public class Damager {
 		CharState? charState = character?.charState;
 		RideArmor? rideArmor = victim as RideArmor;
 		Maverick? maverick = victim as Maverick;
+		Rush? rush = victim as Rush;
 
-		if (damagable == null) return false;
+		if (damagable == null) {
+			return false;
+		}
+		if (multiHitLimit.ContainsKey(projId)) {
+			int hitLimit = multiHitLimit[projId];
+			for (int i = 0; i < hitLimit; i++) {
+				string tempKey = $"{projId}_h{i}_{owner.id}";
+
+				if (damagable.projectileCooldown.GetValueOrDefault(tempKey) == 0) {
+					key = tempKey;
+					break;
+				}
+			}
+		}
 		if (!damagable.projectileCooldown.ContainsKey(key)) {
 			damagable.projectileCooldown[key] = 0;
 		}
-
 		if (damagable.projectileCooldown[key] != 0) {
 			return false;
 		}
@@ -283,6 +300,9 @@ public class Damager {
 				damage *= 2;
 			}
 		}
+		
+		//Rush Jet flinch
+		if (rush != null && flinch > 0 && rush.rushState is RushJetState) rush.changeState(new RushHurt(rush.xDir)); 
 
 		// Character section
 		bool spiked = false;

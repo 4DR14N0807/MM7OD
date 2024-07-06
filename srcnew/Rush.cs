@@ -6,15 +6,17 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 
-public class Rush : Actor {
+public class Rush : Actor, IDamagable {
 	public Character character;
 	public Player player => character.player;
 	public RushState rushState;
 	public bool usedCoil;
+	public int type;
+	public float health = 3;
 
 	// Object initalization happens here.
 	public Rush(
-		Point pos, Player owner, int xDir, ushort netId, bool ownedByLocalPlayer, bool rpc = false
+		Point pos, Player owner, int xDir, ushort netId, bool ownedByLocalPlayer, int type = 0, bool rpc = false
 	) : base(
 		"rush_warp_beam", pos, netId, ownedByLocalPlayer, false
 	) {
@@ -23,6 +25,7 @@ public class Rush : Actor {
 		// Character begin null only matters for the local player tho.
 		netOwner = owner;
 		this.character = owner.character;
+		this.type = type;
 		spriteToCollider["empty"] = null;
 		spriteToCollider["warp_beam"] = null;
 		// Forcefull change sprite to something before we crash.
@@ -43,7 +46,7 @@ public class Rush : Actor {
 		if (physicsCollider == null) {
 			return null;
 		}
-		if (sprite.name == "rush_jet") {
+		if (sprite.name.Contains("rush_jet")) {
 			return getJetCollider();
 		}
 		return new Collider(
@@ -78,7 +81,23 @@ public class Rush : Actor {
 		if (!newState.canEnter(this)) {
 			return;
 		}
-		changeSprite(getSprite(newState.sprite), true);
+
+		string spriteName = sprite?.name ?? "";
+		if (newState.sprite == newState.transitionSprite &&
+			!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
+		) {
+			newState.sprite = newState.defaultSprite;
+		}
+		changeSprite(newState.sprite, true);
+		if (Global.sprites.ContainsKey(getSprite(newState.sprite)) &&
+			sprite != null && spriteName == sprite.name) {
+				sprite.frameIndex = 0;
+				sprite.frameTime = 0;
+				sprite.time = 0;
+				sprite.frameSpeed = 1;
+				sprite.loopCount = 0;
+				sprite.visible = true;
+			}
 
 		RushState oldState = rushState;
 		oldState.onExit(newState);
@@ -94,7 +113,9 @@ public class Rush : Actor {
 	public override void update() {
 		base.update();
 
-		if (character == null || character.charState is Die) changeState(new RushWarpOut());
+		if (character == null || character.charState is Die || character.flag != null) {
+			changeState(new RushWarpOut());
+		}
 	}
 
 	public override void postUpdate() {
@@ -121,6 +142,13 @@ public class Rush : Actor {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		var chr = other.otherCollider.actor as Rock;
+		var wall = other.gameObject as Wall;
+
+		if (wall != null && rushState is RushJetState) {
+			if (other.isGroundHit() || other.isCeilingHit()) {
+				vel.x = 60 * xDir;
+			} else if (other.isSideWallHit()) changeState(new RushWarpOut());
+		}
 
 		/*if (chr == null || chr.charState is Die) return;
 
@@ -131,6 +159,28 @@ public class Rush : Actor {
 			chr.changeState(new Jump(), true);
 			usedCoil = true;
 		}*/
+	}
+
+	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
+		health -= damage;
+		if (health <= 0) {
+			changeState(new RushHurt(xDir));
+		}
+	}
+
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
+		return player.alliance != damagerAlliance && rushState is RushJetState;
+	}
+
+	public bool isInvincible(Player attacker, int? projId) {
+		return false;
+	}
+
+	public bool canBeHealed(int healerAlliance) {
+		return false;
+	}
+
+	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
 	}
 }
 

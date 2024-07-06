@@ -51,28 +51,37 @@ public class ProtoBusterProj : Projectile {
 
 public class ProtoBusterAngledProj : Projectile {
 	public ProtoBusterAngledProj(
-		Point pos, float byteAngle, Player player, ushort? netId, bool rpc = false
+		Point pos, float byteAngle, int type, Player player, ushort? netId, bool rpc = false
 	) : base(
-		ProtoBuster.netWeapon, pos, 1, 0, 1, player,
-		"proto_buster_proj", 0, 0, netId, player.ownedByLocalPlayer
+		ProtoBuster.netWeapon, pos, 1, 0, 2, player,
+		"rock_buster1_proj", 0, 1, netId, player.ownedByLocalPlayer
 	) {
 		byteAngle = byteAngle % 256;
-		fadeSprite = "proto_buster_proj_fade";
+		fadeSprite = "rock_buster1_fade";
+		fadeOnAutoDestroy = true;
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
-		if (byteAngle >= 64 && byteAngle <= 192) {
-			xDir = -1;
-		}
 		if (rpc) {
 			rpcCreateAngle(pos, player, netId, byteAngle);
+		}
+		if (byteAngle > 64 && byteAngle < 192) {
+			xDir = -1;
+			byteAngle -= 128;
+		}
+		this.byteAngle = byteAngle;
+
+		if (type == 0) {
+			changeSprite("proto_buster_proj", true);
+			fadeSprite = "proto_buster_proj_fade";
+			damager.damage = 1;
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterAngledProj(
-			args.pos, args.byteAngle, args.player, args.netId
+			args.pos, args.byteAngle, args.extraData[0], args.player, args.netId
 		);
 	}
 

@@ -27,6 +27,8 @@ public class Rock : Character {
 	public bool isSlideColliding;
 	public Rush rush;
 	public RushWeapon rushWeapon;
+	public int rushWeaponIndex;
+	public int RushSearchCost = 5;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -47,10 +49,16 @@ public class Rock : Character {
 		spriteToCollider["sa_activate_end_air"] = null;
 
 		charge2Time = 80;
+		var rl = player.loadout.rockLoadout.rushLoadout;
+		rushWeaponIndex = rl;
 
-		foreach (var w in player.weapons) {
-			if (w is RushWeapon rw) rushWeapon = rw;
-		}
+		rushWeapon = rl switch {
+			0 => new RushCoilWeapon(),
+			1 => new RushJetWeapon(),
+			_ => new RushSearchWeapon(),
+		};
+
+		player.weapons.Add(rushWeapon);
 	}
 
 	public override void update() {
@@ -326,6 +334,15 @@ public class Rock : Character {
 		return base.canShoot();
 	}
 
+	public bool canCallRush() {
+		if (isInvulnerableAttack() ||
+			hasSuperAdaptorBS.getValue() ||
+			(rushWeapon is RushSearchWeapon && player.currency < RushSearchCost) ||
+			flag != null) return false;
+		
+		return true;
+	}
+
 
 	public override bool canChangeWeapons() {
 		return base.canChangeWeapons();
@@ -502,24 +519,41 @@ public class Rock : Character {
 		return 2;
 	}
 
+	public bool canRideRushJet() {
+		return charState is Fall && Global.level.checkCollisionActor(this, 0, -20) == null;
+	}
+
+	public static List<Weapon> getAllRushWeapons() {
+		return new List<Weapon>() {
+			new RushCoilWeapon(),
+			new RushJetWeapon(),
+			new RushSearchWeapon()
+		};
+	}
+
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 
 		var wall = other.gameObject as Wall;
 		var rush = other.gameObject as Rush;
 		var isGHit = other.hitData?.normal != null && other.hitData.normal.Value.isGroundNormal();
+		bool isRushCoil = rush != null && rush.rushState is RushIdle or RushSleep;
+		bool isRushJet = rush != null && rush.rushState is RushJetState;
 
 		if (charState is RockDoubleJump && wall != null) {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
 		}
 
-		if (rush != null && (rush.rushState is RushIdle || rush.rushState is RushSleep ) && 
-			isGHit && charState is Fall) {
-				
+		if (isRushCoil && isGHit && charState is Fall) {		
 			rush.changeState(new RushCoil());
 			vel.y = getJumpPower() * -1.5f;
 			changeState(new Jump(), true);
 			rushWeapon.addAmmo(-1, player);
+		}
+
+		if (isRushJet && isGHit && canRideRushJet()) {
+			changeState(new RushJetRide(), true);
+			grounded = true;
 		}
 	}
 

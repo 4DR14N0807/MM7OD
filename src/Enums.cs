@@ -321,6 +321,7 @@ public enum BassProjIds {
 public enum BluesProjIds  {
 	Lemon = 600,
 	LemonAngled,
+	LemonLV2Angled,
 	BusterLV2,
 	BusterLV3,
 	BusterLV4,

@@ -300,7 +300,7 @@ public class Sprite {
 			}
 			isUPX = character.player.isX && (character.isHyperXBS.getValue() || (character.sprite.name == "mmx_revive" && character.frameIndex > 3));
 			isUltX = character.player.isX && character.hasUltimateArmorBS.getValue();
-			isSuperAdaptor = character.player.isRock && character.hasSuperAdaptorBS.getValue();
+			isSuperAdaptor = character is Rock && character.hasSuperAdaptorBS.getValue();
 		}
 
 		if (name == "mmx_unpo_grab" || name == "mmx_unpo_grab2") zIndex = ZIndex.MainPlayer;

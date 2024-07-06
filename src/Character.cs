@@ -331,7 +331,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void addBurnTime(Player? attacker, Weapon weapon, float time) {
+	public void addBurnTime(Player attacker, Weapon weapon, float time) {
 		if (!ownedByLocalPlayer) return;
 		if ((this as MegamanX)?.chargedRollingShieldProj != null) return;
 		if (isInvulnerable()) return;
@@ -346,7 +346,10 @@ public partial class Character : Actor, IDamagable {
 		burnTime += time;
 		if (oilTime > 0) {
 			//playSound("flamemOilBurn", sendRpc: true);
-			damager.applyDamage(this, false, weapon, this, (int)ProjIds.Burn, overrideDamage: 2, overrideFlinch: Global.defFlinch);
+			damager.applyDamage(
+				this, false, weapon, this, (int)ProjIds.Burn,
+				overrideDamage: 2, overrideFlinch: Global.defFlinch
+			);
 			burnTime += oilTime;
 			oilTime = 0;
 		}
@@ -401,7 +404,6 @@ public partial class Character : Actor, IDamagable {
 
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
-		ShaderWrapper? palette = null;
 
 		// TODO: Send this to the respective classes.
 		if (acidTime > 0 && player.acidShader != null) {
@@ -699,7 +701,7 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			hSize = 20;
 		}
-		if (player.isRock) {
+		if (this is Rock) {
 			hSize = 35;
 			if (sprite.name.Contains("slide")) {
 				wSize = 36;
@@ -719,8 +721,8 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			rect.y2 = 20;
 		}
-		if (player.isRock) {
-			rect = new Rect( 0, 0, 18, 39);	
+		if (this is Rock) {
+			rect = new Rect(0, 0, 18, 39);	
 		} 
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, offset);
 	}
@@ -1854,7 +1856,7 @@ public partial class Character : Actor, IDamagable {
 			else if (player.isViralSigma()) return pos.addxy(0, 0);
 			return pos.addxy(0, -32);
 		}
-		if (player.isRock) {
+		if (this is Rock) {
 			if (charState is LadderClimb || charState is ShootAltLadder) {
 				float offset = 0;
 				if (xDir < 0) return pos.substractxy(offset, 22);

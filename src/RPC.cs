@@ -337,11 +337,11 @@ public class RPCApplyDamage : RPC {
 		bool isLinkedMelee = (linkedMeleeId != byte.MaxValue);
 
 		var player = Global.level.getPlayerById(ownerId);
-		var victim = Global.level.getActorByNetId(victimId);
+		var victim = Global.level.getActorByNetId(victimId, true);
 		Actor? actor = null;
 		// For when the projectile was a melee without a NetID.
 		if (isLinkedMelee) {
-			Actor mainActor = Global.level.getActorByNetId(actorId);
+			Actor? mainActor = Global.level.getActorByNetId(actorId, true);
 			List<Projectile> projs = new();
 			if (mainActor != null) {
 				// We try to search anything with a matching MeleeID.
@@ -359,7 +359,7 @@ public class RPCApplyDamage : RPC {
 		}
 		// For normal projectiles.
 		else {
-			actor = (actorId == 0 ? null : Global.level.getActorByNetId(actorId));
+			actor = Global.level.getActorByNetId(actorId, true);
 		}
 
 		if (player != null && victim != null) {
@@ -374,7 +374,8 @@ public class RPCApplyDamage : RPC {
 				weaponKillFeedIndex,
 				actor,
 				projId,
-				sendRpc: false);
+				sendRpc: false
+			);
 		}
 	}
 
@@ -699,8 +700,9 @@ public class RPCActorToggle : RPC {
 
 		ushort netId = BitConverter.ToUInt16(arguments, 0);
 		var actor = Global.level.getActorByNetId(netId);
-		if (actor == null) return;
-
+		if (actor == null) {
+			return;
+		}
 		if (toggleId == RPCActorToggleType.SonicSlicerBounce) {
 			//actor.playSound("dingX2");
 			new Anim(actor.pos, "sonicslicer_sparks", actor.xDir, null, true);
@@ -832,14 +834,16 @@ public class RPCCreateAnim : RPC {
 		}
 
 		// The rest of the bytes are for optional, expensive-to-sync data that should be used sparingly.
-		RPCAnimModel extendedAnimModel = null;
-		Actor zIndexRelActor = null;
+		RPCAnimModel? extendedAnimModel = null;
+		Actor? zIndexRelActor = null;
 		if (arguments.Length > 13) {
 			var argumentsList = arguments.ToList();
 			var restofArgs = argumentsList.GetRange(13, argumentsList.Count - 13);
 			extendedAnimModel = Helpers.deserialize<RPCAnimModel>(restofArgs.ToArray());
 			if (extendedAnimModel.zIndexRelActorNetId != null) {
-				zIndexRelActor = Global.level.getActorByNetId(extendedAnimModel.zIndexRelActorNetId.Value);
+				zIndexRelActor = Global.level.getActorByNetId(
+					extendedAnimModel.zIndexRelActorNetId.Value, true
+				);
 			}
 		}
 
@@ -1673,11 +1677,13 @@ public class RPCHeal : RPC {
 		ushort healNetId = BitConverter.ToUInt16(new byte[] { arguments[1], arguments[2] }, 0);
 		int healAmount = arguments[3];
 
-		var actor = Global.level.getActorByNetId(healNetId);
-		if (actor == null) return;
-		var player = Global.level.getPlayerById(playerId);
+		Actor? actor = Global.level.getActorByNetId(healNetId, true);
+		if (actor == null) {
+			return;
+		}
+		Player player = Global.level.getPlayerById(playerId);
 
-		var damagable = actor as IDamagable;
+		IDamagable? damagable = actor as IDamagable;
 		if (damagable != null) {
 			if (actor.ownedByLocalPlayer) {
 				damagable.heal(player, healAmount, allowStacking: true, drawHealText: true);
@@ -1851,7 +1857,7 @@ public class RPCClearOwnership : RPC {
 
 	public override void invoke(params byte[] arguments) {
 		ushort netId = BitConverter.ToUInt16(new byte[] { arguments[0], arguments[1] }, 0);
-		var actor = Global.level.getActorByNetId(netId);
+		var actor = Global.level.getActorByNetId(netId, true);
 		if (actor == null) return;
 		actor.ownedByLocalPlayer = false;
 	}
@@ -1872,13 +1878,15 @@ public class RPCPlaySound : RPC {
 		ushort netId = BitConverter.ToUInt16(arguments, 0);
 		ushort soundIndex = BitConverter.ToUInt16(new byte[] { arguments[2], arguments[3] }, 0);
 
-		var actor = Global.level.getActorByNetId(netId);
-		if (actor == null) return;
+		Actor? actor = Global.level.getActorByNetId(netId);
+		if (actor == null) { return; }
 
 		if (soundIndex < Global.soundCount) {
 			string sound = Global.soundNameByIndex[soundIndex];
-			var soundWrapper = actor.playSound(sound);
-			actor.netSounds[soundIndex] = soundWrapper;
+			SoundWrapper? soundWrapper = actor.playSound(sound);
+			if (soundWrapper != null) {
+				actor.netSounds[soundIndex] = soundWrapper;
+			}
 		}
 	}
 
@@ -1905,8 +1913,8 @@ public class RPCStopSound : RPC {
 		ushort netId = BitConverter.ToUInt16(arguments, 0);
 		ushort soundIndex = BitConverter.ToUInt16(new byte[] { arguments[2], arguments[3] }, 0);
 
-		var actor = Global.level.getActorByNetId(netId);
-		if (actor == null) return;
+		var actor = Global.level.getActorByNetId(netId, true);
+		if (actor == null) { return; }
 
 		if (actor.netSounds.ContainsKey(soundIndex)) {
 			SoundWrapper soundWrapper = actor.netSounds[soundIndex];
@@ -1948,7 +1956,7 @@ public class RPCAddDamageText : RPC {
 
 		if (Global.level?.mainPlayer == null) return;
 		if (Global.level.mainPlayer.id != attackerId) return;
-		var actor = Global.level.getActorByNetId(netId);
+		Actor? actor = Global.level.getActorByNetId(netId, true);
 		if (actor == null) return;
 
 		float floatDamage = damage / 10f;
@@ -2054,10 +2062,11 @@ public class RPCBoundBlasterStick : RPC {
 		short yPos = BitConverter.ToInt16(new byte[] { arguments[6], arguments[7] }, 0);
 
 		BoundBlasterAltProj? beaconActor = Global.level.getActorByNetId(beaconNetId) as BoundBlasterAltProj;
-		Actor stuckActor = Global.level.getActorByNetId(stuckActorNetId);
+		Actor? stuckActor = Global.level.getActorByNetId(stuckActorNetId);
 
-		if (beaconActor == null || stuckActor == null) return;
-
+		if (beaconActor == null || stuckActor == null) {
+			return;
+		}
 		beaconActor.isActorStuck = true;
 		beaconActor.stuckActor = stuckActor;
 		beaconActor.stopSyncingNetPos = true;
@@ -2113,7 +2122,7 @@ public class RPCCreditPlayerKillMaverick : RPC {
 
 		Player killer = Global.level.getPlayerById(killerId);
 		Player assister = Global.level.getPlayerById(assisterId);
-		Maverick? victim = Global.level.getActorByNetId(victimNetId) as Maverick;
+		Maverick? victim = Global.level.getActorByNetId(victimNetId, true) as Maverick;
 
 		victim?.creditMaverickKill(killer, assister, weaponIndex);
 	}
@@ -2154,10 +2163,13 @@ public class RPCCreditPlayerKillVehicle : RPC {
 
 		Player killer = Global.level.getPlayerById(killerId);
 		Player assister = Global.level.getPlayerById(assisterId);
-		Actor victim = Global.level.getActorByNetId(victimNetId);
+		Actor? victim = Global.level.getActorByNetId(victimNetId, true);
 
-		if (victim is RideArmor ra) ra.creditKill(killer, assister, weaponIndex);
-		else if (victim is RideChaser rc) rc.creditKill(killer, assister, weaponIndex);
+		if (victim is RideArmor ra) {
+			ra.creditKill(killer, assister, weaponIndex);
+		} else if (victim is RideChaser rc) {
+			rc.creditKill(killer, assister, weaponIndex);
+		}
 	}
 
 	public void sendRpc(Player killer, Player assister, Actor victim, int? weaponIndex) {
@@ -2192,7 +2204,7 @@ public class RPCChangeDamage : RPC {
 		float damage = BitConverter.ToSingle(new byte[] { arguments[2], arguments[3], arguments[4], arguments[5] }, 0);
 		int flinch = arguments[6];
 
-		var proj = Global.level.getActorByNetId(netId) as Projectile;
+		var proj = Global.level.getActorByNetId(netId, true) as Projectile;
 		if (proj?.damager != null) {
 			proj.damager.damage = damage;
 			proj.damager.flinch = flinch;
@@ -2234,10 +2246,13 @@ public class RPCCheckRAEnter : RPC {
 		int raNum = arguments[4];
 
 		Player player = Global.level.getPlayerById(playerId);
-		if (player == null) return;
+		if (player == null) {
+			return;
+		}
 		RideArmor? ra = Global.level.getActorByNetId(raNetId) as RideArmor;
-		if (ra == null) return;
-
+		if (ra == null) {
+			return;
+		}
 		if (ra.isNeutral && ra.ownedByLocalPlayer && !ra.claimed && ra.character == null) {
 			ra.claimed = true;
 			RPC.raEnter.sendRpc(player.id, ra.netId, neutralId, raNum);

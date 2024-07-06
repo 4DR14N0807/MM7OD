@@ -491,7 +491,7 @@ public class AI {
 						character?.increaseCharge();
 					}
 				} else {
-					maxChargeTime = 4.25f;
+					maxChargeTime = 4.25f * 60f;
 				}
 				framesChargeHeld = 1;
 			}
@@ -536,7 +536,7 @@ public class AI {
 				var wasBuster = (player.weapon is Buster or AxlBullet);
 				player.changeWeaponSlot(getRandomWeaponIndex());
 				if (wasBuster && maxChargeTime > 0) {
-					maxChargeTime = 4.25f * 60;
+					maxChargeTime = 4.25f * 60f;
 				}
 			}
 		}

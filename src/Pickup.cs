@@ -17,8 +17,12 @@ public class Pickup : Actor {
 	public float healAmount = 0;
 	public float coreHealAmount = 0;
 	public PickupType pickupType;
-	public Pickup(Player owner, Point pos, string sprite, ushort? netId, bool ownedByLocalPlayer, NetActorCreateId netActorCreateId, bool sendRpc = false) :
-		base(sprite, pos, netId, ownedByLocalPlayer, false) {
+	public Pickup(
+		Player owner, Point pos, string sprite, ushort? netId,
+		bool ownedByLocalPlayer, NetActorCreateId netActorCreateId, bool sendRpc = false
+	) : base(
+		sprite, pos, netId, ownedByLocalPlayer, false
+	) {
 		netOwner = owner;
 		collider.wallOnly = true;
 		collider.isTrigger = false;

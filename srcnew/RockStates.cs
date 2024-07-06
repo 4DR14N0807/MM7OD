@@ -469,3 +469,27 @@ public class CoilJump : CharState {
 		}
 	}
 }
+
+
+public class RushJetRide : CharState {
+	
+	Rock? rock;
+	public RushJetRide() : base("idle", "shoot") {
+		normalCtrl = false;
+		attackCtrl = true;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		rock = character as Rock;
+		float rushPosX = rock.rush.getCenterPos().x;
+		character.changePos(new Point(rushPosX, rock.rush.pos.y - 16));
+	}
+
+	public override void update() {
+		base.update();
+
+		if (player.input.isPressed(Control.Jump, player) || !character.grounded) character.changeState(new Jump(), true);
+	}
+
+}

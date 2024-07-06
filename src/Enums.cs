@@ -297,9 +297,9 @@ public enum RockWeaponIds {
 	NoiseCrush,
 	DangerWrap,
 	WildCoil,
-	RushSearch,
-	RushJet,
 	RushCoil,
+	RushJet,
+	RushSearch,
 	SARocketPunch,
 	SAArrowSlash,
 	LegBreaker,
@@ -366,6 +366,8 @@ public enum RockProjIds  {
 	WildCoilCharged,
 	SARocketPunch,
 	SAArrowSlash,
+	RSBomb,
+	RSBombExplosion,
 }
 
 public enum ProjIds {

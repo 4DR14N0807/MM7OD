@@ -353,9 +353,10 @@ public class RockLoadout {
 	[ProtoMember(1)] public int weapon1;    //0 indexed
 	[ProtoMember(2)] public int weapon2;
 	[ProtoMember(3)] public int weapon3;
+	[ProtoMember(4)] public int rushLoadout;
 
 	public List<int> getRockWeaponIndices() {
-		return new List<int>() { weapon1, weapon2, weapon3 };
+		return new List<int>() { weapon1, weapon2, weapon3, rushLoadout };
 	}
 
 	public void validate() {
@@ -369,6 +370,8 @@ public class RockLoadout {
 			weapon1 = 0;
 			weapon2 = 1;
 			weapon3 = 2;
+
+			if (rushLoadout < 0 || rushLoadout > 2) rushLoadout = 0;
 		}
 	}
 
@@ -381,6 +384,13 @@ public class RockLoadout {
 		return indices.Select(index => {
 			return Weapon.getAllRockWeapons().Find(w => w.index == index).clone();
 		}).ToList();
+	}
+
+	public Weapon getRushFromLoadout(Player player) {
+		var indices = (byte)rushLoadout;
+		var rushW = Rock.getAllRushWeapons();
+		
+		return rushW[indices];
 	}
 
 	public static RockLoadout createRandom() {

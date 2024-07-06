@@ -98,6 +98,7 @@ public class Damager {
 		CharState? charState = character?.charState;
 		RideArmor? rideArmor = victim as RideArmor;
 		Maverick? maverick = victim as Maverick;
+		Rush? rush = victim as Rush;
 
 		if (damagable == null) return false;
 		if (!damagable.projectileCooldown.ContainsKey(key)) {
@@ -283,6 +284,9 @@ public class Damager {
 				damage *= 2;
 			}
 		}
+		
+		//Rush Jet flinch
+		if (rush != null && flinch > 0 && rush.rushState is RushJetState) rush.changeState(new RushHurt(rush.xDir)); 
 
 		// Character section
 		bool spiked = false;

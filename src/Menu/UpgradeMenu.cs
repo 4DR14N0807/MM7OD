@@ -204,7 +204,7 @@ public class UpgradeMenu : IMainMenu {
 						if (eTankTargets.Count > 0) {
 							var currentTarget = eTankTargets[eTankTargetIndex];
 							if (currentTarget is MaverickWeapon mw && canUseETankInMenu(mw.canUseEtank(mainPlayer.etanks[selectArrowPosY - 1]))) {
-								mainPlayer.etanks[selectArrowPosY - 1].use(mw.maverick);
+								//mainPlayer.etanks[selectArrowPosY - 1].use(mw.maverick);
 								maverickUsed = true;
 							}
 						}
@@ -221,7 +221,7 @@ public class UpgradeMenu : IMainMenu {
 					if (eTankTargets.Count > 0) {
 						var currentTarget = eTankTargets[eTankTargetIndex];
 						if (currentTarget is MaverickWeapon mw && canUseETankInMenu(mw.canUseEtank(mainPlayer.etanks[selectArrowPosY - 1]))) {
-							mainPlayer.etanks[selectArrowPosY].use(mw.maverick);
+							//mainPlayer.etanks[selectArrowPosY].use(mw.maverick);
 							maverickUsed = true;
 						}
 					}

@@ -2679,6 +2679,10 @@ public partial class Player {
 		}
 	}
 
+	public void stopETankHeal() {
+		if (character.eTankHealAmount > 0) character.eTankHealAmount = 0;
+	}
+
 	public void delayWTank() {
 		if (isMainPlayer) {
 			UpgradeMenu.wTankDelay = UpgradeMenu.maxWTankDelay;

@@ -90,9 +90,9 @@ public class ProtoBusterLv2Proj : Projectile {
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 2, player,
-		"rock_buster1_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_midcharge_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "rock_buster1_fade";
+		fadeSprite = "proto_midcharge_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.4125f;
 		projId = (int)BluesProjIds.BusterLV2;
@@ -116,9 +116,9 @@ public class ProtoBusterLv3Proj : Projectile {
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
-		"rock_buster2_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_chargeshot_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "rock_buster2_fade";
+		fadeSprite = "proto_chargeshot_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.45f;
 		projId = (int)BluesProjIds.BusterLV4;
@@ -142,9 +142,9 @@ public class ProtoBusterLv4Proj : Projectile {
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 4, player,
-		"proto_chargeshot_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_chargeshot_red_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "proto_chargeshot_proj_fade";
+		fadeSprite = "proto_chargeshot_red_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.5f;
 		projId = (int)BluesProjIds.BusterLV4;

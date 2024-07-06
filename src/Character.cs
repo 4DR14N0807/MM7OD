@@ -329,7 +329,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void addBurnTime(Player? attacker, Weapon weapon, float time) {
+	public void addBurnTime(Player attacker, Weapon weapon, float time) {
 		if (!ownedByLocalPlayer) return;
 		if ((this as MegamanX)?.chargedRollingShieldProj != null) return;
 		if (isInvulnerable()) return;
@@ -344,7 +344,10 @@ public partial class Character : Actor, IDamagable {
 		burnTime += time;
 		if (oilTime > 0) {
 			//playSound("flamemOilBurn", sendRpc: true);
-			damager.applyDamage(this, false, weapon, this, (int)ProjIds.Burn, overrideDamage: 2, overrideFlinch: Global.defFlinch);
+			damager.applyDamage(
+				this, false, weapon, this, (int)ProjIds.Burn,
+				overrideDamage: 2, overrideFlinch: Global.defFlinch
+			);
 			burnTime += oilTime;
 			oilTime = 0;
 		}
@@ -399,7 +402,6 @@ public partial class Character : Actor, IDamagable {
 
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
-		ShaderWrapper? palette = null;
 
 		// TODO: Send this to the respective classes.
 		if (acidTime > 0 && player.acidShader != null) {

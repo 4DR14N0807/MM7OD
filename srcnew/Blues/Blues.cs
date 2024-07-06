@@ -471,7 +471,7 @@ public class Blues : Character {
 			playSound("buster3", sendRpc: true);
 			lemonCooldown = 12;
 		} else {
-			if (player.input.isHeld(Control.Up, player)) {
+			if (player.input.isHeld(Control.Up, player) && grounded && vel.y >= 0) {
 				addCoreAmmo(4);
 				changeState(new ProtoStrike(), true);
 			} else {

@@ -396,7 +396,7 @@ public class Burning : CharState {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
 		character.burnInvulnTime = 120;
-		character.burnStateStacks = 0;
+		character.burnStunStacks = 0;
 		character.useGravity = true;
 		player.delayETank();
 		//character.specialState = (int)SpecialStateIds.None;

@@ -89,7 +89,6 @@ public partial class Character : Actor, IDamagable {
 	public const float maxLastAttackerTime = 5;
 
 	public float igFreezeProgress;
-	public float burnStateStacks;
 	public float freezeInvulnTime;
 	public float stunInvulnTime;
 	public float crystalizeInvulnTime;
@@ -155,6 +154,7 @@ public partial class Character : Actor, IDamagable {
 	public Damager? oilDamager;
 	public float oilTime;
 	// Burn (MMX)
+	public float burnDamageCooldown;
 	public Damager? burnDamager;
 	public Weapon? burnWeapon;
 	public float burnTime;
@@ -166,9 +166,10 @@ public partial class Character : Actor, IDamagable {
 
 	public float burnEffectTime;
 	public float burnHurtCooldown;
-	// Burn (MM7)
-	public float burnDamageCooldown;
-	public Damager? burningDamager;
+	
+	// Burn Stun
+	public float burnStunStacks;
+
 	// Ice
 	public float slowdownTime;
 	// Parasite.
@@ -406,18 +407,17 @@ public partial class Character : Actor, IDamagable {
 			freeze(freezeTime);
 		}
 	}
-	float burningRecoveryCooldown = 0;
-	public void addBurnStateStacks(float amount, Player attacker) {
+	
+	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
 		if (charState is Burning) return;
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
-		burnStateStacks += amount;
-		burningRecoveryCooldown = 0;
-		if (burnStateStacks >= Burning.maxStacks) {
-			burnStateStacks = 0;
-			burn(attacker);
+		burnStunStacks += amount;
+		if (burnStunStacks >= Burning.maxStacks) {
+			burnStunStacks = 0;
+			burnStun(attacker);
 		}
 	}
 
@@ -461,8 +461,8 @@ public partial class Character : Actor, IDamagable {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
 		}
-		if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
-			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / Burning.maxStacks);
+		if (burnStunStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
+			player.burnStateShader.SetUniform("burnStateStacks", burnStunStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
 		}
 		/*
@@ -997,7 +997,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (burnStateStacks > 0 && charState is not Burning) {
+		if (burnStunStacks > 0 && charState is not Burning) {
 			burnEffectTime += Global.spf;
 			if (burnEffectTime >= Global.spf * 11) {
 				burnEffectTime = 0;
@@ -1006,14 +1006,14 @@ public partial class Character : Actor, IDamagable {
 
 				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 
-				if (burnStateStacks >= 2) {
+				if (burnStunStacks >= 2) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 				}
-				if (burnStateStacks >= 3) {
+				if (burnStunStacks >= 3) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -60)};
 				}
-				if (burnStateStacks >= 4) {
+				if (burnStunStacks >= 4) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -120)};
 				}
@@ -1103,10 +1103,10 @@ public partial class Character : Actor, IDamagable {
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
 		burningRecoveryCooldown += Global.spf;
-		if (burningRecoveryCooldown > 1 && burnStateStacks > 0) {
+		if (burningRecoveryCooldown > 1 && burnStunStacks > 0) {
 			burningRecoveryCooldown = 0;
-			burnStateStacks--;
-			if (burnStateStacks < 0) burnStateStacks = 0;
+			burnStunStacks--;
+			if (burnStunStacks < 0) burnStunStacks = 0;
 		}
 		Helpers.decrementTime(ref freezeInvulnTime);
 		Helpers.decrementTime(ref stunInvulnTime);
@@ -1650,11 +1650,12 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public void burn(Player attacker) {
+	public void burnStun(Player attacker) {
 		if (charState is Burning) return;
 
 		changeState(new Burning(-xDir, attacker), true);
 	}
+
 	public void root() {
 		if (rootCooldown > 0) return;
 		rootTime = 60f;
@@ -3370,7 +3371,7 @@ public partial class Character : Actor, IDamagable {
 		oilTime = 0;
 		player.possessedTime = 0;
 		igFreezeProgress = 0;
-		burnStateStacks = 0;
+		burnStunStacks = 0;
 	}
 
 	public bool canBeHealed(int healerAlliance) {

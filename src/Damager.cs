@@ -951,7 +951,7 @@ public class Damager {
 	}
 
 	public static DamagerMessage? onScorchDamage(IDamagable damageable, Player attacker, float burnStacks) {
-		(damageable as Character)?.addBurnStateStacks(burnStacks, attacker);
+		(damageable as Character)?.addBurnStunStacks(burnStacks, attacker);
 		return null;
 	}
 

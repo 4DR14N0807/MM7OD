@@ -8,7 +8,7 @@ public class GyroAttack : Weapon {
 
 	public GyroAttack() : base() {
 		displayName = "Gyro Attack";
-		descriptionV2 = "A propeller weapon that can\nbe aimed in 3 diferent directions.";
+		descriptionV2 = "A propeller weapon that can\nbe aimed in 2 diferent directions.";
 		defaultAmmoUse = 2;
 
 		index = (int)RockWeaponIds.GyroAttack;
@@ -66,5 +66,9 @@ public class GyroAttackProj : Projectile {
 				changedDir = true;
 			}
 		}
+	}
+	public override void onDestroy() {
+		base.onDestroy();
+		Anim.createGibEffect("gyro_attack_pieces", pos, null, zIndex: zIndex);
 	}
 }

@@ -73,7 +73,7 @@ public class RushWarpIn : RushState {
 		rush.useGravity = false;
 		rush.frameSpeed = 0;
 
-		rockPos = rush.netOwner.character.pos;
+		if (rush.netOwner != null) rockPos = rush.netOwner.character.pos;
 		Point? checkGround = Global.level.getGroundPosNoKillzone(character.pos);
 		rush.pos = checkGround.GetValueOrDefault();
 		warpAnim = new Anim(new Point(rush.pos.x, rush.pos.y - 200), "rush_warp_beam", 1, null, false);
@@ -239,11 +239,11 @@ public class RushJetState : RushState {
 
 		if (rideOnce) decAmmoCooldown--;
 		if (decAmmoCooldown <= 0) {
-			rock.rushWeapon.addAmmo(-1, player);
+			rock?.rushWeapon.addAmmo(-1, player);
 			decAmmoCooldown = maxDecAmmoCooldown;
 		}
 
-		if (rock.rushWeapon.ammo <= 0) {
+		if (rock?.rushWeapon.ammo <= 0) {
 			rush.changeState(new RushWarpOut());
 			rush.character.changeToIdleOrFall();
 		} 
@@ -261,7 +261,7 @@ public class RushSearchState : RushState {
 	Point pickupPos;
 	int pickupTime;
 	int sound;
-	string soundStr;
+	string soundStr = null!;
 	public RushSearchState() : base("rush_dig_start", "rush_smell") {
 
 	}
@@ -295,7 +295,7 @@ public class RushSearchState : RushState {
 			case 0:
 				if (!inTransition() && rush.isAnimOver()) {
 					rush.changeSprite("rush_dig", true);
-					rush.player.currency -= rock.RushSearchCost;
+					rush.player.currency -= rock?.RushSearchCost ?? 5;
 					digging = true;
 					state = 1;
 				} break;
@@ -443,7 +443,7 @@ public class RushWarpOut : RushState {
 		
 		if (time >= 60) {
 			rush.destroySelf();
-			rock.rush = null;
+			if (rock != null) rock.rush = null!;
 		} 
 	}
 }

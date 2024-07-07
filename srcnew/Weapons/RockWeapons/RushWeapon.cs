@@ -119,7 +119,7 @@ public class RSBombProj : Projectile {
 
 public class RSBombExplosionProj : Projectile {
 
-	float radius;
+	int radius;
 	float maxRadius = 48;
 	public RSBombExplosionProj(
 		Point pos, int xDir, Player player,
@@ -137,10 +137,20 @@ public class RSBombExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		if (radius < maxRadius) radius += Global.spf * 600;
+		if (radius < maxRadius) radius++;
 		else destroySelf();
 
-		if (isRunByLocalPlayer()) {
+		var actors = getCloseActors(radius);
+
+		foreach (var actor in actors) {
+			if (actor is IDamagable dmg) {
+				var chr = dmg as Character;
+
+				if (chr != null) damager.applyDamage(chr, false, weapon, this, projId);
+			}
+		}
+
+		/*if (isRunByLocalPlayer()) {
 			foreach (var go in Global.level.getGameObjectArray()) {
 				var chr = go as Character;
 				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
@@ -149,7 +159,7 @@ public class RSBombExplosionProj : Projectile {
 					damager.applyDamage(chr, false, weapon, this, projId);
 				}	
 			}
-		}
+		}*/
 	}
 
 	public override void render(float x, float y) {

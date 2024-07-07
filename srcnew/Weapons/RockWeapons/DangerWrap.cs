@@ -273,7 +273,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 public class DangerWrapExplosionProj : Projectile {
 
-	private float radius = 10f;
+	private int radius = 10;
 	private double maxRadius = 25;
 
 	public DangerWrapExplosionProj(
@@ -305,18 +305,17 @@ public class DangerWrapExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		foreach (var gameObject in Global.level.getGameObjectArray()) {
-			if (gameObject is Actor actor &&
-				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable &&
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null) &&
-				actor.pos.distanceTo(pos) <= radius
-			) {
-				damager.applyDamage(damagable, false, weapon, this, projId);
+		if (radius < maxRadius) radius++;
+
+		var actors = getCloseActors(radius);
+
+		foreach (var actor in actors) {
+			if (actor is Character chr) {
+				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+					damager.applyDamage(chr, false, weapon, this, projId);
+				} 
 			}
 		}
-
-		if (radius < maxRadius) radius += Global.spf * 600;
 	}
 
 	public override void render(float x, float y) {

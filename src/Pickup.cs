@@ -45,8 +45,6 @@ public class Pickup : Actor {
 		base.onCollision(other);
 		if (other.otherCollider.flag == (int)HitboxFlag.Hitbox) return;
 
-		if (other.gameObject is Wall) vel.x = 0;
-
 		if (other.gameObject is Character chr) {
 			if (!chr.ownedByLocalPlayer) return;
 			if (chr.isHyperSigmaBS.getValue()) return;
@@ -189,6 +187,14 @@ public class LargeBoltPickup : Pickup {
 		healAmount = 10;
 		pickupType = PickupType.Bolts;
 	}
+
+	public override void onCollision(CollideData other) {
+		base.onCollision(other);
+
+		var wall = other.gameObject as Wall;
+
+		if (wall != null) stopMoving();
+	}
 }
 
 public class SmallBoltPickup : Pickup {
@@ -201,5 +207,13 @@ public class SmallBoltPickup : Pickup {
 	) {
 		healAmount = 5;
 		pickupType = PickupType.Bolts;
+	}
+
+	public override void onCollision(CollideData other) {
+		base.onCollision(other);
+
+		var wall = other.gameObject as Wall;
+
+		if (wall != null) stopMoving();
 	}
 }

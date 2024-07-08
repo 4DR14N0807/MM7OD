@@ -7,6 +7,7 @@ public enum NetActorCreateId {
 	Default,
 	RideArmor,
 	RaySplasherTurret,
+	Rush,
 	ChillPenguin,
 	SparkMandrill,
 	ArmoredArmadillo,
@@ -76,6 +77,8 @@ public class RPCCreateActor : RPC {
 			new RaySplasherTurret(pos, player, 1, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.RideArmor) {
 			new RideArmor(player, pos, 0, 0, netProjByte, false);
+		} else if (createId == (int)NetActorCreateId.Rush) {
+			new Rush(pos, player, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.ChillPenguin) {
 			new ChillPenguin(player, pos, pos, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.SparkMandrill) {

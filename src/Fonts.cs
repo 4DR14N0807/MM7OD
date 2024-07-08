@@ -252,6 +252,7 @@ public class Fonts {
 			FontType.YellowMenu => "YellowMenu",
 			FontType.OrangeMenu => "OrangeMenu",
 			FontType.WhiteMenu => "WhiteMenu",
+			FontType.White => "White",
 			_ => "Blue"
 		};
 	}
@@ -293,5 +294,6 @@ public enum FontType {
 	PurpleMenu,
 	YellowMenu,
 	OrangeMenu,
-	WhiteMenu
+	WhiteMenu,
+	White,
 }

@@ -89,7 +89,6 @@ public partial class Character : Actor, IDamagable {
 	public const float maxLastAttackerTime = 5;
 
 	public float igFreezeProgress;
-	public float burnStateStacks;
 	public float freezeInvulnTime;
 	public float stunInvulnTime;
 	public float crystalizeInvulnTime;
@@ -155,6 +154,7 @@ public partial class Character : Actor, IDamagable {
 	public Damager? oilDamager;
 	public float oilTime;
 	// Burn (MMX)
+	public float burnDamageCooldown;
 	public Damager? burnDamager;
 	public Weapon? burnWeapon;
 	public float burnTime;
@@ -166,9 +166,10 @@ public partial class Character : Actor, IDamagable {
 
 	public float burnEffectTime;
 	public float burnHurtCooldown;
-	// Burn (MM7)
-	public float burnDamageCooldown;
-	public Damager? burningDamager;
+	
+	// Burn Stun
+	public float burnStunStacks;
+
 	// Ice
 	public float slowdownTime;
 	// Parasite.
@@ -294,66 +295,98 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void addAcidTime(Player attacker, float time) {
-		if (!ownedByLocalPlayer) return;
-		if ((this as MegamanX)?.chargedRollingShieldProj != null) return;
-		if (isInvulnerable()) return;
-		if (isVaccinated()) return;
-
-		Damager damager = new Damager(attacker, 0, 0, 0);
-		if (acidTime == 0 || acidDamager == null) {
-			acidDamager = damager;
-		} else if (acidDamager.owner != damager.owner) return;
-		acidHurtCooldown = 0.5f;
-		acidTime += time;
-		oilTime = 0;
-		if (acidTime > 8) acidTime = 8;
+		if (!ownedByLocalPlayer ||
+			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isInvulnerable() ||
+			isVaccinated()
+		) {
+			return;
+		}
+		// If attacker is null use the same, else use self.
+		Player newAttacker = attacker ?? burnDamager?.owner ?? player;
+		if (acidDamager == null) {
+			acidDamager = new Damager(newAttacker, 0, 0, 0);
+		} else {
+			acidDamager.owner = newAttacker;
+		}
+		// Reset timer if it's 0.
+		if (acidTime == 0) {
+			acidHurtCooldown = 1;
+		}
+		// Apply time if we do not go over 8.
+		if (acidTime + time >= 8) {
+			acidTime += time;
+		}
 	}
 
 	public void addOilTime(Player attacker, float time) {
-		if (!ownedByLocalPlayer) return;
-		if ((this as MegamanX)?.chargedRollingShieldProj != null) return;
-		if (isInvulnerable()) return;
-		if (isVaccinated()) return;
-
-		Damager damager = new Damager(attacker, 0, 0, 0);
-		if (oilTime == 0 || oilDamager == null) {
-			oilDamager = damager;
-		} else if (oilDamager.owner != damager.owner) return;
+		if (!ownedByLocalPlayer ||
+			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isInvulnerable() ||
+			isVaccinated()
+		) {
+			return;
+		}
+		// If attacker is null use the same, else use self.
+		Player newAttacker = attacker ?? burnDamager?.owner ?? player;
+		if (oilDamager == null) {
+			oilDamager = new Damager(newAttacker, 0, 0, 0);
+		} else {
+			oilDamager.owner = newAttacker;
+		}
+		// Apply time and limit to 8.
 		oilTime += time;
-		acidTime = 0;
-		if (oilTime > 8) oilTime = 8;
-
+		if (oilTime >= 8) {
+			oilTime = 8;
+		}
+		// Activate burn if burning.
 		if (burnTime > 0) {
-			float oldBurnTime = burnTime;
-			burnTime = 0;
-			addBurnTime(attacker, new FlameMOilWeapon(), oldBurnTime + 2);
+			addBurnTime(attacker, new FlameMOilWeapon(), 2);
 			return;
 		}
 	}
 
-	public void addBurnTime(Player attacker, Weapon weapon, float time) {
-		if (!ownedByLocalPlayer) return;
-		if ((this as MegamanX)?.chargedRollingShieldProj != null) return;
-		if (isInvulnerable()) return;
-		if (isVaccinated()) return;
-
-		Damager damager = new Damager(attacker, 0, 0, 0);
-		if (burnTime == 0 || burnDamager == null) {
-			burnDamager = damager;
+	public void addBurnTime(Player? attacker, Weapon weapon, float time) {
+		if (!ownedByLocalPlayer ||
+			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isInvulnerable() ||
+			isVaccinated()
+		) {
+			return;
+		}
+		// If attacker is null use the same, else use self.
+		Player newAttacker = attacker ?? burnDamager?.owner ?? player;
+		if (burnDamager == null) {
+			burnDamager = new Damager(newAttacker, 0, 0, 0);
 			burnWeapon = weapon;
-		} else if (burnDamager.owner != damager.owner) return;
-		burnHurtCooldown = 0.5f;
-		burnTime += time;
+		} else {
+			burnDamager.owner = newAttacker;
+			burnWeapon = weapon;
+		}
+		// Reset timer if it's 0.
+		if (burnTime == 0) {
+			burnHurtCooldown = 1;
+		}
+		// Apply time if we do not go over 8.
+		if (burnTime + time >= 8) {
+			burnTime += time;
+		}
+		// Oil explosion.
 		if (oilTime > 0) {
 			//playSound("flamemOilBurn", sendRpc: true);
-			damager.applyDamage(
+			burnDamager.applyDamage(
 				this, false, weapon, this, (int)ProjIds.Burn,
 				overrideDamage: 2, overrideFlinch: Global.defFlinch
 			);
+			// Apply burn damage instantly.
 			burnTime += oilTime;
 			oilTime = 0;
+			burnHurtCooldown = 1;
+			// Double check again in case oil increased over 8.
+			if (burnTime >= 8) {
+				burnTime = 8;
+			}
 		}
-		if (burnTime > 8) burnTime = 8;
 	}
 
 	float igFreezeRecoveryCooldown = 0;
@@ -374,18 +407,17 @@ public partial class Character : Actor, IDamagable {
 			freeze(freezeTime);
 		}
 	}
-	float burningRecoveryCooldown = 0;
-	public void addBurnStateStacks(float amount, Player attacker) {
+	
+	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
 		if (charState is Burning) return;
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
-		burnStateStacks += amount;
-		burningRecoveryCooldown = 0;
-		if (burnStateStacks >= Burning.maxStacks) {
-			burnStateStacks = 0;
-			burn(attacker);
+		burnStunStacks += amount;
+		if (burnStunStacks >= Burning.maxStacks) {
+			burnStunStacks = 0;
+			burnStun(attacker);
 		}
 	}
 
@@ -429,8 +461,8 @@ public partial class Character : Actor, IDamagable {
 			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
 			shaders.Add(player.infectedShader);
 		}
-		if (burnStateStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
-			player.burnStateShader.SetUniform("burnStateStacks", burnStateStacks / Burning.maxStacks);
+		if (burnStunStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
+			player.burnStateShader.SetUniform("burnStateStacks", burnStunStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
 		}
 		/*
@@ -946,8 +978,16 @@ public partial class Character : Actor, IDamagable {
 			acidHurtCooldown += Global.spf;
 			if (acidHurtCooldown > 1) {
 				acidHurtCooldown = 0;
-				acidDamager?.applyDamage(this, player.weapon is TunnelFang, new AcidBurst(), this, (int)ProjIds.AcidBurstPoison, overrideDamage: 1f);
-				new Anim(getCenterPos().addxy(0, -20), "torpedo_smoke", 1, null, true) { vel = new Point(0, -50) };
+				acidDamager?.applyDamage(
+					this, player.weapon is TunnelFang,
+					new AcidBurst(), this, (int)ProjIds.AcidBurstPoison,
+					overrideDamage: 1f
+				);
+				new Anim(
+					getCenterPos().addxy(Helpers.randomRange(-6, 6), -20),
+					"torpedo_smoke", 1, null, true) {
+						vel = new Point(0, -50)
+					};
 			}
 			if (isUnderwater() || charState.invincible || isCCImmune()) {
 				acidTime = 0;
@@ -957,7 +997,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (burnStateStacks > 0 && charState is not Burning) {
+		if (burnStunStacks > 0 && charState is not Burning) {
 			burnEffectTime += Global.spf;
 			if (burnEffectTime >= Global.spf * 11) {
 				burnEffectTime = 0;
@@ -966,14 +1006,14 @@ public partial class Character : Actor, IDamagable {
 
 				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 
-				if (burnStateStacks >= 2) {
+				if (burnStunStacks >= 2) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 				}
-				if (burnStateStacks >= 3) {
+				if (burnStunStacks >= 3) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -60)};
 				}
-				if (burnStateStacks >= 4) {
+				if (burnStunStacks >= 4) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
 					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -120)};
 				}
@@ -1063,10 +1103,10 @@ public partial class Character : Actor, IDamagable {
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
 		burningRecoveryCooldown += Global.spf;
-		if (burningRecoveryCooldown > 1 && burnStateStacks > 0) {
+		if (burningRecoveryCooldown > 1 && burnStunStacks > 0) {
 			burningRecoveryCooldown = 0;
-			burnStateStacks--;
-			if (burnStateStacks < 0) burnStateStacks = 0;
+			burnStunStacks--;
+			if (burnStunStacks < 0) burnStunStacks = 0;
 		}
 		Helpers.decrementTime(ref freezeInvulnTime);
 		Helpers.decrementTime(ref stunInvulnTime);
@@ -1610,11 +1650,12 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public void burn(Player attacker) {
+	public void burnStun(Player attacker) {
 		if (charState is Burning) return;
 
 		changeState(new Burning(-xDir, attacker), true);
 	}
+
 	public void root() {
 		if (rootCooldown > 0) return;
 		rootTime = 60f;
@@ -3330,7 +3371,7 @@ public partial class Character : Actor, IDamagable {
 		oilTime = 0;
 		player.possessedTime = 0;
 		igFreezeProgress = 0;
-		burnStateStacks = 0;
+		burnStunStacks = 0;
 	}
 
 	public bool canBeHealed(int healerAlliance) {

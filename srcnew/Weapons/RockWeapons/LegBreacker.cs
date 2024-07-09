@@ -71,7 +71,7 @@ public class LegBreakerState : CharState {
 		}
 
 		var move = new Point(0, 0);
-		move.x = character.getDashSpeed() * initialSlideDir;
+		if (rock != null) move.x = rock.getSlideSpeed() * initialSlideDir;
 		character.move(move);
 
 		if (cancel) {

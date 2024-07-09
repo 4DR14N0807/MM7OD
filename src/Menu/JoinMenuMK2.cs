@@ -99,7 +99,7 @@ public class JoinMenuP2P : IMainMenu {
 		DrawWrappers.DrawTextureHUD(Global.textures["severbrowser"], 0, 0);
 
 		Fonts.drawTextEX(
-			FontType.Grey, "[OK]: Join, [BACK]: Back",
+			FontType.Orange, "[OK]: Join, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 32, Alignment.Center
 		);
 		/*
@@ -111,29 +111,32 @@ public class JoinMenuP2P : IMainMenu {
 		*/
 
 		Fonts.drawText(
-			FontType.BlueMenu, " Name     Map       Plyrs  Mode       Fork",
+			FontType.OrangeMenu, " Name     Map       Plyrs  Mode       Fork",
 			21, 21
 		);
 		int offset = 0;
 		//DrawWrappers.DrawTextureHUD(Global.textures["cursor"], 21, 30 + (selServerIndex * 10));
 		Global.sprites["cursor"].drawToHUD(0, 21, 30 + ((selServerIndex * 10) + 14));
 		if (refreshing) {
-			Fonts.drawText(FontType.Grey, "Refreshing...", 30, 44);
+			Fonts.drawText(FontType.Orange, "Refreshing...", 30, 44);
 			return;
 		}
 		if (serverIndexes.Length == 0) {
-			Fonts.drawText(FontType.Grey, "No servers found.", 30, 44);
+			Fonts.drawText(FontType.Red, "No servers found.", 30, 44);
 			return;
 		}
 		foreach (long serverId in serverIndexes) {
-			Fonts.drawText(FontType.Blue, serverInfo[serverId].name, 28, 40 + offset);
-			Fonts.drawText(FontType.Blue, serverInfo[serverId].map, 95, 40 + offset);
-			Fonts.drawText(FontType.Blue,
+			FontType font = serverInfo[serverId].fork == Global.shortForkName ? 
+				FontType.Blue : FontType.Red; // Checks if the match is from the same fork or not.
+
+			Fonts.drawText(font, serverInfo[serverId].name, 28, 40 + offset);
+			Fonts.drawText(font, serverInfo[serverId].map, 95, 40 + offset);
+			Fonts.drawText(font,
 				serverInfo[serverId].playerCount + "/" + serverInfo[serverId].maxPlayer,
 				168, 40
 			);
-			Fonts.drawText(FontType.Blue, serverInfo[serverId].mode, 221, 40 + offset);
-			Fonts.drawText(FontType.Blue, serverInfo[serverId].fork, 302, 40 + offset);
+			Fonts.drawText(font, serverInfo[serverId].mode, 221, 40 + offset);
+			Fonts.drawText(font, serverInfo[serverId].fork, 302, 40 + offset);
 			offset += 10;
 		}
 	}

@@ -49,7 +49,7 @@ public class PreOptionsMenu : IMainMenu {
 		FontType menuFont = FontType.Grey;
 		if (inGame) {
 			tileFont = FontType.BlueMenu;
-			menuFont = FontType.Grey;
+			menuFont = FontType.Blue;
 		}
 
 		Fonts.drawText(tileFont, "SETTINGS", Global.screenW * 0.5f, 20, Alignment.Center);

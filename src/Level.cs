@@ -408,9 +408,10 @@ public partial class Level {
 					waterRects.Add(waterRect);
 				}
 			} else if (objectName == "Ladder") {
-				if (!Global.level.isTraining() || Global.debug) {
+				addGameObject(new Ladder(instanceName, points));
+				/*if (!Global.level.isTraining() || Global.debug) {
 					addGameObject(new Ladder(instanceName, points));
-				}
+				}*/
 			} else if (objectName == "Backwall Zone") {
 				if (!Global.disableBackwalls) {
 					addGameObject(new BackwallZone(instanceName, points, (bool?)instance.properties.isExclusion ?? false));

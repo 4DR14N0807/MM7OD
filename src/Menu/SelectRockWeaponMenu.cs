@@ -252,7 +252,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 			int weakAgainstIndex = weapon.weaknessIndex;
 
 			Fonts.drawText(FontType.BlueMenu, "Slot " + (selCursorIndex + 1).ToString() + " weapon", Global.halfScreenW, 128, Alignment.Center);
-			Fonts.drawText(FontType.Grey, weaponNames[selectedWeaponIndices[selCursorIndex]], Global.halfScreenW, 149, Alignment.Center);
+			Fonts.drawText(FontType.Blue, weaponNames[selectedWeaponIndices[selCursorIndex]], Global.halfScreenW, 149, Alignment.Center);
 			//Global.sprites["hud_weapon_icon"].drawToHUD(weapon.weaponSlotIndex, Global.halfScreenW + 75, 148);
 
 			

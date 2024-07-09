@@ -7,7 +7,7 @@ public class SearchSnake : Weapon {
 	public static SearchSnake netWeapon = new();
 
 	public SearchSnake() : base() {
-		displayName = "Search Snake";
+		displayName = "SEARCH SNAKE";
 		descriptionV2 = "Releases snake-like missiles\nthat crawl across surfaces.";
 		defaultAmmoUse = 2;
 

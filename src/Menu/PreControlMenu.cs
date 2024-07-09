@@ -79,30 +79,32 @@ public class PreControlMenu : IMainMenu {
 			Global.sprites["cursor"].drawToHUD(0, optionPos1.x - 10, 74 + (selArrowPosY * 20));
 		}
 
+		FontType font = inGame ? FontType.Blue : FontType.Grey; //Changes font color if it is mid-game.
+
 		Fonts.drawText(
 			FontType.BlueMenu, "SELECT INPUT TO CONFIGURE",
 			Global.screenW * 0.5f, 24, Alignment.Center
 		);
 
 		Fonts.drawText(
-			FontType.Grey, getLeftRightStr("KEYBOARD " + getCharStr(0)),
+			font, getLeftRightStr("KEYBOARD " + getCharStr(0)),
 			optionPos1.x, optionPos1.y, selected: selArrowPosY == 0
 		);
 
 		if (Control.isJoystick()) {
 			Fonts.drawText(
-				FontType.Grey, getLeftRightStr("CONTROLLER " + getCharStr(1)),
+				font, getLeftRightStr("CONTROLLER " + getCharStr(1)),
 				optionPos2.x, optionPos2.y, selected: selArrowPosY == 1
 			);
 		} else {
 			Fonts.drawText(
-				FontType.Grey, "CONTROLLER (NOT DETECTED)",
+				inGame ? FontType.Black : FontType.Grey, "CONTROLLER (NOT DETECTED)",
 				optionPos2.x, optionPos2.y, selected: selArrowPosY == 1
 			);
 		}
 
 		Fonts.drawTextEX(
-			FontType.Grey, "Use [MLEFT]/[MRIGHT] to switch\n" +
+			font, "Use [MLEFT]/[MRIGHT] to switch\n" +
 			"character to configure controls for.\n" +
 			"If a binding does not exist on\n" +
 			"a char-specific control config,\n" +
@@ -111,7 +113,7 @@ public class PreControlMenu : IMainMenu {
 		);
 
 		Fonts.drawTextEX(
-			FontType.Grey, "[OK]: Choose, [BACK]: Back",
+			font, "[OK]: Choose, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 16, Alignment.Center
 		);
 	}

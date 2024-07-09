@@ -110,7 +110,7 @@ public class AddBotMenu : IMainMenu {
 		};
 
 		Fonts.drawText(
-			FontType.Grey, "CHARACTER: " + botCharStr,
+			FontType.Blue, "CHARACTER: " + botCharStr,
 			optionPoses[0].x, optionPoses[0].y, selected: selectArrowPosY == 0
 		);
 		if (Global.level.gameMode.isTeamMode) {
@@ -119,13 +119,13 @@ public class AddBotMenu : IMainMenu {
 				botTeamStr = GameMode.getTeamName(botTeamNum);
 			}
 			Fonts.drawText(
-				teamOptionEnabled() ? FontType.Grey : FontType.Grey, "TEAM: " + botTeamStr,
+				teamOptionEnabled() ? FontType.Blue : FontType.Black, "TEAM: " + botTeamStr,
 				optionPoses[1].x, optionPoses[1].y,
 				selected: selectArrowPosY == 1
 			);
 		}
 		Fonts.drawTextEX(
-			FontType.Grey, "Left/Right: Change, [OK]: Add, [BACK]: Back",
+			FontType.Blue, "Left/Right: Change, [OK]: Add, [BACK]: Back",
 			Global.screenW * 0.5f, 200, Alignment.Center
 		);
 	}

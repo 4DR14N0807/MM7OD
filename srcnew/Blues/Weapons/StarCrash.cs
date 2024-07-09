@@ -8,7 +8,7 @@ public class StarCrash : Weapon {
 	public StarCrashProj? activeProj;
 
 	public StarCrash() : base() {
-		displayName = "Star Crash";
+		displayName = "STAR CRASH";
 		descriptionV2 = "Creates a star-shaped energy barrier\nthat reduces gravity.";
 		decimal coreCooldown = 20;
 		ammoUseText = (1 / coreCooldown * 60).ToGBString() + " per second";

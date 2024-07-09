@@ -630,7 +630,7 @@ public class GameMode {
 			if (!Global.level.is1v1()) {
 				Global.sprites["hud_scrap"].drawToHUD(0, 4, 138);
 				Fonts.drawText(
-					FontType.Grey,
+					FontType.LigthGrey,
 					"x" + drawPlayer.currency.ToString(), 22, 140, Alignment.Left
 				);
 			}

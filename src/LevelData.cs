@@ -568,7 +568,8 @@ public class LevelData {
 		{ "training", "" },
 
 		// MM7
-		{ "robotmuseum" , "robotmuseum"},
+		{ "robotmuseum" , "robotmuseum"}, 
+		{ "willy3" , "wily3"},
 	};
 
 	public string getMusicKey(List<Player> players) {

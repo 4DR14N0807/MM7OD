@@ -138,7 +138,7 @@ public class ChatMenu : IMainMenu {
 		int topLeftY = typedChatY - (chatLineHeight * chatLines) - 2;
 		for (var i = 0; i < chatFeed.Count; i++) {
 			var chat = chatFeed[i];
-			FontType color = FontType.Grey;
+			FontType color = FontType.White;
 			if (chat.alliance != null) {
 				color = (chat.alliance == GameMode.redAlliance ? FontType.Red : FontType.Blue);
 			}
@@ -173,10 +173,10 @@ public class ChatMenu : IMainMenu {
 				true, new Color(16, 16, 16), 1, ZIndex.HUD, false,
 				new Color(255, 255, 255)
 			);
-			Fonts.drawText(FontType.Golden, chatDisplay, topLeftX, typedChatY);
+			Fonts.drawText(FontType.White, chatDisplay, topLeftX, typedChatY);
 
 			if (chatBlinkTime >= 0.5f) {
-				Fonts.drawText(FontType.Grey, "|", topLeftX + width + 1, typedChatY);
+				Fonts.drawText(FontType.White, "|", topLeftX + width + 1, typedChatY);
 			}
 		}
 	}

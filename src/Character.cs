@@ -13,7 +13,9 @@ public partial class Character : Actor, IDamagable {
 		"Vile",
 		"Axl",
 		"Sigma",
-		"Rockman"
+		"Mega Man",
+		"Proto Man",
+		"Bass",
 	};
 	public CharState charState;
 	public Player player;
@@ -96,6 +98,7 @@ public partial class Character : Actor, IDamagable {
 	public float grabInvulnTime;
 	public float darkHoldInvulnTime;
 	public float burnInvulnTime;
+	public float burningRecoveryCooldown;
 
 	public float limboRACheckCooldown;
 	public RideArmor? rideArmor;
@@ -1102,7 +1105,7 @@ public partial class Character : Actor, IDamagable {
 			igFreezeProgress--;
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
-		burningRecoveryCooldown += Global.spf;
+		if (burnStunStacks > 0) burningRecoveryCooldown += Global.spf;
 		if (burningRecoveryCooldown > 1 && burnStunStacks > 0) {
 			burningRecoveryCooldown = 0;
 			burnStunStacks--;

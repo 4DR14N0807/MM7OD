@@ -289,11 +289,11 @@ public class UpgradeMenu : IMainMenu {
 
 		Global.sprites["cursor"].drawToHUD(0, optionPositionsX[selectArrowPosX], optionPositionsY[selectArrowPosY]);
 
-		Fonts.drawText(FontType.Grey, "UPGRADE MENU", Global.screenW * 0.5f, 16, Alignment.Center);
+		Fonts.drawText(FontType.BlueMenu, "UPGRADE MENU", Global.screenW * 0.5f, 16, Alignment.Center);
 		Fonts.drawText(
-			FontType.LigthGrey,
+			FontType.White,
 			Global.nameCoins + ": " + mainPlayer.currency,
-			Global.screenW * 0.5f, 26, Alignment.Center
+			Global.screenW * 0.5f, 32, Alignment.Center
 		);
 
 		for (int i = 0; i < getMaxETanks(); i++) {
@@ -341,17 +341,17 @@ public class UpgradeMenu : IMainMenu {
 			}
 			if (!buyOrUse) {
 				if (!canUseEtank && eTankTargets.Count == 0) buyOrUseStr = "CANNOT USE E-TANK";
-				Fonts.drawText(FontType.Grey, buyOrUseStr, optionPos.x + 24, optionPos.y - 4);
+				Fonts.drawText(FontType.Red, buyOrUseStr, optionPos.x + 24, optionPos.y - 4);
 			} else {
 				Fonts.drawText(
-					FontType.Grey, buyOrUseStr, optionPos.x + 24, optionPos.y - 4,
+					FontType.Blue, buyOrUseStr, optionPos.x + 24, optionPos.y - 4,
 					selected: selectArrowPosY == i + 1
 				);
 			}
 			if (buyOrUse) {
 				string costStr = $" ({eTankCost} {Global.nameCoins})";
 				int posOffset = Fonts.measureText(FontType.Grey, buyOrUseStr);
-				Fonts.drawText(FontType.Grey, costStr, optionPos.x + 24 + posOffset, optionPos.y - 4);
+				Fonts.drawText(FontType.White, costStr, optionPos.x + 24 + posOffset, optionPos.y - 4);
 			}
 			//if (buyOrUse) Fonts.drawText(FontType.Grey, $" ({eTankCost} bolts)", optionPos.x + 93, optionPos.y);
 		}
@@ -401,17 +401,17 @@ public class UpgradeMenu : IMainMenu {
 			}
 			if (!buyOrUse) {
 				if (!canUseWtank && wTankTargets.Count == 0) buyOrUseStr = "CANNOT USE W-TANK";
-				Fonts.drawText(FontType.Grey, buyOrUseStr, optionPos.x + 24, optionPos.y - 4);
+				Fonts.drawText(FontType.Red, buyOrUseStr, optionPos.x + 24, optionPos.y - 4);
 			} else {
 				Fonts.drawText(
-					FontType.Grey, buyOrUseStr, optionPos.x + 24, optionPos.y - 4,
+					FontType.Blue, buyOrUseStr, optionPos.x + 24, optionPos.y - 4,
 					selected: selectArrowPosY == i + 1
 				);
 			}
 			if (buyOrUse) {
 				string costStr = $" ({wTankCost} {Global.nameCoins})";
 				int posOffset = Fonts.measureText(FontType.Grey, buyOrUseStr);
-				Fonts.drawText(FontType.Grey, costStr, optionPos.x + 24 + posOffset, optionPos.y - 4);
+				Fonts.drawText(FontType.White, costStr, optionPos.x + 24 + posOffset, optionPos.y - 4);
 			}
 			//if (buyOrUse) Fonts.drawText(FontType.Grey, $" ({eTankCost} bolts)", optionPos.x + 93, optionPos.y);
 		}
@@ -423,11 +423,11 @@ public class UpgradeMenu : IMainMenu {
 		drawAdaptorUpgrades(mainPlayer, 20);
 
 		Fonts.drawTextEX(
-			FontType.Grey, "[MUP]/[MDOWN]: Select Item",
+			FontType.Blue, "[MUP]/[MDOWN]: Select Item",
 			Global.halfScreenW, Global.screenH - 28, Alignment.Center
 		);
 		Fonts.drawTextEX(
-			FontType.Grey, "[OK]: Buy/Use, [BACK]: Back",
+			FontType.Blue, "[OK]: Buy/Use, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 18, Alignment.Center
 		);
 	}
@@ -455,12 +455,14 @@ public class UpgradeMenu : IMainMenu {
 	
 	public static void drawAdaptorUpgrades(Player mainPlayer, int offY) {
 		if (mainPlayer.character == null) return;
-		if (mainPlayer.character.charState is NovaStrikeState) return;
+		if (mainPlayer.character is not Rock) return;
 
 		var rock = mainPlayer.character as Rock;
+		bool hasAdaptor = mainPlayer.hasSuperAdaptor();
 
 		string specialText = "[CMD]: Super Adaptor" + 
 			$" ({Player.superAdaptorCost} {Global.nameCoins})";
+		if (hasAdaptor) specialText = "Super Adaptor: Activated";
 		/*specialText = (
 			rock.boughtSuperAdaptorOnce ? "" : "[CMD]: Super Adaptor" + 
 			$" ({Player.superAdaptorCost} {Global.nameCoins})"
@@ -468,12 +470,22 @@ public class UpgradeMenu : IMainMenu {
 		if (mainPlayer.canGoSuperAdaptor() && mainPlayer.isRock) {
 			
 		} 
-
-
+		
 		float yPosb = Global.halfScreenH + 9;
+
+		DrawWrappers.DrawLine(
+			7, yPosb + offY, Global.screenW - 7,yPosb + offY, 
+			new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
+		);
+
 		DrawWrappers.DrawRect(
-			5, yPosb + offY, Global.screenW - 5, yPosb + 30 + offY,
+			7, yPosb + offY, Global.screenW - 7, yPosb + 30 + offY,
 			true, Helpers.MenuBgColor, 0, ZIndex.HUD + 200, false
+		);
+
+		DrawWrappers.DrawLine(
+			7, yPosb + 30 + offY, Global.screenW - 7, yPosb + 30 + offY, 
+			new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
 		);
 
 		if (!string.IsNullOrEmpty(specialText)) {
@@ -483,14 +495,15 @@ public class UpgradeMenu : IMainMenu {
 			float extraOffset = mainPlayer.currency >= Player.superAdaptorCost ? 11 : 4;
 			
 			Fonts.drawText(
-				FontType.Grey, Helpers.controlText(specialText).ToUpperInvariant(),
+				hasAdaptor ? FontType.Green : FontType.Orange,
+				Helpers.controlText(specialText).ToUpperInvariant(),
 				Global.halfScreenW, yPos + extraOffset + yOff + offY, Alignment.Center
 			);
 		}
 
 		specialText.ToUpperInvariant();
 
-		if (mainPlayer.currency < Player.superAdaptorCost) {
+		if (mainPlayer.currency < Player.superAdaptorCost && !mainPlayer.hasSuperAdaptor()) {
 			float yOff = specialText.Contains('\n') ? -3 : 0;
 			float yPos = Global.halfScreenH + 9;
 			Fonts.drawText(

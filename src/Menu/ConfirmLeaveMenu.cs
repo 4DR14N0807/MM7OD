@@ -40,22 +40,22 @@ public class ConfirmLeaveMenu : IMainMenu {
 			int i = 0;
 			foreach (var line in lines) {
 				Fonts.drawText(
-					FontType.BlueMenu, line, Global.screenW * 0.5f, 20 + i * 10, Alignment.Center
+					FontType.Red, line, Global.screenW * 0.5f, 20 + i * 10, Alignment.Center
 				);
 				i++;
 			}
 		} else {
 			Fonts.drawText(
-				FontType.BlueMenu, message, Global.screenW * 0.5f, 15, Alignment.Center
+				FontType.Red, message, Global.screenW * 0.5f, 15, Alignment.Center
 			);
 		}
 		Global.sprites["cursor"].drawToHUD(0, 70, 76 + (selectY * 20) - 3);
 
-		Fonts.drawText(FontType.Grey, "NO", optionPos1.x, optionPos1.y, selected: selectY == 0);
-		Fonts.drawText(FontType.Grey, "YES", optionPos2.x, optionPos2.y, selected: selectY == 1);
+		Fonts.drawText(FontType.Blue, "NO", optionPos1.x, optionPos1.y, selected: selectY == 0);
+		Fonts.drawText(FontType.Blue, "YES", optionPos2.x, optionPos2.y, selected: selectY == 1);
 
 		Fonts.drawText(
-			FontType.Grey, "[OK]: Choose, [BACK]: Back",
+			FontType.Blue, "[OK]: Choose, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 20, Alignment.Center
 		);
 	}

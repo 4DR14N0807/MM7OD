@@ -7,7 +7,7 @@ public class SparkShock : Weapon {
 	public static SparkShock netWeapon = new();
 
 	public SparkShock() : base() {
-		displayName = "Spark Shock";
+		displayName = "SPARK SHOCK";
 		descriptionV2 = "Generates an energy ball that can shortcircuit" + "\n" +
 						"electronics, temporarily paralyzing enemies.";
 		defaultAmmoUse = 3;

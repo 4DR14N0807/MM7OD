@@ -181,14 +181,14 @@ public class WaitMenu : IMainMenu {
 		if (Global.serverClient.isHost) {
 			titleText = "Waiting for players...";
 		}
-		Fonts.drawText(FontType.BlueMenu, titleText, Global.halfScreenW, 21, Alignment.Center);
+		Fonts.drawText(FontType.OrangeMenu, titleText, Global.halfScreenW, 21, Alignment.Center);
 
 		//DrawWrappers.DrawTextureHUD(Global.textures["border"], 15, 30);
 		if (!server.isLAN) {
-			Fonts.drawText(FontType.BlueMenu, "Match Name: ", col1Pos, headerPos - 20);
-			Fonts.drawText(FontType.OrangeMenu, server.name, col1Pos + 90, headerPos - 20);
-			Fonts.drawText(FontType.BlueMenu, "Map: ", col1Pos, headerPos - 5);
-			Fonts.drawText(FontType.OrangeMenu, server.getMapShortName(), col1Pos + 36, headerPos - 5);
+			Fonts.drawText(FontType.OrangeMenu, "Match Name: ", col1Pos, headerPos - 20);
+			Fonts.drawText(FontType.BlueMenu, server.name, col1Pos + 90, headerPos - 20);
+			Fonts.drawText(FontType.OrangeMenu, "Map: ", col1Pos, headerPos - 5);
+			Fonts.drawText(FontType.BlueMenu, server.getMapShortName(), col1Pos + 36, headerPos - 5);
 			//Fonts.drawText(FontType.OrangeMenu, server.getMapDisplayName(), col1Pos + 36, headerPos - 5);
 
 		} else {
@@ -198,11 +198,11 @@ public class WaitMenu : IMainMenu {
 			//Fonts.drawText(FontType.BlueMenu, "Map: " + server.getMapDisplayName(), col1Pos, headerPos + 10);
 		}
 
-		Fonts.drawText(FontType.Grey, "PLAYER", col1Pos, headerPos + 10);
-		Fonts.drawText(FontType.Grey, "ID", col2Pos, headerPos + 10);
-		Fonts.drawText(FontType.Grey, "HOST?", col3Pos, headerPos + 10);
-		if (isTeamMode()) Fonts.drawText(FontType.Grey, "TEAM", col4Pos, headerPos + 10);
-		else Fonts.drawText(FontType.Grey, "SPEC?", col4Pos, headerPos + 10);
+		Fonts.drawText(FontType.Orange, "PLAYER", col1Pos, headerPos + 10);
+		Fonts.drawText(FontType.Orange, "ID", col2Pos, headerPos + 10);
+		Fonts.drawText(FontType.Orange, "HOST?", col3Pos, headerPos + 10);
+		if (isTeamMode()) Fonts.drawText(FontType.Orange, "TEAM", col4Pos, headerPos + 10);
+		else Fonts.drawText(FontType.Orange, "SPEC?", col4Pos, headerPos + 10);
 
 		var startServerRow = rowHeight + headerPos;
 
@@ -239,7 +239,7 @@ public class WaitMenu : IMainMenu {
 
 		if (!Global.serverClient.isHost) {
 			Fonts.drawTextEX(
-				FontType.Grey, "[BACK]: Leave, [ALT]: Refresh",
+				FontType.Orange, "[BACK]: Leave, [ALT]: Refresh",
 				Global.halfScreenW, 190, Alignment.Center
 			);
 		} else {
@@ -251,18 +251,18 @@ public class WaitMenu : IMainMenu {
 				);
 			}
 			Fonts.drawTextEX(
-				FontType.Grey, helpLegend,
+				FontType.Orange, helpLegend,
 				Global.halfScreenW, 190, Alignment.Center
 			);
 			if (isTeamMode() && Global.serverClient.isHost) {
 				Fonts.drawTextEX(
-					FontType.Grey, "[Left/Right: change player team]",
+					FontType.Orange, "[Left/Right: change player team]",
 					Global.halfScreenW, 180, Alignment.Center
 				);
 			} else if (
 				  !isTeamMode() && Global.serverClient.isHost)
 				Fonts.drawTextEX(
-					FontType.Grey, "[Left/Right: change player spectator]",
+					FontType.Orange, "[Left/Right: change player spectator]",
 					Global.halfScreenW, 180, Alignment.Center
 				);
 		}

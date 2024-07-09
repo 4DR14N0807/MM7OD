@@ -7,7 +7,7 @@ public class GyroAttack : Weapon {
 	public static GyroAttack netWeapon = new();
 
 	public GyroAttack() : base() {
-		displayName = "Gyro Attack";
+		displayName = "GYRO ATTACK";
 		descriptionV2 = "A propeller weapon that can\nbe aimed in 2 diferent directions.";
 		defaultAmmoUse = 2;
 

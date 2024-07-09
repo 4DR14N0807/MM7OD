@@ -36,6 +36,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 	public IMainMenu prevMenu;
 	public bool inGame;
 	public bool isOffline;
+	private FontType fontOption = FontType.Blue; 
 	public List<MenuOption> menuOptions = new List<MenuOption>();
 
 	SavedMatchSettings savedMatchSettings { get { return isOffline ? SavedMatchSettings.mainOffline : SavedMatchSettings.mainOnline; } }
@@ -70,7 +71,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"START BOLTS" + ": " + //"Start " + Global.nameCoins + ": " +
 						savedMatchSettings.customMatchSettings.startCurrency.ToString(),
 						pos.x, pos.y, selected: selectArrowPosY == 0
@@ -128,7 +129,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"START E-TANKS: " +
 						savedMatchSettings.customMatchSettings.startETanks.ToString(),
 						pos.x, pos.y, selected: selectArrowPosY == 1
@@ -144,7 +145,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"MAX E-TANKS: " +
 						savedMatchSettings.customMatchSettings.maxETanks.ToString(),
 						pos.x, pos.y, selected: selectArrowPosY == 2
@@ -160,7 +161,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"START W-TANKS: " +
 						savedMatchSettings.customMatchSettings.startWTanks.ToString(),
 						pos.x, pos.y, selected: selectArrowPosY == 3
@@ -176,7 +177,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"MAX W-TANKS: " +
 						savedMatchSettings.customMatchSettings.maxWTanks.ToString(),
 						pos.x, pos.y, selected: selectArrowPosY == 4
@@ -192,7 +193,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"HEALTH MODIFIER: " +
 						(savedMatchSettings.customMatchSettings.healthModifier * 10).ToString() + 
 						"%",
@@ -225,7 +226,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"DAMAGE MODIFIER: " +
 						(savedMatchSettings.customMatchSettings.damageModifier * 100).ToString() + "%",
 						pos.x, pos.y, selected: selectArrowPosY == 6
@@ -253,14 +254,14 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.sameCharNum, -1, 5);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.sameCharNum, 5, 7);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"MONO CHARACTER: " +
 						getSameCharString(savedMatchSettings.customMatchSettings.sameCharNum),
-						pos.x, pos.y, selected: selectArrowPosY == 5
+						pos.x, pos.y, selected: selectArrowPosY == 7
 					);
 				}
 			)
@@ -269,14 +270,14 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redSameCharNum, -1, 5);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redSameCharNum, 5, 7);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.Grey,
+						fontOption,
 						"RED MONO CHARACTER: " +
 						getSameCharString(savedMatchSettings.customMatchSettings.redSameCharNum),
-						pos.x, pos.y, selected: selectArrowPosY == 6
+						pos.x, pos.y, selected: selectArrowPosY == 8
 					);
 				}
 			)
@@ -330,7 +331,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		}
 
 		Fonts.drawText(
-			FontType.BlueMenu, "Custom Match Options",
+			FontType.OrangeMenu, "Custom Match Options",
 			Global.halfScreenW, 20, alignment: Alignment.Center
 		);
 
@@ -341,7 +342,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		}
 
 		Fonts.drawTextEX(
-			FontType.Grey, "[MLEFT]/[MRIGHT]: Change setting, [BACK]: Back",
+			FontType.Orange, "[MLEFT]/[MRIGHT]: Change setting, [BACK]: Back",
 			Global.screenW * 0.5f, Global.screenH - 26, Alignment.Center
 		);
 	}

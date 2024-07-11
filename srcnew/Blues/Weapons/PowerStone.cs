@@ -7,7 +7,7 @@ public class PowerStone : Weapon {
 	public static PowerStone netWeapon = new();
 
 	public PowerStone() : base() {
-		displayName = "Power Stone";
+		displayName = "POWER STONE";
 		descriptionV2 = "Summons three stones that spiral around.\nCan be used behind the shield.";
 		defaultAmmoUse = 5;
 

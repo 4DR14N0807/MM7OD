@@ -28,6 +28,7 @@ public class ConfigureCPUMenu : IMainMenu {
 	public bool isInGameEndSelect;
 	public bool isTeamMode;
 	public bool isHost;
+	private FontType fontOption = FontType.Blue;
 
 	public CharSelection[] charSelections;
 
@@ -79,11 +80,11 @@ public class ConfigureCPUMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Grey, "CPU" + (iCopy + 1).ToString(),
+							fontOption, "CPU" + (iCopy + 1).ToString(),
 							pos.x - 32, pos.y
 						);
 						Fonts.drawText(
-							FontType.Grey, "Character: " + charSelections[cpuData.uiSelectedCharIndex].name,
+							fontOption, "Character: " + charSelections[cpuData.uiSelectedCharIndex].name,
 							pos.x + 14, pos.y, selected: index == selectArrowPosY
 						);
 					})
@@ -104,7 +105,7 @@ public class ConfigureCPUMenu : IMainMenu {
 								allianceStr = GameMode.getTeamName(cpuData.alliance);
 							}
 							Fonts.drawText(
-								FontType.Grey, "Team: " + allianceStr, pos.x, pos.y,
+								fontOption, "Team: " + allianceStr, pos.x, pos.y,
 								selected: index == selectArrowPosY
 							);
 						})
@@ -132,14 +133,14 @@ public class ConfigureCPUMenu : IMainMenu {
 		}
 
 		Fonts.drawText(
-			FontType.BlueMenu, "Configure CPU players",
+			FontType.OrangeMenu, "Configure CPU players",
 			Global.halfScreenW, 20, alignment: Alignment.Center
 		);
 		/*DrawWrappers.DrawTextureHUD(
 			Global.textures["cursor"], menuOptions[0].pos.x + 6, menuOptions[selectArrowPosY].pos.y - 2
 		);*/
 
-		Global.sprites["cursor"].drawToHUD(0, menuOptions[0].pos.x + 6, menuOptions[selectArrowPosY].pos.y + 4);
+		Global.sprites["cursor"].drawToHUD(0, menuOptions[0].pos.x - 38, menuOptions[selectArrowPosY].pos.y + 4);
 
 		int i = 0;
 		foreach (var menuOption in menuOptions) {
@@ -148,7 +149,7 @@ public class ConfigureCPUMenu : IMainMenu {
 		}
 
 		Fonts.drawTextEX(
-			FontType.Grey, "[MLEFT]/[MRIGHT]: Change, [BACK]: Back",
+			FontType.Orange, "[MLEFT]/[MRIGHT]: Change, [BACK]: Back",
 			Global.screenW * 0.5f, Global.screenH - 28, Alignment.Center
 		);
 	}

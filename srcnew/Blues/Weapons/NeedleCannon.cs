@@ -12,7 +12,7 @@ public class NeedleCannon : Weapon {
 		defaultAmmoUse = 1.2f;
 
 		// Display data.
-		displayName = "Needle Cannon";
+		displayName = "NEEDLE CANNON";
 		descriptionV2 = "Rapid fire cannon that deals fast damage\nbut has high heat generation.";
 
 		// Auto-calculation for ammo per second text.

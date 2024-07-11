@@ -116,14 +116,14 @@ public class BluesWeaponMenu : IMainMenu {
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenuload"], 0, 0);
 		}
-		Fonts.drawText(FontType.Yellow, "Protoman Loadout", Global.screenW * 0.5f, 24, Alignment.Center);
+		Fonts.drawText(FontType.BlueMenu, "Protoman Loadout", Global.screenW * 0.5f, 24, Alignment.Center);
 
 		int startY = 55;
 		int startX = 30;
 		int startX2 = 160;
 		int wepW = 18;
 		int wepH = 20;
-		Global.sprites["cursor"].drawToHUD(0, startX, startY + cursorRow * wepH);
+		Global.sprites["cursor"].drawToHUD(0, startX, startY - 1 + cursorRow * wepH);
 
 		for (int i = 0; i < 1; i++) {
 			// Position.
@@ -133,7 +133,7 @@ public class BluesWeaponMenu : IMainMenu {
 				_ => specialWeapon
 			};
 			// Category name.
-			Fonts.drawText(FontType.LigthGrey, categoryNames[i], 40, yPos + 2);
+			Fonts.drawText(FontType.OrangeMenu, categoryNames[i], 40, yPos - 1);
 			// Icons.
 			for (int j = 0; j < weaponIcons[i].Length; j++) {
 				// Draw icon sprite.
@@ -154,8 +154,10 @@ public class BluesWeaponMenu : IMainMenu {
 		string weaponTitle = "";
 		string weaponDescription = "";
 		string weaponSubDescription = "";
+		float coreAmmo = 0;
+		Weapon currentWeapon = new();
 		if (cursorRow == 0) {
-			Weapon currentWeapon = specialWeapons[specialWeapon];
+			currentWeapon = specialWeapons[specialWeapon];
 			menuTitle = "Special Weapon";
 			weaponTitle = currentWeapon.displayName;;
 			weaponDescription = currentWeapon.descriptionV2;;
@@ -164,37 +166,49 @@ public class BluesWeaponMenu : IMainMenu {
 			} else {
 				weaponSubDescription = $"Heat generation: {currentWeapon.defaultAmmoUse}";
 			}
+			coreAmmo = currentWeapon.defaultAmmoUse;
 		}
 		// Draw rectangle.
-		int wsy = 124;
+		int wsy = 127;
 		DrawWrappers.DrawRect(
-			25, wsy - 4, Global.screenW - 25, wsy + 68, true, new Color(0, 0, 0, 100), 1,
+			25, wsy, Global.screenW - 25, wsy + 18, true, new Color(0, 0, 0, 100), 1,
 			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
 		);
 		DrawWrappers.DrawRect(
-			25, wsy - 4, Global.screenW - 25, wsy + 11, true, new Color(0, 0, 0, 100), 1,
+			25, wsy, Global.screenW - 25, wsy + 72, true, new Color(0, 0, 0, 100), 1,
 			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
 		);
 		// Draw descriptions.
-		float titleY1 = wsy;
-		float titleY2 = titleY1 + 16;
+		float titleY1 = wsy + 3;
+		float titleY2 = titleY1 + 19;
 		float row1Y = titleY2 + 13;
-		float row2Y = row1Y + 28;
+		float row2Y = row1Y + 25;
 		Fonts.drawText(
-			FontType.Purple, menuTitle,
+			FontType.BlueMenu, menuTitle,
 			Global.halfScreenW, titleY1, Alignment.Center
 		);
 		Fonts.drawText(
-			FontType.Orange, weaponTitle,
+			FontType.Blue, weaponTitle,
 			Global.halfScreenW, titleY2, Alignment.Center
 		);
 		Fonts.drawText(
-			FontType.Grey, weaponDescription,
+			FontType.LigthGrey, weaponDescription,
 			Global.halfScreenW, row1Y, Alignment.Center
 		);
 		Fonts.drawText(
-			FontType.Green, weaponSubDescription,
+			getCoreFont(currentWeapon, coreAmmo), weaponSubDescription,
 			Global.halfScreenW, row2Y, Alignment.Center
 		);
+	}
+
+	private FontType getCoreFont(Weapon wep, float amount) {
+		if (wep is StarCrash or NeedleCannon) return FontType.Red;
+
+		return amount switch {
+			3 => FontType.Yellow,
+			4 => FontType.Orange,
+			5 => FontType.Red,
+			_ => FontType.Green
+		};
 	}
 }

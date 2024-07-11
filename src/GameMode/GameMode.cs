@@ -49,10 +49,10 @@ public class GameMode {
 	public FontType[] teamFonts = {
 		FontType.BlueMenu,
 		FontType.RedMenu,
-		FontType.GreenMenu,
-		FontType.PurpleMenu,
-		FontType.YellowMenu,
-		FontType.OrangeMenu
+		FontType.Green,
+		FontType.Purple,
+		FontType.Yellow,
+		FontType.Orange
 	};
 
 	public VoteKick? currentVoteKick;
@@ -630,7 +630,7 @@ public class GameMode {
 			if (!Global.level.is1v1()) {
 				Global.sprites["hud_scrap"].drawToHUD(0, 4, 138);
 				Fonts.drawText(
-					FontType.Grey,
+					FontType.LigthGrey,
 					"x" + drawPlayer.currency.ToString(), 22, 140, Alignment.Left
 				);
 			}
@@ -2711,21 +2711,15 @@ public class GameMode {
 
 	public FontType getCharFont(Player player) {
 		if (player.isDead && !isOver) {
-			return FontType.LigthGrey;
+			return FontType.White;
 		} else if (player.eliminated()) {
-			return FontType.LigthGrey;
-		} else if (player.isX) {
-			return FontType.Blue;
-		} else if (player.isZero) {
-			return FontType.Red;
-		} else if (player.isAxl) {
-			return FontType.Yellow;
-		} else if (player.isVile) {
-			return FontType.Pink;
-		} else if (player.isSigma) {
-			return FontType.Green;
+			return FontType.White;
 		} else if (player.isRock) {
 			return FontType.Blue;
+		} else if (player.isProtoMan) {
+			return FontType.Red;
+		} else if (player.isBass) {
+			return FontType.Yellow;
 		}
 		return FontType.Grey;
 	}

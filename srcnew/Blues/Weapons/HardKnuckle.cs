@@ -7,7 +7,7 @@ public class HardKnuckle : Weapon {
 	public static HardKnuckle netWeapon = new();
 
 	public HardKnuckle() : base() {
-		displayName = "Hard Knuckle";
+		displayName = "HARD KNUCKLE";
 		descriptionV2 = "Fires out a large missile shaped like a fist,\ncan damage more than one target.";
 		defaultAmmoUse = 4;
 

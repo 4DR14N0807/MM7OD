@@ -36,7 +36,6 @@ public class LegBreakerState : CharState {
 		base.onEnter(oldState);
 		rock = character as Rock;
 		initialSlideDir = character.xDir;
-		character.isDashing = true;
 		character.globalCollider = rock.getSlidingCollider();
 		effect = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);
 	}
@@ -72,7 +71,7 @@ public class LegBreakerState : CharState {
 		}
 
 		var move = new Point(0, 0);
-		move.x = character.getDashSpeed() * initialSlideDir;
+		if (rock != null) move.x = rock.getSlideSpeed() * initialSlideDir;
 		character.move(move);
 
 		if (cancel) {

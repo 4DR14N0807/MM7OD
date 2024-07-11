@@ -252,13 +252,18 @@ public class Fonts {
 			FontType.YellowMenu => "YellowMenu",
 			FontType.OrangeMenu => "OrangeMenu",
 			FontType.WhiteMenu => "WhiteMenu",
+			FontType.White => "White",
+			FontType.Black => "Black",
 			_ => "Blue"
 		};
 	}
 
 	public static FontType getFontAlt(FontType fontType) {
 		return fontType switch {
+			FontType.Blue => FontType.Orange,
+			FontType.Black => FontType.Black,
 			FontType.Orange => FontType.Red,
+			FontType.Red => FontType.Orange,
 			FontType.FBlue => FontType.FOrange,
 			FontType.FOrange => FontType.FBlue,
 			FontType.BlueMenu => FontType.OrangeMenu,
@@ -293,5 +298,7 @@ public enum FontType {
 	PurpleMenu,
 	YellowMenu,
 	OrangeMenu,
-	WhiteMenu
+	WhiteMenu,
+	White,
+	Black,
 }

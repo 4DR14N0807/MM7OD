@@ -221,16 +221,18 @@ public class ControlMenu : IMainMenu {
 
 		if (isController) {
 			Fonts.drawText(
-				FontType.LigthGrey, "Setting controls for controller \"" +
+				inGame ? FontType.White : FontType.Grey, "Setting controls for controller \"" +
 				Control.getControllerName() + "\"",
 				Global.halfScreenW, 32, alignment: Alignment.Center
 			);
 		} else {
 			Fonts.drawText(
-				FontType.LigthGrey, "Setting controls for keyboard",
+				inGame ? FontType.White : FontType.Grey, "Setting controls for keyboard",
 				Global.halfScreenW, 32, alignment: Alignment.Center
 			);
 		}
+
+		FontType font = inGame ? FontType.Blue : FontType.Grey;
 
 		for (int i = 0; i < bindableControls.Count; i++) {
 			var bindableControl = bindableControls[i];
@@ -239,12 +241,12 @@ public class ControlMenu : IMainMenu {
 				boundKeyDisplay = "(Inherit)";
 			}
 			Fonts.drawText(
-				FontType.Grey, bindableControl[1] + ":",
+				font, bindableControl[1] + ":",
 				topLeft.x, topLeft.y + startYOff + 8 * (i + 1),
 				selected: selectArrowPosY == i
 			);
 			Fonts.drawText(
-				FontType.Grey, boundKeyDisplay,
+				font, boundKeyDisplay,
 				topLeft.x + 80, topLeft.y + startYOff + 8 * (i + 1),
 				selected: selectArrowPosY == i
 			);
@@ -252,18 +254,18 @@ public class ControlMenu : IMainMenu {
 
 		if (!listenForKey) {
 			Fonts.drawTextEX(
-				FontType.Grey, "[OK] = Bind, [ALT] = Unbind, [BACK] = Save/Back",
+				font, "[OK] = Bind, [ALT] = Unbind, [BACK] = Save/Back",
 				Global.halfScreenW, Global.screenH - 16, Alignment.Center
 			);
 		} else {
 			if (isController) {
 				Fonts.drawText(
-					FontType.Grey, "Press desired controller button to bind",
+					font, "Press desired controller button to bind",
 					Global.halfScreenW, Global.screenH - 16, Alignment.Center
 				);
 			} else {
 				Fonts.drawText(
-					FontType.Grey, "Press desired key to bind",
+					font, "Press desired key to bind",
 					Global.halfScreenW, Global.screenH - 16, Alignment.Center
 				);
 			}
@@ -275,10 +277,10 @@ public class ControlMenu : IMainMenu {
 				17, 17, Global.screenW - 17, Global.screenH - 17, true,
 				new Color(0, 0, 0, 224), 0, ZIndex.HUD, false
 			);
-			Fonts.drawText(FontType.Grey, "ERROR", Global.screenW / 2, top - 20, alignment: Alignment.Center);
-			Fonts.drawText(FontType.Grey, error, Global.screenW / 2, top, alignment: Alignment.Center);
+			Fonts.drawText(inGame ? FontType.Red : FontType.Grey, "ERROR", Global.screenW / 2, top - 20, alignment: Alignment.Center);
+			Fonts.drawText(inGame ? FontType.Red : FontType.Grey, error, Global.screenW / 2, top, alignment: Alignment.Center);
 			Fonts.drawTextEX(
-				FontType.Grey, Helpers.controlText("Press [OK] to continue"),
+				font, Helpers.controlText("Press [OK] to continue"),
 				Global.screenW / 2, 20 + top, alignment: Alignment.Center
 			);
 		}

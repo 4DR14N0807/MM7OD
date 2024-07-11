@@ -40,6 +40,11 @@ public class Rush : Actor, IDamagable {
 		if (ownedByLocalPlayer) {
 			changeState(new RushWarpIn());
 		}
+
+		netActorCreateId = NetActorCreateId.Rush;
+		if (rpc) {
+			createActorRpc(owner.id);
+		}
 	}
 
 	public override Collider? getTerrainCollider() {

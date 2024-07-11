@@ -6,7 +6,7 @@ public class WaterWave : Weapon {
 	public static GyroAttack netWeapon = new();
 
 	public WaterWave() : base() {
-		displayName = "Water Wave";
+		displayName = "WATER WAVE";
 		descriptionV2 = "A weapon that uses high pressure to\ninject compressed water in one direction.";
 		defaultAmmoUse = 4;
 

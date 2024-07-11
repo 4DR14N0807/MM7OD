@@ -56,15 +56,15 @@ public class CharSelection {
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
 	public static CharSelection[] selections => [
-		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
-		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
-		new CharSelection("Bass", 7, 0, 0, "bass_idle", 0),
+		new CharSelection("MEGA MAN", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("PROTO MAN", 6, 0, 0, "blues_idle", 0 ),
+		new CharSelection("BASS", 7, 0, 0, "bass_idle", 0),
 	];
 
 	public static CharSelection[] selections1v1 => [
-		new CharSelection("Mega Man", 5, 0, 0, "rock_idle", 0),
-		new CharSelection("Proto Man", 6, 0, 0, "blues_idle", 0 ),
-		new CharSelection("Bass", 7, 0, 0, "bass_idle", 0),
+		new CharSelection("MEGA MAN", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("PROTO MAN", 6, 0, 0, "blues_idle", 0 ),
+		new CharSelection("BASS", 7, 0, 0, "bass_idle", 0),
 	];
 
 	public CharSelection(
@@ -94,6 +94,7 @@ public class SelectCharacterMenu : IMainMenu {
 	public bool isInGameEndSelect;
 	public bool isTeamMode;
 	public bool isHost;
+	private FontType fontOption = FontType.OrangeMenu;
 
 	public Action completeAction;
 
@@ -121,6 +122,8 @@ public class SelectCharacterMenu : IMainMenu {
 		this.completeAction = completeAction;
 		this.isTeamMode = isTeamMode;
 		this.isHost = isHost;
+
+		if (isInGame) fontOption = FontType.BlueMenu;
 
 		charSelections = is1v1 ? CharSelection.selections1v1 : CharSelection.selections;
 		playerData.charNum = isInGame ? Global.level.mainPlayer.newCharNum : Options.main.preferredCharacter;
@@ -214,7 +217,7 @@ public class SelectCharacterMenu : IMainMenu {
 		//);
 		if (!isInGame) {
 			Fonts.drawText(
-				FontType.BlueMenu, "Select Character".ToUpper(),
+				fontOption, "Select Character".ToUpper(),
 				Global.halfScreenW, 20, alignment: Alignment.Center
 			);
 		} else {
@@ -224,7 +227,7 @@ public class SelectCharacterMenu : IMainMenu {
 					true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
 				);
 				Fonts.drawText(
-					FontType.BlueMenu, "Select Character For Next Match".ToUpper(),
+					fontOption, "Select Character".ToUpper(),
 					Global.halfScreenW, 20, alignment: Alignment.Center
 				);
 			} else {
@@ -233,7 +236,7 @@ public class SelectCharacterMenu : IMainMenu {
 					true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
 				);
 				Fonts.drawText(
-					FontType.BlueMenu, "Select Character".ToUpper(),
+					fontOption, "Select Character".ToUpper(),
 					Global.halfScreenW, 20, alignment: Alignment.Center
 				);
 			}
@@ -257,16 +260,16 @@ public class SelectCharacterMenu : IMainMenu {
 
 		if (Global.frameCount % 60 < 30) {
 			Fonts.drawText(
-				FontType.LigthGrey, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
+				FontType.Blue, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
 				Alignment.Center
 			);
 			Fonts.drawText(
-				FontType.LigthGrey, ">", Global.halfScreenW + 60, Global.halfScreenH + 22,
+				FontType.Blue, ">", Global.halfScreenW + 60, Global.halfScreenH + 22,
 				Alignment.Center
 			);
 		}
 		Fonts.drawText(
-			FontType.LigthGrey, charSelection.name, Global.halfScreenW, Global.halfScreenH + 22,
+			FontType.Blue, charSelection.name, Global.halfScreenW, Global.halfScreenH + 22,
 			alignment: Alignment.Center
 		);
 
@@ -286,7 +289,7 @@ public class SelectCharacterMenu : IMainMenu {
 			);
 			for (int i = 0; i < description.Length; i++) {
 				Fonts.drawText(
-					FontType.Grey, description[i],
+					FontType.LigthGrey, description[i],
 					Global.halfScreenW, startY + 93 + (10 * (i + 1)), alignment: Alignment.Center
 				);
 			}

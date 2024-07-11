@@ -52,7 +52,7 @@ public class MatchOptionsMenu : IMainMenu {
 				var otherPlayers = Global.level.spectatablePlayers();
 				string spectate = Global.level.mainPlayer.isSpectator ? "STOP SPECTATING" : "SPECTATE";
 				Fonts.drawText(
-					canSpectate() ? FontType.Grey : FontType.Grey,
+					canSpectate() ? FontType.Blue : FontType.Black,
 					spectate, pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -68,7 +68,7 @@ public class MatchOptionsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						canSuicide() ? FontType.Grey : FontType.Grey, "SUICIDE",
+						canSuicide() ? FontType.Red : FontType.Black, "SUICIDE",
 						pos.x, pos.y, selected: selectY == index
 					);
 				}
@@ -103,7 +103,7 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				string teamName = Global.level.gameMode.teamNames[selectedTeam];
 				Fonts.drawText(
-					canChangeToTeam() ? FontType.Grey : FontType.Grey,
+					canChangeToTeam() ? FontType.Blue : FontType.Black,
 					$"CHANGE TEAM TO: < {teamName} >", pos.x, pos.y, selected: selectY == index
 			);
 			}),
@@ -119,7 +119,7 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					canAddBot() ? FontType.Grey : FontType.Grey,
+					canAddBot() ? FontType.Blue : FontType.Black,
 					"ADD BOT", pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -164,7 +164,7 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					canRemoveBot() ? FontType.Grey : FontType.Grey,
+					canRemoveBot() ? FontType.Blue : FontType.Black,
 					"REMOVE BOT: " + (botToRemove?.name ?? "(No bots)"),
 					pos.x, pos.y, selected: selectY == index
 			);
@@ -178,7 +178,7 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Grey,
+					FontType.Blue,
 					 "CHAT HISTORY", pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -191,7 +191,7 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Grey,
+					FontType.Blue,
 					Global.level.gameMode.chatMenu.chatEnabled ? "DISABLE CHAT" : "ENABLE CHAT",
 					pos.x, pos.y, selected: selectY == index
 				);
@@ -227,7 +227,7 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Grey,
+					FontType.Blue,
 					"MUTE: " + getPlayerMuteMsg(playerToMute),
 					pos.x, pos.y, selected: selectY == index
 				);
@@ -256,7 +256,7 @@ public class MatchOptionsMenu : IMainMenu {
 			},
 			(Point pos, int index) => {
 				Fonts.drawText(
-					FontType.Grey,
+					FontType.Blue,
 					"REPORT: " + (playerToReport?.name ?? "(No players)"),
 					pos.x, pos.y, selected: selectY == index
 				);
@@ -286,7 +286,7 @@ public class MatchOptionsMenu : IMainMenu {
 				string prefix = "";
 				if (!KickMenu.hasDirectKickPower()) prefix = "VOTE ";
 				Fonts.drawText(
-					canKick() ? FontType.Grey : FontType.Grey,
+					canKick() ? FontType.Blue : FontType.Black,
 					prefix + "KICK: " + (playerToKick?.name ?? "(No players)"),
 					pos.x, pos.y, selected: selectY == index
 				);
@@ -309,7 +309,7 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				string msg = "VOTE RESET FLAGS";
 				Fonts.drawText(
-					canResetFlags() ? FontType.Grey : FontType.Grey,
+					canResetFlags() ? FontType.Blue : FontType.Black,
 					msg, pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -339,7 +339,7 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				string msg = canEndMatchWithoutVote() ? "END MATCH" : "VOTE END MATCH";
 				Fonts.drawText(
-					canEndMatch() ? FontType.Grey : FontType.Grey,
+					canEndMatch() ? FontType.Blue : FontType.Black,
 					msg, pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -406,12 +406,12 @@ public class MatchOptionsMenu : IMainMenu {
 
 		if (selectY == 5 || selectY == 6 || selectY == 7 || selectY == 9) {
 			Fonts.drawTextEX(
-				FontType.Grey, "[MLEFT]/[MRIGHT]: Change",
+				FontType.Blue, "[MLEFT]/[MRIGHT]: Change",
 				Global.halfScreenW, Global.screenH - 28, Alignment.Center
 			);
 		}
 		Fonts.drawTextEX(
-			FontType.Grey, "[OK]: Select, [BACK]: Back",
+			FontType.Blue, "[OK]: Select, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 18, Alignment.Center
 		);
 	}

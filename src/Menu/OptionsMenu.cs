@@ -47,6 +47,11 @@ public class OptionsMenu : IMainMenu {
 			isGraphics = true;
 		}
 
+		if (inGame) {
+			optionFontText = FontType.Blue;
+			optionFontValue = FontType.Blue;
+		}
+
 		oldIntegerFullscreen = Options.main.integerFullscreen;
 		oldFullscreen = Options.main.fullScreen;
 		oldWindowScale = Options.main.windowScale;
@@ -294,11 +299,11 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							getVideoSettingColor(), "-ENABLE SHADERS:",
+							inGame ? FontType.Black : FontType.Grey, "-ENABLE SHADERS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							getVideoSettingColor(), Helpers.boolYesNo(!Options.main.disableShaders),
+							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(!Options.main.disableShaders),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -313,11 +318,11 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							getVideoSettingColor(), "-ENABLE POST-PROCESSING: ",
+							inGame ? FontType.Black : FontType.Grey, "-ENABLE POST-PROCESSING: ",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							getVideoSettingColor(), Helpers.boolYesNo(Options.main.enablePostProcessing),
+							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(Options.main.enablePostProcessing),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -352,11 +357,11 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							getVideoSettingColor(), "-PARTICLE QUALITY:",
+							inGame ? FontType.Black : FontType.Grey, "-PARTICLE QUALITY:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							getVideoSettingColor(), qualityToString(Options.main.particleQuality),
+							inGame ? FontType.Black : FontType.Grey, qualityToString(Options.main.particleQuality),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -371,11 +376,11 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							getVideoSettingColor(), "-ENABLE MAP SPRITES:",
+							inGame ? FontType.Black : FontType.Grey, "-ENABLE MAP SPRITES:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							getVideoSettingColor(), Helpers.boolYesNo(Options.main.enableMapSprites),
+							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(Options.main.enableMapSprites),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -758,13 +763,13 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Grey,
+							optionFontText,
 							"USE RANDOM LOADOUT:",
 							pos.x, pos.y
 						);
 
 						Fonts.drawText(
-							FontType.Grey, Helpers.boolYesNo(Options.main.useRandomRockLoadout),
+							optionFontValue, Helpers.boolYesNo(Options.main.useRandomRockLoadout),
 							pos.x + 200, pos.y
 						);
 					},
@@ -798,13 +803,13 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Grey,
+							optionFontText,
 							"SPECIAL KEY RUSH:",
 							pos.x, pos.y
 						);
 
 						Fonts.drawText(
-							FontType.Grey, Helpers.boolYesNo(Options.main.rushSpecial),
+							optionFontValue, Helpers.boolYesNo(Options.main.rushSpecial),
 							pos.x + 200, pos.y
 						);
 					},
@@ -822,13 +827,13 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Grey,
+							optionFontText,
 							"SHIELD BEHAVIOUR:",
 							pos.x, pos.y
 						);
 
 						Fonts.drawText(
-							FontType.Grey, Options.main.protoShieldHold ? "HOLD" : "TOGGLE",
+							optionFontValue, Options.main.protoShieldHold ? "HOLD" : "TOGGLE",
 							pos.x + 200, pos.y
 						);
 					},
@@ -1611,7 +1616,7 @@ public class OptionsMenu : IMainMenu {
 				new Color(0, 0, 0, 224), 1, ZIndex.HUD, false, outlineColor: Color.White
 			);
 			Fonts.drawText(
-				FontType.Grey, helpText, Global.halfScreenW, rectY + 4,
+				inGame ? FontType.Orange : FontType.Grey, helpText, Global.halfScreenW, rectY + 4,
 				alignment: Alignment.Center
 			);
 		}

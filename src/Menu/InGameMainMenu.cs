@@ -125,24 +125,24 @@ public class InGameMainMenu : IMainMenu {
 		Global.sprites["cursor"].drawToHUD(0, startX - 10, optionPos[0] + 3 + (selectY * 20));
 
 		Fonts.drawText(
-			isSelWepDisabled() ? FontType.Grey : FontType.Grey,
+			isSelWepDisabled() ? FontType.Black : FontType.Blue,
 			"EDIT LOADOUT", startX, optionPos[0], selected: selectY == 0
 		);
 		Fonts.drawText(
-			isSelArmorDisabled() ? FontType.Grey : FontType.Grey,
+			isSelArmorDisabled() ? FontType.Black : FontType.Blue,
 			"UPGRADE MENU", startX, optionPos[1], selected: selectY == 1
 		);
 		Fonts.drawText(
-			isSelCharDisabled() ? FontType.Grey : FontType.Grey,
+			isSelCharDisabled() ? FontType.Black : FontType.Blue,
 			"SWITCH CHARACTER", startX, optionPos[2], selected: selectY == 2
 		);
 		Fonts.drawText(
-			isMatchOptionsDisabled() ? FontType.Grey : FontType.Grey,
+			isMatchOptionsDisabled() ? FontType.Black : FontType.Blue,
 			"MATCH OPTIONS", startX, optionPos[3], selected: selectY == 3
 		);
-		Fonts.drawText(FontType.Grey, "CONTROLS", startX, optionPos[4], selected: selectY == 4);
-		Fonts.drawText(FontType.Grey, "SETTINGS", startX, optionPos[5], selected: selectY == 5);
-		Fonts.drawText(FontType.Grey, "LEAVE MATCH", startX, optionPos[6], selected: selectY == 6);
-		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [ESC]: Cancel", Global.halfScreenW, 198, Alignment.Center);
+		Fonts.drawText(FontType.Blue, "CONTROLS", startX, optionPos[4], selected: selectY == 4);
+		Fonts.drawText(FontType.Blue, "SETTINGS", startX, optionPos[5], selected: selectY == 5);
+		Fonts.drawText(FontType.Blue, "LEAVE MATCH", startX, optionPos[6], selected: selectY == 6);
+		Fonts.drawTextEX(FontType.Blue, "[OK]: Choose, [ESC]: Cancel", Global.halfScreenW, 198, Alignment.Center);
 	}
 }

@@ -58,7 +58,7 @@ public class ChatHistoryMenu : IMainMenu {
 		}
 
 		Fonts.drawTextEX(
-			FontType.Grey, "[MUP]/[MDOWN]: Scroll, [BACK]: Back",
+			FontType.Blue, "[MUP]/[MDOWN]: Scroll, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 18, Alignment.Center
 		);
 	}

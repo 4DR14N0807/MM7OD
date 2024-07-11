@@ -597,7 +597,6 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual bool canCharge() {
 		if (charState is Burning) return false;
-		if (isInvisibleBS.getValue()) return false;
 		if (invulnTime > 0) return false;
 		if (flag != null) return false;
 		if (isWarpIn()) return false;
@@ -1438,11 +1437,9 @@ public partial class Character : Actor, IDamagable {
 				return true;
 			}
 
-			if (!player.hasSuperAdaptor()) {
-				if (player.input.isPressed(Control.Taunt, player)) {
-					changeState(new Taunt());
-					return true;
-				}
+			if (player.input.isPressed(Control.Taunt, player)) {
+				changeState(new Taunt());
+				return true;
 			}
 
 			if (canAirJump()) {

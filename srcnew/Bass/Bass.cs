@@ -9,6 +9,9 @@ public class Bass : Character {
 	public CopyVisionClone? cVclone;
 	public SpreadDrillProj? sDrill;
 	public SpreadDrillMediumProj? sDrillM;
+
+	// Modes.
+	public bool isSuperBass;
 	
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -144,6 +147,41 @@ public class Bass : Character {
 		if (canShoot()) {
 			shoot();
 		}
+	}
+
+	public override List<byte> getCustomActorNetData() {
+		// Get base arguments.
+		List<byte> customData = base.getCustomActorNetData() ?? new();
+
+		// Per-character data.
+		int weaponIndex = player.weapon.index;
+		if (weaponIndex == (int)WeaponIds.HyperBuster) {
+			weaponIndex = player.weapons[player.hyperChargeSlot].index;
+		}
+		customData.Add((byte)weaponIndex);
+		customData.Add((byte)MathF.Ceiling(player.weapon?.ammo ?? 0));
+	
+		bool[] flags = [
+			isSuperBass,
+		];
+		customData.Add(Helpers.boolArrayToByte(flags));
+
+		return customData;
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		// Update base arguments.
+		base.updateCustomActorNetData(data);
+		data = data[data[0]..];
+
+		// Per-character data.
+		player.changeWeaponFromWi(data[0]);
+		if (player.weapon != null) {
+			player.weapon.ammo = data[1];
+		}
+
+		bool[] flags = Helpers.byteToBoolArray(data[2]);
+		isSuperBass = flags[0];
 	}
 }
 

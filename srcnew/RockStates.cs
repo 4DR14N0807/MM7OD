@@ -422,7 +422,7 @@ public class CallDownRush : CharState {
 
 				case 5:
 					if (character.sprite.name.Contains("sa_activate_end") && character.isAnimOver()) {
-						character.player.setSuperAdaptor(true);
+						(character as Rock)?.setSuperAdaptor(true);
 
 						character.changeToIdleOrFall();
 					}

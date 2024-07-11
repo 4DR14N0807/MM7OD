@@ -436,12 +436,14 @@ public class UpgradeMenu : IMainMenu {
 		if (mainPlayer.character == null) return false;
 		if (mainPlayer.character.charState is NovaStrikeState) return false;
 
-		var rock = mainPlayer.character as Rock;
+		if (mainPlayer.character is not Rock rock) {
+			return false;
+		}
 
 		if (Global.input.isPressedMenu(Control.Special2)) {
-			if (mainPlayer.canGoSuperAdaptor()) {
+			if (rock.canGoSuperAdaptor()) {
 				if (!rock.boughtSuperAdaptorOnce) {
-					mainPlayer.currency -= Player.superAdaptorCost;
+					mainPlayer.currency -= Rock.SuperAdaptorCost;
 					rock.boughtSuperAdaptorOnce = true;
 				}
 				mainPlayer.character.changeState(new CallDownRush(), true);
@@ -457,17 +459,20 @@ public class UpgradeMenu : IMainMenu {
 		if (mainPlayer.character == null) return;
 		if (mainPlayer.character is not Rock) return;
 
-		var rock = mainPlayer.character as Rock;
-		bool hasAdaptor = mainPlayer.hasSuperAdaptor();
+		if (mainPlayer.character is not Rock rock) {
+			return;
+		}
+
+		bool hasAdaptor = rock.hasSuperAdaptor;
 
 		string specialText = "[CMD]: Super Adaptor" + 
-			$" ({Player.superAdaptorCost} {Global.nameCoins})";
+			$" ({Rock.SuperAdaptorCost} {Global.nameCoins})";
 		if (hasAdaptor) specialText = "Super Adaptor: Activated";
 		/*specialText = (
 			rock.boughtSuperAdaptorOnce ? "" : "[CMD]: Super Adaptor" + 
 			$" ({Player.superAdaptorCost} {Global.nameCoins})"
 		);*/
-		if (mainPlayer.canGoSuperAdaptor() && mainPlayer.isRock) {
+		if (rock.canGoSuperAdaptor() && mainPlayer.isRock) {
 			
 		} 
 		
@@ -492,7 +497,7 @@ public class UpgradeMenu : IMainMenu {
 			specialText = specialText.TrimStart('\n');
 			float yOff = specialText.Contains('\n') ? -3 : 0;
 			float yPos = Global.halfScreenH + 9;
-			float extraOffset = mainPlayer.currency >= Player.superAdaptorCost ? 11 : 4;
+			float extraOffset = mainPlayer.currency >= Rock.SuperAdaptorCost ? 11 : 4;
 			
 			Fonts.drawText(
 				hasAdaptor ? FontType.Green : FontType.Orange,
@@ -503,7 +508,7 @@ public class UpgradeMenu : IMainMenu {
 
 		specialText.ToUpperInvariant();
 
-		if (mainPlayer.currency < Player.superAdaptorCost && !mainPlayer.hasSuperAdaptor()) {
+		if (mainPlayer.currency < Rock.SuperAdaptorCost && !rock.hasSuperAdaptor) {
 			float yOff = specialText.Contains('\n') ? -3 : 0;
 			float yPos = Global.halfScreenH + 9;
 			Fonts.drawText(

@@ -775,4 +775,36 @@ public class Blues : Character {
 			return;
 		}
 	}
+
+	public override List<byte> getCustomActorNetData() {
+		// Get base arguments.
+		List<byte> customData = base.getCustomActorNetData() ?? new();
+
+		// Per-character data.
+		customData.Add((byte)MathInt.Floor(coreAmmo));
+		customData.Add((byte)MathInt.Ceiling(shieldHP));
+		bool[] flags = [
+			isShieldFront(),
+			overheating,
+			isBreakMan
+		];
+		customData.Add(Helpers.boolArrayToByte(flags));
+
+		return customData;
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		// Update base arguments.
+		base.updateCustomActorNetData(data);
+		data = data[data[0]..];
+
+		// Per-character data.
+		coreAmmo = data[0];
+		shieldHP = data[1];
+
+		bool[] flags = Helpers.byteToBoolArray(data[2]);
+		isShieldActive = flags[0];
+		overheating = flags[1];
+		isBreakMan = flags[2];
+	}
 }

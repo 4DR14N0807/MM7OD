@@ -141,7 +141,6 @@ public partial class Player {
 	public const int reviveXCost = 10;
 	public const int goldenArmorCost = 5;
 	public const int ultimateArmorCost = 10;
-	public const int superAdaptorCost = 75;
 	public bool lastDeathCanRevive;
 	public int vileFormToRespawnAs;
 	public bool hyperSigmaRespawn;
@@ -373,7 +372,6 @@ public partial class Player {
 	public ushort oldArmorFlag;
 	public bool ultimateArmor;
 	public bool oldUltimateArmor;
-	public bool superAdaptor;
 	public bool frozenCastle;
 	public bool oldFrozenCastle;
 	public bool speedDevil;
@@ -1702,11 +1700,6 @@ public partial class Player {
 			!hasGoldenArmor() && currency >= goldenArmorCost && !usedChipOnce;
 	}
 
-	public bool canGoSuperAdaptor() {
-		return character != null && isRock && character.charState is not Die && character.charState is not CallDownRush &&
-		!hasSuperAdaptor() && currency >= superAdaptorCost;
-	}
-
 	public bool canUpgradeUltimateX() {
 		return character != null &&
 			isX && !isDisguisedAxl &&
@@ -2296,21 +2289,6 @@ public partial class Player {
 
 	public bool hasUltimateArmor() {
 		return ultimateArmor;
-	}
-
-	public void setSuperAdaptor(bool addOrRemove) {
-		if (addOrRemove) {
-			superAdaptor = true;
-			removeWeaponsButBuster();
-			addSARocketPunch();
-		} else {
-			removeSARocketPunch();
-			superAdaptor = false;
-		}
-	}
-
-	public bool hasSuperAdaptor() {
-		return superAdaptor;
 	}
 
 	public int bootsArmorNum {

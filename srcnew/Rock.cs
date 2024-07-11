@@ -29,6 +29,8 @@ public class Rock : Character {
 	public RushWeapon rushWeapon;
 	public int rushWeaponIndex;
 	public int RushSearchCost = 5;
+	public bool hasSuperAdaptor;
+	public const int SuperAdaptorCost = 75;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -176,7 +178,9 @@ public class Rock : Character {
 				usedDoubleJump = true;
 			}*/
 
-		if (player.hasSuperAdaptor()) superAdaptorControls();
+		if (hasSuperAdaptor) {
+			superAdaptorControls();
+		}
 	}
 
 	public void superAdaptorControls() {
@@ -205,13 +209,12 @@ public class Rock : Character {
 		}
 	}
 
-
 	public void quickAdaptorUpgrade() {
 		if (!player.input.isHeld(Control.Special2, player)) {
 			hyperProgress = 0;
 			return;
 		}
-		if (player.hasSuperAdaptor()) {
+		if (hasSuperAdaptor) {
 			hyperProgress = 0;
 			return;
 		}
@@ -223,11 +226,11 @@ public class Rock : Character {
 			hyperProgress = 0;
 			return;
 		}
-		if (!(charState is WarpIn) && player.canGoSuperAdaptor()) {
+		if (!(charState is WarpIn) && canGoSuperAdaptor()) {
 			//hyperProgress += Global.spf;
 
 			if (!boughtSuperAdaptorOnce) {
-				player.currency -= Player.superAdaptorCost;
+				player.currency -= SuperAdaptorCost;
 				boughtSuperAdaptorOnce = true;
 			}
 			player.character.changeState(new CallDownRush(), true);
@@ -238,21 +241,14 @@ public class Rock : Character {
 			return;
 		}
 		hyperProgress = 0;
-		/*if (player.canGoSuperAdaptor()) {
-			if (!player.character.boughtSuperAdaptorOnce) {
-				player.currency -= Player.superAdaptorCost;
-				player.character.boughtSuperAdaptorOnce = true;
-			}
-			player.character.changeState(new CallDownRush(), true);
-			//player.setSuperAdaptor(true);
-			return;
-		}*/
 	}
 
 	public override void render(float x, float y) {
 		base.render(x, y);
 
-		if (hasChargedNoiseCrushBS.getValue()) drawChargedNoiseCrush(x, y);
+		if (hasChargedNoiseCrush) {
+			drawChargedNoiseCrush(x, y);
+		}
 	}
 
 	public void drawChargedNoiseCrush(float x, float y) {
@@ -336,7 +332,7 @@ public class Rock : Character {
 
 	public bool canCallRush() {
 		if (isInvulnerableAttack() ||
-			hasSuperAdaptorBS.getValue() ||
+			hasSuperAdaptor ||
 			(rushWeapon is RushSearchWeapon && player.currency < RushSearchCost) ||
 			flag != null) return false;
 		
@@ -628,11 +624,6 @@ public class Rock : Character {
 		bool favorDefenderProjDestroy = false
 	) {
 		base.destroySelf(spriteName, fadeSound, disableRpc, doRpcEvenIfNotOwned, favorDefenderProjDestroy);
-
-		if (player.hasSuperAdaptor()) {
-			player.setSuperAdaptor(false);
-		}
-
 		//if (rush != null) rush.destroySelf();
 	}
 
@@ -662,13 +653,31 @@ public class Rock : Character {
 		}
 	}
 
-	public virtual void chargeGfx() {
+	public override void chargeGfx() {
 		if (ownedByLocalPlayer) {
 			chargeEffect.stop();
 		}
 		if (isCharging()) {
 			chargeSound.play();
 			chargeEffect.update(getChargeLevel(), 0);
+		}
+	}
+
+	public bool canGoSuperAdaptor() {
+		return (
+			charState is not Die && charState is not CallDownRush &&
+			!hasSuperAdaptor && player.currency >= SuperAdaptorCost
+		);
+	}
+
+	public void setSuperAdaptor(bool addOrRemove) {
+		if (addOrRemove) {
+			hasSuperAdaptor = true;
+			player.removeWeaponsButBuster();
+			player.addSARocketPunch();
+		} else {
+			player.removeSARocketPunch();
+			hasSuperAdaptor = false;
 		}
 	}
 }

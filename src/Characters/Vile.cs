@@ -681,11 +681,11 @@ public class Vile : Character {
 
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = base.getShaders();
-
+		/*
 		if (player.frozenCastle && player.frozenCastleShader != null) {
 			shaders.Add(player.frozenCastleShader);
 		}
-
+		*/
 		return shaders;
 	}
 

@@ -712,7 +712,7 @@ public class Tips {
 
 		new string[]
 		{
-			$"(For {Player.superAdaptorCost} {Global.nameCoins}",
+			$"(For {Rock.SuperAdaptorCost} {Global.nameCoins}",
 			"you can press COMMAND to use Super Adaptor)."
 		},
 

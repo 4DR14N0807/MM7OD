@@ -5,14 +5,20 @@ using System.Linq;
 namespace MMXOnline;
 
 public class Blues : Character {
+	// Lemons.
 	public float lemonCooldown;
 	public float[] unchargedLemonCooldown = new float[3];
+
+	// Mode variables.
+	public bool isShieldActive = true;
+	public bool isBreakMan;
+
+	// Core heat system.
 	public float coreMaxAmmo = 28;
 	public float coreAmmo;
 	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoDamageCooldown = 120;
 	public float coreAmmoDecreaseCooldown;
-	public bool isShieldActive = true;
 	public bool overheating;
 	public float overheatEffectTime;
 

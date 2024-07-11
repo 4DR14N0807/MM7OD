@@ -34,8 +34,6 @@ public class RushState {
 
 	public virtual void preUpdate() { }
 	public virtual void update() { 
-		stateTime++;
-		
 		if (inTransition()) {
 			rush.frameSpeed = 1;
 			if (rush.isAnimOver() && !Global.level.gameMode.isOver) {

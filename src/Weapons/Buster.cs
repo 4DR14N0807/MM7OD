@@ -131,7 +131,7 @@ public class Buster : Weapon {
 			}
 			return;
 		}
-		bool hasUltArmor = player.character.hasUltimateArmorBS.getValue();
+		bool hasUltArmor = player.ultimateArmor;
 		bool isHyperX = ((player.character as MegamanX)?.isHyperX == true);
 
 		if (isHyperX && chargeLevel > 0) {

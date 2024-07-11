@@ -680,5 +680,41 @@ public class Rock : Character {
 			hasSuperAdaptor = false;
 		}
 	}
+
+	public override List<byte> getCustomActorNetData() {
+		// Get base arguments.
+		List<byte> customData = base.getCustomActorNetData() ?? new();
+
+		// Per-character data.
+		int weaponIndex = player.weapon.index;
+		if (weaponIndex == (int)WeaponIds.HyperBuster) {
+			weaponIndex = player.weapons[player.hyperChargeSlot].index;
+		}
+		customData.Add((byte)weaponIndex);
+		customData.Add((byte)MathF.Ceiling(player.weapon?.ammo ?? 0));
+
+		customData.Add(Helpers.boolArrayToByte([
+			hasChargedNoiseCrush,
+			hasSuperAdaptor,
+		]));
+
+		return customData;
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		// Update base arguments.
+		base.updateCustomActorNetData(data);
+		data = data[data[0]..];
+
+		// Per-character data.
+		player.changeWeaponFromWi(data[0]);
+		if (player.weapon != null) {
+			player.weapon.ammo = data[1];
+		}
+
+		bool[] boolData = Helpers.byteToBoolArray(data[4]);
+		hasChargedNoiseCrush = boolData[0];
+		hasSuperAdaptor = boolData[1];
+	}
 }
 

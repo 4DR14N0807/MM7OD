@@ -78,15 +78,19 @@ public class Damager {
 		Actor victim, bool weakness, int weaponIndex, int weaponKillFeedIndex,
 		Actor damagingActor, int projId, bool sendRpc = true
 	) {
-		if (victim is Character chr && chr.isInvulnBS.getValue()) return false;
-
+		if (victim is Character chr && chr.invulnTime > 0) {
+			return false;
+		}
 		if (projId == (int)ProjIds.TriadThunderQuake &&
 			victim.ownedByLocalPlayer && isVictimImmuneToQuake(victim)
 		) {
 			return false;
 		}
-		//if (owner.character?.isDarkHoldBS.getValue() == true) return false;
-
+		if (damagingActor is GenericMeleeProj tgmp &&
+			tgmp.owningActor is Character { isDarkHoldState: true }
+		) {
+			return false;
+		}
 		string key = projId.ToString() + "_" + owner.id.ToString();
 
 		// Key adjustment overrides for more fine tuned balance cases
@@ -736,9 +740,14 @@ public class Damager {
 			}
 		}
 
-
-		if (damage > 0 && victim is not Blues) {
-			victim?.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+		if (damage > 0 && character?.isDarkHoldState != true) {
+			if (damagingActor == null ||
+				character is not Blues blues ||
+				!blues.isShieldFront() ||
+				!hitFromFront(blues, damagingActor, owner, projId)
+			) {
+				victim?.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+			}
 		} 
 
 		float finalDamage = damage * owner.getDamageModifier();

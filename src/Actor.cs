@@ -268,8 +268,8 @@ public partial class Actor : GameObject {
 	public virtual void changeSprite(string spriteName, bool resetFrame) {
 		string oldSpriteName = sprite?.name ?? "";
 		if (spriteName == null) return;
-		if (sprite != null) {
-			if (sprite.name == spriteName) {	
+		if (sprite != null && (this is Character || !resetFrame)) {
+			if (sprite.name == spriteName) {
 				return;
 			}
 		}
@@ -319,7 +319,7 @@ public partial class Actor : GameObject {
 				Global.level.delayedActions.Add(new DelayedAction(() => {
 					playOverrideVoice(spriteName);
 				}, Player.maxReadyTime));
-			} else if ((spriteName != "sigma_die" && spriteName != "sigma2_die" && spriteName != "sigma3_die") || (visible && (this as Character)?.isHyperSigmaBS?.getValue() != true)) {
+			} else if ((spriteName != "sigma_die" && spriteName != "sigma2_die" && spriteName != "sigma3_die") || visible) {
 				playOverrideVoice(spriteName);
 			}
 		}
@@ -905,7 +905,7 @@ public partial class Actor : GameObject {
 			if (character.isCStingInvisibleGraphics() && this is MegamanX mmx && mmx.cStingPaletteTime % 3 == 0) {
 				return false;
 			}
-			if (character.isInvulnBS.getValue()) {
+			if (character.invulnTime > 0) {
 				int mod10 = Global.level.frameCount % 4;
 				if (mod10 < 2) return false;
 			}

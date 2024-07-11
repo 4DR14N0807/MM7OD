@@ -14,10 +14,12 @@ public partial class Player {
 	public bool ownedByLocalPlayer;
 	public int? awakenedCurrencyEnd;
 	public float fgMoveAmmo = 32;
+	public bool isDefenderFavoredNonOwner;
+
 	public bool isDefenderFavored {
 		get {
 			if (character != null && !character.ownedByLocalPlayer) {
-				return character.isDefenderFavoredBS.getValue();
+				return isDefenderFavoredNonOwner;
 			}
 			if (Global.level?.server == null) {
 				return false;
@@ -1932,7 +1934,7 @@ public partial class Player {
 				return false;
 			}
 			foreach (var player in Global.level.players) {
-				if (player.character?.isHyperSigmaBS.getValue() == true && player.isSigma1Or3() && player.character.pos.distanceTo(deathPos) < Global.screenW) {
+				if (player.character is WolfSigma && player.character.pos.distanceTo(deathPos) < Global.screenW) {
 					return false;
 				}
 			}
@@ -2527,11 +2529,6 @@ public partial class Player {
 		return (Global.spf + mashAmount);
 	}
 
-	public bool showHyperBusterCharge() {
-		if (character?.flag != null) return false;
-		return weapon is HyperBuster hb && hb.canShootIncludeCooldown(this);
-	}
-
 	// Sigma helper functions
 
 	public bool isSigma1AndSigma() {
@@ -2563,15 +2560,15 @@ public partial class Player {
 	}
 
 	public bool isWolfSigma() {
-		return isSigma && isSigma1() && character?.isHyperSigmaBS.getValue() == true;
+		return character is WolfSigma;
 	}
 
 	public bool isViralSigma() {
-		return isSigma && isSigma2() && character?.isHyperSigmaBS.getValue() == true;
+		return character is ViralSigma;
 	}
 
 	public bool isKaiserSigma() {
-		return isSigma && isSigma3() && character?.isHyperSigmaBS.getValue() == true;
+		return character is KaiserSigma;
 	}
 
 	public bool isKaiserViralSigma() {

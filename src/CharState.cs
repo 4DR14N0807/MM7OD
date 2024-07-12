@@ -132,7 +132,7 @@ public class CharState {
 		if (oldState is VileHover) {
 			wasVileHovering = true;
 		}
-		if (!useGravity) {
+		if (!useGravity || character.isDWrapped) {
 			character.useGravity = false;
 			character.stopMovingWeak();
 		}

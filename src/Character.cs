@@ -505,6 +505,8 @@ public partial class Character : Actor, IDamagable {
 		if (this is Vile vile && vile.isShootingLongshotGizmo) {
 			return false;
 		}
+		if (isDWrapped) return false;
+
 		return true;
 	}
 
@@ -517,6 +519,7 @@ public partial class Character : Actor, IDamagable {
 			return false;
 		}
 		if (rootTime > 0) return false;
+		if (bigBubble != null) return false;
 		if (isSoftLocked()) {
 			return false;
 		}
@@ -535,6 +538,7 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool canJump() {
 		if (rideArmorPlatform != null) return false;
 		if (rootTime > 0) return false;
+		if (bigBubble != null) return false;
 		if (isSoftLocked()) return false;
 		return true;
 	}
@@ -3345,6 +3349,9 @@ public partial class Character : Actor, IDamagable {
 
 	public void dwrapStart() {
 		isDWrapped = true;
+		useGravity = false;
+		stopMoving();
+		changeSpriteFromName("idle", true);
 		//if (globalCollider != null) globalCollider.isClimbable = true;
 		//new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, null, true);
 		//playSound("hit");
@@ -3352,6 +3359,8 @@ public partial class Character : Actor, IDamagable {
 
 	public void dwrapEnd() {
 		isDWrapped = false;
+		useGravity = true;
+		stopMoving();
 		playSound("hit");
 	}
 
@@ -3431,23 +3440,29 @@ public partial class Character : Actor, IDamagable {
 	public float dWrappedTime;
 	public float dWrapMashTime = DWrapped.DWrapMaxTime;
 	public Damager? dWrapDamager;
+	public DWrapBigBubble bigBubble;
 
 	public void addBubble(Player attacker) {
 		if (!ownedByLocalPlayer || dwrapInvulnTime > 0) return;
+		if (bigBubble != null) return;
 
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
-		dWrappedTime = Global.spf;
+		//dWrappedTime = Global.spf;
 		dWrapDamager = damager;
-		bubbleAnim = new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, player.getNextActorNetId(), true, true);
+		bigBubble = new DWrapBigBubble(pos, player, attacker, xDir,
+			player.getNextActorNetId(), true, true);
+		dwrapStart();
+		//changeState(new DWrapped(true))
+		//bubbleAnim = new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, player.getNextActorNetId(), true, true);
 	}
 
 	public void updateBubble() {
-		if (dWrappedTime <= 0) return;
+		if (bigBubble == null || bigBubble.bubbleFrames <= 0) return;
 
-		if (!(charState is DWrapped)) { changeState(new DWrapped(true)); }
+		/*if (!(charState is DWrapped)) { changeState(new DWrapped(true)); }
 
 		//Point centerPos = getCenterPos();
-		bubbleAnim.changePos(getCenterPos());
+		//bubbleAnim.changePos(getCenterPos());
 
 		dWrappedTime += Global.spf;
 		float mashValue = player.mashValue();
@@ -3459,22 +3474,22 @@ public partial class Character : Actor, IDamagable {
 			removeBubble(true);
 		} else if (dWrappedTime > 2 && (charState is DWrapped)) {
 			removeBubble(false);
-		}
+		}*/
 	}
 
 	public void removeBubble(bool ejected) {
 		if (!ownedByLocalPlayer) return;
 		if (dWrapDamager == null) return;
 
-		bubbleAnim?.destroySelf();
+		//bubbleAnim?.destroySelf();
 		
-		if (!ejected) dWrapDamager.applyDamage(this, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion, overrideDamage: 4, overrideFlinch: Global.defFlinch);	
+		/*if (!ejected) dWrapDamager.applyDamage(this, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion, overrideDamage: 4, overrideFlinch: Global.defFlinch);	
 		
 		dWrappedTime = 0;
 		dWrapMashTime = DWrapped.DWrapMaxTime;
 		dWrapDamager = null;
 		isDWrapped = false;
-		if (charState is not Hurt) changeToIdleOrFall();
+		if (charState is not Hurt) changeToIdleOrFall();*/
 	}
 
 
@@ -3717,7 +3732,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual void onFlinchOrStun(CharState state) {
-
+		if (bigBubble != null) bigBubble.destroySelf();
 	}
 
 	public virtual void onExitState(CharState oldState, CharState newState) {

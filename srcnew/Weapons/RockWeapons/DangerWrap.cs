@@ -332,8 +332,10 @@ public class DWrapped : CharState {
 	bool isDone;
 	bool flinch;
 	public const float DWrapMaxTime = 3;
-	public DWrapped(bool flinch) : base("idle") {
+	public DWrapped(bool flinch) : base("idle", "shoot") {
 		this.flinch = flinch;
+		attackCtrl = true;
+		normalCtrl = false;
 	}
 	public override bool canEnter(Character character) {
 		if (!base.canEnter(character)) return false;
@@ -390,5 +392,90 @@ public class DWrapped : CharState {
 		/* if (character.dWrappedTime > 2 && !(character.charState is DWrapped)) {
 			character.removeBubble(false);
 		} */
+	}
+}
+
+
+public class DWrapBigBubble : Actor, IDamagable {
+
+	public Character character;
+	public Player player => character.player;
+	public float health = 6;
+	public float bubbleFrames;
+	public Anim? bomb;
+
+	public DWrapBigBubble(
+		Point pos, Player victim, Player attacker,
+		int xDir, ushort? netId, 
+		bool ownedByLocalPlayer, bool rpc = false)
+	: base
+	(
+		"danger_wrap_big_bubble", pos, netId, ownedByLocalPlayer, false
+	) {
+		netOwner = victim;
+		this.character = victim.character;
+		useGravity = false;
+
+		bomb = new Anim(getCenterPos(), "danger_wrap_bomb", 
+			xDir, player.getNextActorNetId(), false, true);
+	}
+
+	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
+		health -= damage;
+		if (health <= 0) {
+			destroySelf();
+		}
+	}
+
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
+		return player.alliance == damagerAlliance;
+	}
+
+	public bool isInvincible(Player attacker, int? projId) {
+		return false;
+	}
+
+	public bool canBeHealed(int healerAlliance) {
+		return false;
+	}
+
+	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	}
+
+	public override void update() {
+		base.update();
+		bubbleFrames++;
+
+		changePos(character.getCenterPos());
+
+		if (character.isDWrapped) {
+			character.grounded = true;
+			if (bubbleFrames is <= 60 or >= 150) {
+				if (character.vel.y > -60) character.vel.y -= 5;
+				if (Math.Abs(character.vel.x) < 30 && bubbleFrames <= 60) character.vel.x += 3 * character.xDir;
+			} else {
+				if (character.vel.y < 30) character.vel.y += 2;
+				if (Math.Abs(character.vel.x) > 0) character.vel.x -= 1 * character.xDir;
+			}
+		}
+
+		if (bomb != null) {
+			bomb.changePos(getCenterPos());
+			if(bubbleFrames >= 120) bomb.changeSprite("danger_wrap_bomb_active", true);
+		}
+
+		if (bubbleFrames >= 180) {
+			character.dWrapDamager.applyDamage(character, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion);
+			destroySelf();
+		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		character.bigBubble = null;
+		if (bomb != null) bomb.destroySelf();
+		//character.removeBubble(true);
+		character.dwrapEnd();
+		character.dwrapInvulnTime = 3;
 	}
 }

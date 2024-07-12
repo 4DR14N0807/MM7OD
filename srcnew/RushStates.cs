@@ -59,7 +59,7 @@ public class RushWarpIn : RushState {
 	public Anim warpAnim = null!;
 	bool landed;
 
-	public RushWarpIn(bool addInvulnFrames = true) : base("empty") { }
+	public RushWarpIn(bool addInvulnFrames = true) : base("rush_warp_beam") { }
 
 	public override bool canEnter(Rush rush) {
 		return rush.rushState is not RushWarpIn;
@@ -70,11 +70,12 @@ public class RushWarpIn : RushState {
 		rush.stopMoving();
 		rush.useGravity = false;
 		rush.frameSpeed = 0;
+		rush.vel.y = 300;
 
 		if (rush.netOwner != null) rockPos = rush.netOwner.character.pos;
 		Point? checkGround = Global.level.getGroundPosNoKillzone(character.pos);
-		rush.pos = checkGround.GetValueOrDefault();
-		warpAnim = new Anim(new Point(rush.pos.x, rush.pos.y - 200), "rush_warp_beam", 1, null, false);
+		//rush.pos = checkGround.GetValueOrDefault();
+		//warpAnim = new Anim(new Point(rush.pos.x, rush.pos.y - 200), "rush_warp_beam", 1, null, false);
 	}
 
 	public override void onExit(RushState newState) {
@@ -82,20 +83,36 @@ public class RushWarpIn : RushState {
 		rush.visible = true;
 		rush.useGravity = true;
 		rush.splashable = true;
-		warpAnim.destroySelf();
+		//warpAnim.destroySelf();
 	}
 
 	public override void update() {
 		base.update();
-		warpAnim.move(warpAnim.pos.directionToNorm(rush.pos).times(300));
+		//warpAnim.move(warpAnim.pos.directionToNorm(rush.pos).times(300));
 
-		if (warpAnim.pos.distanceTo(rush.pos) <= 32) {
+		/*if (warpAnim.pos.distanceTo(rush.pos) <= 32) {
 			warpAnim.destroySelf();
+			rush.changeSprite("rush_warp_in", true);
+			landed = true;
+		}*/
+		if (canLand(rush)) {
+			rush.vel.y = 0;
 			rush.changeSprite("rush_warp_in", true);
 			landed = true;
 		}
 
 		if (landed && rush.isAnimOver()) rush.changeState(new RushIdle());
+	}
+
+	public bool canLand(Actor actor) {
+		if (Global.level.checkCollisionActor(actor, 0, 2) == null) {
+			return false;
+		}
+		List<CollideData> hits = Global.level.getTriggerList(actor, 0, 2, null, new Type[] { typeof(KillZone) });
+		if (hits.Count > 0) {
+			return false;
+		}
+		return true;
 	}
 }
 
@@ -110,7 +127,7 @@ public class RushIdle : RushState {
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
 		//rush.isPlatform = true;
-		rush.xDir = rush.character.xDir;
+		//rush.xDir = rush.character.xDir;
 	}
 
 	public override void update() {
@@ -225,7 +242,7 @@ public class RushJetState : RushState {
 			if (xDir == rush.xDir * -1) jetSpeedX = 60;
 			else jetSpeedX = 120;
 
-			if (yDir != 0) jetSpeedY = yDir * 60;
+			if (yDir != 0 && Global.level.checkCollisionActor(rush, 0, yDir * 48) == null) jetSpeedY = yDir * 60;
 			else jetSpeedY = 0;
 		} else {
 			maxDecAmmoCooldown = 45;
@@ -422,6 +439,8 @@ public class RushWarpOut : RushState {
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
 		rock = rush.character as Rock;
+		//rush.physicsCollider = null;
+		rush.globalCollider = null;
 	}
 
 	public override bool canEnter(Rush rush) {

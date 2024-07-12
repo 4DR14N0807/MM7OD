@@ -27,7 +27,7 @@ public class Rush : Actor, IDamagable {
 		this.character = owner.character;
 		this.type = type;
 		spriteToCollider["empty"] = null;
-		spriteToCollider["warp_beam"] = null;
+		//spriteToCollider["warp_beam"] = null;
 		// Forcefull change sprite to something before we crash.
 		sprite = Global.sprites["empty"].clone();
 		// We do this to manually call the state change.
@@ -117,6 +117,8 @@ public class Rush : Actor, IDamagable {
 
 	public override void update() {
 		base.update();
+
+		if (rushState is RushWarpOut) spriteToCollider["warp_beam"] = null;
 
 		if (character == null || character.charState is Die || character.flag != null) {
 			changeState(new RushWarpOut());

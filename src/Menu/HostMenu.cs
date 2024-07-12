@@ -576,7 +576,7 @@ public class HostMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							FontType.Grey, "MIRRORED: " + Helpers.boolYesNo(mirrored),
+							fontOption, "MIRRORED: " + Helpers.boolYesNo(mirrored),
 							pos.x, pos.y, selected: index == selectArrowPosY
 						);
 					}

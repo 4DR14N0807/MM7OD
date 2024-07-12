@@ -238,7 +238,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 			var rush = Rock.getAllRushWeapons()[wi];
 
 			Fonts.drawText(FontType.BlueMenu, "Rush Adaptor", Global.halfScreenW, 128, Alignment.Center);
-			Fonts.drawText(FontType.Grey, rush.displayName, Global.halfScreenW, 149, Alignment.Center);
+			Fonts.drawText(FontType.Blue, rush.displayName, Global.halfScreenW, 149, Alignment.Center);
 
 			if (rush.description?.Length == 1) Fonts.drawText(FontType.LigthGrey, rush.description[0], 30, wsy + 2);
 			else if (rush.description?.Length > 0) Fonts.drawText(FontType.LigthGrey, rush.description[0], 30, wsy - 2);

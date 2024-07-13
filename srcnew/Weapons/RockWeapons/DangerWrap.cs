@@ -464,7 +464,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 			if(bubbleFrames >= 120) bomb.changeSprite("danger_wrap_bomb_active", true);
 		}
 
-		if (bubbleFrames >= 180) {
+		if (bubbleFrames >= 180 && character.dWrapDamager != null) {
 			character.dWrapDamager.applyDamage(character, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion);
 			destroySelf();
 		}
@@ -472,7 +472,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		character.bigBubble = null;
+		character.bigBubble = null!;
 		if (bomb != null) bomb.destroySelf();
 		//character.removeBubble(true);
 		character.dwrapEnd();

@@ -69,7 +69,7 @@ public class RushWarpIn : RushState {
 		base.onEnter(oldState);
 		rush.stopMoving();
 		rush.useGravity = false;
-		rush.frameSpeed = 0;
+		//rush.frameSpeed = 0;
 		rush.vel.y = 300;
 
 		if (rush.netOwner != null) rockPos = rush.netOwner.character.pos;

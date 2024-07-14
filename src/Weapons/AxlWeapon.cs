@@ -108,11 +108,11 @@ public class AxlWeapon : Weapon {
 			axl.muzzleFlash.sprite.restart();
 		}
 
-		if (axlBulletType == AxlBulletType.AltFire) {
+		/*if (axlBulletType == AxlBulletType.AltFire) {
 			axl.playSound(!isCharged ? "" : shootSounds[3]);
 		} else {
 			axl.playSound(!isCharged ? shootSounds[0] : shootSounds[3]);
-		}
+		}*/
 
 		float rateOfFireMode = (axl.isWhiteAxl() ? whiteAxlFireRateMod() : 1);
 		shootTime = rateOfFire / rateOfFireMode;

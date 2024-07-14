@@ -87,7 +87,7 @@ public class Zero : Character {
 
 	public override void preUpdate() {
 		base.preUpdate();
-		if (grounded) {
+		if (grounded && charState is not ZeroUppercut) {
 			airRisingUses = 0;
 		}
 	}
@@ -101,6 +101,7 @@ public class Zero : Character {
 		airSpecial.update();
 		gigaAttack.update();
 		gigaAttack.charLinkedUpdate(this, true);
+		base.update();
 
 		if (isAwakened) {
 			updateAwakenedAura();
@@ -130,8 +131,6 @@ public class Zero : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-
-		base.update();
 		// Hypermode timer.
 		if (hyperModeTimer > 0) {
 			hyperModeTimer -= Global.speedMul;
@@ -474,13 +473,13 @@ public class Zero : Character {
 
 	public bool airAttacks() {
 		int yDir = player.input.getYDir(player);
-		if (yDir == -1 && canAirDash() && airRisingUses == 0 &&
+		if (yDir == -1 && canAirDash() && airRisingUses == 0 && (
 			(uppercutA.type == (int)RisingType.RisingFang && shootPressed) ||
 			(uppercutS.type == (int)RisingType.RisingFang && specialPressed)
-		) {
+		)) {
 			changeState(new ZeroUppercut(RisingType.RisingFang, isUnderwater()), true);
 			dashedInAir++;
-			return false;
+			return true;
 		}
 		if (yDir == 1 && (shootPressed || specialPressed)) {
 			// Weapon type to use.

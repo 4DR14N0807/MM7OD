@@ -457,15 +457,15 @@ public class PunchyZero : Character {
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
 		if (isBlack) {
-			palette = player.zeroPaletteShader;
+			//palette = player.zeroPaletteShader;
 			palette?.SetUniform("palette", 1);
 			palette?.SetUniform("paletteTexture", Global.textures["hyperZeroPalette"]);
 		}
 		if (isAwakened) {
-			palette = player.zeroAzPaletteShader;
+			//palette = player.zeroAzPaletteShader;
 		}
 		if (isViral) {
-			palette = player.nightmareZeroShader;
+			//palette = player.nightmareZeroShader;
 		}
 		if (palette != null && hypermodeBlink > 0) {
 			float blinkRate = MathInt.Ceiling(hypermodeBlink / 30f);

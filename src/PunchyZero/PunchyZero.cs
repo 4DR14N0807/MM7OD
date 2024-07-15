@@ -27,17 +27,27 @@ public class PunchyZero : Character {
 	public PunchyZeroMeleeWeapon meleeWeapon = new();
 	public PZeroParryWeapon parryWeapon = new();
 	public Weapon gigaAttack;
+	public AwakenedAura awakenedAuraWeapon = new();
+	public ZSaber saberSwingWeapon = new();
+	public ZeroBuster busterWeapon = new();
 	
 	// Inputs.
-	public float shootPressTime;
-	public float parryPressTime;
-	public float specialPressTime;
+	public int shootPressTime;
+	public int parryPressTime;
+	public int swingPressTime;
+	public int specialPressTime;
 
 	// Cooldowns.
 	public float dashAttackCooldown = 0;
 	public float diveKickCooldown = 0;
 	public float parryCooldown = 0;
+	public float swingCooldown = 0;
 	public float uppercutCooldown = 0;
+
+	// Hypermode stuff.
+	public float donutTimer = 0;
+	public int donutsPending = 0;
+	public int freeBusterShots = 0;
 
 	// Creation code.
 	public PunchyZero(
@@ -47,7 +57,15 @@ public class PunchyZero : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
 		charId = CharIds.PunchyZero;
-		gigaAttack = new RakuhouhaWeapon();
+		// Loadout stuff.
+		PZeroLoadout pzeroLoadout = player.loadout.pzeroLoadout;
+		
+		gigaAttack = pzeroLoadout.gigaAttack switch {
+			1 => new CFlasher(),
+			2 => new RekkohaWeapon(),
+			_ => new RakuhouhaWeapon(),
+		};
+		hyperMode = pzeroLoadout.hyperMode;
 	}
 
 	public override void update() {
@@ -130,11 +148,11 @@ public class PunchyZero : Character {
 			}
 		}
 		// For the donuts.
-		/* if (donutsPending > 0 && donutTimer <= 0) {
+		if (donutsPending > 0 && donutTimer <= 0) {
 			shootDonutProj(donutsPending * 9);
 			donutsPending--;
 			donutTimer = 9;
-		} */
+		}
 		// Charge and release charge logic.
 		if (isAwakened) {
 			chargeLogic(shootDonuts);
@@ -144,8 +162,7 @@ public class PunchyZero : Character {
 	}
 
 	public override bool canCharge() {
-		//return (player.currency > 0 || freeBusterShots > 0) && donutsPending == 0;
-		return true;
+		return (player.currency > 0 || freeBusterShots > 0) && donutsPending == 0;
 	}
 
 	public override bool chargeButtonHeld() {
@@ -175,7 +192,7 @@ public class PunchyZero : Character {
 	}
 
 	public void shoot(int chargeLevel) {
-		//if (player.currency <= 0 && freeBusterShots <= 0) { return; }
+		if (player.currency <= 0 && freeBusterShots <= 0) { return; }
 		if (chargeLevel == 0) { return; }
 		int currencyUse = 0;
 
@@ -191,34 +208,34 @@ public class PunchyZero : Character {
 		// Shoot stuff.
 		if (chargeLevel == 1) {
 			currencyUse = 1;
-			//playSound("buster2X3", sendRpc: true);
+			playSound("buster2X3", sendRpc: true);
 			new ZBuster2Proj(
 				shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
 			);
 		} else if (chargeLevel == 2) {
 			currencyUse = 1;
-			//playSound("buster3X3", sendRpc: true);
+			playSound("buster3X3", sendRpc: true);
 			new ZBuster3Proj(
 				shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
 			);
 		} else if (chargeLevel == 3 || chargeLevel >= 4) {
 			currencyUse = 1;
-			//playSound("buster4", sendRpc: true);
+			playSound("buster4", sendRpc: true);
 			new ZBuster4Proj(
 				shootPos, xDir, 0, player, player.getNextActorNetId(), rpc: true
 			);
 		}
 		if (currencyUse > 0) {
-			/* if (freeBusterShots > 0) {
+			if (freeBusterShots > 0) {
 				freeBusterShots--;
 			} else if (player.currency > 0) {
 				player.currency--;
-			} */
+			}
 		}
 	}
 
 	public void shootDonuts(int chargeLevel) {
-		//if (player.currency <= 0 && freeBusterShots <= 0) { return; }
+		if (player.currency <= 0 && freeBusterShots <= 0) { return; }
 		if (chargeLevel == 0) { return; }
 		int currencyUse = 0;
 
@@ -230,8 +247,8 @@ public class PunchyZero : Character {
 		setShootAnim();
 		shootDonutProj(0);
 		if (chargeLevel >= 2) {
-			//donutTimer = 9;
-			//donutsPending = (chargeLevel - 1);
+			donutTimer = 9;
+			donutsPending = (chargeLevel - 1);
 		}
 		currencyUse = 1;
 		if (currencyUse > 0) {
@@ -250,7 +267,7 @@ public class PunchyZero : Character {
 			shootPos, xDir,
 			time / 60f, player, player.getNextActorNetId(), rpc: true
 		);
-		//playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
+		playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
 		shootAnimTime = 0.3f;
 	}
 
@@ -275,6 +292,9 @@ public class PunchyZero : Character {
 		if (parryPressTime > 0) {
 			parryPressTime--;
 		}
+		if (swingPressTime > 0) {
+			swingPressTime--;
+		}
 		if (player.input.isPressed(Control.Shoot, player)) {
 			shootPressTime = 6;
 		}
@@ -282,12 +302,12 @@ public class PunchyZero : Character {
 			specialPressTime = 6;
 		}
 		if (player.input.isPressed(Control.WeaponLeft, player) ||
-			player.input.isPressed(Control.WeaponRight, player)
+			player.input.isPressed(Control.WeaponRight, player) && !isAwakened
 		) {
 			parryPressTime = 6;
 		}
 		if (player.input.isPressed(Control.WeaponRight, player) && isAwakened) {
-			//swingPressTime = 6;
+			swingPressTime = 6;
 		}
 	}
 
@@ -319,6 +339,21 @@ public class PunchyZero : Character {
 	}
 
 	public override bool attackCtrl() {
+		if (donutsPending != 0) {
+			return false;
+		}
+		if (isAwakened && swingPressTime > 0 && swingCooldown == 0) {
+			swingCooldown = 60;
+			if (charState is WallSlide wallSlide) {
+				changeState(new PunchyZeroHadangekiWall(wallSlide.wallDir, wallSlide.wallCollider), true);
+				return true;
+			}
+			if (isDashing && grounded) {
+				slideVel = xDir * getDashSpeed() * 0.9f;
+			}
+			changeState(new PunchyZeroHadangeki(), true);
+			return true;
+		}
 		if (grounded && vel.y >= 0) {
 			return groundAttacks();
 		}
@@ -349,7 +384,7 @@ public class PunchyZero : Character {
 		}
 		int yDir = player.input.getYDir(player);
 		if (isDashing && dashAttackCooldown == 0 &&
-			player.input.isHeld(Control.Down, player) && shootPressTime > 0
+			player.input.getYDir(player) == 0 && shootPressTime > 0
 		) {
 			changeState(new PZeroSpinKick(), true);
 			return true;
@@ -359,7 +394,7 @@ public class PunchyZero : Character {
 				changeState(new PZeroShoryuken(), true);
 				return true;
 			}
-			if (isDashing) {
+			if (grounded && isDashing) {
 				slideVel = xDir * getDashSpeed() * 0.8f;
 			}
 			changeState(new PZeroPunch1(), true);
@@ -416,20 +451,18 @@ public class PunchyZero : Character {
 	public override string getSprite(string spriteName) {
 		return "zero_" + spriteName;
 	}
-	/*
+
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
-
-		int paletteNum = 0;
 		if (isBlack) {
-			paletteNum = 1;
-		}
-		if (paletteNum != 0) {
 			palette = player.zeroPaletteShader;
-			palette?.SetUniform("palette", paletteNum);
+			palette?.SetUniform("palette", 1);
 			palette?.SetUniform("paletteTexture", Global.textures["hyperZeroPalette"]);
+		}
+		if (isAwakened) {
+			palette = player.zeroAzPaletteShader;
 		}
 		if (isViral) {
 			palette = player.nightmareZeroShader;
@@ -447,7 +480,7 @@ public class PunchyZero : Character {
 		shaders.AddRange(baseShaders);
 		return shaders;
 	}
-	*/
+
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
 		int meleeId = getHitboxMeleeId(hitbox);
 		if (meleeId == -1) {
@@ -473,6 +506,7 @@ public class PunchyZero : Character {
 			"zero_shoryuken" => MeleeIds.Uppercut,
 			"zero_megapunch" => MeleeIds.StrongPunch,
 			"zero_dropkick" => MeleeIds.DropKick,
+			"zero_projswing" or "zero_projswing_air" => MeleeIds.SaberSwing,
 			_ => MeleeIds.None
 		});
 	}
@@ -519,6 +553,17 @@ public class PunchyZero : Character {
 			) {
 				netcodeOverride = NetcodeModel.FavorDefender
 			}),
+			(int)MeleeIds.AwakenedAura => (new GenericMeleeProj(
+				awakenedAuraWeapon, projPos, ProjIds.AwakenedAura, player, 2, 0, 0.5f,
+				addToLevel: addToLevel
+			) {
+				netcodeOverride = NetcodeModel.FavorDefender
+			}),
+			(int)MeleeIds.SaberSwing => new GenericMeleeProj(
+				saberSwingWeapon, projPos, ProjIds.ZSaberProjSwing, player,
+				3, Global.defFlinch, 0.5f, isReflectShield: true,
+				addToLevel: addToLevel
+			),
 			_ => null
 		};
 		return proj;
@@ -561,15 +606,18 @@ public class PunchyZero : Character {
 		Uppercut,
 		DropKick,
 		Parry,
-		ParryAttack
+		ParryAttack,
+		SaberSwing,
+		AwakenedAura
 	}
 
 	// For parry purposes.
 	public override void onCollision(CollideData other) {
 		if (specialState == (int)SpecialStateIds.PZeroParry &&
 			other.gameObject is Projectile proj &&
+			proj.damager?.owner?.teamAlliance != player.teamAlliance &&
 			charState is PZeroParry zeroParry &&
-			proj.damager.damage > 0 &&
+			proj.damager?.damage > 0 &&
 			zeroParry.canParry(proj, proj.projId)
 		) {
 			zeroParry.counterAttack(proj.owner, proj);

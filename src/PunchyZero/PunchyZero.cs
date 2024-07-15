@@ -1,19 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MMXOnline;
 
 public class PunchyZero : Character {
 	// Hypermode stuff.
-	public float blackZeroTime;
-	public float awakenedZeroTime;
 	public bool isViral;
-	public bool isAwakened;
+	public int awakenedPhase;
+	public bool isAwakened => (awakenedPhase != 0);
+	public bool isGenmuZero => (awakenedPhase >= 2);
 	public bool isBlack;
-	public byte hypermodeBlink;
 	public int hyperMode;
+
+	// Hypermode timers.
+	public static readonly float maxBlackZeroTime = 20 * 60;
 	public float hyperModeTimer;
+	public float scrapDrainCounter = 120;
+	public bool hyperOvertimeActive;
+	
+	// Hypermode effects stuff.
 	public int awakenedAuraFrame;
 	public float awakenedAuraAnimTime;
+	public byte hypermodeBlink;
 
 	// Weapons.
 	public PunchyZeroMeleeWeapon meleeWeapon = new();
@@ -43,20 +51,9 @@ public class PunchyZero : Character {
 	}
 
 	public override void update() {
-		inputUpdate();
-		//Helpers.decrementFrames(ref donutTimer);
-		//Helpers.decrementFrames(ref swingCooldown);
-		Helpers.decrementFrames(ref parryCooldown);
-		Helpers.decrementFrames(ref dashAttackCooldown);
-		Helpers.decrementFrames(ref diveKickCooldown);
-		Helpers.decrementFrames(ref uppercutCooldown);
-		gigaAttack.update();
-		gigaAttack.charLinkedUpdate(this, true);
-
 		if (isAwakened) {
 			updateAwakenedAura();
 		}
-
 		if (!Global.level.isHyper1v1()) {
 			if (isAwakened && ownedByLocalPlayer) {
 				if (musicSource == null) {
@@ -70,16 +67,55 @@ public class PunchyZero : Character {
 				destroyMusicSource();
 			}
 		}
+		if (!ownedByLocalPlayer) {
+			base.update();
+			return;
+		}
 
+		// Local update starts here.
+		inputUpdate();
+		Helpers.decrementFrames(ref donutTimer);
+		Helpers.decrementFrames(ref swingCooldown);
+		Helpers.decrementFrames(ref parryCooldown);
+		Helpers.decrementFrames(ref dashAttackCooldown);
+		Helpers.decrementFrames(ref diveKickCooldown);
+		Helpers.decrementFrames(ref uppercutCooldown);
+		gigaAttack.update();
+		gigaAttack.charLinkedUpdate(this, true);
 		base.update();
 
 		// Hypermode timer.
 		if (hyperModeTimer > 0) {
 			hyperModeTimer -= Global.speedMul;
+			if (hyperModeTimer <= 120) {
+				hypermodeBlink = (byte)MathInt.Ceiling(hyperModeTimer - 120);
+			}
 			if (hyperModeTimer <= 0) {
+				hypermodeBlink = 0;
 				hyperModeTimer = 0;
-				isAwakened = false;
-				isBlack = false;
+				if (hyperOvertimeActive && isAwakened && player.currency >= 2) {
+					awakenedPhase = 2;
+					heal(player, player.maxHealth * 2, true);
+				} else {
+					awakenedPhase = 0;
+					isBlack = false;
+				}
+				hyperOvertimeActive = false;
+			}
+		}
+		// Genmu Zero scrap drain.
+		else if (awakenedPhase == 2) {
+			if (scrapDrainCounter > 0) {
+				scrapDrainCounter--;
+			} else {
+				scrapDrainCounter = 120;
+				player.currency--;
+				if (player.currency < 0) {
+					player.currency = 0;
+					awakenedPhase = 0;
+					isBlack = false;
+					hyperOvertimeActive = false;
+				}
 			}
 		}
 		// For the shooting animation.
@@ -256,6 +292,29 @@ public class PunchyZero : Character {
 	}
 
 	public override bool normalCtrl() {
+		// Hypermode activation.
+		if (player.currency >= Player.zeroHyperCost &&
+			player.input.isHeld(Control.Special2, player) &&
+			charState is not HyperZeroStart and not WarpIn && (
+				!isViral && !isAwakened && !isBlack ||
+				isAwakened && !hyperOvertimeActive
+			)
+		) {
+			hyperProgress += Global.spf;
+		} else {
+			hyperProgress = 0;
+		}
+		if (hyperProgress >= 1 && (isViral || isAwakened || isBlack)) {
+			hyperProgress = 0;
+			hyperOvertimeActive = true;
+			Global.level.gameMode.setHUDErrorMessage(player, "Overtime mode active");
+		}
+		else if (hyperProgress >= 1 && player.currency >= Player.zeroHyperCost) {
+			hyperProgress = 0;
+			changeState(new HyperPunchyZeroStart(), true);
+			return true;
+		}
+		// Regular states.
 		return base.normalCtrl();
 	}
 
@@ -465,6 +524,33 @@ public class PunchyZero : Character {
 		return proj;
 	}
 
+	public override Dictionary<int, Func<Projectile>> getGlobalProjs() {
+		if (isAwakened && globalCollider != null) {
+			Dictionary<int, Func<Projectile>> retProjs = new() {
+				[(int)ProjIds.AwakenedAura] = () => {
+					playSound("awakenedaura", forcePlay: true, sendRpc: true); 
+					Point centerPoint = globalCollider.shape.getRect().center();
+					float damage = 2;
+					int flinch = 0;
+					if (isGenmuZero) {
+						damage = 4;
+						flinch = Global.defFlinch;
+					}
+					Projectile proj = new GenericMeleeProj(
+						awakenedAuraWeapon, centerPoint,
+						ProjIds.AwakenedAura, player, damage, flinch, 0.5f
+					) {
+						globalCollider = globalCollider.clone(),
+						meleeId = (int)MeleeIds.AwakenedAura
+					};
+					return proj;
+				}
+			};
+			return retProjs;
+		}
+		return base.getGlobalProjs();
+	}
+
 	public enum MeleeIds {
 		None = -1,
 		Punch,
@@ -502,5 +588,82 @@ public class PunchyZero : Character {
 
 	public override bool canAddAmmo() {
 		return (gigaAttack.ammo < gigaAttack.maxAmmo);
+	}
+
+	public override float getRunSpeed() {
+		float runSpeed = Physics.WalkSpeed;
+		if (isBlack) {
+			runSpeed *= 1.15f;
+		}
+		return runSpeed * getRunDebuffs();
+	}
+
+	public override void render(float x, float y) {
+		if (isViral && visible) {
+			addRenderEffect(RenderEffectType.Trail);
+		} else {
+			removeRenderEffect(RenderEffectType.Trail);
+		}
+		if (isAwakened && visible) {
+			float xOff = 0;
+			int auraXDir = 1;
+			float yOff = 5;
+			string auraSprite = "zero_awakened_aura";
+			if (sprite.name.Contains("dash")) {
+				auraSprite = "zero_awakened_aura2";
+				auraXDir = xDir;
+				yOff = 8;
+			}
+			var shaders = new List<ShaderWrapper>();
+			if (isGenmuZero &&
+				Global.frameCount % Global.normalizeFrames(6) > Global.normalizeFrames(3) &&
+				Global.shaderWrappers.ContainsKey("awakened")
+			) {
+				shaders.Add(Global.shaderWrappers["awakened"]);
+			}
+			Global.sprites[auraSprite].draw(
+				awakenedAuraFrame,
+				pos.x + x + (xOff * auraXDir),
+				pos.y + y + yOff, auraXDir,
+				1, null, 1, 1, 1,
+				zIndex - 1, shaders: shaders
+			);
+		}
+		base.render(x, y);
+	}
+
+	public override List<byte> getCustomActorNetData() {
+		List<byte> customData = base.getCustomActorNetData();
+		customData.Add((byte)MathF.Floor(gigaAttack.ammo));
+
+		customData.Add(Helpers.boolArrayToByte([
+			hypermodeBlink > 0,
+			isAwakened,
+			isGenmuZero,
+			isBlack,
+			isViral,
+		]));
+		if (hypermodeBlink > 0) {
+			customData.Add(hypermodeBlink);
+		}
+
+		return customData;
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		// Update base arguments.
+		base.updateCustomActorNetData(data);
+		data = data[data[0]..];
+
+		// Per-player data.
+		gigaAttack.ammo = data[0];
+		bool[] flags = Helpers.byteToBoolArray(data[1]);
+		awakenedPhase = (flags[2] ? 2 : (flags[1] ? 1 : 0));
+		isBlack = flags[3];
+		isViral = flags[4];
+
+		if (flags[0]) {
+			hypermodeBlink = data[2];
+		}
 	}
 }

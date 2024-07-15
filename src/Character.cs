@@ -213,7 +213,11 @@ public partial class Character : Actor, IDamagable {
 
 		isDashing = false;
 		splashable = true;
+		// Intialize state as soon as posible.
+		charState = new NetLimbo();
+		charState.character = this;
 
+		// Starting state.
 		CharState initialCharState;
 
 		if (ownedByLocalPlayer) {
@@ -733,7 +737,7 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public override Collider getGlobalCollider() {
+	public override Collider? getGlobalCollider() {
 		var rect = new Rect(0, 0, 18, 34);
 		var offset = new Point (0, 0);
 		if (sprite.name.Contains("_ra_")) {
@@ -1586,10 +1590,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public bool isHeadbuttSprite(string? sprite) {
-		if (sprite == null) {
-			return false;
-		}
+	public bool isHeadbuttSprite(string sprite) {
 		return sprite.EndsWith("jump") || sprite.EndsWith("up_dash") || sprite.EndsWith("wall_kick");
 	}
 
@@ -1789,10 +1790,8 @@ public partial class Character : Actor, IDamagable {
 
 	public Point getDashDustEffectPos(int xDir) {
 		float dashXPos = -24;
-		if (player.isVile) dashXPos = -30;
-		if (player.isSigma1AndSigma()) dashXPos = -35;
-		if (player.isSigma2AndSigma()) dashXPos = -35;
-		if (player.isSigma3AndSigma()) dashXPos = -35;
+		if (this is Vile) dashXPos = -30;
+		if (this is BaseSigma) dashXPos = -35;
 		return pos.addxy(dashXPos * xDir + (5 * xDir), -4);
 	}
 
@@ -2079,7 +2078,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		if (!forceChange &&
-			(charState?.GetType() == newState.GetType() || changedStateInFrame)
+			(charState.GetType() == newState.GetType() || changedStateInFrame)
 		) {
 			return;
 		}
@@ -2101,7 +2100,7 @@ public partial class Character : Actor, IDamagable {
 				return;
 			}
 		}
-		if (charState?.canExit(this, newState) == false) {
+		if (charState.canExit(this, newState) == false) {
 			return; 
 		}
 		if (!newState.canEnter(this)) {
@@ -2111,26 +2110,25 @@ public partial class Character : Actor, IDamagable {
 		if (shootAnimTime > 0 && newState.canShoot()) {
 			changeSprite(getSprite(newState.shootSprite), true);
 		} else {
-			string spriteName = sprite?.name ?? "";
+			string spriteName = sprite.name;
 			if (newState.sprite == newState.transitionSprite &&
 				!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
 			) {
 				newState.sprite = newState.defaultSprite;
 			}
 			changeSprite(getSprite(newState.sprite), true);
-			if (Global.sprites.ContainsKey(getSprite(newState.sprite)) &&
-				sprite != null && spriteName == sprite.name && this is not MegamanX
-			) {
+
+			if (Global.sprites.ContainsKey(getSprite(newState.sprite)) && spriteName == sprite.name) {
 				sprite.frameIndex = 0;
 				sprite.frameTime = 0;
-				sprite.time = 0;
+				sprite.animTime = 0;
 				sprite.frameSpeed = 1;
 				sprite.loopCount = 0;
 				sprite.visible = true;
 			}
 		}
-		CharState? oldState = charState;
-		oldState?.onExit(newState);
+		CharState oldState = charState;
+		oldState.onExit(newState);
 
 		charState = newState;
 		newState.onEnter(oldState);
@@ -2165,21 +2163,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		currentLabelY = -getLabelOffY();
 
-		if (player.isSigma && visible) {
-			string kaiserBodySprite = "";
-			if (sprite.name.EndsWith("kaiser_idle")) kaiserBodySprite = sprite.name + "_body";
-			if (sprite.name.EndsWith("kaiser_hover")) kaiserBodySprite = sprite.name + "_body";
-			if (sprite.name.EndsWith("kaiser_fall")) kaiserBodySprite = sprite.name + "_body";
-			if (sprite.name.EndsWith("kaiser_shoot")) kaiserBodySprite = sprite.name + "_body";
-			if (sprite.name.EndsWith("kaiser_shoot2")) kaiserBodySprite = sprite.name + "_body";
-			if (sprite.name.EndsWith("kaiser_taunt")) kaiserBodySprite = sprite.name + "_body";
-			if (kaiserBodySprite != "") {
-				Global.sprites[kaiserBodySprite].draw(
-					0, pos.x + x, pos.y + y, xDir, 1, null, 1, 1, 1, zIndex - 10
-				);
-			}
-		}
-
+		
 		if (rideArmor == null && rideChaser == null && rideArmorPlatform == null) {
 			base.render(x, y);
 		} else if (rideArmorPlatform != null) {

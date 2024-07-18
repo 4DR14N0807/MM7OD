@@ -238,8 +238,8 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 		if (landed && didExplode) {
 			for (int i = 0; i < 6; i++) {
-				float x = Helpers.cosd(i * 60) * 60;
-				float y = Helpers.sind(i * 60) * 60;
+				float x = Helpers.cosd(i * 60) * 180;
+				float y = Helpers.sind(i * 60) * 180;
 				new Anim(pos, "generic_explosion", 1, null, true) { vel = new Point(x, y) };
 			}
 
@@ -273,8 +273,8 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 public class DangerWrapExplosionProj : Projectile {
 
-	private int radius = 10;
-	private double maxRadius = 25;
+	private int radius = 0;
+	private double maxRadius = 80;
 
 	public DangerWrapExplosionProj(
 		Weapon weapon, Point pos, int xDir,
@@ -287,7 +287,7 @@ public class DangerWrapExplosionProj : Projectile {
 	) {
 
 		projId = (int)RockProjIds.DangerWrapExplosion;
-		maxTime = 0.2f;
+		//maxTime = 0.2f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
 
@@ -305,15 +305,17 @@ public class DangerWrapExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		if (radius < maxRadius) radius++;
+		if (radius < maxRadius) radius += 4;
+		else destroySelf();
 
-		var actors = getCloseActors(radius);
+		if (isRunByLocalPlayer()) {
+			foreach (var go in Global.level.getGameObjectArray()) {
+				var chr = go as Character;
+				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
+					&& chr.pos.distanceTo(pos) <= radius) {
 
-		foreach (var actor in actors) {
-			if (actor is Character chr) {
-				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
 					damager.applyDamage(chr, false, weapon, this, projId);
-				} 
+				}	
 			}
 		}
 	}
@@ -322,9 +324,9 @@ public class DangerWrapExplosionProj : Projectile {
 		base.render(x, y);
 		double transparency = (time) / (0.4);
 		if (transparency < 0) { transparency = 0; }
-		Color col1 = new(0, 0, 0, 64);
-		Color col2 = new(255, 255, 255, (byte)(255.0 - 255.0 * (transparency)));
-		DrawWrappers.DrawCircle(pos.x + x, pos.y + y, radius, filled: true, col1, 5f, zIndex - 10, isWorldPos: true);
+		Color col1 = new(222, 41, 24, 128);
+		Color col2 = new(255, 255, 255, 255);
+		DrawWrappers.DrawCircle(pos.x + x, pos.y + y, radius, filled: true, col1, 4f, zIndex - 10, isWorldPos: true, col2);
 	}
 }
 

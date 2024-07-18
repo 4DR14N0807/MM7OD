@@ -12,6 +12,7 @@ public class Blues : Character {
 	// Mode variables.
 	public bool isShieldActive = true;
 	public bool isBreakMan;
+	public const int ReviveCost = 75;
 
 	// Core heat system.
 	public float coreMaxAmmo = 28;
@@ -35,6 +36,9 @@ public class Blues : Character {
 	public bool starCrashActive;
 	public StarCrashProj? starCrash;
 	public HardKnuckleProj? hardKnuckleProj;
+
+	// Gravity Hold stuff
+	public int gHoldOwnerYDir = 1;
 
 	// AI variables.
 	public float aiSpecialUseTimer = 0;
@@ -62,6 +66,7 @@ public class Blues : Character {
 			5 => new WaterWave(),
 			6 => new GyroAttack(),
 			7 => new StarCrash(),
+			8 => new GravityHold(),
 			_ => new PowerStone(),
 		};
 	}
@@ -255,7 +260,20 @@ public class Blues : Character {
 		if (overheating) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 0.1f);
 		}
+
+		if (!Global.level.isHyper1v1()) {
+			if (isBreakMan) { 
+				if (musicSource == null) addMusicSource("breakman", getCenterPos(), true);
+			} else {
+				destroyMusicSource();
+			}
+		}
+
 		if (!ownedByLocalPlayer) return;
+		if (player.input.isPressed(Control.Special2, player) && !isBreakMan) {
+			changeState(new BluesRevive(), true);
+
+		}
 
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
@@ -774,6 +792,28 @@ public class Blues : Character {
 			shoot(getChargeLevel());
 			return;
 		}
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> baseShaders = base.getShaders();
+		List<ShaderWrapper> shaders = new();
+		ShaderWrapper? palette = null;
+
+		int index = isBreakMan ? 1 : 0;
+		palette = player.breakManShader;
+
+		palette?.SetUniform("palette", index);
+		palette?.SetUniform("paletteTexture", Global.textures["blues_hyperpalette"]);
+
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		if (shaders.Count == 0) {
+			return baseShaders;
+		}
+
+		shaders.AddRange(baseShaders);
+		return shaders;
 	}
 
 	public override List<byte> getCustomActorNetData() {

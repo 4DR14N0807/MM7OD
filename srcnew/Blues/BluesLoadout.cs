@@ -59,6 +59,7 @@ public class BluesWeaponMenu : IMainMenu {
 		new WaterWave(),
 		new GyroAttack(),
 		new StarCrash(),
+		new GravityHold(),
 	];
 
 	public BluesWeaponMenu(IMainMenu prevMenu, bool inGame) {

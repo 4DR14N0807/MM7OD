@@ -359,7 +359,7 @@ public class CallDownRush : CharState {
 
 				case 1: //Rush Land
 					rush.vel = new Point();
-					rush.changeSprite("rush_warp_in", true);
+					rush.changeSprite("rush_warp_in", false);
 
 					if (rush.isAnimOver()) phase = 2;
 					break;
@@ -369,7 +369,7 @@ public class CallDownRush : CharState {
 					var rockPos = character.pos;
 					rockPos.y -= 64;
 					jumpTime++;
-					rush.changeSprite("sa_rush_jump", true);
+					rush.changeSprite("sa_rush_jump", false);
 					rush.move(rush.pos.directionToNorm(rockPos).times(300));
 					if (rush.pos.distanceTo(rockPos) < 10) isXAllign = true;
 					//rush.moveToXPos(new Point(character.pos.x, character.pos.y - 32), 60);
@@ -398,7 +398,7 @@ public class CallDownRush : CharState {
 				break;*/
 
 				case 3: //Rush transform
-					rush.changeSprite("sa_rush_transform", true);
+					rush.changeSprite("sa_rush_transform", false);
 
 					if (rush.isAnimOver()) {
 						jumpTime = 0;

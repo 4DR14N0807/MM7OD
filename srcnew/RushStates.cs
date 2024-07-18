@@ -58,6 +58,7 @@ public class RushWarpIn : RushState {
 	public Point rockPos;
 	public Anim warpAnim = null!;
 	bool landed;
+	bool warped;
 
 	public RushWarpIn(bool addInvulnFrames = true) : base("rush_warp_beam") { }
 
@@ -69,7 +70,7 @@ public class RushWarpIn : RushState {
 		base.onEnter(oldState);
 		rush.stopMoving();
 		rush.useGravity = false;
-		//rush.frameSpeed = 0;
+		rush.frameSpeed = 1;
 		rush.vel.y = 300;
 
 		if (rush.netOwner != null) rockPos = rush.netOwner.character.pos;
@@ -97,18 +98,22 @@ public class RushWarpIn : RushState {
 		}*/
 		if (canLand(rush)) {
 			rush.vel.y = 0;
-			rush.changeSprite("rush_warp_in", true);
+			rush.changeSprite("rush_warp_in", false);
 			landed = true;
 		}
 
 		if (landed && rush.isAnimOver()) rush.changeState(new RushIdle());
 	}
 
-	public bool canLand(Actor actor) {
-		if (Global.level.checkCollisionActor(actor, 0, 2) == null) {
+	public override void postUpdate() {
+		base.postUpdate();
+	}
+
+	public bool canLand(Actor rActor) {
+		if (Global.level.checkCollisionActor(rActor, rActor.xDir, 1) == null) {
 			return false;
 		}
-		List<CollideData> hits = Global.level.getTriggerList(actor, 0, 2, null, new Type[] { typeof(KillZone) });
+		List<CollideData> hits = Global.level.getTriggerList(rActor, rActor.xDir, 1, null, new Type[] { typeof(KillZone) });
 		if (hits.Count > 0) {
 			return false;
 		}
@@ -188,7 +193,7 @@ public class RushCoil : RushState {
 
 	public override void update() {
 		base.update();
-		if (stateTime >= 90) {
+		if (rush.isAnimOver()) {
 			rush.changeState(new RushWarpOut());
 		}
 	}

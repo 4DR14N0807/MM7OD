@@ -157,6 +157,8 @@ public class Rush : Actor, IDamagable {
 			} else if (other.isSideWallHit()) changeState(new RushWarpOut());
 		}
 
+		if (rushState is RushWarpIn && other.isGroundHit()) changeState(new RushIdle());
+
 		/*if (chr == null || chr.charState is Die) return;
 
 		if (chr == netOwner.character && chr.charState is Fall &&

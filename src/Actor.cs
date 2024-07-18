@@ -88,6 +88,12 @@ public partial class Actor : GameObject {
 	public float gravityModifier = 1;
 	public bool reversedGravity;
 	public float gravityWellModifier = 1;
+	// Gravity Hold Stuff
+	public float gHoldModifier = 1;
+	public Player? gHoldOwner;
+	public bool gHolded;
+	public int gHoldTime;
+
 	public Dictionary<string, float> projectileCooldown { get; set; } = new Dictionary<string, float>();
 	public Dictionary<int, float> flinchCooldown { get; set; } = new Dictionary<int, float>();
 
@@ -268,7 +274,7 @@ public partial class Actor : GameObject {
 	public virtual void changeSprite(string spriteName, bool resetFrame) {
 		string oldSpriteName = sprite?.name ?? "";
 		if (spriteName == null) return;
-		if (sprite != null && (this is Character || !resetFrame)) {
+		if (sprite != null && (this is Character || this is Rush || !resetFrame)) {
 			if (sprite.name == spriteName) {
 				return;
 			}
@@ -500,6 +506,25 @@ public partial class Actor : GameObject {
 		if (immuneToKnockback) {
 			stopMoving();
 		}
+
+		//G.Hold floating
+
+		if (gHolded && reversedGravity) {
+			float stopPos = pos.y;
+			if (gHoldTime >= 240) gHoldEnd(true);
+			if (gHoldTime == 10) {
+				stopMoving();
+				useGravity = false;
+				stopPos = pos.y;
+			} else if (gHoldTime > 10) {
+				useGravity = false;
+				float mod = gHoldTime % 2 == 0 ? 1 : -1;
+				pos.y = Helpers.lerp(stopPos, 0, Global.spf * 5 * mod);
+			}
+			gHoldTime++;
+		}
+
+		
 
 		foreach (var key in netSounds.Keys.ToList()) {
 			if (!Global.sounds.Contains(netSounds[key])) {
@@ -1588,6 +1613,34 @@ public partial class Actor : GameObject {
 		grounded = false;
 		vel.y = -1;
 	}
+	public void gHoldStart() {
+		vel = new Point();
+		incPos(new Point(0, -5));
+		yDir = -1;
+		gHoldModifier = -1;
+		gHolded = true;	
+		reversedGravity = true;
+	}
+
+	public void gHoldEnd(bool shouldDestroy) {
+		vel = new Point();
+		yDir = 1;
+		gHoldModifier = 1;
+		reversedGravity = false;
+		gHoldTime = 0;
+		
+		if (shouldDestroy) destroyGHold();
+		else {
+			useGravity = false;
+			vel.y = 480;
+		}
+	}
+
+	public void destroyGHold() {
+		gHolded = false;
+		gHoldOwner = null!;
+		useGravity = true;
+	}
 
 	public bool stopCeiling() {
 		if (vel.y < 0 && Global.level.checkCollisionActor(this, 0, -1) != null) {
@@ -1763,7 +1816,7 @@ public partial class Actor : GameObject {
 	}
 
 	public virtual float getGravity() {
-		return Global.level.gravity * gravityModifier * gravityWellModifier;
+		return Global.level.gravity * gravityModifier * gHoldModifier;
 	}
 
 	public Actor[] getCloseActors(

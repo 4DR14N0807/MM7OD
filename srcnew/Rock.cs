@@ -533,7 +533,7 @@ public class Rock : Character {
 		var wall = other.gameObject as Wall;
 		var rush = other.gameObject as Rush;
 		var isGHit = other.hitData?.normal != null && other.hitData.normal.Value.isGroundNormal();
-		bool isRushCoil = rush != null && rush.rushState is RushIdle or RushSleep;
+		bool isRushCoil = rush != null && rush.rushState is RushIdle or RushSleep && rush.type == 0;
 		bool isRushJet = rush != null && rush.rushState is RushJetState;
 
 		if (charState is RockDoubleJump && wall != null) {
@@ -666,7 +666,8 @@ public class Rock : Character {
 	public bool canGoSuperAdaptor() {
 		return (
 			charState is not Die && charState is not CallDownRush &&
-			!hasSuperAdaptor && player.currency >= SuperAdaptorCost
+			!hasSuperAdaptor && player.currency >= SuperAdaptorCost &&
+			rush == null
 		);
 	}
 

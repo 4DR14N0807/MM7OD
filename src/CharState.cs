@@ -1551,6 +1551,7 @@ public class Die : CharState {
 	bool sigmaHasMavericks;
 	BaseSigma sigma;
 	MegamanX mmx;
+	Blues? blues;
 
 	public Die() : base("die") {
 	}
@@ -1559,6 +1560,7 @@ public class Die : CharState {
 		base.onEnter(oldState);
 		sigma = character as BaseSigma;
 		mmx = character as MegamanX;
+		blues = character as Blues;
 		character.useGravity = false;
 		character.stopMoving();
 		character.stopCharge();
@@ -1573,6 +1575,7 @@ public class Die : CharState {
 		}
 		player.lastDeathWasVileMK2 = vile?.isVileMK2 == true;
 		player.lastDeathWasVileMK5 = vile?.isVileMK5 == true;
+		//player.lastDeathWasBreakMan = blues.isBreakMan;
 		player.lastDeathWasSigmaHyper = sigma?.isHyperSigma == true || character is KaiserSigma;
 		player.lastDeathWasXHyper = mmx?.isHyperX == true; ;
 		player.lastDeathPos = character.getCenterPos();
@@ -1742,7 +1745,8 @@ public class Die : CharState {
 			not ViralSigmaRevive and
 			not KaiserSigmaRevive and
 			not XReviveStart and
-			not XRevive
+			not XRevive and
+			not BluesRevive
 		) {
 			return false;
 		}

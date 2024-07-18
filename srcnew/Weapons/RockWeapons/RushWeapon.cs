@@ -45,6 +45,7 @@ public class RushWeapon : Weapon {
 			} else {
 				int type = rock.rushWeaponIndex;
 				rock.rush = new Rush(shootPos, player, xDir, player.getNextActorNetId(), true, type, true);
+				//rock.rush.changeState(new RushIdle());
 			}
 		}
 	}
@@ -120,7 +121,7 @@ public class RSBombProj : Projectile {
 public class RSBombExplosionProj : Projectile {
 
 	int radius;
-	float maxRadius = 48;
+	float maxRadius = 64;
 	public RSBombExplosionProj(
 		Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false)
@@ -137,20 +138,10 @@ public class RSBombExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		if (radius < maxRadius) radius++;
+		if (radius < maxRadius) radius += 4;
 		else destroySelf();
 
-		var actors = getCloseActors(radius);
-
-		foreach (var actor in actors) {
-			if (actor is IDamagable dmg) {
-				var chr = dmg as Character;
-
-				if (chr != null) damager.applyDamage(chr, false, weapon, this, projId);
-			}
-		}
-
-		/*if (isRunByLocalPlayer()) {
+		if (isRunByLocalPlayer()) {
 			foreach (var go in Global.level.getGameObjectArray()) {
 				var chr = go as Character;
 				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
@@ -159,15 +150,15 @@ public class RSBombExplosionProj : Projectile {
 					damager.applyDamage(chr, false, weapon, this, projId);
 				}	
 			}
-		}*/
+		}
 	}
 
 	public override void render(float x, float y) {
 		base.render(x, y);
 		double transparency = (time) / (0.4);
 		if (transparency < 0) { transparency = 0; }
-		Color col1 = new(0, 0, 0, 64);
-		Color col2 = new(255, 255, 255, (byte)(255.0 - 255.0 * (transparency)));
-		DrawWrappers.DrawCircle(pos.x + x, pos.y + y, radius, filled: true, col1, 5f, zIndex - 10, isWorldPos: true);
+		Color col1 = new(222, 41, 24, 128);
+		Color col2 = new(255, 255, 255, 255);
+		DrawWrappers.DrawCircle(pos.x + x, pos.y + y, radius, filled: true, col1, 2f, zIndex - 10, isWorldPos: true, col2);
 	}
 }

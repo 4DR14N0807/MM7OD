@@ -284,12 +284,16 @@ public class Sprite {
 		bool isUPX = false;
 		bool isUltX = false;
 		bool isSuperAdaptor = false;
+		bool isReversed = false;
+		bool isBreakMan = false;
 		Character character = actor as Character;
 		if (character != null) {
 			if (character.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
 			isSuperAdaptor = character is Rock { hasSuperAdaptor: true };
+			isReversed = character.gHolded && character.reversedGravity;
+			isBreakMan = character is Blues { isBreakMan: true };
 		}
 
 		if (name == "mmx_unpo_grab" || name == "mmx_unpo_grab2") zIndex = ZIndex.MainPlayer;
@@ -520,6 +524,7 @@ public class Sprite {
 
 		float extraXOff = 0;
 		float extraYOff = 0;
+		float extraYPos = 0;
 		if (isUltX) {
 			bitmap = Global.textures["XUltimate"];
 			extraYOff = 3;
@@ -535,6 +540,13 @@ public class Sprite {
 			extraYOff = 6;
 			bitmap = Global.textures["rock_superadaptor"];
 		}
+
+		if (isBreakMan) {
+			bitmap = Global.textures["blues_breakman"];
+		}
+
+		if (isReversed) extraYPos += 35;
+
 		DrawWrappers.DrawTexture(
 			bitmap,
 			currentFrame.rect.x1 - extraXOff,
@@ -542,7 +554,7 @@ public class Sprite {
 			currentFrame.rect.w() + extraXOff,
 			currentFrame.rect.h() + extraYOff,
 			x - (extraXOff * xDirArg),
-			y - extraYOff,
+			y - extraYOff - extraYPos,
 			zIndex,
 			cx - frameOffsetX * xDirArg,
 			cy - frameOffsetY * yDirArg,

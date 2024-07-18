@@ -43,7 +43,7 @@ public class Hurt : CharState {
 		}
 		if (!spiked) {
 			character.vel.y = (-0.125f * (flinchTime - 1)) * 60f;
-			if (isCombo && character.pos.y < flinchYPos) {
+			if (isCombo && character.pos.y < flinchYPos && !character.gHolded) {
 				// Magic equation. Changing gravity from 0.25 probably super-break this.
 				// That said, we do not change base gravity.
 				character.vel.y *= (0.002f * flinchTime - 0.076f) * (flinchYPos - character.pos.y) + 1;

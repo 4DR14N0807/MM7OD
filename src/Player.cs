@@ -131,6 +131,7 @@ public partial class Player {
 	public Point? lastDeathPos;
 	public bool lastDeathWasVileMK2;
 	public bool lastDeathWasVileMK5;
+	public bool lastDeathWasBreakMan;
 	public bool lastDeathWasSigmaHyper;
 	public bool lastDeathWasXHyper;
 	public const int zeroHyperCost = 10;
@@ -450,9 +451,10 @@ public partial class Player {
 	public ShaderWrapper darkHoldScreenShader = Helpers.cloneShaderSafe("darkHoldScreen");
 
 	// New shaders.
-	public ShaderWrapper rockPaletteShader = Helpers.cloneGenericPaletteShader("rock_palette_texture");
+	public ShaderWrapper rockPaletteShader = Helpers.cloneShaderSafe("rockPalette");
 	public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
 	public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
+	public ShaderWrapper breakManShader = Helpers.cloneShaderSafe("paletteBreakMan");
 
 	// Character specific data populated on RPC request
 	public ushort? charNetId;
@@ -872,6 +874,14 @@ public partial class Player {
 		vileFormToRespawnAs = 0;
 		hyperSigmaRespawn = false;
 		hyperXRespawn = false;
+
+		if (isProtoMan) {
+			if (canReviveBlues()) {
+				if (input.isPressed(Control.Special2, this)) {
+					reviveBlues();
+				}
+			}
+		}
 
 		if (isVile) {
 			if (isSelectingRA()) {
@@ -1944,6 +1954,24 @@ public partial class Player {
 		return !Global.level.isElimination() && armorFlag == 0 && character?.charState is Die && lastDeathCanRevive && isX && newCharNum == 0 && currency >= reviveXCost && !lastDeathWasXHyper;
 	}
 
+	public bool canReviveBlues() {
+		return !Global.level.isElimination() && 
+			character?.charState is Die && 
+			lastDeathCanRevive && currency >= Blues.ReviveCost && 
+			!lastDeathWasBreakMan;
+	}
+
+	public void reviveBlues() {
+		currency -= Blues.ReviveCost;
+		/*Blues blues = limboChar as Blues;
+
+		respawnTime = 0;
+		character = limboChar;
+		character.visible = true;
+		limboChar = null;*/
+		//character.changeState(new BluesRevive(), true);
+	}
+
 	public void reviveVile(bool toMK5) {
 		currency -= reviveVileCost;
 		Vile vile = (limboChar as Vile);
@@ -2659,7 +2687,7 @@ public partial class Player {
 	}
 
 	public void stopETankHeal() {
-		if (character.eTankHealAmount > 0) character.eTankHealAmount = 0;
+		if (character != null && character.eTankHealAmount > 0) character.eTankHealAmount = 0;
 	}
 
 	public void delayWTank() {

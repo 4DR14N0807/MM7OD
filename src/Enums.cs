@@ -312,6 +312,8 @@ public enum RockWeaponIds {
 	GyroAttack,
 	StarCrash,
 	NeedleCannon,
+	NapalmBomb,
+	GravityHold,
 }
 
 public enum BassProjIds {
@@ -338,6 +340,7 @@ public enum BluesProjIds  {
 	ProtoStrikePush,
 	BigBangStrike,
 	BigBangStrikeExplosion,
+	GravityHold,
 }
 
 public enum RockProjIds  {

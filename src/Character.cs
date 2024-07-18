@@ -1274,6 +1274,17 @@ public partial class Character : Actor, IDamagable {
 			vel.y = 0;
 		}
 
+		if (Global.level.checkCollisionActor(this, 0, 1) != null) {
+			if (gHolded && gHoldModifier > 0) {
+				Damager.applyDamage(
+					gHoldOwner, 2, 1, Global.halfFlinch, this,
+					false, (int)RockWeaponIds.GravityHold, 0, this,
+					(int)BluesProjIds.GravityHold
+				); 
+				destroyGHold();
+			}
+		}
+
 		// This overrides the ground checks made by Actor.update();
 		if (rideArmorPlatform != null) {
 			changePos(rideArmorPlatform.getMK5Pos().addxy(0, 1));
@@ -2855,7 +2866,9 @@ public partial class Character : Actor, IDamagable {
 			projId == (int)ProjIds.GreenSpinnerSplash ||
 			projId == (int)ProjIds.NecroBurst ||
 			projId == (int)ProjIds.SniperMissileBlast ||
-			projId == (int)ProjIds.SpeedBurnerRecoil;
+			projId == (int)ProjIds.SpeedBurnerRecoil ||
+			projId == (int)RockProjIds.RSBomb ||
+			projId == (int)RockProjIds.RSBombExplosion;
 
 		if (isSelfDamaging && damagerPlayerId == player.id) {
 			return true;

@@ -2879,7 +2879,21 @@ public class GameMode {
 					FontType.BlueMenu, "Spectating in " + Math.Round(level.mainPlayer.respawnTime).ToString(),
 					Global.screenW / 2, Global.screenH / 2, Alignment.Center
 				);
-			} else if (level.mainPlayer.canReviveVile()) {
+			} else if (level.mainPlayer.canReviveBlues()) {
+				Fonts.drawText(
+						FontType.Blue, respawnStr,
+						Global.screenW / 2, -10 + Global.screenH / 2, Alignment.Center
+					);
+					string reviveText = Helpers.controlText(
+						$"[CMD]: Revive as Break Man ({Blues.ReviveCost} {Global.nameCoins})"
+					);
+					Fonts.drawText(
+						FontType.DarkBlue, reviveText,
+						Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
+					);
+			}
+			
+			 else if (level.mainPlayer.canReviveVile()) {
 				if (level.mainPlayer.lastDeathWasVileMK2) {
 					Fonts.drawText(
 						FontType.BlueMenu, respawnStr,

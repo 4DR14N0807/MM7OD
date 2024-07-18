@@ -273,3 +273,58 @@ public class OverheatShutdown : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 	}
 }
+
+
+public class BluesRevive : CharState {
+
+	float radius = 200;
+	Blues? blues;
+	public BluesRevive() : base("revive") {
+		invincible = true;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues;
+
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		character.useGravity = true;
+		character.removeRenderEffect(RenderEffectType.Flash);
+		//Global.level.delayedActions.Add(new DelayedAction(() => { character.destroyMusicSource(); }, 0.75f));
+		blues.isBreakMan = true;
+
+		if (character != null) {
+			character.invulnTime = 0.5f;
+		}
+	}
+
+	public override void update() {
+		base.update();
+
+		if (radius >= 0) {
+			radius -= Global.spf * 150;
+		}
+		if (character.frameIndex < 2) {
+			if (Global.frameCount % 4 < 2) {
+				character.addRenderEffect(RenderEffectType.Flash);
+			} else {
+				character.removeRenderEffect(RenderEffectType.Flash);
+			}
+		} else {
+			character.removeRenderEffect(RenderEffectType.Flash);
+		}
+		if (character.frameIndex == 3 && !once) {
+			player.health = 1;
+			character.addHealth(player.maxHealth);
+			once = true;
+		}
+		if (character.ownedByLocalPlayer) {
+			if (character.isAnimOver()) {
+				character.changeState(new Fall(), true);
+			}
+		}
+	}
+}

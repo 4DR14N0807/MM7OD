@@ -197,6 +197,7 @@ public partial class Actor : GameObject {
 		} else {
 			// Default to empty if no sprite was provided.
 			sprite = Global.sprites["empty"].clone();
+			sprite.name = "null";
 		}
 		// Initalize other stuff.
 		this.pos = pos;
@@ -416,11 +417,7 @@ public partial class Actor : GameObject {
 		this.zIndex = val;
 	}
 
-	public Frame currentFrame {
-		get {
-			return sprite.getCurrentFrame();
-		}
-	}
+	public Frame currentFrame => sprite.getCurrentFrame();
 
 	public float framePercent {
 		get {
@@ -446,7 +443,7 @@ public partial class Actor : GameObject {
 		if (!useFrameProjs) {
 			return;
 		}
-		if (sprite == null) {
+		if (sprite.name == "null") {
 			return;
 		}
 		// Frame-based hitbox projectile section
@@ -931,6 +928,9 @@ public partial class Actor : GameObject {
 			cy = 1;
 		}
 
+		if (collider == null) {
+			return pos.y;
+		}
 		return pos.y - (collider.shape.getRect().h() * cy);
 	}
 
@@ -972,7 +972,10 @@ public partial class Actor : GameObject {
 		return true;
 	}
 
-	public void getKillerAndAssister(Player ownPlayer, ref Player killer, ref Player assister, ref int? weaponIndex, ref int? assisterProjId, ref int? assisterWeaponId) {
+	public void getKillerAndAssister(
+		Player ownPlayer, ref Player? killer, ref Player? assister, ref int? weaponIndex,
+		ref int? assisterProjId, ref int? assisterWeaponId
+	) {
 		if (damageHistory.Count > 0) {
 			for (int i = damageHistory.Count - 1; i >= 0; i--) {
 				var lastAttacker = damageHistory[i];
@@ -1168,8 +1171,8 @@ public partial class Actor : GameObject {
 	}
 
 	public virtual bool shouldRender(float x, float y) {
-		// Don't draw things without sprites.
-		if (sprite == null || currentFrame == null) {
+		// Don't draw things without sprites or with the "null" sprite.
+		if (sprite.name == "null" || currentFrame == null) {
 			return false;
 		}
 		// Don't draw actors out of the screen for optimization
@@ -1235,7 +1238,7 @@ public partial class Actor : GameObject {
 	}
 
 	public void addDamageTextHelper(
-		Player attacker, float damage, float maxHealth, bool sendRpc
+		Player? attacker, float damage, float maxHealth, bool sendRpc
 	) {
 		if (attacker == null) return;
 

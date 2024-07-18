@@ -106,7 +106,7 @@ public partial class Character : Actor, IDamagable {
 	public float limboRACheckCooldown;
 	public RideArmor? rideArmor;
 	public RideChaser? rideChaser;
-	public Player? lastGravityWellDamager;
+	public Player lastGravityWellDamager;
 
 	// Some things previously in other char files used by multiple characters.
 	public int lastShootPressed;
@@ -162,7 +162,7 @@ public partial class Character : Actor, IDamagable {
 	// Burn (MMX)
 	public float burnDamageCooldown;
 	public Damager? burnDamager;
-	public Weapon? burnWeapon;
+	public Weapon burnWeapon = FireWave.netWeapon;
 	public float burnTime;
 
 	//Spark Shock root
@@ -261,6 +261,7 @@ public partial class Character : Actor, IDamagable {
 		Global.level.addGameObject(this);
 
 		chargeEffect = new ChargeEffect();
+		lastGravityWellDamager = player;
 	}
 
 	public override void onStart() {
@@ -1155,12 +1156,6 @@ public partial class Character : Actor, IDamagable {
 
 			return;
 		}
-
-		if (player.isVile && !player.isAI && !player.isDisguisedAxl && player.getVileWeightActive() > VileLoadout.maxWeight && charState is not WarpIn && charState is not Die) {
-			applyDamage(Damager.envKillDamage, player, this, null, null);
-			return;
-		}
-
 		updateParasite();
 		updateBubble();
 
@@ -1490,11 +1485,15 @@ public partial class Character : Actor, IDamagable {
 				// UNTIL you start falling OR you move away and jump into it
 				int dpadXDir = player.input.getXDir(player);
 
-				if (dpadXDir == -1 && velYRequirementMet && charState.lastLeftWall != null) {
+				if (dpadXDir == -1 && velYRequirementMet && charState.lastLeftWall != null
+					&& charState.lastLeftWallCollider != null
+				) {
 					changeState(new WallSlide(-1, charState.lastLeftWallCollider));
 					return true;
 				}
-				if (dpadXDir == 1 && velYRequirementMet && charState.lastRightWall != null) {
+				if (dpadXDir == 1 && velYRequirementMet && charState.lastRightWall != null
+					&& charState.lastRightWallCollider != null
+				) {
 					changeState(new WallSlide(1, charState.lastRightWallCollider));
 					return true;
 				}
@@ -1588,10 +1587,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
-		if (!isHeadbuttSprite(sprite?.name) && isHeadbuttSprite(spriteName)) {
+		if (!isHeadbuttSprite(sprite.name) && isHeadbuttSprite(spriteName)) {
 			headbuttAirTime = Global.spf;
 		}
-		if (isHeadbuttSprite(sprite?.name) && !isHeadbuttSprite(spriteName)) {
+		if (isHeadbuttSprite(sprite.name) && !isHeadbuttSprite(spriteName)) {
 			headbuttAirTime = 0;
 		}
 		List<Trail>? trails = sprite?.lastFiveTrailDraws;
@@ -1906,7 +1905,7 @@ public partial class Character : Actor, IDamagable {
 
 			if (player.weapon is WolfSigmaHandWeapon handWeapon && handWeapon.hand.isControlling) {
 				var hand = handWeapon.hand;
-				Point camCenter = sigmaHeadGroundCamCenterPos.Value;
+				Point camCenter = sigmaHeadGroundCamCenterPos ?? getCenterPos();
 				if (hand.pos.x > camCenter.x + Global.halfScreenW || hand.pos.x < camCenter.x - Global.halfScreenW || hand.pos.y > camCenter.y + Global.halfScreenH || hand.pos.y < camCenter.y - Global.halfScreenH) {
 					float overFactorX = MathF.Abs(hand.pos.x - camCenter.x) - Global.halfScreenW;
 					if (overFactorX > 0) {
@@ -1933,8 +1932,8 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (rideArmor != null) {
-			if (ownedByLocalPlayer && rideArmor.rideArmorState is RADropIn) {
-				return (rideArmor.rideArmorState as RADropIn).spawnPos.addxy(0, -24);
+			if (ownedByLocalPlayer && rideArmor.rideArmorState is RADropIn rADropInState) {
+				return rADropInState.spawnPos.addxy(0, -24);
 			}
 			return rideArmor.pos.round().addxy(camOffsetX, -24);
 		}
@@ -1947,7 +1946,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public Rect getHeadRect() {
-		Point headPos = getHeadPos().Value;
+		Point headPos = getHeadPos() ?? pos;
 		float topY = float.MaxValue;
 		float leftX = float.MaxValue;
 		float rightX = float.MinValue;
@@ -2232,7 +2231,7 @@ public partial class Character : Actor, IDamagable {
 
 		bool shouldDrawName = false;
 		bool shouldDrawHealthBar = false;
-		string overrideName = null;
+		string overrideName = "";
 		FontType? overrideColor = null;
 
 		if (!hideHealthAndName()) {
@@ -2245,7 +2244,9 @@ public partial class Character : Actor, IDamagable {
 				}
 			}
 			// Special case: labeling the own player's disguised Axl
-			else if (player.isMainPlayer && player.isDisguisedAxl && Global.level.gameMode.isTeamMode) {
+			else if (player.isMainPlayer && player.isDisguisedAxl && 
+				Global.level.gameMode.isTeamMode && player.disguise != null
+			) {
 				overrideName = player.disguise.targetName;
 				shouldDrawName = true;
 			}
@@ -2253,7 +2254,8 @@ public partial class Character : Actor, IDamagable {
 			else if (
 				!player.isMainPlayer && player.isDisguisedAxl &&
 				Global.level.gameMode.isTeamMode &&
-				player.alliance != Global.level.mainPlayer.alliance
+				player.alliance != Global.level.mainPlayer.alliance &&
+				player.disguise != null
 			) {
 				overrideName = player.disguise.targetName;
 				overrideColor = Global.level.gameMode.teamFonts[Global.level.mainPlayer.alliance];
@@ -2300,7 +2302,7 @@ public partial class Character : Actor, IDamagable {
 		if (shouldDrawHealthBar || Global.overrideDrawHealth) {
 			drawHealthBar();
 		}
-		if (shouldDrawName || Global.overrideDrawName) {
+		if (shouldDrawName || Global.overrideDrawName && overrideName != "") {
 			drawName(overrideName, overrideColor);
 		}
 
@@ -3106,7 +3108,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void killPlayer(Player killer, Player assister, int? weaponIndex, int? projId) {
+	public void killPlayer(Player? killer, Player? assister, int? weaponIndex, int? projId) {
 		player.health = 0;
 		int? assisterProjId = null;
 		int? assisterWeaponId = null;

@@ -15,16 +15,16 @@ public class CharState {
 	public bool airSpriteReset;
 	public bool wasGrounded = true;
 	public Point busterOffset;
-	public Character character;
-	public Collider lastLeftWallCollider;
-	public Collider lastRightWallCollider;
-	public Wall lastLeftWall;
-	public Wall lastRightWall;
-	public Collider wallKickLeftWall;
-	public Collider wallKickRightWall;
+	public Character character = null!;
+	public Collider? lastLeftWallCollider;
+	public Collider? lastRightWallCollider;
+	public Wall? lastLeftWall;
+	public Wall? lastRightWall;
+	public Collider? wallKickLeftWall;
+	public Collider? wallKickRightWall;
 	public float stateTime;
 	public float stateFrames;
-	public string enterSound;
+	public string enterSound = "";
 	public float framesJumpNotHeld = 0;
 	public bool once;
 	public bool useGravity = true;
@@ -49,9 +49,6 @@ public class CharState {
 	public virtual void releaseGrab() {
 		grabTime = 0;
 	}
-
-	// For character specific code.
-	public Vile vile;
 
 	// Control system.
 	// This dictates if it can attack or land.
@@ -112,7 +109,7 @@ public class CharState {
 		}
 		if (character.rideArmorPlatform != null && (
 			newState is Hurt || newState is Die ||
-			newState is CallDownMech || newState?.isGrabbedState == true
+			newState is CallDownMech || newState.isGrabbedState == true
 		)) {
 			character.rideArmorPlatform = null;
 		}
@@ -124,8 +121,6 @@ public class CharState {
 	}
 
 	public virtual void onEnter(CharState oldState) {
-		vile = character as Vile;
-
 		if (!string.IsNullOrEmpty(enterSound)) {
 			character.playSound(enterSound, sendRpc: true);
 		}
@@ -235,7 +230,7 @@ public class CharState {
 
 
 		// Moving platforms detection
-		CollideData leftWallPlat = character.getHitWall(-Global.spf * 300, 0);
+		CollideData? leftWallPlat = character.getHitWall(-Global.spf * 300, 0);
 		if (leftWallPlat?.gameObject is Wall leftWall && leftWall.isMoving) {
 			character.move(leftWall.deltaMove, useDeltaTime: true);
 			lastLeftWallCollider = leftWall.collider;
@@ -243,7 +238,7 @@ public class CharState {
 			lastLeftWallCollider = leftActor.collider;
 		}
 
-		CollideData rightWallPlat = character.getHitWall(Global.spf * 300, 0);
+		CollideData? rightWallPlat = character.getHitWall(Global.spf * 300, 0);
 		if (rightWallPlat?.gameObject is Wall rightWall && rightWall.isMoving) {
 			character.move(rightWall.deltaMove, useDeltaTime: true);
 			lastRightWallCollider = rightWall.collider;
@@ -333,8 +328,8 @@ public class CharState {
 
 	public void checkLadder(bool isGround) {
 		if (player.input.isHeld(Control.Up, player)) {
-			var ladders = Global.level.getTriggerList(character, 0, 0, null, typeof(Ladder));
-			if (ladders.Count > 0) {
+			List<CollideData> ladders = Global.level.getTriggerList(character, 0, 0, null, typeof(Ladder));
+			if (ladders != null && ladders.Count > 0 && ladders[0].gameObject is Ladder ladder) {
 				var midX = ladders[0].otherCollider.shape.getRect().center().x;
 				if (Math.Abs(character.pos.x - midX) < 12) {
 					var rect = ladders[0].otherCollider.shape.getRect();
@@ -342,7 +337,7 @@ public class CharState {
 					if (Global.level.checkCollisionActor(character, snapX - character.pos.x, 0) == null) {
 						float? incY = null;
 						if (isGround) incY = -10;
-						character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX, incY));
+						character.changeState(new LadderClimb(ladder, midX, incY));
 					}
 				}
 			}
@@ -350,13 +345,13 @@ public class CharState {
 		if (isGround && player.input.isPressed(Control.Down, player)) {
 			character.checkLadderDown = true;
 			var ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
-			if (ladders.Count > 0) {
+			if (ladders.Count > 0 && ladders[0].gameObject is Ladder ladder) {
 				var rect = ladders[0].otherCollider.shape.getRect();
 				var snapX = (rect.x1 + rect.x2) / 2;
 				float xDist = snapX - character.pos.x;
 				if (MathF.Abs(xDist) < 10 && Global.level.checkCollisionActor(character, xDist, 30) == null) {
 					var midX = ladders[0].otherCollider.shape.getRect().center().x;
-					character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX));
+					character.changeState(new LadderClimb(ladder, midX));
 					character.move(new Point(0, 30), false);
 					character.stopCamUpdate = true;
 				}
@@ -958,7 +953,7 @@ public class Dash : CharState {
 			}
 		}
 		dashTime += Global.spf;
-		if (stateTime > 0.1) {
+		if (stateTime > 0.1 && !character.isUnderwater()) {
 			stateTime = 0;
 			new Anim(
 				character.getDashDustEffectPos(initialDashDir),
@@ -1265,10 +1260,6 @@ public class LadderClimb : CharState {
 			return;
 		}
 
-		if (player.isVile && vile != null && vile.vileLadderShootCooldown == 0) {
-			character.changeSpriteFromName(sprite, true);
-		}
-
 		if (character.isAttacking()) {
 			character.frameSpeed = 1;
 		} else {
@@ -1564,13 +1555,20 @@ public class Die : CharState {
 		if (character is MegamanX mmx) {
 			mmx.removeBarrier();
 			player.lastDeathWasXHyper = mmx.isHyperX;
+		} else {
+			player.lastDeathWasXHyper = false;
 		}
 		if (character.ownedByLocalPlayer && character.player.isDisguisedAxl) {
 			character.player.revertToAxlDeath();
 			character.changeSpriteFromName("die", true);
 		}
-		player.lastDeathWasVileMK2 = vile?.isVileMK2 == true;
-		player.lastDeathWasVileMK5 = vile?.isVileMK5 == true;
+		if (character is Vile vile) {
+			player.lastDeathWasVileMK2 = vile.isVileMK2 == true;
+			player.lastDeathWasVileMK5 = vile.isVileMK5 == true;
+		} else {
+			player.lastDeathWasVileMK2 = false;
+			player.lastDeathWasVileMK5 = false;
+		}
 		player.lastDeathWasSigmaHyper = character is WolfSigma or ViralSigma or KaiserSigma;
 		player.lastDeathPos = character.getCenterPos();
 		//why is this here

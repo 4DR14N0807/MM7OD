@@ -660,7 +660,9 @@ public class Blues : Character {
 		// Do shield checks only if damage exists and a actor too.
 		if (actor == null || attacker == null) {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
-			playSound("hit", sendRpc: true);
+			if (charState is not Hurt { stateFrames: 0 }) {
+				playSound("hit", sendRpc: true);
+			}
 			return;
 		}
 		// Tracker variables.
@@ -669,13 +671,22 @@ public class Blues : Character {
 		bool fullyBlocked = false;
 		bool shieldBlocked = false;
 		bool bodyDamaged = false;
+		bool shieldPierced = false;
+		bool bodyPierced = false;
 		// Shield front block check.
 		if (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
 			shieldBlocked = true;
-			// 1 damage scenario.
-			// Reduce damage only 50% of the time.
-			if (damage < 2) {
-				shieldDamageDebt += damage / 2m;
+			int damageReduction = 1;
+			// Armor pierce.
+			// Remove damage reduction.
+			if (Damager.isArmorPiercing(projId)) {
+				damageReduction = 0;
+				shieldPierced = true;
+			}
+			// 1-2 damage scenario.
+			// Reduce damage only 1/3rd of the time.
+			if (damageReduction > 0 && damage <= 2) {
+				shieldDamageDebt += damage / 3m;
 				damage = 0;
 				if (shieldDamageDebt >= 1) {
 					shieldDamageDebt--;
@@ -685,8 +696,8 @@ public class Blues : Character {
 				}
 			}
 			// High HP scenario.
-			else if (shieldHP + 1 >= damage) {
-				shieldHP -= damage - 1;
+			else if (shieldHP + damageReduction >= damage) {
+				shieldHP -= damage - damageReduction;
 				if (shieldHP <= 0) {
 					shieldHP = 0;
 				}
@@ -694,7 +705,7 @@ public class Blues : Character {
 			}
 			// Low HP scenario.
 			else {
-				damage -= shieldHP + 1;
+				damage -= shieldHP + damageReduction;
 				shieldHP = 0;
 				shieldBlocked = false;
 			}
@@ -711,17 +722,21 @@ public class Blues : Character {
 		// Back shield block check.
 		else if (!isShieldFront() && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
 			shieldBlocked = true;
-			if (damage < 2) {
-				shieldDamageDebt += damage / 2m;
-				damage = 0;
-				if (shieldDamageDebt >= 1) {
-					shieldDamageDebt--;
-					damage = 1;
+			if (!Damager.isArmorPiercing(projId)) {
+				if (damage <= 1) {
+					shieldDamageDebt += damage / 2m;
+					damage = 0;
+					if (shieldDamageDebt >= 1) {
+						shieldDamageDebt--;
+						damage = 1;
+					} else {
+						fullyBlocked = true;
+					}
 				} else {
-					fullyBlocked = true;
+					damage--;
 				}
 			} else {
-				damage--;
+				bodyPierced = true;
 			}
 		}
 		if (damage > 0) {
@@ -746,7 +761,10 @@ public class Blues : Character {
 		if (oldHealth > player.health || bodyDamaged) {
 			int fontColor = (int)FontType.Red;
 			if (shieldBlocked) {
-				fontColor = (int)FontType.Blue;
+				fontColor = (int)FontType.Orange;
+				if (bodyPierced) {
+					fontColor = (int)FontType.Yellow;
+				}
 			}
 			float damageText = float.Parse((oldHealth - player.health).ToString());
 			addDamageText(damageText, fontColor);
@@ -754,9 +772,13 @@ public class Blues : Character {
 			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
 		if (ogShieldHP > shieldHP) {
+			int fontColor = (int)FontType.Blue;
+			if (shieldPierced) {
+				fontColor = (int)FontType.Purple;
+			}
 			float damageText = float.Parse((ogShieldHP - shieldHP).ToString());
-			addDamageText(damageText, (int)FontType.Blue);
-			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, (int)FontType.Blue);
+			addDamageText(damageText, fontColor);
+			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 		}
 	}
 

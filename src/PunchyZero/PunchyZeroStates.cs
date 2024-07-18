@@ -116,7 +116,7 @@ public class PZeroSpinKick : CharState {
 		soundTime -= Global.speedMul;
 		if (soundTime <= 0) {
 			soundTime = 9;
-			//character.playSound("spinkick", sendRpc: true);
+			character.playSound("spinkick", sendRpc: true);
 		}
 		float iXDir = player.input.getXDir(player);
 		if (iXDir != 0 && iXDir != character.xDir || player.input.isPressed(Control.Dash, player)) {
@@ -161,7 +161,7 @@ public class PZeroDropKickState : CharState {
 		if (character.frameIndex >= 3 && !once) {
 			character.vel.x = character.xDir * 300;
 			character.vel.y = 450;
-			//character.playSound("punch2", sendRpc: true);
+			character.playSound("punch2", sendRpc: true);
 			once = true;
 		}
 		base.update();
@@ -215,7 +215,7 @@ public class ZeroDropkickLand : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		//character.playSound("land", sendRpc: true);
+		character.playSound("land", sendRpc: true);
 	}
 }
 
@@ -260,9 +260,9 @@ public class PZeroParry : CharState {
 			}
 		}
 		if (Helpers.randomRange(0, 10) != 10) {
-			//character.playSound("zeroParry", forcePlay: false, sendRpc: true);
+			character.playSound("zeroParry", forcePlay: false, sendRpc: true);
 		} else {
-			//character.playSound("zeroParry2", forcePlay: false, sendRpc: true);
+			character.playSound("zeroParry2", forcePlay: false, sendRpc: true);
 		}
 		character.changeState(new PZeroParryCounter(counterAttackTarget, isMelee), true);
 	}
@@ -387,7 +387,7 @@ public class PZeroShoryuken : CharState {
 			jumpedYet = true;
 			character.dashedInAir++;
 			character.vel.y = -character.getJumpPower() * 1.2f;
-			//character.playSound("punch2", sendRpc: true);
+			character.playSound("punch2", sendRpc: true);
 		}
 
 		if (character.sprite.frameIndex >= 3 && character.sprite.frameIndex < 6) {
@@ -491,7 +491,7 @@ public class HyperPunchyZeroStart : CharState {
 				time = Global.spf;
 				radius = 0;
 				activateHypermode();
-				//character.playSound("ching");
+				character.playSound("ching");
 				character.fillHealthToMax();
 			}
 		} else {
@@ -535,7 +535,7 @@ public class HyperPunchyZeroStart : CharState {
 			character.invulnTime = 0.5f;
 		}
 		if (zero.isAwakened || zero.isBlack) {
-			zero.hyperModeTimer = 20 * 60;
+			zero.hyperModeTimer = PunchyZero.maxBlackZeroTime + 30;
 		}
 		virusEffectParts?.destroySelf();
 		bool playedHitSound = false;
@@ -573,7 +573,7 @@ public class HyperPunchyZeroStart : CharState {
 
 	public void activateHypermode() {
 		if (zero.hyperMode == 1) {
-			zero.isAwakened = true;
+			zero.awakenedPhase = 1;
 			float storedAmmo = zero.gigaAttack.ammo;
 			zero.gigaAttack = new ShinMessenkou();
 			zero.gigaAttack.ammo = storedAmmo;
@@ -582,7 +582,7 @@ public class HyperPunchyZeroStart : CharState {
 			float storedAmmo = zero.gigaAttack.ammo;
 			zero.gigaAttack = new DarkHoldWeapon();
 			zero.gigaAttack.ammo = storedAmmo;
-			//zero.freeBusterShots = 10;
+			zero.freeBusterShots = 10;
 		} else {
 			zero.isBlack = true;
 		}
@@ -616,7 +616,7 @@ public class PunchyZeroHadangeki : CharState {
 			character.isDashing = false;
 		}
 		if (character.frameIndex >= 7 && !fired) {
-			//character.playSound("zerosaberx3", sendRpc: true);
+			character.playSound("zerosaberx3", sendRpc: true);
 			fired = true;
 			new PZeroHadangeki(
 				character.pos.addxy(30 * character.xDir, -20), character.xDir,
@@ -668,7 +668,7 @@ public class PunchyZeroHadangekiWall : CharState {
 	public override void update() {
 		base.update();
 		if (character.frameIndex >= 4 && !fired) {
-			//character.playSound("zerosaberx3", sendRpc: true);
+			character.playSound("zerosaberx3", sendRpc: true);
 			fired = true;
 			new PZeroHadangeki(
 				character.pos.addxy(30 * -wallDir, -20), -wallDir,

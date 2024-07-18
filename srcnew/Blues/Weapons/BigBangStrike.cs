@@ -30,7 +30,7 @@ public class BigBangStrikeProj : Projectile {
 	public override void update() {
 		base.update();
 		if (System.MathF.Abs(vel.x) < 1000) {
-			vel.x += frameTime * 4 * 60 * Global.speedMul * xDir;
+			vel.x += time * 4 * Global.speedMul * xDir;
 			if (System.MathF.Abs(vel.x) >= 1000) {
 				vel.x = (float)xDir * 1000;
 			}

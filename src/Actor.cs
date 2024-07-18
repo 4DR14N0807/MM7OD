@@ -9,14 +9,36 @@ namespace MMXOnline;
 public partial class Actor : GameObject {
 	public Sprite sprite; //Current sprite
 
-	public int frameIndex { get { return sprite.frameIndex; } set { if (sprite == null) { return; } sprite.frameIndex = value; } }
-	public float frameSpeed { get { return sprite.frameSpeed; } set { if (sprite == null) { return; } sprite.frameSpeed = value; } }
-	public float frameTime { get { return sprite.frameTime; } set { if (sprite == null) { return; } sprite.frameTime = value; } }
-	public float animTime { get { return sprite.animTime; } set { if (sprite == null) { return; } sprite.animTime = value; } }
-	public int loopCount { get { return sprite.loopCount; } }
+	public int frameIndex {
+		get => sprite.frameIndex;
+		set => sprite.frameIndex = value;
+	}
+	public float frameSpeed {
+		get => sprite.frameSpeed;
+		set => sprite.frameSpeed = value;
+	}
+	public float frameSeconds {
+		get => sprite.frameSeconds;
+		set => sprite.frameSeconds = value;
+	}
+	public float animSeconds {
+		get => sprite.animSeconds;
+		set => sprite.animSeconds = value;
+	}
+	public float frameTime {
+		get => sprite.frameTime;
+		set => sprite.frameTime = value;
+	}
+	public float animTime {
+		get => sprite.animTime;
+		set => sprite.animTime = value;
+	}
+	public int loopCount => sprite.loopCount;
+
 	public void setFrameIndexSafe(int newFrameIndex) {
-		if (sprite == null) return;
-		if (sprite.frames.InRange(newFrameIndex)) sprite.frameIndex = newFrameIndex;
+		if (sprite.frames.InRange(newFrameIndex)) {
+			sprite.frameIndex = newFrameIndex;
+		}
 	}
 
 	public bool useFrameProjs;
@@ -161,6 +183,22 @@ public partial class Actor : GameObject {
 	public Actor(
 		string spriteName, Point pos, ushort? netId, bool ownedByLocalPlayer, bool dontAddToLevel
 	) {
+		// Intialize sprites as soon as posible to prevent crashes.
+		if (spriteName is not null and not "") {
+			changeSprite(spriteName, true);
+			// Crash if spriteName was provided but does not exist.
+			if (sprite == null) {
+				string typeName = GetType().ToString().Replace("MMXOnline.", "");
+				throw new Exception(
+					"Null sprite at object" + typeName +
+					"with spritename variable \"" + spriteName + "\""
+				);
+			}
+		} else {
+			// Default to empty if no sprite was provided.
+			sprite = Global.sprites["empty"].clone();
+		}
+		// Initalize other stuff.
 		this.pos = pos;
 		prevPos = pos;
 		/*
@@ -186,16 +224,6 @@ public partial class Actor : GameObject {
 		yDir = 1;
 		grounded = false;
 		zIndex = ++Global.level.autoIncActorZIndex;
-		if (spriteName is not null and not "") {
-			changeSprite(spriteName, true);
-			if (sprite == null) {
-				string typeName = GetType().ToString().Replace("MMXOnline", "");
-				throw new Exception(
-					"Error null sprite at object" + typeName +
-					"with spritename variable \"" + spriteName + "\""
-				);
-			}
-		}
 		lastNetUpdate = Global.time;
 
 		if (netId is not null and >= Level.firstNormalNetId) {
@@ -286,8 +314,8 @@ public partial class Actor : GameObject {
 			Global.level.removeFromGridFast(this);
 		}
 		int oldFrameIndex = sprite?.frameIndex ?? 0;
-		float oldFrameTime = sprite?.frameTime ?? 0;
-		float oldAnimTime = sprite?.animTime ?? 0;
+		float oldFrameTime = sprite?.frameSeconds ?? 0;
+		float oldAnimTime = sprite?.animSeconds ?? 0;
 
 		sprite = Global.sprites[spriteName].clone();
 
@@ -308,8 +336,8 @@ public partial class Actor : GameObject {
 			animTime = 0;
 		} else {
 			frameIndex = oldFrameIndex;
-			frameTime = oldFrameTime;
-			animTime = oldAnimTime;
+			frameSeconds = oldFrameTime;
+			animSeconds = oldAnimTime;
 		}
 
 		if (frameIndex >= sprite.frames.Count) {
@@ -400,7 +428,7 @@ public partial class Actor : GameObject {
 			foreach (var frame in sprite.frames) {
 				entireDuration += frame.duration;
 			}
-			return animTime / entireDuration;
+			return animSeconds / entireDuration;
 		}
 	}
 

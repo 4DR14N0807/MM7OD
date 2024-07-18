@@ -686,21 +686,30 @@ public class Blues : Character {
 			// 1-2 damage scenario.
 			// Reduce damage only 1/3rd of the time.
 			if (damageReduction > 0 && damage <= 2) {
-				shieldDamageDebt += damage / 3m;
-				damage = 0;
-				if (shieldDamageDebt >= 1) {
-					shieldDamageDebt--;
-					shieldHP--;
+				if (damage <= 1) {
+					shieldDamageDebt += damage * 2;
 				} else {
-					fullyBlocked = true;
+					shieldDamageDebt += damage * 1.5m;
 				}
+				decimal shieldDamage = damage - 1;
+				if (shieldDamage < 0) {
+					shieldDamage = 0;
+				}
+				if (shieldDamageDebt >= 6) {
+					shieldDamageDebt = 0;
+					if (shieldDamage > 0) {
+						shieldHP -= shieldDamage;
+					} else {
+						fullyBlocked = true;
+					}
+				} else {
+					shieldHP -= damage;
+				}
+				damage = 0;
 			}
 			// High HP scenario.
 			else if (shieldHP + damageReduction >= damage) {
 				shieldHP -= damage - damageReduction;
-				if (shieldHP <= 0) {
-					shieldHP = 0;
-				}
 				damage = 0;
 			}
 			// Low HP scenario.
@@ -710,6 +719,8 @@ public class Blues : Character {
 				shieldBlocked = false;
 			}
 			if (shieldHP <= 0) {
+				shieldHP = 0;
+				shieldDamageDebt = 0;
 				isShieldActive = false;
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);

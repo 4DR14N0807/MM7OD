@@ -357,7 +357,6 @@ public class Blues : Character {
 				stopCharge();
 			}
 			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
-			overdriveAmmoMaxCooldown = 10;
 		}
 		// For the shooting animation.
 		if (shootAnimTime > 0) {

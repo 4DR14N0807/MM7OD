@@ -318,7 +318,6 @@ public class OverheatShutdown : CharState {
 
 
 public class BluesRevive : CharState {
-
 	float radius = 200;
 	Blues? blues;
 	public BluesRevive() : base("revive") {
@@ -328,7 +327,7 @@ public class BluesRevive : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues;
-
+		player.health = 1;
 	}
 
 	public override void onExit(CharState newState) {
@@ -359,13 +358,12 @@ public class BluesRevive : CharState {
 			character.removeRenderEffect(RenderEffectType.Flash);
 		}
 		if (character.frameIndex == 3 && !once) {
-			player.health = 1;
 			character.addHealth(player.maxHealth);
 			once = true;
 		}
 		if (character.ownedByLocalPlayer) {
 			if (character.isAnimOver()) {
-				character.changeState(new Fall(), true);
+				character.changeToIdleOrFall();
 			}
 		}
 	}

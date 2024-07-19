@@ -213,10 +213,14 @@ public class Blues : Character {
 		} else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
 		}
-		List<Trail>? trails = sprite?.lastFiveTrailDraws;
+		List<Trail>? trails = sprite.lastFiveTrailDraws;
 		base.changeSprite(spriteName, resetFrame);
-		if (trails != null && sprite != null) {
+		if (trails != null) {
 			sprite.lastFiveTrailDraws = trails;
+		}
+		if (isBreakMan && sprite.textureName == "blues_default") {
+			sprite.textureName = "blues_breakman";
+			sprite.bitmap = Global.textures["blues_breakman"];
 		}
 	}
 

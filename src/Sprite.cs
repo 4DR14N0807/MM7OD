@@ -24,6 +24,7 @@ public class Sprite {
 	public string wrapMode;
 	public bool freeForPool = false;
 	public Texture bitmap;
+	public string textureName;
 	public Texture xArmorBootsBitmap;
 	public Texture xArmorBodyBitmap;
 	public Texture xArmorHelmetBitmap;
@@ -85,7 +86,7 @@ public class Sprite {
 			spritesheetPath = customMapName + ":" + spritesheetPath;
 		}
 
-		string textureName = Path.GetFileNameWithoutExtension(spritesheetPath);
+		textureName = Path.GetFileNameWithoutExtension(spritesheetPath);
 		if (!Global.textures.ContainsKey(textureName)) {
 			throw new Exception("Missing texture \"" + textureName + "\" for sprite \"" + name + "\"");
 		}

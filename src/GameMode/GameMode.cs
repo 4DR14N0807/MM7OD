@@ -1482,15 +1482,41 @@ public class GameMode {
 			renderAmmo(
 				baseX, baseY, 0, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo), maxAmmo: protoman.coreMaxAmmo
 			);
+			if (protoman.overdrive) {
+				int yPos = MathInt.Ceiling(9 + baseY);
+				int color = 2;
+				if (Global.frameCount % 6 >= 3) {
+					color = 6;
+				}
+				for (var i = 0; i < protoman.overdriveAmmo; i++) {
+					Global.sprites["hud_weapon_full"].drawToHUD(color, baseX, yPos);
+					yPos -= 2;
+				}
+			}
 			if (!protoman.overheating && protoman.ownedByLocalPlayer) {
-				int yPos = MathInt.Ceiling(9 + baseY - MathF.Ceiling(protoman.coreAmmo) * 2);
+				int baseAmmo = MathInt.Floor(protoman.coreAmmo);
+				int baseColor = 0;
+				int filledColor = 4;
+				if (protoman.overdrive) {
+					baseAmmo = MathInt.Floor(protoman.overdriveAmmo);
+					baseColor = 6;
+					filledColor = 2;
+					if (Global.frameCount % 6 >= 3) {
+						baseColor = 6;
+						filledColor = 6;
+					}
+				}
+				int yPos = MathInt.Ceiling(9 + baseY - MathF.Ceiling(baseAmmo) * 2);
 
 				int ammoAmmount = protoman.getChargeShotCorePendingAmmo();
 				int actualUse = protoman.getChargeShotAmmoUse(protoman.getChargeLevel());
+				if (ammoAmmount + baseAmmo > protoman.coreMaxAmmo) {
+					ammoAmmount = MathInt.Floor(protoman.coreMaxAmmo - baseAmmo);
+				}
 				for (var i = 0; i < ammoAmmount; i++) {
-					int color = 0;
+					int color = baseColor;
 					if (i < actualUse) {
-						color = coreAmmoColor;
+						color = filledColor;
 					}
 					Global.sprites["hud_weapon_full"].drawToHUD(color, baseX, yPos);
 					yPos -= 2;

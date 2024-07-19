@@ -23,6 +23,11 @@ public class Blues : Character {
 	public bool overheating;
 	public float overheatEffectTime;
 
+	// Break Man stuff.
+	public bool overdrive;
+	public float overdriveAmmo = 28;
+	public float overdriveAmmoDecreaseCooldown;
+
 	// Shield vars.
 	public decimal shieldHP = 20;
 	public int shieldMaxHP = 20;
@@ -77,7 +82,14 @@ public class Blues : Character {
 
 	public override float getRunSpeed() {
 		float runSpeed = Physics.WalkSpeed;
-		if (overheating) {
+		if (overdrive) {
+			if (isShieldActive) {
+				runSpeed *= 0.55f;
+			} else {
+				runSpeed *= 0.8f;
+			}
+		}
+		else if (overheating) {
 			runSpeed *= 0.5f;
 			if (isShieldActive) {
 				runSpeed *= 0.9375f;
@@ -91,8 +103,11 @@ public class Blues : Character {
 
 	public float getShieldDashSpeed() {
 		float runSpeed = 3.25f * 60;
-		if (overheating) {
-			runSpeed *= 0.5f;
+		if (overdrive) {
+			runSpeed = 3f * 60;
+			if (isShieldActive) {
+				runSpeed = 2.5f * 60;
+			}
 		}
 		else if (isShieldActive) {
 			runSpeed = 2.75f * 60;
@@ -115,6 +130,9 @@ public class Blues : Character {
 		}
 		else if (isShieldActive) {
 			jumpSpeed *= 0.85f;
+		}
+		else if (overdrive) {
+			jumpSpeed *= 0.9f;
 		}
 		return jumpSpeed * getJumpModifier();
 	}
@@ -296,8 +314,13 @@ public class Blues : Character {
 				shieldHP = shieldMaxHP;
 			}
 		}
-		if (coreAmmo >= coreMaxAmmo && !overheating) {
-			overheating = true;
+		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive) {
+			if (isBreakMan) {
+				overdrive = true;
+				overdriveAmmo = coreMaxAmmo;
+			} else {
+				overheating = true;
+			}
 			setHurt(-xDir, 12, false);
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
@@ -308,8 +331,9 @@ public class Blues : Character {
 			}
 		} else {
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
+			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
 		}
-		if (coreAmmoDecreaseCooldown <= 0) {
+		if (coreAmmoDecreaseCooldown <= 0 && !overdrive) {
 			coreAmmo--;
 			if (coreAmmo <= 0) {
 				overheating = false;
@@ -319,6 +343,17 @@ public class Blues : Character {
 			if (overheating) {
 				coreAmmoDecreaseCooldown = 12;
 			}
+		}
+		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive) {
+			overdriveAmmo--;
+			if (overdriveAmmo <= 0) {
+				overdrive = false;
+				overheating = true;
+				setHurt(-xDir, 12, false);
+				playSound("danger_wrap_explosion", sendRpc: true);
+				stopCharge();
+			}
+			overdriveAmmoDecreaseCooldown = 15;
 		}
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
@@ -340,7 +375,7 @@ public class Blues : Character {
 		}
 
 		// Overheating effects-
-		if (overheating) {
+		if (overheating || overdrive) {
 			overheatEffectTime += Global.speedMul;
 			if (overheatEffectTime >= 3) {
 				overheatEffectTime = 0;
@@ -348,8 +383,21 @@ public class Blues : Character {
 
 				Anim tempAnim = new Anim(burnPos.addRand(14, 15), "dust", 1, null, true, host: this);
 				tempAnim.vel.y = -120;
-				tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 2);
+				if (overheating) {
+					tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 2);
+				} else {
+					RenderEffectType smokeEffect = getChargeLevel() switch {
+						1 => RenderEffectType.ChargeBlue,
+						2 => RenderEffectType.ChargePink,
+						3 => RenderEffectType.ChargeGreen,
+						_ => RenderEffectType.ChargeYellow,
+					};
+					tempAnim.addRenderEffect(smokeEffect, 0.033333f, 2);
+				}
 			}
+		}
+		if (overdrive && getChargeLevel() <= 0) {
+			addRenderEffect(RenderEffectType.ChargeYellow, 0.033333f, 0.1f);
 		}
 	}
 
@@ -484,6 +532,9 @@ public class Blues : Character {
 			if (oldShootAnimTime <= 0.25f) {
 				shootAnimTime = 0.25f;
 			}
+			if (overdrive) {
+				addOvedriveAmmo(1);
+			}
 		} else if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
 				shootPos, xDir, player, player.getNextActorNetId(), true
@@ -563,11 +614,27 @@ public class Blues : Character {
 		if (!forceAdd && overheating && amount >= 0) {
 			return;
 		}
+		if (overdrive) {
+			addOvedriveAmmo(amount, resetCooldown, forceAdd);
+			return;
+		}
 		coreAmmo += amount;
 		if (coreAmmo > coreMaxAmmo) { coreAmmo = coreMaxAmmo; }
 		if (coreAmmo < 0) { coreAmmo = 0; }
 		if (resetCooldown) {
 			resetCoreCooldown();
+		}
+	}
+
+	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
+		if (!overdrive) {
+			return;
+		}
+		overdriveAmmo += amount;
+		if (overdriveAmmo > coreMaxAmmo) { overdriveAmmo = coreMaxAmmo; }
+		if (overdriveAmmo < 0) { overdriveAmmo = 0; }
+		if (resetCooldown) {
+			overdriveAmmoDecreaseCooldown = 15;
 		}
 	}
 

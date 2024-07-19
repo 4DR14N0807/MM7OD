@@ -12,7 +12,7 @@ public class BigBangStrikeProj : Projectile {
 		Global.superFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
-		maxTime = 1.425f;
+		maxTime = 0.925f;
 		shouldShieldBlock = false;
 		reflectable = false;
 
@@ -30,7 +30,7 @@ public class BigBangStrikeProj : Projectile {
 	public override void update() {
 		base.update();
 		if (System.MathF.Abs(vel.x) < 1000) {
-			vel.x += time * 4 * Global.speedMul * xDir;
+			vel.x += time * 40 * Global.speedMul * xDir;
 			if (System.MathF.Abs(vel.x) >= 1000) {
 				vel.x = (float)xDir * 1000;
 			}

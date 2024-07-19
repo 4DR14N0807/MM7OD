@@ -67,9 +67,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 	) {
 		projId = (int)BluesProjIds.BigBangStrikeExplosion;
 		maxTime = 3f;
-		fadeSprite = "big_bang_strike_fade";
 		destroyOnHit = false;
-		fadeOnAutoDestroy = true;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -101,6 +99,15 @@ public class BigBangStrikeExplosionProj : Projectile {
 					damager.applyDamage(damagable, false, weapon, this, projId);
 				}
 			}
+		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		if (ownedByLocalPlayer) {
+			var proj = new StrikeAttackPushProj(
+				pos, 0, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true
+			);
 		}
 	}
 }
@@ -160,29 +167,32 @@ public class ProtoStrikeProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
-			var proj = new ProtoStrikePushProj(pos, xDir, player, player.getNextActorNetId(), rpc: true);
+			var proj = new StrikeAttackPushProj(
+				pos, 1, xDir, player, player.getNextActorNetId(), rpc: true
+			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
 	}
 
 	public override void render(float x, float y) {
 		long lastZIndex = zIndex;
-		alpha = 0.5f;
-		base.render(x, y);
+		//alpha = 0.5f;
+		//base.render(x, y);
 		alpha = 1;
 		zIndex = ZIndex.Character - 1000;
+		addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
 		base.render(x, y);
+		removeRenderEffect(RenderEffectType.ChargeOrange);
 		zIndex = lastZIndex;
 	}
 }
 
-
-public class ProtoStrikePushProj : Projectile {
+public class StrikeAttackPushProj : Projectile {
 	Player player;
 	float radius = 40;
 
-	public ProtoStrikePushProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+	public StrikeAttackPushProj(
+		Point pos, int type, int xDir, Player player, ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 0, 1, player, "big_bang_strike_fade",
 		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
@@ -191,14 +201,21 @@ public class ProtoStrikePushProj : Projectile {
 		projId = (int)BluesProjIds.ProtoStrikePush;
 		destroyOnHit = false;
 
+		if (type == 1) {
+			addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
+		}
+		else if (type == 2) {
+			addRenderEffect(RenderEffectType.ChargePurple, 0, 6);
+		}
+
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreate(pos, player, netId, xDir, (byte)type);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
-		return new ProtoStrikePushProj(
-			args.pos, args.xDir, args.player, args.netId
+		return new StrikeAttackPushProj(
+			args.pos, args.extraData[0], args.xDir, args.player, args.netId
 		);
 	}
 
@@ -224,6 +241,117 @@ public class ProtoStrikePushProj : Projectile {
 					}
 				}
 			}
+		}
+	}
+}
+
+public class RedStrikeProj : Projectile {
+	public RedStrikeProj(
+		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 0, 3, player, "big_bang_strike_proj",
+		Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+	) {
+		projId = (int)BluesProjIds.BigBangStrike;
+		maxTime = 0.6f;
+		shouldShieldBlock = false;
+		reflectable = false;
+		addRenderEffect(RenderEffectType.ChargePurple, 0, 6);
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new BigBangStrikeProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
+
+	public override void update() {
+		base.update();
+		if (System.MathF.Abs(vel.x) < 1000) {
+			vel.x += time * 40 * Global.speedMul * xDir;
+			if (System.MathF.Abs(vel.x) >= 1000) {
+				vel.x = (float)xDir * 1000;
+			}
+		}
+	}
+
+	public override void onHitDamagable(IDamagable damagable) {
+		base.onHitDamagable(damagable);
+		if (ownedByLocalPlayer) {
+			destroySelf();
+		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		if (ownedByLocalPlayer) {
+			var proj = new RedStrikeExplosionProj(
+				pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true
+			);
+			proj.playSound("danger_wrap_explosion", true, true);
+		}
+	}
+}
+
+public class RedStrikeExplosionProj : Projectile {
+	float radius = 38;
+	float absorbRadius = 120;
+
+	public RedStrikeExplosionProj(
+		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 0, 1, player, "big_bang_strike_explosion",
+		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+	) {
+		projId = (int)BluesProjIds.BigBangStrikeExplosion;
+		maxTime = 1f;
+		destroyOnHit = false;
+		fadeOnAutoDestroy = true;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+
+		projId = (int)BluesProjIds.BigBangStrike;
+		addRenderEffect(RenderEffectType.ChargePurple, 0, 6);
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new BigBangStrikeExplosionProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
+
+	public override void update() {
+		base.update();
+
+		foreach (var gameObject in Global.level.getGameObjectArray()) {
+			if (gameObject is Actor actor &&
+				actor.ownedByLocalPlayer &&
+				gameObject is IDamagable damagable &&
+				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+			) {
+				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
+					float direction = MathF.Sign(pos.x - actor.pos.x);
+					actor.move(new Point(direction * 30, 0));
+				}
+				if (actor.getCenterPos().distanceTo(pos) <= radius) {
+					damager.applyDamage(damagable, false, weapon, this, projId);
+				}
+			}
+		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		if (ownedByLocalPlayer) {
+			var proj = new StrikeAttackPushProj(
+				pos, 2, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true
+			);
 		}
 	}
 }
@@ -275,7 +403,6 @@ public class BigBangStrikeStart : CharState {
 		}
 	}
 }
-
 
 public class BigBangStrikeState : CharState {
 	bool fired;

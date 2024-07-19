@@ -93,6 +93,45 @@ public class ProtoBusterAngledProj : Projectile {
 	}
 }
 
+public class ProtoBusterOverdriveProj : Projectile {
+	public ProtoBusterOverdriveProj(
+		Point pos, int xDir, Player player,
+		ushort? netId, Point? vel = null, bool rpc = false
+	) : base(
+		ProtoBuster.netWeapon, pos, xDir, 250, 1, player,
+		"rock_buster1_proj", 0, 0, netId, player.ownedByLocalPlayer
+	) {
+		maxTime = 0.425f;
+		projId = (int)BluesProjIds.Lemon;
+		fadeSprite = "rock_buster1_fade";
+		fadeOnAutoDestroy = true;
+
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoBusterProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
+	}
+	public override void update() {
+		base.update();
+		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 300) {
+			vel.x += Global.spf * xDir * 900f;
+			if (System.MathF.Abs(vel.x) >= 300) {
+				vel.x = (float)xDir * 300;
+			}
+		}
+	}
+
+	public override void onReflect() {
+		vel.x = 300;
+		base.onReflect();
+	}
+}
+
 public class ProtoBusterLv2Proj : Projectile {
 	public ProtoBusterLv2Proj(
 		Point pos, int xDir, Player player,

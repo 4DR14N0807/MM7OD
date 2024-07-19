@@ -27,7 +27,8 @@ public class Blues : Character {
 	public bool overdrive;
 	public float overdriveAmmo = 28;
 	public float overdriveAmmoDecreaseCooldown;
-	public float overdriveAmmoMaxCooldown = 12;
+	public float overdriveAmmoMaxCooldown = 13;
+	public float redStrikeCooldown = 0;
 
 	// Shield vars.
 	public decimal shieldHP = 20;
@@ -303,6 +304,8 @@ public class Blues : Character {
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
+		Helpers.decrementFrames(ref redStrikeCooldown);
+		
 		specialWeapon.update();
 		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
@@ -328,10 +331,14 @@ public class Blues : Character {
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
-		if (isCharging() && chargeTime <= charge3Time + 10) {
+		if (isCharging() && chargeTime <= charge3Time + (overdrive ? 20 : 10)) {
 			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
+			if (overdriveAmmoDecreaseCooldown > 0) {
+				overdriveAmmoDecreaseCooldown -= Global.speedMul / 2f;
+				if (overdriveAmmoDecreaseCooldown <= 0) { overdriveAmmoDecreaseCooldown = 0; }
+			};
 		} else {
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
@@ -357,6 +364,7 @@ public class Blues : Character {
 				stopCharge();
 			}
 			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
+			overdriveAmmoMaxCooldown = 13;
 		}
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
@@ -383,15 +391,19 @@ public class Blues : Character {
 			if (overheatEffectTime >= 3) {
 				overheatEffectTime = 0;
 				Point burnPos = pos.addxy(xDir * 2, -15);
+				string sprite = "dust";
+				if (overdrive) {
+					sprite = "charge_part_1";
+				}
 
-				Anim tempAnim = new Anim(burnPos.addRand(14, 15), "dust", 1, null, true, host: this);
+				Anim tempAnim = new Anim(burnPos.addRand(14, 15), sprite, 1, null, true, host: this);
 				tempAnim.vel.y = -120;
 				if (overheating) {
 					tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 2);
 				} else {
 					RenderEffectType smokeEffect = getChargeLevel() switch {
 						1 => RenderEffectType.ChargeBlue,
-						2 => RenderEffectType.ChargePink,
+						2 => RenderEffectType.ChargePurple,
 						3 => RenderEffectType.ChargeGreen,
 						_ => RenderEffectType.ChargeYellow,
 					};
@@ -406,7 +418,6 @@ public class Blues : Character {
 
 	public override void onFlinchOrStun(CharState newState) {
 		coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
-		if (newState is Hurt) addCoreAmmo(3);
 		base.onFlinchOrStun(newState);
 	}
 
@@ -475,6 +486,9 @@ public class Blues : Character {
 			if (canShootSpecial()) {
 				shootSpecial(0);
 				return true;
+			} else if (overdrive && redStrikeCooldown == 0) {
+				changeState(new RedStrike(), true);
+				return true;
 			} else if (canUseBigBangStrike()) {
 				changeState(new BigBangStrikeStart(), true);
 				return true;
@@ -525,18 +539,23 @@ public class Blues : Character {
 		int xDir = getShootXDir();
 
 		if (chargeLevel <= 0) {
-			var lemon = new ProtoBusterProj(
-				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
-			);
+			if (!overdrive) {
+				new ProtoBusterProj(
+					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+				);
+			} else {
+				new ProtoBusterOverdriveProj(
+					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+				);
+				playSound("buster2", sendRpc: true);
+				addCoreAmmo(1);
+			}
 			playSound("buster", sendRpc: true);
 			//resetCoreCooldown(45);
 			lemonCooldown = 12;
 			unchargedLemonCooldown[lemonNum] = 50;
 			if (oldShootAnimTime <= 0.25f) {
 				shootAnimTime = 0.25f;
-			}
-			if (overdrive) {
-				addOvedriveAmmo(1);
 			}
 		} else if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
@@ -651,7 +670,7 @@ public class Blues : Character {
 			var renderGfx = RenderEffectType.ChargeBlue;
 			renderGfx = level switch {
 				1 => RenderEffectType.ChargeBlue,
-				2 => RenderEffectType.ChargePink,
+				2 => RenderEffectType.ChargePurple,
 				3 => RenderEffectType.ChargeGreen,
 				_ => RenderEffectType.ChargeBlue,
 			};

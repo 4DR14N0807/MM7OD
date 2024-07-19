@@ -1499,12 +1499,8 @@ public class GameMode {
 				int filledColor = 4;
 				if (protoman.overdrive) {
 					baseAmmo = MathInt.Floor(protoman.overdriveAmmo);
-					baseColor = 6;
-					filledColor = 2;
-					if (Global.frameCount % 6 >= 3) {
-						baseColor = 6;
-						filledColor = 6;
-					}
+					baseColor = 3;
+					filledColor = 3;
 				}
 				int yPos = MathInt.Ceiling(9 + baseY - MathF.Ceiling(baseAmmo) * 2);
 
@@ -1521,6 +1517,11 @@ public class GameMode {
 					Global.sprites["hud_weapon_full"].drawToHUD(color, baseX, yPos);
 					yPos -= 2;
 				}
+			}
+
+			if (protoman.redStrikeCooldown > 0) {
+				Global.sprites["hud_blues_weapon_icon"].drawToHUD(3, 12, 162);
+				drawWeaponSlotCooldown(12, 162, protoman.redStrikeCooldown / (4 * 60));
 			}
 			return;
 		}

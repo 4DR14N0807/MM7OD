@@ -224,6 +224,48 @@ public class ProtoStrike : CharState {
 	}
 }
 
+
+public class RedStrike : CharState {
+	Blues blues = null!;
+	float startTime;
+	bool fired;
+
+	public RedStrike() : base("strikeattack") {
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+	}
+
+	public override void update() {
+		base.update();
+		blues.overdriveAmmoDecreaseCooldown = blues.overdriveAmmoMaxCooldown;
+
+		if (!fired && character.frameIndex >= 3) {
+			Point shootPos = character.getShootPos();
+			new RedStrikeProj(
+				shootPos, character.xDir, player, player.getNextActorNetId(), true
+			);
+			blues.playSound("buster3", true, true);
+			fired = true;
+			startTime = stateFrames;
+		}
+		if (stateFrames >= startTime + 20) {
+			blues.addCoreAmmo(4);
+			character.setHurt(-character.xDir, Global.halfFlinch, false);
+			character.slideVel = 200 * -character.xDir;
+			return;
+		}
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		blues.redStrikeCooldown = 4 * 60;
+	}
+}
+
+
 public class OverheatShutdownStart : CharState {
 	Blues blues = null!;
 

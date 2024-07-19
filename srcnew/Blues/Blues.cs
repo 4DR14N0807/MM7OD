@@ -27,6 +27,7 @@ public class Blues : Character {
 	public bool overdrive;
 	public float overdriveAmmo = 28;
 	public float overdriveAmmoDecreaseCooldown;
+	public float overdriveAmmoMaxCooldown = 12;
 
 	// Shield vars.
 	public decimal shieldHP = 20;
@@ -181,7 +182,7 @@ public class Blues : Character {
 			flag == null &&
 			grounded && vel.y >= 0 &&
 			charState is not BluesSlide and not ShieldDash &&
-			!overheating && rootTime <= 0
+			!overheating && !overdrive && rootTime <= 0
 		);
 	}
 
@@ -194,7 +195,9 @@ public class Blues : Character {
 
 	public bool canShootSpecial() {
 		if (flag != null ||
-			isCharging() || overheating ||
+			isCharging() ||
+			overheating ||
+			overdrive ||
 			specialWeapon.shootCooldown > 0 ||
 			!specialWeapon.canShoot(0, this) ||
 			invulnTime > 0
@@ -353,7 +356,8 @@ public class Blues : Character {
 				playSound("danger_wrap_explosion", sendRpc: true);
 				stopCharge();
 			}
-			overdriveAmmoDecreaseCooldown = 15;
+			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
+			overdriveAmmoMaxCooldown = 10;
 		}
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
@@ -463,7 +467,7 @@ public class Blues : Character {
 	public override bool attackCtrl() {
 		bool shootPressed = player.input.isPressed(Control.Shoot, player);
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
-		if (!overheating && specialWeapon is NeedleCannon) {
+		if (!overheating && !overdrive && specialWeapon is NeedleCannon) {
 			specialPressed = player.input.isHeld(Control.Special1, player);
 		}
 		bool downHeld = player.input.isHeld(Control.Down, player);
@@ -634,7 +638,7 @@ public class Blues : Character {
 		if (overdriveAmmo > coreMaxAmmo) { overdriveAmmo = coreMaxAmmo; }
 		if (overdriveAmmo < 0) { overdriveAmmo = 0; }
 		if (resetCooldown) {
-			overdriveAmmoDecreaseCooldown = 15;
+			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
 		}
 	}
 

@@ -152,7 +152,7 @@ public class Blues : Character {
 	public bool canShieldDash() {
 		return (
 			flag == null &&
-			grounded &&
+			(grounded || isBreakMan && dashedInAir == 0) &&
 			charState is not ShieldDash &&
 			!overheating && rootTime <= 0
 		);
@@ -662,11 +662,11 @@ public class Blues : Character {
 			healShieldHPCooldown = 180;
 		}
 		// Do shield checks only if damage exists and a actor too.
-		if (actor == null || attacker == null) {
-			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
-			if (charState is not Hurt { stateFrames: 0 }) {
+		if (actor == null || attacker == null || player.health <= 0) {
+			if (charState is not Hurt { stateFrames: 0 } && player.health > 0) {
 				playSound("hit", sendRpc: true);
 			}
+			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 			return;
 		}
 		// Tracker variables.

@@ -1390,9 +1390,9 @@ public class GameMode {
 		bool forceSmallBarsOff = false;
 
 		// Small Bars option.
-		float ammoDisplayMultiplier = 1;
+		float ammoDisplayMultiplier = 1 / player.weapon.ammoDisplayScale;
 		if (player.weapon.allowSmallBar && Options.main.enableSmallBars && !forceSmallBarsOff) {
-			ammoDisplayMultiplier = 0.5f;
+			ammoDisplayMultiplier *= 0.5f;
 		}
 
 		if (player.isSigma) {

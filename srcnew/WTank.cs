@@ -10,10 +10,11 @@ public class WTank {
 	public WTank() {
 
 	}
-	public void use(Player player, Character character, int weaponSlot) {
+	public void use(Player player, Character character, float amount) {
 		//character.addAmmo(ammo);
-		character.addWTankAddAmmo(weaponSlot, ammo);
+		ammo = amount;
+		character.addWTankAddAmmo(ammo);
 		character.usedWtank = this;
-		RPC.useWTank.sendRpc(character.netId, (int)player.weapon.maxAmmo);
+		RPC.useWTank.sendRpc(character.netId, (int)ammo);
 	}
 }

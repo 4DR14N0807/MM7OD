@@ -440,6 +440,7 @@ public partial class Player {
 	public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
 	public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
 	public ShaderWrapper breakManShader = Helpers.cloneShaderSafe("paletteBreakMan");
+	public ShaderWrapper bassPaletteShader = Helpers.cloneShaderSafe("bassPalette");
 
 	// Character specific data populated on RPC request
 	public ushort? charNetId;
@@ -2631,11 +2632,11 @@ public partial class Player {
 		return true;
 	}
 
-	public bool canUseWTank(WTank wtank, Weapon weaponToHeal) {
+	public bool canUseWTank(WTank wtank) {
 		if (isDead) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
-		if (weaponToHeal.ammo >= weaponToHeal.maxAmmo) return false;
+		//if (weaponToHeal.ammo >= weaponToHeal.maxAmmo) return false;
 		//if (weapon.ammo == weapon.maxAmmo) return false;
 		//if (weapon is not RockBuster) return true;
 		// (weapon is not SARocketPunch) return true;

@@ -79,7 +79,7 @@ public class Blues : Character {
 	}
 
 	public override bool canAddAmmo() {
-		return false;//(coreAmmo > 0);
+		return (coreAmmo > 0 && !overheating);
 	}
 
 	public override float getRunSpeed() {
@@ -587,6 +587,7 @@ public class Blues : Character {
 	}
 
 	public void shootSpecial(int chargeLevel) {
+		int extraArg = 0;
 		if (specialWeapon == null) {
 			return;
 		}
@@ -596,12 +597,13 @@ public class Blues : Character {
 		// Shoot anim and vars.
 		if (!specialWeapon.hasCustomAnim) {
 			setShootAnim();
-		}
+		} else extraArg = 1;
+		
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
 		specialWeapon.shootCooldown = specialWeapon.fireRateFrames;
-		specialWeapon.shoot(this, chargeLevel);
+		specialWeapon.shoot(this, chargeLevel, extraArg);
 		addCoreAmmo(specialWeapon.getAmmoUsage(chargeLevel));
 	}
 

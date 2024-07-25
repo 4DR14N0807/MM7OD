@@ -47,12 +47,12 @@ public class DevConsole {
 			int posX = MathInt.Round(Global.level.camX);
 			int posY = MathInt.Round(Global.level.camY);
 			DrawWrappers.DrawTexture(
-				Global.textures["pausemenuload"],
-				0, 0, 384, 216, posX, posY, ZIndex.HUD
+				Global.textures["pausemenu"],
+				0, 0, 384, 216, posX, posY, ZIndex.HUD + 2000000
 			);
 			for (int i = 0; i < consoleLog.Count; i++) {
 				string line = consoleLog[i];
-				Fonts.drawText(FontType.Grey, line, 20, 20 + (i * 10));
+				Fonts.drawText(FontType.White, line, 20, 20 + (i * 10));
 			}
 		}
 	}

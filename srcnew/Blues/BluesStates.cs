@@ -3,6 +3,84 @@ using System.Collections.Generic;
 
 namespace MMXOnline;
 
+
+public class BluesShootAlt : CharState {
+
+	Weapon stateWeapon;
+	bool fired;
+
+	public BluesShootAlt(Weapon wep) : base("shoot2") {
+		normalCtrl = false;
+		airMove = true;
+		canStopJump = true;
+		stateWeapon = wep;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		bool air = !character.grounded || character.vel.y < 0;
+
+		defaultSprite = sprite;
+		landSprite =  "shoot2";
+		if (air) {
+			sprite = "shoot2_air";
+			defaultSprite = sprite;
+		}
+		character.changeSpriteFromName(sprite, true);
+	}
+
+	public override bool canEnter(Character character) {
+		if (character.charState is Burning) return false;
+		return base.canEnter(character);
+	}
+
+	public override void update() {
+		base.update();
+
+		if (!fired && character.frameIndex >= 2) {
+			stateWeapon.shoot(character, 0, 2);
+			fired = true;
+		}
+
+		if (character.isAnimOver()) character.changeToIdleOrFall();
+	}
+}
+
+
+public class BluesShootAltLadder : CharState {
+
+	Weapon stateWeapon;
+	bool fired;
+	List<CollideData> ladders;
+	float midX; 
+	public BluesShootAltLadder(Weapon wep) : base("ladder_shoot2") {
+		normalCtrl = false;
+		stateWeapon = wep;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.stopMoving();
+		character.useGravity = false;
+		ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
+		midX = ladders[0].otherCollider.shape.getRect().center().x;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (!fired && character.frameIndex >= 1) {
+			stateWeapon.shoot(character, 0, 2);
+			fired = true;
+		}
+
+		if (character.isAnimOver()) {
+			character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
+		}
+	}
+}
+
+
 public class ShieldDash : CharState {
 	bool soundPlayed;
 	int initialXDir;
@@ -327,7 +405,7 @@ public class BluesRevive : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues;
+		blues = character as Blues ?? throw new NullReferenceException();
 
 	}
 
@@ -336,7 +414,7 @@ public class BluesRevive : CharState {
 		character.useGravity = true;
 		character.removeRenderEffect(RenderEffectType.Flash);
 		//Global.level.delayedActions.Add(new DelayedAction(() => { character.destroyMusicSource(); }, 0.75f));
-		blues.isBreakMan = true;
+		if (blues != null) blues.isBreakMan = true;
 
 		if (character != null) {
 			character.invulnTime = 0.5f;

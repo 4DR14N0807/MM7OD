@@ -13,7 +13,8 @@ public class GravityHold : Weapon {
 		defaultAmmoUse = 4;
 
 		index = (int)RockWeaponIds.GravityHold;
-		fireRateFrames = 60; 
+		fireRateFrames = 60;
+		hasCustomAnim = true;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -30,7 +31,12 @@ public class GravityHold : Weapon {
 		int yDir = blues.gHoldOwnerYDir;
 		//character.changeState(new GravityHoldState(), true);
 
-		new GravityHoldProj(shootPos, xDir, yDir, player, player.getNextActorNetId(), true);
+		if (args[1] == 1) {
+			if (character.charState is not LadderClimb) character.changeState(new BluesShootAlt(this), true);
+			else character.changeState(new BluesShootAltLadder(this), true);
+		} else if (args[1] == 2) {
+			new GravityHoldProj(shootPos, xDir, yDir, player, player.getNextActorNetId(), true);
+		}
 	}
 }
 

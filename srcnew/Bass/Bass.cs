@@ -5,10 +5,13 @@ namespace MMXOnline;
 
 public class Bass : Character {
 	// Weapons.
-	float weaponCooldown;
+	public float weaponCooldown;
 	public CopyVisionClone? cVclone;
 	public SpreadDrillProj? sDrill;
 	public SpreadDrillMediumProj? sDrillM;
+	public RemoteMineProj? rMine;
+	public float wBurnerAngle;
+	public int wBurnerAngleMod = 1;
 
 	// Modes.
 	public bool isSuperBass;
@@ -26,6 +29,18 @@ public class Bass : Character {
 		charId = CharIds.Bass;
 	}
 
+	public override bool canAddAmmo() {
+		if (player.weapon == null) { return false; }
+		bool hasEmptyAmmo = false;
+		foreach (Weapon weapon in player.weapons) {
+			if (weapon.canHealAmmo && weapon.ammo < weapon.maxAmmo) {
+				hasEmptyAmmo = true;
+				break;
+			}
+		}
+		return hasEmptyAmmo;
+	}
+
 	public override void update() {
 		base.update();
 		Helpers.decrementFrames(ref weaponCooldown);
@@ -41,12 +56,17 @@ public class Bass : Character {
 			lastShootPressed = Global.frameCount;
 		}
 		player.changeWeaponControls();
+
+		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
+			wBurnerAngleMod = 1;
+			wBurnerAngle = 0;
+		} 
 	}
 
 	public override bool attackCtrl() {
 		int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
 		if (framesSinceLastShootPressed <= 6) {
-			if (weaponCooldown <= 0) {
+			if (weaponCooldown <= 0 && player.weapon.canShoot(0, player)) {
 				shoot();
 				return true;
 			}
@@ -68,6 +88,8 @@ public class Bass : Character {
 		if (dir == 2 || player.input.getXDir(player) != 0) {
 			multiplier = 1;
 		}
+		if (dir * multiplier == 2) return 1;
+
 		return dir * multiplier;
 	}
 
@@ -147,6 +169,28 @@ public class Bass : Character {
 		if (canShoot()) {
 			shoot();
 		}
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> baseShaders = base.getShaders();
+		List<ShaderWrapper> shaders = new();
+		ShaderWrapper? palette = null;
+
+		int index = player.weapon.index;
+		palette = player.bassPaletteShader;
+
+		palette?.SetUniform("palette", index);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_palette_texture"]);
+
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		if (shaders.Count == 0) {
+			return baseShaders;
+		}
+
+		shaders.AddRange(baseShaders);
+		return shaders;
 	}
 
 	public override List<byte> getCustomActorNetData() {

@@ -19,6 +19,10 @@ public class RockBuster : Weapon {
 		description = new string[] { "Rock's default weapon.", "Can be charged to deal more damage." };
 	}
 
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
+	}
+
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
 		if (player.character.ownedByLocalPlayer) {

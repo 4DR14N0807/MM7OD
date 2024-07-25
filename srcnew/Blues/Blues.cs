@@ -881,7 +881,7 @@ public class Blues : Character {
 			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
-		if (ogShieldHP > shieldHP) {
+		if (shieldDamaged) {
 			int fontColor = (int)FontType.Blue;
 			if (shieldPierced) {
 				fontColor = (int)FontType.Purple;

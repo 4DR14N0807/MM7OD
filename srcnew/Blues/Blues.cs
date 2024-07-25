@@ -34,6 +34,7 @@ public class Blues : Character {
 	public decimal shieldHP = 20;
 	public int shieldMaxHP = 20;
 	public float healShieldHPCooldown = 15;
+	public decimal shieldDamageSavings;
 	public decimal shieldDamageDebt;
 	public bool? shieldCustomState = null;
 	public bool customDamageDisplayOn;
@@ -751,49 +752,67 @@ public class Blues : Character {
 			healShieldHPCooldown = 180;
 		}
 		// Do shield checks only if damage exists and a actor too.
-		if (actor == null || attacker == null || player.health <= 0) {
+		if (damage < 0 || actor == null || attacker == null || player.health <= 0) {
 			if (charState is not Hurt { stateFrames: 0 } && player.health > 0) {
 				playSound("hit", sendRpc: true);
 			}
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 			return;
 		}
+		
 		// Tracker variables.
 		decimal ogShieldHP = shieldHP;
 		float oldHealth = player.health;
-		bool fullyBlocked = false;
-		bool shieldBlocked = false;
+		bool shieldDamaged = false;
 		bool bodyDamaged = false;
 		bool shieldPierced = false;
 		bool bodyPierced = false;
-		// Shield front block check.
-		if (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1)) {
-			shieldBlocked = true;
-			int damageReduction = 1;
+		int damageReduction = 1;
+		bool shieldHitFront = (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
+		bool shieldHitBack = (!isShieldFront() && Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
+
+		// Things that apply to both shield variants.
+		if (shieldHitBack || shieldHitFront) {
+			// In case we did only fractional damage to the shield.
+			if (damage % 1 != 0) {
+				decimal oldDamage = damage;
+				damage = Math.Floor(damage);
+				shieldDamageDebt += oldDamage - damage;
+			}
+			while (damageDebt >= 1) {
+				shieldDamageDebt -= 1;
+				damage += 1;
+			}
 			// Armor pierce.
 			// Remove damage reduction.
 			if (Damager.isArmorPiercing(projId)) {
 				damageReduction = 0;
-				shieldPierced = true;
+				if (shieldHitFront) {
+					shieldPierced = true;
+				}
+				if (shieldHitBack) {
+					bodyPierced = true;
+				}
 			}
+		}
+		// Shield front block check.
+		if (shieldHitFront && damage > 0) {
+			shieldDamaged = true;
 			// 1-2 damage scenario.
-			// Reduce damage only 1/3rd of the time.
 			if (damageReduction > 0 && damage <= 2) {
 				if (damage <= 1) {
-					shieldDamageDebt += damage * 2;
+					shieldDamageSavings += damage * (1m/3m);
 				} else {
-					shieldDamageDebt += damage * 1.5m;
+					shieldDamageSavings += damage * 0.25m;
 				}
-				decimal shieldDamage = damage - 1;
-				if (shieldDamage < 0) {
-					shieldDamage = 0;
+				if (damage < 0) {
+					damage = 0;
 				}
-				if (shieldDamageDebt >= 6) {
-					shieldDamageDebt = 0;
-					if (shieldDamage > 0) {
-						shieldHP -= shieldDamage;
-					} else {
-						fullyBlocked = true;
+				if (shieldDamageSavings >= 1) {
+					shieldDamageSavings -= damageReduction;
+					if (shieldDamageSavings <= 0) { shieldDamageSavings = 0; }
+					if (damage >= 2) {
+						shieldHP -= damage - 1;
 					}
 				} else {
 					shieldHP -= damage;
@@ -809,7 +828,7 @@ public class Blues : Character {
 			else {
 				damage -= shieldHP + damageReduction;
 				shieldHP = 0;
-				shieldBlocked = false;
+				shieldDamaged = false;
 			}
 			if (shieldHP <= 0) {
 				shieldHP = 0;
@@ -824,23 +843,16 @@ public class Blues : Character {
 			}
 		}
 		// Back shield block check.
-		else if (!isShieldFront() && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)) {
-			shieldBlocked = true;
-			if (!Damager.isArmorPiercing(projId)) {
-				if (damage <= 1) {
-					shieldDamageDebt += damage / 2m;
+		else if (shieldHitBack && !bodyPierced && damage > 0) {
+			shieldDamaged = true;
+			if (damage <= 1) {
+				shieldDamageSavings += damage * 0.5m;
+				if (shieldDamageSavings >= 1) {
 					damage = 0;
-					if (shieldDamageDebt >= 1) {
-						shieldDamageDebt--;
-						damage = 1;
-					} else {
-						fullyBlocked = true;
-					}
-				} else {
-					damage--;
+					if (shieldDamageSavings <= 0) { shieldDamageSavings = 0; }
 				}
 			} else {
-				bodyPierced = true;
+				damage--;
 			}
 		}
 		if (damage > 0) {
@@ -857,18 +869,12 @@ public class Blues : Character {
 				playSound("ding", sendRpc: true);
 			}
 		}
-		if (fullyBlocked) {
-			addDamageText("0", (int)FontType.Blue);
-			RPC.addDamageText.sendRpc(attacker.id, netId, 0, (int)FontType.Blue);
-			return;
-		}
-		if (oldHealth > player.health || bodyDamaged) {
+		if (bodyDamaged) {
 			int fontColor = (int)FontType.Red;
-			if (shieldBlocked) {
+			if (bodyPierced) {
+				fontColor = (int)FontType.Yellow;
+			} else if (shieldDamaged) {
 				fontColor = (int)FontType.Orange;
-				if (bodyPierced) {
-					fontColor = (int)FontType.Yellow;
-				}
 			}
 			float damageText = float.Parse((oldHealth - player.health).ToString());
 			addDamageText(damageText, fontColor);

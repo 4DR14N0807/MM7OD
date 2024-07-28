@@ -346,6 +346,7 @@ public partial class Player {
 	public bool readyTextOver = false;
 	public ServerPlayer serverPlayer;
 	public LoadoutData loadout;
+	public bool loadoutSet;
 	public LoadoutData previousLoadout;
 	public LoadoutData oldAxlLoadout;
 	public AxlLoadout axlLoadout { get { return loadout.axlLoadout; } }
@@ -356,8 +357,6 @@ public partial class Player {
 	// Note: Every time you add an armor, add an "old" version and update DNA Core code appropriately
 	public ushort armorFlag;
 	public ushort oldArmorFlag;
-	public bool ultimateArmor;
-	public bool oldUltimateArmor;
 	public bool frozenCastle;
 	public bool oldFrozenCastle;
 	public bool speedDevil;
@@ -641,8 +640,12 @@ public partial class Player {
 
 		if (ownedByLocalPlayer && !isAI) {
 			loadout = LoadoutData.createFromOptions(id);
+			loadoutSet = true;
 		} else {
 			loadout = LoadoutData.createRandom(id);
+			if (ownedByLocalPlayer) {
+				loadoutSet = true;
+			}
 		}
 
 		configureWeapons();
@@ -651,36 +654,41 @@ public partial class Player {
 	}
 
 	public int getHeartTankModifier() {
-		return Helpers.clamp(Global.level.server?.customMatchSettings?.heartTankHp ?? 1, 1, 2);
+		return Global.level.server?.customMatchSettings?.heartTankHp ?? 1;
 	}
 
 	public float getMaverickMaxHp() {
 		if (!Global.level.is1v1() && isTagTeam()) {
-			//return 16 + (heartTanks * getHeartTankModifier());
-			return MathF.Ceiling(24 * getHealthModifier());
+			return getModifiedHealth(20) + (heartTanks * getHeartTankModifier());
 		}
-
-		return MathF.Ceiling(24 * getHealthModifier());
+		return MathF.Ceiling(getModifiedHealth(24));
 	}
 
 	public bool hasAllItems() {
 		return etanks.Count >= 4 && heartTanks >= 8;
 	}
 
-	public float getHealthModifier() {
-		var level = Global.level;
-		float modifier = 1;
-		if (level.is1v1()) {
-			if (Global.level.server.playTo == 1) modifier = 2;
-			if (Global.level.server.playTo == 2) modifier = 1.5f;
+	public static float getBaseHealth() {
+		if (Global.level.server.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.healthModifier;
 		}
-		if (level.server.customMatchSettings != null) {
-			modifier = (float)(level.server.customMatchSettings.healthModifier * 0.1m);
-			//if (level.gameMode.isTeamMode && alliance == GameMode.redAlliance) {
-			//	modifier = level.server.customMatchSettings.redHealthModifier;
-			//}
+		return 16;
+	}
+
+	public static float getModifiedHealth(float health) {
+		if (Global.level.server.customMatchSettings != null) {
+			float retHp = getBaseHealth();
+			float extraHP = health - 16;
+
+			float hpMulitiplier = MathF.Ceiling(getBaseHealth() / 16);
+			retHp += MathF.Ceiling(extraHP * hpMulitiplier);
+
+			if (retHp < 1) {
+				retHp = 1;
+			}
+			return retHp;
 		}
-		return modifier;
+		return health;
 	}
 
 	public float getDamageModifier() {
@@ -696,7 +704,7 @@ public partial class Player {
 	public float getMaxHealth() {
 		// 1v1 is the only mode without possible heart tanks/sub tanks
 		if (Global.level.is1v1()) {
-			return MathF.Ceiling(28 * getHealthModifier());
+			return getModifiedHealth(28);
 		}
 		int baseHP = 28;
 		int bonus = 0;
@@ -781,6 +789,9 @@ public partial class Player {
 	}
 
 	public ushort getNextATransNetId() {
+		if (curATransNetId < getStartNetId() + 1) {
+			curATransNetId = (ushort)(getStartNetId() + 1);
+		}
 		var retId = curATransNetId;
 		curATransNetId++;
 		if (curATransNetId >= getStartNetId() + 10) {
@@ -1104,7 +1115,12 @@ public partial class Player {
 					false, charNetId, ownedByLocalPlayer
 				);
 			} else if (charNum == (int)CharIds.Sigma) {
-				if (isSigma3()) {
+				if (!ownedByLocalPlayer && !loadoutSet) {
+					character = new BaseSigma(
+						this, pos.x, pos.y, xDir,
+						false, charNetId, ownedByLocalPlayer
+					);
+				} else if (isSigma3()) {
 					character = new Doppma(
 						this, pos.x, pos.y, xDir,
 						false, charNetId, ownedByLocalPlayer
@@ -1365,15 +1381,16 @@ public partial class Player {
 		// Save old flags.
 		oldArmorFlag = armorFlag;
 		oldSpeedDevil = speedDevil;
-		oldFrozenCastle = frozenCastle;
-		oldUltimateArmor = ultimateArmor;
+		oldFrozenCastle = frozenCastle;;
 
 		// Armor flags for X.
 		if (data.charNum == (int)CharIds.X) {
 			armorFlag = BitConverter.ToUInt16(
 				new byte[] { data.extraData[0], data.extraData[1] }
 			);
-			oldUltimateArmor = (data.extraData[2] == 1);
+			if (retChar is MegamanX retX) {
+				retX.hasUltimateArmor = (data.extraData[2] == 1);
+			}
 		}
 		// Store old weapons.
 		oldWeapons = weapons;
@@ -1404,12 +1421,10 @@ public partial class Player {
 		oldArmorFlag = armorFlag;
 		oldFrozenCastle = frozenCastle;
 		oldSpeedDevil = speedDevil;
-		oldUltimateArmor = ultimateArmor;
 
 		armorFlag = dnaCore.armorFlag;
 		frozenCastle = dnaCore.frozenCastle;
 		speedDevil = dnaCore.speedDevil;
-		ultimateArmor = dnaCore.ultimateArmor;
 
 		bool isVileMK2 = charNum == 2 && dnaCore.hyperMode == DNACoreHyperMode.VileMK2;
 		bool isVileMK5 = charNum == 2 && dnaCore.hyperMode == DNACoreHyperMode.VileMK5;
@@ -1422,7 +1437,7 @@ public partial class Player {
 				extraData = new byte[] {
 					armorBytes[0],
 					armorBytes[1],
-					ultimateArmor ? (byte)1 : (byte)0
+					dnaCore.ultimateArmor ? (byte)1 : (byte)0
 				};
 			} else if (dnaCore.charNum == (int)CharIds.Vile) {
 				extraData = new byte[1];
@@ -1444,12 +1459,7 @@ public partial class Player {
 			);
 			Global.serverClient?.rpc(RPC.axlDisguise, json);
 		}
-		float hpModifier = getHealthModifier();
-		if (hpModifier < 1) {
-			maxHealth = dnaCore.maxHealth + heartTanks * getHeartTankModifier();
-		} else {
-			maxHealth = dnaCore.maxHealth + MathF.Ceiling(heartTanks * getHeartTankModifier() * getHealthModifier());
-		}
+		maxHealth = dnaCore.maxHealth + MathF.Ceiling(heartTanks * getHeartTankModifier());
 
 		oldAxlLoadout = loadout;
 		loadout = dnaCore.loadout;
@@ -1639,7 +1649,6 @@ public partial class Player {
 		armorFlag = oldArmorFlag;
 		speedDevil = oldSpeedDevil;
 		frozenCastle = oldFrozenCastle;
-		ultimateArmor = oldUltimateArmor;
 
 		lastDNACore = null;
 		lastDNACoreIndex = 4;
@@ -1688,7 +1697,6 @@ public partial class Player {
 		armorFlag = oldArmorFlag;
 		speedDevil = oldSpeedDevil;
 		frozenCastle = oldFrozenCastle;
-		ultimateArmor = oldUltimateArmor;
 
 		lastDNACore = null;
 		lastDNACoreIndex = 4;
@@ -2035,7 +2043,7 @@ public partial class Player {
 			character.destroySelf();
 		}
 		clearSigmaWeapons();
-		maxHealth = MathF.Ceiling(32 * getHealthModifier());
+		maxHealth = getModifiedHealth(32);
 		ushort newNetId = getNextATransNetId();
 		if (form == 0) {
 			if (Global.level.is1v1()) {
@@ -2048,7 +2056,7 @@ public partial class Player {
 		} else {
 			KaiserSigma kaiserSigma = new KaiserSigma(
 				this, spawnPoint.x, spawnPoint.y, character.xDir, true,
-				newNetId, character.ownedByLocalPlayer
+				newNetId, true
 			);
 			character = kaiserSigma;
 			character.changeSprite("kaisersigma_enter", true);
@@ -2066,16 +2074,17 @@ public partial class Player {
 
 	public void reviveSigmaNonOwner(int form, Point spawnPoint, ushort sigmaNetId) {
 		clearSigmaWeapons();
-		maxHealth = MathF.Ceiling(32 * getHealthModifier());
-		//if (form >= 2) {
+		maxHealth = getModifiedHealth(32);
+		if (form >= 2) {
 			character.destroySelf();
 			KaiserSigma kaiserSigma = new KaiserSigma(
 				this, spawnPoint.x, spawnPoint.y, character.xDir, true,
-				character.netId, character.ownedByLocalPlayer
+				sigmaNetId, false
 			);
 			character = kaiserSigma;
-		//}
-		character.changeSprite("kaisersigma_enter", true);
+
+			character.changeSprite("kaisersigma_enter", true);
+		}
 	}
 
 	public void reviveX() {
@@ -2309,17 +2318,19 @@ public partial class Player {
 	}
 
 	public void setUltimateArmor(bool addOrRemove) {
-		if (addOrRemove) {
-			ultimateArmor = true;
-			addNovaStrike();
-		} else {
-			ultimateArmor = false;
-			removeNovaStrike();
+		if (character is MegamanX mmx) {
+			if (addOrRemove) {
+				mmx.hasUltimateArmor = true;
+				addNovaStrike();
+			} else {
+				mmx.hasUltimateArmor = false;
+				removeNovaStrike();
+			}
 		}
 	}
 
 	public bool hasUltimateArmor() {
-		return ultimateArmor;
+		return character is MegamanX { hasUltimateArmor: true };
 	}
 
 	public int bootsArmorNum {

@@ -62,12 +62,14 @@ public class UpgradeMenu : IMainMenu {
 	}
 
 	public int getHeartTankCost() {
-		// if (Global.level.server?.customMatchSettings?.heartTankHp == 2) return 4;
+		if (Global.level.server?.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.heartTankCost;
+		}
 		return 2;
 	}
 
 	public int getMaxHeartTanks() {
-		return Global.level.server?.customMatchSettings?.maxHeartTanks ?? 4;
+		return Global.level.server?.customMatchSettings?.maxHeartTanks ?? 8;
 	}
 
 	public int getMaxETanks() {

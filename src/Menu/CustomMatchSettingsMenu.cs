@@ -25,6 +25,23 @@ public class CustomMatchSettings {
 
 	public CustomMatchSettings() {
 	}
+
+	public static CustomMatchSettings getDefaults() {
+		return new CustomMatchSettings {
+			hyperModeMatch = false,
+			startCurrency = 3,
+			startHeartTanks = 0,
+			startSubTanks = 0,
+			healthModifier = 16,
+			damageModifier = 1,
+			sameCharNum = -1,
+			redSameCharNum = -1,
+			maxHeartTanks = 8,
+			maxSubTanks = 2,
+			heartTankHp = 1,
+			heartTankCost = 2,
+		};
+	}
 }
 
 public class CustomMatchSettingsMenu : IMainMenu {
@@ -82,7 +99,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		/*menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.heartTankHp, 1, 2, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.heartTankHp, 1, 8, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -189,7 +206,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.healthModifier, 5, 20);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.healthModifier, 8, 32);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(

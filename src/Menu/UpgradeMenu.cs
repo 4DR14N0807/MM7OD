@@ -62,9 +62,9 @@ public class UpgradeMenu : IMainMenu {
 	}
 
 	public int getHeartTankCost() {
-		if (Global.level.server?.customMatchSettings != null) {
+		/*if (Global.level.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.heartTankCost;
-		}
+		}*/
 		return 2;
 	}
 

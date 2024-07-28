@@ -36,10 +36,7 @@ public class CustomMatchSettings {
 			damageModifier = 1,
 			sameCharNum = -1,
 			redSameCharNum = -1,
-			maxHeartTanks = 8,
-			maxSubTanks = 2,
-			heartTankHp = 1,
-			heartTankCost = 2,
+			maxETanks = 2,
 		};
 	}
 }

@@ -711,14 +711,14 @@ public partial class Player {
 		if (isSigma && isPuppeteer()) {
 			bonus = 4;
 		}
-		float hpModifier = getHealthModifier();
+		//float hpModifier = getHealthModifier();
 		if (isProtoMan) {
 			baseHP = 16;
 		}
-		if (hpModifier < 1) {
-			return MathF.Ceiling((baseHP + bonus) * hpModifier) + heartTanks * getHeartTankModifier();
-		}
-		return MathF.Ceiling((baseHP + bonus + heartTanks * getHeartTankModifier()) * hpModifier);
+		//if (hpModifier < 1) {
+		//	return MathF.Ceiling((baseHP + bonus) * hpModifier);
+		//}
+		return MathF.Ceiling(baseHP + bonus);
 	}
 
 	public void creditHealing(float healAmount) {

@@ -247,12 +247,13 @@ public class Blues : Character {
 		}
 	}
 
-	public override void changeState(CharState newState, bool forceChange = false) {
+	public override bool changeState(CharState newState, bool forceChange = false) {
 		shieldCustomState = null;
 		base.changeState(newState, forceChange);
 		if (!newState.attackCtrl || !newState.normalCtrl) {
 			shootAnimTime = 0;
 		}
+		return true;
 	}
 
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {

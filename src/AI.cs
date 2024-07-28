@@ -1051,7 +1051,7 @@ public class AI {
 	}
 	//End of X
 	//Start of Saber Zero
-	public void zeroAIAttack(Zero zero) {
+	/*public void zeroAIAttack(Zero zero) {
 		bool isTargetClose = target?.pos.x - 15 > character.pos.x;
 		bool isTargetInAir = target?.pos.y < character.pos.y - 50;
 		// Go hypermode 
@@ -1282,7 +1282,7 @@ public class AI {
 				isWildDance = false;
 			}
 		}
-	}
+	}*/
 	public void WildDanceMove(Character zero) {
 		if (character is Zero zero7) {
 			if (!zero7.isAttacking() && zero7.charState.canAttack() && zero7.charState.attackCtrl) {
@@ -1315,7 +1315,7 @@ public class AI {
 			}
 		}
 	}
-	public void zeroAIDodge(Character zero3, GameObject go) {
+	/*public void zeroAIDodge(Character zero3, GameObject go) {
 		var proj = go as Projectile;
 				if (proj != null && proj.damager.owner.alliance != player.alliance) {
 					if (player.character is Zero zero) {
@@ -1345,7 +1345,7 @@ public class AI {
 						}
 					}
 				}	
-	}
+	} */
 	//End of Saber Zero
 	//Start of Punchy Zero
 	public void KnuckleZeroAIAttack(PunchyZero pzero) {

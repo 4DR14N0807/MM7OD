@@ -117,7 +117,6 @@ public class CharState {
 			//player.delayWTank();
 		}
 		character.onExitState(this, newState);
-		player.delayETank();
 	}
 
 	public virtual void onEnter(CharState oldState) {
@@ -132,7 +131,7 @@ public class CharState {
 			character.stopMovingWeak();
 		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
-		player.delayETank();
+		if (this is not Run and not Idle and not Taunt) player.delayETank();
 		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick && oldState.canStopJump == false) {
 			canStopJump = false;
@@ -1377,6 +1376,11 @@ public class Taunt : CharState {
 
 	public override void update() {
 		base.update();
+
+		if (finishedMatch) {
+			character.useGravity = false;
+			character.stopMoving();
+		}
 
 		if (player.charNum == 2) {
 			if (character.isAnimOver()) {

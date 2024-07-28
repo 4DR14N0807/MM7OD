@@ -318,6 +318,8 @@ public enum RockWeaponIds {
 
 public enum BassProjIds {
 	BassLemon = 700,
+	TenguBladeProj,
+	TenguBladeDash,
 }
 
 public enum BluesProjIds  {
@@ -790,12 +792,13 @@ public enum ProjIds {
 	DZMelee,
 	DZHadangeki,
 	
-	//Rock stuff
+	//7OD stuff
 	SlashClaw,
 	ScorchWheelUnderwater,
 	LegBreaker,
 	ProtoStrike,
 	ProtoStrikeLvl2,
+	TenguBladeDash,
 
 	// Special damage types.
 	SelfDmg = 30000,

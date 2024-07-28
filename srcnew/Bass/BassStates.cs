@@ -19,7 +19,11 @@ public class BassShoot : CharState {
 	public override void update() {
 		base.update();
 		if (player.dashPressed(out string dashControl) && character.grounded) {
-			bass.changeState(new Dash(dashControl), true);
+			if (bass.canUseTBladeDash()) {
+				bass.changeState(new TenguBladeDash(), true);
+			} else {
+				bass.changeState(new Dash(dashControl), true);
+			}
 			return;
 		}
 		if (stateFrames >= 16) {

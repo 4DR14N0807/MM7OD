@@ -12,6 +12,7 @@ public class Bass : Character {
 	public RemoteMineProj? rMine;
 	public float wBurnerAngle;
 	public int wBurnerAngleMod = 1;
+	public float tBladeDashCooldown;
 
 	// Modes.
 	public bool isSuperBass;
@@ -44,6 +45,7 @@ public class Bass : Character {
 	public override void update() {
 		base.update();
 		Helpers.decrementFrames(ref weaponCooldown);
+		Helpers.decrementFrames(ref tBladeDashCooldown);
 
 		// Shoot controls.
 		bool shootPressed;
@@ -61,6 +63,67 @@ public class Bass : Character {
 			wBurnerAngleMod = 1;
 			wBurnerAngle = 0;
 		} 
+	}
+
+	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
+		int meleeId = getHitboxMeleeId(hitbox);
+		if (meleeId == -1) {
+			return null;
+		}
+		Projectile? proj = getMeleeProjById(meleeId, centerPoint);
+		if (proj == null) {
+			return null;
+		}
+		// Assing data variables.
+		proj.meleeId = meleeId;
+		proj.owningActor = this;
+
+		return proj;
+	}
+
+	public override int getHitboxMeleeId(Collider hitbox) {
+		return (int)(sprite.name switch {
+			"bass_tblade_dash" => MeleeIds.TenguBladeDash,
+			_ => MeleeIds.None
+		});
+	}
+
+	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
+		Point projPos = pos ?? new Point(0, 0);
+		Projectile? proj = id switch {
+			/*(int)MeleeIds.TenguBladeDash => new GenericMeleeProj(
+				new TenguBlade(), projPos, ProjIds.TenguBladeDash, player, 2, 0, 0.375f,
+				addToLevel: addToLevel
+
+			),*/
+			(int)MeleeIds.TenguBladeDash => new TenguBladeMelee(
+				projPos, player
+			),
+			
+			_ => null
+		};
+		return proj;
+
+	}
+
+	public enum MeleeIds {
+		None = -1,
+		TenguBladeDash,
+	}
+
+	public bool canUseTBladeDash() {
+		return player.weapon is TenguBlade tb && tb.ammo > 0 &&
+		grounded && tBladeDashCooldown <= 0;
+	}
+
+	public override bool normalCtrl() {
+		bool dashPressed = player.input.isPressed(Control.Dash, player);
+		if (dashPressed && canUseTBladeDash()) {
+			changeState(new TenguBladeDash(), true);
+			return true;
+		} 
+
+		return base.normalCtrl();
 	}
 
 	public override bool attackCtrl() {

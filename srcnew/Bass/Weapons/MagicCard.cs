@@ -10,7 +10,7 @@ public class MagicCard : Weapon {
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
-		weaponSlotIndex = 8;
+		weaponSlotIndex = index;
 		fireRateFrames = 20;
 	}
 
@@ -38,18 +38,30 @@ public class MagicCardProj : Projectile {
 	public Pickup? pickup;
 
 	public MagicCardProj(
-		Point pos, int xDir, int byteAngle, 
+		Point pos, int xDir, float byteAngle, 
 		Player player, ushort? netProjId, bool rpc = false
 	) : base (
 		MagicCard.netWeapon, pos, xDir, 0, 1,
 		player, "magic_card_proj", 0, 0.25f, 
 		netProjId, player.ownedByLocalPlayer
 	) {
+		projId = (int)BassProjIds.MagicCard;
 		maxTime = 3f;
 		maxReverseTime = 0.25f;
 		this.byteAngle = byteAngle;
 		shooter = player.character;
 		vel = Point.createFromByteAngle(byteAngle) * projSpeed;
+		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreateByteAngle(pos, player, netId, byteAngle);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new MagicCardProj(
+			arg.pos, arg.xDir, arg.byteAngle, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {

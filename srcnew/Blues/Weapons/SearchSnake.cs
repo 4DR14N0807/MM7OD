@@ -44,6 +44,7 @@ public class SearchSnakeProj : Projectile {
 		fadeOnAutoDestroy = true;
 		useGravity = true;
 		maxTime = 2;
+		canBeLocal = false;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}

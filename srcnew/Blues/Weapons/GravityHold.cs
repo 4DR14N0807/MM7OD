@@ -36,7 +36,7 @@ public class GravityHold : Weapon {
 			if (character.charState is not LadderClimb) character.changeState(new BluesShootAlt(this), true);
 			else character.changeState(new BluesShootAltLadder(this), true);
 		} else if (args[1] == 2) {
-			new GravityHoldProj(shootPos, xDir, yDir, player, player.getNextActorNetId(), true);
+			new GravityHoldProj(shootPos, xDir, player, player.getNextActorNetId(), true);
 		}
 	}
 }
@@ -45,10 +45,9 @@ public class GravityHold : Weapon {
 public class GravityHoldProj : Projectile {
 
 	bool fired;
-	int yPush;
 
 	public GravityHoldProj(
-		Point pos, int xDir, int yDir, Player player, 
+		Point pos, int xDir, Player player, 
 		ushort? netProjId, bool rpc = false
 	) : base 
 	(
@@ -56,10 +55,20 @@ public class GravityHoldProj : Projectile {
 		player, "empty", 0, 0, netProjId,
 		player.ownedByLocalPlayer
 	) {
+		projId = (int)BluesProjIds.GravityHold;
 		maxTime = 0.1f;
 		shouldShieldBlock = false;
 		destroyOnHit = false;
-		yPush = yDir;
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new GravityHoldProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 
 	public override void update() {
@@ -67,6 +76,8 @@ public class GravityHoldProj : Projectile {
 
 		Rect rect = new Rect(pos.x - 80, pos.y - 80, pos.x + 80, pos.y + 80);
 		var hits = Global.level.checkCollisionsShape(rect.getShape(), new List<GameObject>() { this });
+		
+		new GravityHoldEffect(pos, damager.owner.character);
 
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor && !fired &&
@@ -89,7 +100,6 @@ public class GravityHoldProj : Projectile {
 						chr.gHoldEnd(false);
 					}
 				}
-				new GravityHoldEffect(pos, damager.owner.character);
 				fired = true;
 			}
 		}
@@ -169,7 +179,7 @@ public class GravityHoldState : CharState {
 		base.update();
 
 		if (!fired && character.isAnimOver()) {
-			new GravityHoldProj(character.getCenterPos(), character.getShootXDir(), blues.gHoldOwnerYDir, 
+			new GravityHoldProj(character.getCenterPos(), character.getShootXDir(), 
 				player, player.getNextActorNetId(), true);
 			fired = true;
 		}

@@ -8,7 +8,7 @@ public class RemoteMine : Weapon {
 
 	public RemoteMine() : base() {
 		index = (int)BassWeaponIds.RemoteMine;
-		weaponSlotIndex = 5;
+		weaponSlotIndex = index;
 		fireRateFrames = 45;
 	}
 
@@ -42,10 +42,22 @@ public class RemoteMineProj : Projectile {
 			player, "remote_mine_proj", 0, 0.5f, 
 			netProjId, player.ownedByLocalPlayer
 	) {
+		projId = (int)BassProjIds.RemoteMine;
 		maxTime = 1.5f;
 		bass = player.character as Bass;
 		if (bass != null) bass.rMine = this;
 		anim = new Anim(getCenterPos(), "remote_mine_anim", xDir, player.getNextActorNetId(), false, true);
+		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new RemoteMineProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {
@@ -100,9 +112,20 @@ public class RemoteMineExplosionProj : Projectile {
 		player, "remote_mine_explosion", Global.halfFlinch, 1,
 		netProjId, player.ownedByLocalPlayer
 	) {
+		projId = (int)BassProjIds.RemoteMineExplosion;
 		maxTime = 0.75f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new RemoteMineExplosionProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {

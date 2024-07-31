@@ -10,7 +10,7 @@ public class IceWall : Weapon {
 
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;
-		weaponSlotIndex = 1;
+		weaponSlotIndex = index;
 		fireRateFrames = 120;
 	}
 
@@ -60,14 +60,25 @@ public class IceWallProj : Projectile {
 		player, "ice_wall_proj", 0, 1,
 		netProjId, player.ownedByLocalPlayer
 	) {
+		projId = (int)BassProjIds.IceWall;
 		maxTime = 5f;
 		destroyOnHit = false;
 		useGravity = true;
 		isPlatform = true;
 		collider.wallOnly = true;
 		fadeSprite = "ice_wall_fade";
-	}
+		canBeLocal = false;
 
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+	}
+	
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new IceWallProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
+	}
 
 	public override void update() {
 		base.update();

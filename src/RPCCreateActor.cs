@@ -8,6 +8,7 @@ public enum NetActorCreateId {
 	RideArmor,
 	RaySplasherTurret,
 	Rush,
+	CopyVisionClone,
 	ChillPenguin,
 	SparkMandrill,
 	ArmoredArmadillo,
@@ -79,6 +80,8 @@ public class RPCCreateActor : RPC {
 			new RideArmor(player, pos, 0, 0, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.Rush) {
 			new Rush(pos, player, xDir, netProjByte, false);
+		} else if (createId == (int)NetActorCreateId.CopyVisionClone) {
+			new CopyVisionClone(pos, player, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.ChillPenguin) {
 			new ChillPenguin(player, pos, pos, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.SparkMandrill) {

@@ -72,6 +72,20 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BluesProjIds.ProtoStrikePush, StrikeAttackPushProj.rpcInvoke },
 		{ (int)BluesProjIds.BigBangStrike, BigBangStrikeProj.rpcInvoke },
 		{ (int)BluesProjIds.BigBangStrikeExplosion, BigBangStrikeExplosionProj.rpcInvoke },
+
+		//Bass stuff.
+		{ (int)BassProjIds.BassLemon, BassBusterProj.rpcInvoke },
+		{ (int)BassProjIds.CopyVisionLemon, CopyVisionLemon.rpcInvoke },
+		{ (int)BassProjIds.IceWall, IceWallProj.rpcInvoke },
+		{ (int)BassProjIds.MagicCard, MagicCardProj.rpcInvoke },
+		{ (int)BassProjIds.RemoteMine, RemoteMineProj.rpcInvoke },
+		{ (int)BassProjIds.RemoteMineExplosion, RemoteMineExplosionProj.rpcInvoke },
+		{ (int)BassProjIds.SpreadDrill, SpreadDrillProj.rpcInvoke },
+		{ (int)BassProjIds.SpreadDrillMid, SpreadDrillMediumProj.rpcInvoke },
+		{ (int)BassProjIds.SpreadDrillSmall, SpreadDrillSmallProj.rpcInvoke },
+		{ (int)BassProjIds.WaveBurner, WaveBurnerProj.rpcInvoke },
+		{ (int)BassProjIds.WaveBurnerUnderwater, WaveBurnerUnderwaterProj.rpcInvoke },
+		{ (int)BassProjIds.TenguBladeProj, TenguBladeProj.rpcInvoke },
 	};
 
 }

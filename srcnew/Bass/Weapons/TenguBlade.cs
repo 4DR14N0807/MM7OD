@@ -7,7 +7,7 @@ public class TenguBlade : Weapon {
 	public static TenguBlade netWeapon = new();
 	public TenguBlade() : base() {
 		index = (int)BassWeaponIds.TenguBlade;
-		weaponSlotIndex = 7;
+		weaponSlotIndex = index;
 		fireRateFrames = 60;
 	}
 
@@ -57,6 +57,16 @@ public class TenguBladeProj : Projectile {
 	) {
 		maxTime = 2;
 		projId = (int)BassProjIds.TenguBladeProj;
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new TenguBladeProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {

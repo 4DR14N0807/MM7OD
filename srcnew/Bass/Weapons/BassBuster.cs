@@ -9,7 +9,7 @@ public class BassBuster : Weapon {
 
 	public BassBuster() : base() {
 		index = (int)BassWeaponIds.BassBuster;
-		weaponSlotIndex = 0;
+		weaponSlotIndex = index;
 		fireRateFrames = 6;
 		isStream = true;
 	}
@@ -61,9 +61,16 @@ public class BassBusterProj : Projectile {
 		vel = Point.createFromByteAngle(byteAngle) * 240;
 		destroyOnHitWall = true;
 		fadeSprite = "bass_buster_proj_fade";
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, player, netId, byteAngle);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new BassBusterProj(
+			arg.pos, arg.byteAngle, arg.player, arg.netId
+		);
 	}
 }

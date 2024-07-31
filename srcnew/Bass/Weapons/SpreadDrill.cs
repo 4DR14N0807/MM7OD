@@ -8,7 +8,7 @@ public class SpreadDrill : Weapon {
 	public static SpreadDrill netWeapon = new();
 	public SpreadDrill() : base() {
 		index = (int)BassWeaponIds.SpreadDrill;
-		weaponSlotIndex = 3;
+		weaponSlotIndex = index;
 		weaponBarBaseIndex = 0;
 		killFeedIndex = 0;
 		maxAmmo = 7;
@@ -48,17 +48,24 @@ public class SpreadDrillProj : Projectile {
 		SpreadDrill.netWeapon, pos, xDir, 100, 2, player, "spread_drill_proj", 0, 1f, netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 2f;
-		projId = (int)ProjIds.TunnelFang;
+		projId = (int)BassProjIds.SpreadDrill;
 		destroyOnHit = false;
 		bass = player.character as Bass;
 		if (bass != null) bass.sDrill = this;
 
 		anim = new Anim(getFirstPOI(0) ?? new Point(0,0), "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
 		anim2 = new Anim(getFirstPOI(1) ?? new Point(0,0), "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SpreadDrillProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 	public override void update() {
 		base.update();
@@ -103,14 +110,21 @@ public class SpreadDrillMediumProj : Projectile {
 		SpreadDrill.netWeapon, pos, xDir, 200, 1, player, "spread_drill_medium_proj", 0, 0.50f, netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 1f;
-		projId = (int)ProjIds.TunnelFang;
+		projId = (int)BassProjIds.SpreadDrillMid;
 		destroyOnHit = false;
 
 		anim = new Anim(getFirstPOI() ?? new Point(0,0), "spread_drill_medium_effect", xDir, player.getNextActorNetId(), false, true);
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SpreadDrillMediumProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {
@@ -165,14 +179,21 @@ public class SpreadDrillSmallProj : Projectile {
 		SpreadDrill.netWeapon, pos, xDir, 400, 1, player, "spread_drill_small_proj", 0, 0.25f, netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 1.5f;
-		projId = (int)ProjIds.TunnelFang;
+		projId = (int)BassProjIds.SpreadDrillSmall;
 		destroyOnHit = false;
 
 		anim = new Anim(pos.addxy(-5, 5), "spread_drill_small_effect", xDir, player.getNextActorNetId(), false, true);
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SpreadDrillSmallProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {

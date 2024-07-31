@@ -19,9 +19,9 @@ public class RayGun : AxlWeapon {
 		killFeedIndex = 33;
 		rateOfFire = 0.1f;
 
-		if (altFire == 1) {
+		/*if (altFire == 1) {
 			shootSounds[3] = "";
-		}
+		}*/
 	}
 
 	public override float whiteAxlFireRateMod() {

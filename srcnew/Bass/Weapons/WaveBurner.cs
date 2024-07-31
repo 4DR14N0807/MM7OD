@@ -9,7 +9,7 @@ public class WaveBurner : Weapon {
 
 	public WaveBurner() : base() {
 		index = (int)BassWeaponIds.WaveBurner;
-		weaponSlotIndex = 4;
+		weaponSlotIndex = index;
 		fireRateFrames = 4;
 		isStream = true;
 		maxAmmo = 168;
@@ -45,9 +45,21 @@ public class WaveBurnerProj : Projectile {
 		player, "wave_burner_proj", 0, 0.25f, 
 		netProjId, player.ownedByLocalPlayer 
 	) {
+		projId = (int)BassProjIds.WaveBurner;
 		maxTime = 0.2f;
 		//this.byteAngle = byteAngle;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
+		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreateByteAngle(pos, player, netId, byteAngle);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new WaveBurnerProj(
+			arg.pos, arg.byteAngle, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {
@@ -78,6 +90,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 		player, "wave_burner_underwater_proj", 0, 0.4f, 
 		netProjId, player.ownedByLocalPlayer 
 	) {
+		projId = (int)BassProjIds.WaveBurnerUnderwater;
 		maxTime = 0.33f;
 		destroyOnHit = false;
 		rand = Helpers.randomRange(1, 4);
@@ -97,6 +110,16 @@ public class WaveBurnerUnderwaterProj : Projectile {
 			bubble2.frameSpeed = 0;
 			bubble2.frameIndex = 1;
 		}
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new WaveBurnerUnderwaterProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {

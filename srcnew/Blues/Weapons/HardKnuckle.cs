@@ -49,6 +49,7 @@ public class HardKnuckleProj : Projectile {
 		fadeOnAutoDestroy = true;
 		destroyOnHit = false;
 		spawnPointX = pos.x;
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);

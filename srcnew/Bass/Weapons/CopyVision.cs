@@ -9,10 +9,10 @@ public class CopyVision : Weapon {
 	public static CopyVision netWeapon = new();
 
 	public CopyVision() : base() {
-		weaponSlotIndex = (int)BassWeaponIds.CopyVision;
-		weaponBarBaseIndex = (int)BassWeaponIds.CopyVision;
 		index = (int)BassWeaponIds.CopyVision;
-		weaponBarIndex = (int)BassWeaponIds.CopyVision;
+		weaponSlotIndex = index;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		killFeedIndex = 0;
 		maxAmmo = 7;
 		ammo = maxAmmo;
@@ -66,9 +66,20 @@ public class CopyVisionLemon : Projectile {
 		CopyVision.netWeapon, pos, xDir, 240, 1, player, "copy_vision_lemon",
 		0, 0.075f, netProjId, player.ownedByLocalPlayer
 	) {
+		projId = (int)BassProjIds.CopyVisionLemon;
 		maxTime = 0.525f;
 		fadeSprite = "copy_vision_lemon_fade";
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
 		projId = (int)BassProjIds.BassLemon;
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new CopyVisionLemon(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 }
 
@@ -93,7 +104,7 @@ public class CopyVisionClone : Actor {
 		useGravity = false;
 		this.xDir = xDir;
 		netOwner = player;
-		netActorCreateId = NetActorCreateId.RaySplasherTurret;
+		netActorCreateId = NetActorCreateId.CopyVisionClone;
 		if (rpc) {
 			createActorRpc(player.id);
 		}

@@ -318,8 +318,19 @@ public enum RockWeaponIds {
 
 public enum BassProjIds {
 	BassLemon = 700,
+	IceWall,
+	CopyVisionLemon,
+	SpreadDrill,
+	SpreadDrillMid,
+	SpreadDrillSmall,
+	WaveBurner,
+	WaveBurnerUnderwater,
+	RemoteMine,
+	RemoteMineExplosion,
+	LightingBolt,
 	TenguBladeProj,
 	TenguBladeDash,
+	MagicCard,
 }
 
 public enum BluesProjIds  {

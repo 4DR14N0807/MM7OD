@@ -189,14 +189,14 @@ public class Weapon {
 		return new List<Weapon>()
 		{
 				new AxlBullet(),
-				new RayGun(axlLoadout.rayGunAlt),
+				/*new RayGun(axlLoadout.rayGunAlt),
 				new BlastLauncher(axlLoadout.blastLauncherAlt),
 				new BlackArrow(axlLoadout.blackArrowAlt),
 				new SpiralMagnum(axlLoadout.spiralMagnumAlt),
 				new BoundBlaster(axlLoadout.boundBlasterAlt),
 				new PlasmaGun(axlLoadout.plasmaGunAlt),
 				new IceGattling(axlLoadout.iceGattlingAlt),
-				new FlameBurner(axlLoadout.flameBurnerAlt),
+				new FlameBurner(axlLoadout.flameBurnerAlt),*/
 			};
 	}
 

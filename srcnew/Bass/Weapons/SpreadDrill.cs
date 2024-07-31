@@ -86,8 +86,8 @@ public class SpreadDrillProj : Projectile {
 			gravityModifier -= 0.01f;
 		}
 
-		if (anim != null) anim.pos = getFirstPOI(0) ?? new Point(0, 0);
-		if (anim2 != null) anim2.pos = getFirstPOI(1) ?? new Point(0, 0);
+		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
+		if (anim2 != null) anim2.changePos(getFirstPOI(1) ?? new Point(0, 0));
 	}
 
 	public override void onDestroy() {
@@ -138,7 +138,7 @@ public class SpreadDrillMediumProj : Projectile {
 		}
 		Helpers.decrementTime(ref sparksCooldown);
 
-		if (anim != null) anim.pos = getFirstPOI(0) ?? new Point(0, 0);
+		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
 		if (hits >= 3) destroySelf();
 		
 		if (Math.Abs(vel.x) < speed) vel.x += Global.speedMul * xDir * 8;
@@ -200,7 +200,7 @@ public class SpreadDrillSmallProj : Projectile {
 		base.update();
 		Helpers.decrementTime(ref sparksCooldown);
 
-		if (anim != null) anim.pos = getFirstPOI(0) ?? new Point(0,0);
+		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
 		if (hits >= 3) destroySelf();
 
 		if (Math.Abs(vel.x) < speed) vel.x += Global.speedMul * xDir * 16;

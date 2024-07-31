@@ -64,7 +64,9 @@ public class ProtoBusterAngledProj : Projectile {
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
 		if (rpc) {
-			rpcCreateAngle(pos, player, netId, byteAngle);
+			byte[] extraArgs = new byte[] { (byte)type };
+			
+			rpcCreateAngle(pos, player, netId, byteAngle, extraArgs);
 		}
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;

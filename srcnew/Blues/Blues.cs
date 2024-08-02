@@ -777,10 +777,18 @@ public class Blues : Character {
 			if (damage % 1 != 0) {
 				decimal oldDamage = damage;
 				damage = Math.Floor(damage);
-				shieldDamageDebt += oldDamage - damage;
+				if (shieldHitFront) {
+					shieldDamageDebt += oldDamage - damage;
+				} else {
+					damageDebt += oldDamage - damage;
+				}
 			}
-			while (shieldDamageDebt >= 1) {
+			while (shieldHitFront && shieldDamageDebt >= 1) {
 				shieldDamageDebt -= 1;
+				damage += 1;
+			}
+			while (shieldHitBack && damageDebt >= 1) {
+				damageDebt -= 1;
 				damage += 1;
 			}
 			// Armor pierce.

@@ -713,7 +713,7 @@ public partial class Player {
 		}
 		//float hpModifier = getHealthModifier();
 		if (isProtoMan) {
-			baseHP = 16;
+			baseHP = 14;
 		} else if (isBass) {
 			baseHP = 20;
 		}

@@ -785,19 +785,35 @@ public class Blues : Character {
 		bool shieldPierced = false;
 		bool bodyPierced = false;
 		int damageReduction = 1;
-		bool shieldHitFront = (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
-		bool shieldHitBack = (!isShieldFront() && Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
+		bool shieldActive = isShieldFront();
+		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
+		bool shieldHitBack = (!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
 
+		if (projId == (int)BassProjIds.RemoteMineExplosion) {
+			if (shieldActive) {
+				shieldHitFront = true;
+			} else {
+				shieldHitBack = true;
+			}
+		}
 		// Things that apply to both shield variants.
 		if (shieldHitBack || shieldHitFront) {
 			// In case we did only fractional damage to the shield.
 			if (damage % 1 != 0) {
 				decimal oldDamage = damage;
 				damage = Math.Floor(damage);
-				shieldDamageDebt += oldDamage - damage;
+				if (shieldHitFront) {
+					shieldDamageDebt += oldDamage - damage;
+				} else {
+					damageDebt += oldDamage - damage;
+				}
 			}
-			while (damageDebt >= 1) {
+			while (shieldHitFront && shieldDamageDebt >= 1) {
 				shieldDamageDebt -= 1;
+				damage += 1;
+			}
+			while (shieldHitBack && damageDebt >= 1) {
+				damageDebt -= 1;
 				damage += 1;
 			}
 			// Armor pierce.

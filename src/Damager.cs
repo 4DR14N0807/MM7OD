@@ -861,20 +861,12 @@ public class Damager {
 	}
 
 	public static bool isArmorPiercing(int? projId) {
-		if (projId == null) return false;
-		return
-			projId == (int)ProjIds.SpiralMagnum ||
-			projId == (int)ProjIds.AssassinBullet ||
-			projId == (int)ProjIds.AssassinBulletQuick ||
-			projId == (int)ProjIds.VileMK2Grab ||
-			projId == (int)ProjIds.UPGrab ||
-			projId == (int)ProjIds.LaunchODrain ||
-			projId == (int)ProjIds.DistanceNeedler ||
-			projId == (int)ProjIds.Raijingeki ||
-			projId == (int)ProjIds.Raijingeki2 ||
-			projId == (int)ProjIds.CFlasher ||
-			projId == (int)ProjIds.AcidBurstPoison ||
-			projId == (int)ProjIds.MetteurCrash;
+		if (projId == null) {
+			return false;
+		}
+		return (
+			projId == (int)ProjIds.SlashClaw
+		);
 	}
 
 	public static bool isDot(int? projId) {

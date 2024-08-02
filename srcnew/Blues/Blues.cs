@@ -771,9 +771,17 @@ public class Blues : Character {
 		bool shieldPierced = false;
 		bool bodyPierced = false;
 		int damageReduction = 1;
-		bool shieldHitFront = (isShieldFront() && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
-		bool shieldHitBack = (!isShieldFront() && Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
+		bool shieldActive = isShieldFront();
+		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
+		bool shieldHitBack = (!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
 
+		if (projId != (int)BassProjIds.RemoteMineExplosion) {
+			if (shieldActive) {
+				shieldHitFront = false;
+			} else {
+				shieldHitBack = false;
+			}
+		}
 		// Things that apply to both shield variants.
 		if (shieldHitBack || shieldHitFront) {
 			// In case we did only fractional damage to the shield.

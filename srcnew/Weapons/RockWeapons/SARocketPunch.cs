@@ -10,23 +10,35 @@ public class SARocketPunch : Weapon {
 	public SARocketPunch() : base() {
 		index = (int)RockWeaponIds.SARocketPunch;
 		killFeedIndex = 0;
-		//shootSounds = new List<string>() {"buster", "buster2", "super_adaptor_punch", "super_adaptor_punch"};
 		weaponSlotIndex = (int)RockWeaponSlotIds.SARocketPunch;
 	}
 
+		public override bool canShoot(int chargeLevel, Player player) {
+		if (!base.canShoot(chargeLevel, player)) return false;
+		if (chargeLevel > 1) {
+			return true;
+		}
+		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
+			if (lemonsOnField[i].destroyed) {
+				lemonsOnField.RemoveAt(i);
+				continue;
+			}
+		}
+		return lemonsOnField.Count < 3;
+	}
 
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
 		if (player.character.ownedByLocalPlayer) {
 			if (player.character is Rock rock) {
 				if (chargeLevel >= 2) {
 					if (player.character.grounded) player.character.changeState(new SARocketPunchState(), true);
-					else new SARocketPunchProj(this, pos, xDir, player, netProjId, true);
+					else new SARocketPunchProj(pos, xDir, player, netProjId, true);
 					player.character.playSound("super_adaptor_punch", sendRpc: true);
 				} else if (chargeLevel == 1) {
-					new RockBusterMidChargeProj(new RockBuster(), pos, xDir, player, 0, netProjId, true);
+					new RockBusterMidChargeProj(pos, xDir, player, 0, netProjId, true);
 					player.character.playSound("buster2", sendRpc: true);
 				} else {
-					var proj = new RockBusterProj(new RockBuster(), pos, xDir, player, netProjId, true);
+					var proj = new RockBusterProj(pos, xDir, player, netProjId, true);
 					lemonsOnField.Add(proj);
 					rock.lemons++;
 					player.character.playSound("buster", sendRpc: true);
@@ -41,18 +53,36 @@ public class SARocketPunch : Weapon {
 		}
 	}
 
-	public override bool canShoot(int chargeLevel, Player player) {
-		if (!base.canShoot(chargeLevel, player)) return false;
-		if (chargeLevel > 1) {
-			return true;
-		}
-		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
-			if (lemonsOnField[i].destroyed) {
-				lemonsOnField.RemoveAt(i);
-				continue;
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
+		Player player = character.player;
+		int chargeLevel = args[0];
+
+		if (player.character is Rock rock) {
+				if (chargeLevel >= 2) {
+					if (character.grounded) character.changeState(new SARocketPunchState(), true);
+					else new SARocketPunchProj(shootPos, xDir, player, player.getNextActorNetId(), true);
+					character.playSound("super_adaptor_punch", sendRpc: true);
+
+				} else if (chargeLevel == 1) {
+					new RockBusterMidChargeProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
+					character.playSound("buster2", sendRpc: true);
+
+				} else {
+					var proj = new RockBusterProj(shootPos, xDir, player, player.getNextActorNetId(), true);
+					lemonsOnField.Add(proj);
+					rock.lemons++;
+					character.playSound("buster", sendRpc: true);
+
+					rock.lemonTime += 20f * rock.lemons / 60f;
+					if (rock.lemonTime >= 1f) {
+						rock.lemonTime = 0;
+						rock.shootTime = 30f / 60f;
+					}
+				}
 			}
-		}
-		return lemonsOnField.Count < 3;
 	}
 }
 
@@ -70,10 +100,10 @@ public class SARocketPunchProj : Projectile {
 	public SARocketPunch? saRocketPunch;
 
 	public SARocketPunchProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, ushort netProjId, bool rpc = false
+		Point pos, int xDir, Player player, 
+		ushort netProjId, bool rpc = false
 	) : base(
-			weapon, pos, xDir, 240, 3,
+			SARocketPunch.netWeapon, pos, xDir, 240, 3,
 			player, "sa_rocket_punch", Global.halfFlinch, 0.5f,
 			netProjId, player.ownedByLocalPlayer
 	) {
@@ -95,8 +125,7 @@ public class SARocketPunchProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SARocketPunchProj(
-			SARocketPunch.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -191,7 +220,7 @@ public class SARocketPunchState : CharState {
 
 			var poi = character.currentFrame.POIs;
 			Point? shootPos = character.getFirstPOI();
-			if (shootPos != null) new SARocketPunchProj(new SARocketPunch(), shootPos.Value.addxy(0, 0), character.getShootXDir(), player, player.getNextActorNetId(true), true);
+			if (shootPos != null) new SARocketPunchProj(shootPos.Value, character.getShootXDir(), player, player.getNextActorNetId(true), true);
 		}
 
 		if (character.isAnimOver()) {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MMXOnline;
 
@@ -8,6 +9,8 @@ public class TenguBlade : Weapon {
 	public TenguBlade() : base() {
 		index = (int)BassWeaponIds.TenguBlade;
 		weaponSlotIndex = index;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		fireRateFrames = 60;
 	}
 
@@ -16,7 +19,8 @@ public class TenguBlade : Weapon {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 
-		new TenguBladeStart(shootPos, character.getShootXDir(), player.getNextActorNetId(), player, true);
+		if (character.charState is LadderClimb) character.changeState(new TenguBladeLadder(), true);
+		else character.changeState(new TenguBladeState(), true);
 	}
 }
 
@@ -24,6 +28,7 @@ public class TenguBlade : Weapon {
 public class TenguBladeStart : Anim {
 
 	Player player;
+	Point distance;
 
 	public TenguBladeStart(
 		Point pos, int xDir, ushort? netId, Player player,
@@ -33,12 +38,47 @@ public class TenguBladeStart : Anim {
 		sendRpc, ownedByLocalPlayer, player.character
 	) {
 		this.player = player;
+		distance = pos.directionTo(player.character.getCenterPos());
+	}
+
+	public override void update() {
+		base.update();
+
+		changePos(player.character.getCenterPos().subtract(distance));
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 
 		new TenguBladeProj(pos, xDir, player, player.getNextActorNetId(), true);
+	}
+}
+
+
+public class TenguBladeState : CharState {
+
+	bool fired;
+
+	public TenguBladeState() : base("tblade") {
+		normalCtrl = false;
+		attackCtrl = false;
+		airMove = true;
+		useDashJumpSpeed = true;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (!fired && character.currentFrame.getBusterOffset() != null) {
+
+			Point shootPos = character.getFirstPOI() ?? character.getShootPos();
+			Player player = character.player;
+
+			new TenguBladeStart(shootPos, character.xDir, player.getNextActorNetId(), player, true);
+			fired = true;
+		}
+
+		if (character.isAnimOver()) character.changeToIdleOrFall();
 	}
 }
 
@@ -87,6 +127,7 @@ public class TenguBladeProj : Projectile {
 		if (other.isCeilingHit()) destroySelf();
 
 		bouncedOnce = true;
+		incPos(new Point(6 * -xDir, 0));
 		xDir *= -1;
 		vel.x *= -1;
 		vel.y = 0;
@@ -104,9 +145,15 @@ public class TenguBladeMelee : GenericMeleeProj {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
-		var chr = damagable as Character;
+		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
+				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
+			) {
+				if (damagable is Character chr && chr != null) chr.xPushVel = xDir * 180;	
+			}
+		}
 
-		if (chr != null) chr.xPushVel = xDir * 100;
+		
 	}
 }
 
@@ -126,7 +173,7 @@ public class TenguBladeDash : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 		character.isDashing = true;
-		character.xPushVel = character.xDir * character.getDashSpeed() * 2;
+		//character.xPushVel = character.xDir * character.getDashSpeed() * 2;
 		startXDir = character.xDir;
 		player.weapon.addAmmo(-1, player);
 	}
@@ -142,6 +189,59 @@ public class TenguBladeDash : CharState {
 
 		inputXDir = player.input.getXDir(player);
 
-		if ((inputXDir != startXDir && inputXDir != 0) || stateFrames > 16) character.changeToIdleOrFall();
+		if (inputXDir != startXDir && inputXDir != 0) character.changeToIdleOrFall(); 
+		else if (stateFrames >= 16) character.changeState(new TenguBladeDashEnd(), true);
+		Point move = new Point();
+		move.x = character.xDir * character.getDashSpeed();
+		character.move(move);
+	}
+}
+
+
+public class TenguBladeDashEnd : CharState {
+	public TenguBladeDashEnd() : base("tblade_dash_end") {
+		normalCtrl = true;
+		attackCtrl = true;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (character.isAnimOver()) character.changeToIdleOrFall();
+	}
+}
+
+
+public class TenguBladeLadder : CharState {
+
+	bool fired;
+	List<CollideData> ladders;
+	float midX; 
+
+	public TenguBladeLadder() : base("ladder_tblade") {
+		normalCtrl = false;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.stopMoving();
+		character.useGravity = false;
+		ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
+		midX = ladders[0].otherCollider.shape.getRect().center().x;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (!fired && character.currentFrame.getBusterOffset() != null) {
+			Point shootPos = character.getFirstPOI() ?? character.getShootPos();
+			Player player = character.player;
+			new TenguBladeStart(shootPos, character.getShootXDir(), player.getNextActorNetId(), player, true);
+			fired = true;
+		}
+
+		if (character.isAnimOver()) {
+			character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
+		}
 	}
 }

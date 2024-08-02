@@ -6,6 +6,8 @@ public class LightingBolt : Weapon {
 	public LightingBolt() : base() {
 		index = (int)BassWeaponIds.LightingBolt;
 		weaponSlotIndex = index;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		fireRateFrames = 180;
 	}
 

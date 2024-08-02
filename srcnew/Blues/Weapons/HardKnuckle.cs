@@ -81,9 +81,9 @@ public class HardKnuckleProj : Projectile {
 			bounceCooldowns[key] = Helpers.clampMin0(bounceCooldowns[key]) - Global.speedMul;
 		}
 		// Local player ends here.
-		if (!canControl) {
+		/*if (!canControl) {
 			return;
-		}
+		}*/
 		int inputYDir = owner.input.getYDir(owner);
 		vel.y = 60 * inputYDir;
 		if (inputYDir != 0) {

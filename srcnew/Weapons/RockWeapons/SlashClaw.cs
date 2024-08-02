@@ -11,7 +11,6 @@ public class SlashClawWeapon : Weapon {
 		weaponBarBaseIndex = (int)RockWeaponBarIds.SlashClaw;
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.SlashClaw;
-		//shootSounds = new List<string>() {"slash_claw", "slash_claw", "slash_claw", ""};
 		killFeedIndex = 0;
 		maxAmmo = 18;
 		ammo = maxAmmo;
@@ -27,47 +26,78 @@ public class SlashClawWeapon : Weapon {
                 player.character.changeState(new RockChargeShotState(player.character.grounded), true);
             }*/
 			if (player.character.charState is LadderClimb) {
-				player.character.changeState(new ShootAltLadder(this, (int)chargeLevel), true);
+				player.character.changeState(new SlashClawLadder(), true);
 			} else {
-				player.character.changeState(new ShootAlt(this, (int)chargeLevel), true);
+				player.character.changeState(new SlashClawState());
 			}
 			player.character.playSound("slash_claw", sendRpc: true);
 		}
 	}
+
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		int chargeLevel = args[0];
+
+		if (character.charState is LadderClimb) {
+			character.changeState(new SlashClawLadder(), true);
+		} else {
+			character.changeState(new SlashClawState(), true);
+		}
+		character.playSound("slash_claw", sendRpc: true);
+	}
 }
 
+
 public class SlashClawState : CharState {
-
-	bool grounded;
-	bool fired;
-
-	public SlashClawState(bool grounded) : base(grounded ? "slashclaw" : "slashclaw_air", "", "", "") {
-		this.grounded = grounded;
-		landSprite = "slashclaw";
+	public SlashClawState() : base("slashclaw") {
+		normalCtrl = false;
+		attackCtrl = false;
 		airMove = true;
+		canStopJump = true;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		bool air = !character.grounded || character.vel.y < 0;
+		defaultSprite = sprite;
+		landSprite = "slashclaw";
+		if (air) {
+			sprite = "slashclaw_air";
+			defaultSprite = sprite;
+		}
+		character.changeSpriteFromName(sprite, true);
 	}
 
 	public override void update() {
 		base.update();
 
-		if (!fired && character.frameIndex >= 6) {
-			player.weapon.addAmmo(-1, player);
-			fired = true;
+		if (character.isAnimOver()) character.changeToIdleOrFall();
+		else {
+			if (character.grounded && player.input.isPressed(Control.Jump, player)) {
+				character.vel.y = -character.getJumpPower();
+				sprite = "slashclaw_air";
+				character.changeSpriteFromName(sprite, false);
+			}
 		}
+	}
+ }
 
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
+
+public class SlashClawLadder : CharState {
+	public SlashClawLadder() : base("ladder_slashclaw") {
+		normalCtrl = false;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.useGravity = true;
+		character.stopMoving();
+		character.useGravity = false;
 	}
 
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-		character.useGravity = true;
+	public override void update() {
+		var ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
+		var midX = ladders[0].otherCollider.shape.getRect().center().x;
 
+		if (character.isAnimOver()) character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
 	}
 }

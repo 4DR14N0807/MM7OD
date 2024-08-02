@@ -48,12 +48,27 @@ public class DangerWrap : Weapon {
             } else*/
 			if (player.input.isHeld(Control.Down, player)) {
 
-				dangerMines.Add(new DangerWrapMineProj(this, pos, xDir, player, 0, netProjId, true));
+				dangerMines.Add(new DangerWrapMineProj(pos, xDir, player, 0, netProjId, true));
 			} else {
-				new DangerWrapBubbleProj(this, pos, xDir, player, 0, netProjId);
+				new DangerWrapBubbleProj(pos, xDir, player, 0, netProjId);
 			}
 			player.character.playSound("buster2", sendRpc: true);
 		}
+	}
+
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
+		Player player = character.player;
+
+		if (player.input.isHeld(Control.Down, player)) {
+
+			dangerMines.Add(new DangerWrapMineProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true));
+		} else {
+			new DangerWrapBubbleProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
+		}
+		player.character.playSound("buster2", sendRpc: true);
 	}
 }
 
@@ -64,15 +79,14 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 	public float health = 1;
 	public float heightMultiplier = 1f;
 	private bool spawnedBomb = false;
-	Character? character;
 	Anim? bomb;
 
 	public DangerWrapBubbleProj(
-		Weapon weapon, Point pos, int xDir,
+		Point pos, int xDir,
 		Player player, int type, ushort netProjId,
 		bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 0,
+		DangerWrap.netWeapon, pos, xDir, 0, 0,
 		player, "danger_wrap_start", 0, 0.5f, netProjId,
 		player.ownedByLocalPlayer
 	) {
@@ -80,7 +94,6 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 		projId = (int)RockProjIds.DangerWrap;
 		maxTime = 1.5f;
 		fadeOnAutoDestroy = true;
-		//destroyOnHitWall = true;
 		useGravity = false;
 		canBeLocal = false;
 		this.type = type;
@@ -115,7 +128,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapBubbleProj(
-			DangerWrap.netWeapon, arg.pos, arg.xDir, arg.player,
+			arg.pos, arg.xDir, arg.player,
 			arg.extraData[0], arg.netId
 		);
 	}
@@ -127,7 +140,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 
 			time = 0;
 			new DangerWrapBubbleProj(
-				weapon, pos, xDir, damager.owner, 1,
+				pos, xDir, damager.owner, 1,
 				damager.owner.getNextActorNetId(true), rpc: true
 			);
 			destroySelfNoEffect();
@@ -183,11 +196,11 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	float health = 1;
 
 	public DangerWrapMineProj(
-		Weapon weapon, Point pos, int xDir,
+		Point pos, int xDir,
 		Player player, int type, ushort netProjId,
 		bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 2,
+		DangerWrap.netWeapon, pos, xDir, 0, 2,
 		player, "danger_wrap_fall", 0, 1,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -206,7 +219,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapMineProj(
-			DangerWrap.netWeapon, arg.pos, arg.xDir, arg.player,
+			arg.pos, arg.xDir, arg.player,
 			arg.extraData[0], arg.netId
 		);
 	}
@@ -244,7 +257,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			}
 
 			playSound("danger_wrap_explosion");
-			new DangerWrapExplosionProj(weapon, pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
+			new DangerWrapExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
 		}
 	}
 	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
@@ -277,11 +290,11 @@ public class DangerWrapExplosionProj : Projectile {
 	private double maxRadius = 80;
 
 	public DangerWrapExplosionProj(
-		Weapon weapon, Point pos, int xDir,
+		Point pos, int xDir,
 		Player player, ushort netProjId,
 		bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 4,
+		DangerWrap.netWeapon, pos, xDir, 0, 4,
 		player, "empty", Global.defFlinch, 0.5f,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -297,8 +310,7 @@ public class DangerWrapExplosionProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapExplosionProj(
-		DangerWrap.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+		arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -402,7 +414,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 
 	public Character character;
 	public Player player => character.player;
-	public float health = 6;
+	public float health = 4;
 	public float bubbleFrames;
 	public Anim? bomb;
 

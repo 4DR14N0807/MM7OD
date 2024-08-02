@@ -27,14 +27,13 @@ public class LegBreakerState : CharState {
 		this.initialSlideButton = initialSlideButton;
 		accuracy = 10;
 		exitOnAirborne = true;
-		attackCtrl = true;
 		normalCtrl = true;
 		useDashJumpSpeed = false;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		rock = character as Rock;
+		rock = character as Rock ?? throw new NullReferenceException();
 		initialSlideDir = character.xDir;
 		character.globalCollider = rock.getSlidingCollider();
 		effect = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);

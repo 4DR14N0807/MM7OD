@@ -11,6 +11,8 @@ public class IceWall : Weapon {
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;
 		weaponSlotIndex = index;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		fireRateFrames = 120;
 	}
 
@@ -19,7 +21,7 @@ public class IceWall : Weapon {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 
-		new IceWallProj(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
+		new IceWallActor(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
 	}
 }
 
@@ -41,45 +43,33 @@ public class IceWallStart : Anim {
 	public override void onDestroy() {
 		base.onDestroy();
 
-		new IceWallProj(pos, xDir, player, player.getNextActorNetId(), true);
+		new IceWallActor(pos, xDir, player, player.getNextActorNetId(), true);
 	}
 }
 	
 
-public class IceWallProj : Projectile {
+public class IceWallActor : Actor {
 
 	float maxSpeed = 300;
 	int bounces;
 	bool startedMoving;
 	List<Character> chrs = new();
-	public IceWallProj(
+	Player player;
+	public IceWallActor(
 		Point pos, int xDir, Player player,
-		ushort? netProjId, bool rpc = false
+		ushort? netId, bool rpc = false
 	) : base(
-		IceWall.netWeapon, pos, xDir, 0, 0,
-		player, "ice_wall_proj", 0, 1,
-		netProjId, player.ownedByLocalPlayer
+		"ice_wall_proj", pos, netId, player.ownedByLocalPlayer, false
 	) {
-		projId = (int)BassProjIds.IceWall;
-		maxTime = 5f;
-		destroyOnHit = false;
+		
 		useGravity = true;
-		isPlatform = true;
-		collider.wallOnly = true;
-		fadeSprite = "ice_wall_fade";
 		canBeLocal = false;
-
-		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
-		}
+		base.xDir = xDir;
+		this.player = player;
+		collider.wallOnly = true;
+		collider.isTrigger = false;
 	}
 	
-	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new IceWallProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
-		);
-	}
-
 	public override void update() {
 		base.update();
 
@@ -92,13 +82,6 @@ public class IceWallProj : Projectile {
 		if (bounces >= 3) destroySelf();
 	}
 
-	public override void onHitWall(CollideData other) {
-		base.onHitWall(other);
-		if (other.isSideWallHit()) {		
-			xDir *= -1;
-		}
-	}
-
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
@@ -106,14 +89,14 @@ public class IceWallProj : Projectile {
 		var own = netOwner?.character;
 		var chr = other.gameObject as Character;
 
-		/*//Wall hit.
+		//Wall hit.
 		if (wall != null) {
 			if (other.isSideWallHit()) {
 				xDir *= -1;
 				playSound("ding");
 				bounces++;
 			}
-		}*/
+		}
 
 		//Movement start.
 		if (own != null) {
@@ -131,9 +114,9 @@ public class IceWallProj : Projectile {
 					} 
 				}
 			} else if (other.isGroundHit() && vel.y < 120 && 
-				chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+				chr.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
 
-				damager.applyDamage(chr, false, weapon, this, projId, 3, Global.halfFlinch);
+				chr.applyDamage(3, player, chr, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);
 			}
 		}
 	}

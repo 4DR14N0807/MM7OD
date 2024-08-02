@@ -32,6 +32,17 @@ public class ScorchWheel : Weapon {
 			}
 		}
 	}
+
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		int chargeLevel = args[0];
+
+		if (character.charState is LadderClimb) {
+			character.changeState(new ShootAltLadder(this, chargeLevel), true);
+		} else {
+			character.changeState(new ShootAlt(this, chargeLevel), true);
+		}
+	}
 }
 
 
@@ -40,11 +51,10 @@ public class ScorchWheelSpawn : Projectile {
 	public Rock? rock;
 	bool hasHeld;
 	public ScorchWheelSpawn(
-		Weapon weapon, Point pos, int xDir,
-		Player player, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, 	
+		ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 0,
+		ScorchWheel.netWeapon, pos, xDir, 0, 0,
 		player, "scorch_wheel_spawn", 0, 0,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -60,8 +70,7 @@ public class ScorchWheelSpawn : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ScorchWheelSpawn(
-			ScorchWheel.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -79,14 +88,14 @@ public class ScorchWheelSpawn : Projectile {
 		}
 
 		if (isAnimOver() && hasHeld == true) {
-			new ScorchWheelProj(new ScorchWheel(), pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
+			new ScorchWheelProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
 			destroySelf();
 			playSound("scorch_wheel", true, true);
 		} else if (isAnimOver()
 				&& hasHeld == false
 		) {
 			destroySelf();
-			new ScorchWheelMoveProj(weapon, pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
+			new ScorchWheelMoveProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
 			playSound("scorch_wheel", true, true);
 			if (rock != null) rock.shootTime = 1f;
 		}
@@ -108,14 +117,6 @@ public class ScorchWheelSpawn : Projectile {
 		base.onDestroy();
 		if (rock != null) rock.sWellSpawn = null;
 	}
-
-	/*public void moveWell(){
-        if (time > 0.49f) {
-			vel.x = xDir * 200;
-		}
-        if (!ownedByLocalPlayer) return;
-        if (owner.character is Rock){ rock.sWell = null;}
-    }*/
 }
 
 
@@ -130,8 +131,13 @@ public class ScorchWheelProj : Projectile {
 	float holdTime;
 	bool hasHeld;
 
-	public ScorchWheelProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-	base(weapon, pos, xDir, 0, 1, player, "scorch_wheel_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
+	public ScorchWheelProj(
+		Point pos, int xDir, Player player, 
+		ushort netProjId, bool rpc = false
+	) : base(
+		ScorchWheel.netWeapon, pos, xDir, 0, 1, 
+		player, "scorch_wheel_proj", 0, 0.5f, 
+		netProjId, player.ownedByLocalPlayer) {
 
 		projId = (int)RockProjIds.ScorchWheel;
 		destroyOnHit = false;
@@ -150,8 +156,7 @@ public class ScorchWheelProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ScorchWheelProj(
-			ScorchWheel.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -182,7 +187,7 @@ public class ScorchWheelProj : Projectile {
 
 			if (!hasHeld || holdTime >= 2) {
 				destroySelf();
-				new ScorchWheelMoveProj(weapon, pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), rpc: true);
+				new ScorchWheelMoveProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), rpc: true);
 				playSound("scorch_wheel", true, true);
 				rock.shootTime = 1f;
 				return;
@@ -216,20 +221,17 @@ public class ScorchWheelProj : Projectile {
 
 public class ScorchWheelMoveProj : Projectile {
 	public Rock? rock;
-	//public int maxSpeed = 200;
 	public ScorchWheelMoveProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, 
+		ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 240, 1,
+		ScorchWheel.netWeapon, pos, xDir, 240, 1,
 		player, "scorch_wheel_grounded_proj", 0, 1,
 		netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)RockProjIds.ScorchWheelMove;
 		useGravity = true;
 		maxTime = 1.25f;
-		//destroyOnHit = false;
 		canBeLocal = false;
 
 		if (rpc) {
@@ -239,8 +241,7 @@ public class ScorchWheelMoveProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ScorchWheelMoveProj(
-			ScorchWheel.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -262,8 +263,6 @@ public class ScorchWheelMoveProj : Projectile {
 
 		if (normal.isSideways()) {
 			destroySelf();
-			//vel.x *= -1;
-			//incPos(new Point(5 * MathF.Sign(vel.x), 0));
 		}
 	}
 
@@ -290,11 +289,10 @@ public class UnderwaterScorchWheelProj : Projectile {
 	Rock? rock;
 
 	public UnderwaterScorchWheelProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, 
+		ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 2,
+		ScorchWheel.netWeapon, pos, xDir, 0, 2,
 		player, "empty", 0, 1,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -312,8 +310,7 @@ public class UnderwaterScorchWheelProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new UnderwaterScorchWheelProj(
-			ScorchWheel.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -361,7 +358,6 @@ public class Burning : CharState {
 	Player attacker;
 
 	public Burning(int dir, Player attacker) : base("burning") {
-		//invincible = true;
 		superArmor = true;
 		burnDir = dir;
 		burnMoveSpeed = dir * 100;
@@ -389,7 +385,6 @@ public class Burning : CharState {
 		character.useGravity = false;
 		character.stopMoving();
 		player.delayETank();
-		//character.specialState = (int)SpecialStateIds.Burning;
 	}
 
 	public override void onExit(CharState newState) {
@@ -399,7 +394,6 @@ public class Burning : CharState {
 		character.burnStunStacks = 0;
 		character.useGravity = true;
 		player.delayETank();
-		//character.specialState = (int)SpecialStateIds.None;
 	}
 
 	public override void update() {

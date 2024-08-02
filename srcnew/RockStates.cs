@@ -118,24 +118,21 @@ public class ShootAlt : CharState {
 	Weapon stateWeapon;
 	bool fired;
 	int chargeLv;
-	public ShootAlt(Weapon stateWeapon, int chargeLv) : base("slashclaw", "", "", "") {
+	public ShootAlt(Weapon stateWeapon, int chargeLv) : base("shoot2") {
 		normalCtrl = false;
 		airMove = true;
 		canStopJump = true;
 		this.stateWeapon = stateWeapon;
 		this.chargeLv = chargeLv;
-
-		if (stateWeapon is ScorchWheel || stateWeapon is JunkShield || stateWeapon is WildCoil) base.sprite = "shoot2";
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bool air = !character.grounded || character.vel.y < 0;
-		//sprite = stateWeapon is SlashClawWeapon ? "slashclaw" : "shoot2";
 		defaultSprite = sprite;
-		landSprite = stateWeapon is SlashClawWeapon ? "slashclaw" : "shoot2";
+		landSprite = "shoot2";
 		if (air) {
-			sprite = stateWeapon is SlashClawWeapon ? "slashclaw_air" : "shoot2_air";
+			sprite = "shoot2_air";
 			defaultSprite = sprite;
 		}
 		character.changeSpriteFromName(sprite, true);
@@ -155,34 +152,33 @@ public class ShootAlt : CharState {
 		if (stateWeapon is JunkShield) {
 			if (!fired && character.frameIndex == 2) {
 				fired = true;
-				new JunkShieldProj(new JunkShield(), character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), true);
+				new JunkShieldProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), true);
 			}
 		} else if (stateWeapon is ScorchWheel) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 				fired = true;
 
 				if (character.isUnderwater()) {
-					new UnderwaterScorchWheelProj(new ScorchWheel(), character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
+					new UnderwaterScorchWheelProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
 				} else {
-					new ScorchWheelSpawn(new ScorchWheel(), character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
-					//new ScorchWheelProj(new ScorchWheel(), new Point(character.getCenterPos().x - offset, character.getCenterPos().y), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
+					new ScorchWheelSpawn(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
 				}
 			}
 		} else if (stateWeapon is WildCoil) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 
-				fired = true;
-				var pois = character.currentFrame.POIs;
-				Point? shootPos = character.getFirstPOI();
+				fired = true;	
+				Point shootPos = character.getFirstPOI() ?? character.getCenterPos();
+				Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
 
 				if (chargeLv >= 2) {
-					new WildCoilChargedProj(new WildCoil(), (Point)character.getFirstPOI(0), character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
-					new WildCoilChargedProj(new WildCoil(), (Point)character.getFirstPOI(1), character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
-					player.character.playSound("buster3", sendRpc: true);
+					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
+					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
+					character.playSound("buster3", sendRpc: true);
 				} else {
-					new WildCoilProj(new WildCoil(), (Point)character.getFirstPOI(0), character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
-					new WildCoilProj(new WildCoil(), (Point)character.getFirstPOI(1), character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
-					player.character.playSound("buster2", sendRpc: true);
+					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
+					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
+					character.playSound("buster2", sendRpc: true);
 				}
 			}
 		} else {
@@ -196,7 +192,7 @@ public class ShootAlt : CharState {
 		} else {
 			if ((character.grounded) && player.input.isPressed(Control.Jump, player)) {
 				character.vel.y = -character.getJumpPower();
-				sprite = stateWeapon is SlashClawWeapon ? "slashclaw_air" : "shoot2_air";
+				sprite = "shoot2_air";
 				character.changeSpriteFromName(sprite, false);
 			}
 		}
@@ -210,13 +206,10 @@ public class ShootAltLadder : CharState {
 	int chargeLv;
 
 	//Adrián: This is used for weapons with different shoot anims (Wild Coil, Junk Shield, etc) while being in a ladder.
-	public ShootAltLadder(Weapon ladderWeapon, int chargeLv) : base("ladder_slashclaw", "", "", "") {
+	public ShootAltLadder(Weapon ladderWeapon, int chargeLv) : base("ladder_shoot2") {
 		normalCtrl = false;
 		this.ladderWeapon = ladderWeapon;
 		this.chargeLv = chargeLv;
-
-		if (ladderWeapon is ScorchWheel || ladderWeapon is JunkShield || ladderWeapon is WildCoil) base.sprite = "ladder_shoot2";
-		//Adrián: Slash claw anim is the default behavior.
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -224,11 +217,6 @@ public class ShootAltLadder : CharState {
 		character.stopMoving();
 		character.useGravity = false;
 	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-	}
-
 	public override void update() {
 		base.update();
 
@@ -241,7 +229,7 @@ public class ShootAltLadder : CharState {
 		if (ladderWeapon is JunkShield) {
 			if (!fired && character.frameIndex == 1) {
 				fired = true;
-				new JunkShieldProj(new JunkShield(), character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), true);
+				new JunkShieldProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), true);
 			}
 		} else if (ladderWeapon is ScorchWheel) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
@@ -249,26 +237,26 @@ public class ShootAltLadder : CharState {
 				character.getShootXDir();
 
 				if (character.isUnderwater()) {
-					new UnderwaterScorchWheelProj(new ScorchWheel(), character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
+					new UnderwaterScorchWheelProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
 				} else {
-					new ScorchWheelProj(new ScorchWheel(), character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
+					new ScorchWheelSpawn(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
 				}
 			}
 		} else if (ladderWeapon is WildCoil) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 
 				fired = true;
-				var pois = character.currentFrame.POIs;
-				Point? shootPos = character.getFirstPOI();
+				Point shootPos = character.getFirstPOI() ?? character.getCenterPos();
+				Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
 
 				if (chargeLv >= 2) {
-					new WildCoilChargedProj(new WildCoil(), (Point)character.getFirstPOI(0), character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-					new WildCoilChargedProj(new WildCoil(), (Point)character.getFirstPOI(1), character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
-					player.character.playSound("buster3", sendRpc: true);
+					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
+					character.playSound("buster3", sendRpc: true);
 				} else {
-					new WildCoilProj(new WildCoil(), (Point)character.getFirstPOI(0), character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-					new WildCoilProj(new WildCoil(), (Point)character.getFirstPOI(1), character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
-					player.character.playSound("buster2", sendRpc: true);
+					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
+					character.playSound("buster2", sendRpc: true);
 				}
 			}
 		} else {
@@ -481,7 +469,7 @@ public class RushJetRide : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		rock = character as Rock;
+		rock = character as Rock ?? throw new NullReferenceException();
 		float rushPosX = rock.rush.getCenterPos().x;
 		character.changePos(new Point(rushPosX, rock.rush.pos.y - 16));
 	}

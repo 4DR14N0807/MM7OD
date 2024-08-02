@@ -16,17 +16,16 @@ public class ArrowSlashProj : Projectile {
 	float timeMoving;
 
 	public ArrowSlashProj(
-		Weapon weapon, Point pos, int xDir,
+		Point pos, int xDir,
 		Player player, ushort netProjId,
 		bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 1,
+		ArrowSlash.netWeapon, pos, xDir, 0, 1,
 		player, "slash_claw_proj", 0, 0.5f,
 		netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 1f;
 		projId = (int)RockProjIds.SAArrowSlash;
-		//fadeSprite = "slash_claw_proj_fade";
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
@@ -35,8 +34,7 @@ public class ArrowSlashProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ArrowSlashProj(
-			FreezeCracker.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -78,7 +76,7 @@ public class SAArrowSlashState : CharState {
 		base.update();
 
 		if (!fired) {
-			new ArrowSlashProj(new ArrowSlash(), character.getCenterPos(), character.xDir, player, player.getNextActorNetId(), true);
+			new ArrowSlashProj(character.getCenterPos(), character.xDir, player, player.getNextActorNetId(), true);
 			fired = true;
 		}
 

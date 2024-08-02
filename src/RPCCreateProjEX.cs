@@ -76,7 +76,7 @@ public partial class RPCCreateProj : RPC {
 		//Bass stuff.
 		{ (int)BassProjIds.BassLemon, BassBusterProj.rpcInvoke },
 		{ (int)BassProjIds.CopyVisionLemon, CopyVisionLemon.rpcInvoke },
-		{ (int)BassProjIds.IceWall, IceWallProj.rpcInvoke },
+		//{ (int)BassProjIds.IceWall, IceWallProj.rpcInvoke },
 		{ (int)BassProjIds.MagicCard, MagicCardProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMine, RemoteMineProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMineExplosion, RemoteMineExplosionProj.rpcInvoke },

@@ -12,13 +12,6 @@ public class RushWeapon : Weapon {
 		ammo = maxAmmo;
 		displayName = "";
 	}
-
-	/*public override bool canShoot(int chargeLevel, Player player) {
-		Rock? rock = player.character as Rock;
-
-		return rock?.rush == null && base.canShoot(chargeLevel, player);
-	}*/
-
 	public override float getAmmoUsage(int chargeLevel) {
 		return 0;
 	}
@@ -45,7 +38,6 @@ public class RushWeapon : Weapon {
 			} else {
 				int type = rock.rushWeaponIndex;
 				rock.rush = new Rush(shootPos, player, xDir, player.getNextActorNetId(), true, type, true);
-				//rock.rush.changeState(new RushIdle());
 			}
 		}
 	}

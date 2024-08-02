@@ -9,6 +9,8 @@ public class RemoteMine : Weapon {
 	public RemoteMine() : base() {
 		index = (int)BassWeaponIds.RemoteMine;
 		weaponSlotIndex = index;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		fireRateFrames = 45;
 	}
 

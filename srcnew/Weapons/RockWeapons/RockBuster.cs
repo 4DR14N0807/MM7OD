@@ -23,7 +23,19 @@ public class RockBuster : Weapon {
 		return 0;
 	}
 
-
+	public override bool canShoot(int chargeLevel, Player player) {
+		if (!base.canShoot(chargeLevel, player)) return false;
+		if (chargeLevel > 1) {
+			return true;
+		}
+		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
+			if (lemonsOnField[i].destroyed) {
+				lemonsOnField.RemoveAt(i);
+				continue;
+			}
+		}
+		return lemonsOnField.Count < 3;
+	}
 	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
 		if (player.character.ownedByLocalPlayer) {
 			if (player.character is Rock rock) {
@@ -31,13 +43,13 @@ public class RockBuster : Weapon {
 				if (chargeLevel >= 2) {
 					if (player.character.grounded) {
 						player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-					} else new RockBusterChargedProj(this, pos, xDir, player, 0, netProjId);
+					} else new RockBusterChargedProj(pos, xDir, player, 0, netProjId);
 					player.character.playSound("buster3", sendRpc: true);
 				} else if (chargeLevel == 1) {
-					new RockBusterMidChargeProj(this, pos, xDir, player, 0, netProjId);
+					new RockBusterMidChargeProj(pos, xDir, player, 0, netProjId);
 					player.character.playSound("buster2", sendRpc: true);
 				} else {
-					var proj = new RockBusterProj(this, pos, xDir, player, netProjId, true);
+					var proj = new RockBusterProj(pos, xDir, player, netProjId, true);
 					lemonsOnField.Add(proj);
 					rock.lemons++;
 					player.character.playSound("buster", sendRpc: true);
@@ -52,18 +64,35 @@ public class RockBuster : Weapon {
 		}
 	}
 
-	public override bool canShoot(int chargeLevel, Player player) {
-		if (!base.canShoot(chargeLevel, player)) return false;
-		if (chargeLevel > 1) {
-			return true;
-		}
-		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
-			if (lemonsOnField[i].destroyed) {
-				lemonsOnField.RemoveAt(i);
-				continue;
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
+		Player player = character.player;
+		int chargeLevel = args[0];
+
+		if (player.character is Rock rock) {
+				if (chargeLevel >= 2) {
+					if (character.grounded) {
+						character.changeState(new RockChargeShotState(character.grounded), true);
+					} else new RockBusterChargedProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
+					character.playSound("buster3", sendRpc: true);
+				} else if (chargeLevel == 1) {
+					new RockBusterMidChargeProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
+					character.playSound("buster2", sendRpc: true);
+				} else {
+					var proj = new RockBusterProj(shootPos, xDir, player, player.getNextActorNetId(), true);
+					lemonsOnField.Add(proj);
+					rock.lemons++;
+					character.playSound("buster", sendRpc: true);
+
+					rock.lemonTime += 20f * rock.lemons / 60f;
+					if (rock.lemonTime >= 1f) {
+						rock.lemonTime = 0;
+						rock.shootTime = 30f / 60f;
+					}
+				}
 			}
-		}
-		return lemonsOnField.Count < 3;
 	}
 }
 
@@ -71,11 +100,10 @@ public class RockBuster : Weapon {
 public class RockBusterProj : Projectile {
 
 	public RockBusterProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, 
+		ushort netProjId, bool rpc = false
 	) : base(
-			weapon, pos, xDir, 240, 1,
+			RockBuster.netWeapon, pos, xDir, 240, 1,
 			player, "rock_buster_proj", 0, 0,
 			netProjId, player.ownedByLocalPlayer
 	) {
@@ -92,16 +120,8 @@ public class RockBusterProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RockBusterProj(
-			RockBuster.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
-	}
-
-	public override void update() {
-		base.update();
-		if (!ownedByLocalPlayer) {
-			return;
-		}
 	}
 }
 
@@ -111,11 +131,10 @@ public class RockBusterMidChargeProj : Projectile {
 	float projSpeed = 300;
 
 	public RockBusterMidChargeProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, int type, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, 
+		int type, ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 2,
+		RockBuster.netWeapon, pos, xDir, 0, 2,
 		player, "rock_buster1_start", 0, 0,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -131,7 +150,6 @@ public class RockBusterMidChargeProj : Projectile {
 			base.vel.x = projSpeed * xDir;
 		}
 		this.type = type;
-		canBeLocal = true;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
@@ -142,8 +160,7 @@ public class RockBusterMidChargeProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RockBusterMidChargeProj(
-			RockBuster.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
 	}
 
@@ -154,7 +171,7 @@ public class RockBusterMidChargeProj : Projectile {
 
 		if (type == 0 && isAnimOver()) {
 			time = 0;
-			new RockBusterMidChargeProj(weapon, pos, xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
+			new RockBusterMidChargeProj(pos, xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
 			destroySelfNoEffect();
 		}
 	}
@@ -166,11 +183,10 @@ public class RockBusterChargedProj : Projectile {
 	float projSpeed = 420;
 
 	public RockBusterChargedProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, int type, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player,
+		int type, ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 3,
+		RockBuster.netWeapon, pos, xDir, 0, 3,
 		player, "rock_buster2_start", Global.halfFlinch, 0,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -198,8 +214,7 @@ public class RockBusterChargedProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RockBusterChargedProj(
-			RockBuster.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
 	}
 
@@ -210,7 +225,7 @@ public class RockBusterChargedProj : Projectile {
 
 		if (type == 0 && isAnimOver()) {
 			time = 0;
-			new RockBusterChargedProj(weapon, pos, xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
+			new RockBusterChargedProj(pos, xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
 			destroySelfNoEffect();
 		}
 	}
@@ -233,15 +248,15 @@ public class RockChargeShotState : CharState {
 	public override void update() {
 		base.update();
 
-		if (character.frameIndex == 0 && !fired && grounded) {
+		if (!fired && grounded) {
 
 			fired = true;
 			var poi = character.currentFrame.POIs;
-			new RockBusterChargedProj(new RockBuster(), character.getShootPos(), character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+			new RockBusterChargedProj(character.getShootPos(), character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
 		} else if (!fired) {
 
 			fired = true;
-			new RockBusterChargedProj(new RockBuster(), character.getShootPos(), character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+			new RockBusterChargedProj(character.getShootPos(), character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
 		}
 
 

@@ -1541,7 +1541,9 @@ public class GameMode {
 
 		if (shouldDrawWeaponAmmo(player, weapon)) {
 			baseY += 25;
-			Global.sprites["hud_weapon_base"].drawToHUD(weapon.weaponBarBaseIndex, baseX, baseY);
+			string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
+			string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
+			Global.sprites[baseBarName].drawToHUD(weapon.weaponBarBaseIndex, baseX, baseY);
 			baseY -= 16;
 			for (var i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier); i++) {
 				var floorOrCeiling = Math.Ceiling(weapon.ammo * ammoDisplayMultiplier);
@@ -1557,10 +1559,10 @@ public class GameMode {
 						(weapon is HyperBuster hb && !hb.canShootIncludeCooldown(level.mainPlayer))) {
 						spriteIndex = grayAmmoIndex;
 					}
-					if (spriteIndex >= Global.sprites["hud_weapon_full"].frames.Count) {
+					if (spriteIndex >= Global.sprites[fullBarName].frames.Count) {
 						spriteIndex = 0;
 					}
-					Global.sprites["hud_weapon_full"].drawToHUD(spriteIndex, baseX, baseY);
+					Global.sprites[fullBarName].drawToHUD(spriteIndex, baseX, baseY);
 				} else {
 					Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 				}

@@ -51,6 +51,8 @@ public class StarCrashProj : Projectile {
 	float starAngle;
 	int radius = 30;
 	int coreCooldown = 50;
+	int frameCount;
+	int starFrame;
 
 	public StarCrashProj(
 		Point pos, int xDir,
@@ -88,6 +90,12 @@ public class StarCrashProj : Projectile {
 		pos = blues.getCenterPos().round();
 		xDir = blues.xDir;
 
+		frameCount++;
+		if (frameCount > 4) {
+			frameCount = 0;
+			starFrame++;
+		}
+
 		// Local player ends here.
 		if (!ownedByLocalPlayer) {
 			return;
@@ -119,7 +127,7 @@ public class StarCrashProj : Projectile {
 			float yPlus = Helpers.sind(extraAngle) * radius;
 
 			Global.sprites["star_crash"].draw(
-				frameIndex, pos.x + xPlus,
+				starFrame % 4, pos.x + xPlus,
 				pos.y + yPlus,
 				xDir, yDir, getRenderEffectSet(),
 				1, 1, 1, zIndex

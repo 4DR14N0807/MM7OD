@@ -10,6 +10,8 @@ public class WaveBurner : Weapon {
 	public WaveBurner() : base() {
 		index = (int)BassWeaponIds.WaveBurner;
 		weaponSlotIndex = index;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		fireRateFrames = 4;
 		isStream = true;
 		maxAmmo = 168;
@@ -49,6 +51,7 @@ public class WaveBurnerProj : Projectile {
 		maxTime = 0.2f;
 		//this.byteAngle = byteAngle;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
+		xDir = player.character.getShootXDir();
 		canBeLocal = false;
 
 		if (rpc) {

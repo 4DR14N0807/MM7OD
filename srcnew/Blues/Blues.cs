@@ -20,6 +20,8 @@ public class Blues : Character {
 	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoDamageCooldown = 120;
 	public float coreAmmoDecreaseCooldown;
+	public float coreHealAmount;
+	public float coreHealTime;
 	public bool overheating;
 	public float overheatEffectTime;
 
@@ -307,10 +309,18 @@ public class Blues : Character {
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 		Helpers.decrementFrames(ref redStrikeCooldown);
+		Helpers.decrementFrames(ref coreHealTime);
 		
 		specialWeapon.update();
 		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
+		}
+
+		if (coreHealAmount > 0 && coreHealTime <= 0) {
+			coreHealAmount--;
+			coreAmmo--;
+			coreHealTime = 3;
+			playSound("heal");
 		}
 
 		// Shield HP.
@@ -650,6 +660,10 @@ public class Blues : Character {
 		if (resetCooldown) {
 			resetCoreCooldown();
 		}
+	}
+
+	public void healCore(float amount) {
+		coreHealAmount = amount;
 	}
 
 	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {

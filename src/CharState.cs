@@ -1255,11 +1255,11 @@ public class LadderClimb : CharState {
 		character.xPushVel = 0;
 		character.vel.x = 0;
 		character.vel.y = 0;
-		if (inTransition()) {
+		if (inTransition() || character.rootTime > 0) {
 			return;
 		}
 
-		if (character.isAttacking()) {
+		if (character.isAttacking() || character.shootAnimTime > 0) {
 			character.frameSpeed = 1;
 		} else {
 			character.frameSpeed = 0;

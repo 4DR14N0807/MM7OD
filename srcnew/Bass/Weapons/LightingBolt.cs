@@ -5,7 +5,7 @@ namespace MMXOnline;
 public class LightingBolt : Weapon {
 	public LightingBolt() : base() {
 		index = (int)BassWeaponIds.LightingBolt;
-		weaponSlotIndex = 6;
+		weaponSlotIndex = index;
 		fireRateFrames = 180;
 	}
 

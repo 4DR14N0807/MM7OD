@@ -8,12 +8,12 @@ public class SpreadDrill : Weapon {
 	public static SpreadDrill netWeapon = new();
 	public SpreadDrill() : base() {
 		index = (int)BassWeaponIds.SpreadDrill;
-		weaponSlotIndex = 3;
+		weaponSlotIndex = index;
 		weaponBarBaseIndex = 0;
 		killFeedIndex = 0;
 		maxAmmo = 7;
 		ammo = maxAmmo;
-		rateOfFire = 1.5f;
+		fireRateFrames = 90;
 		descriptionV2 = (
 			"Shoots a drill that spread by pressing SPECIAL." + "\n" +
 			"Slowdown on hit, the smaller the drill the faster the drill."
@@ -48,17 +48,24 @@ public class SpreadDrillProj : Projectile {
 		SpreadDrill.netWeapon, pos, xDir, 100, 2, player, "spread_drill_proj", 0, 1f, netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 2f;
-		projId = (int)ProjIds.TunnelFang;
+		projId = (int)BassProjIds.SpreadDrill;
 		destroyOnHit = false;
 		bass = player.character as Bass;
 		if (bass != null) bass.sDrill = this;
 
-		anim = new Anim(getFirstPOI(0).Value, "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
-		anim2 = new Anim(getFirstPOI(1).Value, "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
+		anim = new Anim(getFirstPOI(0) ?? new Point(0,0), "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
+		anim2 = new Anim(getFirstPOI(1) ?? new Point(0,0), "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SpreadDrillProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 	public override void update() {
 		base.update();
@@ -79,8 +86,8 @@ public class SpreadDrillProj : Projectile {
 			gravityModifier -= 0.01f;
 		}
 
-		if (anim != null) anim.pos = getFirstPOI(0).Value;
-		if (anim2 != null) anim2.pos = getFirstPOI(1).Value;
+		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
+		if (anim2 != null) anim2.changePos(getFirstPOI(1) ?? new Point(0, 0));
 	}
 
 	public override void onDestroy() {
@@ -95,6 +102,7 @@ public class SpreadDrillProj : Projectile {
 public class SpreadDrillMediumProj : Projectile {
 	float sparksCooldown;
 	Anim? anim;
+	int hits;
 
 	public SpreadDrillMediumProj(
 		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
@@ -102,14 +110,21 @@ public class SpreadDrillMediumProj : Projectile {
 		SpreadDrill.netWeapon, pos, xDir, 200, 1, player, "spread_drill_medium_proj", 0, 0.50f, netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 1f;
-		projId = (int)ProjIds.TunnelFang;
+		projId = (int)BassProjIds.SpreadDrillMid;
 		destroyOnHit = false;
 
-		anim = new Anim(getFirstPOI().Value, "spread_drill_medium_effect", xDir, player.getNextActorNetId(), false, true);
+		anim = new Anim(getFirstPOI() ?? new Point(0,0), "spread_drill_medium_effect", xDir, player.getNextActorNetId(), false, true);
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SpreadDrillMediumProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {
@@ -123,33 +138,27 @@ public class SpreadDrillMediumProj : Projectile {
 		}
 		Helpers.decrementTime(ref sparksCooldown);
 
-		if (anim != null) anim.pos = getFirstPOI(0).Value;
+		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
+		if (hits >= 3) destroySelf();
+		
+		if (Math.Abs(vel.x) < speed) vel.x += Global.speedMul * xDir * 8;
+		else if (Math.Abs(vel.x) > speed) vel.x = speed * xDir;
 	}
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
-		vel.x = 4 * xDir;
-		// To update the reduced speed.
+		vel.x = 0;
 		if (ownedByLocalPlayer) {
 			forceNetUpdateNextFrame = true;
 		}
 
-		if (damagable is not CrackedWall) {
-			time -= Global.spf;
-			if (time < 0) time = 0;
-		}
-
-		if (sparksCooldown == 0) {
-			//playSound("tunnelFangDrill");
-			//var sparks = new Anim(pos, "tunnelfang_sparks", xDir, null, true);
-			//sparks.setzIndex(zIndex + 100);
-			sparksCooldown = 0.25f;
-		}
-		var chr = damagable as Character;
-		if (chr != null && chr.ownedByLocalPlayer && !chr.isImmuneToKnockback()) {
-			chr.vel = Point.lerp(chr.vel, Point.zero, Global.spf * 10);
-			chr.slowdownTime = 0.25f;
-		}
+		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
+				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
+			) {
+				hits++;
+			}
+		} 
 	}
 
 	public override void onDestroy() {
@@ -163,53 +172,55 @@ public class SpreadDrillMediumProj : Projectile {
 public class SpreadDrillSmallProj : Projectile {
 	float sparksCooldown;
 	Anim? anim;
+	int hits;
 	public SpreadDrillSmallProj(
 		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
 	) : base(
 		SpreadDrill.netWeapon, pos, xDir, 400, 1, player, "spread_drill_small_proj", 0, 0.25f, netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 1.5f;
-		projId = (int)ProjIds.TunnelFang;
+		projId = (int)BassProjIds.SpreadDrillSmall;
 		destroyOnHit = false;
 
 		anim = new Anim(pos.addxy(-5, 5), "spread_drill_small_effect", xDir, player.getNextActorNetId(), false, true);
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
 	}
 
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SpreadDrillSmallProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
+	}
+
 	public override void update() {
 		base.update();
 		Helpers.decrementTime(ref sparksCooldown);
 
-		if (anim != null) anim.pos = getFirstPOI(0).Value;
+		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
+		if (hits >= 3) destroySelf();
+
+		if (Math.Abs(vel.x) < speed) vel.x += Global.speedMul * xDir * 16;
+		else if (Math.Abs(vel.x) > speed) vel.x = speed * xDir;
 	}
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
-		vel.x = 4 * xDir;
-		// To update the reduced speed.
+		vel.x = 0;
 		if (ownedByLocalPlayer) {
 			forceNetUpdateNextFrame = true;
 		}
 
-		if (damagable is not CrackedWall) {
-			time -= Global.spf;
-			if (time < 0) time = 0;
-		}
-
-		if (sparksCooldown == 0) {
-			//playSound("tunnelFangDrill");
-			//var sparks = new Anim(pos, "tunnelfang_sparks", xDir, null, true);
-			//sparks.setzIndex(zIndex + 100);
-			sparksCooldown = 0.25f;
-		}
-		var chr = damagable as Character;
-		if (chr != null && chr.ownedByLocalPlayer && !chr.isImmuneToKnockback()) {
-			chr.vel = Point.lerp(chr.vel, Point.zero, Global.spf * 10);
-			chr.slowdownTime = 0.25f;
-		}
+		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
+				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
+			) {
+				hits++;
+			}
+		} 
 	}
 
 	public override void onDestroy() {

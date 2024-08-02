@@ -26,12 +26,12 @@ public class UpgradeMenu : IMainMenu {
 	public const float maxWTankDelay = 2;
 
 	public List<Point> optionPositions = new List<Point>() {
-		new Point (20, 70),
-		new Point (196, 90),
+		new Point (16, 70),
+		new Point (192, 90),
 	};
 
 	public List<float> optionPositionsX = new List<float>() {
-		20, 196
+		16, 192
 	};
 
 	public List<float> optionPositionsY = new List<float>() {
@@ -62,12 +62,14 @@ public class UpgradeMenu : IMainMenu {
 	}
 
 	public int getHeartTankCost() {
-		// if (Global.level.server?.customMatchSettings?.heartTankHp == 2) return 4;
+		/*if (Global.level.server?.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.heartTankCost;
+		}*/
 		return 2;
 	}
 
 	public int getMaxHeartTanks() {
-		return Global.level.server?.customMatchSettings?.maxHeartTanks ?? 4;
+		return Global.level.server?.customMatchSettings?.maxHeartTanks ?? 8;
 	}
 
 	public int getMaxETanks() {
@@ -90,6 +92,15 @@ public class UpgradeMenu : IMainMenu {
 	public bool canUseWTankInMenu(bool canUseWTank) {
 		if (!canUseWTank) return false;
 		return wTankDelay == 0;
+	}
+
+	public float getAmmoPercentHeal() {
+		int weps = 0;
+		foreach(var wep in mainPlayer.weapons) {
+			if (wep.getAmmoUsage(0) > 0 && wep is not RushWeapon) weps++;
+		}
+		if (weps == 2) return 100f;
+		return 75f;
 	}
 
 	public void update() {
@@ -193,6 +204,7 @@ public class UpgradeMenu : IMainMenu {
 				}
 			} */
 
+			//ETANKS SECTION
 			if (selectArrowPosX == 0) {
 				if (mainPlayer.etanks.Count <= selectArrowPosY) {
 					if (mainPlayer.etanks.Count < getMaxETanks() && mainPlayer.currency >= eTankCost) {
@@ -232,6 +244,8 @@ public class UpgradeMenu : IMainMenu {
 					}
 				}
 			}
+
+			//WTANKS SECTION
 			else if (selectArrowPosX == 1) {
 				if (mainPlayer.wtanks.Count <= selectArrowPosY) {
 					if (mainPlayer.wtanks.Count < getMaxWTanks() && mainPlayer.currency >= wTankCost) {
@@ -247,8 +261,8 @@ public class UpgradeMenu : IMainMenu {
 								var currentTarget = wTankTargets[wTankTargetIndex];
 							}
 
-							if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY], wTankTargets[wTankTargetIndex]))) {
-								mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, wTankTargetIndex);
+							if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
+								mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, getAmmoPercentHeal());
 								mainPlayer.wtanks.RemoveAt(selectArrowPosY);
 							}
 
@@ -258,19 +272,14 @@ public class UpgradeMenu : IMainMenu {
 				}
 
 				else if (mainPlayer.wtanks.InRange(selectArrowPosY)) {
-					if (!isUsingWTank) {
-						isUsingWTank = true;
-							
-					} else {
-						if (wTankTargets.Count > 0) {
-							var currentTarget = wTankTargets[wTankTargetIndex];
-						}
-						if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY], wTankTargets[wTankTargetIndex]))) {
-							mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, wTankTargetIndex);
-							mainPlayer.wtanks.RemoveAt(selectArrowPosY);
-						}
-						isUsingWTank = false;
+					if (wTankTargets.Count > 0) {
+						var currentTarget = wTankTargets[wTankTargetIndex];
 					}
+					if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
+						mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, getAmmoPercentHeal());
+						mainPlayer.wtanks.RemoveAt(selectArrowPosY);
+					}
+					isUsingWTank = false;
 				}
 			}
 
@@ -401,7 +410,7 @@ public class UpgradeMenu : IMainMenu {
 			}
 			if (!buyOrUse) {
 				if (!canUseWtank && wTankTargets.Count == 0) buyOrUseStr = "CANNOT USE W-TANK";
-				Fonts.drawText(FontType.Red, buyOrUseStr, optionPos.x + 24, optionPos.y - 4);
+				Fonts.drawText(FontType.Blue, buyOrUseStr, optionPos.x + 24, optionPos.y - 4);
 			} else {
 				Fonts.drawText(
 					FontType.Blue, buyOrUseStr, optionPos.x + 24, optionPos.y - 4,

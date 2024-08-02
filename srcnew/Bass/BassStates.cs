@@ -18,8 +18,12 @@ public class BassShoot : CharState {
 
 	public override void update() {
 		base.update();
-		if (player.dashPressed(out string dashControl)) {
-			bass.changeState(new Dash(dashControl), true);
+		if (player.dashPressed(out string dashControl) && character.grounded) {
+			if (bass.canUseTBladeDash()) {
+				bass.changeState(new TenguBladeDash(), true);
+			} else {
+				bass.changeState(new Dash(dashControl), true);
+			}
 			return;
 		}
 		if (stateFrames >= 16) {
@@ -32,7 +36,7 @@ public class BassShoot : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 
-		sprite = getShootSprite(bass.getShootYDir());
+		sprite = getShootSprite(bass.getShootYDir(), bass.player.weapon);
 		landSprite = sprite;
 		airSprite = "jump_" + sprite;
 		fallSprite = "fall_" + sprite;
@@ -52,7 +56,15 @@ public class BassShoot : CharState {
 		}
 	}
 
-	public static string getShootSprite(int dir) {
+	public static string getShootSprite(int dir, Weapon wep) {
+		if (wep is not BassBuster &&
+			wep is not MagicCard) return "shoot";
+
+		else if (wep is MagicCard) {
+			if (dir < 0) return "shoot_up";
+			return "shoot";
+		}
+
 		return dir switch {
 			-2 => "shoot_up",
 			-1 => "shoot_up_diag",

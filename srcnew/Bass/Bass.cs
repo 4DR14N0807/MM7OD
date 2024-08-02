@@ -5,10 +5,14 @@ namespace MMXOnline;
 
 public class Bass : Character {
 	// Weapons.
-	float weaponCooldown;
+	public float weaponCooldown;
 	public CopyVisionClone? cVclone;
 	public SpreadDrillProj? sDrill;
 	public SpreadDrillMediumProj? sDrillM;
+	public RemoteMineProj? rMine;
+	public float wBurnerAngle;
+	public int wBurnerAngleMod = 1;
+	public float tBladeDashCooldown;
 
 	// Modes.
 	public bool isSuperBass;
@@ -26,9 +30,22 @@ public class Bass : Character {
 		charId = CharIds.Bass;
 	}
 
+	public override bool canAddAmmo() {
+		if (player.weapon == null) { return false; }
+		bool hasEmptyAmmo = false;
+		foreach (Weapon weapon in player.weapons) {
+			if (weapon.canHealAmmo && weapon.ammo < weapon.maxAmmo) {
+				hasEmptyAmmo = true;
+				break;
+			}
+		}
+		return hasEmptyAmmo;
+	}
+
 	public override void update() {
 		base.update();
 		Helpers.decrementFrames(ref weaponCooldown);
+		Helpers.decrementFrames(ref tBladeDashCooldown);
 
 		// Shoot controls.
 		bool shootPressed;
@@ -41,12 +58,78 @@ public class Bass : Character {
 			lastShootPressed = Global.frameCount;
 		}
 		player.changeWeaponControls();
+
+		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
+			wBurnerAngleMod = 1;
+			wBurnerAngle = 0;
+		} 
+	}
+
+	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
+		int meleeId = getHitboxMeleeId(hitbox);
+		if (meleeId == -1) {
+			return null;
+		}
+		Projectile? proj = getMeleeProjById(meleeId, centerPoint);
+		if (proj == null) {
+			return null;
+		}
+		// Assing data variables.
+		proj.meleeId = meleeId;
+		proj.owningActor = this;
+
+		return proj;
+	}
+
+	public override int getHitboxMeleeId(Collider hitbox) {
+		return (int)(sprite.name switch {
+			"bass_tblade_dash" => MeleeIds.TenguBladeDash,
+			_ => MeleeIds.None
+		});
+	}
+
+	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
+		Point projPos = pos ?? new Point(0, 0);
+		Projectile? proj = id switch {
+			/*(int)MeleeIds.TenguBladeDash => new GenericMeleeProj(
+				new TenguBlade(), projPos, ProjIds.TenguBladeDash, player, 2, 0, 0.375f,
+				addToLevel: addToLevel
+
+			),*/
+			(int)MeleeIds.TenguBladeDash => new TenguBladeMelee(
+				projPos, player
+			),
+			
+			_ => null
+		};
+		return proj;
+
+	}
+
+	public enum MeleeIds {
+		None = -1,
+		TenguBladeDash,
+	}
+
+	public bool canUseTBladeDash() {
+		return player.weapon is TenguBlade tb && tb.ammo > 0 &&
+		grounded && tBladeDashCooldown <= 0;
+	}
+
+	public override bool normalCtrl() {
+		bool dashPressed = player.input.isPressed(Control.Dash, player);
+		if (dashPressed && canUseTBladeDash()) {
+			changeState(new TenguBladeDash(), true);
+			return true;
+		} 
+
+		return base.normalCtrl();
 	}
 
 	public override bool attackCtrl() {
 		int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
 		if (framesSinceLastShootPressed <= 6) {
-			if (weaponCooldown <= 0) {
+			if (weaponCooldown <= 0 && player.weapon.canShoot(0, player)) {
 				shoot();
 				return true;
 			}
@@ -68,6 +151,8 @@ public class Bass : Character {
 		if (dir == 2 || player.input.getXDir(player) != 0) {
 			multiplier = 1;
 		}
+		if (dir * multiplier == 2) return 1;
+
 		return dir * multiplier;
 	}
 
@@ -147,6 +232,28 @@ public class Bass : Character {
 		if (canShoot()) {
 			shoot();
 		}
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> baseShaders = base.getShaders();
+		List<ShaderWrapper> shaders = new();
+		ShaderWrapper? palette = null;
+
+		int index = player.weapon.index;
+		palette = player.bassPaletteShader;
+
+		palette?.SetUniform("palette", index);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_palette_texture"]);
+
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		if (shaders.Count == 0) {
+			return baseShaders;
+		}
+
+		shaders.AddRange(baseShaders);
+		return shaders;
 	}
 
 	public override List<byte> getCustomActorNetData() {

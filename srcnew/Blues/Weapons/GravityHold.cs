@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SFML.Graphics;
 
 namespace MMXOnline;
 
@@ -13,7 +14,8 @@ public class GravityHold : Weapon {
 		defaultAmmoUse = 4;
 
 		index = (int)RockWeaponIds.GravityHold;
-		fireRateFrames = 60; 
+		fireRateFrames = 60;
+		hasCustomAnim = true;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -25,12 +27,17 @@ public class GravityHold : Weapon {
 		Point shootPos = character.getCenterPos();
 		int xDir = character.getShootXDir();
 		Player player = character.player;
-		Blues? blues = character as Blues;
+		Blues blues = character as Blues ?? throw new NullReferenceException();
 		blues.gHoldOwnerYDir *= -1;
 		int yDir = blues.gHoldOwnerYDir;
 		//character.changeState(new GravityHoldState(), true);
 
-		new GravityHoldProj(shootPos, xDir, yDir, player, player.getNextActorNetId(), true);
+		if (args[1] == 1) {
+			if (character.charState is not LadderClimb) character.changeState(new BluesShootAlt(this), true);
+			else character.changeState(new BluesShootAltLadder(this), true);
+		} else if (args[1] == 2) {
+			new GravityHoldProj(shootPos, xDir, player, player.getNextActorNetId(), true);
+		}
 	}
 }
 
@@ -38,10 +45,9 @@ public class GravityHold : Weapon {
 public class GravityHoldProj : Projectile {
 
 	bool fired;
-	int yPush;
 
 	public GravityHoldProj(
-		Point pos, int xDir, int yDir, Player player, 
+		Point pos, int xDir, Player player, 
 		ushort? netProjId, bool rpc = false
 	) : base 
 	(
@@ -49,19 +55,56 @@ public class GravityHoldProj : Projectile {
 		player, "empty", 0, 0, netProjId,
 		player.ownedByLocalPlayer
 	) {
+		projId = (int)BluesProjIds.GravityHold;
 		maxTime = 0.1f;
 		shouldShieldBlock = false;
 		destroyOnHit = false;
-		yPush = yDir;
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new GravityHoldProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 
 	public override void update() {
 		base.update();
 
-		Rect rect = new Rect(pos.x - 48, pos.y - 48, pos.x + 48, pos.y + 48);
+		Rect rect = new Rect(pos.x - 80, pos.y - 80, pos.x + 80, pos.y + 80);
 		var hits = Global.level.checkCollisionsShape(rect.getShape(), new List<GameObject>() { this });
+		
+		new GravityHoldEffect(pos, damager.owner.character);
 
-		foreach (CollideData other in hits) {
+		foreach (var gameObject in Global.level.getGameObjectArray()) {
+			if (gameObject is Actor actor && !fired &&
+				actor.ownedByLocalPlayer &&
+				gameObject is Character chr &&
+				chr.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+			) {
+				if (chr != null && chr.player.alliance == damager.owner.alliance) continue;
+				if (chr != null && chr.isCCImmune()) continue;
+				if (chr != null && chr.grounded) return;
+				if (chr != null && chr.gHoldOwner != null && chr.gHoldOwner != damager.owner) return;
+				//if (actor.gHoldOwner != damager.owner) continue;
+
+				if (chr != null && chr.pos.distanceTo(pos) <= 80) {
+					chr.gHoldOwner = damager.owner;
+
+					if (!chr.gHolded) {
+						chr.gHoldStart();
+					} else {
+						chr.gHoldEnd(false);
+					}
+				}
+				fired = true;
+			}
+		}
+
+		/*foreach (CollideData other in hits) {
 			var actor = other.gameObject as Actor;
 			var chr = other.gameObject as Character;
 
@@ -80,17 +123,45 @@ public class GravityHoldProj : Projectile {
 					} else {
 						chr.gHoldEnd(false);
 					}
-				} 
+				}
+				new GravityHoldEffect(pos, damager.owner.character);
 				fired = true;
 			}
-		}
+		}*/
+	}
+}
+
+
+public class GravityHoldEffect : Effect {
+
+	Character rootChar;
+	int effectFrames;
+	Rect rect;
+
+	public GravityHoldEffect(Point pos, Character character) : base(pos) {
+		rootChar = character;
+	}
+
+	public override void update() {
+		base.update();
+
+		rect = new Rect(pos.x - 80, pos.y - 80, pos.x + 80, pos.y + 80);
+		effectFrames++;
+
+		if (effectFrames >= 30) destroySelf();
+	}
+
+	public override void render(float x, float y) {
+		base.render(x, y);
+		DrawWrappers.DrawCircle(pos.x, pos.y, 80, true, 
+		new Color(255,255,255,255), 1, ZIndex.Backwall);
 	}
 }
 
 
 public class GravityHoldState : CharState {
 
-	Blues? blues;
+	Blues blues = null!;
 	bool fired;
 
 	public GravityHoldState() : base("strikeattack") {
@@ -100,7 +171,7 @@ public class GravityHoldState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues;
+		blues = character as Blues ?? throw new NullReferenceException();
 		blues.gHoldOwnerYDir *= -1;
 	}
 
@@ -108,7 +179,7 @@ public class GravityHoldState : CharState {
 		base.update();
 
 		if (!fired && character.isAnimOver()) {
-			new GravityHoldProj(character.getCenterPos(), character.getShootXDir(), blues.gHoldOwnerYDir, 
+			new GravityHoldProj(character.getCenterPos(), character.getShootXDir(), 
 				player, player.getNextActorNetId(), true);
 			fired = true;
 		}

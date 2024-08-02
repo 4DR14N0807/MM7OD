@@ -241,9 +241,7 @@ public partial class Character : Actor, IDamagable {
 		spriteToCollider["die"] = null;
 		spriteToCollider["block"] = getBlockCollider();
 
-		changeState(initialCharState);
-		charState = initialCharState;
-
+		changeState(initialCharState, true);
 		visible = isVisible;
 
 		chargeTime = 0;
@@ -710,6 +708,10 @@ public partial class Character : Actor, IDamagable {
 
 	// For terrain collision.
 	public override Collider? getTerrainCollider() {
+		Collider? overrideGlobalCollider = null;
+		if (spriteToColliderMatch(sprite.name, out overrideGlobalCollider)) {
+			return overrideGlobalCollider;
+		}
 		if (physicsCollider == null) {
 			return null;
 		}
@@ -1395,7 +1397,7 @@ public partial class Character : Actor, IDamagable {
 		if (charState.normalCtrl) {
 			normalCtrl();
 		}
-		if (charState.attackCtrl) {
+		if (charState.attackCtrl && invulnTime <= 0) {
 			return attackCtrl();
 		}
 		if (charState.altCtrls.Any(b => b)) {
@@ -1767,7 +1769,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool canBeGrabbed() {
-		return grabInvulnTime == 0 && !isCCImmune() && charState is not DarkHoldState;
+		return (
+			grabInvulnTime == 0 && !charState.invincible &&
+			!isInvulnerable() && !isCCImmune() && isDarkHoldState
+		);
 	}
 
 	public bool isDeathOrReviveSprite() {
@@ -2083,18 +2088,17 @@ public partial class Character : Actor, IDamagable {
 		changeState(new Idle("land"), true);
 	}
 
-	public virtual void changeState(CharState newState, bool forceChange = false) {
-		if (newState == null) {
-			return;
-		}
-		if (!forceChange &&
-			(charState.GetType() == newState.GetType() || changedStateInFrame)
-		) {
-			return;
-		}
+	public virtual bool changeState(CharState newState, bool forceChange = false) {
 		// Set the character as soon as posible.
 		newState.character = this;
 		newState.altCtrls = new bool[altCtrlsLength];
+
+		// Check if we can change.
+		if (!forceChange &&
+			(charState.GetType() == newState.GetType() || changedStateInFrame)
+		) {
+			return false;
+		}
 		// For Ride Armor stuns.
 		if (charState is InRideArmor inRideArmor) {
 			if (newState is GenericStun) {
@@ -2107,14 +2111,14 @@ public partial class Character : Actor, IDamagable {
 				if (paralyzedTime > 0) {
 					inRideArmor.stun(paralyzedTime / 60f);
 				}
-				return;
+				return false;
 			}
 		}
-		if (charState.canExit(this, newState) == false) {
-			return; 
+		if (!charState.canExit(this, newState)) {
+			return false; 
 		}
 		if (!newState.canEnter(this)) {
-			return;
+			return false;
 		}
 		changedStateInFrame = true;
 		if (shootAnimTime > 0 && newState.canShoot()) {
@@ -2147,6 +2151,7 @@ public partial class Character : Actor, IDamagable {
 		//	this.shootTime = 0;
 		//	this.shootAnimTime = 0;
 		//}
+		return true;
 	}
 
 	// Get dist from y pos to pos at which to draw the first label
@@ -3231,8 +3236,16 @@ public partial class Character : Actor, IDamagable {
 		player.weapon?.addAmmoPercentHeal(amount);
 	}
 
-	public virtual void addWTankAddAmmo(int weaponSlot, float amount) {
-		player.weapons?[weaponSlot].addAmmoHeal(amount);
+	public virtual void addWTankAddAmmo(float amount) {
+		//player.weapons?[weaponSlot].addAmmoHeal(amount);
+		foreach (var weapon in player.weapons) {
+			if (weapon is not RockBuster &&
+				weapon is not BassBuster) {
+					
+					weapon?.addAmmoPercentHeal(amount);
+				}
+			
+		}
 	}
 
 	public virtual bool canAddAmmo() {
@@ -3782,7 +3795,11 @@ public partial class Character : Actor, IDamagable {
 		chargeGfx();
 	}
 
+	public virtual void aiUpdate(Actor? target) { }
+
 	public virtual void aiAttack(Actor target) { }
+
+	public virtual void aiDodge(Actor? target) { }
 
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = new();
@@ -3872,8 +3889,8 @@ public partial class Character : Actor, IDamagable {
 
 		player.isDefenderFavoredNonOwner = boolData[0];
 		invulnTime = (boolData[1] ? 1 : 0);
-		isDarkHoldState = boolData[1];
-		isStrikeChainState = boolData[2];
+		isDarkHoldState = boolData[2];
+		isStrikeChainState = boolData[3];
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[6]);

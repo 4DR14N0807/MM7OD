@@ -307,7 +307,7 @@ public class Blues : Character {
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 		Helpers.decrementFrames(ref redStrikeCooldown);
-		
+
 		specialWeapon.update();
 		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
@@ -563,14 +563,14 @@ public class Blues : Character {
 			new ProtoBusterLv2Proj(
 				shootPos, xDir, player, player.getNextActorNetId(), true
 			);
-			addCoreAmmo(getChargeShotAmmoUse(2));
+			addCoreAmmo(getChargeShotAmmoUse(1));
 			playSound("buster2", sendRpc: true);
 			lemonCooldown = 12;
 		} else if (chargeLevel == 2) {
 			new ProtoBusterLv3Proj(
 				shootPos, xDir, player, player.getNextActorNetId(), true
 			);
-			addCoreAmmo(getChargeShotAmmoUse(3));
+			addCoreAmmo(getChargeShotAmmoUse(2));
 			playSound("buster3", sendRpc: true);
 			lemonCooldown = 12;
 		} else {
@@ -768,6 +768,7 @@ public class Blues : Character {
 		float oldHealth = player.health;
 		bool shieldDamaged = false;
 		bool bodyDamaged = false;
+		bool backShieldDamaged = false;
 		bool shieldPierced = false;
 		bool bodyPierced = false;
 		int damageReduction = 1;
@@ -863,7 +864,8 @@ public class Blues : Character {
 		}
 		// Back shield block check.
 		else if (shieldHitBack && !bodyPierced && damage > 0) {
-			shieldDamaged = true;
+			backShieldDamaged = true;
+			bodyDamaged = true;
 			if (damage <= 1) {
 				shieldDamageSavings += damage * 0.5m;
 				if (shieldDamageSavings >= 1) {
@@ -892,7 +894,7 @@ public class Blues : Character {
 			int fontColor = (int)FontType.Red;
 			if (bodyPierced) {
 				fontColor = (int)FontType.Yellow;
-			} else if (shieldDamaged) {
+			} else if (backShieldDamaged) {
 				fontColor = (int)FontType.Orange;
 			}
 			float damageText = float.Parse((oldHealth - player.health).ToString());

@@ -779,7 +779,7 @@ public class Blues : Character {
 				damage = Math.Floor(damage);
 				shieldDamageDebt += oldDamage - damage;
 			}
-			while (damageDebt >= 1) {
+			while (shieldDamageDebt >= 1) {
 				shieldDamageDebt -= 1;
 				damage += 1;
 			}

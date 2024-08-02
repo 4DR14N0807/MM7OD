@@ -13,7 +13,6 @@ public class ThunderBolt : Weapon {
 		weaponSlotIndex = (int)RockWeaponSlotIds.ThunderBolt;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.ThunderBolt;
 		weaponBarIndex = weaponBarBaseIndex;
-		//shootSounds = new List<string>() {"thunder_bolt", "thunder_bolt", "thunder_bolt", ""};
 		killFeedIndex = 0;
 		maxAmmo = 20;
 		ammo = maxAmmo;
@@ -30,9 +29,19 @@ public class ThunderBolt : Weapon {
         	}
 		
 			else */
-			new ThunderBoltProj(this, pos, xDir, player, 0, netProjId);
+			new ThunderBoltProj(pos, xDir, player, 0, netProjId);
 			player.character.playSound("thunder_bolt", sendRpc: true);
 		}
+	}
+
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
+		Player player = character.player;
+
+		new ThunderBoltProj(shootPos, xDir, player, 0, player.getNextActorNetId());
+		character.playSound("thunder_bolt", sendRpc: true);
 	}
 }
 public class ThunderBoltProj : Projectile {
@@ -42,11 +51,10 @@ public class ThunderBoltProj : Projectile {
 	float projSpeed = 300;
 
 	public ThunderBoltProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, int type, ushort netProjId,
+		Point pos, int xDir, Player player, int type, ushort netProjId,
 		Character? hitChar = null, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 2,
+		ThunderBolt.netWeapon, pos, xDir, 0, 2,
 		player, "thunder_bolt_start", 0, 0.5f,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -74,8 +82,7 @@ public class ThunderBoltProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ThunderBoltProj(
-			ThunderBolt.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
 	}
 
@@ -87,7 +94,7 @@ public class ThunderBoltProj : Projectile {
 			Character? chr = null;
 			if (isAnimOver()) {
 				time = 0;
-				new ThunderBoltProj(weapon, pos.clone(), xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), chr, rpc: true);
+				new ThunderBoltProj(pos.clone(), xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), chr, rpc: true);
 				destroySelfNoEffect(disableRpc: true, true);
 			}
 		}
@@ -99,8 +106,7 @@ public class ThunderBoltProj : Projectile {
 			return;
 		}
 		if (type == 1) {
-			//destroySelf(fadeSprite);
-			new ThunderBoltSplitProj(weapon, pos.clone(), xDir, damager.owner, 0, damager.owner.getNextActorNetId(true), true);
+			new ThunderBoltSplitProj(pos.clone(), xDir, damager.owner, 0, damager.owner.getNextActorNetId(true), true);
 		}
 	}
 
@@ -118,11 +124,10 @@ public class ThunderBoltSplitProj : Projectile {
 	float projSpeed = 300;
 	Player player;
 	public ThunderBoltSplitProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, int type,
+		Point pos, int xDir, Player player, int type,
 		ushort netProjId, bool rpc = false
 	) : base(
-	weapon, pos, xDir, 0, 2,
+	ThunderBolt.netWeapon, pos, xDir, 0, 2,
 	player, "thunder_bolt_fade", 4, 0.5f,
 	netProjId, player.ownedByLocalPlayer
 	) {
@@ -154,8 +159,7 @@ public class ThunderBoltSplitProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ThunderBoltSplitProj(
-			ThunderBolt.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
 	}
 
@@ -171,8 +175,8 @@ public class ThunderBoltSplitProj : Projectile {
 		}
 		if (type == 0) {
 			if (isAnimOver()) {
-				new ThunderBoltSplitProj(weapon, pos.addxy(0, -24), xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
-				new ThunderBoltSplitProj(weapon, pos.addxy(0, 24), xDir, damager.owner, 2, damager.owner.getNextActorNetId(true), rpc: true);
+				new ThunderBoltSplitProj(pos.addxy(0, -24), xDir, damager.owner, 1, damager.owner.getNextActorNetId(true), rpc: true);
+				new ThunderBoltSplitProj(pos.addxy(0, 24), xDir, damager.owner, 2, damager.owner.getNextActorNetId(true), rpc: true);
 				destroySelfNoEffect();
 			}
 		}

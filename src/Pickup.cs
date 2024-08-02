@@ -55,7 +55,7 @@ public class Pickup : Actor {
 			} else if (pickupType == PickupType.Ammo) {
 				if (chr.canAddAmmo()) {
 					if (chr is Blues blues) {
-						blues.addCoreAmmo(-coreHealAmount);
+						blues.healCore(coreHealAmount);
 					} else {
 						chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
 						//chr.addAmmo(healAmount);

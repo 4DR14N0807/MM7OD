@@ -139,7 +139,10 @@ public class Bass : Character {
 
 	public void shoot() {
 		turnToInput(player.input, player);
-		changeState(new BassShoot(), true);
+		if (player.weapon is not TenguBlade) {
+			if (charState is LadderClimb or BassShootLadder) changeState(new BassShootLadder(), true);
+			else changeState(new BassShoot(), true);
+		}
 		player.weapon.shoot(this, 0);
 		weaponCooldown = player.weapon.fireRateFrames;
 		player.weapon.addAmmo(-player.weapon.getAmmoUsage(0), player);
@@ -203,7 +206,7 @@ public class Bass : Character {
 	}
 
 	public override bool canAirJump() {
-		return dashedInAir == 0;
+		return dashedInAir == 0 && rootTime <= 0 && charState is not BassShootLadder;
 	}
 
 	public override bool canAirDash() {

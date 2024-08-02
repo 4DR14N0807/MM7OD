@@ -9,8 +9,8 @@ public class SpreadDrill : Weapon {
 	public SpreadDrill() : base() {
 		index = (int)BassWeaponIds.SpreadDrill;
 		weaponSlotIndex = index;
-		weaponBarBaseIndex = 0;
-		killFeedIndex = 0;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		maxAmmo = 7;
 		ammo = maxAmmo;
 		fireRateFrames = 90;
@@ -119,6 +119,7 @@ public class SpreadDrillMediumProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+		projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -188,6 +189,7 @@ public class SpreadDrillSmallProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+		projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

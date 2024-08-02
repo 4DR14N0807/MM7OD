@@ -12,7 +12,6 @@ public class WildCoil : Weapon {
 		weaponSlotIndex = (int)RockWeaponSlotIds.WildCoil;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.WildCoil;
 		weaponBarIndex = weaponBarBaseIndex;
-		//shootSounds = new List<string>() {"buster2", "buster2", "buster3", "buster3"};
 		killFeedIndex = 0;
 		maxAmmo = 20;
 		ammo = maxAmmo;
@@ -32,6 +31,17 @@ public class WildCoil : Weapon {
 		}
 	}
 
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		int chargeLevel = args[0];
+
+		if (character.charState is LadderClimb) {
+			character.changeState(new ShootAltLadder(this, chargeLevel), true);
+		} else {
+			character.changeState(new ShootAlt(this, chargeLevel), true);
+		}
+	}
+
 	public override float getAmmoUsage(int chargeLevel) {
 		if (chargeLevel >= 2) return 2;
 		return 1;
@@ -43,11 +53,10 @@ public class WildCoilProj : Projectile {
 	public int bounceSpeed = 240;
 	float soundCooldown;
 	public WildCoilProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, int type, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, 
+		int type, ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 120, 2,
+		WildCoil.netWeapon, pos, xDir, 120, 2,
 		player, "wild_coil_start", 0, 0.5f,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -72,8 +81,7 @@ public class WildCoilProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WildCoilProj(
-			WildCoil.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
 	}
 
@@ -93,8 +101,6 @@ public class WildCoilProj : Projectile {
 
 		if (normal.isSideways()) {
 			destroySelf();
-			//vel.x *= -1;
-			//incPos(new Point(5 * MathF.Sign(vel.x), 0));
 		} else {
 			changeSprite("wild_coil_jump", true);
 			if (frameIndex > 0) frameIndex = 0;
@@ -124,15 +130,14 @@ public class WildCoilChargedProj : Projectile {
 	int bounceCounter;
 	int bounceBuff;
 	bool bouncedOnce;
-	Anim? outline;
+	Anim outline;
 	bool drawOutline;
 
 	public WildCoilChargedProj(
-		Weapon weapon, Point pos, int xDir,
-		Player player, int type, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, 
+		int type, ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 120, 2,
+		WildCoil.netWeapon, pos, xDir, 120, 2,
 		player, "wild_coil_charge_start", 0, 0.5f,
 		netProjId, player.ownedByLocalPlayer
 	) {
@@ -167,8 +172,7 @@ public class WildCoilChargedProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WildCoilChargedProj(
-			WildCoil.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
 	}
 
@@ -181,7 +185,7 @@ public class WildCoilChargedProj : Projectile {
 
 		bounceBuff = (int)bounceCounter / bounceReq;
 		outline?.changePos(pos);
-		if (bouncedOnce) outline.frameIndex = frameIndex;
+		if (bouncedOnce && outline != null) outline.frameIndex = frameIndex;
 
 		if (bounceBuff < 3) {
 			switch (bounceBuff) {
@@ -209,8 +213,6 @@ public class WildCoilChargedProj : Projectile {
 
 		if (normal.isSideways()) {
 			destroySelf();
-			//vel.x *= -1;
-			//incPos(new Point(5 * MathF.Sign(vel.x), 0));
 		} else {
 			changeSprite("wild_coil_charge_jump", true);
 			bouncedOnce = true;

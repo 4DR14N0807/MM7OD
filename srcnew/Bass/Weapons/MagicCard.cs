@@ -11,6 +11,8 @@ public class MagicCard : Weapon {
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
 		weaponSlotIndex = index;
+		weaponBarBaseIndex = index;
+		weaponBarIndex = index;
 		fireRateFrames = 20;
 	}
 

@@ -44,6 +44,17 @@ public class JunkShield : Weapon {
 			}
 		}
 	}
+
+	public override void shoot(Character character, params int[] args) {
+		base.shoot(character, args);
+		int chargeLevel = args[0];
+
+		if (character.charState is LadderClimb) {
+				character.changeState(new ShootAltLadder(this, chargeLevel), true);
+		} else {
+			character.changeState(new ShootAlt(this, chargeLevel), true);
+		}
+	}
 }
 
 
@@ -62,9 +73,14 @@ public class JunkShieldProj : Projectile {
 	public List<int> randomPieces = new List<int>();
 	LoopingSound sound;
 
-	public JunkShieldProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-	base(weapon, pos, xDir, 0, 1, player, "junk_shield_proj", 0, 0.25f, netProjId, player.ownedByLocalPlayer) {
-
+	public JunkShieldProj(
+		Point pos, int xDir, Player player, 
+		ushort netProjId, bool rpc = false
+	) : base(
+		JunkShield.netWeapon, pos, xDir, 0, 1, 
+		player, "junk_shield_proj", 0, 0.25f, 
+		netProjId, player.ownedByLocalPlayer) 
+	{
 		projId = (int)RockProjIds.JunkShield;
 		destroyOnHit = false;
 		rock = player.character as Rock;
@@ -92,8 +108,7 @@ public class JunkShieldProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new JunkShieldProj(
-			JunkShield.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.netId
+			arg.pos, arg.xDir, arg.player, arg.netId
 		);
 	}
 
@@ -156,8 +171,6 @@ public class JunkShieldProj : Projectile {
 
 
 	public override void onHitDamagable(IDamagable damagable) {
-		//if (rock != null) base.onHitDamagable(rock);
-		//decHealth(1);
 		base.onHitDamagable(damagable);
 
 		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
@@ -166,14 +179,6 @@ public class JunkShieldProj : Projectile {
 			) {
 				HP--;
 			}
-		}
-	}
-
-
-	public void decHealth(float amount = 1) {
-		if (healthDecCooldown == 0) {
-			healthDecCooldown = Global.spf;
-			HP--;
 		}
 	}
 
@@ -192,9 +197,7 @@ public class JunkShieldProj : Projectile {
 		for (var i = 0; i < actualCount; i++) {
 			var angleToShoot = (int)projAngle + (85 * i);
 			if (angleToShoot >= 256) angleToShoot -= 256;
-			//float x = 180 * Helpers.cosd(angleToShoot * 1.40625f);
-			//float y = 180 * Helpers.sind(angleToShoot * 1.40625f);
-			if (rock != null) new JunkShieldShootProj(weapon, rock.getCenterPos(), rock.getShootXDir(), damager.owner, angleToShoot, damager.owner.getNextActorNetId(true), true);
+			if (rock != null) new JunkShieldShootProj(rock.getCenterPos(), rock.getShootXDir(), damager.owner, angleToShoot, damager.owner.getNextActorNetId(true), true);
 		}
 		Global.playSound("thunder_bolt");
 	}
@@ -207,8 +210,14 @@ public class JunkShieldShootProj : Projectile {
 	const int projSpeed = 180;
 	Rock? rock;
 
-	public JunkShieldShootProj(Weapon weapon, Point pos, int xDir, Player player, int angle, ushort netProjId, bool rpc = false) :
-	base(weapon, pos, xDir, 0, 2, player, "junk_shield_shoot_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
+	public JunkShieldShootProj(
+		Point pos, int xDir, Player player, 
+		int angle, ushort netProjId, bool rpc = false
+	) : base(
+		JunkShield.netWeapon, pos, xDir, 0, 2, 
+		player, "junk_shield_shoot_proj", 0, 0.5f, 
+		netProjId, player.ownedByLocalPlayer) 
+	{
 		projId = (int)RockProjIds.JunkShieldPiece;
 		rock = player.character as Rock;
 		maxTime = 0.75f;
@@ -229,8 +238,7 @@ public class JunkShieldShootProj : Projectile {
 		frameIndex = (int)shootAngle / 16;
 		frameSpeed = 0;
 
-		base.vel.x = projSpeed * Helpers.cosd(angle * 1.40625f);
-		base.vel.y = projSpeed * Helpers.sind(angle * 1.40625f);
+		base.vel = Point.createFromByteAngle(angle) * projSpeed;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)angle };
@@ -241,53 +249,7 @@ public class JunkShieldShootProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new JunkShieldShootProj(
-			JunkShield.netWeapon, arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
-	}
-
-	public override void update() {
-		base.update();
-		if (!ownedByLocalPlayer) return;
-	}
-}
-
-
-public class JunkShieldState : CharState {
-	bool fired;
-	public JunkShieldState(bool grounded) : base("shoot2", "", "", "") {
-		airMove = true;
-	}
-
-	public override void update() {
-		base.update();
-
-		if (!fired && character.frameIndex == 2) {
-
-			fired = true;
-			new JunkShieldProj(new JunkShield(), character.getCenterPos(), character.xDir, player, player.getNextActorNetId(), true);
-		}
-
-		if (character.isAnimOver()) {
-			if (character.grounded) character.changeState(new Idle(), true);
-			else character.changeState(new Fall(), true);
-		}
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		bool air = !character.grounded || character.vel.y < 0;
-		sprite = "shoot2";
-		defaultSprite = sprite;
-		landSprite = "shoot2";
-		if (air) {
-			sprite = "shoot2_air";
-			defaultSprite = sprite;
-		}
-		character.changeSpriteFromName(sprite, true);
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
 	}
 }

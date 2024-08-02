@@ -714,6 +714,8 @@ public partial class Player {
 		//float hpModifier = getHealthModifier();
 		if (isProtoMan) {
 			baseHP = 14;
+		} else if (isBass) {
+			baseHP = 20;
 		}
 		//if (hpModifier < 1) {
 		//	return MathF.Ceiling((baseHP + bonus) * hpModifier);

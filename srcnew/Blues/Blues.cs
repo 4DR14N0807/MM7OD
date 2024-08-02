@@ -775,11 +775,11 @@ public class Blues : Character {
 		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
 		bool shieldHitBack = (!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
 
-		if (projId != (int)BassProjIds.RemoteMineExplosion) {
+		if (projId == (int)BassProjIds.RemoteMineExplosion) {
 			if (shieldActive) {
-				shieldHitFront = false;
+				shieldHitFront = true;
 			} else {
-				shieldHitBack = false;
+				shieldHitBack = true;
 			}
 		}
 		// Things that apply to both shield variants.

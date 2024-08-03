@@ -794,8 +794,6 @@ public class Blues : Character {
 		if (projId == (int)BassProjIds.RemoteMineExplosion) {
 			if (shieldActive) {
 				shieldHitFront = true;
-			} else {
-				shieldHitBack = true;
 			}
 		}
 		// Things that apply to both shield variants.

@@ -126,6 +126,7 @@ public class Flag : Actor {
 	public void pickupFlag(Character chr) {
 		removeUpdraft();
 		chr.onFlagPickup(this);
+		if (chr is Blues blues) blues.destroyStarCrash();
 		timeDropped = 0;
 		this.chr = chr;
 		useGravity = false;

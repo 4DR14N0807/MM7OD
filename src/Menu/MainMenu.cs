@@ -242,10 +242,10 @@ public class MainMenu : IMainMenu {
 			*/
 			int offset = 2;
 			if (Global.checksum != Global.prodChecksum) {
-				Fonts.drawText(FontType.LigthGrey, Global.CRC32Checksum, 2, offset + 9);
+				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 9);
 				offset += 10;
 			}
-			Fonts.drawText(FontType.LigthGrey, versionText, 2, 2);
+			Fonts.drawText(FontType.WhiteSmall, versionText, 2, 2);
 
 		}
 	}

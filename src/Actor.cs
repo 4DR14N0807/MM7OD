@@ -1262,10 +1262,10 @@ public partial class Actor : GameObject {
 		}
 		string text = damage.ToString();
 		if (color == null) {
-			color = (int)FontType.Red;
+			color = (int)FontType.RedSmall;
 			if (damage < 0) {
 				text = (damage * -1).ToString();
-				color = (int)FontType.Green;
+				color = (int)FontType.GreenSmall;
 			}
 		}
 		if (damage != 0 && damage < 1 && damage > -1) {

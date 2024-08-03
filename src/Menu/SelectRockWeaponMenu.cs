@@ -240,10 +240,10 @@ public class SelectRockWeaponMenu : IMainMenu {
 			Fonts.drawText(FontType.BlueMenu, "Rush Adaptor", Global.halfScreenW, 128, Alignment.Center);
 			Fonts.drawText(FontType.Blue, rush.displayName, Global.halfScreenW, 149, Alignment.Center);
 
-			if (rush.description?.Length == 1) Fonts.drawText(FontType.LigthGrey, rush.description[0], 30, wsy + 2);
-			else if (rush.description?.Length > 0) Fonts.drawText(FontType.LigthGrey, rush.description[0], 30, wsy - 2);
-			if (rush.description?.Length > 1) Fonts.drawText(FontType.LigthGrey, rush.description[1], 30, wsy + 7);
-			if (rush.description?.Length > 2) Fonts.drawText(FontType.LigthGrey, rush.description[2], 30, wsy + 16);
+			if (rush.description?.Length == 1) Fonts.drawText(FontType.WhiteSmall, rush.description[0], 30, wsy + 2);
+			else if (rush.description?.Length > 0) Fonts.drawText(FontType.WhiteSmall, rush.description[0], 30, wsy - 2);
+			if (rush.description?.Length > 1) Fonts.drawText(FontType.WhiteSmall, rush.description[1], 30, wsy + 7);
+			if (rush.description?.Length > 2) Fonts.drawText(FontType.WhiteSmall, rush.description[2], 30, wsy + 16);
 		} 
 		else 
 		{
@@ -259,10 +259,10 @@ public class SelectRockWeaponMenu : IMainMenu {
 
 			var wep = Weapon.getAllRockWeapons()[wi];
 
-			if (wep.description?.Length == 1) Fonts.drawText(FontType.LigthGrey, wep.description[0], 30, wsy + 2);
-			else if (wep.description?.Length > 0) Fonts.drawText(FontType.LigthGrey, wep.description[0], 30, wsy - 2);
-			if (wep.description?.Length > 1) Fonts.drawText(FontType.LigthGrey, wep.description[1], 30, wsy + 7);
-			if (wep.description?.Length > 2) Fonts.drawText(FontType.LigthGrey, wep.description[2], 30, wsy + 16);
+			if (wep.description?.Length == 1) Fonts.drawText(FontType.WhiteSmall, wep.description[0], 30, wsy + 2);
+			else if (wep.description?.Length > 0) Fonts.drawText(FontType.WhiteSmall, wep.description[0], 30, wsy - 2);
+			if (wep.description?.Length > 1) Fonts.drawText(FontType.WhiteSmall, wep.description[1], 30, wsy + 7);
+			if (wep.description?.Length > 2) Fonts.drawText(FontType.WhiteSmall, wep.description[2], 30, wsy + 16);
 		}
 
 		//Helpers.drawTextStd(Helpers.menuControlText("Left/Right: Change Weapon"), Global.screenW * 0.5f, 200 + botOffY, Alignment.Center, fontSize: 16);

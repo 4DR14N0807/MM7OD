@@ -14,7 +14,7 @@ public class SlashClawWeapon : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 18;
 		ammo = maxAmmo;
-		rateOfFire = 1f;
+		fireRateFrames = 60;
 		description = new string[] { "Fast melee attack, requires proper spacing.", "No tiene flinch." };
 	}
 

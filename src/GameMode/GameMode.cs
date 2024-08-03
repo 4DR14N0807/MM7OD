@@ -630,7 +630,7 @@ public class GameMode {
 			if (!Global.level.is1v1()) {
 				Global.sprites["hud_scrap"].drawToHUD(0, 4, 138);
 				Fonts.drawText(
-					FontType.LigthGrey,
+					FontType.WhiteSmall,
 					"x" + drawPlayer.currency.ToString(), 22, 140, Alignment.Left
 				);
 			}
@@ -759,7 +759,7 @@ public class GameMode {
 			);
 		} else if (Global.serverClient != null && Global.serverClient.isLagging() && hudErrorMsgTime == 0) {
 			Fonts.drawText(
-				FontType.LigthGrey, Helpers.controlText("Veneco Detectado."),
+				FontType.WhiteSmall, Helpers.controlText("Veneco Detectado."),
 				Global.halfScreenW, 50, Alignment.Center
 			);
 		} else if (mainPlayer?.character is BaseSigma sigma && sigma.possessTarget != null) {
@@ -1346,6 +1346,8 @@ public class GameMode {
 		baseY += 25;
 		if (baseIndex >= 0) {
 			Global.sprites["hud_weapon_base"].drawToHUD(baseIndex, baseX, baseY);
+		} else if (baseIndex == -2) {
+			Global.sprites["hud_core_base"].drawToHUD(0, baseX, baseY);
 		}
 		baseY -= 16;
 
@@ -1480,7 +1482,7 @@ public class GameMode {
 				coreAmmoColor = 6;
 			}
 			renderAmmo(
-				baseX, baseY, 0, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo), maxAmmo: protoman.coreMaxAmmo
+				baseX, baseY, -2, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo), maxAmmo: protoman.coreMaxAmmo
 			);
 			if (protoman.overdrive) {
 				int yPos = MathInt.Ceiling(9 + baseY);
@@ -2478,12 +2480,12 @@ public class GameMode {
 		int top2 = -3;
 		if (!Global.level.server.isP2P) {
 			Fonts.drawText(
-				FontType.LigthGrey, Global.level.server.region.name,
+				FontType.WhiteSmall, Global.level.server.region.name,
 				Global.screenW - 12, top2 + 14, Alignment.Right
 			);
 		} else {
 			Fonts.drawText(
-				FontType.LigthGrey, "P2P Server",
+				FontType.WhiteSmall, "P2P Server",
 				Global.screenW - 12, top2 + 14, Alignment.Right
 			);
 		}
@@ -2496,20 +2498,20 @@ public class GameMode {
 			else iconXPos = 253;
 		}
 		Fonts.drawText(
-			FontType.LigthGrey, netcodePingStr,
+			FontType.WhiteSmall, netcodePingStr,
 			Global.screenW - 12, top2 + 22, Alignment.Right
 		);
 		Global.sprites["hud_netcode"].drawToHUD((int)level.server.netcodeModel, Global.screenW - 50, top2 + 29);
 		if (Global.level.server.isLAN) {
 			Fonts.drawText(
-				FontType.LigthGrey, "IP: " + Global.level.server.ip,
+				FontType.WhiteSmall, "IP: " + Global.level.server.ip,
 				Global.screenW - 12, top2 + 32, Alignment.Right
 			);
 		}
 	}
 
 	public virtual FontType getPingFont(int? ping) {
-		if (ping < level.server.netcodeModelPing) return FontType.LigthGrey;
+		if (ping < level.server.netcodeModelPing) return FontType.White;
 		return FontType.Red;
 	}
 
@@ -2987,7 +2989,7 @@ public class GameMode {
 					var line = level.mainPlayer.randomTip[i];
 					if (i == 0) line = "Tip: " + line;
 					Fonts.drawText(
-						FontType.LigthGrey, line,
+						FontType.WhiteSmall, line,
 						Global.screenW / 2, (Global.screenH / 2) + 45 + (12 * i), Alignment.Center
 					);
 				}
@@ -3222,7 +3224,7 @@ public class GameMode {
 			float distInMeters = objPos.distanceTo(playerPos) * 0.044f;
 			bool isLeft = posX < Global.viewScreenW / 2;
 			Fonts.drawText(
-				FontType.LigthGrey, label + MathF.Round(distInMeters).ToString() + "m",
+				FontType.WhiteSmall, label + MathF.Round(distInMeters).ToString() + "m",
 				posX, posY, isLeft ? Alignment.Left : Alignment.Right
 			);
 		}

@@ -220,10 +220,10 @@ public class WaitMenu : IMainMenu {
 				color = Color.Green;
 			}
 
-			Fonts.drawText(FontType.LigthGrey, player.name, col1Pos, startServerRow + (i * rowHeight2) + 14);
-			Fonts.drawText(FontType.LigthGrey, player.id.ToString(), col2Pos, startServerRow + (i * rowHeight2) + 14);
+			Fonts.drawText(FontType.WhiteSmall, player.name, col1Pos, startServerRow + (i * rowHeight2) + 14);
+			Fonts.drawText(FontType.WhiteSmall, player.id.ToString(), col2Pos, startServerRow + (i * rowHeight2) + 14);
 			Fonts.drawText(
-				FontType.LigthGrey, player.isHost ? "yes" : "no",
+				FontType.WhiteSmall, player.isHost ? "yes" : "no",
 				col3Pos, startServerRow + (i * rowHeight2) + 14
 			);
 			if (isTeamMode()) {
@@ -231,9 +231,9 @@ public class WaitMenu : IMainMenu {
 				if (player.isSpectator) {
 					team = "Spec";
 				}
-				Fonts.drawText(FontType.LigthGrey, team, col4Pos, startServerRow + (i * rowHeight2) + 14);
+				Fonts.drawText(FontType.WhiteSmall, team, col4Pos, startServerRow + (i * rowHeight2) + 14);
 			} else {
-				Fonts.drawText(FontType.LigthGrey, player.isSpectator ? "yes" : "no", col4Pos, startServerRow + (i * rowHeight2) + 14);
+				Fonts.drawText(FontType.WhiteSmall, player.isSpectator ? "yes" : "no", col4Pos, startServerRow + (i * rowHeight2) + 14);
 			}
 		}
 

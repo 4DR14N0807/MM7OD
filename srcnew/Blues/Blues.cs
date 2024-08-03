@@ -321,6 +321,7 @@ public class Blues : Character {
 			coreAmmo--;
 			coreHealTime = 3;
 			playSound("heal");
+			if (coreAmmo <= 0) coreHealAmount = 0;
 		}
 
 		// Shield HP.
@@ -905,11 +906,11 @@ public class Blues : Character {
 			}
 		}
 		if (bodyDamaged) {
-			int fontColor = (int)FontType.Red;
+			int fontColor = (int)FontType.RedSmall;
 			if (bodyPierced) {
-				fontColor = (int)FontType.Yellow;
-			} else if (backShieldDamaged) {
-				fontColor = (int)FontType.Orange;
+				fontColor = (int)FontType.YellowSmall;
+			} else if (shieldDamaged) {
+				fontColor = (int)FontType.OrangeSmall;
 			}
 			float damageText = float.Parse((oldHealth - player.health).ToString());
 			addDamageText(damageText, fontColor);
@@ -917,9 +918,9 @@ public class Blues : Character {
 			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
 		if (shieldDamaged) {
-			int fontColor = (int)FontType.Blue;
+			int fontColor = (int)FontType.BlueSmall;
 			if (shieldPierced) {
-				fontColor = (int)FontType.Purple;
+				fontColor = (int)FontType.PurpleSmall;
 			}
 			float damageText = float.Parse((ogShieldHP - shieldHP).ToString());
 			addDamageText(damageText, fontColor);

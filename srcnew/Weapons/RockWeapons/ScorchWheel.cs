@@ -13,7 +13,7 @@ public class ScorchWheel : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 14;
 		ammo = maxAmmo;
-		rateOfFire = 1f;
+		fireRateFrames = 60;
 		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };
 	}
 
@@ -97,7 +97,7 @@ public class ScorchWheelSpawn : Projectile {
 			destroySelf();
 			new ScorchWheelMoveProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
 			playSound("scorch_wheel", true, true);
-			if (rock != null) rock.shootTime = 1f;
+			if (rock != null) rock.weaponCooldown = 60;
 		}
 
 	}
@@ -189,7 +189,7 @@ public class ScorchWheelProj : Projectile {
 				destroySelf();
 				new ScorchWheelMoveProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), rpc: true);
 				playSound("scorch_wheel", true, true);
-				rock.shootTime = 1f;
+				rock.weaponCooldown = 60;
 				return;
 			}
 		}

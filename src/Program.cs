@@ -388,11 +388,11 @@ class Program {
 				yPos = 219;
 			}
 			Fonts.drawText(
-				FontType.LigthGrey, "VFPS:" + vfps.ToString(), Global.screenW - 9, yPos - 10,
+				FontType.WhiteSmall, "VFPS:" + vfps.ToString(), Global.screenW - 9, yPos - 10,
 				Alignment.Right
 			);
 			Fonts.drawText(
-				FontType.LigthGrey, "FPS:" + fps.ToString(), Global.screenW - 9, yPos,
+				FontType.WhiteSmall, "FPS:" + fps.ToString(), Global.screenW - 9, yPos,
 				Alignment.Right
 			);
 		}

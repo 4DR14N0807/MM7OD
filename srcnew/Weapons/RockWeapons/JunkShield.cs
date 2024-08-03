@@ -11,7 +11,7 @@ public class JunkShield : Weapon {
 	public static JunkShield netWeapon = new JunkShield();
 	public JunkShield() : base() {
 		shootSounds = new string[] { "", "", "", "" };
-		rateOfFire = 1f;
+		fireRateFrames = 60;
 		index = (int)RockWeaponIds.JunkShield;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.JunkShield;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -137,7 +137,7 @@ public class JunkShieldProj : Projectile {
 
 		if (time >= Global.spf * 15 && player.input.isPressed(Control.Shoot, player)) {
 			shootProjs();
-			rock.shootTime = 1f;
+			rock.weaponCooldown = 60;
 		}
 	}
 

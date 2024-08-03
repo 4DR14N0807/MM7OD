@@ -15,7 +15,7 @@ public class NoiseCrush : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 14;
 		ammo = maxAmmo;
-		rateOfFire = 0.5f;
+		fireRateFrames = 30;
 		//shootSounds = new List<string>() {"noise_crush", "noise_crush", "", ""};
 		description = new string[] { "Weak projectile that bounces on walls.", "Catch it to get a stronger shot." };
 	}

@@ -232,7 +232,7 @@ public class Fonts {
 			FontType.Green => "Green",
 			FontType.DarkGreen => "DarkGreen",
 			FontType.Grey => "Grey",
-			FontType.LigthGrey => "LigthGrey",
+			FontType.WhiteSmall => "WhiteSmall",
 			FontType.Orange => "Orange",
 			FontType.DarkOrange => "DarkOrange",
 			FontType.Pink => "Pink",
@@ -252,6 +252,12 @@ public class Fonts {
 			FontType.WhiteMenu => "WhiteMenu",
 			FontType.White => "White",
 			FontType.Black => "Black",
+			FontType.BlueSmall => "BlueSmall",
+			FontType.RedSmall => "RedSmall",
+			FontType.GreenSmall => "GreenSmall",
+			FontType.OrangeSmall => "OrangeSmall",
+			FontType.YellowSmall => "YellowSmall",
+			FontType.PurpleSmall => "PurpleSmall",
 			_ => "Blue"
 		};
 	}
@@ -279,7 +285,6 @@ public enum FontType {
 	Green,
 	DarkGreen,
 	Grey,
-	LigthGrey,
 	Orange,
 	DarkOrange,
 	Pink,
@@ -299,4 +304,11 @@ public enum FontType {
 	WhiteMenu,
 	White,
 	Black,
+	BlueSmall,
+	RedSmall,
+	GreenSmall,
+	OrangeSmall,
+	YellowSmall,
+	PurpleSmall,
+	WhiteSmall,
 }

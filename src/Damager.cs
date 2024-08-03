@@ -865,7 +865,10 @@ public class Damager {
 			return false;
 		}
 		return (
-			projId == (int)ProjIds.SlashClaw
+			projId == (int)ProjIds.SlashClaw ||
+			projId == (int)BassProjIds.TenguBladeDash ||
+			projId == (int)RockProjIds.DangerWrapExplosion ||
+			projId == (int)RockProjIds.DangerWrapBubbleExplosion
 		);
 	}
 

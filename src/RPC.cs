@@ -431,9 +431,9 @@ public class RPCShoot : RPC {
 			new Point(xPos, yPos), weaponIndex, xDir, chargeLevel, projNetId, false
 		);*/
 
-		(player?.character as Rock)?.shootRpc(
+		/*(player?.character as Rock)?.shootRpc(
 			new Point(xPos, yPos), weaponIndex, xDir, chargeLevel, projNetId, false
-		);
+		);*/
 	}
 }
 

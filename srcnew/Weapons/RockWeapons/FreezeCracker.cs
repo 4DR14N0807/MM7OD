@@ -14,7 +14,7 @@ public class FreezeCracker : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.FreezeCracker;
 		//shootSounds = new List<string>() {"buster2", "buster2", "buster2", ""};
-		rateOfFire = 0.75f;
+		fireRateFrames = 45;
 		maxAmmo = 16;
 		ammo = maxAmmo;
 		description = new string[] { "Splits in 6 pieces when hitting a wall.", "Can be aimed up or down." };
@@ -72,8 +72,9 @@ public class FreezeCrackerProj : Projectile {
 			canBeLocal = false;
 			changeSprite("freeze_cracker_proj", false);
 			reflectable = true;
-			int dir = player.input.getYDir(player);
-			base.vel = Point.createFromByteAngle(-dir * 32) * (projSpeed * xDir);
+			int dir = player.input.getYDir(player) * 32;
+			float ang = xDir > 0 ? dir : -dir + 128;
+			base.vel = Point.createFromByteAngle(ang) * projSpeed;
 		}
 
 		if (rpc) {

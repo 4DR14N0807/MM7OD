@@ -193,7 +193,7 @@ public class BluesWeaponMenu : IMainMenu {
 			Global.halfScreenW, titleY2, Alignment.Center
 		);
 		Fonts.drawText(
-			FontType.LigthGrey, weaponDescription,
+			FontType.WhiteSmall, weaponDescription,
 			Global.halfScreenW, row1Y, Alignment.Center
 		);
 		Fonts.drawText(

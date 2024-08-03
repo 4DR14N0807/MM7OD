@@ -289,7 +289,7 @@ public class SelectCharacterMenu : IMainMenu {
 			);
 			for (int i = 0; i < description.Length; i++) {
 				Fonts.drawText(
-					FontType.LigthGrey, description[i],
+					FontType.WhiteSmall, description[i],
 					Global.halfScreenW, startY + 93 + (10 * (i + 1)), alignment: Alignment.Center
 				);
 			}

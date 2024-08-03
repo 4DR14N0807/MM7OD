@@ -610,17 +610,7 @@ public class Idle : CharState {
 
 		if (Global.level.gameMode.isOver) {
 			if (Global.level.gameMode.playerWon(player)) {
-				if (character.grounded) {
-					/*if (!character.sprite.name.Contains("_win")) {
-						character.changeSpriteFromName("win", true);
-					}*/
-					character.changeState(new Taunt(true), true);
-				} else {
-					/*player.character.stopMoving();
-					player.character.useGravity = false;
-					character.changeSpriteFromName("win_air", true);*/
-					character.changeState(new Taunt(true), true);
-				}
+				character.changeState(new Win(), true);
 				
 			} else {
 				if (!character.sprite.name.Contains("lose")) {
@@ -1409,6 +1399,31 @@ public class Taunt : CharState {
 	}
 }
 
+public class Win : CharState {
+	public Win() : base("win") {
+		normalCtrl = false;
+		attackCtrl = false;
+		useGravity = false;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		bool air = !character.grounded || character.vel.y < 0;
+        defaultSprite = sprite;
+        landSprite = "win";
+        if (air) {
+			sprite = "win_air";
+			defaultSprite = sprite;
+		}
+        character.changeSpriteFromName(sprite, true);
+	}
+
+	public override void update() {
+		character.stopMoving();
+		character.useGravity = false;
+	}
+}
+ 
 public class Frozen : CharState {
 	public float startFreezeTime;
 	public float freezeTime;

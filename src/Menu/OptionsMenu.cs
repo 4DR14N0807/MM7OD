@@ -1643,7 +1643,7 @@ public class OptionsMenu : IMainMenu {
 			}
 
 			Fonts.drawText(
-				FontType.LigthGrey, "Press Enter to continue",
+				FontType.WhiteSmall, "Press Enter to continue",
 				Global.screenW / 2, 40 + top, alignment: Alignment.Center
 			);
 		}

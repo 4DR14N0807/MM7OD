@@ -9,14 +9,14 @@ public class Rock : Character {
 
 	public float lemonTime;
 	public int lemons;
+	public float weaponCooldown;
 	public JunkShieldProj? junkShield;
 	public ScorchWheelSpawn? sWellSpawn;
 	public ScorchWheelProj? sWell;
-	public UnderwaterScorchWheelProj sWellU;
+	public UnderwaterScorchWheelProj? sWellU;
 	public UnderwaterScorchWheelProj? underwaterScorchWheel;
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
-	public bool spawnedSWheelHitbox;
 	public bool hasChargedNoiseCrush = false;
 	public float noiseCrushAnimTime;
 	public bool usedDoubleJump;
@@ -25,7 +25,7 @@ public class Rock : Character {
 	public float legBreakerCooldown;
 	public float timeSinceLastShoot;
 	public bool isSlideColliding;
-	public Rush rush;
+	public Rush? rush;
 	public RushWeapon rushWeapon;
 	public int rushWeaponIndex;
 	public int RushSearchCost = 5;
@@ -53,7 +53,7 @@ public class Rock : Character {
 		charge2Time = 80;
 		var rl = player.loadout.rockLoadout.rushLoadout;
 		rushWeaponIndex = rl;
-
+	
 		rushWeapon = rl switch {
 			0 => new RushCoilWeapon(),
 			1 => new RushJetWeapon(),
@@ -66,12 +66,15 @@ public class Rock : Character {
 	public override void update() {
 		base.update();
 
-		Helpers.decrementTime(ref lemonTime);
+		if (!ownedByLocalPlayer) return;
+
+		Helpers.decrementFrames(ref lemonTime);
 		Helpers.decrementTime(ref arrowSlashCooldown);
 		Helpers.decrementTime(ref legBreakerCooldown);
+		Helpers.decrementFrames(ref weaponCooldown);
 
-		timeSinceLastShoot += Global.spf;
-		if (timeSinceLastShoot >= Global.spf * 30) lemons = 0;
+		timeSinceLastShoot++;
+		if (timeSinceLastShoot >= 30) lemons = 0;
 
 		if (player.weapon.ammo >= player.weapon.maxAmmo) {
 			weaponHealAmount = 0;
@@ -79,108 +82,122 @@ public class Rock : Character {
 
 		if (player.weapon is not NoiseCrush) hasChargedNoiseCrush = false;
 
-		//================================UNDERWATER SCORCH WHEEL ==============================================
-
-		if (underwaterScorchWheel != null && !spawnedSWheelHitbox) {
-			var center = getCenterPos();
-			sWheel = new GenericMeleeProj(new ScorchWheel(), center, ProjIds.ScorchWheelUnderwater, player, 2, 0, 1);
-
-			var rect = new Rect(0, 0, 32, 39);
-			sWheel.globalCollider = new Collider(rect.getPoints(), false, sWheel, false, false, 0, new Point());
-			spawnedSWheelHitbox = true;
-		}
-
-		if (sWheel != null) {
-			sWheel.pos = getCenterPos();
-			if (!sprite.name.Contains("shoot2") &&
-			!sprite.name.Contains("shoot2_air") && !sprite.name.Contains("ladder_shoot2")) {
-				sWheel.destroySelfNoEffect();
-				spawnedSWheelHitbox = false;
-			}
-		}
-
-		//======================================================================================================
-
-
-		if (weaponHealAmount > 0 && player.health > 0) {
-			weaponHealTime += Global.spf;
-			if (weaponHealTime > 0.05) {
-				weaponHealTime = 0;
-				weaponHealAmount--;
-				player.weapon.ammo = Helpers.clampMax(player.weapon.ammo + 1, player.weapon.maxAmmo);
-				playSound("heal", forcePlay: true);
-			}
-		}
-
-		if (shootAnimTime > 0 && !charState.isGrabbing) {
+		// For the shooting animation.
+		if (shootAnimTime > 0) {
 			shootAnimTime -= Global.spf;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
-				changeSpriteFromName(charState.sprite, false);
+				if (sprite.name.EndsWith("_shoot")) {
+					changeSpriteFromName(charState.defaultSprite, false);
+				}
+			}
+		}
+		player.changeWeaponControls();
+		
+		// Shoot logic.
+		chargeLogic(shoot);
+
+		quickAdaptorUpgrade();
+	}
+
+	public override bool normalCtrl() {
+		bool slidePressed = player.dashPressed(out string slideControl);
+		bool jumpPressed = player.input.isPressed(Control.Jump, player);
+
+		if (slidePressed && canSlide()) {
+			changeState(new Slide(slideControl), true);
+			return true;
+		}
+
+		if (jumpPressed && !grounded && hasSuperAdaptor && !usedDoubleJump) {
+			changeState(new RockDoubleJump(), true);
+			return true;
+		}
+		return base.normalCtrl();
+	}
+
+	public override bool attackCtrl() {
+		bool shootPressed = player.input.isPressed(Control.Shoot, player);
+		bool specialPressed = player.input.isPressed(Control.Special1, player);
+		bool downHeld = player.input.isHeld(Control.Down, player);
+		bool slidePressed = player.dashPressed(out string slideControl);
+		bool arrowSlashInput = player.input.checkHadoken(player, xDir, Control.Shoot);
+
+		if (hasSuperAdaptor) {
+			if (slidePressed && downHeld && canSlide() && legBreakerCooldown <= 0) {
+				changeState(new LegBreakerState(slideControl), true);
+				legBreakerCooldown = 90f / 60f;
+				return true;
+			}
+
+			if (arrowSlashInput && arrowSlashCooldown <= 0 && charState is not LadderClimb) {
+				changeState(new SAArrowSlashState(), true);
+				arrowSlashCooldown = 90f / 60f;
+				return true;
 			}
 		}
 
-		Point inputDir = player.input.getInputDir(player);
+		/*if (shootPressed && canShoot()) {
+			
+		}*/
 
-		bool shootPressed = player.input.isPressed(Control.Shoot, player);
-		bool shootHeld = player.input.isHeld(Control.Shoot, player);
-		bool specialPressed = player.input.isPressed(Control.Special1, player);
-
-		if (!player.isAI && specialPressed && rushWeapon != null && rushWeapon.canShoot(getChargeLevel(), player)
-			&& Options.main.rushSpecial) {
-			rushWeapon.shoot(this, 0);
+		if (!isCharging()) {
+			if (shootPressed) {
+				lastShootPressed = Global.frameCount;
+			}
+			int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
+			if (shootPressed || framesSinceLastShootPressed < 6) {
+				if (weaponCooldown <= 0) {
+					shoot(0);
+					return true;
+				}
+			}
 		}
+		return base.attackCtrl();
+	}
 
-		player.busterWeapon.update();
-
-		var oldWeapon = player.weapon;
-
-		if (shootPressed) {
-			lastShootPressed = Global.frameCount;
+	public void shoot(int chargeLevel) {
+		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
+			changeToIdleOrFall();
 		}
-
-		int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
-		int framesSinceLastShootReleased = Global.frameCount - lastShootReleased;
-
-		bool offCooldown = oldWeapon.shootTime == 0 && shootTime == 0;
-
-		bool shootCondition = (
-			shootPressed ||
-			(framesSinceLastShootPressed < Global.normalizeFrames(6) &&
-			framesSinceLastShootReleased > Global.normalizeFrames(30)) ||
-			(shootHeld && player.weapon.isStream && chargeTime < charge1Time)
-		);
-		if (offCooldown &&
-			shootCondition && canShoot()) {
-			shoot(false);
+		// Shoot anim and vars.
+		float oldShootAnimTime = shootAnimTime;
+		
+		setShootAnim();
+		
+		player.weapon.shoot(this, chargeLevel);
+		weaponCooldown = player.weapon.fireRateFrames;
+		player.weapon.addAmmo(-player.weapon.getAmmoUsage(chargeLevel), player);
+		if (oldShootAnimTime <= 0.25f) {
+			shootAnimTime = 0.25f;
 		}
+	}
 
-		rockCharge();
-
-		player.changeWeaponControls();
-		//changeSprite("rock_" + charState.shootSprite, true);
-		chargeGfx();
-
-		if (player.dashPressed(out string slideControl) && canSlide()
-			&& charState is not Slide && charState is not RockChargeShotState
-			&& charState is not ShootAlt
-		) {
-			changeState(new Slide(slideControl), true);
+	public void setShootAnim() {
+		string shootSprite = getSprite(charState.shootSprite);
+		if (!Global.sprites.ContainsKey(shootSprite)) {
+			if (grounded) {
+				shootSprite = getSprite("shoot");
+			} else {
+				shootSprite = getSprite("jump_shoot");
+			}
 		}
-
-		quickAdaptorUpgrade();
-
-		/*if (!grounded && player.hasSuperAdaptor() &&
-				player.input.isPressed(Control.Jump, player) &&
-				canJump() && flag == null && !usedDoubleJump
-			) {
-				changeState(new RockDoubleJump(), true);
-				usedDoubleJump = true;
-			}*/
-
-		if (hasSuperAdaptor) {
-			superAdaptorControls();
+	
+		changeSprite(shootSprite, false);
+		
+		if (shootSprite == getSprite("shoot")) {
+			frameIndex = 0;
+			frameTime = 0;
+			animTime = 0;
 		}
+		if (charState is LadderClimb) {
+			if (player.input.isHeld(Control.Left, player)) {
+				this.xDir = -1;
+			} else if (player.input.isHeld(Control.Right, player)) {
+				this.xDir = 1;
+			}
+		}
+		shootAnimTime = 0.3f;
 	}
 
 	public void superAdaptorControls() {
@@ -327,7 +344,7 @@ public class Rock : Character {
 		if (isInvulnerableAttack()) return false;
 		if (saRocketPunchProj != null) return false;
 
-		return base.canShoot();
+		return base.canShoot() && weaponCooldown <= 0;
 	}
 
 	public bool canCallRush() {
@@ -343,106 +360,6 @@ public class Rock : Character {
 	public override bool canChangeWeapons() {
 		return base.canChangeWeapons();
 	}
-
-	public void shoot(bool doCharge) {
-		int chargeLevel = getChargeLevel();
-
-		if (!doCharge && chargeLevel >= 2) return;
-
-		if (!player.weapon.canShoot(chargeLevel, player)) {
-			return;
-		}
-
-		shootTime = player.weapon.rateOfFire;
-		timeSinceLastShoot = 0;
-		player.delayETank();
-
-		if (player.weapon is NoiseCrush) {
-			if (hasChargedNoiseCrush) {
-				doCharge = true;
-				chargeLevel = 2;
-			}
-		}
-
-		bool hasShootSprite = !string.IsNullOrEmpty(charState.shootSprite);
-
-		if (shootAnimTime == 0) {
-			if (hasShootSprite) changeSprite(getSprite(charState.shootSprite), false);
-		} else if (charState is Idle) {
-			frameIndex = 0;
-			frameTime = 0;
-		}
-		if (charState is LadderClimb) {
-			if (player.input.isHeld(Control.Left, player)) {
-				this.xDir = -1;
-			} else if (player.input.isHeld(Control.Right, player)) {
-				this.xDir = 1;
-			}
-
-			/* if (player.weapon is SlashClawWeapon || player.weapon is JunkShield || player.weapon is ScorchWheel || player.weapon is WildCoil) {
-				changeState(new ShootAltLadder(player.weapon, chargeLevel), true);
-			} */
-		}
-
-		//Sometimes transitions cause the shoot sprite not to be played immediately, so force it here
-		if (currentFrame.getBusterOffset() == null) {
-			if (hasShootSprite) changeSprite(getSprite(charState.shootSprite), false);
-		}
-
-		if (hasShootSprite) shootAnimTime = 0.3f;
-		int xDir = getShootXDir();
-
-		int cl = doCharge ? chargeLevel : 0;
-
-		shootRpc(getShootPos(), player.weapon.index, xDir, cl, player.getNextActorNetId(), true);
-	}
-
-	public void shootRpc(Point pos, int weaponIndex, int xDir, int chargeLevel, ushort netProjId, bool sendRpc) {
-		// Right before we shoot, change to the current weapon.
-		// This ensures that the shoot RPC sent reflects the current weapon used
-		if (!player.isAI) {
-			player.changeWeaponFromWi(weaponIndex);
-		}
-
-		Weapon weapon = player.weapon;
-
-		shoot(weapon, pos, xDir, player, chargeLevel, netProjId);
-
-		if (ownedByLocalPlayer && sendRpc) {
-			var playerIdByte = (byte)player.id;
-			var xDirByte = (byte)(xDir + 128);
-			var chargeLevelByte = (byte)chargeLevel;
-			var netProjIdBytes = BitConverter.GetBytes(netProjId);
-			var xBytes = BitConverter.GetBytes((short)pos.x);
-			var yBytes = BitConverter.GetBytes((short)pos.y);
-			var weaponIndexByte = (byte)weapon.index;
-
-			RPC shootRpc = RPC.shoot;
-
-			Global.serverClient?.rpc(shootRpc, playerIdByte, xBytes[0], xBytes[1], yBytes[0], yBytes[1], xDirByte, chargeLevelByte, netProjIdBytes[0], netProjIdBytes[1], weaponIndexByte);
-		}
-	}
-
-	public void shoot(Weapon weapon, Point pos, int xDir, Player player, int chargeLevel, ushort netProjId) {
-		float ammoUsage = 0;
-		weapon.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-		// Lasto: Esta monda no sirve.
-		/* if (weapon.soundTime == 0) {
-			if (weapon.shootSounds != null && weapon.shootSounds.Count > 0) {
-				playSound(weapon.shootSounds[chargeLevel]);
-			}
-		} */
-		// Only deduct ammo if owned by local player
-		if (ownedByLocalPlayer) {
-			if (weapon is RockBuster buster || weapon is SARocketPunch rocketPunch) {
-				ammoUsage = 0;
-			} else {
-				ammoUsage = weapon.getAmmoUsage(chargeLevel);
-			}
-			weapon.addAmmo(-ammoUsage, player);
-		}
-	}
-
 	public override bool canCharge() {
 		Weapon weapon = player.weapon;
 		if (flag != null) return false;
@@ -460,23 +377,6 @@ public class Rock : Character {
 	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
 	}
-
-	public void rockCharge() {
-		if (chargeButtonHeld() && canCharge() && (!player.isAI || chargeTime <= charge2Time + 0.4f)) {
-			increaseCharge();
-		} else {
-			if (isCharging()) {
-				if (shootTime == 0 && canShoot()) {
-					shoot(true);
-				}
-				stopCharge();
-				lastShootReleased = Global.frameCount;
-			} else if (!(charState is Hurt)) {
-				stopCharge();
-			}
-		}
-	}
-
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -541,7 +441,7 @@ public class Rock : Character {
 		}
 
 		if (isRushCoil && isGHit && charState is Fall) {		
-			rush.changeState(new RushCoil());
+			rush?.changeState(new RushCoil());
 			vel.y = getJumpPower() * -1.5f;
 			changeState(new Jump(), true);
 			rushWeapon.addAmmo(-1, player);
@@ -590,6 +490,8 @@ public class Rock : Character {
 				addToLevel: addToLevel
 			),
 
+			_ => null
+
 		};
 		return proj;
 
@@ -628,7 +530,7 @@ public class Rock : Character {
 	}
 
 	public override void aiAttack(Actor target) {
-		if (AI.trainingBehavior != 0) {
+		/*if (AI.trainingBehavior != 0) {
 			return;
 		}
 		if (player.weapon == null) {
@@ -650,17 +552,7 @@ public class Rock : Character {
 			stopCharge();
 		} else if (canCharge() && shootAnimTime == 0) {
 			increaseCharge();
-		}
-	}
-
-	public override void chargeGfx() {
-		if (ownedByLocalPlayer) {
-			chargeEffect.stop();
-		}
-		if (isCharging()) {
-			chargeSound.play();
-			chargeEffect.update(getChargeLevel(), 0);
-		}
+		}*/
 	}
 
 	public bool canGoSuperAdaptor() {

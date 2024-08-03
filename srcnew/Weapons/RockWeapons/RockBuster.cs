@@ -15,7 +15,7 @@ public class RockBuster : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.MegaBuster;
 		//shootSounds = new List<string>() {"buster", "buster2", "buster3", ""};
-		rateOfFire = 0.15f;
+		fireRateFrames = 9;
 		description = new string[] { "Rock's default weapon.", "Can be charged to deal more damage." };
 	}
 
@@ -35,33 +35,6 @@ public class RockBuster : Weapon {
 			}
 		}
 		return lemonsOnField.Count < 3;
-	}
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		if (player.character.ownedByLocalPlayer) {
-			if (player.character is Rock rock) {
-
-				if (chargeLevel >= 2) {
-					if (player.character.grounded) {
-						player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-					} else new RockBusterChargedProj(pos, xDir, player, 0, netProjId);
-					player.character.playSound("buster3", sendRpc: true);
-				} else if (chargeLevel == 1) {
-					new RockBusterMidChargeProj(pos, xDir, player, 0, netProjId);
-					player.character.playSound("buster2", sendRpc: true);
-				} else {
-					var proj = new RockBusterProj(pos, xDir, player, netProjId, true);
-					lemonsOnField.Add(proj);
-					rock.lemons++;
-					player.character.playSound("buster", sendRpc: true);
-
-					rock.lemonTime += 20f * rock.lemons / 60f;
-					if (rock.lemonTime >= 1f) {
-						rock.lemonTime = 0;
-						rock.shootTime = 30f / 60f;
-					}
-				}
-			}
-		}
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -86,10 +59,10 @@ public class RockBuster : Weapon {
 					rock.lemons++;
 					character.playSound("buster", sendRpc: true);
 
-					rock.lemonTime += 20f * rock.lemons / 60f;
-					if (rock.lemonTime >= 1f) {
+					rock.lemonTime += 20f * rock.lemons;
+					if (rock.lemonTime >= 60f) {
 						rock.lemonTime = 0;
-						rock.shootTime = 30f / 60f;
+						rock.weaponCooldown = 30;
 					}
 				}
 			}

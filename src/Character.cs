@@ -2343,7 +2343,7 @@ public partial class Character : Actor, IDamagable {
 				DrawWrappers.DrawRect(topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1, true, Color.Yellow, 0, ZIndex.HUD - 1);
 
 				Fonts.drawText(
-					FontType.Grey, "Dropping...",
+					FontType.WhiteSmall, "Dropping...",
 					pos.x + 5, pos.y - 15 + currentLabelY,
 					Alignment.Center, true, depth: ZIndex.HUD
 				);
@@ -2394,7 +2394,7 @@ public partial class Character : Actor, IDamagable {
 				DrawWrappers.DrawRect(topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1, true, Color.Yellow, 0, ZIndex.HUD - 1);
 
 				Fonts.drawText(
-					FontType.Grey, "Dropping...",
+					FontType.WhiteSmall, "Dropping...",
 					pos.x + 5, pos.y - 15 + currentLabelY,
 					Alignment.Center, true, depth: ZIndex.HUD
 				);

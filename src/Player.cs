@@ -702,25 +702,19 @@ public partial class Player {
 	}
 
 	public float getMaxHealth() {
-		// 1v1 is the only mode without possible heart tanks/sub tanks
-		if (Global.level.is1v1()) {
-			return getModifiedHealth(28);
-		}
 		int baseHP = 28;
-		int bonus = 0;
-		if (isSigma && isPuppeteer()) {
-			bonus = 4;
-		}
-		//float hpModifier = getHealthModifier();
+
 		if (isProtoMan) {
 			baseHP = 14;
 		} else if (isBass) {
 			baseHP = 20;
 		}
-		//if (hpModifier < 1) {
-		//	return MathF.Ceiling((baseHP + bonus) * hpModifier);
-		//}
-		return MathF.Ceiling(baseHP + bonus);
+		// 1v1 is the only mode without possible heart tanks/sub tanks
+		if (Global.level.is1v1()) {
+			return getModifiedHealth(baseHP);
+		}
+		
+		return MathF.Ceiling(baseHP);
 	}
 
 	public void creditHealing(float healAmount) {

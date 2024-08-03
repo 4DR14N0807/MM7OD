@@ -16,7 +16,7 @@ public class DangerWrap : Weapon {
 		weaponSlotIndex = (int)RockWeaponSlotIds.DangerWrap;
 		//shootSounds = new List<string>() {"buster2", "buster2", "buster2", ""};
 		killFeedIndex = 0;
-		rateOfFire = 1.25f;
+		fireRateFrames = 75;
 		maxAmmo = 10;
 		ammo = maxAmmo;
 		description = new string[] { "Complex weapon able to catch foes.", "Press UP/LEFT/RIGHT to change direction", "or press DOWN to leave a mine." };

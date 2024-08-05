@@ -871,6 +871,7 @@ public class Damager {
 			projId == (int)RockProjIds.DangerWrapBubbleExplosion ||
 			projId == (int)RockProjIds.ScorchWheelBurn ||
 			projId == (int)RockProjIds.DangerWrapMine ||
+			projId == (int)BluesProjIds.GravityHold ||
 			projId == (int)BluesProjIds.ProtoStrike ||
 			projId == (int)BluesProjIds.BigBangStrike ||
 			projId == (int)BluesProjIds.BigBangStrikeExplosion ||

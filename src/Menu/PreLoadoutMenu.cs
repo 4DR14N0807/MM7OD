@@ -26,7 +26,7 @@ public class PreLoadoutMenu : IMainMenu {
 	}
 
 	public void update() {
-		Helpers.menuUpDown(ref selectY, 0, 1);
+		Helpers.menuUpDown(ref selectY, 0, 2);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			/*if (selectY == 0) {
 				Menu.change(new SelectWeaponMenu(this, false));
@@ -53,6 +53,9 @@ public class PreLoadoutMenu : IMainMenu {
 			if (selectY == 1) {
 				Menu.change(new BluesWeaponMenu(this, false));
 			}
+			if (selectY == 2) {
+				Menu.change(new BassWeaponMenu(this, false));
+			}
 		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
 			Menu.change(prevMenu);
 		}
@@ -72,6 +75,7 @@ public class PreLoadoutMenu : IMainMenu {
 
 		Fonts.drawText(FontType.Grey, "ROCKMAN LOADOUT", startX, optionPos[0], selected: selectY == 0);
 		Fonts.drawText(FontType.Grey, "PROTOMAN LOADOUT", startX, optionPos[1], selected: selectY == 1);
+		Fonts.drawText(FontType.Grey, "BASS LOADOUT", startX, optionPos[2], selected: selectY == 2);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 200, Alignment.Center);
 	}

@@ -74,6 +74,13 @@ public class SelectRockWeaponMenu : IMainMenu {
 		return selectedWeaponIndices[0] == selectedWeaponIndices[1] || selectedWeaponIndices[1] == selectedWeaponIndices[2] || selectedWeaponIndices[0] == selectedWeaponIndices[2];
 	}
 
+	public bool duplicateIndices() {
+		return
+		cursors[0].index == cursors[1].index ||
+		cursors[0].index == cursors[2].index ||
+		cursors[1].index == cursors[2].index;
+	}
+
 	public bool areWeaponArrSame(List<int> wepArr1, List<int> wepArr2) {
 		for (int i = 0; i < wepArr1.Count; i++) {
 			if (wepArr1[i] != wepArr2[i]) return false;
@@ -85,7 +92,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 	public void update() {
 		if (!string.IsNullOrEmpty(error)) {
 			if (Global.input.isPressedMenu(Control.MenuConfirm)) {
-				error = null;
+				error = null!;
 			}
 			return;
 		}
@@ -106,22 +113,31 @@ public class SelectRockWeaponMenu : IMainMenu {
 
 		Helpers.menuUpDown(ref selCursorIndex, 0, 3);
 
-		for (int i = 0; i < 4; i++) {
-			selectedWeaponIndices[i] = cursors[i].index;
-		}
-
 		//Adrián: Random Loadout feature (via Loadout menu)
 		
 		bool randomPressed = Global.input.isPressedMenu(Control.Special1);
 
 		if (randomPressed) {
-			Random slot0 = new Random(), slot1 = new Random(), slot2 = new Random();
-			
-			Global.playSound("menu");
-			//cursors[0].index = slot0.Next(0, 9);
-			cursors[1].index = slot1.Next(0, 9);
-			cursors[2].index = slot2.Next(0, 9);
+			bool duplicatedWeapons = true;
 
+			for (int i = 0; i < 4; i++) {
+				int maxRange = i < 3 ? 8 : 2;
+				if (i != selCursorIndex) cursors[i].index = Helpers.randomRange(0, maxRange);
+			}
+			Global.playSound("menu");
+			
+			while (duplicatedWeapons) {
+				for (int i = 0; i < 4; i++) {
+					int maxRange = i < 3 ? 8 : 2;
+					if (i != selCursorIndex) cursors[i].index = Helpers.randomRange(0, maxRange);
+				}
+
+				if (!duplicateIndices()) duplicatedWeapons = false;
+			}
+		}
+
+		for (int i = 0; i < 4; i++) {
+			selectedWeaponIndices[i] = cursors[i].index;
 		}
 
 		bool backPressed = Global.input.isPressedMenu(Control.MenuBack);

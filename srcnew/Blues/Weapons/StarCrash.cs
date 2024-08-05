@@ -116,6 +116,14 @@ public class StarCrashProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		blues?.destroyStarCrash();
+
+		for (int i = 0; i < 3; i++) {
+			float extraAngle = (starAngle + i * 120) % 360;
+			float xPlus = pos.x + (Helpers.cosd(extraAngle) * radius);
+			float yPlus = pos.y + (Helpers.sind(extraAngle) * radius);
+
+			new Anim(new Point(xPlus, yPlus), "star_crash_fade", xDir, blues?.player.getNextActorNetId(), true, true);
+		}
 	}
 
 	public override void render(float x, float y) {

@@ -25,6 +25,7 @@ public class RockBuster : Weapon {
 
 	public override bool canShoot(int chargeLevel, Player player) {
 		if (!base.canShoot(chargeLevel, player)) return false;
+		Rock? rock = player.character as Rock;
 		if (chargeLevel > 1) {
 			return true;
 		}
@@ -34,7 +35,7 @@ public class RockBuster : Weapon {
 				continue;
 			}
 		}
-		return lemonsOnField.Count < 3;
+		return lemonsOnField.Count < 3 && rock?.weaponCooldown <= 0;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -59,6 +60,7 @@ public class RockBuster : Weapon {
 					rock.lemons++;
 					character.playSound("buster", sendRpc: true);
 
+					rock.timeSinceLastShoot = 0;
 					rock.lemonTime += 20f * rock.lemons;
 					if (rock.lemonTime >= 60f) {
 						rock.lemonTime = 0;

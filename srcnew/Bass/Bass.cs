@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MMXOnline;
 
@@ -28,6 +29,7 @@ public class Bass : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Bass;
+		player.weapons = getLoadout();
 	}
 
 	public override bool canAddAmmo() {
@@ -167,6 +169,18 @@ public class Bass : Character {
 		return getShootYDir() * xDir * 32 + baseAngle;
 	}
 
+	//Loadout Stuff
+	public List<Weapon> getLoadout() {
+		if (Global.level.isTraining() && !Global.level.server.useLoadout) {
+			return getAllWeapons();
+		}  else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomBassLoadout) {
+			return getRandomLoadout();
+		} else if (Global.level.is1v1()) {
+			return getAllWeapons();
+		}
+		return getWeaponsFromLoadout(Options.main.bassLoadout);
+	}
+
 	public static List<Weapon> getAllWeapons() {
 		return new List<Weapon>() {
 			new BassBuster(),
@@ -175,10 +189,45 @@ public class Bass : Character {
 			new SpreadDrill(),
 			new WaveBurner(),
 			new RemoteMine(),
-			new LightingBolt(),
+			new LightningBolt(),
 			new TenguBlade(),
 			new MagicCard(),
 		};
+	}
+
+	public List<Weapon> getWeaponsFromLoadout(BassLoadout loadout) {
+		var list = new List<Weapon>();
+
+		list.Add(getAllWeapons()[loadout.weapon1]);
+		list.Add(getAllWeapons()[loadout.weapon2]);
+		list.Add(getAllWeapons()[loadout.weapon3]);
+
+		return list;
+	}
+
+	public static List<Weapon> getRandomLoadout() {
+		Random slot0 = new Random(), slot1 = new Random(), slot2 = new Random();
+		bool hasRepeatedWeapons = true;
+		int[] weaponIndexes = new int[3];
+		var indices = new List<byte>();
+
+		while (hasRepeatedWeapons) {
+			weaponIndexes[0] = Helpers.randomRange(0, 8);
+			weaponIndexes[1] = Helpers.randomRange(0, 8);
+			weaponIndexes[2] = Helpers.randomRange(0, 8);
+
+			if (weaponIndexes[0] != weaponIndexes[1] 
+				&& weaponIndexes[0] != weaponIndexes[2] 
+				&& weaponIndexes[1] != weaponIndexes[2]) hasRepeatedWeapons = false;
+		}
+
+		indices.Add((byte)weaponIndexes[0]);
+		indices.Add((byte)weaponIndexes[1]);
+		indices.Add((byte)weaponIndexes[2]);
+
+		return indices.Select(index => {
+			return getAllWeapons().Find(w => w.index == index).clone();
+		}).ToList();;
 	}
 
 	public override string getSprite(string spriteName) {

@@ -840,6 +840,46 @@ public class OptionsMenu : IMainMenu {
 					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
 				),
 			};
+		} else if (charNum == 7) {
+			menuOptions = new List<MenuOption>() {
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.useRandomBassLoadout);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"USE RANDOM LOADOUT:",
+							pos.x, pos.y
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.useRandomBassLoadout),
+							pos.x + 200, pos.y
+						);
+					},
+					"Generates a random loadout when respawning."
+				),
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightInc(ref Options.main.gridModeBass, 0, 2);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText, "WEAPON SWITCH GRID MODE:",
+ 							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, gridModeToStr(Options.main.gridModeBass),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"For weapon switch in certain or all modes.\n" +
+					"Hold WEAPON L/R and use a directon to switch weapon."
+				),
+			};
 		}
 		
 		
@@ -1598,7 +1638,9 @@ public class OptionsMenu : IMainMenu {
 		else if (charNum == 2) subtitle = "VILE SETTINGS";
 		else if (charNum == 3) subtitle = "AXL SETTINGS";
 		else if (charNum == 4) subtitle = "SIGMA SETTINGS";
-		else if (charNum == 5) subtitle = "ROCKMAN SETTINGS";
+		else if (charNum == 5) subtitle = "MEGAMAN SETTINGS";
+		else if (charNum == 6) subtitle = "PROTOMAN SETTINGS";
+		else if (charNum == 7) subtitle = "BASS SETTINGS";
 		Fonts.drawText(FontType.BlueMenu, subtitle, Global.halfScreenW, 20, Alignment.Center);
 		Fonts.drawTextEX(
 			FontType.Grey, "[MLEFT]/[MRIGHT]: Change, [BACK]: Save and Back",

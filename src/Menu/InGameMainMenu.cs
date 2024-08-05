@@ -31,6 +31,8 @@ public class InGameMainMenu : IMainMenu {
 					Menu.change(new SelectRockWeaponMenu(this, true));
 				}  else if (Global.level.mainPlayer.realCharNum == 6) {
 					Menu.change(new BluesWeaponMenu(this, true));
+				} else if (Global.level.mainPlayer.realCharNum == 7) {
+					Menu.change(new BassWeaponMenu(this, true));
 				}
 				 else if (Global.level.mainPlayer.realCharNum == 4) {
 					Menu.change(new SelectSigmaWeaponMenu(this, true));

@@ -22,11 +22,12 @@ public class PreOptionsMenu : IMainMenu {
 	}
 
 	public void update() {
-		Helpers.menuUpDown(ref selectY, 0, 4);
+		Helpers.menuUpDown(ref selectY, 0, 5);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			int? charNum = null;
 			if (selectY == 3) charNum = 5;
 			else if (selectY == 4) charNum = 6;
+			else if (selectY == 5) charNum = 7;
 
 
 			Menu.change(new OptionsMenu(this, inGame, charNum, selectY));
@@ -62,8 +63,9 @@ public class PreOptionsMenu : IMainMenu {
 		//Fonts.drawText(menuFont, "Vile settings", startX, optionPos[5], selected: selectY == 5);
 		//Fonts.drawText(menuFont, "Axl settings", startX, optionPos[6], selected: selectY == 6);
 		//Fonts.drawText(menuFont, "Sigma settings", startX, optionPos[7], selected: selectY == 7);
-		Fonts.drawText(menuFont, "ROCKMAN SETTINGS", startX, optionPos[3], selected: selectY == 3);
+		Fonts.drawText(menuFont, "MEGAMAN SETTINGS", startX, optionPos[3], selected: selectY == 3);
 		Fonts.drawText(menuFont, "PROTOMAN SETTINGS", startX, optionPos[4], selected: selectY == 4);
+		Fonts.drawText(menuFont, "BASS SETTINGS", startX, optionPos[5], selected: selectY == 5);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 198, Alignment.Center);
 	}

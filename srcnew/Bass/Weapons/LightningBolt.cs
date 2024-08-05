@@ -2,9 +2,10 @@ using System;
 
 namespace MMXOnline;
 
-public class LightingBolt : Weapon {
-	public LightingBolt() : base() {
-		index = (int)BassWeaponIds.LightingBolt;
+public class LightningBolt : Weapon {
+	public LightningBolt() : base() {
+		index = (int)BassWeaponIds.LightningBolt;
+		displayName = "LIGHTNING BOLT";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

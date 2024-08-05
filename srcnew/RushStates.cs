@@ -103,6 +103,8 @@ public class RushWarpIn : RushState {
 		}
 
 		if (landed && rush.isAnimOver()) rush.changeState(new RushIdle());
+
+		if (stateTime >= 120) rush.destroySelf();
 	}
 
 	public override void postUpdate() {

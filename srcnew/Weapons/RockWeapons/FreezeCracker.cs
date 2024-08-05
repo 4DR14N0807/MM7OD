@@ -20,19 +20,6 @@ public class FreezeCracker : Weapon {
 		description = new string[] { "Splits in 6 pieces when hitting a wall.", "Can be aimed up or down." };
 	}
 
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-
-		if (player.character.ownedByLocalPlayer) {
-			/*if (chargeLevel >= 2 && player.hasBusterLoadout()) {
-                player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-            }
-            else */
-			new FreezeCrackerProj(pos, xDir, player, 0, netProjId);
-			player.character.playSound("buster2", sendRpc: true);
-		}
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();

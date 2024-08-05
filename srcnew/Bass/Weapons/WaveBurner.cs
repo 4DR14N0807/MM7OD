@@ -9,6 +9,7 @@ public class WaveBurner : Weapon {
 
 	public WaveBurner() : base() {
 		index = (int)BassWeaponIds.WaveBurner;
+		displayName = "WAVE BURNER";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

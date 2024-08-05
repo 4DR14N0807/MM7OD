@@ -114,6 +114,8 @@ public class Options {
 
 	// Bass
 	public BassLoadout bassLoadout = BassLoadout.createDefault();
+	public int gridModeBass;
+	public bool useRandomBassLoadout;
 	
 	// Punchy Zero
 	public PZeroLoadout pzeroLoadout = new PZeroLoadout();
@@ -166,6 +168,7 @@ public class Options {
 		sigmaLoadout.validate();
 		rockLoadout.validate();
 		bluesLoadout.validate();
+		bassLoadout.validate();
 	}
 
 	public static bool isValidLANIP(string LANIPPrefix) {

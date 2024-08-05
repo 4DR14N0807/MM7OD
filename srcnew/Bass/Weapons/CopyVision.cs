@@ -10,6 +10,7 @@ public class CopyVision : Weapon {
 
 	public CopyVision() : base() {
 		index = (int)BassWeaponIds.CopyVision;
+		displayName = "COPY VISION";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

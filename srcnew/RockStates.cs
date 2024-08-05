@@ -118,7 +118,9 @@ public class ShootAlt : CharState {
 	Weapon stateWeapon;
 	bool fired;
 	int chargeLv;
-	public ShootAlt(Weapon stateWeapon, int chargeLv) : base("shoot2") {
+	bool isUnderwaterSW;
+	public ShootAlt(Weapon stateWeapon, int chargeLv, bool underwater = false) : 
+	base(underwater ? "shoot_swell" : "shoot2") {
 		normalCtrl = false;
 		airMove = true;
 		canStopJump = true;
@@ -128,11 +130,17 @@ public class ShootAlt : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		
+		if (character.isUnderwater() && stateWeapon is ScorchWheel) {
+			character.changeSpriteFromName("shoot_swell", true);
+		}
+
+		isUnderwaterSW = character.isUnderwater() && stateWeapon is ScorchWheel;
 		bool air = !character.grounded || character.vel.y < 0;
 		defaultSprite = sprite;
-		landSprite = "shoot2";
+		landSprite = isUnderwaterSW ? "shoot_swell" : "shoot2";
 		if (air) {
-			sprite = "shoot2_air";
+			sprite = isUnderwaterSW ? "shoot_swell_air" : "shoot2_air";
 			defaultSprite = sprite;
 		}
 		character.changeSpriteFromName(sprite, true);
@@ -192,7 +200,7 @@ public class ShootAlt : CharState {
 		} else {
 			if ((character.grounded) && player.input.isPressed(Control.Jump, player)) {
 				character.vel.y = -character.getJumpPower();
-				sprite = "shoot2_air";
+				sprite = isUnderwaterSW ? "shoot_swell_air" : "shoot2_air";
 				character.changeSpriteFromName(sprite, false);
 			}
 		}
@@ -206,7 +214,8 @@ public class ShootAltLadder : CharState {
 	int chargeLv;
 
 	//Adrián: This is used for weapons with different shoot anims (Wild Coil, Junk Shield, etc) while being in a ladder.
-	public ShootAltLadder(Weapon ladderWeapon, int chargeLv) : base("ladder_shoot2") {
+	public ShootAltLadder(Weapon ladderWeapon, int chargeLv, bool underwater = false) : 
+	base(underwater ? "ladder_shoot_swell" : "ladder_shoot2") {
 		normalCtrl = false;
 		this.ladderWeapon = ladderWeapon;
 		this.chargeLv = chargeLv;
@@ -340,7 +349,7 @@ public class CallDownRush : CharState {
 
 			switch (phase) {
 				case 0: //Rush Call
-					if (rush.pos.y < character.pos.y) {
+					if (rush.pos.y < character.getCenterPos().y) {
 						rush.vel.y = 480;
 					} else phase = 1;
 					break;
@@ -360,8 +369,6 @@ public class CallDownRush : CharState {
 					rush.changeSprite("sa_rush_jump", false);
 					rush.move(rush.pos.directionToNorm(rockPos).times(300));
 					if (rush.pos.distanceTo(rockPos) < 10) isXAllign = true;
-					//rush.moveToXPos(new Point(character.pos.x, character.pos.y - 32), 60);
-					//rush.moveToPos(new Point(character.pos.x, character.pos.y + 64), 120);
 					if (isXAllign) phase = 3;
 					break;
 
@@ -398,9 +405,9 @@ public class CallDownRush : CharState {
 					rush.vel.y = 420;
 					jumpTime++;
 
-					if (jumpTime >= 12) {
+					if (jumpTime >= 6) {
 						rush.destroySelf();
-						new Anim(character.pos, "sa_activate_effect", 1, null, true, true);
+						new Anim(character.pos, "sa_activate_effect", 1, character.player.getNextActorNetId(), true, true);
 						string endSprite = character.grounded ? "rock_sa_activate_end" : "rock_sa_activate_end_air";
 						character.changeSprite(endSprite, true);
 						Global.playSound("super_adaptor_activate");

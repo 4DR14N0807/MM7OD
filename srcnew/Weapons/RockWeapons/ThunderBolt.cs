@@ -19,21 +19,6 @@ public class ThunderBolt : Weapon {
 		description = new string[] { "Powerful DPS weapon.", "Divides in 2 when hitting an enemy." };
 	}
 
-
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-
-		if (player.character.ownedByLocalPlayer) {
-			/*if (chargeLevel >= 2 && player.hasBusterLoadout()) {
-            	player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-        	}
-		
-			else */
-			new ThunderBoltProj(pos, xDir, player, 0, netProjId);
-			player.character.playSound("thunder_bolt", sendRpc: true);
-		}
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();

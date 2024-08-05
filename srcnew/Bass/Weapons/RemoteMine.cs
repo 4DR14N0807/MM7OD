@@ -8,6 +8,7 @@ public class RemoteMine : Weapon {
 
 	public RemoteMine() : base() {
 		index = (int)BassWeaponIds.RemoteMine;
+		displayName = "REMOTE MINE";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

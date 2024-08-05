@@ -16,15 +16,6 @@ public class RushWeapon : Weapon {
 		return 0;
 	}
 
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-		/*if (player.character is Rock rock) {
-			int type = rock.rushWeaponIndex;
-			rock.rush = new Rush(pos, player, xDir, netProjId, true, type, true);
-		}*/
-		shoot(player.character, (int)chargeLevel);
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();

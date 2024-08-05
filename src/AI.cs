@@ -1384,7 +1384,7 @@ public class AI {
 				break;
 			// If the character is on fall state, Drop Kick.
 			case 5 when pzero.charState is Fall:
-				pzero.changeState(new PZeroDropKickState(), true);
+				//pzero.changeState(new PZeroDropKickState(), true);
 				break;
 			// if the character is on Jump or Fall, Air Kick.
 			case 6 when pzero.charState is Jump or Fall:

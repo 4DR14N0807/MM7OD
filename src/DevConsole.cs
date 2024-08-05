@@ -253,8 +253,6 @@ public class DevConsole {
 		new Command("checksum", (args) => printChecksum(), false),
 		new Command("dna", (args) => addDnaCore(args)),
 		new Command("timeleft", (args) => Global.level.gameMode.remainingTime = 5),
-		new Command("subtank", (args) => fillSubtank(args)),
-		new Command("subtest", (args) => { fillSubtank(args); setHealth(new string[] { "1" }); }),
 		new Command("aiattack", (args) => AI.trainingBehavior = AITrainingBehavior.Attack),
 		new Command("aijump", (args) => AI.trainingBehavior = AITrainingBehavior.Jump),
 		new Command("aiguard", (args) => AI.trainingBehavior = AITrainingBehavior.Guard),

@@ -603,7 +603,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canCharge() {
-		if (charState is Burning) return false;
 		if (invulnTime > 0) return false;
 		if (flag != null) return false;
 		if (isWarpIn()) return false;

@@ -4,6 +4,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -178,13 +181,21 @@ class Program {
 		}
 
 		// Loading with GUI.
+		string urlText = "Using local conection.";
+		bool hasServerOnlineUrl = false;
+
 		loadText.Add("Getting Master Server URL...");
 		loadMultiThread(loadText, window, MasterServerData.updateMasterServerURL);
-		if (MasterServerData.serverIp == "127.0.0.1") {
-			loadText[loadText.Count - 1] = "Using local conection.";
-		} else {
-			loadText[loadText.Count - 1] = "Master Server OK.";
+		if (MasterServerData.serverIp != "127.0.0.1") {
+			urlText = "All IPs OK.";
+			hasServerOnlineUrl = true;
 		}
+		loadText[loadText.Count - 1] = "Getting local IPs...";
+		loadMultiThread(loadText, window, getRadminIP);
+		if (Global.radminIP != "" && hasServerOnlineUrl) {
+			urlText += " Radmin detected.";
+		}
+		loadText[loadText.Count - 1] = urlText;
 
 		loadText.Add("Deleting MMX Sprites..."); //Loading Sprites...
 		loadMultiThread(loadText, window, loadImages);
@@ -233,9 +244,22 @@ class Program {
 			Menu.change(menu);
 			menu.completeAction();
 		} else if (mode == 2) {
-			// TODO: Fix this.
+			// TODO: Fix this.y
 			// Somehow we need to get the data before we connect.
 			Menu.change(new JoinMenuP2P(true));
+			var me = new ServerPlayer(
+				Options.main.playerName, 0, false,
+				SelectCharacterMenu.playerData.charNum, null, Global.deviceId, null, 0
+			);
+			Global.serverClient = ServerClient.CreateDirect(
+				args[0], int.Parse(args[1]), me,
+				out JoinServerResponse joinServerResponse, out string error
+			);
+			if (joinServerResponse != null && error == null) {
+				Menu.change(new WaitMenu(new MainMenu(), joinServerResponse.server, false));
+			} else {
+				Menu.change(new ErrorMenu(error, new MainMenu()));
+			}
 		}
 
 		while (window.IsOpen) {
@@ -1118,6 +1142,27 @@ class Program {
 
 		return true;
 	}
+
+	public static void getRadminIP() {
+		var local = NetworkInterface.GetAllNetworkInterfaces();
+		foreach (NetworkInterface net in local) {
+			if (net.NetworkInterfaceType != NetworkInterfaceType.Ethernet) {
+				continue;
+			}
+			if (!net.Description.ToLowerInvariant().Contains("radmin")) {
+				continue;
+			}
+			foreach (var uniAdress in net.GetIPProperties().UnicastAddresses) {
+				IPAddress ipAddress = IPAddress.Parse(uniAdress.Address.ToString());
+				if (ipAddress.AddressFamily == AddressFamily.InterNetwork) {
+					Global.radminIP = ipAddress.ToString();
+					return;
+				}
+			}
+		}
+	}
+
+	// Main loop stuff.
 	public static decimal deltaTimeSavings = 0;
 	public static decimal lastUpdateTime = 0;
 

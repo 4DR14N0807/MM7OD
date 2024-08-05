@@ -1380,7 +1380,7 @@ public partial class Character : Actor, IDamagable {
 		if (charState.airMove && !grounded) {
 			airMove();
 		}
-		if (charState.canJump && (grounded || canAirJump())) {
+		if (charState.canJump && (grounded || canAirJump() && flag == null)) {
 			if (player.input.isPressed(Control.Jump, player)) {
 				if (!grounded) {
 					dashedInAir++;
@@ -1430,12 +1430,14 @@ public partial class Character : Actor, IDamagable {
 			} else if (player.dashPressed(out string dashControl) && canDash() && charState is not Dash) {
 				changeState(new Dash(dashControl), true);
 				return true;
-			} else if (rideArmorPlatform != null &&
-				  player.input.isPressed(Control.Jump, player) &&
-				  player.input.isHeld(Control.Up, player) &&
-				  canEjectFromRideArmor()
+			} else if (
+				rideArmorPlatform != null &&
+				player.input.isPressed(Control.Jump, player) &&
+				player.input.isHeld(Control.Up, player) &&
+				canEjectFromRideArmor()
 			  ) {
 				getOffMK5Platform();
+				changeState(new Jump());
 				return true;
 			}
 			if (player.isCrouchHeld() && canCrouch() && charState is not Crouch) {
@@ -1449,7 +1451,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Air normal states.
 		else {
-			if (player.dashPressed(out string dashControl) && canAirDash() && canDash()) {
+			if (player.dashPressed(out string dashControl) && canAirDash() && canDash() && flag == null) {
 				changeState(new AirDash(dashControl));
 				return true;
 			}
@@ -1459,7 +1461,7 @@ public partial class Character : Actor, IDamagable {
 				return true;
 			}
 
-			if (canAirJump()) {
+			if (canAirJump() && flag == null) {
 				if (player.input.isPressed(Control.Jump, player) && canJump()) {
 					lastJumpPressedTime = Global.time;
 				}
@@ -1771,7 +1773,7 @@ public partial class Character : Actor, IDamagable {
 	public bool canBeGrabbed() {
 		return (
 			grabInvulnTime == 0 && !charState.invincible &&
-			!isInvulnerable() && !isCCImmune() && isDarkHoldState
+			!isInvulnerable() && !isCCImmune() && !isDarkHoldState
 		);
 	}
 
@@ -3560,11 +3562,12 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void releaseGrab(Actor grabber, bool sendRpc = false) {
-		charState?.releaseGrab();
+		charState.releaseGrab();
 		if (!ownedByLocalPlayer) {
 			RPC.commandGrabPlayer.sendRpc(
 				grabber.netId, netId, CommandGrabScenario.Release, grabber.isDefenderFavored()
 			);
+			changeState(new NetLimbo());
 		}
 	}
 

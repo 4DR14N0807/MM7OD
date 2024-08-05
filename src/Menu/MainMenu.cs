@@ -231,8 +231,7 @@ public class MainMenu : IMainMenu {
 			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
 			Fonts.drawText(FontType.Grey, "Loading...", Global.screenW / 2, top, Alignment.Center);
 		} else {
-			//string versionText = "v" + Global.version + " " + Global.subVersionShortName + " " + Global.shortForkName;
-			string versionText = Global.shortForkName + " " + Global.versionName;
+			string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
 			/*
 			if (Helpers.compareVersions(Global.version, Global.serverVersion) == -1 &&
 				Global.serverVersion != decimal.MaxValue
@@ -245,8 +244,11 @@ public class MainMenu : IMainMenu {
 				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 9);
 				offset += 10;
 			}
-			Fonts.drawText(FontType.WhiteSmall, versionText, 2, 2);
-
+			Fonts.drawText(FontType.DarkBlue, versionText, 2, offset);
+			offset += 10;
+			if (Global.radminIP != "") {
+				Fonts.drawText(FontType.DarkGreen, "Radmin", 2, offset);
+			}
 		}
 	}
 }

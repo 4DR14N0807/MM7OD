@@ -227,7 +227,7 @@ public partial class Actor : GameObject {
 		zIndex = ++Global.level.autoIncActorZIndex;
 		lastNetUpdate = Global.time;
 
-		if (netId is not null and >= Level.firstNormalNetId) {
+		if (netId is not null) {
 			Global.level.actorsById[netId.Value] = this;
 		}
 
@@ -1378,7 +1378,7 @@ public partial class Actor : GameObject {
 		if (!destroyed) {
 			destroyed = true;
 			destroyedOnFrame = Global.frameCount;
-			if (netId is not null and >= Level.firstNormalNetId &&
+			if (netId is not null &&
 				Global.level.actorsById.ContainsKey(netId.Value)
 			) {
 				if (Global.level.actorsById[netId.Value] == this) {

@@ -82,7 +82,7 @@ public class InGameMainMenu : IMainMenu {
 	}
 
 	public bool isSelWepDisabled() {
-		return Global.level.is1v1() || mainPlayer.realCharNum == (int)CharIds.BusterZero;
+		return Global.level.is1v1() || mainPlayer?.realCharNum == (int)CharIds.BusterZero;
 	}
 
 	public bool isSelArmorDisabled() {

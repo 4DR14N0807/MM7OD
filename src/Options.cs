@@ -65,7 +65,7 @@ public class Options {
 	public int hyperChargeSlot;
 	public bool novaStrikeSpecial;
 	public bool gigaCrushSpecial;
-	public XLoadout xLoadout = new XLoadout();
+	public XLoadout xLoadout = XLoadout.getDefault();
 
 	// Zero
 	public bool swapAirAttacks;

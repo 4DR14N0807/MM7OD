@@ -17,20 +17,20 @@ namespace MMXOnline;
 public partial class Global {
 	public static decimal version = 20m;
 	public static string versionName = "v0.2";
-	public static string subVersionName = "Alpha 12 RC 1";
-	public static string subVersionShortName = "a12";
+	public static string subVersionName = "Alpha";
+	public static string subVersionShortName = "Alpha";
 
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "AB831F535E1DEE1A7A88AA694CD1E561";
+	private const string assetChecksum = "86B00C17076AD59E94D34BEF561B5710";
 
 	// For forks/mods of the game, add a prefix here so that different forks
 	// don't conflict with each other or the base game
 	public const string checksumPrefix = "[Community Edition]";
 	// Use this to make sure the checksum varies.
 	// Better to use together with "checksumPrefix" and be diferent from it.
-	public const string checksumPrefix2 = "CE-A12-Devtest";
+	public const string checksumPrefix2 = "CE-A12-RC7-03-08-2024";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;
 	// For displaying the name of the mod in the version string.
@@ -160,6 +160,9 @@ public partial class Global {
 	public static bool overrideDrawCursorChar = false;
 	public static bool overrideDrawName = false;
 	public static bool overrideDrawHealth = false;
+
+	// IP Data.
+	public static string radminIP = "";
 
 	// IF YOU ADD ANY DEBUG SETTINGS YOU MUST SET THEM TO INACTIVE VALUE IN THIS FUNCTION
 	public static void Init() {

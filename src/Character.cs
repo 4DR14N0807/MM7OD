@@ -240,6 +240,7 @@ public partial class Character : Actor, IDamagable {
 		spriteToCollider["revive_to5"] = null;
 		spriteToCollider["die"] = null;
 		spriteToCollider["block"] = getBlockCollider();
+		spriteToCollider["burning"] = null;
 
 		changeState(initialCharState, true);
 		visible = isVisible;

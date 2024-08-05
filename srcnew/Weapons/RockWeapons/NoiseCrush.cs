@@ -21,36 +21,9 @@ public class NoiseCrush : Weapon {
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
-		Rock? rock = player.character as Rock ?? throw new NullReferenceException();
-		if (rock.hasChargedNoiseCrush) return true;
+		Rock? rock = player.character as Rock;
+		if (rock != null && rock.hasChargedNoiseCrush) return true;
 		return base.canShoot(chargeLevel, player);
-	}
-
-
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		if (player.character.ownedByLocalPlayer) {
-			if (player.character is Rock rock) {
-
-				if (chargeLevel >= 2 && rock.hasChargedNoiseCrush) {
-					player.character.playSound("noise_crush", sendRpc: true);
-					new NoiseCrushChargedProj(pos, xDir, player, 0, netProjId, true);
-					new NoiseCrushChargedProj(new Point(pos.x - (6 * xDir), pos.y), xDir, player, 0, netProjId, true);
-					new NoiseCrushChargedProj(new Point(pos.x - (12 * xDir), pos.y), xDir, player, 1, netProjId, true);
-					new NoiseCrushChargedProj(new Point(pos.x - (18 * xDir), pos.y), xDir, player, 2, netProjId, true);
-					new NoiseCrushChargedProj(new Point(pos.x - (24 * xDir), pos.y), xDir, player, 3, netProjId, true);
-					rock.hasChargedNoiseCrush = false;
-					rock.noiseCrushAnimTime = 0;
-				} else {
-					player.setNextActorNetId(netProjId);
-					new NoiseCrushProj(pos, xDir, player, 0, player.getNextActorNetId(true), true, true);
-					new NoiseCrushProj(new Point(pos.x - (4 * xDir), pos.y), xDir, player, 0, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(new Point(pos.x - (8 * xDir), pos.y), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(new Point(pos.x - (12 * xDir), pos.y), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(new Point(pos.x - (16 * xDir), pos.y), xDir, player, 2, player.getNextActorNetId(true), rpc: true);
-					player.character.playSound("noise_crush", sendRpc: true);
-				}
-			}
-		}
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -59,24 +32,25 @@ public class NoiseCrush : Weapon {
 		int xDir = character.getShootXDir();
 		Player player = character.player;
 		int chargeLevel = args[0];
+		bool charged = args[1] == 1;
 
 		if (player.character is Rock rock) {
 
-				if (chargeLevel >= 2 && rock.hasChargedNoiseCrush) {
+				if (charged) {
 					character.playSound("noise_crush_charged");
 					new NoiseCrushChargedProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(6 * xDir, 0), xDir, player, 0, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(12 * xDir, 0), xDir, player, 1, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(18 * xDir, 0), xDir, player, 2, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(24 * xDir, 0), xDir, player, 3, player.getNextActorNetId(), true);
+					new NoiseCrushChargedProj(shootPos.addxy(6 * -xDir, 0), xDir, player, 0, player.getNextActorNetId(), true);
+					new NoiseCrushChargedProj(shootPos.addxy(12 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(), true);
+					new NoiseCrushChargedProj(shootPos.addxy(18 * -xDir, 0), xDir, player, 2, player.getNextActorNetId(), true);
+					new NoiseCrushChargedProj(shootPos.addxy(24 * -xDir, 0), xDir, player, 3, player.getNextActorNetId(), true);
 					rock.hasChargedNoiseCrush = false;
 					rock.noiseCrushAnimTime = 0;
 				} else {
 					new NoiseCrushProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true, true);
-					new NoiseCrushProj(shootPos.addxy(4 * xDir, 0), xDir, player, 0, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(shootPos.addxy(8 * xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(shootPos.addxy(12 * xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(shootPos.addxy(16 * xDir, 0), xDir, player, 2, player.getNextActorNetId(true), rpc: true);
+					new NoiseCrushProj(shootPos.addxy(4 * -xDir, 0), xDir, player, 0, player.getNextActorNetId(true), rpc: true);
+					new NoiseCrushProj(shootPos.addxy(8 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
+					new NoiseCrushProj(shootPos.addxy(12 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
+					new NoiseCrushProj(shootPos.addxy(16 * -xDir, 0), xDir, player, 2, player.getNextActorNetId(true), rpc: true);
 					character.playSound("noise_crush", sendRpc: true);
 				}
 			}

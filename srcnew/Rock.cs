@@ -19,6 +19,7 @@ public class Rock : Character {
 	public SARocketPunchProj? saRocketPunchProj;
 	public bool hasChargedNoiseCrush = false;
 	public float noiseCrushAnimTime;
+	public LoopingSound? chargedNoiseCrushSound;
 	public bool usedDoubleJump;
 	public bool boughtSuperAdaptorOnce;
 	public float arrowSlashCooldown;
@@ -44,12 +45,12 @@ public class Rock : Character {
 	) {
 		charId = CharIds.Rock;
 
-		spriteToCollider["burning"] = null;
 		spriteToCollider["sa_activate_air"] = null;
 		spriteToCollider["sa_activate"] = null;
 		spriteToCollider["sa_activate_end"] = null;
 		spriteToCollider["sa_activate_end_air"] = null;
 
+		charge1Time = 40;
 		charge2Time = 80;
 		var rl = player.loadout.rockLoadout.rushLoadout;
 		rushWeaponIndex = rl;
@@ -69,8 +70,8 @@ public class Rock : Character {
 		if (!ownedByLocalPlayer) return;
 
 		Helpers.decrementFrames(ref lemonTime);
-		Helpers.decrementTime(ref arrowSlashCooldown);
-		Helpers.decrementTime(ref legBreakerCooldown);
+		Helpers.decrementFrames(ref arrowSlashCooldown);
+		Helpers.decrementFrames(ref legBreakerCooldown);
 		Helpers.decrementFrames(ref weaponCooldown);
 
 		timeSinceLastShoot++;
@@ -81,6 +82,15 @@ public class Rock : Character {
 		}
 
 		if (player.weapon is not NoiseCrush) hasChargedNoiseCrush = false;
+
+		if (hasChargedNoiseCrush) {
+			if (chargedNoiseCrushSound == null) {
+				chargedNoiseCrushSound = new LoopingSound("charge_start", "charge_loop", this);
+			} else chargedNoiseCrushSound.play();
+		} else if (chargedNoiseCrushSound != null) {
+			chargedNoiseCrushSound.stop();
+			chargedNoiseCrushSound = null!;
+		}
 
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
@@ -104,15 +114,19 @@ public class Rock : Character {
 		bool slidePressed = player.dashPressed(out string slideControl);
 		bool jumpPressed = player.input.isPressed(Control.Jump, player);
 
-		if (slidePressed && canSlide()) {
+		if (slidePressed && canSlide() && charState is not Slide) {
 			changeState(new Slide(slideControl), true);
 			return true;
 		}
 
-		if (jumpPressed && !grounded && hasSuperAdaptor && !usedDoubleJump) {
+		if (jumpPressed && !grounded && hasSuperAdaptor && !usedDoubleJump && flag == null) {
 			changeState(new RockDoubleJump(), true);
+			usedDoubleJump = true;
 			return true;
 		}
+
+		if (grounded) usedDoubleJump = false;
+
 		return base.normalCtrl();
 	}
 
@@ -123,16 +137,21 @@ public class Rock : Character {
 		bool slidePressed = player.dashPressed(out string slideControl);
 		bool arrowSlashInput = player.input.checkHadoken(player, xDir, Control.Shoot);
 
+		if (specialPressed && canCallRush()) {
+			rushWeapon.shoot(this, 0);
+			return true;
+		}
+
 		if (hasSuperAdaptor) {
-			if (slidePressed && downHeld && canSlide() && legBreakerCooldown <= 0) {
+			if (slidePressed && downHeld && legBreakerCooldown <= 0 && canSlide()) {
 				changeState(new LegBreakerState(slideControl), true);
-				legBreakerCooldown = 90f / 60f;
+				legBreakerCooldown = 90f;
 				return true;
 			}
 
 			if (arrowSlashInput && arrowSlashCooldown <= 0 && charState is not LadderClimb) {
 				changeState(new SAArrowSlashState(), true);
-				arrowSlashCooldown = 90f / 60f;
+				arrowSlashCooldown = 90f;
 				return true;
 			}
 		}
@@ -157,6 +176,8 @@ public class Rock : Character {
 	}
 
 	public void shoot(int chargeLevel) {
+		if (!player.weapon.canShoot(chargeLevel, player)) return;
+		if (!canShoot()) return;
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
 			changeToIdleOrFall();
 		}
@@ -164,13 +185,16 @@ public class Rock : Character {
 		float oldShootAnimTime = shootAnimTime;
 		
 		setShootAnim();
+
+		int chargedNS = hasChargedNoiseCrush ? 1 : 0;
 		
-		player.weapon.shoot(this, chargeLevel);
 		weaponCooldown = player.weapon.fireRateFrames;
+		player.weapon.shoot(this, chargeLevel, chargedNS);
 		player.weapon.addAmmo(-player.weapon.getAmmoUsage(chargeLevel), player);
 		if (oldShootAnimTime <= 0.25f) {
 			shootAnimTime = 0.25f;
 		}
+		stopCharge();
 	}
 
 	public void setShootAnim() {
@@ -280,14 +304,17 @@ public class Rock : Character {
 		//float distFromCenter = Helpers.randomRange(-16, 16);
 		float posOffset = noiseCrushAnimTime * 50;
 		int hyperChargeAnimFrame = MathInt.Floor((noiseCrushAnimTime / 12) * sprite1.frames.Count);
+		for (int i = 0; i < 8; i++) {
+			sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16,16), sy, 1,1, null, 1,1,1, zIndex + 1);
+		}
+		/*sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
 		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
 		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
 		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
 		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
 		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
 		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
-		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
-		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);
+		sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16, 16), sy, 1, 1, null, 1, 1, 1, zIndex + 1);*/
 	}
 
 	public override bool canMove() {
@@ -377,12 +404,14 @@ public class Rock : Character {
 	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
 	}
+	
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
 
 		int index = player.weapon.index;
+		if (index > (int)RockWeaponIds.WildCoil) index = (int)RockWeaponIds.MegaBuster;
 		palette = player.rockPaletteShader;
 
 		palette?.SetUniform("palette", index);
@@ -469,9 +498,13 @@ public class Rock : Character {
 
 	public override int getHitboxMeleeId(Collider hitbox) {
 		return (int)(sprite.name switch {
-			"rock_slashclaw" => MeleeIds.SlashClaw,
-			"rock_slashclaw_air" => MeleeIds.SlashClaw,
+			"rock_slashclaw" or
+			"rock_slashclaw_air" or
 			"rock_ladder_slashclaw" => MeleeIds.SlashClaw,
+
+			"rock_shoot_swell" or 
+			"rock_ladder_shoot_swell" => MeleeIds.UnderWaterScorchWheel,
+
 			"rock_sa_legbreaker" => MeleeIds.LegBreaker,
 			_ => MeleeIds.None
 		});
@@ -485,6 +518,12 @@ public class Rock : Character {
 				addToLevel: addToLevel
 
 			),
+
+			(int)MeleeIds.UnderWaterScorchWheel => new GenericMeleeProj(
+				new ScorchWheel(), projPos, ProjIds.ScorchWheelUnderwater,
+				player, 2, 0, 0.5f, addToLevel: addToLevel
+			),
+
 			(int)MeleeIds.LegBreaker => new GenericMeleeProj(
 				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f,
 				addToLevel: addToLevel
@@ -502,6 +541,25 @@ public class Rock : Character {
 		SlashClaw,
 		UnderWaterScorchWheel,
 		LegBreaker,
+	}
+
+	public override void chargeGfx() {
+		if (ownedByLocalPlayer) {
+			chargeEffect.stop();
+		}
+		if (isCharging()) {
+			chargeSound.play();
+			int level = getChargeLevel();
+			var renderGfx = RenderEffectType.ChargeBlue;
+			renderGfx = level switch {
+				1 => RenderEffectType.ChargeBlue,
+				2 => RenderEffectType.ChargeGreen,
+				_ => RenderEffectType.ChargeBlue,
+			};
+			addRenderEffect(renderGfx, 0.033333f, 0.1f);
+			chargeEffect.character = this;
+			chargeEffect.update(getChargeLevel(), 1);
+		}
 	}
 
 	public virtual Collider getSlidingCollider() {
@@ -530,7 +588,7 @@ public class Rock : Character {
 	}
 
 	public override void aiAttack(Actor target) {
-		/*if (AI.trainingBehavior != 0) {
+		if (AI.trainingBehavior != 0) {
 			return;
 		}
 		if (player.weapon == null) {
@@ -548,11 +606,11 @@ public class Rock : Character {
 			return;
 		}
 		if (canShoot() && player.weapon.shootCooldown == 0 && player.weapon.canShoot(0, player)) {
-			shoot(true);
+			shoot(0);
 			stopCharge();
 		} else if (canCharge() && shootAnimTime == 0) {
 			increaseCharge();
-		}*/
+		}
 	}
 
 	public bool canGoSuperAdaptor() {

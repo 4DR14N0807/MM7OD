@@ -28,23 +28,6 @@ public class JunkShield : Weapon {
 		return rock?.junkShield == null && base.canShoot(chargeLevel, player);
 	}
 
-
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-		player.setNextActorNetId(netProjId);
-
-		if (player.character.ownedByLocalPlayer) {
-			/*if (chargeLevel >= 2 && player.hasBusterLoadout()) {
-            player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-        	} else*/
-			if (player.character.charState is LadderClimb) {
-				player.character.changeState(new ShootAltLadder(this, (int)chargeLevel), true);
-			} else {
-				player.character.changeState(new ShootAlt(this, (int)chargeLevel), true);
-			}
-		}
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		int chargeLevel = args[0];

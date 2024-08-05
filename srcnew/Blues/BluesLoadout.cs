@@ -117,7 +117,7 @@ public class BluesWeaponMenu : IMainMenu {
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenuload"], 0, 0);
 		}
-		Fonts.drawText(FontType.BlueMenu, "Protoman Loadout", Global.screenW * 0.5f, 24, Alignment.Center);
+		Fonts.drawText(FontType.RedMenu, "Protoman Loadout", Global.screenW * 0.5f, 24, Alignment.Center);
 
 		int startY = 55;
 		int startX = 30;
@@ -134,7 +134,7 @@ public class BluesWeaponMenu : IMainMenu {
 				_ => specialWeapon
 			};
 			// Category name.
-			Fonts.drawText(FontType.OrangeMenu, categoryNames[i], 40, yPos - 1);
+			Fonts.drawText(FontType.BlueMenu, categoryNames[i], 40, yPos - 1);
 			// Icons.
 			for (int j = 0; j < weaponIcons[i].Length; j++) {
 				// Draw icon sprite.
@@ -185,11 +185,11 @@ public class BluesWeaponMenu : IMainMenu {
 		float row1Y = titleY2 + 13;
 		float row2Y = row1Y + 25;
 		Fonts.drawText(
-			FontType.BlueMenu, menuTitle,
+			FontType.RedMenu, menuTitle,
 			Global.halfScreenW, titleY1, Alignment.Center
 		);
 		Fonts.drawText(
-			FontType.Blue, weaponTitle,
+			FontType.Red, weaponTitle,
 			Global.halfScreenW, titleY2, Alignment.Center
 		);
 		Fonts.drawText(

@@ -360,7 +360,7 @@ label:
 				}
 
 			} else if (isBass) {
-				weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();
+				//weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();
 			}
 		} else {
 			foreach (var weapon in Weapon.getAllSwitchableWeapons(loadout.axlLoadout)) {

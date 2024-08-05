@@ -701,8 +701,8 @@ public class GameMode {
 				}
 			}
 			if (drawPlayer.character is Rock rock && rock.boughtSuperAdaptorOnce) {
-				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown);
-				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown, 27);
+				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown / 90);
+				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown / 90, 27);
 			}
 			if (drawPlayer.character is Axl axl2 && axl2.dodgeRollCooldown > 0) {
 				float cooldown = 1 - Helpers.progress(axl2.dodgeRollCooldown, Axl.maxDodgeRollCooldown);

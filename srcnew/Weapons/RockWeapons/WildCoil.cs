@@ -19,18 +19,6 @@ public class WildCoil : Weapon {
 		description = new string[] { "Throws coils in both sides that", "can be charged to reach more height.", "Use Up/Down to change bounce patterns." };
 	}
 
-
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-
-		if (player.character.ownedByLocalPlayer) {
-			if (player.character.charState is LadderClimb) {
-				player.character.changeState(new ShootAltLadder(this, (int)chargeLevel), true);
-			} else {
-				player.character.changeState(new ShootAlt(this, (int)chargeLevel), true);
-			}
-		}
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		int chargeLevel = args[0];

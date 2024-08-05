@@ -8,6 +8,7 @@ public class TenguBlade : Weapon {
 	public static TenguBlade netWeapon = new();
 	public TenguBlade() : base() {
 		index = (int)BassWeaponIds.TenguBlade;
+		displayName = "TENGU BLADE";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

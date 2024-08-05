@@ -10,6 +10,7 @@ public class MagicCard : Weapon {
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
+		displayName = "MAGIC CARD";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

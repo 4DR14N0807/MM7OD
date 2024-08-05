@@ -45,6 +45,11 @@ public class GravityHold : Weapon {
 public class GravityHoldProj : Projectile {
 
 	bool fired;
+	bool effect;
+	float r = 0;
+	float maxR = 80;
+	float midR;
+	bool changeColor;
 
 	public GravityHoldProj(
 		Point pos, int xDir, Player player, 
@@ -52,13 +57,14 @@ public class GravityHoldProj : Projectile {
 	) : base 
 	(
 		GravityHold.netWeapon, pos, xDir, 0, 0,
-		player, "empty", 0, 0, netProjId,
+		player, "empty", 0, 1, netProjId,
 		player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.GravityHold;
-		maxTime = 0.1f;
+		//maxTime = 0.1f;
 		shouldShieldBlock = false;
 		destroyOnHit = false;
+		midR = maxR / 2;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
@@ -74,21 +80,26 @@ public class GravityHoldProj : Projectile {
 	public override void update() {
 		base.update();
 
-		Rect rect = new Rect(pos.x - 80, pos.y - 80, pos.x + 80, pos.y + 80);
-		var hits = Global.level.checkCollisionsShape(rect.getShape(), new List<GameObject>() { this });
+		if (r < maxR) r += 4;
+		else destroySelf();
+		if (r >= midR) changeColor = true;
 		
-		new GravityHoldEffect(pos, damager.owner.character);
+		if (!effect) {
+			new GravityHoldEffect(pos, damager.owner.character, damager.owner.character.grounded);
+			effect = true;
+		}
 
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor && !fired &&
 				actor.ownedByLocalPlayer &&
-				gameObject is Character chr &&
+				gameObject is Character chr && chr != null &&
 				chr.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
 			) {
-				if (chr != null && chr.player.alliance == damager.owner.alliance) continue;
-				if (chr != null && chr.isCCImmune()) continue;
-				if (chr != null && chr.grounded) return;
-				if (chr != null && chr.gHoldOwner != null && chr.gHoldOwner != damager.owner) return;
+				if (chr == null) return;
+				if (chr.player.alliance == damager.owner.alliance) continue;
+				if (chr.isCCImmune()) continue;
+				if (chr.grounded) return;
+				if (chr.gHoldOwner != null && chr.gHoldOwner != damager.owner) return;
 				//if (actor.gHoldOwner != damager.owner) continue;
 
 				if (chr != null && chr.pos.distanceTo(pos) <= 80) {
@@ -103,31 +114,20 @@ public class GravityHoldProj : Projectile {
 				fired = true;
 			}
 		}
+	}
 
-		/*foreach (CollideData other in hits) {
-			var actor = other.gameObject as Actor;
-			var chr = other.gameObject as Character;
+	public override void render(float x, float y) {
+		base.render(x,y);
+		var colors = new List<Color>() {
+			new Color(241, 9, 18, 128),
+			new Color(200, 18, 130, 128)
+		};
 
-			if (actor != null && actor.ownedByLocalPlayer && !fired) {
-				if (chr != null && chr.player.alliance == damager.owner.alliance) continue;
-				if (chr != null && chr.isCCImmune()) continue;
-				if (chr != null && chr.grounded) return;
-				if (chr != null && chr.gHoldOwner != null && chr.gHoldOwner != damager.owner) return;
-				//if (actor.gHoldOwner != damager.owner) continue;
+		DrawWrappers.DrawCircle(pos.x, pos.y, r, false, !changeColor ? colors[0] : colors[1],
+		8, ZIndex.Foreground, outlineColor: !changeColor ? colors[0] : colors[1]);
 
-				if (chr != null) {
-					chr.gHoldOwner = damager.owner;
-
-					if (!chr.gHolded) {
-						chr.gHoldStart();
-					} else {
-						chr.gHoldEnd(false);
-					}
-				}
-				new GravityHoldEffect(pos, damager.owner.character);
-				fired = true;
-			}
-		}*/
+		DrawWrappers.DrawCircle(pos.x, pos.y, maxR - r, false, !changeColor ? colors[1] : colors[0],
+		8, ZIndex.Foreground, outlineColor: !changeColor ? colors[1] : colors[0]);
 	}
 }
 
@@ -137,24 +137,66 @@ public class GravityHoldEffect : Effect {
 	Character rootChar;
 	int effectFrames;
 	Rect rect;
+	bool fired;
+	Anim? part;
+	Anim? rock;
+	bool grounded;
 
-	public GravityHoldEffect(Point pos, Character character) : base(pos) {
+	public GravityHoldEffect(Point pos, Character character, bool grounded) : base(pos) {
 		rootChar = character;
+		rootChar.shakeCamera(true);
+		this.grounded = grounded;
 	}
 
 	public override void update() {
 		base.update();
 
-		rect = new Rect(pos.x - 80, pos.y - 80, pos.x + 80, pos.y + 80);
+		if (rock != null && rock.time >= 0.5f) rock?.destroySelf();
+
+		if (!fired && grounded) {
+			for (int i = 0; i < 8; i++) {
+				float ang = Helpers.randomRange(-128, 0);
+				rock = new Anim(rootChar.pos.addRand(80,0), "gravity_hold_rocks", 
+					1 ,rootChar.player.getNextActorNetId(), 
+					false, true) {vel = Point.createFromByteAngle(ang) * Helpers.randomRange(60, 180)};
+				
+				rock.frameSpeed = 0;
+				rock.frameIndex = Helpers.randomRange(0, rock.sprite.frames.Count - 1);
+				rock.useGravity = true;
+			}
+			 
+			fired = true;
+		}
+
+		if (effectFrames % 8 == 0) {
+			for (int i = 0; i < 4; i++) {
+				part = new Anim(rootChar.pos.addRand(80, 8), 
+				"gravity_hold_charge_part", 1, rootChar.player.getNextActorNetId(), false, true);
+
+				part.vel.y = Helpers.randomRange(-300, -180);
+			}
+
+			Point newPos = rootChar.pos.addxy(0, -160);
+			for (int i = 0; i < 4; i++) {
+				part = new Anim(newPos.addRand(80, 8), 
+				"gravity_hold_charge_part", 1, rootChar.player.getNextActorNetId(), false, true);
+
+				part.vel.y = Helpers.randomRange(180, 300);
+			}
+		}
+
 		effectFrames++;
 
-		if (effectFrames >= 30) destroySelf();
+		if (effectFrames >= 32) {
+			part?.destroySelf();
+			destroySelf();
+		} 
 	}
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		DrawWrappers.DrawCircle(pos.x, pos.y, 80, true, 
-		new Color(255,255,255,255), 1, ZIndex.Backwall);
+		//DrawWrappers.DrawCircle(pos.x, pos.y, 80, true, 
+		// Color(255,255,255,255), 1, ZIndex.Backwall);
 	}
 }
 

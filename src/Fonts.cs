@@ -271,6 +271,7 @@ public class Fonts {
 			FontType.FBlue => FontType.FOrange,
 			FontType.FOrange => FontType.FBlue,
 			FontType.BlueMenu => FontType.OrangeMenu,
+			FontType.PurpleMenu => FontType.YellowMenu,
 			FontType.OrangeMenu => FontType.BlueMenu,
 			FontType.DarkBlue => FontType.DarkOrange,
 			_ => FontType.Grey

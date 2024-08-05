@@ -868,7 +868,17 @@ public class Damager {
 			projId == (int)ProjIds.SlashClaw ||
 			projId == (int)BassProjIds.TenguBladeDash ||
 			projId == (int)RockProjIds.DangerWrapExplosion ||
-			projId == (int)RockProjIds.DangerWrapBubbleExplosion
+			projId == (int)RockProjIds.DangerWrapBubbleExplosion ||
+			projId == (int)RockProjIds.ScorchWheelBurn ||
+			projId == (int)RockProjIds.DangerWrapMine ||
+			projId == (int)BluesProjIds.GravityHold ||
+			projId == (int)BluesProjIds.ProtoStrike ||
+			projId == (int)BluesProjIds.BigBangStrike ||
+			projId == (int)BluesProjIds.BigBangStrikeExplosion ||
+			projId == (int)ProjIds.TenguBladeDash ||
+			projId == (int)BassProjIds.TenguBladeDash ||
+			//projId == (int)BassProjIds.TenguBladeProj ||
+			projId == (int)BassProjIds.LightningBolt
 		);
 	}
 

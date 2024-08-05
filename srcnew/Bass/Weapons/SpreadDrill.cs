@@ -8,6 +8,7 @@ public class SpreadDrill : Weapon {
 	public static SpreadDrill netWeapon = new();
 	public SpreadDrill() : base() {
 		index = (int)BassWeaponIds.SpreadDrill;
+		displayName = "SPREAD DRILL";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

@@ -10,6 +10,7 @@ public class IceWall : Weapon {
 
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;
+		displayName = "ICE WALL";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;

@@ -18,22 +18,6 @@ public class SlashClawWeapon : Weapon {
 		description = new string[] { "Fast melee attack, requires proper spacing.", "No tiene flinch." };
 	}
 
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-
-		if (player.character.ownedByLocalPlayer) {
-			/*if (chargeLevel >= 2 && player.hasBusterLoadout()) {
-                player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-            }*/
-			if (player.character.charState is LadderClimb) {
-				player.character.changeState(new SlashClawLadder(), true);
-			} else {
-				player.character.changeState(new SlashClawState());
-			}
-			player.character.playSound("slash_claw", sendRpc: true);
-		}
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		int chargeLevel = args[0];

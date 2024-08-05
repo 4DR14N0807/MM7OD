@@ -2218,6 +2218,9 @@ public partial class Player {
 		} else if (isRock) {
 			if (Global.level.is1v1()) return Options.main.gridModeRock > 0;
 			return Options.main.gridModeRock > 1;
+		} else if (isBass) {
+			if (Global.level.is1v1()) return Options.main.gridModeBass > 0;
+			return Options.main.gridModeBass > 1;
 		}
 
 		return false;

@@ -27,32 +27,10 @@ public class SARocketPunch : Weapon {
 		return lemonsOnField.Count < 3;
 	}
 
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		if (player.character.ownedByLocalPlayer) {
-			if (player.character is Rock rock) {
-				if (chargeLevel >= 2) {
-					if (player.character.grounded) player.character.changeState(new SARocketPunchState(), true);
-					else new SARocketPunchProj(pos, xDir, player, netProjId, true);
-					player.character.playSound("super_adaptor_punch", sendRpc: true);
-				} else if (chargeLevel == 1) {
-					new RockBusterMidChargeProj(pos, xDir, player, 0, netProjId, true);
-					player.character.playSound("buster2", sendRpc: true);
-				} else {
-					var proj = new RockBusterProj(pos, xDir, player, netProjId, true);
-					lemonsOnField.Add(proj);
-					rock.lemons++;
-					player.character.playSound("buster", sendRpc: true);
-
-					rock.lemonTime += 20f * rock.lemons / 60f;
-					if (rock.lemonTime >= 1f) {
-						rock.lemonTime = 0;
-						rock.shootTime = 30f / 60f;
-					}
-				}
-			}
-		}
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
 	}
-
+	
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
@@ -76,10 +54,11 @@ public class SARocketPunch : Weapon {
 					rock.lemons++;
 					character.playSound("buster", sendRpc: true);
 
-					rock.lemonTime += 20f * rock.lemons / 60f;
-					if (rock.lemonTime >= 1f) {
+					rock.timeSinceLastShoot = 0;
+					rock.lemonTime += 20f * rock.lemons;
+					if (rock.lemonTime >= 60f) {
 						rock.lemonTime = 0;
-						rock.shootTime = 30f / 60f;
+						rock.weaponCooldown = 30;
 					}
 				}
 			}

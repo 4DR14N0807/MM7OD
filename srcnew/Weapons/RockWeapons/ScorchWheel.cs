@@ -17,30 +17,14 @@ public class ScorchWheel : Weapon {
 		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };
 	}
 
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-
-		if (player.character.ownedByLocalPlayer) {
-			/*if (chargeLevel >= 2 && player.hasBusterLoadout()) {
-                player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-            }
-            else if (player.character is Rock rock)*/
-			if (player.character.charState is LadderClimb) {
-				player.character.changeState(new ShootAltLadder(this, (int)chargeLevel), true);
-			} else {
-				player.character.changeState(new ShootAlt(this, (int)chargeLevel), true);
-			}
-		}
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		int chargeLevel = args[0];
 
 		if (character.charState is LadderClimb) {
-			character.changeState(new ShootAltLadder(this, chargeLevel), true);
+			character.changeState(new ShootAltLadder(this, chargeLevel, character.isUnderwater()), true);
 		} else {
-			character.changeState(new ShootAlt(this, chargeLevel), true);
+			character.changeState(new ShootAlt(this, chargeLevel, character.isUnderwater()), true);
 		}
 	}
 }
@@ -362,6 +346,8 @@ public class Burning : CharState {
 		burnDir = dir;
 		burnMoveSpeed = dir * 100;
 		this.attacker = attacker;
+		normalCtrl = false;
+		attackCtrl = false;
 	}
 
 	public override bool canEnter(Character character) {

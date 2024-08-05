@@ -38,24 +38,6 @@ public class DangerWrap : Weapon {
 
 	}
 
-
-	public override void getProjectile(Point pos, int xDir, Player player, float chargeLevel, ushort netProjId) {
-		base.getProjectile(pos, xDir, player, chargeLevel, netProjId);
-		if (player.character.ownedByLocalPlayer) {
-			/*
-            if (chargeLevel >= 2 && player.hasBusterLoadout()) {
-                player.character.changeState(new RockChargeShotState(player.character.grounded), true);
-            } else*/
-			if (player.input.isHeld(Control.Down, player)) {
-
-				dangerMines.Add(new DangerWrapMineProj(pos, xDir, player, 0, netProjId, true));
-			} else {
-				new DangerWrapBubbleProj(pos, xDir, player, 0, netProjId);
-			}
-			player.character.playSound("buster2", sendRpc: true);
-		}
-	}
-
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();

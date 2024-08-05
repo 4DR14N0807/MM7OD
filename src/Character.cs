@@ -1279,10 +1279,10 @@ public partial class Character : Actor, IDamagable {
 			if (gHolded && gHoldModifier > 0) {
 				Damager.applyDamage(
 					gHoldOwner, 2, 1, Global.halfFlinch, this,
-					false, (int)RockWeaponIds.GravityHold, 0, this,
-					(int)BluesProjIds.GravityHold
-				); 
-				destroyGHold();
+					false, (int)RockWeaponIds.GravityHold, 0, gHoldOwner?.character ?? this,
+					(int)BluesProjIds.GravityHoldCrash
+				);
+				gHolded = false;
 			}
 		}
 

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace MMXOnline;
 
-
 public class BluesShootAlt : CharState {
-
 	Weapon stateWeapon;
 	bool fired;
 

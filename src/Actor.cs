@@ -627,11 +627,17 @@ public partial class Actor : GameObject {
 					}
 					grav *= modifier;
 				}
-				vel.y += grav * Global.speedMul;
-				if (vel.y > terminalVelDown) {
-					vel.y = terminalVelDown;
-				} else if (vel.y < -terminalVelUp) {
-					vel.y = -terminalVelUp;
+				if (grav > 0 && vel.y < terminalVelDown) {
+					vel.y += grav * Global.speedMul;
+					if (vel.y > terminalVelDown) {
+						vel.y = terminalVelDown;
+					}
+				}
+				else if (grav < 0) {
+					vel.y += grav * Global.speedMul;
+					if (vel.y < -terminalVelUp) {
+						vel.y = -terminalVelUp;
+					}
 				}
 			}
 
@@ -1669,7 +1675,7 @@ public partial class Actor : GameObject {
 
 	public void destroyGHold() {
 		gHolded = false;
-		gHoldOwner = null!;
+		gHoldOwner = null;
 		useGravity = true;
 	}
 
@@ -1860,11 +1866,12 @@ public partial class Actor : GameObject {
 		Point checkPos = new Point(MathF.Round(pos.x), MathF.Round(pos.y));
 		Shape shape = Rect.createFromWH(
 			pos.x - halfDist, pos.y - halfDist,
-			halfDist, halfDist
+			distance, distance
 		).getShape();
-		var hits = Global.level.checkCollisionsShape(shape, null);
+		List<CollideData> hits = Global.level.checkCollisionsShape(shape, null);
+
 		int alliance = -1;
-		if (includeAllies) {
+		if (!includeAllies) {
 			alliance = this switch {
 				Character selfChar => selfChar.player.alliance,
 				Projectile selfProj => selfProj.damager.owner.alliance,

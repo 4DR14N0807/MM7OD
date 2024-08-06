@@ -140,9 +140,9 @@ public class ProtoBusterLv2Proj : Projectile {
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 2, player,
-		"rock_buster2_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_midcharge_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "rock_buster2_proj_fade";
+		fadeSprite = "proto_midcharge_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.4125f;
 		projId = (int)BluesProjIds.BusterLV2;

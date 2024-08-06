@@ -12,7 +12,7 @@ public class Blues : Character {
 	// Mode variables.
 	public bool isShieldActive = true;
 	public bool isBreakMan;
-	public const int ReviveCost = 75;
+	public const int reviveCost = 75;
 
 	// Core heat system.
 	public float coreMaxAmmo = 28;
@@ -300,10 +300,6 @@ public class Blues : Character {
 		}
 
 		if (!ownedByLocalPlayer) return;
-		if (player.input.isPressed(Control.Special2, player) && !isBreakMan) {
-			changeState(new BluesRevive(), true);
-
-		}
 
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
@@ -426,6 +422,10 @@ public class Blues : Character {
 		}
 		if (overdrive && getChargeLevel() <= 0) {
 			addRenderEffect(RenderEffectType.ChargeYellow, 0.033333f, 0.1f);
+		}
+		// Revive stuff.
+		if (player.canReviveBlues() && player.input.isPressed(Control.Special2, player)) {
+			player.reviveBlues();
 		}
 	}
 

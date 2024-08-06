@@ -116,9 +116,10 @@ public partial class Player {
 	public Point? lastDeathPos;
 	public bool lastDeathWasVileMK2;
 	public bool lastDeathWasVileMK5;
-	public bool lastDeathWasBreakMan;
 	public bool lastDeathWasSigmaHyper;
 	public bool lastDeathWasXHyper;
+	public bool bluesRespawn = false;
+	public bool lastDeathWasBreakMan;
 	public const int zeroHyperCost = 10;
 	public const int zBusterZeroHyperCost = 8;
 	public const int AxlHyperCost = 10;
@@ -144,7 +145,7 @@ public partial class Player {
 	public bool isAxl { get { return charNum == (int)CharIds.Axl; } }
 	public bool isSigma { get { return charNum == (int)CharIds.Sigma; } }
 	public bool isRock { get { return charNum == (int)CharIds.Rock; } }
-	public bool isProtoMan { get { return charNum == (int)CharIds.Blues; } }
+	public bool isBlues { get { return charNum == (int)CharIds.Blues; } }
 	public bool isBass { get { return charNum == (int)CharIds.Bass; } }
 
 
@@ -704,7 +705,7 @@ public partial class Player {
 	public float getMaxHealth() {
 		int baseHP = 28;
 
-		if (isProtoMan) {
+		if (isBlues) {
 			baseHP = 14;
 		} else if (isBass) {
 			baseHP = 20;
@@ -892,14 +893,6 @@ public partial class Player {
 		vileFormToRespawnAs = 0;
 		hyperSigmaRespawn = false;
 		hyperXRespawn = false;
-
-		if (isProtoMan) {
-			if (canReviveBlues()) {
-				if (input.isPressed(Control.Special2, this)) {
-					reviveBlues();
-				}
-			}
-		}
 
 		if (isVile) {
 			if (isSelectingRA()) {
@@ -1971,23 +1964,20 @@ public partial class Player {
 		return !Global.level.isElimination() && armorFlag == 0 && character?.charState is Die && lastDeathCanRevive && isX && newCharNum == 0 && currency >= reviveXCost && !lastDeathWasXHyper;
 	}
 
+	public void reviveBlues() {
+		currency -= Blues.reviveCost;
+		bluesRespawn = true;
+		character.changeState(new BluesRevive(), true);
+	}
+
 	public bool canReviveBlues() {
 		return !Global.level.isElimination() && 
-			character?.charState is Die && 
-			lastDeathCanRevive && currency >= Blues.ReviveCost && 
+			character?.charState is Die && lastDeathCanRevive && 
+			currency >= Blues.reviveCost && 
 			!lastDeathWasBreakMan;
 	}
 
-	public void reviveBlues() {
-		currency -= Blues.ReviveCost;
-		/*Blues blues = limboChar as Blues;
-
-		respawnTime = 0;
-		character = limboChar;
-		character.visible = true;
-		limboChar = null;*/
-		//character.changeState(new BluesRevive(), true);
-	}
+	
 
 	public void reviveVile(bool toMK5) {
 		currency -= reviveVileCost;

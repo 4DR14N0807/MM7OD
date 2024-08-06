@@ -8,6 +8,7 @@ using SFML.System;
 namespace MMXOnline;
 
 public class GameMode {
+	public Blues? blues;
 	public const string Deathmatch = "deathmatch";
 	public const string TeamDeathmatch = "team deathmatch";
 	public const string CTF = "ctf";
@@ -2748,7 +2749,7 @@ public class GameMode {
 			return FontType.White;
 		} else if (player.isRock) {
 			return FontType.Blue;
-		} else if (player.isProtoMan) {
+		} else if (player.isBlues) {
 			return FontType.Red;
 		} else if (player.isBass) {
 			return FontType.Yellow;
@@ -2890,9 +2891,11 @@ public class GameMode {
 	}
 
 	public void drawRespawnHUD() {
-		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver && level.mainPlayer.canReviveX()) {
+		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver && level.mainPlayer.canReviveBlues()) {
 			Fonts.drawTextEX(
-				FontType.Blue, Helpers.controlText("[CMD]: Activate Raging Charge"),
+				FontType.Red, Helpers.controlText(
+						$"[CMD]: Revive as Break Man ({Blues.reviveCost} {Global.nameCoins})"
+					),
 				Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
 			);
 		}
@@ -2916,21 +2919,7 @@ public class GameMode {
 					FontType.BlueMenu, "Spectating in " + Math.Round(level.mainPlayer.respawnTime).ToString(),
 					Global.screenW / 2, Global.screenH / 2, Alignment.Center
 				);
-			} else if (level.mainPlayer.canReviveBlues()) {
-				Fonts.drawText(
-						FontType.Blue, respawnStr,
-						Global.screenW / 2, -10 + Global.screenH / 2, Alignment.Center
-					);
-					string reviveText = Helpers.controlText(
-						$"[CMD]: Revive as Break Man ({Blues.ReviveCost} {Global.nameCoins})"
-					);
-					Fonts.drawText(
-						FontType.DarkBlue, reviveText,
-						Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
-					);
-			}
-			
-			 else if (level.mainPlayer.canReviveVile()) {
+			} else if (level.mainPlayer.canReviveVile()) {
 				if (level.mainPlayer.lastDeathWasVileMK2) {
 					Fonts.drawText(
 						FontType.BlueMenu, respawnStr,

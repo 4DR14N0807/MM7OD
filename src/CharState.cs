@@ -1589,6 +1589,9 @@ public class Die : CharState {
 			player.lastDeathWasVileMK2 = false;
 			player.lastDeathWasVileMK5 = false;
 		}
+		if (character is Blues blues) {
+			player.lastDeathWasBreakMan = blues.isBreakMan;
+		}
 		player.lastDeathWasSigmaHyper = character is WolfSigma or ViralSigma or KaiserSigma;
 		player.lastDeathPos = character.getCenterPos();
 		//why is this here

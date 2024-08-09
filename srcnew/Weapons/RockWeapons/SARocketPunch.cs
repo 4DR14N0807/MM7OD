@@ -148,7 +148,7 @@ public class SARocketPunchProj : Projectile {
 			if (shooter.sprite.name == "rock_rocket_punch") {
 				Point poi = shooter.pos;
 				var pois = shooter.sprite.getCurrentFrame()?.POIs;
-				if (pois != null && pois.Count > 0) {
+				if (pois != null && pois.Length > 0) {
 					poi = pois[0];
 				}
 				returnPos = shooter.pos.addxy(poi.x * shooter.xDir, poi.y);

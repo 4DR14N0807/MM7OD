@@ -246,7 +246,8 @@ public class Anim : Actor {
 		string spriteName, Point centerPos,
 		Player player, GibPattern gibPattern = GibPattern.Radial,
 		float randVelStart = 100, float randVelEnd = 200,
-		float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false
+		float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false,
+		long? zIndex= null
 	) {
 		AnimData sprite = Global.sprites[spriteName];
 		float startAngle = 0;

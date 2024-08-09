@@ -72,15 +72,15 @@ public class JunkShieldProj : Projectile {
 		this.player = player;
 		canBeLocal = false;
 
-		for (var i = 0; i < mainProjsCount; i++) {
-			var mainProjSprite = Global.sprites["junk_shield_pieces"].clone();
+		for (int i = 0; i < mainProjsCount; i++) {
+			Sprite mainProjSprite = new Sprite("junk_shield_pieces");
 			mainProjSprite.frameIndex = 5;
 			mainProjSprite.frameSpeed = 0;
 			mainProjs.Add(mainProjSprite);
 		}
 
-		for (var i = 0; i < otherProjsCount; i++) {
-			var otherProjSprite = Global.sprites["junk_shield_pieces"].clone();
+		for (int i = 0; i < otherProjsCount; i++) {
+			Sprite otherProjSprite = new Sprite("junk_shield_pieces");
 			randomPieces.Add(Helpers.randomRange(0, 4));
 			otherProjSprite.frameSpeed = 0;
 			otherProjs.Add(otherProjSprite);

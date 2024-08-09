@@ -44,12 +44,12 @@ public class GeminiLaserProj : Projectile {
         canBeLocal = false;
         destroyOnHit = false;
 
-        spriteStart = Global.sprites["gemini_laser_start_proj"].clone();
+        spriteStart = new Sprite("gemini_laser_start_proj");
         for (var i = 0; i < 4; i++) {
-			var midSprite = Global.sprites["gemini_laser_mid_proj"].clone();
+			var midSprite = new Sprite("gemini_laser_mid_proj");
 			spriteMids.Add(midSprite);
 		}
-        spriteEnd = Global.sprites["gemini_laser_end_proj"].clone();
+        spriteEnd = new Sprite("gemini_laser_end_proj");
 
     }
 
@@ -102,12 +102,12 @@ public class GeminiLaserProj : Projectile {
             base.vel.y = 240 * Helpers.sind(45) * yDir; 
             didBounceOnce = true;
 
-            spriteStart = Global.sprites["gemini_laser_start_bounce_proj"].clone();
+            spriteStart = new Sprite("gemini_laser_start_bounce_proj");
             for (var i = 0; i < 4; i++) {
-			var midSprite = Global.sprites["gemini_laser_mid_proj"].clone();
+			var midSprite = new Sprite("gemini_laser_mid_proj");
 			spriteMids[i] = midSprite;
 		    }
-            spriteEnd = Global.sprites["gemini_laser_end_bounce_proj"].clone();
+            spriteEnd = new Sprite("gemini_laser_end_bounce_proj");
         } else {
             var normal = other.hitData.normal ?? new Point(0, -1);
 

@@ -879,7 +879,7 @@ class Program {
 			if (!string.IsNullOrEmpty(alias)) {
 				var pieces = alias.Split(',');
 				foreach (var piece in pieces) {
-					Global.sprites[piece] = Global.sprites[spriteName].clone();
+					Global.sprites[piece] = Global.sprites[spriteName].cloneAnimSlow();
 					Global.sprites[piece].name = piece;
 				}
 			}

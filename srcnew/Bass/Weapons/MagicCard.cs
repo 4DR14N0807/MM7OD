@@ -80,13 +80,13 @@ public class MagicCardProj : Projectile {
 		if (reversed) {
 			vel = new Point(0, 0);
 			frameSpeed = -2;
-			if (frameIndex == 0) frameIndex = sprite.frames.Count - 1;
+			if (frameIndex == 0) frameIndex = sprite.totalFrameNum - 1;
 
 			Point returnPos = shooter.getCenterPos();
 			if (shooter.sprite.name.Contains("shoot")) {
 				Point poi = shooter.pos;
 				var pois = shooter.sprite.getCurrentFrame()?.POIs;
-				if (pois != null && pois.Count > 0) {
+				if (pois != null && pois.Length > 0) {
 					poi = pois[0];
 				}
 				returnPos = shooter.pos.addxy(poi.x * shooter.xDir, poi.y);

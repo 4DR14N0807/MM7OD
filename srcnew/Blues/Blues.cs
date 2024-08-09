@@ -243,10 +243,6 @@ public class Blues : Character {
 		if (trails != null) {
 			sprite.lastFiveTrailDraws = trails;
 		}
-		if (isBreakMan && sprite.textureName == "blues_default") {
-			sprite.textureName = "blues_breakman";
-			sprite.bitmap = Global.textures["blues_breakman"];
-		}
 	}
 
 	public override bool changeState(CharState newState, bool forceChange = false) {
@@ -386,7 +382,7 @@ public class Blues : Character {
 				if (sprite.name.EndsWith("_shoot") || sprite.name.EndsWith("_shoot_shield")) {
 					changeSpriteFromName(charState.defaultSprite, false);
 					if (charState is WallSlide) {
-						frameIndex = sprite.frames.Count - 1;
+						frameIndex = sprite.totalFrameNum - 1;
 					}
 				}
 			}

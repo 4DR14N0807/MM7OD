@@ -121,7 +121,7 @@ public class Sprite {
 		cy += animData.alignOffY - tempOffY - currentFrame.offset.y;
 
 		DrawWrappers.DrawTextureHUD(
-			animData.bitmap,
+			overrideTexture ?? animData.bitmap,
 			currentFrame.rect.x1, currentFrame.rect.y1,
 			currentFrame.rect.w(), currentFrame.rect.h(),
 			x - cx, y - cy,
@@ -143,7 +143,7 @@ public class Sprite {
 			if (!actor.shouldDraw()) return;
 		}
 
-		Texture bitmap = animData.bitmap;
+		Texture bitmap = overrideTexture ?? animData.bitmap;
 
 		// Character-specific draw section
 		if (actor is Character chara) {
@@ -606,7 +606,7 @@ public class AnimData {
 		bitmap = overrideAnim.bitmap;
 	}
 
-	public AnimData clone() {
+	public AnimData cloneAnimSlow() {
 		AnimData clonedSprite = (AnimData)MemberwiseClone();
 		clonedSprite.hitboxes = new Collider[hitboxes.Length];
 		for (int i = 0; i < hitboxes.Length; i++){

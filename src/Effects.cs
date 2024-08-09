@@ -197,7 +197,7 @@ public class DieEffectParticles {
 				var rect = new Rect(x - halfWidth, y - halfWidth, x + halfWidth, y + halfWidth);
 				var camRect = new Rect(Global.level.camX, Global.level.camY, Global.level.camX + Global.viewScreenW, Global.level.camY + Global.viewScreenH);
 				if (rect.overlaps(camRect)) {
-					int frameIndex = (int)MathF.Round(time * 20) % diePart.sprite.frames.Count;
+					int frameIndex = (int)MathF.Round(time * 20) % diePart.sprite.totalFrameNum;
 					diePart.sprite.draw(frameIndex, x + offsetX, y + offsetY, 1, 1, null, alpha, 1, 1, ZIndex.Foreground);
 				}
 				counter++;

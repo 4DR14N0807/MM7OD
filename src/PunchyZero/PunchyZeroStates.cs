@@ -206,7 +206,6 @@ public class PZeroDiveKickState : CharState {
 
 
 public class ZeroDropkickLand : CharState {
-	int type;
 	public ZeroDropkickLand() : base("land") {
 		exitOnAirborne = true;
 	}

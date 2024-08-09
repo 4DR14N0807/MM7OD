@@ -9,7 +9,6 @@ public class Slide : CharState {
 	public bool stop;
 	public int particles = 3;
 	Anim? dust;
-	bool isColliding;
 	Rock? rock;
 
 	public Slide(string initialSlideButton) : base("slide", "", "") {
@@ -326,13 +325,11 @@ public class RockDoubleJump : CharState {
 
 
 public class CallDownRush : CharState {
-
 	Anim? rush;
 	const float rushAnimStartPos = 200;
 	int phase = 0;
 	float jumpTime = 0;
 	bool isXAllign;
-	bool isYAllign;
 
 	public CallDownRush() : base("sa_activate", "", "", "") {
 		invincible = true;

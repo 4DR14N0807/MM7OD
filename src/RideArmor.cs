@@ -1064,6 +1064,7 @@ public class RideArmor : Actor, IDamagable {
 
 		if (!netColorShadersSet) {
 			setColorShaders();
+			netColorShadersSet = true;
 		}
 	}
 }

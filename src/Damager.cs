@@ -1008,9 +1008,6 @@ public class Damager {
 					damagePos = projOwner.character.pos;
 				}
 			}
-			if (damagePos == null && proj.hitboxActor?.destroyed == false) {
-				damagePos = proj.hitboxActor.pos;
-			}
 		}
 
 		// Call function if pos is not null.

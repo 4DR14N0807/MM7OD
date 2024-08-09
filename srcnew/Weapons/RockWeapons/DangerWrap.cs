@@ -325,7 +325,6 @@ public class DangerWrapExplosionProj : Projectile {
 }
 
 public class DWrapped : CharState {
-	bool isDone;
 	bool flinch;
 	public const float DWrapMaxTime = 3;
 	public DWrapped(bool flinch) : base("idle", "shoot") {
@@ -380,7 +379,6 @@ public class DWrapped : CharState {
 		}
 
 		if (!character.hasBubble || character.dWrapDamager == null) {
-			isDone = true;
 			//character.changeState(new Fall(), true);
 			//return;
 		}

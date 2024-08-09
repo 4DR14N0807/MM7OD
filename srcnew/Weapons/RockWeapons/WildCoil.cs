@@ -119,7 +119,6 @@ public class WildCoilChargedProj : Projectile {
 	int bounceBuff;
 	bool bouncedOnce;
 	Anim outline;
-	bool drawOutline;
 
 	public WildCoilChargedProj(
 		Point pos, int xDir, Player player, 

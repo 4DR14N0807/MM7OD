@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class BassShoot : CharState {
-	bool isFalling;
 	Bass bass = null!;
 
 	public BassShoot() : base("not_a_real_sprite") {
@@ -44,7 +43,6 @@ public class BassShoot : CharState {
 		if (!bass.grounded || bass.vel.y < 0) {
 			string tempSprite = airSprite;
 			if (bass.vel.y >= 0) {
-				isFalling = true;
 				tempSprite = fallSprite;
 			}
 			if (bass.sprite.name != bass.getSprite("tempSprite")) {

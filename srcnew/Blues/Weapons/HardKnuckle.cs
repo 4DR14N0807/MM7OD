@@ -31,7 +31,6 @@ public class HardKnuckle : Weapon {
 }
 
 public class HardKnuckleProj : Projectile {
-	bool changedDir;
 	bool deflected;
 	float spawnPointX;
 	bool canControl = true;

@@ -432,8 +432,6 @@ public class KaiserSigmaBeamState : KaiserSigmaBaseState {
 	KaiserSigmaBeamProj proj;
 	float randPartTime;
 	bool isDown;
-	SoundWrapper chargeSound;
-	SoundWrapper beamSound;
 	public KaiserSigmaBeamState(bool isDown) : base(isDown ? "shoot" : "shoot2") {
 		immuneToWind = true;
 		canShootBallistics = true;
@@ -479,14 +477,6 @@ public class KaiserSigmaBeamState : KaiserSigmaBaseState {
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		proj?.destroySelf();
-		if (chargeSound != null && !chargeSound.deleted) {
-			chargeSound.sound.Stop();
-			RPC.stopSound.sendRpc(chargeSound.soundBuffer.soundKey, character.netId);
-		}
-		if (beamSound != null && !beamSound.deleted) {
-			beamSound.sound.Stop();
-			RPC.stopSound.sendRpc(beamSound.soundBuffer.soundKey, character.netId);
-		}
 	}
 }
 

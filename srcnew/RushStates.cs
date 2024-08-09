@@ -58,7 +58,6 @@ public class RushWarpIn : RushState {
 	public Point rockPos;
 	public Anim warpAnim = null!;
 	bool landed;
-	bool warped;
 
 	public RushWarpIn(bool addInvulnFrames = true) : base("rush_warp_beam") { }
 

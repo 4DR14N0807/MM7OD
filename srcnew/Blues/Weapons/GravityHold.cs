@@ -32,7 +32,6 @@ public class GravityHold : Weapon {
 
 
 public class GravityHoldProj : Projectile {
-	bool fired;
 	bool effect;
 	float r = 0;
 	float maxR = 80;
@@ -168,7 +167,6 @@ public class GravityHoldProj : Projectile {
 public class GravityHoldEffect : Effect {
 	Character rootChar;
 	int effectFrames;
-	Rect rect;
 	bool fired;
 	bool grounded;
 

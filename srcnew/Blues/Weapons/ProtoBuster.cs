@@ -65,7 +65,6 @@ public class ProtoBusterAngledProj : Projectile {
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
-			
 			rpcCreateAngle(pos, player, netId, byteAngle, extraArgs);
 		}
 		if (byteAngle > 64 && byteAngle < 192) {
@@ -101,11 +100,11 @@ public class ProtoBusterOverdriveProj : Projectile {
 		ushort? netId, Point? vel = null, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 250, 1, player,
-		"rock_buster1_proj", 0, 0, netId, player.ownedByLocalPlayer
+		"proto_midcharge_proj", Global.miniFlinch, 0, netId, player.ownedByLocalPlayer
 	) {
 		maxTime = 0.425f;
-		projId = (int)BluesProjIds.Lemon;
-		fadeSprite = "rock_buster1_fade";
+		projId = (int)BluesProjIds.LemonOverdrive;
+		fadeSprite = "proto_midcharge_proj_fade";
 		fadeOnAutoDestroy = true;
 
 		if (rpc) {
@@ -136,16 +135,21 @@ public class ProtoBusterOverdriveProj : Projectile {
 
 public class ProtoBusterLv2Proj : Projectile {
 	public ProtoBusterLv2Proj(
-		Point pos, int xDir, Player player,
+		int type, Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 2, player,
-		"proto_midcharge_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"rock_buster1_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "proto_midcharge_proj_fade";
+		fadeSprite = "rock_buster1_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.4125f;
 		projId = (int)BluesProjIds.BusterLV2;
+		if (type == 1) {
+			damager.flinch = Global.halfFlinch;
+			changeSprite("rock_buster2_proj", true);
+			fadeSprite = "rock_buster2_fade";
+		}
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -154,7 +158,7 @@ public class ProtoBusterLv2Proj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterLv2Proj(
-			args.pos, args.xDir, args.player, args.netId
+			args.extraData[0], args.pos, args.xDir, args.player, args.netId
 		);
 	}
 }
@@ -162,16 +166,19 @@ public class ProtoBusterLv2Proj : Projectile {
 
 public class ProtoBusterLv3Proj : Projectile {
 	public ProtoBusterLv3Proj(
-		Point pos, int xDir, Player player,
+		int type, Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
-		"proto_chargeshot_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_chargeshot_red_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "proto_chargeshot_proj_fade";
+		fadeSprite = "proto_chargeshot_red_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.45f;
 		projId = (int)BluesProjIds.BusterLV4;
+		if (type == 1) {
+			damager.flinch = Global.defFlinch;
+		}
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -181,23 +188,26 @@ public class ProtoBusterLv3Proj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterLv3Proj(
-			args.pos, args.xDir, args.player, args.netId
+			args.extraData[0], args.pos, args.xDir, args.player, args.netId
 		);
 	}
 }
 
 public class ProtoBusterLv4Proj : Projectile {
 	public ProtoBusterLv4Proj(
-		Point pos, int xDir, Player player,
+		int type, Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 4, player,
-		"proto_chargeshot_red_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_chargeshot_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "proto_chargeshot_red_proj_fade";
+		fadeSprite = "proto_chargeshot_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.5f;
 		projId = (int)BluesProjIds.BusterLV4;
+		if (type == 1) {
+			damager.flinch = Global.superFlinch;
+		}
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -206,7 +216,7 @@ public class ProtoBusterLv4Proj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterLv4Proj(
-			args.pos, args.xDir, args.player, args.netId
+			args.extraData[0], args.pos, args.xDir, args.player, args.netId
 		);
 	}
 }

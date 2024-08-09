@@ -15,9 +15,8 @@ public class Damager {
 	public const float ohkoDamage = 500;
 	public const float headshotModifier = 2;
 
-	public static readonly Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>()
-	{
-		//{ (int)ProjIds.SlashClaw, 1.5f},
+	public static readonly Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
+		{ (int)BluesProjIds.LemonOverdrive, 0.5f},
 	};
 
 	public static readonly Dictionary<int, int> multiHitLimit = new() {

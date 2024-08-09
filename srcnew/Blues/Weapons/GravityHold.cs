@@ -192,7 +192,7 @@ public class GravityHoldEffect : Effect {
 				rock.vel.x = Helpers.randomRange(-100, 100);
 				rock.vel.y = -225;
 				rock.frameSpeed = 0;
-				rock.frameIndex = Helpers.randomRange(0, rock.sprite.frames.Count - 1);
+				rock.frameIndex = Helpers.randomRange(0, rock.sprite.totalFrameNum - 1);
 				rock.useGravity = true;
 				rock.ttl = 0.5f;
 			}

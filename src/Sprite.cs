@@ -754,7 +754,6 @@ public class AnimData {
 			}
 		}
 
-		float extraXOff = 0;
 		float extraYOff = 0;
 		DrawWrappers.DrawTexture(
 			bitmap, currentFrame.rect.x1,

@@ -2492,11 +2492,8 @@ public class GameMode {
 		}
 
 		string netcodePingStr = "";
-		int iconXPos = 280;
 		if (level.server.netcodeModel == NetcodeModel.FavorAttacker) {
 			netcodePingStr = "<" + level.server.netcodeModelPing.ToString();
-			if (level.server.netcodeModelPing < 100) iconXPos = 260;
-			else iconXPos = 253;
 		}
 		Fonts.drawText(
 			FontType.WhiteSmall, netcodePingStr,

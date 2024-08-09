@@ -1918,45 +1918,7 @@ public partial class Player {
 
 		bool basicCheck = !Global.level.isElimination() && limboChar != null && lastDeathCanRevive && isSigma && newCharNum == 4 && currency >= reviveSigmaCost && !lastDeathWasSigmaHyper;
 		if (!basicCheck) return false;
-
-		if (false) {
-			Point deathPos = limboChar.pos;
-
-			// Get ground snapping pos
-			var rect = new Rect(deathPos.addxy(-7, 0), deathPos.addxy(7, 112));
-			var hits = Global.level.checkCollisionsShape(rect.getShape(), null);
-			Point? closestHitPoint = Helpers.getClosestHitPoint(hits, deathPos, typeof(Wall));
-			if (closestHitPoint != null) {
-				deathPos = new Point(deathPos.x, closestHitPoint.Value.y);
-			} else {
-				if (isSigma1()) {
-					return false;
-				}
-			}
-
-			// Check if ample space to revive in
-			int w = 10;
-			int h = 120;
-			rect = new Rect(new Point(deathPos.x - w / 2, deathPos.y - h), new Point(deathPos.x + w / 2, deathPos.y - 25));
-			hits = Global.level.checkCollisionsShape(rect.getShape(), null);
-			if (hits.Any(h => h.gameObject is Wall)) {
-				return false;
-			}
-
-			if (deathPos.x - 100 < 0 || deathPos.x + 100 > Global.level.width) {
-				return false;
-			}
-			foreach (var player in Global.level.players) {
-				if (player.character is WolfSigma && player.character.pos.distanceTo(deathPos) < Global.screenW) {
-					return false;
-				}
-			}
-		} else if (false) {
-			return true;
-		} else if (true) {
-			return limboChar != null && KaiserSigma.canKaiserSpawn(limboChar, out spawnPoint);
-		}
-
+	
 		return true;
 	}
 

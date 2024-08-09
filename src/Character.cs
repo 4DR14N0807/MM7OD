@@ -1705,7 +1705,8 @@ public partial class Character : Actor, IDamagable {
 				1 => RenderEffectType.ChargeBlue,
 				2 => RenderEffectType.ChargeYellow,
 				3 => RenderEffectType.ChargePink,
-				4 => RenderEffectType.ChargeOrange
+				4 => RenderEffectType.ChargeOrange,
+				_ => RenderEffectType.ChargeGreen
 			};
 			addRenderEffect(renderGfx, 0.033333f, 0.1f);
 			chargeEffect.update(getChargeLevel(), 0);
@@ -2001,10 +2002,6 @@ public partial class Character : Actor, IDamagable {
 			return getCenterPos();
 		}
 		var busterOffset = (Point)busterOffsetPos;
-		if (player.isX && player.armArmorNum == 3 && sprite.needsX3BusterCorrection()) {
-			if (busterOffset.x > 0) busterOffset.x += 4;
-			else if (busterOffset.x < 0) busterOffset.x -= 4;
-		}
 		busterOffset.x *= xDir;
 		if (player.weapon is RollingShield && charState is Dash) {
 			busterOffset.y -= 2;
@@ -2588,7 +2585,6 @@ public partial class Character : Actor, IDamagable {
 			return false;
 		}
 
-		int statusIndex = 0;
 		float statusProgress = 0;
 		float totalMashTime = 1;
 		float healthBarInnerWidth = 30;
@@ -2627,55 +2623,42 @@ public partial class Character : Actor, IDamagable {
 				return true;
 			}
 		} else if (charState is VileMK2Grabbed grabbed) {
-			statusIndex = 3;
 			totalMashTime = VileMK2Grabbed.maxGrabTime;
 			statusProgress = grabbed.grabTime / totalMashTime;
 		} else if (parasiteTime > 0) {
-			statusIndex = 4;
 			totalMashTime = 2;
 			statusProgress = 1 - (parasiteMashTime / 5);
 		} else if (charState is UPGrabbed upGrabbed) {
-			statusIndex = 5;
 			totalMashTime = UPGrabbed.maxGrabTime;
 			statusProgress = upGrabbed.grabTime / totalMashTime;
 		} else if (charState is WhirlpoolGrabbed drained) {
-			statusIndex = 6;
 			totalMashTime = WhirlpoolGrabbed.maxGrabTime;
 			statusProgress = drained.grabTime / totalMashTime;
 		} else if (player.isPossessed()) {
-			statusIndex = 7;
 			totalMashTime = Player.maxPossessedTime;
 			statusProgress = player.possessedTime / totalMashTime;
 		} else if (charState is WheelGGrabbed wheelgGrabbed) {
-			statusIndex = 8;
 			totalMashTime = WheelGGrabbed.maxGrabTime;
 			statusProgress = wheelgGrabbed.grabTime / totalMashTime;
 		} else if (charState is FStagGrabbed fstagGrabbed) {
-			statusIndex = 9;
 			totalMashTime = FStagGrabbed.maxGrabTime;
 			statusProgress = fstagGrabbed.grabTime / totalMashTime;
 		} else if (charState is MagnaCDrainGrabbed magnacGrabbed) {
-			statusIndex = 10;
 			totalMashTime = MagnaCDrainGrabbed.maxGrabTime;
 			statusProgress = magnacGrabbed.grabTime / totalMashTime;
 		} else if (charState is CrushCGrabbed crushcGrabbed) {
-			statusIndex = 11;
 			totalMashTime = CrushCGrabbed.maxGrabTime;
 			statusProgress = crushcGrabbed.grabTime / totalMashTime;
 		} else if (charState is BBuffaloDragged bbuffaloDragged) {
-			statusIndex = 12;
 			totalMashTime = BBuffaloDragged.maxGrabTime;
 			statusProgress = bbuffaloDragged.grabTime / totalMashTime;
 		} else if (charState is DarkHoldState darkHoldState) {
-			statusIndex = 13;
 			totalMashTime = DarkHoldState.totalStunTime;
 			statusProgress = darkHoldState.stunTime / totalMashTime;
 		} else if (dWrappedTime > 0) {
-			statusIndex = 14;
 			totalMashTime = DWrapped.DWrapMaxTime;
 			statusProgress = dWrapMashTime / totalMashTime;
 		} else if (charState is Burning burning) {
-			statusIndex = 15;
 			statusProgress = burning.burningTime;
 		} else {
 			player.lastMashAmount = 0;

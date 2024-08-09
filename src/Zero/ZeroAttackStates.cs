@@ -128,8 +128,6 @@ public class ZeroAirSlashState : ZeroGenericMeleeState {
 }
 
 public class ZeroRollingSlashtate : ZeroGenericMeleeState {
-	bool once;
-
 	public ZeroRollingSlashtate() : base("attack_air2") {
 		sound = "saber1";
 		soundFrame = 1;

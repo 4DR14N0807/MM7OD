@@ -906,7 +906,7 @@ public class Blues : Character {
 			int fontColor = (int)FontType.RedSmall;
 			if (bodyPierced) {
 				fontColor = (int)FontType.YellowSmall;
-			} else if (shieldDamaged) {
+			} else if (backShieldDamaged) {
 				fontColor = (int)FontType.OrangeSmall;
 			}
 			float damageText = float.Parse((oldHealth - player.health).ToString());

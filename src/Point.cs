@@ -316,7 +316,6 @@ public struct Point {
 	public static bool operator!= (Point l, Point r) {
 		return l.x != r.x || l.y != r.y;
 	}
-
 	public static Point operator* (float l, Point r) {
 		return new Point(r.x * l, r.y * l);
 	}
@@ -334,5 +333,11 @@ public struct Point {
 	}
 	public static Point operator% (Point l, float r) {
 		return new Point(l.x % r, l.y % r);
+	}
+	public override bool Equals(object obj) {
+		return obj is Point op && op.x == x && op.y == y;
+	}
+	public override int GetHashCode() {
+		return base.GetHashCode();
 	}
 }

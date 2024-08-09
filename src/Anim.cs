@@ -243,17 +243,14 @@ public class Anim : Actor {
 	}
 
 	public static void createGibEffect(
-		string spriteName, Point centerPos, Player? player,
-		GibPattern gibPattern = GibPattern.Radial, float randVelStart = 100,
-		float randVelEnd = 200, float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false,
-		long? zIndex = null
+		string spriteName, Point centerPos,
+		Player player, GibPattern gibPattern = GibPattern.Radial,
+		float randVelStart = 100, float randVelEnd = 200,
+		float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false
 	) {
-		if (player == null) {
-			sendRpc = false;
-		}
-		var sprite = Global.sprites[spriteName];
+		AnimData sprite = Global.sprites[spriteName];
 		float startAngle = 0;
-		for (int i = 0; i < sprite.frames.Count; i++) {
+		for (int i = 0; i < sprite.frames.Length; i++) {
 			float angle = Helpers.randomRange(0, 360);
 			if (gibPattern == GibPattern.Radial || gibPattern == GibPattern.SemiCircle) {
 				angle = startAngle;
@@ -277,9 +274,9 @@ public class Anim : Actor {
 			anim.frameIndex = i;
 
 			if (gibPattern == GibPattern.Radial) {
-				startAngle -= 360 / sprite.frames.Count;
+				startAngle -= 360 / sprite.frames.Length;
 			} else if (gibPattern == GibPattern.SemiCircle) {
-				startAngle -= 180 / sprite.frames.Count;
+				startAngle -= 180 / sprite.frames.Length;
 			}
 		}
 	}
@@ -325,6 +322,8 @@ public class ParasiteAnim : Anim {
 	float flashFrameTime;
 	float flashFramePeriod = 0.25f;
 	int flashFrameIndex;
+	Sprite secondAnim = new Sprite("parasitebomb_light");
+	
 	public ParasiteAnim(Point pos, string spriteName, ushort? netId = null, bool sendRpc = false, bool ownedByLocalPlayer = true) :
 		base(pos, spriteName, 1, netId, false, sendRpc, ownedByLocalPlayer) {
 	}
@@ -342,7 +341,7 @@ public class ParasiteAnim : Anim {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		Global.sprites["parasitebomb_light"].draw(flashFrameIndex, pos.x + x, pos.y + y, 1, 1, null, 1, 1, 1, zIndex);
+		secondAnim.draw(flashFrameIndex, pos.x + x, pos.y + y, 1, 1, null, 1, 1, 1, zIndex);
 	}
 }
 

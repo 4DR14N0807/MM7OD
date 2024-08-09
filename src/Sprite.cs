@@ -14,20 +14,6 @@ public class Sprite {
 	public Collider[] hitboxes;
 	public Collider[][] frameHitboxes;
 
-	public static Texture xArmorBootsBitmap = null!;
-	public static Texture xArmorBodyBitmap = null!;
-	public static Texture xArmorHelmetBitmap = null!;
-	public static Texture xArmorArmBitmap = null!;
-	public static Texture xArmorBootsBitmap2 = null!;
-	public static Texture xArmorBodyBitmap2 = null!;
-	public static Texture xArmorHelmetBitmap2 = null!;
-	public static Texture xArmorArmBitmap2 = null!;
-	public static Texture xArmorBootsBitmap3 = null!;
-	public static Texture xArmorBodyBitmap3 = null!;
-	public static Texture xArmorHelmetBitmap3 = null!;
-	public static Texture xArmorArmBitmap3 = null!;
-	public static Texture axlArmBitmap = null!;
-
 	public float time;
 	public int frameIndex;
 	public float frameSpeed = 1;
@@ -55,6 +41,12 @@ public class Sprite {
 	public float tempOffX = 0;
 	
 	public int totalFrameNum => (animData.frames.Length);
+	
+	public List<Trail> lastFiveTrailDraws = new List<Trail>();
+	public List<Trail> lastTwoBkTrailDraws = new List<Trail>();
+
+	internal static Texture superMegaManBitmap = null!;
+	internal static Texture breakManBitmap = null!;
 
 	public Sprite(string spritename) {
 		animData = Global.sprites[spritename];
@@ -137,8 +129,6 @@ public class Sprite {
 		);
 	}
 
-	public List<Trail> lastFiveTrailDraws = new List<Trail>();
-	public List<Trail> lastTwoBkTrailDraws = new List<Trail>();
 	public void draw(
 		int frameIndex, float x, float y, int flipX, int flipY,
 		HashSet<RenderEffectType>? renderEffects, float alpha,
@@ -153,37 +143,20 @@ public class Sprite {
 			if (!actor.shouldDraw()) return;
 		}
 
+		Texture bitmap = animData.bitmap;
+
 		// Character-specific draw section
-		int[]? armors = null;
-		bool drawAxlArms = true;
-		bool hyperBusterReady = false;
-		bool isUPX = false;
-		bool isUltX = false;
-		Character? character = actor as Character;
-		if (character != null) {
-			// TODO: Fix this.
-			if (character is MegamanX { stingActive: true } &&
-				!Global.shaderWrappers.ContainsKey("invisible")
-			) {
-				alpha = 0.25f;
-			}
-			if (character.player.isX) {
-				armors = new int[] {
-					character.player.bootsArmorNum,
-					character.player.bodyArmorNum,
-					character.player.helmetArmorNum,
-					character.player.armArmorNum
-				};
-			}
-			if (character.flattenedTime > 0) {
+		if (actor is Character chara) {
+			if (chara.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
-			isSuperAdaptor = character is Rock { hasSuperAdaptor: true };
-			isReversed = character.gHolded && character.reversedGravity;
-			isBreakMan = character is Blues { isBreakMan: true };
+			if (animData.textureName == "rock_default" && chara is Rock { hasSuperAdaptor: true }) {
+				bitmap = Sprite.superMegaManBitmap;
+			}
+			else if (animData.textureName == "nlues_default" && chara is Blues { isBreakMan: true }) {
+				bitmap = Sprite.breakManBitmap;
+			}
 		}
-
-		if (name == "mmx_unpo_grab" || name == "mmx_unpo_grab2") zIndex = ZIndex.MainPlayer;
 
 		Frame currentFrame = getCurrentFrame(frameIndex);
 		if (currentFrame == null) return;
@@ -196,15 +169,6 @@ public class Sprite {
 
 		cx += animData.alignOffX - tempOffX;
 		cy += animData.alignOffY - tempOffY;
-
-		if (scaleY == -1 && (
-				actor is MagnaCentipede ms ||
-				name.Contains("magnac_teleport") ||
-				name.Contains("magnac_notail_teleport")
-			)
-		) {
-			cy -= MagnaCentipede.constHeight;
-		}
 
 		float frameOffsetX = 0;
 		float frameOffsetY = 0;
@@ -253,8 +217,6 @@ public class Sprite {
 
 		float xDirArg = flipX * scaleX;
 		float yDirArg = flipY * scaleY;
-
-		Texture bitmap = animData.bitmap;
 
 		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
 			if (renderEffects.Contains(RenderEffectType.BlueShadow) && alpha >= 1) {
@@ -313,52 +275,6 @@ public class Sprite {
 				}
 			}
 
-			if (name is "boomerk_dash" or "boomerk_bald_dash" && (animTime > 0 || frameIndex > 0)) {
-				if (Global.isOnFrameCycle(4)) {
-					var trail = lastTwoBkTrailDraws.ElementAtOrDefault(5);
-					if (trail != null) {
-						trail.action.Invoke(trail.time);
-						trail.time -= Global.spf;
-					}
-				} else {
-					var trail = lastTwoBkTrailDraws.ElementAtOrDefault(9);
-					if (trail != null) {
-						trail.action.Invoke(trail.time);
-						trail.time -= Global.spf;
-					}
-				}
-
-				var shaderList = new List<ShaderWrapper>();
-				if (Global.shaderWrappers.ContainsKey("boomerkTrail")) {
-					ShaderWrapper boomerkTrail = Global.shaderWrappers["boomerkTrail"];
-					boomerkTrail.SetUniform("paletteTexture", Global.textures["boomerkTrailPalette"]);
-					shaderList.Add(boomerkTrail);
-				}
-
-				if (lastTwoBkTrailDraws.Count > 10) {
-					lastTwoBkTrailDraws.PopFirst();
-				}
-				lastTwoBkTrailDraws.Add(new Trail() {
-					action = (float time) => {
-						DrawWrappers.DrawTexture(
-							bitmap,
-							animData.frames[1].rect.x1,
-							animData.frames[1].rect.y1,
-							animData.frames[1].rect.w(),
-							animData.frames[1].rect.h(),
-							x + frameOffsetX, y + frameOffsetY,
-							zIndex, cx, cy,
-							xDirArg, yDirArg,
-							angle, alpha,
-							shaderList, true
-						);
-					},
-					time = 0.25f
-				});
-			} else {
-				lastTwoBkTrailDraws.Clear();
-			}
-
 			if (renderEffects.Contains(RenderEffectType.Trail)) {
 				for (int i = lastFiveTrailDraws.Count - 1; i >= 0; i--) {
 					var trail = lastFiveTrailDraws[i];
@@ -372,125 +288,26 @@ public class Sprite {
 				if (lastFiveTrailDraws.Count > 5) lastFiveTrailDraws.PopFirst();
 				lastFiveTrailDraws.Add(new Trail() {
 					action = (float time) => {
-						DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaderList, true);
+						DrawWrappers.DrawTexture(
+							bitmap, currentFrame.rect.x1, currentFrame.rect.y1,
+							currentFrame.rect.w(), currentFrame.rect.h(),
+							x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy,
+							xDirArg, yDirArg, angle, alpha, shaderList, true
+						);
 					},
 					time = 0.25f
-				});
-			}
-
-			if (renderEffects.Contains(RenderEffectType.SpeedDevilTrail) && character != null && Global.shaderWrappers.ContainsKey("speedDevilTrail")) {
-				for (int i = character.lastFiveTrailDraws.Count - 1; i >= 0; i--) {
-					Trail trail = character.lastFiveTrailDraws[i];
-					if (character.isDashing) {
-						trail.action.Invoke(trail.time);
-					}
-					trail.time -= Global.spf;
-					if (trail.time <= 0) character.lastFiveTrailDraws.RemoveAt(i);
-				}
-
-				var shaderList = new List<ShaderWrapper>();
-
-				var speedDevilShader = character.player.speedDevilShader;
-				shaderList.Add(speedDevilShader);
-
-				if (character.lastFiveTrailDraws.Count > 1) character.lastFiveTrailDraws.PopFirst();
-
-				character.lastFiveTrailDraws.Add(new Trail() {
-					action = (float time) => {
-						speedDevilShader?.SetUniform("alpha", time * 2);
-						DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaderList, true);
-					},
-					time = 0.125f
 				});
 			}
 		}
 
 		float extraYOff = 0;
-		if (isUltX) {
-			bitmap = Global.textures["XUltimate"];
-			extraYOff = 3;
-			armors = null;
-		}
-
-		if (isUPX) {
-			bitmap = Global.textures["XUP"];
-		}
-
-		DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1, currentFrame.rect.y1 - extraYOff, currentFrame.rect.w(), currentFrame.rect.h() + extraYOff, x + frameOffsetX, y + frameOffsetY - extraYOff, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-
-		if (isUPX) {
-			var upShaders = new List<ShaderWrapper>(shaders);
-			if (Global.isOnFrameCycle(5)) {
-				if (Global.shaderWrappers.ContainsKey("hit")) {
-					upShaders.Add(Global.shaderWrappers["hit"]);
-				}
-			}
-			DrawWrappers.DrawTexture(Global.textures["XUPGlow"], currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, upShaders, true);
-		}
-
-		if (armors != null && animData.isXSprite) {
-			bool isShootSprite = needsX3BusterCorrection();
-
-			float xOff = 0;
-			float extraW = 0;
-			float flippedExtraW = 0;
-
-			if (isShootSprite) {
-				if (name.Contains("mmx_wall_slide_shoot")) {
-					flippedExtraW = 5;
-					extraW = flippedExtraW;
-					xOff = -flippedExtraW * flipX;
-				} else {
-					extraW = 5;
-				}
-			}
-
-			var x3ArmShaders = new List<ShaderWrapper>(shaders);
-			if (hyperBusterReady) {
-				if (Global.isOnFrameCycle(5)) {
-					if (Global.shaderWrappers.ContainsKey("hit")) {
-						x3ArmShaders.Add(Global.shaderWrappers["hit"]);
-					}
-				}
-			}
-
-			if (armors[2] == 1) DrawWrappers.DrawTexture(xArmorHelmetBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-			if (armors[2] == 2) DrawWrappers.DrawTexture(
-				xArmorHelmetBitmap2,
-				currentFrame.rect.x1, currentFrame.rect.y1 - 1,
-				currentFrame.rect.w(), currentFrame.rect.h() + 1,
-				x + frameOffsetX, y + frameOffsetY - 1, zIndex,
-				cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true
-			);
-			if (armors[2] == 3) DrawWrappers.DrawTexture(xArmorHelmetBitmap3, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-
-			if (armors[0] == 1) DrawWrappers.DrawTexture(xArmorBootsBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-			if (armors[0] == 2) DrawWrappers.DrawTexture(xArmorBootsBitmap2, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-			if (armors[0] == 3) DrawWrappers.DrawTexture(xArmorBootsBitmap3, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-
-			if (armors[1] == 1) DrawWrappers.DrawTexture(xArmorBodyBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-			if (armors[1] == 3) DrawWrappers.DrawTexture(xArmorBodyBitmap3, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-			if (armors[1] == 2) DrawWrappers.DrawTexture(
-				xArmorBodyBitmap2,
-				currentFrame.rect.x1, currentFrame.rect.y1,
-				currentFrame.rect.w(), currentFrame.rect.h(),
-				x + frameOffsetX, y + frameOffsetY,
-				zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true
-			);
-
-			if (armors[3] == 1) DrawWrappers.DrawTexture(xArmorArmBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-			if (armors[3] == 2) DrawWrappers.DrawTexture(xArmorArmBitmap2, currentFrame.rect.x1 - flippedExtraW, currentFrame.rect.y1, currentFrame.rect.w() + extraW, currentFrame.rect.h(), x + frameOffsetX + xOff, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true);
-			if (armors[3] == 3) DrawWrappers.DrawTexture(xArmorArmBitmap3, currentFrame.rect.x1 - flippedExtraW, currentFrame.rect.y1, currentFrame.rect.w() + extraW, currentFrame.rect.h(), x + frameOffsetX + xOff, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, x3ArmShaders, true);
-		}
-
-		if (animData.isAxlSprite && drawAxlArms) {
-			DrawWrappers.DrawTexture(axlArmBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, 0, alpha, shaders, true);
-		}
-	}
-
-	public bool needsX3BusterCorrection() {
-		return name.Contains("mmx_shoot") || name.Contains("mmx_run_shoot") || name.Contains("mmx_fall_shoot") || name.Contains("mmx_jump_shoot") || name.Contains("mmx_dash_shoot") || name.Contains("mmx_ladder_shoot")
-			|| name.Contains("mmx_wall_slide_shoot") || name.Contains("mmx_up_dash_shoot") || name.Contains("mmx_wall_kick_shoot");
+		DrawWrappers.DrawTexture(
+			bitmap,
+			currentFrame.rect.x1, currentFrame.rect.y1 - extraYOff,
+			currentFrame.rect.w(), currentFrame.rect.h() + extraYOff,
+			x + frameOffsetX, y + frameOffsetY - extraYOff, zIndex,
+			cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true
+		);
 	}
 
 	public Frame getCurrentFrame(int frameIndex = -1) {
@@ -637,9 +454,7 @@ public class AnimData {
 	public float alignOffY;
 	public bool loop;
 	public Texture bitmap;
-	
-	public bool isXSprite;
-	public bool isAxlSprite;
+	public string textureName;
 
 	public AnimData(string spriteJsonStr, string name, string customMapName) {
 		dynamic spriteJson = JsonConvert.DeserializeObject(spriteJsonStr) ?? throw new NullReferenceException();
@@ -679,12 +494,7 @@ public class AnimData {
 		List<Frame> frames = new();
 		List<Collider> hitboxes = new();
 
-		if (textureName == "XDefault") {
-			isXSprite = true;
-		}
-		if (textureName == "axl") {
-			isAxlSprite = true;
-		}
+		this.textureName = textureName;
 
 		JArray hitboxesJson = spriteJson["hitboxes"];
 		foreach (dynamic hitboxJson in hitboxesJson) {

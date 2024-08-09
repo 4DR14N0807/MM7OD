@@ -1089,7 +1089,7 @@ public partial class Player {
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
-			} else if (charNum == (int)CharIds.Rock) {
+			} else if (charNum == (int)CharIds.Rock || serverPlayer.isBot) {
 				character = new Rock(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer

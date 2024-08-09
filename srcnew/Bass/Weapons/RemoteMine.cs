@@ -103,7 +103,9 @@ public class RemoteMineProj : Projectile {
 
 	void explode() {
 		destroySelf();
-		new RemoteMineExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+		if (ownedByLocalPlayer) {
+			new RemoteMineExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+		}
 	}
 }
 

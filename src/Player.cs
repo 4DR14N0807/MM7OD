@@ -1079,63 +1079,7 @@ public partial class Player {
 		assassinHitPos = null;
 
 		if (character == null) {
-			bool mk2VileOverride = false;
-			// Hyper mode overrides (PRE)
-			if (Global.level.isHyper1v1() && ownedByLocalPlayer) {
-				if (isVile) {
-					mk2VileOverride = true;
-					currency = 9999;
-				}
-			}
-
-			if (charNum == (int)CharIds.X) {
-				character = new MegamanX(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Zero) {
-				character = new Zero(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Vile) {
-				character = new Vile(
-					this, pos.x, pos.y, xDir, false, charNetId,
-					ownedByLocalPlayer, mk2VileOverride: mk2VileOverride
-				);
-			} else if (charNum == (int)CharIds.Axl) {
-				character = new Axl(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Sigma) {
-				if (!ownedByLocalPlayer && !loadoutSet) {
-					character = new BaseSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else if (isSigma3()) {
-					character = new Doppma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else if (isSigma2()) {
-					character = new NeoSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else {
-					character = new CmdSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				}
-			} else if (charNum == (int)CharIds.Rock) {
-				character = new Rock(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Blues) {
+			if (charNum == (int)CharIds.Blues) {
 				character = new Blues(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
@@ -1145,13 +1089,8 @@ public partial class Player {
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
-			} else if (charNum == (int)CharIds.BusterZero) {
-				character = new BusterZero(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.PunchyZero) {
-				character = new PunchyZero(
+			} else if (charNum == (int)CharIds.Rock) {
+				character = new Rock(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);

@@ -250,8 +250,11 @@ public class Blues : Character {
 	}
 
 	public override bool changeState(CharState newState, bool forceChange = false) {
+		bool changedState = base.changeState(newState, forceChange);
+		if (!changedState) {
+			return false;
+		}
 		shieldCustomState = null;
-		base.changeState(newState, forceChange);
 		if (!newState.attackCtrl || !newState.normalCtrl) {
 			shootAnimTime = 0;
 		}

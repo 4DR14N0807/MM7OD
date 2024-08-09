@@ -126,6 +126,7 @@ public class ShieldDash : CharState {
 		initialXDir = character.xDir;
 		character.isDashing = true;
 		character.vel.y = 0;
+		blues.shieldCustomState = blues.isShieldActive;
 	}
 
 	public override void onExit(CharState newState) {

@@ -119,12 +119,10 @@ public class Bass : Character {
 	}
 
 	public override bool normalCtrl() {
-		bool dashPressed = player.input.isPressed(Control.Dash, player);
-		if (dashPressed && canUseTBladeDash()) {
+		if (player.input.isPressed(Control.Dash, player) && canUseTBladeDash()) {
 			changeState(new TenguBladeDash(), true);
 			return true;
-		} 
-
+		}
 		return base.normalCtrl();
 	}
 

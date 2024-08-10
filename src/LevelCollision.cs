@@ -256,6 +256,10 @@ public partial class Level {
 			}
 		}
 
+		if (gameObject is Actor { isSolidWall: true }) {
+			return false;
+		}
+
 		if (actorCollider.disabled || gameObjectCollider.disabled) return false;
 		if (actorCollider.isTrigger || gameObjectCollider.isTrigger) return true;
 

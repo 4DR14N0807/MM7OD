@@ -76,6 +76,7 @@ public partial class Actor : GameObject {
 	public float landingVelY;
 	public bool immuneToKnockback;
 	public bool isPlatform;
+	public bool isSolidWall;
 
 	public float xFlinchPushVel = 0;
 

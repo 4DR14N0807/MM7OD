@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Converters;
 
 namespace MMXOnline;
@@ -53,6 +54,8 @@ public class IceWallActor : Projectile {
 	bool startedMoving;
 	List<Character> chrs = new();
 	Player player;
+	Collider? terrainCollider;
+
 	public IceWallActor(
 		Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
@@ -64,7 +67,7 @@ public class IceWallActor : Projectile {
 		base.xDir = xDir;
 		this.player = player;
 		collider.isTrigger = false;
-		isPlatform = true;
+		isSolidWall = true;
 		maxTime = 2f;
 		destroyOnHit = false;
 	}

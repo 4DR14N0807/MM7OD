@@ -58,7 +58,6 @@ public class RushWarpIn : RushState {
 	public Point rockPos;
 	public Anim warpAnim = null!;
 	bool landed;
-	bool warped;
 
 	public RushWarpIn(bool addInvulnFrames = true) : base("rush_warp_beam") { }
 
@@ -395,7 +394,7 @@ public class RushSearchState : RushState {
 			pickup = new Anim(pickupPos, "rush_pickups", 1, rush.player.getNextActorNetId(), false, true)
 				{vel = new Point(0, -360), useGravity = true, frameSpeed = 0};
 
-			pickup.frameIndex = Helpers.randomRange(0, pickup.sprite.frames.Count - 1);
+			pickup.frameIndex = Helpers.randomRange(0, pickup.sprite.totalFrameNum - 1);
 			pickup.setzIndex(ZIndex.Default); return;
 		} else {
 			// Bomb.

@@ -21,7 +21,6 @@ public class RemoteMine : Weapon {
 		return bass?.rMine == null && base.canShoot(chargeLevel, player);
 	}
 	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 
@@ -31,7 +30,7 @@ public class RemoteMine : Weapon {
 
 
 public class RemoteMineProj : Projectile {
-
+	bool exploded;
 	bool landed;
 	Character? host;
 	Anim? anim;
@@ -46,7 +45,7 @@ public class RemoteMineProj : Projectile {
 			netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMine;
-		maxTime = 1.5f;
+		maxTime = 1.25f;
 		bass = player.character as Bass;
 		if (bass != null) bass.rMine = this;
 		anim = new Anim(getCenterPos(), "remote_mine_anim", xDir, player.getNextActorNetId(), false, true);
@@ -72,7 +71,11 @@ public class RemoteMineProj : Projectile {
 		int moveY = owner.input.getYDir(owner);
 		if (moveY != 0 && !landed) move(new Point(0, 90 * moveY ));
 
-		if (bass?.rMine != null && landed && owner.input.isPressed(Control.Shoot, owner)) explode();
+		if (ownedByLocalPlayer && bass?.rMine != null &&
+			landed && owner.input.isPressed(Control.Shoot, owner)
+		) {
+			destroySelf();
+		}
 	}
 
 	public override void onCollision(CollideData other) {
@@ -90,13 +93,18 @@ public class RemoteMineProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!exploded) {
+			explode();
+		}
 		if (anim != null) anim.destroySelf();
 		if (bass != null) bass.rMine = null!;
 	}
 
 	void explode() {
 		destroySelf();
-		new RemoteMineExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+		if (ownedByLocalPlayer) {
+			new RemoteMineExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+		}
 	}
 }
 

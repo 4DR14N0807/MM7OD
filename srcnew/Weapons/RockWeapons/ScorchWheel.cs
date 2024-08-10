@@ -130,8 +130,8 @@ public class ScorchWheelProj : Projectile {
 		if (rock != null) rock.sWell = this;
 		canBeLocal = false;
 
-		for (var i = 0; i < 4; i++) {
-			var fireball = Global.sprites["scorch_wheel_fireball"].clone();
+		for (int i = 0; i < 4; i++) {
+			Sprite fireball = new Sprite("scorch_wheel_fireball");
 			fireballs.Add(fireball);
 		}
 

@@ -1119,63 +1119,7 @@ public partial class Player {
 		assassinHitPos = null;
 
 		if (character == null) {
-			bool mk2VileOverride = false;
-			// Hyper mode overrides (PRE)
-			if (Global.level.isHyper1v1() && ownedByLocalPlayer) {
-				if (isVile) {
-					mk2VileOverride = true;
-					currency = 9999;
-				}
-			}
-
-			if (charNum == (int)CharIds.X) {
-				character = new MegamanX(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Zero) {
-				character = new Zero(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Vile) {
-				character = new Vile(
-					this, pos.x, pos.y, xDir, false, charNetId,
-					ownedByLocalPlayer, mk2VileOverride: mk2VileOverride
-				);
-			} else if (charNum == (int)CharIds.Axl) {
-				character = new Axl(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Sigma) {
-				if (!ownedByLocalPlayer && !loadoutSet) {
-					character = new BaseSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else if (isSigma3()) {
-					character = new Doppma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else if (isSigma2()) {
-					character = new NeoSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else {
-					character = new CmdSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				}
-			} else if (charNum == (int)CharIds.Rock) {
-				character = new Rock(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Blues) {
+			if (charNum == (int)CharIds.Blues) {
 				character = new Blues(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
@@ -1185,13 +1129,8 @@ public partial class Player {
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
-			} else if (charNum == (int)CharIds.BusterZero) {
-				character = new BusterZero(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.PunchyZero) {
-				character = new PunchyZero(
+			} else if (charNum == (int)CharIds.Rock || serverPlayer.isBot) {
+				character = new Rock(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
@@ -1958,45 +1897,7 @@ public partial class Player {
 
 		bool basicCheck = !Global.level.isElimination() && limboChar != null && lastDeathCanRevive && isSigma && newCharNum == 4 && currency >= reviveSigmaCost && !lastDeathWasSigmaHyper;
 		if (!basicCheck) return false;
-
-		if (false) {
-			Point deathPos = limboChar.pos;
-
-			// Get ground snapping pos
-			var rect = new Rect(deathPos.addxy(-7, 0), deathPos.addxy(7, 112));
-			var hits = Global.level.checkCollisionsShape(rect.getShape(), null);
-			Point? closestHitPoint = Helpers.getClosestHitPoint(hits, deathPos, typeof(Wall));
-			if (closestHitPoint != null) {
-				deathPos = new Point(deathPos.x, closestHitPoint.Value.y);
-			} else {
-				if (isSigma1()) {
-					return false;
-				}
-			}
-
-			// Check if ample space to revive in
-			int w = 10;
-			int h = 120;
-			rect = new Rect(new Point(deathPos.x - w / 2, deathPos.y - h), new Point(deathPos.x + w / 2, deathPos.y - 25));
-			hits = Global.level.checkCollisionsShape(rect.getShape(), null);
-			if (hits.Any(h => h.gameObject is Wall)) {
-				return false;
-			}
-
-			if (deathPos.x - 100 < 0 || deathPos.x + 100 > Global.level.width) {
-				return false;
-			}
-			foreach (var player in Global.level.players) {
-				if (player.character is WolfSigma && player.character.pos.distanceTo(deathPos) < Global.screenW) {
-					return false;
-				}
-			}
-		} else if (false) {
-			return true;
-		} else if (true) {
-			return limboChar != null && KaiserSigma.canKaiserSpawn(limboChar, out spawnPoint);
-		}
-
+	
 		return true;
 	}
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class BassShoot : CharState {
-	bool isFalling;
 	Bass bass = null!;
 
 	public BassShoot() : base("not_a_real_sprite") {
@@ -44,7 +43,6 @@ public class BassShoot : CharState {
 		if (!bass.grounded || bass.vel.y < 0) {
 			string tempSprite = airSprite;
 			if (bass.vel.y >= 0) {
-				isFalling = true;
 				tempSprite = fallSprite;
 			}
 			if (bass.sprite.name != bass.getSprite("tempSprite")) {
@@ -57,14 +55,19 @@ public class BassShoot : CharState {
 	}
 
 	public static string getShootSprite(int dir, Weapon wep) {
-		if (wep is not BassBuster &&
-			wep is not MagicCard) return "shoot";
-
-		else if (wep is MagicCard) {
-			if (dir < 0) return "shoot_up";
+		if (wep is not BassBuster
+			and not MagicCard
+			and not WaveBurner
+			and not RemoteMine
+		) {
 			return "shoot";
 		}
-
+		if (wep is RemoteMine && dir == -2) {
+			dir = -1;
+		}
+		if (wep is MagicCard && dir == -1) {
+			dir = -2;
+		}
 		return dir switch {
 			-2 => "shoot_up",
 			-1 => "shoot_up_diag",

@@ -349,7 +349,7 @@ public class BaseSigma : Character {
 			}
 		}
 
-		if (this is ViralSigma && charState is not Die) {
+		if (player.character is ViralSigma && charState is not Die) {
 			lastHyperSigmaSprite = sprite?.name;
 			lastHyperSigmaFrameIndex = frameIndex;
 			lastViralSigmaAngle = angle ?? 0;

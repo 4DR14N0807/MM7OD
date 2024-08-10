@@ -32,7 +32,6 @@ public class GravityHold : Weapon {
 
 
 public class GravityHoldProj : Projectile {
-	bool fired;
 	bool effect;
 	float r = 0;
 	float maxR = 80;
@@ -168,7 +167,6 @@ public class GravityHoldProj : Projectile {
 public class GravityHoldEffect : Effect {
 	Character rootChar;
 	int effectFrames;
-	Rect rect;
 	bool fired;
 	bool grounded;
 
@@ -192,7 +190,7 @@ public class GravityHoldEffect : Effect {
 				rock.vel.x = Helpers.randomRange(-100, 100);
 				rock.vel.y = -225;
 				rock.frameSpeed = 0;
-				rock.frameIndex = Helpers.randomRange(0, rock.sprite.frames.Count - 1);
+				rock.frameIndex = Helpers.randomRange(0, rock.sprite.totalFrameNum - 1);
 				rock.useGravity = true;
 				rock.ttl = 0.5f;
 			}

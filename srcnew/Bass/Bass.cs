@@ -119,12 +119,10 @@ public class Bass : Character {
 	}
 
 	public override bool normalCtrl() {
-		bool dashPressed = player.input.isPressed(Control.Dash, player);
-		if (dashPressed && canUseTBladeDash()) {
+		if (player.input.isPressed(Control.Dash, player) && canUseTBladeDash()) {
 			changeState(new TenguBladeDash(), true);
 			return true;
-		} 
-
+		}
 		return base.normalCtrl();
 	}
 
@@ -150,23 +148,23 @@ public class Bass : Character {
 		player.weapon.addAmmo(-player.weapon.getAmmoUsage(0), player);
 	}
 
-	public int getShootYDir() {
+	public int getShootYDir(bool allowDown = false, bool allowDiagonal = true) {
 		int dir = player.input.getYDir(player);
 		int multiplier = 2;
-		if (dir == 2 || player.input.getXDir(player) != 0) {
+		if (allowDiagonal && player.input.getXDir(player) != 0) {
 			multiplier = 1;
 		}
-		if (dir * multiplier == 2) return 1;
+		if (!allowDown && dir * multiplier == 2) return 1;
 
 		return dir * multiplier;
 	}
 
-	public int getShootAngle() {
+	public int getShootAngle(bool allowDown = false, bool allowDiagonal = false) {
 		int baseAngle = 0;
 		if (xDir == -1) {
 			baseAngle = 128;
 		}
-		return getShootYDir() * xDir * 32 + baseAngle;
+		return getShootYDir(allowDown, allowDiagonal) * xDir * 32 + baseAngle;
 	}
 
 	//Loadout Stuff

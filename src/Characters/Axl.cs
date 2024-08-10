@@ -1154,10 +1154,14 @@ public class Axl : Character {
 		}
 
 		// aimbot
-		if (player.isAI) {
+		/*if (player.isAI) {
 			var target = Global.level.getClosestTarget(pos, player.alliance, true);
-			if (target != null) player.axlCursorPos = target.pos.addxy(-Global.level.camX, -Global.level.camY - (target is InRideArmor ? 0 : 16));
-		}
+			if (target != null) {
+				player.axlCursorPos = target.pos.addxy(
+					-Global.level.camX, -Global.level.camY - (target is InRideArmor ? 0 : 16)
+				);
+			}
+		}*/
 
 		getMouseTargets();
 	}
@@ -1351,6 +1355,7 @@ public class Axl : Character {
 	float mcFrameTime;
 	float mcMaxFrameTime = 0.03f;
 	int mcFrameIndex;
+	Sprite pistol2Sprite = new Sprite("axl_arm_pistol2");
 	public void drawArm(float angle) {
 		long zIndex = this.zIndex - 1;
 		Point gunArmOrigin;
@@ -1372,7 +1377,7 @@ public class Axl : Character {
 		if (player.axlWeapon is DoubleBullet) {
 			var armPos = getDoubleBulletArmPos();
 			if (shouldDraw()) {
-				Global.sprites["axl_arm_pistol2"].draw(0, gunArmOrigin.x + armPos.x * axlXDir, gunArmOrigin.y + armPos.y, axlXDir, 1, getRenderEffectSet(), 1, 1, 1, this.zIndex + 100, angle: angle, shaders: getShaders(), actor: this);
+				pistol2Sprite.draw(0, gunArmOrigin.x + armPos.x * axlXDir, gunArmOrigin.y + armPos.y, axlXDir, 1, getRenderEffectSet(), 1, 1, 1, this.zIndex + 100, angle: angle, shaders: getShaders(), actor: this);
 			}
 		}
 
@@ -1436,10 +1441,10 @@ public class Axl : Character {
 
 	public Sprite getAxlArmSprite() {
 		if (!ownedByLocalPlayer && Global.spriteNameByIndex.ContainsKey(netAxlArmSpriteIndex)) {
-			return Global.sprites[Global.spriteNameByIndex[netAxlArmSpriteIndex]];
+			return new Sprite(Global.spriteNameByIndex[netAxlArmSpriteIndex]);
 		}
 
-		return Global.sprites[getAxlArmSpriteName()];
+		return new Sprite(getAxlArmSpriteName());
 	}
 
 	public Point getCorrectedCursorPos() {
@@ -1448,7 +1453,7 @@ public class Axl : Character {
 		Point gunArmOrigin = getAxlGunArmOrigin();
 
 		Sprite sprite = getAxlArmSprite();
-		float minimumAimRange = sprite.frames[0].POIs[0].magnitude + 5;
+		float minimumAimRange = sprite.animData.frames[0].POIs[0].magnitude + 5;
 
 		if (gunArmOrigin.distanceTo(cursorPos) < minimumAimRange) {
 			Point angleDir = Point.createFromAngle(getShootAngle(true));
@@ -1466,7 +1471,7 @@ public class Axl : Character {
 	public Point getMuzzleOffset(float angle) {
 		if (player.axlWeapon == null) return new Point();
 		Sprite sprite = getAxlArmSprite();
-		Point muzzlePOI = sprite.frames[0].POIs[0];
+		Point muzzlePOI = sprite.animData.frames[0].POIs[0];
 
 		float horizontalOffX = 0;// Helpers.cosd(angle) * muzzlePOI.x;
 		float horizontalOffY = 0;// Helpers.sind(angle) * muzzlePOI.x;
@@ -1489,8 +1494,8 @@ public class Axl : Character {
 		}
 
 		Sprite sprite = getAxlArmSprite();
-		float angle = getShootAngle(ignoreXDir: true) + sprite.frames[0].POIs[poiIndex].angle * axlXDir;
-		Point angleDir = Point.createFromAngle(angle).times(sprite.frames[0].POIs[poiIndex].magnitude);
+		float angle = getShootAngle(ignoreXDir: true) + sprite.animData.frames[0].POIs[poiIndex].angle * axlXDir;
+		Point angleDir = Point.createFromAngle(angle).times(sprite.animData.frames[0].POIs[poiIndex].magnitude);
 
 		return gunArmOrigin.addxy(angleDir.x, angleDir.y);
 	}
@@ -1499,9 +1504,9 @@ public class Axl : Character {
 		if (player.axlWeapon == null) return new Point();
 		Point gunArmOrigin = getAxlGunArmOrigin();
 		Sprite sprite = getAxlArmSprite();
-		if (sprite.frames[0].POIs.Count < 2) return new Point();
-		float angle = getShootAngle(ignoreXDir: true) + sprite.frames[0].POIs[1].angle * axlXDir;
-		Point angleDir = Point.createFromAngle(angle).times(sprite.frames[0].POIs[1].magnitude);
+		if (sprite.animData.frames[0].POIs.Length < 2) return new Point();
+		float angle = getShootAngle(ignoreXDir: true) + sprite.animData.frames[0].POIs[1].angle * axlXDir;
+		Point angleDir = Point.createFromAngle(angle).times(sprite.animData.frames[0].POIs[1].magnitude);
 		return gunArmOrigin.addxy(angleDir.x, angleDir.y);
 	}
 
@@ -1548,7 +1553,7 @@ public class Axl : Character {
 		var pois = sprite.getCurrentFrame().POIs;
 		Point offset = getTwoHandedOffset();
 		Point roundPos = new Point(MathInt.Round(pos.x), MathInt.Round(pos.y));
-		if (pois.Count > 0) {
+		if (pois.Length > 0) {
 			retPoint = roundPos.addxy((offset.x + pois[0].x) * axlXDir, pois[0].y + offset.y);
 		} else retPoint = roundPos.addxy((offset.x + 3) * axlXDir, -21 + offset.y);
 

@@ -243,15 +243,17 @@ public class Blues : Character {
 		if (trails != null) {
 			sprite.lastFiveTrailDraws = trails;
 		}
-		if (isBreakMan && sprite.textureName == "blues_default") {
-			sprite.textureName = "blues_breakman";
-			sprite.bitmap = Global.textures["blues_breakman"];
+		if (isBreakMan && sprite.animData.textureName == "blues_default") {
+			sprite.overrideTexture = Sprite.breakManBitmap;
 		}
 	}
 
 	public override bool changeState(CharState newState, bool forceChange = false) {
+		bool changedState = base.changeState(newState, forceChange);
+		if (!changedState) {
+			return false;
+		}
 		shieldCustomState = null;
-		base.changeState(newState, forceChange);
 		if (!newState.attackCtrl || !newState.normalCtrl) {
 			shootAnimTime = 0;
 		}
@@ -383,14 +385,15 @@ public class Blues : Character {
 				if (sprite.name.EndsWith("_shoot") || sprite.name.EndsWith("_shoot_shield")) {
 					changeSpriteFromName(charState.defaultSprite, false);
 					if (charState is WallSlide) {
-						frameIndex = sprite.frames.Count - 1;
+						frameIndex = sprite.totalFrameNum - 1;
 					}
 				}
 			}
 		}
 		// Shoot logic.
 		chargeLogic(shoot);
-		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == getSprite("idle_shield")) {
+		int requiredCharge = (isBreakMan ? 1 : 2);
+		if (isShieldActive && getChargeLevel() >= requiredCharge && sprite.name == getSprite("idle_shield")) {
 			changeSpriteFromName("idle_chargeshield", true);
 		}
 
@@ -530,6 +533,8 @@ public class Blues : Character {
 
 	public void shoot(int chargeLevel) {
 		int lemonNum = -1;
+		int type = isBreakMan ? 1 : 0;
+
 		if (chargeLevel < 2) {
 			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 				if (unchargedLemonCooldown[i] <= 0) {
@@ -572,14 +577,18 @@ public class Blues : Character {
 			}
 		} else if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
-				shootPos, xDir, player, player.getNextActorNetId(), true
+				type, shootPos, xDir, player, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(1));
-			playSound("buster2", sendRpc: true);
+			if (type == 0) {
+				playSound("buster2", sendRpc: true);
+			} else {
+				playSound("buster3", sendRpc: true);
+			}
 			lemonCooldown = 12;
 		} else if (chargeLevel == 2) {
 			new ProtoBusterLv3Proj(
-				shootPos, xDir, player, player.getNextActorNetId(), true
+				type, shootPos, xDir, player, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(2));
 			playSound("buster3", sendRpc: true);
@@ -589,9 +598,23 @@ public class Blues : Character {
 				addCoreAmmo(4);
 				changeState(new ProtoStrike(), true);
 			} else {
+				if (type == 1) {
+					var proj = new ProtoBusterLv4Proj(
+						type, shootPos.addxy(-12 * xDir, 0), xDir, player, player.getNextActorNetId(), true
+					);
+					proj.frameIndex = 2;
+					proj.maxTime += 4 / 60f;
+				}
 				new ProtoBusterLv4Proj(
-					shootPos, xDir, player, player.getNextActorNetId(), true
+					type, shootPos, xDir, player, player.getNextActorNetId(), true
 				);
+				if (type == 1) {
+					var proj = new ProtoBusterLv4Proj(
+						type, shootPos.addxy(12 * xDir, 0), xDir, player, player.getNextActorNetId(), true
+					);
+					proj.frameIndex = 1;
+					proj.maxTime -= 4 / 60f;
+				}
 				addCoreAmmo(getChargeShotAmmoUse(3));
 				playSound("buster3", sendRpc: true);
 				lemonCooldown = 12;
@@ -907,7 +930,7 @@ public class Blues : Character {
 			int fontColor = (int)FontType.RedSmall;
 			if (bodyPierced) {
 				fontColor = (int)FontType.YellowSmall;
-			} else if (shieldDamaged) {
+			} else if (backShieldDamaged) {
 				fontColor = (int)FontType.OrangeSmall;
 			}
 			float damageText = float.Parse((oldHealth - player.health).ToString());

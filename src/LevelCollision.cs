@@ -256,7 +256,7 @@ public partial class Level {
 			}
 		}
 
-		if (gameObject is Actor { isSolidWall: true }) {
+		if (!actorCollider.isTrigger && gameObject is Actor { isSolidWall: true }) {
 			return false;
 		}
 

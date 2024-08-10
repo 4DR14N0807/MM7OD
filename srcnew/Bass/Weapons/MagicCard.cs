@@ -44,7 +44,7 @@ public class MagicCardProj : Projectile {
 		Player player, ushort? netProjId, bool rpc = false
 	) : base (
 		MagicCard.netWeapon, pos, xDir, 0, 1,
-		player, "magic_card_proj", 0, 0.25f, 
+		player, "magic_card_proj", 0, 0, 
 		netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BassProjIds.MagicCard;

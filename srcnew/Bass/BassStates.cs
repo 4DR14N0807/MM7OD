@@ -58,8 +58,15 @@ public class BassShoot : CharState {
 		if (wep is not BassBuster
 			and not MagicCard
 			and not WaveBurner
+			and not RemoteMine
 		) {
-				return "shoot";
+			return "shoot";
+		}
+		if (wep is RemoteMine && dir == -2) {
+			dir = -1;
+		}
+		if (wep is MagicCard && dir == -1) {
+			dir = -2;
 		}
 		return dir switch {
 			-2 => "shoot_up",

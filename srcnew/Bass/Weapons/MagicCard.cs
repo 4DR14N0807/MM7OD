@@ -22,10 +22,11 @@ public class MagicCard : Weapon {
 			return;
 		}
 		Point shootPos = character.getShootPos();
+		float shootAngle = bass.getShootAngle(true, false);
 		Player player = character.player;
 
 		var card = new MagicCardProj(
-			shootPos, character.getShootXDir(), bass.getShootAngle(), player, player.getNextActorNetId(), true
+			shootPos, character.getShootXDir(), shootAngle, player, player.getNextActorNetId(), true
 		);
 		cardsOnField.Add(card);
 	}
@@ -56,13 +57,13 @@ public class MagicCardProj : Projectile {
 		canBeLocal = false;
 
 		if (rpc) {
-			rpcCreateByteAngle(pos, player, netId, byteAngle);
+			rpcCreateByteAngle(pos, player, netId, byteAngle, (byte)(xDir + 1));
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MagicCardProj(
-			arg.pos, arg.xDir, arg.byteAngle, arg.player, arg.netId
+			arg.pos, arg.extraData[0] - 1, arg.byteAngle, arg.player, arg.netId
 		);
 	}
 

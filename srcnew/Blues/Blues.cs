@@ -772,7 +772,7 @@ public class Blues : Character {
 			canShieldBeActive = shieldCustomState.Value;
 		} else {
 			canShieldBeActive = (
-				charState.attackCtrl || charState.attackCtrl ||
+				charState.attackCtrl ||
 				charState is Hurt || charState is GenericStun
 			);
 		}

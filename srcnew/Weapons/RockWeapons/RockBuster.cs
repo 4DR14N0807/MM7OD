@@ -115,7 +115,7 @@ public class RockBusterMidChargeProj : Projectile {
 	) {
 
 		projId = (int)RockProjIds.RockBusterMid;
-		maxTime = 0.66f;
+		maxTime = 0.5f;
 		fadeOnAutoDestroy = true;
 		fadeSprite = "rock_buster1_fade";
 
@@ -155,7 +155,7 @@ public class RockBusterMidChargeProj : Projectile {
 public class RockBusterChargedProj : Projectile {
 
 	public int type;
-	float projSpeed = 420;
+	float projSpeed = 340;
 
 	public RockBusterChargedProj(
 		Point pos, int xDir, Player player,
@@ -167,14 +167,13 @@ public class RockBusterChargedProj : Projectile {
 	) {
 
 		projId = (int)RockProjIds.RockBusterCharged;
-		maxTime = 0.4f;
+		maxTime = 0.48f;
 		fadeOnAutoDestroy = true;
 		fadeSprite = "rock_buster2_fade";
 		this.type = type;
 
 		if (type == 1) {
-
-			var sprite = "rock_buster2_proj";
+			string? sprite = "rock_buster2_proj";
 			changeSprite(sprite, false);
 			reflectable = true;
 			base.vel.x = projSpeed * xDir;

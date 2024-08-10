@@ -66,6 +66,7 @@ public class IceWallActor : Projectile {
 		collider.isTrigger = false;
 		isPlatform = true;
 		maxTime = 2f;
+		destroyOnHit = false;
 	}
 	
 	public override void update() {
@@ -83,38 +84,37 @@ public class IceWallActor : Projectile {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		var wall = other.gameObject as Wall;
-		var own = netOwner?.character;
-		var chr = other.gameObject as Character;
-
-		//Wall hit.
-		if (wall != null) {
+		Character? ownChar = damager.owner?.character;
+		// Wall hit.
+		if (other.gameObject is Wall) {
 			if (other.isSideWallHit()) {
 				xDir *= -1;
+				vel.x *= -1;
+				pos.y += xDir;
 				playSound("ding");
 				bounces++;
 			}
+			return;
 		}
-
-		//Movement start.
-		if (own != null) {
-			if (other.isSideWallHit() && own.charState is Run or Dash) {
+		// Movement start.
+		if (other.gameObject == ownChar) {
+			if (ownChar.pos.y > getTopY() + 10 && ownChar.charState is Run or Dash) {
 				startedMoving = true;
 			}
 		}
-
-		if (chr != null) {
+		// Hit enemy.
+		else if (other.gameObject is Character chara && chara.player.alliance != damager.owner.alliance) {
 			if (other.isSideWallHit()) {
 				foreach (var enemy in chrs) {
-					if (chr != enemy) {
-						chrs.Add(chr);
+					if (chara != enemy) {
+						chrs.Add(chara);
 						maxSpeed -= 100;
 					} 
 				}
 			} else if (other.isGroundHit() && vel.y < 120 && 
-				chr.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
+				chara.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
 
-				chr.applyDamage(3, player, chr, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);
+				chara.applyDamage(3, player, chara, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);
 			}
 		}
 	}

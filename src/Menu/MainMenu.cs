@@ -241,14 +241,14 @@ public class MainMenu : IMainMenu {
 			*/
 			int offset = 2;
 			if (Global.checksum != Global.prodChecksum) {
-				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 9);
+				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset);
 				offset += 10;
 			}
-			Fonts.drawText(FontType.DarkBlue, versionText, 2, offset);
+			/*Fonts.drawText(FontType.DarkBlue, versionText, 2, offset);
 			offset += 10;
 			if (Global.radminIP != "") {
 				Fonts.drawText(FontType.DarkGreen, "Radmin", 2, offset);
-			}
+			}*/
 		}
 	}
 }

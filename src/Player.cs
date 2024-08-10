@@ -240,6 +240,34 @@ public partial class Player {
 			charWTanks[isDisguisedAxl ? 3 : charNum] = value;
 		}
 	}
+
+	// L & M Tanks (Blues exclusive)
+	public Dictionary<int, List<LTank>> charLTanks = new Dictionary<int, List<LTank>>()
+	{
+			{ (int)CharIds.Blues, new List<LTank>() },
+		};
+	public List<LTank> ltanks {
+		get {
+			return charLTanks[isDisguisedAxl ? 3 : charNum];
+		}
+		set {
+			charLTanks[isDisguisedAxl ? 3 : charNum] = value;
+		}
+	}
+
+	public Dictionary<int, List<MTank>> charMTanks = new Dictionary<int, List<MTank>>()
+	{
+			{ (int)CharIds.Blues, new List<MTank>() },
+		};
+	public List<MTank> mtanks {
+		get {
+			return charMTanks[isDisguisedAxl ? 3 : charNum];
+		}
+		set {
+			charMTanks[isDisguisedAxl ? 3 : charNum] = value;
+		}
+	}
+
 	// Heart tanks
 	public Dictionary<int, int> charHeartTanks = new Dictionary<int, int>(){
 		{ (int)CharIds.X, 0 },
@@ -344,7 +372,9 @@ public partial class Player {
 	public bool warpedIn = false;
 	public float readyTime;
 	public const float maxReadyTime = 1.75f;
+	public float whistleTime = 0;
 	public bool readyTextOver = false;
+	public bool playedBluesWhistle = false;
 	public ServerPlayer serverPlayer;
 	public LoadoutData loadout;
 	public bool loadoutSet;
@@ -862,9 +892,19 @@ public partial class Player {
 			}
 		}
 
+		//Protoman Whistle
+		if (!warpedInOnce && !playedBluesWhistle &&
+			character != null && character is Blues) {
+			
+			character.playSound("whistle", true, true);
+			playedBluesWhistle = true;
+			whistleTime = 3;
+		}
+
 		readyTime += Global.spf;
-		if (readyTime >= maxReadyTime) {
+		if (readyTime >= maxReadyTime + whistleTime) {
 			readyTextOver = true;
+			whistleTime = 0;
 		}
 
 		if (Global.level.gameMode.isOver && aiTakeover) {
@@ -1836,7 +1876,7 @@ public partial class Player {
 		return !Global.level.isElimination() && 
 			character?.charState is Die && lastDeathCanRevive && 
 			currency >= Blues.reviveCost && 
-			!lastDeathWasBreakMan;
+			!lastDeathWasBreakMan && character is Blues;
 	}
 
 	
@@ -2508,6 +2548,22 @@ public partial class Player {
 		//if (weapon is not RockBuster) return true;
 		// (weapon is not SARocketPunch) return true;
 		
+		return true;
+	}
+
+	public bool canUseLTank(LTank ltank) {
+		if (isDead) return false;
+		if (character.charState is WarpOut) return false;
+		if (character.charState.invincible) return false;
+
+		return true;
+	}
+
+	public bool canUseMTank(MTank mtank) {
+		if (isDead) return false;
+		if (character.charState is WarpOut) return false;
+		if (character.charState.invincible) return false;
+
 		return true;
 	}
 

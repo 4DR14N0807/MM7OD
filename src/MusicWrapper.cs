@@ -31,6 +31,8 @@ public class MusicWrapper {
 		}
 	}
 
+	public float volumeModifier = 1;
+
 	public MusicWrapper() {
 
 	}
@@ -98,7 +100,7 @@ public class MusicWrapper {
 
 	public void updateVolume() {
 		if (music == null) return;
-		music.Volume = volume * Options.main.musicVolume;
+		music.Volume = volume * Options.main.musicVolume * volumeModifier;
 	}
 
 	public void updateMusicSource() {

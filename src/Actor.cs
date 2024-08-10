@@ -848,19 +848,10 @@ public partial class Actor : GameObject {
 			bool isPlatform = false;
 			bool tooLowOnPlatform = false;
 			if (hitActor?.isPlatform == true) {
-				bool dropThruWolfPaw = (
-					hitActor is WolfSigmaHand &&
-					chr != null && !chr.grounded &&
-					chr.player.input.isHeld(Control.Down, chr.player)
-				);
-				if (!dropThruWolfPaw) {
-					isPlatform = true;
-					if (pos.y > hitActor.getTopY() + 10) {
-						tooLowOnPlatform = true;
-						isPlatform = false;
-					}
-				} else {
-					collideData = null;
+				isPlatform = true;
+				if (pos.y > hitActor.getTopY() + 10) {
+					tooLowOnPlatform = true;
+					isPlatform = false;
 				}
 			}
 
@@ -917,18 +908,14 @@ public partial class Actor : GameObject {
 	}
 
 	public float getTopY() {
-		var collider = this.standartCollider;
-
-		float cx = sprite.animData.baseAlignmentX;
-		float cy = sprite.animData.baseAlignmentY;
-		
-		cx = cx * currentFrame.rect.w();
-		cy = cy * currentFrame.rect.h();
-
+		Collider? collider = this.standartCollider;
 		if (collider == null) {
 			return pos.y;
 		}
-		return pos.y - (collider.shape.getRect().h() * cy);
+		float cy = sprite.animData.baseAlignmentY;
+		cy = cy * collider.shape.getRect().h();
+
+		return pos.y - cy;
 	}
 
 	public float getYMod() {

@@ -28,12 +28,18 @@ public class WaveBurner : Weapon {
 		Bass? bass = character as Bass ?? throw new NullReferenceException();
 
 		if (character.isUnderwater()) {
-			new WaveBurnerUnderwaterProj(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
+			new WaveBurnerUnderwaterProj(
+				shootPos, character.getShootXDir(),
+				player, player.getNextActorNetId(), true
+			);
 		} else {
-			float shootAngle = bass.getShootAngle() + bass.wBurnerAngle;
+			float shootAngle = bass.getShootAngle(true, true) + bass.wBurnerAngle;
 			new WaveBurnerProj(shootPos, shootAngle, player, player.getNextActorNetId(), true);
 			bass.wBurnerAngle += 8 * bass.wBurnerAngleMod;
-			if (Math.Abs(bass.wBurnerAngle) > 48) bass.wBurnerAngleMod *= -1;
+			if (Math.Abs(bass.wBurnerAngle) > 32) {
+				bass.wBurnerAngleMod *= -1;
+				bass.wBurnerAngle = 32 * MathF.Sign(bass.wBurnerAngle);
+			}
 		}
 	}
 }

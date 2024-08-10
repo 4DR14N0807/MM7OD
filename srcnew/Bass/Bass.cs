@@ -159,7 +159,7 @@ public class Bass : Character {
 		return dir * multiplier;
 	}
 
-	public int getShootAngle(bool allowDown = false, bool allowDiagonal = false) {
+	public int getShootAngle(bool allowDown = false, bool allowDiagonal = true) {
 		int baseAngle = 0;
 		if (xDir == -1) {
 			baseAngle = 128;

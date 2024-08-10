@@ -5,7 +5,6 @@ using Newtonsoft.Json.Converters;
 namespace MMXOnline;
 
 public class IceWall : Weapon {
-
 	public static IceWall netWeapon = new();
 
 	public IceWall() : base() {
@@ -19,7 +18,7 @@ public class IceWall : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
+		Point shootPos = character.getShootPos().addxy(0, 2);
 		Player player = character.player;
 
 		new IceWallActor(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
@@ -28,7 +27,6 @@ public class IceWall : Weapon {
 
 
 public class IceWallStart : Anim {
-
 	Player player;
 
 	public IceWallStart(
@@ -43,14 +41,13 @@ public class IceWallStart : Anim {
 
 	public override void onDestroy() {
 		base.onDestroy();
-
-		new IceWallActor(pos, xDir, player, player.getNextActorNetId(), true);
+		if (ownedByLocalPlayer) {
+			new IceWallActor(pos, xDir, player, player.getNextActorNetId(), true);
+		}
 	}
 }
 	
-
-public class IceWallActor : Actor {
-
+public class IceWallActor : Projectile {
 	float maxSpeed = 300;
 	int bounces;
 	bool startedMoving;
@@ -60,15 +57,15 @@ public class IceWallActor : Actor {
 		Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
-		"ice_wall_proj", pos, netId, player.ownedByLocalPlayer, false
+		IceWall.netWeapon, pos, xDir, 0, 0, player, "ice_wall_proj", 0, 0, netId, player.ownedByLocalPlayer
 	) {
-		
 		useGravity = true;
 		canBeLocal = false;
 		base.xDir = xDir;
 		this.player = player;
-		collider.wallOnly = true;
 		collider.isTrigger = false;
+		isPlatform = true;
+		maxTime = 2f;
 	}
 	
 	public override void update() {
@@ -76,13 +73,13 @@ public class IceWallActor : Actor {
 
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
 			vel.x += xDir * Global.speedMul * 7.5f;
-			
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
 
-		if (bounces >= 3) destroySelf();
+		if (bounces >= 3) {
+			destroySelf();
+		}
 	}
-
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);

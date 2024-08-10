@@ -90,8 +90,10 @@ public class MagicCardProj : Projectile {
 				}
 				returnPos = shooter.pos.addxy(poi.x * shooter.xDir, poi.y);
 			}
+			Point speed = pos.directionToNorm(returnPos).times(425);
+			move(speed);
+			byteAngle = speed.byteAngle;
 
-			move(pos.directionToNorm(returnPos).times(425));
 			if (pos.distanceTo(returnPos) < 10) {
 				destroySelf();
 			}

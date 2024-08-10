@@ -55,14 +55,12 @@ public class BassShoot : CharState {
 	}
 
 	public static string getShootSprite(int dir, Weapon wep) {
-		if (wep is not BassBuster &&
-			wep is not MagicCard) return "shoot";
-
-		else if (wep is MagicCard) {
-			if (dir < 0) return "shoot_up";
-			return "shoot";
+		if (wep is not BassBuster
+			and not MagicCard
+			and not WaveBurner
+		) {
+				return "shoot";
 		}
-
 		return dir switch {
 			-2 => "shoot_up",
 			-1 => "shoot_up_diag",

@@ -18,22 +18,21 @@ public class MagicCard : Weapon {
 	}
 
 	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
+		if (character is not Bass bass) {
+			return;
+		}
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
-		int angle = player.input.isHeld(Control.Up, player) ? 192 : 0;
-		if (character.xDir == -1) {
-			angle = -angle + 128;
-		}
 
-		var card = new MagicCardProj(shootPos, character.getShootXDir(), angle, player, player.getNextActorNetId(), true);
+		var card = new MagicCardProj(
+			shootPos, character.getShootXDir(), bass.getShootAngle(), player, player.getNextActorNetId(), true
+		);
 		cardsOnField.Add(card);
 	}
 }
 
 
 public class MagicCardProj : Projectile {
-
 	bool reversed;
 	Character shooter;
 	float maxReverseTime;
@@ -50,10 +49,10 @@ public class MagicCardProj : Projectile {
 	) {
 		projId = (int)BassProjIds.MagicCard;
 		maxTime = 3f;
-		maxReverseTime = 0.25f;
+		maxReverseTime = 0.45f;
 		this.byteAngle = byteAngle;
 		shooter = player.character;
-		vel = Point.createFromByteAngle(byteAngle) * projSpeed;
+		vel = Point.createFromByteAngle(byteAngle) * 425;
 		canBeLocal = false;
 
 		if (rpc) {
@@ -92,7 +91,7 @@ public class MagicCardProj : Projectile {
 				returnPos = shooter.pos.addxy(poi.x * shooter.xDir, poi.y);
 			}
 
-			move(pos.directionToNorm(returnPos).times(projSpeed));
+			move(pos.directionToNorm(returnPos).times(425));
 			if (pos.distanceTo(returnPos) < 10) {
 				destroySelf();
 			}

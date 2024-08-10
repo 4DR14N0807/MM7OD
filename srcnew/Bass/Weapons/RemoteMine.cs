@@ -21,7 +21,6 @@ public class RemoteMine : Weapon {
 		return bass?.rMine == null && base.canShoot(chargeLevel, player);
 	}
 	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 

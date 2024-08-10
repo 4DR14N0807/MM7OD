@@ -1066,17 +1066,7 @@ public partial class Player {
 
 		configureWeapons();
 		maxHealth = getMaxHealth();
-		if (isSigma) {
-			if (isSigma1()) {
-				sigmaMaxAmmo = 20;
-				sigmaAmmo = sigmaMaxAmmo;
-			} else if (isSigma2()) {
-				sigmaMaxAmmo = 28;
-				sigmaAmmo = 0;
-			}
-		}
 		health = maxHealth;
-		assassinHitPos = null;
 
 		if (character == null) {
 			if (charNum == (int)CharIds.Blues) {
@@ -1097,34 +1087,6 @@ public partial class Player {
 			} else {
 				throw new Exception("Error: Non-valid char ID: " + charNum);
 			}
-			// Hyper mode overrides (POST)
-			if (Global.level.isHyperMatch() && ownedByLocalPlayer) {
-				if (isX) {
-					setUltimateArmor(true);
-				}
-				if (character is Zero zero) {
-					if (loadout.zeroLoadout.hyperMode == 0) {
-						zero.isBlack = true;
-					} else if (loadout.zeroLoadout.hyperMode == 1) {
-						zero.awakenedPhase = 1;
-					} else {
-						zero.isViral = true;
-					}
-				}
-				if (character is Axl axl) {
-					if (loadout.axlLoadout.hyperMode == 0) {
-						axl.whiteAxlTime = 100000;
-						axl.hyperAxlUsed = true;
-						var db = new DoubleBullet();
-						weapons[0] = db;
-					} else {
-						axl.stingChargeTime = 8;
-						axl.hyperAxlUsed = true;
-						currency = 9999;
-					}
-				}
-			}
-
 			lastCharacter = character;
 		}
 
@@ -1136,7 +1098,6 @@ public partial class Player {
 
 		if (isCamPlayer) {
 			Global.level.snapCamPos(character.getCamCenterPos(), null);
-			//console.log(Global.level.camX + "," + Global.level.camY);
 		}
 		warpedIn = true;
 	}

@@ -786,7 +786,9 @@ public class Blues : Character {
 	}
 
 	public override void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
-		if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		// Disable shield on any damage.
 		if (damage > 0) {

@@ -3001,8 +3001,8 @@ public partial class Character : Actor, IDamagable {
 				//player.delayWTank();
 			}
 		}
-		if (this is not Blues { customDamageDisplayOn: true } &&
-			originalHP > 0 && (originalDamage > 0 || damage > 0)
+		if (originalHP > 0 && (originalDamage > 0 || damage > 0) &&
+			this is not Blues { customDamageDisplayOn: true }
 		) {
 			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
 		}

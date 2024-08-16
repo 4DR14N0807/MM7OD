@@ -49,6 +49,7 @@ public class HardKnuckleProj : Projectile {
 		destroyOnHit = false;
 		spawnPointX = pos.x;
 		canBeLocal = false;
+		netOwner = player;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -65,7 +66,7 @@ public class HardKnuckleProj : Projectile {
 		base.update();
 		// Max distance check.
 		if (MathF.Abs(pos.x - spawnPointX) > 16 * 6) {
-			destroySelf(disableRpc: true);
+			destroySelf();
 		}
 		// Aceleration,
 		float maxSpeed = 4f * 60;
@@ -83,7 +84,8 @@ public class HardKnuckleProj : Projectile {
 		/*if (!canControl) {
 			return;
 		}*/
-		int inputYDir = owner.input.getYDir(owner);
+		int inputYDir = 0;
+		if (netOwner != null) inputYDir = netOwner.input.getYDir(netOwner);
 		vel.y = 60 * inputYDir;
 		if (inputYDir != 0) {
 			forceNetUpdateNextFrame = true;

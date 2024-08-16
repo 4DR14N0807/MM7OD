@@ -55,11 +55,10 @@ public class BluesWeaponMenu : IMainMenu {
 		new HardKnuckle(),
 		new SearchSnake(),
 		new SparkShock(),
+		new GravityHold(),
 		new PowerStone(),
-		new WaterWave(),
 		new GyroAttack(),
 		new StarCrash(),
-		new GravityHold(),
 	];
 
 	public BluesWeaponMenu(IMainMenu prevMenu, bool inGame) {
@@ -80,10 +79,7 @@ public class BluesWeaponMenu : IMainMenu {
 
 		if (okPressed || backPressed && !inGame) {
 			bool isChanged = false;
-			// Temportally disables water wave.
-			if (specialWeapon == 5) {
-				specialWeapon = 0;
-			}
+		
 			if (targetLoadout.specialWeapon != specialWeapon) {
 				targetLoadout.specialWeapon = specialWeapon;
 				isChanged = true;
@@ -121,9 +117,12 @@ public class BluesWeaponMenu : IMainMenu {
 
 		int startY = 55;
 		int startX = 30;
-		int startX2 = 160;
+		int startX2 = 168;
 		int wepW = 18;
 		int wepH = 20;
+		float rightArrowPos = 309;
+		float leftArrowPos = 153;
+
 		Global.sprites["cursor"].drawToHUD(0, startX, startY - 1 + cursorRow * wepH);
 
 		for (int i = 0; i < 1; i++) {
@@ -133,6 +132,16 @@ public class BluesWeaponMenu : IMainMenu {
 			int selectVar = i switch {
 				_ => specialWeapon
 			};
+			//Arrows
+			if (Global.frameCount % 60 < 30) {
+				Fonts.drawText(
+					FontType.BlueMenu, ">", rightArrowPos, yPos - 1,
+					Alignment.Center
+				);
+				Fonts.drawText(
+					FontType.BlueMenu, "<", leftArrowPos, yPos - 1 , Alignment.Center
+				);
+			}
 			// Category name.
 			Fonts.drawText(FontType.BlueMenu, categoryNames[i], 40, yPos - 1);
 			// Icons.
@@ -208,7 +217,7 @@ public class BluesWeaponMenu : IMainMenu {
 		return amount switch {
 			3 => FontType.Yellow,
 			4 => FontType.Orange,
-			5 => FontType.Red,
+			>=5 => FontType.Red,
 			_ => FontType.Green
 		};
 	}

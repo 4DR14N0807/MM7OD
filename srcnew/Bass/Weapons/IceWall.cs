@@ -70,6 +70,7 @@ public class IceWallActor : Projectile {
 		isSolidWall = true;
 		maxTime = 2f;
 		destroyOnHit = false;
+		splashable = true;
 	}
 	
 	public override void update() {
@@ -79,6 +80,14 @@ public class IceWallActor : Projectile {
 			vel.x += xDir * Global.speedMul * 7.5f;
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
+
+		if (isUnderwater()) {
+			grounded = false;
+			gravityModifier = -1;
+			if (Math.Abs(vel.y) > Physics.MaxUnderwaterFallSpeed * 0.5f) {
+				vel.y = Physics.MaxUnderwaterFallSpeed * 0.5f * gravityModifier;
+			}
+		} else gravityModifier = 1;
 
 		if (bounces >= 3) {
 			destroySelf();
@@ -106,7 +115,7 @@ public class IceWallActor : Projectile {
 			}
 		}
 		// Hit enemy.
-		else if (other.gameObject is Character chara && chara.player.alliance != damager.owner.alliance) {
+		else if (other.gameObject is Character chara && chara.player.alliance != damager?.owner?.alliance) {
 			if (other.isSideWallHit()) {
 				foreach (var enemy in chrs) {
 					if (chara != enemy) {
@@ -114,7 +123,7 @@ public class IceWallActor : Projectile {
 						maxSpeed -= 100;
 					} 
 				}
-			} else if (other.isGroundHit() && vel.y < 120 && 
+			} else if (other.isGroundHit() && vel.y > 120 && 
 				chara.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
 
 				chara.applyDamage(3, player, chara, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);

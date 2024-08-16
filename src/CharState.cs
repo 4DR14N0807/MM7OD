@@ -131,7 +131,10 @@ public class CharState {
 			character.stopMovingWeak();
 		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
-		if (this is not Run and not Idle and not Taunt) player.delayETank();
+		if (this is not Run and not Idle and not Taunt) {
+			player.delayETank();
+			player.delayLTank();
+		} 
 		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick && oldState.canStopJump == false) {
 			canStopJump = false;

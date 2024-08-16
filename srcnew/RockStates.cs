@@ -179,12 +179,12 @@ public class ShootAlt : CharState {
 				Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
 
 				if (chargeLv >= 2) {
-					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
-					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
+					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
 					character.playSound("buster3", sendRpc: true);
 				} else {
-					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
-					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
+					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
 					character.playSound("buster2", sendRpc: true);
 				}
 			}

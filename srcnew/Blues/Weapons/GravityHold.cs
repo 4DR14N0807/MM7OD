@@ -174,6 +174,7 @@ public class GravityHoldEffect : Effect {
 		rootChar = character;
 		rootChar.shakeCamera(true);
 		this.grounded = grounded;
+		Global.level.addEffect(this);
 	}
 
 	public override void update() {
@@ -185,7 +186,7 @@ public class GravityHoldEffect : Effect {
 				Anim rock = new Anim(
 					rootChar.pos.addRand(80, 0),
 					"gravity_hold_rocks",
-					1, null, false
+					1, rootChar.player.getNextActorNetId(), false, true
 				);
 				rock.vel.x = Helpers.randomRange(-100, 100);
 				rock.vel.y = -225;

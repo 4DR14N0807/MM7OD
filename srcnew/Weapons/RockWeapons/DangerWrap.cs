@@ -399,7 +399,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 	public Anim? bomb;
 
 	public DWrapBigBubble(
-		Point pos, Player victim, Player attacker,
+		Point pos, Player victim,
 		int xDir, ushort? netId, 
 		bool ownedByLocalPlayer, bool rpc = false)
 	: base
@@ -412,6 +412,11 @@ public class DWrapBigBubble : Actor, IDamagable {
 
 		bomb = new Anim(getCenterPos(), "danger_wrap_bomb", 
 			xDir, player.getNextActorNetId(), false, true);
+
+		netActorCreateId = NetActorCreateId.Rush;
+		if (rpc) {
+			createActorRpc(victim.id);
+		}
 	}
 
 	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
@@ -471,5 +476,6 @@ public class DWrapBigBubble : Actor, IDamagable {
 		//character.removeBubble(true);
 		character.dwrapEnd();
 		character.dwrapInvulnTime = 3;
+		new Anim(pos, "danger_wrap_big_bubble_fade", xDir, player.getNextActorNetId(), true);
 	}
 }

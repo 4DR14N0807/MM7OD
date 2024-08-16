@@ -63,10 +63,6 @@ public class ProtoBusterAngledProj : Projectile {
 		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-			rpcCreateAngle(pos, player, netId, byteAngle, extraArgs);
-		}
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;
 			byteAngle -= 128;
@@ -77,6 +73,11 @@ public class ProtoBusterAngledProj : Projectile {
 			changeSprite("proto_buster_proj", true);
 			fadeSprite = "proto_buster_proj_fade";
 			damager.damage = 1;
+		}
+
+		if (rpc) {
+			byte[] extraArgs = new byte[] { (byte)type };
+			rpcCreateAngle(pos, player, netId, byteAngle, extraArgs);
 		}
 	}
 
@@ -152,7 +153,9 @@ public class ProtoBusterLv2Proj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			byte[] extraArgs = new byte[] { (byte)type };
+
+			rpcCreate(pos, player, netId, xDir, extraArgs);
 		}
 	}
 
@@ -181,7 +184,9 @@ public class ProtoBusterLv3Proj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			byte[] extraArgs = new byte[] { (byte)type };
+
+			rpcCreate(pos, player, netId, xDir, extraArgs);
 		}
 	}
 
@@ -210,7 +215,9 @@ public class ProtoBusterLv4Proj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			byte[] extraArgs = new byte[] { (byte)type };
+
+			rpcCreate(pos, player, netId, xDir, extraArgs);
 		}
 	}
 

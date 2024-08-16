@@ -663,7 +663,7 @@ public class Rock : Character {
 			player.weapon.ammo = data[1];
 		}
 
-		bool[] boolData = Helpers.byteToBoolArray(data[4]);
+		bool[] boolData = Helpers.byteToBoolArray(data[2]);
 		hasChargedNoiseCrush = boolData[0];
 		hasSuperAdaptor = boolData[1];
 	}

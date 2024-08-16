@@ -10,6 +10,11 @@ public class LTank {
 
 	}
 	public void use(Player player, Character character) {
-		
+		Blues? blues = character as Blues;
+		blues.isUsingLTank = true;
+
+		blues?.addETankHealth(player.maxHealth);
+		blues?.healCore(blues.coreMaxAmmo);
+		blues?.healShield(blues.shieldMaxHP);
 	}
 }

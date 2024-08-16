@@ -15,9 +15,9 @@ public class BluesUpgradeMenu : IMainMenu {
 		public int mTankCost = 20;
 		public int startX = 25;
 		public static float lTankDelay = 0;
-		public const float maxLTankDelay = 2;
+		public const float maxLTankDelay = 120;
 		public static float mTankDelay = 0;
-		public const float maxMTankDelay = 2;
+		public const float maxMTankDelay = 120;
 
 		public List<float> optionPositionsX = new List<float>() {
 			16, 192
@@ -62,7 +62,7 @@ public class BluesUpgradeMenu : IMainMenu {
 
 
 	public void update() {
-		if (Global.input.isPressedMenu(Control.MenuLeft)) {
+		/*if (Global.input.isPressedMenu(Control.MenuLeft)) {
 			selectArrowPosX--;
 			if (selectArrowPosX < 0) selectArrowPosX = 1;
 		}
@@ -70,7 +70,7 @@ public class BluesUpgradeMenu : IMainMenu {
 		if (Global.input.isPressedMenu(Control.MenuRight)) {
 			selectArrowPosX++;
 			if (selectArrowPosX > 1) selectArrowPosX = 0;
-		}
+		}*/
 
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 		if (selectArrowPosY > getMaxIndex() - 1) selectArrowPosY = getMaxIndex() - 1;
@@ -194,7 +194,7 @@ public class BluesUpgradeMenu : IMainMenu {
 			}
 		}
 
-		//MTANKS RENDER
+		/*//MTANKS RENDER
 		for (int i = 0; i < getMaxMTanks(); i++) {
 			if (i > mainPlayer.mtanks.Count) continue;
 			bool canUseMtank = true;
@@ -229,7 +229,7 @@ public class BluesUpgradeMenu : IMainMenu {
 				int posOffset = Fonts.measureText(FontType.Grey, buyOrUseStr);
 				Fonts.drawText(FontType.White, costStr, optionPos.x + 24 + posOffset, optionPos.y - 4);
 			}
-		}
+		}*/
 
 		Fonts.drawTextEX(
 			FontType.Blue, "[MUP]/[MDOWN]: Select Item",

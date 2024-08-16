@@ -377,6 +377,7 @@ public class GameMode {
 
 		Helpers.decrementTime(ref UpgradeMenu.eTankDelay);
 		Helpers.decrementTime(ref UpgradeMenu.wTankDelay);
+		Helpers.decrementFrames(ref BluesUpgradeMenu.lTankDelay);
 
 		if (!isOver) {
 			if (!Menu.inMenu && ((level.mainPlayer.warpedIn && !isWarpIn) || Global.level.mainPlayer.isSpectator) && Global.input.isPressedMenu(Control.MenuPause) && !chatMenu.recentlyExited) {

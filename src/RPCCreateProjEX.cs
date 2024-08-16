@@ -66,6 +66,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BluesProjIds.HardKnuckle, HardKnuckleProj.rpcInvoke },
 		{ (int)BluesProjIds.SearchSnake, SearchSnakeProj.rpcInvoke },
 		{ (int)BluesProjIds.SparkShock, SparkShockProj.rpcInvoke },
+		{ (int)BluesProjIds.GravityHold, GravityHoldProj.rpcInvoke},
 		{ (int)BluesProjIds.PowerStone, PowerStoneProj.rpcInvoke },
 		{ (int)BluesProjIds.GyroAttack, GyroAttackProj.rpcInvoke },
 		{ (int)BluesProjIds.StarCrash, StarCrashProj.rpcInvoke },

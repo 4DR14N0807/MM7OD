@@ -404,6 +404,7 @@ public partial class Character : Actor, IDamagable {
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 		if (isVaccinated()) return;
+		if (charState.invincible) return;
 
 		igFreezeProgress += amount;
 		igFreezeRecoveryCooldown = 0;
@@ -1609,7 +1610,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void freeze(int timeToFreeze = 120) {
-		if (!ownedByLocalPlayer || !canFreeze()) {
+		if (!ownedByLocalPlayer) {
 			return;
 		}
 		frozenMaxTime = timeToFreeze;
@@ -1625,6 +1626,7 @@ public partial class Character : Actor, IDamagable {
 			(this as MegamanX)?.chargedRollingShieldProj == null &&
 			!charState.stunResistant &&
 			!charState.invincible &&
+			invulnTime == 0 &&
 			freezeInvulnTime <= 0 &&
 			!isInvulnerable() &&
 			!isVaccinated() &&
@@ -1647,14 +1649,14 @@ public partial class Character : Actor, IDamagable {
 
 	public void paralize(float timeToParalize = 120) {
 		if (!ownedByLocalPlayer ||
-			charState is Die ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
-			charState.stunResistant ||
-			stunInvulnTime > 0 ||
-			isInvulnerable() &&
+			isInvulnerable() ||
 			isVaccinated() ||
-			isCCImmune() || 
-			charState.invincible
+			isCCImmune() ||
+			charState.invincible ||
+			charState.stunResistant ||
+			(charState is Die or VileMK2Grabbed) ||
+			(this as MegamanX)?.chargedRollingShieldProj != null ||
+		 	stunInvulnTime > 0
 		) {
 			return;
 		}
@@ -1667,15 +1669,15 @@ public partial class Character : Actor, IDamagable {
 
 	public void crystalize(float timeToCrystalize = 120) {
 		if (!ownedByLocalPlayer ||
-			charState is Die ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
-			charState.stunResistant ||
-			isCrystalized ||
-			crystalizeInvulnTime > 0 ||
 			isInvulnerable() ||
 			isVaccinated() ||
-			isCCImmune() || 
-			charState.invincible
+			isCCImmune() ||
+			charState.invincible ||
+			charState.stunResistant ||
+			isCrystalized ||
+			(charState is Die) ||
+			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			crystalizeInvulnTime > 0
 		) {
 			return;
 		}
@@ -1737,6 +1739,7 @@ public partial class Character : Actor, IDamagable {
 	// and should be set only by code that is checking to see if such things can be done.
 	public virtual bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
 		if (isWarpIn()) return true;
+		if (invulnTime > 0) return true;
 		if (!ignoreRideArmorHide && charState is InRideArmor && (charState as InRideArmor)?.isHiding == true) {
 			return true;
 		}
@@ -2869,10 +2872,11 @@ public partial class Character : Actor, IDamagable {
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
 		}
-
+		//this made Axl immortal to pits, suicide button, etc
+		/*
 		if (attacker == player && axl?.isWhiteAxl() == true) {
 			damage = 0;
-		}
+		} */
 		if (Global.level.isRace() &&
 			damage != (decimal)Damager.envKillDamage &&
 			damage != (decimal)Damager.switchKillDamage &&
@@ -3380,7 +3384,7 @@ public partial class Character : Actor, IDamagable {
 	// PARASITE SECTION
 	public void addParasite(Player attacker) {
 		if (!ownedByLocalPlayer) return;
-
+		if (this is Character character && (character.charState.invincible || character.isInvulnerable())) return;
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
 		parasiteTime = Global.spf;
 		parasiteDamager = damager;

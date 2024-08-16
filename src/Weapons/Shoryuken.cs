@@ -34,8 +34,8 @@ public class Shoryuken : CharState {
 		if (character.sprite.frameIndex >= 2 && !jumpedYet) {
 			jumpedYet = true;
 			character.dashedInAir++;
-			character.vel.y = -character.getJumpPower() * 4.75f;
-			//character.playSound("shoryukenV", sendRpc: true);
+			character.vel.y = -character.getJumpPower() * 1.55f;
+			character.playSound("shoryukenV", sendRpc: true);
 		}
 		if (character.sprite.frameIndex == 2 && character.currentFrame.POIs.Length > 0) {
 			character.move(new Point(character.xDir * 165, 0));

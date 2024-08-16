@@ -232,13 +232,6 @@ public class MainMenu : IMainMenu {
 			Fonts.drawText(FontType.Grey, "Loading...", Global.screenW / 2, top, Alignment.Center);
 		} else {
 			string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
-			/*
-			if (Helpers.compareVersions(Global.version, Global.serverVersion) == -1 &&
-				Global.serverVersion != decimal.MaxValue
-			) {
-				versionText += "(Update available)";
-			}
-			*/
 			int offset = 2;
 			
 			Fonts.drawText(FontType.WhiteSmall, Global.shortForkName + " " + Global.versionName, 2, offset);
@@ -247,11 +240,9 @@ public class MainMenu : IMainMenu {
 				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 10);
 				offset += 10;
 			}
-			/*Fonts.drawText(FontType.DarkBlue, versionText, 2, offset);
-			offset += 10;
 			if (Global.radminIP != "") {
-				Fonts.drawText(FontType.DarkGreen, "Radmin", 2, offset);
-			}*/
+				Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
+			}
 		}
 	}
 }

@@ -102,42 +102,44 @@ public class JoinMenuP2P : IMainMenu {
 			FontType.Orange, "[OK]: Join, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 32, Alignment.Center
 		);
-		/*
-		Fonts.drawText(FontType.BlueMenu, "Name", 30, 22);
-		Fonts.drawText(FontType.BlueMenu, "Map", 102, 22);
-		Fonts.drawText(FontType.BlueMenu, "PNJ", 190, 22);
-		Fonts.drawText(FontType.BlueMenu, "Mode", 238, 22);
-		Fonts.drawText(FontType.BlueMenu, "Fork", 326, 22);
-		*/
-
-		Fonts.drawText(
-			FontType.OrangeMenu, " Name     Map       Plyrs  Mode       Fork",
-			21, 21
-		);
-		int offset = 0;
-		//DrawWrappers.DrawTextureHUD(Global.textures["cursor"], 21, 30 + (selServerIndex * 10));
-		Global.sprites["cursor"].drawToHUD(0, 21, 30 + ((selServerIndex * 10) + 14));
+		Fonts.drawText(FontType.Orange, "Name", 30, 22);
+		Fonts.drawText(FontType.Orange, "Map", 102, 22);
+		Fonts.drawText(FontType.Orange, "PNJ", 190, 22);
+		Fonts.drawText(FontType.Orange, "Mode", 238, 22);
+		Fonts.drawText(FontType.Orange, "Fork", 324, 22);
+		int offset = 4;
+		DrawWrappers.DrawTextureHUD(Global.textures["cursor"], 21, 30 + ((selServerIndex * 12) + 5));
 		if (refreshing) {
-			Fonts.drawText(FontType.Orange, "Refreshing...", 30, 44);
+			Fonts.drawText(FontType.Yellow, "Refreshing...", 30, 36);
 			return;
 		}
 		if (serverIndexes.Length == 0) {
-			Fonts.drawText(FontType.Red, "No servers found.", 30, 44);
+			Fonts.drawText(FontType.Red, "No servers found.", 30, 36);
 			return;
 		}
 		foreach (long serverId in serverIndexes) {
-			FontType font = serverInfo[serverId].fork == Global.shortForkName ? 
-				FontType.Blue : FontType.Red; // Checks if the match is from the same fork or not.
+			FontType fontType = FontType.Blue;
+			if (serverInfo[serverId].fork != Global.shortForkName) {
+				fontType = FontType.Red;
+			}
+			int maxPlayer = serverInfo[serverId].maxPlayer;
+			string mode = serverInfo[serverId].mode;
+			string map = serverInfo[serverId].map;
+			map = string.Concat(map[0].ToString().ToUpper(), map.AsSpan(1));
+			mode = string.Concat(mode[0].ToString().ToUpper(), mode.AsSpan(1));
 
-			Fonts.drawText(font, serverInfo[serverId].name, 28, 40 + offset);
-			Fonts.drawText(font, serverInfo[serverId].map, 95, 40 + offset);
-			Fonts.drawText(font,
-				serverInfo[serverId].playerCount + "/" + serverInfo[serverId].maxPlayer,
-				168, 40
+			if (maxPlayer == 0) {
+				maxPlayer = Server.maxPlayerCap;
+			}
+			Fonts.drawText(fontType, serverInfo[serverId].name, 30, 32 + offset);
+			Fonts.drawText(fontType, map, 102, 32 + offset);
+			Fonts.drawText(fontType,
+				serverInfo[serverId].playerCount + "/" + maxPlayer,
+				190, 32 + offset
 			);
-			Fonts.drawText(font, serverInfo[serverId].mode, 221, 40 + offset);
-			Fonts.drawText(font, serverInfo[serverId].fork, 302, 40 + offset);
-			offset += 10;
+			Fonts.drawText(fontType, mode, 238, 32 + offset);
+			Fonts.drawText(fontType, serverInfo[serverId].fork, 324, 32 + offset);
+			offset += 12;
 		}
 	}
 

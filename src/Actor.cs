@@ -228,7 +228,7 @@ public partial class Actor : GameObject {
 		zIndex = ++Global.level.autoIncActorZIndex;
 		lastNetUpdate = Global.time;
 
-		if (netId is not null) {
+		if (netId != null) {
 			Global.level.actorsById[netId.Value] = this;
 		}
 

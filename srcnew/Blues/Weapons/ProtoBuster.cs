@@ -156,7 +156,9 @@ public class ProtoBusterLv2Proj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir, (byte)type);
+			byte[] extraArgs = new byte[] { (byte)type };
+
+			rpcCreate(pos, player, netId, xDir, extraArgs);
 		}
 	}
 
@@ -185,7 +187,9 @@ public class ProtoBusterLv3Proj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir, (byte)type);
+			byte[] extraArgs = new byte[] { (byte)type };
+
+			rpcCreate(pos, player, netId, xDir, extraArgs);
 		}
 	}
 
@@ -214,7 +218,9 @@ public class ProtoBusterLv4Proj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir, (byte)type);
+			byte[] extraArgs = new byte[] { (byte)type };
+
+			rpcCreate(pos, player, netId, xDir, extraArgs);
 		}
 	}
 

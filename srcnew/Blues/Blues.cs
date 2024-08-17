@@ -828,6 +828,9 @@ public class Blues : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+		return;
+
+
 		decimal damage = decimal.Parse(fDamage.ToString());
 		// Disable shield on any damage.
 		if (damage > 0) {

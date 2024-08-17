@@ -2867,7 +2867,9 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
-		if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = decimal.Parse(player.health.ToString());

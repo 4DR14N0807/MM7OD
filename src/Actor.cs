@@ -1370,10 +1370,10 @@ public partial class Actor : GameObject {
 			if (netId is not null &&
 				Global.level.actorsById.ContainsKey(netId.Value)
 			) {
-				if (Global.level.actorsById[netId.Value] == this) {
+				//if (Global.level.actorsById[netId.Value] == this) {
 					Global.level.actorsById.Remove(netId.Value);
 					Global.level.destroyedActorsById[netId.Value] = this;
-				}
+				//}
 			}
 			onDestroy();
 		} else {

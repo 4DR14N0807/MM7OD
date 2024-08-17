@@ -802,7 +802,7 @@ public class Blues : Character {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 			return;
 		}
-		
+
 		// Tracker variables.
 		decimal ogShieldHP = shieldHP;
 		float oldHealth = player.health;

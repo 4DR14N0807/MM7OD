@@ -866,6 +866,19 @@ public class Blues : Character {
 				playSound("hit", sendRpc: true);
 			}
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
+
+			string errorStr = "Error: ";
+			if (actor == null) {
+				errorStr += "No actor for attacker.\n";
+			}
+			if (attacker == null) {
+				if (actor == null) {
+					errorStr += "And, no player for attacker.";
+				} else {
+					errorStr += "No player for attacker.";
+				}
+			}
+			Global.level.gameMode.setHUDErrorMessage(player, errorStr, false, true);
 			return;
 		}
 		// Tracker variables.

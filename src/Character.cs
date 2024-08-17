@@ -3014,9 +3014,6 @@ public partial class Character : Actor, IDamagable {
 			if (projId != (int)ProjIds.Burn && projId != (int)ProjIds.AcidBurstPoison) {
 				player.delayETank();
 				player.stopETankHeal();
-				if (player.character is Blues bl) {
-					bl.stopLTankHeal(stopShield: false);
-				} 
 				//player.delayWTank();
 			}
 		}

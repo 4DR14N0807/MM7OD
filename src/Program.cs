@@ -298,7 +298,7 @@ class Program {
 		if (Global.levelStarted()) {
 			Global.level.update();
 			if (!Global.isSkippingFrames) {
-				//Global.level.clearOldActors();
+				Global.level.clearOldActors();
 			}
 		}
 		Menu.update();

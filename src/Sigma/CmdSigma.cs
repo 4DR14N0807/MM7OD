@@ -67,7 +67,7 @@ public class CmdSigma : BaseSigma {
 				lastAttackFrame = Global.level.frameCount;
 			}
 		}
-		framesSinceLastAttack = Global.level.frameCount - lastAttackFrame;
+		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		if (lenientAttackPressed && saberCooldown == 0) {

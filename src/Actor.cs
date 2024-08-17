@@ -944,13 +944,13 @@ public partial class Actor : GameObject {
 				return false;
 			}
 			if (character.invulnTime > 0) {
-				int mod10 = Global.level.frameCount % 4;
+				int mod10 = (int)(Global.level.frameCount % 4L);
 				if (mod10 < 2) return false;
 			}
 		}
 		if (this is Maverick maverick) {
 			if (maverick.invulnTime > 0) {
-				int mod10 = Global.level.frameCount % 4;
+				int mod10 = (int)(Global.level.frameCount % 4L);
 				if (mod10 < 2) return false;
 			}
 		}
@@ -1366,14 +1366,13 @@ public partial class Actor : GameObject {
 
 		if (!destroyed) {
 			destroyed = true;
-			destroyedOnFrame = Global.frameCount;
-			if (netId is not null &&
-				Global.level.actorsById.ContainsKey(netId.Value)
+			destroyedOnFrame = Global.level.frameCount;
+			if (netId != null &&
+				Global.level.actorsById.ContainsKey(netId.Value) &&
+				Global.level.actorsById[netId.Value] == this
 			) {
-				//if (Global.level.actorsById[netId.Value] == this) {
-					Global.level.actorsById.Remove(netId.Value);
-					Global.level.destroyedActorsById[netId.Value] = this;
-				//}
+				Global.level.actorsById.Remove(netId.Value);
+				Global.level.destroyedActorsById[netId.Value] = this;
 			}
 			onDestroy();
 		} else {

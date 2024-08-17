@@ -51,10 +51,10 @@ public class NeoSigma : BaseSigma {
 		if (player.weapon is not AssassinBullet) {
 			if (player.input.isPressed(Control.Shoot, player)) {
 				attackPressed = true;
-				lastAttackFrame = Global.level.frameCount;
+				lastAttackFrame = (int)(Global.level.frameCount);
 			}
 		}
-		framesSinceLastAttack = Global.level.frameCount - lastAttackFrame;
+		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		// Shoot button attacks.

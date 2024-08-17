@@ -878,7 +878,7 @@ public class Blues : Character {
 					errorStr += "No player for attacker.";
 				}
 			}
-			Global.level.gameMode.setHUDErrorMessage(player, errorStr, false, true);
+			Global.level.gameMode.setHUDErrorMessage(Global.level.mainPlayer, errorStr, false, true);
 			return;
 		}
 		// Tracker variables.

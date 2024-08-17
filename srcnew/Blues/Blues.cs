@@ -785,10 +785,15 @@ public class Blues : Character {
 		);
 	}
 
-	public override void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
+	public override void applyDamage(
+		float fDamage,
+		Player? attacker, Actor? actor,
+		int? weaponIndex, int? projId
+	) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+
 		decimal damage = decimal.Parse(fDamage.ToString());
 		// Disable shield on any damage.
 		if (damage > 0) {
@@ -802,7 +807,6 @@ public class Blues : Character {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 			return;
 		}
-
 		// Tracker variables.
 		decimal ogShieldHP = shieldHP;
 		float oldHealth = player.health;
@@ -935,7 +939,7 @@ public class Blues : Character {
 			} else if (backShieldDamaged) {
 				fontColor = (int)FontType.OrangeSmall;
 			}
-			float damageText = float.Parse((oldHealth - player.health).ToString());
+			float damageText = float.Parse(damage.ToString());
 			addDamageText(damageText, fontColor);
 			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 			resetCoreCooldown(coreAmmoDamageCooldown);

@@ -2314,7 +2314,7 @@ public partial class Level {
 
 	public void clearOldActors() {
 		foreach ((ushort actorId, Actor actor) in destroyedActorsById) {
-			if (frameCount - actor.destroyedOnFrame is > 360 or < 0) {
+			if (frameCount - actor.destroyedOnFrame is > 3600 or < 0) {
 				destroyedActorsById.Remove(actorId);
 			}
 		}

@@ -2858,7 +2858,9 @@ public partial class Character : Actor, IDamagable {
 		return true;
 	}
 
-	public virtual void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
+	public virtual void applyDamage(
+		float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId
+	) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}

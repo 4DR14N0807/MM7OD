@@ -167,7 +167,7 @@ public class WildCoilChargedProj : Projectile {
 	public override void update() {
 		base.update();
 
-		if (!ownedByLocalPlayer) return;
+		//if (!ownedByLocalPlayer) return;
 		if (soundCooldown > 0) Helpers.decrementTime(ref soundCooldown);
 
 		bounceBuff = (int)bounceCounter / bounceReq;
@@ -193,14 +193,12 @@ public class WildCoilChargedProj : Projectile {
 
 
 	public override void onHitWall(CollideData other) {
-		if (!ownedByLocalPlayer) return;
+		//if (!ownedByLocalPlayer) return;
 
 		var normal = other.hitData.normal ?? new Point(0, -1);
 
 
-		if (normal.isSideways()) {
-			destroySelf();
-		} else {
+		if (!normal.isSideways()) {
 			changeSprite("wild_coil_charge_jump", true);
 			bouncedOnce = true;
 
@@ -223,7 +221,7 @@ public class WildCoilChargedProj : Projectile {
 				frameIndex = 0;
 				outline.frameIndex = 0;
 			}
-		}
+		} else destroySelf(); 	
 	}
 
 	public override void onDestroy() {

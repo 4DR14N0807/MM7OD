@@ -423,6 +423,7 @@ public partial class Character : Actor, IDamagable {
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
+		burningRecoveryCooldown = 0;
 		burnStunStacks += amount;
 		if (burnStunStacks >= Burning.maxStacks) {
 			burnStunStacks = 0;
@@ -1079,8 +1080,8 @@ public partial class Character : Actor, IDamagable {
 			igFreezeProgress--;
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
-		if (burnStunStacks > 0) burningRecoveryCooldown += Global.spf;
-		if (burningRecoveryCooldown > 1 && burnStunStacks > 0) {
+		if (burnStunStacks > 0) burningRecoveryCooldown++;
+		if (burningRecoveryCooldown >= 60 && burnStunStacks > 0) {
 			burningRecoveryCooldown = 0;
 			burnStunStacks--;
 			if (burnStunStacks < 0) burnStunStacks = 0;
@@ -2521,20 +2522,27 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool drawETankHealing() {
-		if (ownedByLocalPlayer) {
-			if (usedEtank != null) {
-				drawETankHealingInner(usedEtank.health);
+		if (this is Blues blues) {
+			if (blues.isUsingLTank) {
+				blues.drawLTankHealingInner();
 				return true;
 			}
 		} else {
-			if (netETankHealAmount > 0) {
-				drawETankHealingInner(netETankHealAmount);
-				netETankHealAmount -= Global.spf * 20;
-				if (netETankHealAmount <= 0) netETankHealAmount = 0;
-				return true;
+			if (ownedByLocalPlayer) {
+				if (usedEtank != null) {
+					drawETankHealingInner(usedEtank.health);
+					return true;
+				}
+			} else {
+				if (netETankHealAmount > 0) {
+					drawETankHealingInner(netETankHealAmount);
+					netETankHealAmount -= Global.spf * 20;
+					if (netETankHealAmount <= 0) netETankHealAmount = 0;
+					return true;
+				}
 			}
 		}
-
+		
 		return false;
 	}
 
@@ -3006,6 +3014,9 @@ public partial class Character : Actor, IDamagable {
 			if (projId != (int)ProjIds.Burn && projId != (int)ProjIds.AcidBurstPoison) {
 				player.delayETank();
 				player.stopETankHeal();
+				if (player.character is Blues bl) {
+					bl.stopLTankHeal(stopShield: false);
+				} 
 				//player.delayWTank();
 			}
 		}
@@ -3470,7 +3481,7 @@ public partial class Character : Actor, IDamagable {
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
 		//dWrappedTime = Global.spf;
 		dWrapDamager = damager;
-		bigBubble = new DWrapBigBubble(pos, player, attacker, xDir,
+		bigBubble = new DWrapBigBubble(pos, player, xDir,
 			player.getNextActorNetId(), true, true);
 		dwrapStart();
 		//changeState(new DWrapped(true))

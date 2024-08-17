@@ -36,10 +36,15 @@ public class Blues : Character {
 	public decimal shieldHP = 20;
 	public int shieldMaxHP = 20;
 	public float healShieldHPCooldown = 15;
+	public float healShieldAmount; //
+	public float tankHealShieldCooldown; //Used for LTanks heal
 	public decimal shieldDamageSavings;
 	public decimal shieldDamageDebt;
 	public bool? shieldCustomState = null;
 	public bool customDamageDisplayOn;
+	
+	// Tanks
+	public bool isUsingLTank;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
@@ -72,11 +77,10 @@ public class Blues : Character {
 			1 => new HardKnuckle(),
 			2 => new SearchSnake(),
 			3 => new SparkShock(),
-			4 => new PowerStone(),
-			5 => new WaterWave(),
+			4 => new GravityHold(),
+			5 => new PowerStone(),
 			6 => new GyroAttack(),
 			7 => new StarCrash(),
-			8 => new GravityHold(),
 			_ => new PowerStone(),
 		};
 	}
@@ -305,13 +309,19 @@ public class Blues : Character {
 
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
-		Helpers.decrementFrames(ref healShieldHPCooldown);
 		Helpers.decrementFrames(ref redStrikeCooldown);
 		Helpers.decrementFrames(ref coreHealTime);
+		Helpers.decrementFrames(ref tankHealShieldCooldown);
+		if (healShieldAmount <= 0) Helpers.decrementFrames(ref healShieldHPCooldown);
 		
 		specialWeapon.update();
 		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
+		}
+
+		//LTank check
+		if (isUsingLTank && coreHealAmount <= 0 && healShieldAmount <= 0 && eTankHealAmount <= 0) {
+			isUsingLTank = false;
 		}
 
 		if (coreHealAmount > 0 && coreHealTime <= 0) {
@@ -377,6 +387,17 @@ public class Blues : Character {
 			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
 			overdriveAmmoMaxCooldown = 13;
 		}
+		//LTank Shield HP Heal.
+		if (healShieldAmount > 0 && tankHealShieldCooldown <= 0) {
+			if (shieldHP < shieldMaxHP) {
+				shieldHP++;
+				healShieldAmount--;
+				tankHealShieldCooldown = 8;
+				playSound("heal");
+			} else healShieldAmount = 0;
+		}
+
+
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
 			shootAnimTime -= Global.spf;
@@ -690,6 +711,24 @@ public class Blues : Character {
 		coreHealAmount = amount;
 	}
 
+	public void healShield(float amount) {
+		healShieldAmount = amount;
+	}
+
+	public void stopLTankHeal(bool stopCore = true, bool stopShield = true) {
+		if (stopCore) coreHealAmount = 0;
+		if (stopShield) healShieldAmount = 0;
+	}
+	
+	public void drawLTankHealingInner() {
+		if (eTankHealAmount <= 0 && healShieldAmount <= 0 && coreHealAmount <= 0) return;
+		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
+
+		Global.sprites["menu_ltank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		
+		deductLabelY(labelSubtankOffY);
+	}
+
 	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
 		if (!overdrive) {
 			return;
@@ -793,7 +832,6 @@ public class Blues : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-
 		decimal damage = decimal.Parse(fDamage.ToString());
 		// Disable shield on any damage.
 		if (damage > 0) {
@@ -860,6 +898,7 @@ public class Blues : Character {
 		// Shield front block check.
 		if (shieldHitFront && damage > 0) {
 			shieldDamaged = true;
+			stopLTankHeal(false);
 			// 1-2 damage scenario.
 			if (damageReduction > 0 && damage <= 2) {
 				if (damage <= 1) {
@@ -908,6 +947,7 @@ public class Blues : Character {
 		else if (shieldHitBack && !bodyPierced && damage > 0) {
 			backShieldDamaged = true;
 			bodyDamaged = true;
+			stopLTankHeal(false);
 			if (damage <= 1) {
 				shieldDamageSavings += damage * 0.5m;
 				if (shieldDamageSavings >= 1) {

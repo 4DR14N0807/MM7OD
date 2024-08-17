@@ -103,7 +103,7 @@ public class JunkShieldProj : Projectile {
 
 		if (rock != null) {
 			xDir = rock.getShootXDir();
-			pos = rock.getCenterPos();
+			pos = rock.getCenterPos().round();
 		}
 
 		if (sound != null) sound.play();
@@ -126,7 +126,7 @@ public class JunkShieldProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		if (rock != null) centerPos = rock.getCenterPos();
+		if (rock != null) centerPos = rock.getCenterPos().round();
 		float hpCount = HP;
 		float extra = HP % 2;
 		mainProjsCount = (int)(hpCount + extra) / 2;

@@ -2552,11 +2552,16 @@ public partial class Player {
 	}
 
 	public bool canUseLTank(LTank ltank) {
-		if (isDead) return false;
-		if (character.charState is WarpOut) return false;
-		if (character.charState.invincible) return false;
-
-		return true;
+		if (character is Blues blues && character != null) {
+			if (isDead) return false;
+			if (blues?.charState is WarpOut) return false;
+			if (blues != null && blues.charState.invincible) return false;
+			if (blues?.charState is OverheatShutdown or
+				OverheatShutdownStart) return false;
+			if (health >= maxHealth && blues?.shieldHP >= blues?.shieldMaxHP && blues?.coreAmmo <= 0) return false;
+			return true;
+		} 
+		return false;
 	}
 
 	public bool canUseMTank(MTank mtank) {
@@ -2603,6 +2608,13 @@ public partial class Player {
 			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
 		}
 	}
+
+	public void delayLTank() {
+		if (isMainPlayer) {
+			BluesUpgradeMenu.lTankDelay = BluesUpgradeMenu.maxLTankDelay;
+		}
+	}
+
 
 	public void stopETankHeal() {
 		if (character != null && character.eTankHealAmount > 0) character.eTankHealAmount = 0;

@@ -233,10 +233,11 @@ public class MainMenu : IMainMenu {
 		} else {
 			string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
 			int offset = 2;
-			Fonts.drawText(FontType.BlueSmall, versionText, 2, offset);
-			offset += 10;
+			
+			Fonts.drawText(FontType.WhiteSmall, Global.shortForkName + " " + Global.versionName, 2, offset);
+
 			if (Global.checksum != Global.prodChecksum) {
-				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset);
+				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 10);
 				offset += 10;
 			}
 			if (Global.radminIP != "") {

@@ -196,6 +196,7 @@ public class Damager {
 
 		if (damagable != null && damagable is not CrackedWall && owner != null && owner.isMainPlayer && !isDot(projId)) {
 			owner.delayETank();
+			owner.delayLTank();
 			//owner.delayWTank();
 		}
 

@@ -88,6 +88,6 @@ public class PowerStoneProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		Anim.createGibEffect("power_stone_pieces_big", pos, null, zIndex: zIndex);
+		Anim.createGibEffect("power_stone_pieces_big", pos, null!, zIndex: zIndex);
 	}
 }

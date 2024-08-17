@@ -261,7 +261,7 @@ public class DevConsole {
 		new Command("aikill", (args) => Global.level.otherPlayer?.forceKill()),
 		new Command("aiswitch", aiSwitch),
 		new Command("aimash", (args) => aiMash(args)),
-		new Command("scrap", currencyCommand),
+		new Command("bolt", currencyCommand),
 		new Command("die", (args) => Global.level.mainPlayer.forceKill()),
 		new Command("raflight", (args) => Global.level.rideArmorFlight = !Global.level.rideArmorFlight),
 		// Online

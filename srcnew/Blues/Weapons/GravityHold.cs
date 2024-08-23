@@ -161,7 +161,7 @@ public class GravityHoldProj : Projectile {
 
 	public override void onStart() {
 		base.onStart();
-		playSound("voltcCrash");
+		playSound("gHoldCrash");
 	}
 }
 

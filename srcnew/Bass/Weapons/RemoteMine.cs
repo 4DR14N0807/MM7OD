@@ -65,7 +65,9 @@ public class RemoteMineProj : Projectile {
 
 	public override void update() {
 		base.update();
-
+		if (time >= maxTime){
+			new Anim(getCenterPos(), "remote_mine_fade_anim", xDir, 
+			netId, true, true);}
 		if (host != null) changePos(host.getCenterPos());
 		if (anim != null) anim.changePos(getCenterPos());
 

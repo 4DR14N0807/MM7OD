@@ -858,11 +858,11 @@ public class Dash : CharState {
 
 		character.isDashing = true;
 		character.globalCollider = character.getDashingCollider();
-		/*dashSpark = new Anim(
+		dashSpark = new Anim(
 			character.getDashSparkEffectPos(initialDashDir),
 			"dash_sparks", initialDashDir, player.getNextActorNetId(),
 			true, sendRpc: true
-		);*/
+		);
 	}
 
 	public override void onExit(CharState newState) {

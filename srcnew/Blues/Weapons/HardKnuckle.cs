@@ -35,6 +35,7 @@ public class HardKnuckleProj : Projectile {
 	bool deflected;
 	float spawnPointX;
 	bool canControl = true;
+	int type;
 
 	Dictionary<string, float> bounceCooldowns = new();
 
@@ -45,6 +46,9 @@ public class HardKnuckleProj : Projectile {
 		Global.halfFlinch, 1f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.HardKnuckle;
+		if (player.character is Blues blu && blu.isBreakMan) {
+			changeSprite("hard_knuckle_proj_bman", true);
+		}
 		fadeSprite = "generic_explosion";
 		fadeOnAutoDestroy = true;
 		destroyOnHit = false;

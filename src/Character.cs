@@ -1379,7 +1379,17 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (charState.airMove && !grounded) {
 			airMove();
+					
 		}
+		bool jumped = false;
+		if(canAirJump()
+			&& player.input.isPressed(Control.Jump, player)
+			&& charState is BassShoot){
+			if(!grounded && !jumped){
+				jumped = true;
+				new Anim(pos, "double_jump_anim", xDir, netId, true, true);}
+		}
+		
 		if (charState.canJump && (grounded || canAirJump() && flag == null)) {
 			if (player.input.isPressed(Control.Jump, player)) {
 				if (!grounded) {
@@ -1387,6 +1397,7 @@ public partial class Character : Actor, IDamagable {
 				} else {
 					grounded = false;
 				}
+
 				vel.y = -getJumpPower();
 				playSound("jump", sendRpc: true);
 				if (charState.airSprite != null && charState.airSprite != "") {
@@ -1472,6 +1483,7 @@ public partial class Character : Actor, IDamagable {
 				) {
 					lastJumpPressedTime = 0;
 					dashedInAir++;
+					new Anim(pos, "double_jump_anim", xDir, netId, true, true);
 					vel.y = -getJumpPower();
 					changeState(new Jump(), true);
 					return true;

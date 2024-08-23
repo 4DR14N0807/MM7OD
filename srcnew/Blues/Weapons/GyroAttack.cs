@@ -67,6 +67,13 @@ public class GyroAttackProj : Projectile {
 			}
 		}
 	}
+	public override void onHitDamagable(IDamagable damagable) {
+		base.onHitDamagable(damagable);
+		if (damagable is Actor enemyActor && enemyActor.netId is not null and >= Level.firstNormalNetId) {
+			string keyName = enemyActor.GetType().ToString() + "_" + enemyActor.netId;
+			new Anim(pos, "rock_buster_fade", xDir, netId, true, true);
+		}
+	}
 	public override void onDestroy() {
 		base.onDestroy();
 		Anim.createGibEffect("gyro_attack_pieces", pos, null, zIndex: zIndex);

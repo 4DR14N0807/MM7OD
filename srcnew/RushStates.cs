@@ -300,13 +300,14 @@ public class RushSearchState : RushState {
 		base.update();
 
 		if (digging) digTime++;
-		if (pickup != null) {
+		//not needed animore
+		/*if (pickup != null) {
 			pickupTime++;
 			if (pickupTime >= 30) {
 				pickup.destroySelf();
 				pickup = null;
 			}
-		}
+		}*/
 
 		if (inTransition() && stateTime % 15 == 0) Global.playSound("rush_search_start");
 		if (state == 1 && stateTime % 12 == 0) {
@@ -392,10 +393,7 @@ public class RushSearchState : RushState {
 		} else if (dice is >= 6 and <= 40) {
 			// Trash.
 			Global.playSound("rush_search_end");
-			pickup = new Anim(pickupPos, "rush_pickups", 1, rush.player.getNextActorNetId(), false, true)
-				{vel = new Point(0, -360), useGravity = true, frameSpeed = 0};
-
-			pickup.frameIndex = Helpers.randomRange(0, pickup.sprite.frames.Count - 1);
+			pickup = new Trash(pickupPos, rush.player.getNextActorNetId(), sendRpc: true);
 			pickup.setzIndex(ZIndex.Default); return;
 		} else {
 			// Bomb.
@@ -469,5 +467,24 @@ public class RushWarpOut : RushState {
 			rush.destroySelf();
 			if (rock != null) rock.rush = null!;
 		} 
+	}
+}
+
+public class Trash : Anim {
+	public Trash(Point pos, ushort? netId = null, bool sendRpc = false, bool ownedByLocalPlayer = true) :
+		base(pos, "rush_pickups", 1, netId, false, sendRpc, ownedByLocalPlayer) {
+		frameSpeed = 0;
+		frameIndex = Helpers.randomRange(0, sprite.frames.Count - 1);
+		vel = new Point(0, -360);
+		useGravity = true;
+		collider.wallOnly = true;
+	}
+
+	public override void update() {
+		base.update();
+		if(time >= 2){
+			destroySelf();
+			new Anim(pos,"dust", xDir, netId, true, sendRpc: true);
+		}
 	}
 }

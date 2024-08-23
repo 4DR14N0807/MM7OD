@@ -26,6 +26,7 @@ public class Rush : Actor, IDamagable {
 		netOwner = owner;
 		this.character = owner.character;
 		this.type = type;
+		//syncs rush xdir with rock xdir
 		this.xDir = character.xDir;
 		spriteToCollider["empty"] = null;
 		//spriteToCollider["warp_beam"] = null;

@@ -206,7 +206,7 @@ public class GravityHoldEffect : Effect {
 					1, null, false
 				);
 				part.ttl = 30 / 60f;
-				part.vel.y = Helpers.randomRange(-300, -180);
+				part.vel.y = Helpers.randomRange(300, 180);
 			}
 		}
 		if (effectFrames >= 32) {

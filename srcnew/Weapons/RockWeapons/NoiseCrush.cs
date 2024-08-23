@@ -78,6 +78,7 @@ public class NoiseCrushProj : Projectile {
 		maxTime = 0.75f;
 		this.type = type;
 		this.isMain = isMain;
+		//improve fade sprite
 		fadeSprite = "noise_crush_fade";
 		canBeLocal = false;
 

@@ -65,6 +65,7 @@ public class RemoteMineProj : Projectile {
 	public override void update() {
 		base.update();
 		if (time >= maxTime){
+			//ruben: cant put this as fade anim or on destroy because it will conflict with the explosion anim
 			new Anim(getCenterPos(), "remote_mine_fade_anim", xDir, 
 			netId, true, true);}
 		if (host != null) changePos(host.getCenterPos());

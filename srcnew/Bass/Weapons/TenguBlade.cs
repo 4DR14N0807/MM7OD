@@ -191,6 +191,7 @@ public class TenguBladeDash : CharState {
 	public override void update() {
 		base.update();
 
+		//tengu blade dash dust
 		inputXDir = player.input.getXDir(player);
 		if (stateTime > 0.1 && !character.isUnderwater()) {
 			stateTime = 0;

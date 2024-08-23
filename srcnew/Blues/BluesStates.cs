@@ -213,6 +213,7 @@ public class BluesSpreadShoot : CharState {
 				character.getShootPos(), (shotAngle + angleOffset) * shootDir, type,
 				player, player.getNextActorNetId(), rpc: true
 			);
+			//this way lemons and mid charge shot sounds wont conflict
 			if (type == 0) {
 				blues.playSound("buster", sendRpc: true);
 			}

@@ -34,8 +34,6 @@ public class HardKnuckleProj : Projectile {
 	bool deflected;
 	float spawnPointX;
 	bool canControl = true;
-	int type;
-
 	Dictionary<string, float> bounceCooldowns = new();
 
 	public HardKnuckleProj(

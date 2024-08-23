@@ -1383,6 +1383,7 @@ public partial class Character : Actor, IDamagable {
 			airMove();
 					
 		}
+		//bass double jump
 		bool jumped = false;
 		if(canAirJump()
 			&& player.input.isPressed(Control.Jump, player)
@@ -1485,6 +1486,7 @@ public partial class Character : Actor, IDamagable {
 				) {
 					lastJumpPressedTime = 0;
 					dashedInAir++;
+					//bass double jump
 					new Anim(pos, "double_jump_anim", xDir, netId, true, true);
 					vel.y = -getJumpPower();
 					changeState(new Jump(), true);

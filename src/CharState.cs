@@ -862,6 +862,7 @@ public class Dash : CharState {
 
 		character.isDashing = true;
 		character.globalCollider = character.getDashingCollider();
+		//dash spark anim
 		dashSpark = new Anim(
 			character.getDashSparkEffectPos(initialDashDir),
 			"dash_sparks", initialDashDir, player.getNextActorNetId(),

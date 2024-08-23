@@ -78,7 +78,8 @@ public class NoiseCrushProj : Projectile {
 		maxTime = 0.75f;
 		this.type = type;
 		this.isMain = isMain;
-		fadeSprite = "rock_buster_fade";
+		//improve fade sprite
+		fadeSprite = "noise_crush_fade";
 		canBeLocal = false;
 
 		if (type == 1) changeSprite("noise_crush_middle", true);
@@ -131,6 +132,7 @@ public class NoiseCrushChargedProj : Projectile {
 		projId = (int)RockProjIds.NoiseCrushCharged;
 		maxTime = 1f;
 		this.type = type;
+		fadeSprite = "noise_crush_fade";
 
 		if (type == 1) changeSprite("noise_crush_charged_middle", true);
 		else if (type == 2) changeSprite("noise_crush_charged_middle2", true);

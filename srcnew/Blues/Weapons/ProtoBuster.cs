@@ -54,10 +54,10 @@ public class ProtoBusterAngledProj : Projectile {
 		Point pos, float byteAngle, int type, Player player, ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, 1, 0, 2, player,
-		"rock_buster1_proj", 0, 1, netId, player.ownedByLocalPlayer
+		"proto_midcharge_proj", 0, 1, netId, player.ownedByLocalPlayer
 	) {
 		byteAngle = byteAngle % 256;
-		fadeSprite = "rock_buster1_fade";
+		fadeSprite = "proto_midcharge_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.LemonAngled;

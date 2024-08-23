@@ -25,7 +25,7 @@ public class SparkShock : Weapon {
 		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
 		new SparkShockProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
-		character.playSound("spark_shock", sendRpc: true);
+		character.playSound("sparkShock", sendRpc: true);
 	}
 }
 
@@ -37,6 +37,7 @@ public class SparkShockProj : Projectile {
 		SparkShock.netWeapon, pos, xDir, 3 * 60, 1, player, "spark_shock_proj",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
+		//todo: improve sparkshock sprites
 		maxTime = 0.75f;
 		projId = (int)BluesProjIds.SparkShock;
 

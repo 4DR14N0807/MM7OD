@@ -147,6 +147,11 @@ public class GenericMeleeProj : Projectile {
 			switch (projId) {
 				case (int)ProjIds.ZSaber1:
 				case (int)ProjIds.ZSaberRollingSlash:
+				case (int)BassProjIds.TenguBladeProj: 
+				
+					new Anim(hitPoint.Value, "tengu_blade_proj_hit", xDir,
+						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+					break;
 				case (int)ProjIds.ZSaberAir: 
 				
 					new Anim(hitPoint.Value, SaberSlashFade, xDir,

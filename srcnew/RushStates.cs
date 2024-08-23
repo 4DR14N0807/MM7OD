@@ -392,12 +392,8 @@ public class RushSearchState : RushState {
 		} else if (dice is >= 6 and <= 40) {
 			// Trash.
 			Global.playSound("rush_search_end");
-			//pickup = new Trash(pickupPos, rush.player.getNextActorNetId(), sendRpc: true);
-			pickup = new Anim(pickupPos, "rush_pickups", 1, rush.player.getNextActorNetId(), false, true)
-				{vel = new Point(0, -360), useGravity = true, frameSpeed = 0};
-
-			pickup.frameIndex = Helpers.randomRange(0, pickup.sprite.totalFrameNum - 1);
-			pickup.setzIndex(ZIndex.Default); return;
+			pickup = new Trash(pickupPos, rush.player.getNextActorNetId(), 
+			sendRpc: true); return;
 		} else {
 			// Bomb.
 			Global.playSound("rush_search_end");
@@ -476,6 +472,7 @@ public class RushWarpOut : RushState {
 public class Trash : Anim {
 	public Trash(Point pos, ushort? netId = null, bool sendRpc = false, bool ownedByLocalPlayer = true) :
 		base(pos, "rush_pickups", 1, netId, false, sendRpc, ownedByLocalPlayer) {
+		setzIndex(ZIndex.Default);
 		frameSpeed = 0;
 		frameIndex = Helpers.randomRange(0, sprite.totalFrameNum - 1);
 		vel = new Point(0, -360);
@@ -485,6 +482,7 @@ public class Trash : Anim {
 
 	public override void update() {
 		base.update();
+		//add a fade anim on destroy
 		if(time >= 2){
 			destroySelf();
 			new Anim(pos,"dust", xDir, netId, true, sendRpc: true);

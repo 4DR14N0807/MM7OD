@@ -63,9 +63,6 @@ public class ProtoBusterAngledProj : Projectile {
 		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
-		if (rpc) {
-			rpcCreateAngle(pos, player, netId, byteAngle, (byte)type);
-		}
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;
 			byteAngle -= 128;

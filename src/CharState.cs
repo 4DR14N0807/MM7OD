@@ -1351,6 +1351,7 @@ public class Taunt : CharState {
 		if (player.charNum == 0) tauntTime = 0.75f;
 		if (player.charNum == 1) tauntTime = 0.7f;
 		if (player.charNum == 3) tauntTime = 0.75f;
+		if (player.charNum == (int)CharIds.Blues) tauntTime = 1.25f;
 
 		bool air = !character.grounded || character.vel.y < 0;
         defaultSprite = sprite;
@@ -1595,6 +1596,7 @@ public class Die : CharState {
 		}
 		if (character is Blues blues) {
 			player.lastDeathWasBreakMan = blues.isBreakMan;
+			blues.destroyStarCrash();
 		}
 		player.lastDeathWasSigmaHyper = character is WolfSigma or ViralSigma or KaiserSigma;
 		player.lastDeathPos = character.getCenterPos();

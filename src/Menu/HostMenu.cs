@@ -835,6 +835,7 @@ public class HostMenu : IMainMenu {
 
 	public string[] mapSortOrder = new string[] {
 		"urbanarea", "iceberg", "recyclingplant", "substancefactory", "weatherinstitute", 
+		"dinosaurjungle", "willy3", 
 	};
 	public int mapSortFunc(LevelData a, LevelData b) {
 		int aIndex = -1;

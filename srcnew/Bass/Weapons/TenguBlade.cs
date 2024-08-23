@@ -159,7 +159,7 @@ public class TenguBladeDash : CharState {
 	int inputXDir;
 	Bass bass = null!;
 	public TenguBladeDash() : base("tblade_dash") {
-		normalCtrl = false;
+		normalCtrl = true;
 		attackCtrl = false;
 		enterSound = "slide";
 	}

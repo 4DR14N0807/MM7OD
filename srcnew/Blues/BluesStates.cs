@@ -412,6 +412,7 @@ public class BluesRevive : CharState {
 		base.onExit(newState);
 		character.useGravity = true;
 		character.removeRenderEffect(RenderEffectType.Flash);
+		character.playSound("whistle", true, true);
 		//Global.level.delayedActions.Add(new DelayedAction(() => { character.destroyMusicSource(); }, 0.75f));
 		if (blues != null) blues.isBreakMan = true;
 

@@ -332,6 +332,7 @@ public class Blues : Character {
 			if (isBreakMan) {
 				overdrive = true;
 				overdriveAmmo = coreMaxAmmo;
+				destroyStarCrash();
 			} else {
 				overheating = true;
 			}

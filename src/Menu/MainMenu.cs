@@ -241,7 +241,7 @@ public class MainMenu : IMainMenu {
 				offset += 10;
 			}
 			if (Global.radminIP != "") {
-				Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
+				//Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
 			}
 		}
 	}

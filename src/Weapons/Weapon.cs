@@ -355,6 +355,9 @@ public class Weapon {
 	// This is to be used locally to get projectiles.
 	// A replacement of the above. Remeber to send RPCs when using this one.
 	public virtual void shoot(Character character, params int[] args) {
+		//args[0] is used to store the chargeLevel while shooting.
+		//args[1] is mostly used for weapons with custom shoot anims so the code
+		//knows if the character is entering the state or spawning the projectiles.
 	}
 	public virtual void shoot(Actor actor, params int[] args) {
 	}

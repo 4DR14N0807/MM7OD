@@ -32,7 +32,7 @@ public class NeoSigma : BaseSigma {
 			if (isAnimOver() && charState != null && charState is not SigmaClawState) {
 				changeSprite(getSprite(charState.defaultSprite), true);
 				if (charState is WallSlide && sprite != null) {
-					frameIndex = sprite.frames.Count - 1;
+					frameIndex = sprite.totalFrameNum - 1;
 				}
 			} else if (grounded && sprite?.name != "sigma2_attack" && sprite?.name != "sigma2_attack2") {
 				changeSprite("sigma2_attack", false);
@@ -51,10 +51,10 @@ public class NeoSigma : BaseSigma {
 		if (player.weapon is not AssassinBullet) {
 			if (player.input.isPressed(Control.Shoot, player)) {
 				attackPressed = true;
-				lastAttackFrame = Global.level.frameCount;
+				lastAttackFrame = (int)(Global.level.frameCount);
 			}
 		}
-		framesSinceLastAttack = Global.level.frameCount - lastAttackFrame;
+		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		// Shoot button attacks.

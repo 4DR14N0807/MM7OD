@@ -9,7 +9,6 @@ public class Slide : CharState {
 	public bool stop;
 	public int particles = 3;
 	Anim? dust;
-	bool isColliding;
 	Rock? rock;
 
 	public Slide(string initialSlideButton) : base("slide", "", "") {
@@ -180,12 +179,12 @@ public class ShootAlt : CharState {
 				Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
 
 				if (chargeLv >= 2) {
-					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
-					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
+					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
 					character.playSound("buster3", sendRpc: true);
 				} else {
-					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(true), rpc: true);
-					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(true), rpc: true);
+					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
 					character.playSound("buster2", sendRpc: true);
 				}
 			}
@@ -326,13 +325,11 @@ public class RockDoubleJump : CharState {
 
 
 public class CallDownRush : CharState {
-
 	Anim? rush;
 	const float rushAnimStartPos = 200;
 	int phase = 0;
 	float jumpTime = 0;
 	bool isXAllign;
-	bool isYAllign;
 
 	public CallDownRush() : base("sa_activate", "", "", "") {
 		invincible = true;

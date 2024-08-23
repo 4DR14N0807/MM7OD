@@ -228,14 +228,11 @@ public class RayGunAltProj : Projectile {
 
 		Helpers.decrementTime(ref soundCooldown);
 		if (soundCooldown == 0) {
-			string laserSound = "";
 			soundCooldown = 0.217f;
 			int chargeLevel = getChargeLevel();
 			if (chargeLevel == 1) {
-				laserSound = "";
 				soundCooldown = 0.18f;
 			} else if (chargeLevel == 2) {
-				laserSound = "";
 				soundCooldown = 0.14f;
 			}
 

@@ -103,6 +103,11 @@ public class Maverick : Actor, IDamagable {
 	public WeaponIds weakWeaponId;
 	public WeaponIds weakMaverickWeaponId;
 
+	// For sprite draw.
+	public Sprite subtankSprite = new Sprite("menu_subtank");
+	public Sprite subtankBarSprite = new Sprite("menu_subtank_bar");
+	public Sprite cursorSprite = new Sprite("cursorchar");
+
 	private Input _input;
 	public Input input {
 		get {
@@ -1044,7 +1049,7 @@ public class Maverick : Actor, IDamagable {
 		renderDamageText(35);
 
 		if (showCursor()) {
-			Global.sprites["cursorchar"].draw(0, pos.x + x, pos.y + y + currentLabelY, 1, 1, null, 1, 1, 1, zIndex + 1);
+			cursorSprite.draw(0, pos.x + x, pos.y + y + currentLabelY, 1, 1, null, 1, 1, 1, zIndex + 1);
 			deductLabelY(labelCursorOffY);
 		}
 	}

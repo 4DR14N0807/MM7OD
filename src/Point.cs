@@ -217,6 +217,15 @@ public struct Point {
 		return sum.multiply(1.0f / points.Count);
 	}
 
+	public static Point average(Point[] points) {
+		if (points.Length == 0) return new Point();
+		Point sum = new Point();
+		foreach (var point in points) {
+			sum.inc(point);
+		}
+		return sum.multiply(1.0f / points.Length);
+	}
+
 	public static float minX(List<Point> points) {
 		float minX = float.MaxValue;
 		foreach (var point in points) {
@@ -307,7 +316,6 @@ public struct Point {
 	public static bool operator!= (Point l, Point r) {
 		return l.x != r.x || l.y != r.y;
 	}
-
 	public static Point operator* (float l, Point r) {
 		return new Point(r.x * l, r.y * l);
 	}
@@ -325,5 +333,11 @@ public struct Point {
 	}
 	public static Point operator% (Point l, float r) {
 		return new Point(l.x % r, l.y % r);
+	}
+	public override bool Equals(object obj) {
+		return obj is Point op && op.x == x && op.y == y;
+	}
+	public override int GetHashCode() {
+		return base.GetHashCode();
 	}
 }

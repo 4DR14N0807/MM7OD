@@ -131,7 +131,10 @@ public class CharState {
 			character.stopMovingWeak();
 		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
-		if (this is not Run and not Idle and not Taunt) player.delayETank();
+		if (this is not Run and not Idle and not Taunt) {
+			player.delayETank();
+			player.delayLTank();
+		} 
 		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick && oldState.canStopJump == false) {
 			canStopJump = false;
@@ -415,7 +418,7 @@ public class WarpIn : CharState {
 		if (warpAnim == null) {
 			character.visible = true;
 			character.frameSpeed = 1;
-			if (this is CmdSigma && character.sprite.frameIndex >= 2 && !decloaked) {
+			if (character is CmdSigma && character.sprite.frameIndex >= 2 && !decloaked) {
 				decloaked = true;
 				var cloakAnim = new Anim(character.getFirstPOI() ?? character.getCenterPos(), "sigma_cloak", character.xDir, player.getNextActorNetId(), true);
 				cloakAnim.vel = new Point(-25 * character.xDir, -10);
@@ -707,6 +710,7 @@ public class SwordBlock : CharState {
 		exitOnAirborne = true;
 		attackCtrl = true;
 		normalCtrl = true;
+		stunResistant = true;
 	}
 
 	public override void update() {
@@ -1877,6 +1881,9 @@ public class GenericGrabbedState : CharState {
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		character.grabInvulnTime = 2;
+		if (this is VileMK2Grabbed) {
+			character.stunInvulnTime = 1;
+		}
 		character.useGravity = true;
 		character.setzIndex(savedZIndex);
 	}

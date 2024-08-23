@@ -30,7 +30,7 @@ public class Rush : Actor, IDamagable {
 		spriteToCollider["empty"] = null;
 		//spriteToCollider["warp_beam"] = null;
 		// Forcefull change sprite to something before we crash.
-		sprite = Global.sprites["empty"].clone();
+		sprite = new Sprite("empty");
 		// We do this to manually call the state change.
 		// As oldState cannot be null because we do not want null crashes.
 		rushState = new RushState("empty");

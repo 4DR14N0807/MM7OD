@@ -126,6 +126,7 @@ public class ShieldDash : CharState {
 		initialXDir = character.xDir;
 		character.isDashing = true;
 		character.vel.y = 0;
+		blues.shieldCustomState = blues.isShieldActive;
 	}
 
 	public override void onExit(CharState newState) {
@@ -252,6 +253,7 @@ public class ProtoGenericShotState : CharState {
 
 		if (!fired && character.frameIndex == 3) {
 			weapon.shoot(blues, 0);
+			fired = true;
 		}
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();

@@ -206,7 +206,6 @@ public class PZeroDiveKickState : CharState {
 
 
 public class ZeroDropkickLand : CharState {
-	int type;
 	public ZeroDropkickLand() : base("land") {
 		exitOnAirborne = true;
 	}
@@ -428,7 +427,7 @@ public class PZeroShoryuken : CharState {
 	public bool canDownSpecial() {
 		return (
 			zero.diveKickCooldown == 0 &&
-			character.sprite.frameIndex >= character.sprite.frames.Count - 3
+			character.sprite.frameIndex >= character.sprite.totalFrameNum- 3
 		);
 	}
 
@@ -682,7 +681,7 @@ public class PunchyZeroHadangekiWall : CharState {
 		}
 		if (character.isAnimOver()) {
 			character.changeState(new WallSlide(wallDir, wallCollider));
-			character.sprite.frameIndex = character.sprite.frames.Count - 1;
+			character.sprite.frameIndex = character.sprite.totalFrameNum - 1;
 		}
 	}
 

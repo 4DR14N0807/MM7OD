@@ -18,22 +18,22 @@ public class MagicCard : Weapon {
 	}
 
 	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		Player player = character.player;
-		int angle = player.input.isHeld(Control.Up, player) ? 192 : 0;
-		if (character.xDir == -1) {
-			angle = -angle + 128;
+		if (character is not Bass bass) {
+			return;
 		}
+		Point shootPos = character.getShootPos();
+		float shootAngle = bass.getShootAngle(true, false);
+		Player player = character.player;
 
-		var card = new MagicCardProj(shootPos, character.getShootXDir(), angle, player, player.getNextActorNetId(), true);
+		var card = new MagicCardProj(
+			shootPos, character.getShootXDir(), shootAngle, player, player.getNextActorNetId(), true
+		);
 		cardsOnField.Add(card);
 	}
 }
 
 
 public class MagicCardProj : Projectile {
-
 	bool reversed;
 	Character shooter;
 	float maxReverseTime;
@@ -45,25 +45,25 @@ public class MagicCardProj : Projectile {
 		Player player, ushort? netProjId, bool rpc = false
 	) : base (
 		MagicCard.netWeapon, pos, xDir, 0, 1,
-		player, "magic_card_proj", 0, 0.25f, 
+		player, "magic_card_proj", 0, 0, 
 		netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BassProjIds.MagicCard;
 		maxTime = 3f;
-		maxReverseTime = 0.25f;
+		maxReverseTime = 0.45f;
 		this.byteAngle = byteAngle;
 		shooter = player.character;
-		vel = Point.createFromByteAngle(byteAngle) * projSpeed;
+		vel = Point.createFromByteAngle(byteAngle) * 425;
 		canBeLocal = false;
 
 		if (rpc) {
-			rpcCreateByteAngle(pos, player, netId, byteAngle);
+			rpcCreateByteAngle(pos, player, netId, byteAngle, (byte)(xDir + 1));
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MagicCardProj(
-			arg.pos, arg.xDir, arg.byteAngle, arg.player, arg.netId
+			arg.pos, arg.extraData[0] - 1, arg.byteAngle, arg.player, arg.netId
 		);
 	}
 
@@ -80,19 +80,21 @@ public class MagicCardProj : Projectile {
 		if (reversed) {
 			vel = new Point(0, 0);
 			frameSpeed = -2;
-			if (frameIndex == 0) frameIndex = sprite.frames.Count - 1;
+			if (frameIndex == 0) frameIndex = sprite.totalFrameNum - 1;
 
 			Point returnPos = shooter.getCenterPos();
 			if (shooter.sprite.name.Contains("shoot")) {
 				Point poi = shooter.pos;
 				var pois = shooter.sprite.getCurrentFrame()?.POIs;
-				if (pois != null && pois.Count > 0) {
+				if (pois != null && pois.Length > 0) {
 					poi = pois[0];
 				}
 				returnPos = shooter.pos.addxy(poi.x * shooter.xDir, poi.y);
 			}
+			Point speed = pos.directionToNorm(returnPos).times(425);
+			move(speed);
+			byteAngle = speed.byteAngle;
 
-			move(pos.directionToNorm(returnPos).times(projSpeed));
 			if (pos.distanceTo(returnPos) < 10) {
 				destroySelf();
 			}

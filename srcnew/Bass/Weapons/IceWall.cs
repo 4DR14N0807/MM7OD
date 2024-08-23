@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Converters;
 
 namespace MMXOnline;
 
 public class IceWall : Weapon {
-
 	public static IceWall netWeapon = new();
 
 	public IceWall() : base() {
@@ -19,7 +19,7 @@ public class IceWall : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
+		Point shootPos = character.getShootPos().addxy(0, 2);
 		Player player = character.player;
 
 		new IceWallActor(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
@@ -28,7 +28,6 @@ public class IceWall : Weapon {
 
 
 public class IceWallStart : Anim {
-
 	Player player;
 
 	public IceWallStart(
@@ -43,32 +42,35 @@ public class IceWallStart : Anim {
 
 	public override void onDestroy() {
 		base.onDestroy();
-
-		new IceWallActor(pos, xDir, player, player.getNextActorNetId(), true);
+		if (ownedByLocalPlayer) {
+			new IceWallActor(pos, xDir, player, player.getNextActorNetId(), true);
+		}
 	}
 }
 	
-
-public class IceWallActor : Actor {
-
+public class IceWallActor : Projectile {
 	float maxSpeed = 300;
 	int bounces;
 	bool startedMoving;
 	List<Character> chrs = new();
 	Player player;
+	Collider? terrainCollider;
+
 	public IceWallActor(
 		Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
-		"ice_wall_proj", pos, netId, player.ownedByLocalPlayer, false
+		IceWall.netWeapon, pos, xDir, 0, 0, player, "ice_wall_proj", 0, 0, netId, player.ownedByLocalPlayer
 	) {
-		
 		useGravity = true;
 		canBeLocal = false;
 		base.xDir = xDir;
 		this.player = player;
-		collider.wallOnly = true;
 		collider.isTrigger = false;
+		isSolidWall = true;
+		maxTime = 2f;
+		destroyOnHit = false;
+		splashable = true;
 	}
 	
 	public override void update() {
@@ -76,48 +78,55 @@ public class IceWallActor : Actor {
 
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
 			vel.x += xDir * Global.speedMul * 7.5f;
-			
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
 
-		if (bounces >= 3) destroySelf();
-	}
+		if (isUnderwater()) {
+			grounded = false;
+			gravityModifier = -1;
+			if (Math.Abs(vel.y) > Physics.MaxUnderwaterFallSpeed * 0.5f) {
+				vel.y = Physics.MaxUnderwaterFallSpeed * 0.5f * gravityModifier;
+			}
+		} else gravityModifier = 1;
 
+		if (bounces >= 3) {
+			destroySelf();
+		}
+	}
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		var wall = other.gameObject as Wall;
-		var own = netOwner?.character;
-		var chr = other.gameObject as Character;
-
-		//Wall hit.
-		if (wall != null) {
+		Character? ownChar = damager.owner?.character;
+		// Wall hit.
+		if (other.gameObject is Wall) {
 			if (other.isSideWallHit()) {
 				xDir *= -1;
+				vel.x *= -1;
+				pos.y += xDir;
 				playSound("ding");
 				bounces++;
 			}
+			return;
 		}
-
-		//Movement start.
-		if (own != null) {
-			if (other.isSideWallHit() && own.charState is Run or Dash) {
+		// Movement start.
+		if (other.gameObject == ownChar) {
+			if (ownChar.pos.y > getTopY() + 10 && ownChar.charState is Run or Dash) {
 				startedMoving = true;
 			}
 		}
-
-		if (chr != null) {
+		// Hit enemy.
+		else if (other.gameObject is Character chara && chara.player.alliance != damager?.owner?.alliance) {
 			if (other.isSideWallHit()) {
 				foreach (var enemy in chrs) {
-					if (chr != enemy) {
-						chrs.Add(chr);
+					if (chara != enemy) {
+						chrs.Add(chara);
 						maxSpeed -= 100;
 					} 
 				}
-			} else if (other.isGroundHit() && vel.y < 120 && 
-				chr.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
+			} else if (other.isGroundHit() && vel.y > 120 && 
+				chara.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
 
-				chr.applyDamage(3, player, chr, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);
+				chara.applyDamage(3, player, chara, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);
 			}
 		}
 	}

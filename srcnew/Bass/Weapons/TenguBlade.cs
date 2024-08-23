@@ -27,7 +27,6 @@ public class TenguBlade : Weapon {
 
 
 public class TenguBladeStart : Anim {
-
 	Player player;
 	Point distance;
 
@@ -57,7 +56,6 @@ public class TenguBladeStart : Anim {
 
 
 public class TenguBladeState : CharState {
-
 	bool fired;
 
 	public TenguBladeState() : base("tblade") {
@@ -71,7 +69,6 @@ public class TenguBladeState : CharState {
 		base.update();
 
 		if (!fired && character.currentFrame.getBusterOffset() != null) {
-
 			Point shootPos = character.getFirstPOI() ?? character.getShootPos();
 			Player player = character.player;
 
@@ -85,7 +82,6 @@ public class TenguBladeState : CharState {
 
 
 public class TenguBladeProj : Projectile {
-
 	bool bouncedOnce;
 	const float maxSpeed = 240;
 	public TenguBladeProj(
@@ -117,7 +113,6 @@ public class TenguBladeProj : Projectile {
 		if (bouncedOnce && vel.y < 240) {
 			vel.y -= Global.speedMul * (60f * 0.175f);
 		}
-
 		if (Math.Abs(vel.x) < maxSpeed) {
 			vel.x += xDir * Global.speedMul * (60f * 0.25f);
 		}
@@ -125,14 +120,13 @@ public class TenguBladeProj : Projectile {
 
 	public override void onHitWall(CollideData other) {
 		base.onHitWall(other);
-
 		if (other.isCeilingHit()) destroySelf();
 
 		bouncedOnce = true;
 		incPos(new Point(6 * -xDir, 0));
 		xDir *= -1;
 		vel.x *= -1;
-		vel.y = 0;
+		vel.y *= -1;
 	}
 }
 

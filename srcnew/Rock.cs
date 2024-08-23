@@ -303,7 +303,7 @@ public class Rock : Character {
 		var sprite1 = Global.sprites["noise_crush_charge_part"];
 		//float distFromCenter = Helpers.randomRange(-16, 16);
 		float posOffset = noiseCrushAnimTime * 50;
-		int hyperChargeAnimFrame = MathInt.Floor((noiseCrushAnimTime / 12) * sprite1.frames.Count);
+		int hyperChargeAnimFrame = MathInt.Floor((noiseCrushAnimTime / 12) * sprite1.frames.Length);
 		for (int i = 0; i < 8; i++) {
 			sprite1.draw(hyperChargeAnimFrame, sx + Helpers.randomRange(-16,16), sy, 1,1, null, 1,1,1, zIndex + 1);
 		}
@@ -663,7 +663,7 @@ public class Rock : Character {
 			player.weapon.ammo = data[1];
 		}
 
-		bool[] boolData = Helpers.byteToBoolArray(data[4]);
+		bool[] boolData = Helpers.byteToBoolArray(data[2]);
 		hasChargedNoiseCrush = boolData[0];
 		hasSuperAdaptor = boolData[1];
 	}

@@ -80,15 +80,17 @@ public class StarCrashProj : Projectile {
 		base.update();
 		starAngle += 4;
 		if (starAngle >= 360) starAngle -= 360;
-		if (blues == null) {
+		/*if (blues == null) {
 			if (ownedByLocalPlayer) {
 				destroySelf();
 			}
 			return;
-		}
+		}*/
 		// Sync poses with protoman.
-		pos = blues.getCenterPos().round();
-		xDir = blues.xDir;
+		if (blues != null) {
+			pos = blues.getCenterPos().round();
+			xDir = blues.xDir;
+		} 
 
 		frameCount++;
 		if (frameCount > 4) {
@@ -97,17 +99,17 @@ public class StarCrashProj : Projectile {
 		}
 
 		// Local player ends here.
-		if (!ownedByLocalPlayer) {
+		/*if (!ownedByLocalPlayer) {
 			return;
-		}
+		}*/
 		// Destroy if not linked with Protoman anymore.
-		if (blues.destroyed || blues.starCrash != this || !blues.starCrashActive || blues.overheating) {
+		if (blues == null || blues.destroyed || blues.starCrash != this || !blues.starCrashActive || blues.overheating) {
 			destroySelf();
 		}
 		// Ammo reduction.
 		if (coreCooldown <= 0) {
 			coreCooldown = 20;
-			blues.addCoreAmmo(1);
+			blues?.addCoreAmmo(1);
 		} else {
 			coreCooldown--;
 		}
@@ -122,7 +124,7 @@ public class StarCrashProj : Projectile {
 			float xPlus = pos.x + (Helpers.cosd(extraAngle) * radius);
 			float yPlus = pos.y + (Helpers.sind(extraAngle) * radius);
 
-			new Anim(new Point(xPlus, yPlus), "star_crash_fade", xDir, blues?.player.getNextActorNetId(), true, true);
+			new Anim(new Point(xPlus, yPlus), "star_crash_fade", xDir, damager.owner.getNextActorNetId(), true, true);
 		}
 	}
 

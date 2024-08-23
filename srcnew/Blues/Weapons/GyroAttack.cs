@@ -31,14 +31,13 @@ public class GyroAttack : Weapon {
 public class GyroAttackProj : Projectile {
 
 	bool changedDir;
-	Player player;
 	const float projSpeed = 180;
 
 	public GyroAttackProj(Point pos, int xDir, Player player, ushort? netId, bool rpc = false) :
 	base(GyroAttack.netWeapon, pos, xDir, projSpeed, 2, player, "gyro_attack_proj", 0, 0, netId, player.ownedByLocalPlayer) {
 		maxTime = 0.625f;
 		projId = (int)BluesProjIds.GyroAttack;
-		this.player = player;
+		netOwner = player;
 		canBeLocal = false;
 
 		if (rpc) {
@@ -55,12 +54,12 @@ public class GyroAttackProj : Projectile {
 	public override void update() {
 		base.update();
 
-		if (!changedDir) {
-			if (player.input.isPressed(Control.Up, player)) {
+		if (!changedDir && netOwner != null) {
+			if (netOwner.input.isPressed(Control.Up, netOwner)) {
 				base.vel = new Point(0, -projSpeed);
 				time = 0;
 				changedDir = true;
-			} else if (player.input.isPressed(Control.Down, player)) {
+			} else if (netOwner.input.isPressed(Control.Down, netOwner)) {
 				base.vel = new Point(0, projSpeed);
 				time = 0;
 				changedDir = true;
@@ -76,6 +75,6 @@ public class GyroAttackProj : Projectile {
 	}
 	public override void onDestroy() {
 		base.onDestroy();
-		Anim.createGibEffect("gyro_attack_pieces", pos, null, zIndex: zIndex);
+		Anim.createGibEffect("gyro_attack_pieces", pos, null!, zIndex: zIndex);
 	}
 }

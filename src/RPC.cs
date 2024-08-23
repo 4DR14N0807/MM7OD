@@ -1708,7 +1708,9 @@ public class RPCCommandGrabPlayer : RPC {
 		if (!victimChar.canBeGrabbed()) return;
 
 		if (!isDefenderFavored) {
-			if (victimChar.ownedByLocalPlayer && !Helpers.isOfClass(victimChar.charState, grabbedState.GetType())) {
+			if (victimChar.ownedByLocalPlayer &&
+				!Helpers.isOfClass(victimChar.charState, grabbedState.GetType())
+			) {
 				victimChar.changeState(grabbedState, true);
 			}
 		} else {
@@ -2158,7 +2160,7 @@ public class RPCCreditPlayerKillVehicle : RPC {
 		}
 	}
 
-	public void sendRpc(Player killer, Player assister, Actor victim, int? weaponIndex) {
+	public void sendRpc(Player? killer, Player? assister, Actor victim, int? weaponIndex) {
 		if (killer == null) return;
 		if (victim?.netId == null) return;
 

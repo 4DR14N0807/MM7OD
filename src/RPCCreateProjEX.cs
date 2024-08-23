@@ -57,6 +57,7 @@ public partial class RPCCreateProj : RPC {
 
 		//Blues
 		{ (int)BluesProjIds.Lemon, ProtoBusterProj.rpcInvoke },
+		{ (int)BluesProjIds.LemonOverdrive, ProtoBusterOverdriveProj.rpcInvoke },
 		{ (int)BluesProjIds.LemonAngled, ProtoBusterAngledProj.rpcInvoke },
 		{ (int)BluesProjIds.BusterLV2, ProtoBusterLv2Proj.rpcInvoke },
 		{ (int)BluesProjIds.BusterLV3, ProtoBusterLv3Proj.rpcInvoke },
@@ -65,6 +66,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BluesProjIds.HardKnuckle, HardKnuckleProj.rpcInvoke },
 		{ (int)BluesProjIds.SearchSnake, SearchSnakeProj.rpcInvoke },
 		{ (int)BluesProjIds.SparkShock, SparkShockProj.rpcInvoke },
+		{ (int)BluesProjIds.GravityHold, GravityHoldProj.rpcInvoke},
 		{ (int)BluesProjIds.PowerStone, PowerStoneProj.rpcInvoke },
 		{ (int)BluesProjIds.GyroAttack, GyroAttackProj.rpcInvoke },
 		{ (int)BluesProjIds.StarCrash, StarCrashProj.rpcInvoke },

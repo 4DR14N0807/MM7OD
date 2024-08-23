@@ -20,8 +20,6 @@ public class Blues : Character {
 	public float coreAmmoMaxCooldown = 60;
 	public float coreAmmoDamageCooldown = 120;
 	public float coreAmmoDecreaseCooldown;
-	public float coreHealAmount;
-	public float coreHealTime;
 	public bool overheating;
 	public float overheatEffectTime;
 
@@ -40,6 +38,13 @@ public class Blues : Character {
 	public decimal shieldDamageDebt;
 	public bool? shieldCustomState = null;
 	public bool customDamageDisplayOn;
+
+	// Tanks
+	public bool isUsingLTank;
+	public float lTankHealShieldAmount;
+	public float lTankHealShieldCooldown;
+	public float lTankCoreHealAmount;
+	public float lTankCoreHealTime;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
@@ -72,11 +77,10 @@ public class Blues : Character {
 			1 => new HardKnuckle(),
 			2 => new SearchSnake(),
 			3 => new SparkShock(),
-			4 => new PowerStone(),
-			5 => new WaterWave(),
+			4 => new GravityHold(),
+			5 => new PowerStone(),
 			6 => new GyroAttack(),
 			7 => new StarCrash(),
-			8 => new GravityHold(),
 			_ => new PowerStone(),
 		};
 	}
@@ -243,15 +247,17 @@ public class Blues : Character {
 		if (trails != null) {
 			sprite.lastFiveTrailDraws = trails;
 		}
-		if (isBreakMan && sprite.textureName == "blues_default") {
-			sprite.textureName = "blues_breakman";
-			sprite.bitmap = Global.textures["blues_breakman"];
+		if (isBreakMan && sprite.animData.textureName == "blues_default") {
+			sprite.overrideTexture = Sprite.breakManBitmap;
 		}
 	}
 
 	public override bool changeState(CharState newState, bool forceChange = false) {
+		bool changedState = base.changeState(newState, forceChange);
+		if (!changedState) {
+			return false;
+		}
 		shieldCustomState = null;
-		base.changeState(newState, forceChange);
 		if (!newState.attackCtrl || !newState.normalCtrl) {
 			shootAnimTime = 0;
 		}
@@ -303,23 +309,16 @@ public class Blues : Character {
 
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
-		Helpers.decrementFrames(ref healShieldHPCooldown);
 		Helpers.decrementFrames(ref redStrikeCooldown);
-		Helpers.decrementFrames(ref coreHealTime);
-		
+		Helpers.decrementFrames(ref lTankCoreHealTime);
+		Helpers.decrementFrames(ref lTankHealShieldCooldown);
+		if (lTankHealShieldAmount <= 0) {
+			Helpers.decrementFrames(ref healShieldHPCooldown);
+		}
 		specialWeapon.update();
 		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
 		}
-
-		if (coreHealAmount > 0 && coreHealTime <= 0) {
-			coreHealAmount--;
-			coreAmmo--;
-			coreHealTime = 3;
-			playSound("heal");
-			if (coreAmmo <= 0) coreHealAmount = 0;
-		}
-
 		// Shield HP.
 		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");
@@ -375,6 +374,47 @@ public class Blues : Character {
 			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
 			overdriveAmmoMaxCooldown = 13;
 		}
+
+		// L-Tank check
+		if (isUsingLTank && lTankCoreHealAmount <= 0 &&
+			lTankHealShieldAmount <= 0 && eTankHealAmount <= 0
+		) {
+			isUsingLTank = false;
+		}
+		// L-Tank Core cooling.
+		if (lTankCoreHealAmount > 0 && lTankCoreHealTime <= 0) {
+			lTankCoreHealAmount--;
+			lTankCoreHealTime = 3;
+			playSound("heal");
+			if (overdrive) {
+				overdriveAmmo++;
+				if (overdriveAmmo >= 28) {
+					overdriveAmmo = 28;
+					lTankCoreHealAmount = 0;
+					lTankCoreHealTime = 0;
+				}	
+			} else {
+				coreAmmo--;
+				if (coreAmmo <= 0) {
+					coreAmmo = 0;
+					lTankCoreHealAmount = 0;
+					lTankCoreHealTime = 0;
+				}
+			}
+		}
+		// L-Tank Shield HP Heal.
+		if (lTankHealShieldAmount > 0 && lTankHealShieldCooldown <= 0) {
+			shieldHP++;
+			lTankHealShieldAmount--;
+			lTankHealShieldCooldown = 8;
+			playSound("heal");
+			if (shieldHP >= shieldMaxHP) {
+				shieldHP = shieldMaxHP;
+				lTankHealShieldAmount = 0;
+				lTankHealShieldCooldown = 0;
+			}
+		}
+
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
 			shootAnimTime -= Global.spf;
@@ -383,14 +423,15 @@ public class Blues : Character {
 				if (sprite.name.EndsWith("_shoot") || sprite.name.EndsWith("_shoot_shield")) {
 					changeSpriteFromName(charState.defaultSprite, false);
 					if (charState is WallSlide) {
-						frameIndex = sprite.frames.Count - 1;
+						frameIndex = sprite.totalFrameNum - 1;
 					}
 				}
 			}
 		}
 		// Shoot logic.
 		chargeLogic(shoot);
-		if (isShieldActive && getChargeLevel() >= 2 && sprite.name == getSprite("idle_shield")) {
+		int requiredCharge = (isBreakMan ? 1 : 2);
+		if (isShieldActive && getChargeLevel() >= requiredCharge && sprite.name == getSprite("idle_shield")) {
 			changeSpriteFromName("idle_chargeshield", true);
 		}
 
@@ -530,6 +571,8 @@ public class Blues : Character {
 
 	public void shoot(int chargeLevel) {
 		int lemonNum = -1;
+		int type = isBreakMan ? 1 : 0;
+
 		if (chargeLevel < 2) {
 			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 				if (unchargedLemonCooldown[i] <= 0) {
@@ -572,14 +615,18 @@ public class Blues : Character {
 			}
 		} else if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
-				shootPos, xDir, player, player.getNextActorNetId(), true
+				type, shootPos, xDir, player, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(1));
-			playSound("buster2", sendRpc: true);
+			if (type == 0) {
+				playSound("buster2", sendRpc: true);
+			} else {
+				playSound("buster3", sendRpc: true);
+			}
 			lemonCooldown = 12;
 		} else if (chargeLevel == 2) {
 			new ProtoBusterLv3Proj(
-				shootPos, xDir, player, player.getNextActorNetId(), true
+				type, shootPos, xDir, player, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(2));
 			playSound("buster3", sendRpc: true);
@@ -589,9 +636,23 @@ public class Blues : Character {
 				addCoreAmmo(4);
 				changeState(new ProtoStrike(), true);
 			} else {
+				if (type == 1) {
+					var proj = new ProtoBusterLv4Proj(
+						type, shootPos.addxy(-12 * xDir, 0), xDir, player, player.getNextActorNetId(), true
+					);
+					proj.frameIndex = 2;
+					proj.maxTime += 4 / 60f;
+				}
 				new ProtoBusterLv4Proj(
-					shootPos, xDir, player, player.getNextActorNetId(), true
+					type, shootPos, xDir, player, player.getNextActorNetId(), true
 				);
+				if (type == 1) {
+					var proj = new ProtoBusterLv4Proj(
+						type, shootPos.addxy(12 * xDir, 0), xDir, player, player.getNextActorNetId(), true
+					);
+					proj.frameIndex = 1;
+					proj.maxTime -= 4 / 60f;
+				}
 				addCoreAmmo(getChargeShotAmmoUse(3));
 				playSound("buster3", sendRpc: true);
 				lemonCooldown = 12;
@@ -664,7 +725,31 @@ public class Blues : Character {
 	}
 
 	public void healCore(float amount) {
-		coreHealAmount = amount;
+		lTankCoreHealAmount = amount;
+	}
+
+	public void healShield(float amount) {
+		lTankHealShieldAmount = amount;
+	}
+
+	public void stopLTankHeal(bool stopCore = true, bool stopShield = true) {
+		if (stopCore) {
+			lTankCoreHealAmount = 0;
+			lTankCoreHealTime = 0;
+		}
+		if (stopShield) {
+			lTankHealShieldAmount = 0;
+			lTankHealShieldCooldown = 0;
+		}
+	}
+	
+	public void drawLTankHealingInner() {
+		if (eTankHealAmount <= 0 && lTankHealShieldAmount <= 0 && lTankCoreHealAmount <= 0) return;
+		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
+
+		Global.sprites["menu_ltank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		
+		deductLabelY(labelSubtankOffY);
 	}
 
 	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
@@ -749,7 +834,7 @@ public class Blues : Character {
 			canShieldBeActive = shieldCustomState.Value;
 		} else {
 			canShieldBeActive = (
-				charState.attackCtrl || charState.attackCtrl ||
+				charState.attackCtrl || charState is ShieldDash ||
 				charState is Hurt || charState is GenericStun
 			);
 		}
@@ -762,8 +847,14 @@ public class Blues : Character {
 		);
 	}
 
-	public override void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
-		if (!ownedByLocalPlayer) return;
+	public override void applyDamage(
+		float fDamage,
+		Player? attacker, Actor? actor,
+		int? weaponIndex, int? projId
+	) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		// Disable shield on any damage.
 		if (damage > 0) {
@@ -777,7 +868,6 @@ public class Blues : Character {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 			return;
 		}
-		
 		// Tracker variables.
 		decimal ogShieldHP = shieldHP;
 		float oldHealth = player.health;
@@ -831,6 +921,7 @@ public class Blues : Character {
 		// Shield front block check.
 		if (shieldHitFront && damage > 0) {
 			shieldDamaged = true;
+			stopLTankHeal(false);
 			// 1-2 damage scenario.
 			if (damageReduction > 0 && damage <= 2) {
 				if (damage <= 1) {
@@ -890,6 +981,7 @@ public class Blues : Character {
 			}
 		}
 		if (damage > 0) {
+			stopLTankHeal(stopShield: false);
 			bodyDamaged = true;
 			customDamageDisplayOn = true;
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
@@ -907,10 +999,10 @@ public class Blues : Character {
 			int fontColor = (int)FontType.RedSmall;
 			if (bodyPierced) {
 				fontColor = (int)FontType.YellowSmall;
-			} else if (shieldDamaged) {
+			} else if (backShieldDamaged) {
 				fontColor = (int)FontType.OrangeSmall;
 			}
-			float damageText = float.Parse((oldHealth - player.health).ToString());
+			float damageText = float.Parse(damage.ToString());
 			addDamageText(damageText, fontColor);
 			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 			resetCoreCooldown(coreAmmoDamageCooldown);

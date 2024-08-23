@@ -1042,7 +1042,6 @@ public class WSpongeHangSeedThrowState : MaverickState {
 public class WSpongeChargeState : MaverickState {
 	int state = 0;
 	public const float maxChargeTime = 4;
-	SoundWrapper chargeSound;
 
 	public WSpongeChargeState() : base("angry_start", "") {
 		superArmor = true;
@@ -1084,9 +1083,6 @@ public class WSpongeChargeState : MaverickState {
 		base.onExit(newState);
 		if (maverick is WireSponge sponge) {
 			sponge.chargeTime = 0;
-		}
-		if (chargeSound != null && !chargeSound.deleted) {
-			chargeSound.sound.Stop();
 		}
 		RPC.stopSound.sendRpc("wspongeCharge", maverick.netId);
 	}

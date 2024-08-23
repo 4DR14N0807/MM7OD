@@ -45,7 +45,7 @@ public class CmdSigma : BaseSigma {
 			if (isAnimOver() && charState != null && charState is not SigmaSlashState) {
 				changeSprite(getSprite(charState.defaultSprite), true);
 				if (charState is WallSlide && sprite != null) {
-					frameIndex = sprite.frames.Count - 1;
+					frameIndex = sprite.totalFrameNum - 1;
 				}
 			} else if (grounded && sprite.name != "sigma_attack") {
 				changeSprite("sigma_attack", false);
@@ -67,7 +67,7 @@ public class CmdSigma : BaseSigma {
 				lastAttackFrame = Global.level.frameCount;
 			}
 		}
-		framesSinceLastAttack = Global.level.frameCount - lastAttackFrame;
+		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		if (lenientAttackPressed && saberCooldown == 0) {

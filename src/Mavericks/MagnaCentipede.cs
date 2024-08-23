@@ -635,7 +635,6 @@ public class MagnaCMagnetPullProj : Projectile {
 }
 
 public class MagnaCMagnetPullState : MaverickState {
-	SoundWrapper pullSound;
 	public MagnaCMagnetPullProj proj;
 	public MagnaCMagnetPullState() : base("drain_start", "") {
 	}
@@ -679,9 +678,6 @@ public class MagnaCMagnetPullState : MaverickState {
 	public override void onExit(MaverickState newState) {
 		base.onExit(newState);
 		proj?.destroySelf();
-		if (pullSound != null && !pullSound.deleted) {
-			pullSound.sound?.Stop();
-		}
 		RPC.stopSound.sendRpc("magnacPull", maverick.netId);
 	}
 }

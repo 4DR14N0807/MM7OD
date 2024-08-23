@@ -867,9 +867,9 @@ class Program {
 			string name = Path.GetFileNameWithoutExtension(overrideSpritePath);
 			string json = File.ReadAllText(overrideSpritePath);
 
-			Sprite sprite = new Sprite(json, name, null);
+			AnimData sprite = new AnimData(json, name, null);
 			if (Global.sprites.ContainsKey(sprite.name)) {
-				Global.sprites[sprite.name].overrideSprite(sprite);
+				Global.sprites[sprite.name].overrideAnim(sprite);
 			}
 		}
 
@@ -879,7 +879,7 @@ class Program {
 			if (!string.IsNullOrEmpty(alias)) {
 				var pieces = alias.Split(',');
 				foreach (var piece in pieces) {
-					Global.sprites[piece] = Global.sprites[spriteName].clone();
+					Global.sprites[piece] = Global.sprites[spriteName].cloneAnimSlow();
 					Global.sprites[piece].name = piece;
 				}
 			}
@@ -900,6 +900,11 @@ class Program {
 			Global.spriteNameByIndex[i] = arrayBuffer[i];
 			Global.spriteCount++;
 		}
+
+		// Set up special sprites.
+		Sprite.superMegaManBitmap = Global.textures["rock_superadaptor"];
+		Sprite.breakManBitmap = Global.textures["blues_breakman"];
+		//Sprite.superBassBitmap = Global.textures["bass_super"];
 	}
 
 	static string loadSpritesSub(string[] spriteFilePaths) {
@@ -911,7 +916,7 @@ class Program {
 				continue;
 			}
 			fileChecksumDict[name] = json;
-			Sprite sprite = new Sprite(json, name, null);
+			AnimData sprite = new AnimData(json, name, "");
 			lock (Global.sprites) {
 				Global.sprites[sprite.name] = sprite;
 			}

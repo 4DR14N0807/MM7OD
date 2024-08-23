@@ -30,6 +30,7 @@ public class SearchSnake : Weapon {
 public class SearchSnakeProj : Projectile {
 	bool groundedOnce;
 	bool startAngleDrawing;
+	float prevAngle;
 
 	public SearchSnakeProj(
 		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
@@ -83,9 +84,11 @@ public class SearchSnakeProj : Projectile {
 				byteAngle = -64 * xDir;
 			} else if (deltaDirY == 1) {
 				byteAngle = 64 * xDir;
+			} else if (deltaPos.x < 0 && prevAngle == -64) {
+				byteAngle = 128;
 			} else {
 				byteAngle = 0;
-			}
+			} prevAngle = byteAngle ?? 0;
 		}
 		base.render(x, y);
 	}

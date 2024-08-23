@@ -404,6 +404,7 @@ public partial class Character : Actor, IDamagable {
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 		if (isVaccinated()) return;
+		if (charState.invincible) return;
 
 		igFreezeProgress += amount;
 		igFreezeRecoveryCooldown = 0;
@@ -422,6 +423,7 @@ public partial class Character : Actor, IDamagable {
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
+		burningRecoveryCooldown = 0;
 		burnStunStacks += amount;
 		if (burnStunStacks >= Burning.maxStacks) {
 			burnStunStacks = 0;
@@ -1078,8 +1080,8 @@ public partial class Character : Actor, IDamagable {
 			igFreezeProgress--;
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
-		if (burnStunStacks > 0) burningRecoveryCooldown += Global.spf;
-		if (burningRecoveryCooldown > 1 && burnStunStacks > 0) {
+		if (burnStunStacks > 0) burningRecoveryCooldown++;
+		if (burningRecoveryCooldown >= 60 && burnStunStacks > 0) {
 			burningRecoveryCooldown = 0;
 			burnStunStacks--;
 			if (burnStunStacks < 0) burnStunStacks = 0;
@@ -1581,7 +1583,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public Point getCharRideArmorPos() {
-		if (rideArmor == null || rideArmor.currentFrame.POIs.Count == 0) {
+		if (rideArmor == null || rideArmor.currentFrame.POIs.Length == 0) {
 			return new Point();
 		}
 		var charPos = rideArmor.currentFrame.POIs[0];
@@ -1590,7 +1592,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public Point getMK5RideArmorPos() {
-		if (rideArmorPlatform == null || rideArmorPlatform.currentFrame.POIs.Count == 0) {
+		if (rideArmorPlatform == null || rideArmorPlatform.currentFrame.POIs.Length == 0) {
 			return new Point();
 		}
 		var charPos = rideArmorPlatform.currentFrame.POIs[0];
@@ -1621,7 +1623,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void freeze(int timeToFreeze = 120) {
-		if (!ownedByLocalPlayer || !canFreeze()) {
+		if (!ownedByLocalPlayer) {
 			return;
 		}
 		frozenMaxTime = timeToFreeze;
@@ -1637,6 +1639,7 @@ public partial class Character : Actor, IDamagable {
 			(this as MegamanX)?.chargedRollingShieldProj == null &&
 			!charState.stunResistant &&
 			!charState.invincible &&
+			invulnTime == 0 &&
 			freezeInvulnTime <= 0 &&
 			!isInvulnerable() &&
 			!isVaccinated() &&
@@ -1659,14 +1662,14 @@ public partial class Character : Actor, IDamagable {
 
 	public void paralize(float timeToParalize = 120) {
 		if (!ownedByLocalPlayer ||
-			charState is Die ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
-			charState.stunResistant ||
-			stunInvulnTime > 0 ||
-			isInvulnerable() &&
+			isInvulnerable() ||
 			isVaccinated() ||
-			isCCImmune() || 
-			charState.invincible
+			isCCImmune() ||
+			charState.invincible ||
+			charState.stunResistant ||
+			(charState is Die or VileMK2Grabbed) ||
+			(this as MegamanX)?.chargedRollingShieldProj != null ||
+		 	stunInvulnTime > 0
 		) {
 			return;
 		}
@@ -1679,15 +1682,15 @@ public partial class Character : Actor, IDamagable {
 
 	public void crystalize(float timeToCrystalize = 120) {
 		if (!ownedByLocalPlayer ||
-			charState is Die ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
-			charState.stunResistant ||
-			isCrystalized ||
-			crystalizeInvulnTime > 0 ||
 			isInvulnerable() ||
 			isVaccinated() ||
-			isCCImmune() || 
-			charState.invincible
+			isCCImmune() ||
+			charState.invincible ||
+			charState.stunResistant ||
+			isCrystalized ||
+			(charState is Die) ||
+			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			crystalizeInvulnTime > 0
 		) {
 			return;
 		}
@@ -1717,7 +1720,8 @@ public partial class Character : Actor, IDamagable {
 				1 => RenderEffectType.ChargeBlue,
 				2 => RenderEffectType.ChargeYellow,
 				3 => RenderEffectType.ChargePink,
-				4 => RenderEffectType.ChargeOrange
+				4 => RenderEffectType.ChargeOrange,
+				_ => RenderEffectType.ChargeGreen
 			};
 			addRenderEffect(renderGfx, 0.033333f, 0.1f);
 			chargeEffect.update(getChargeLevel(), 0);
@@ -1748,6 +1752,7 @@ public partial class Character : Actor, IDamagable {
 	// and should be set only by code that is checking to see if such things can be done.
 	public virtual bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
 		if (isWarpIn()) return true;
+		if (invulnTime > 0) return true;
 		if (!ignoreRideArmorHide && charState is InRideArmor && (charState as InRideArmor)?.isHiding == true) {
 			return true;
 		}
@@ -1869,7 +1874,7 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			float hideY = 0;
 			if (sprite.name.Contains("_ra_hide")) {
-				hideY = 22 * ((float)sprite.frameIndex / sprite.frames.Count);
+				hideY = 22 * ((float)sprite.frameIndex / sprite.totalFrameNum);
 			}
 			yOff = -6 + hideY;
 		} else if (player.isZero) yOff = -20;
@@ -2013,10 +2018,6 @@ public partial class Character : Actor, IDamagable {
 			return getCenterPos();
 		}
 		var busterOffset = (Point)busterOffsetPos;
-		if (player.isX && player.armArmorNum == 3 && sprite.needsX3BusterCorrection()) {
-			if (busterOffset.x > 0) busterOffset.x += 4;
-			else if (busterOffset.x < 0) busterOffset.x -= 4;
-		}
 		busterOffset.x *= xDir;
 		if (player.weapon is RollingShield && charState is Dash) {
 			busterOffset.y -= 2;
@@ -2533,20 +2534,27 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool drawETankHealing() {
-		if (ownedByLocalPlayer) {
-			if (usedEtank != null) {
-				drawETankHealingInner(usedEtank.health);
+		if (this is Blues blues) {
+			if (blues.isUsingLTank) {
+				blues.drawLTankHealingInner();
 				return true;
 			}
 		} else {
-			if (netETankHealAmount > 0) {
-				drawETankHealingInner(netETankHealAmount);
-				netETankHealAmount -= Global.spf * 20;
-				if (netETankHealAmount <= 0) netETankHealAmount = 0;
-				return true;
+			if (ownedByLocalPlayer) {
+				if (usedEtank != null) {
+					drawETankHealingInner(usedEtank.health);
+					return true;
+				}
+			} else {
+				if (netETankHealAmount > 0) {
+					drawETankHealingInner(netETankHealAmount);
+					netETankHealAmount -= Global.spf * 20;
+					if (netETankHealAmount <= 0) netETankHealAmount = 0;
+					return true;
+				}
 			}
 		}
-
+		
 		return false;
 	}
 
@@ -2600,7 +2608,6 @@ public partial class Character : Actor, IDamagable {
 			return false;
 		}
 
-		int statusIndex = 0;
 		float statusProgress = 0;
 		float totalMashTime = 1;
 		float healthBarInnerWidth = 30;
@@ -2639,55 +2646,42 @@ public partial class Character : Actor, IDamagable {
 				return true;
 			}
 		} else if (charState is VileMK2Grabbed grabbed) {
-			statusIndex = 3;
 			totalMashTime = VileMK2Grabbed.maxGrabTime;
 			statusProgress = grabbed.grabTime / totalMashTime;
 		} else if (parasiteTime > 0) {
-			statusIndex = 4;
 			totalMashTime = 2;
 			statusProgress = 1 - (parasiteMashTime / 5);
 		} else if (charState is UPGrabbed upGrabbed) {
-			statusIndex = 5;
 			totalMashTime = UPGrabbed.maxGrabTime;
 			statusProgress = upGrabbed.grabTime / totalMashTime;
 		} else if (charState is WhirlpoolGrabbed drained) {
-			statusIndex = 6;
 			totalMashTime = WhirlpoolGrabbed.maxGrabTime;
 			statusProgress = drained.grabTime / totalMashTime;
 		} else if (player.isPossessed()) {
-			statusIndex = 7;
 			totalMashTime = Player.maxPossessedTime;
 			statusProgress = player.possessedTime / totalMashTime;
 		} else if (charState is WheelGGrabbed wheelgGrabbed) {
-			statusIndex = 8;
 			totalMashTime = WheelGGrabbed.maxGrabTime;
 			statusProgress = wheelgGrabbed.grabTime / totalMashTime;
 		} else if (charState is FStagGrabbed fstagGrabbed) {
-			statusIndex = 9;
 			totalMashTime = FStagGrabbed.maxGrabTime;
 			statusProgress = fstagGrabbed.grabTime / totalMashTime;
 		} else if (charState is MagnaCDrainGrabbed magnacGrabbed) {
-			statusIndex = 10;
 			totalMashTime = MagnaCDrainGrabbed.maxGrabTime;
 			statusProgress = magnacGrabbed.grabTime / totalMashTime;
 		} else if (charState is CrushCGrabbed crushcGrabbed) {
-			statusIndex = 11;
 			totalMashTime = CrushCGrabbed.maxGrabTime;
 			statusProgress = crushcGrabbed.grabTime / totalMashTime;
 		} else if (charState is BBuffaloDragged bbuffaloDragged) {
-			statusIndex = 12;
 			totalMashTime = BBuffaloDragged.maxGrabTime;
 			statusProgress = bbuffaloDragged.grabTime / totalMashTime;
 		} else if (charState is DarkHoldState darkHoldState) {
-			statusIndex = 13;
 			totalMashTime = DarkHoldState.totalStunTime;
 			statusProgress = darkHoldState.stunTime / totalMashTime;
 		} else if (dWrappedTime > 0) {
-			statusIndex = 14;
 			totalMashTime = DWrapped.DWrapMaxTime;
 			statusProgress = dWrapMashTime / totalMashTime;
 		} else if (charState is Burning burning) {
-			statusIndex = 15;
 			statusProgress = burning.burningTime;
 		} else {
 			player.lastMashAmount = 0;
@@ -2884,8 +2878,12 @@ public partial class Character : Actor, IDamagable {
 		return true;
 	}
 
-	public virtual void applyDamage(float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId) {
-		if (!ownedByLocalPlayer) return;
+	public virtual void applyDamage(
+		float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId
+	) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = decimal.Parse(player.health.ToString());
@@ -2898,10 +2896,11 @@ public partial class Character : Actor, IDamagable {
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
 		}
-
+		//this made Axl immortal to pits, suicide button, etc
+		/*
 		if (attacker == player && axl?.isWhiteAxl() == true) {
 			damage = 0;
-		}
+		} */
 		if (Global.level.isRace() &&
 			damage != (decimal)Damager.envKillDamage &&
 			damage != (decimal)Damager.switchKillDamage &&
@@ -3030,8 +3029,8 @@ public partial class Character : Actor, IDamagable {
 				//player.delayWTank();
 			}
 		}
-		if (this is not Blues { customDamageDisplayOn: true } &&
-			originalHP > 0 && (originalDamage > 0 || damage > 0)
+		if (originalHP > 0 && (originalDamage > 0 || damage > 0) &&
+			this is not Blues { customDamageDisplayOn: true }
 		) {
 			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
 		}
@@ -3409,7 +3408,7 @@ public partial class Character : Actor, IDamagable {
 	// PARASITE SECTION
 	public void addParasite(Player attacker) {
 		if (!ownedByLocalPlayer) return;
-
+		if (this is Character character && (character.charState.invincible || character.isInvulnerable())) return;
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
 		parasiteTime = Global.spf;
 		parasiteDamager = damager;
@@ -3491,7 +3490,7 @@ public partial class Character : Actor, IDamagable {
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
 		//dWrappedTime = Global.spf;
 		dWrapDamager = damager;
-		bigBubble = new DWrapBigBubble(pos, player, attacker, xDir,
+		bigBubble = new DWrapBigBubble(pos, player, xDir,
 			player.getNextActorNetId(), true, true);
 		dwrapStart();
 		//changeState(new DWrapped(true))

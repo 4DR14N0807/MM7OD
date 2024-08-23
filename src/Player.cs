@@ -240,6 +240,34 @@ public partial class Player {
 			charWTanks[isDisguisedAxl ? 3 : charNum] = value;
 		}
 	}
+
+	// L & M Tanks (Blues exclusive)
+	public Dictionary<int, List<LTank>> charLTanks = new Dictionary<int, List<LTank>>()
+	{
+			{ (int)CharIds.Blues, new List<LTank>() },
+		};
+	public List<LTank> ltanks {
+		get {
+			return charLTanks[isDisguisedAxl ? 3 : charNum];
+		}
+		set {
+			charLTanks[isDisguisedAxl ? 3 : charNum] = value;
+		}
+	}
+
+	public Dictionary<int, List<MTank>> charMTanks = new Dictionary<int, List<MTank>>()
+	{
+			{ (int)CharIds.Blues, new List<MTank>() },
+		};
+	public List<MTank> mtanks {
+		get {
+			return charMTanks[isDisguisedAxl ? 3 : charNum];
+		}
+		set {
+			charMTanks[isDisguisedAxl ? 3 : charNum] = value;
+		}
+	}
+
 	// Heart tanks
 	public Dictionary<int, int> charHeartTanks = new Dictionary<int, int>(){
 		{ (int)CharIds.X, 0 },
@@ -344,7 +372,9 @@ public partial class Player {
 	public bool warpedIn = false;
 	public float readyTime;
 	public const float maxReadyTime = 1.75f;
+	public float whistleTime = 0;
 	public bool readyTextOver = false;
+	public bool playedBluesWhistle = false;
 	public ServerPlayer serverPlayer;
 	public LoadoutData loadout;
 	public bool loadoutSet;
@@ -862,9 +892,19 @@ public partial class Player {
 			}
 		}
 
+		//Protoman Whistle
+		if (!warpedInOnce && !playedBluesWhistle &&
+			character != null && character is Blues) {
+			
+			character.playSound("whistle", true, true);
+			playedBluesWhistle = true;
+			whistleTime = 3;
+		}
+
 		readyTime += Global.spf;
-		if (readyTime >= maxReadyTime) {
+		if (readyTime >= maxReadyTime + whistleTime) {
 			readyTextOver = true;
+			whistleTime = 0;
 		}
 
 		if (Global.level.gameMode.isOver && aiTakeover) {
@@ -1066,76 +1106,10 @@ public partial class Player {
 
 		configureWeapons();
 		maxHealth = getMaxHealth();
-		if (isSigma) {
-			if (isSigma1()) {
-				sigmaMaxAmmo = 20;
-				sigmaAmmo = sigmaMaxAmmo;
-			} else if (isSigma2()) {
-				sigmaMaxAmmo = 28;
-				sigmaAmmo = 0;
-			}
-		}
 		health = maxHealth;
-		assassinHitPos = null;
 
 		if (character == null) {
-			bool mk2VileOverride = false;
-			// Hyper mode overrides (PRE)
-			if (Global.level.isHyper1v1() && ownedByLocalPlayer) {
-				if (isVile) {
-					mk2VileOverride = true;
-					currency = 9999;
-				}
-			}
-
-			if (charNum == (int)CharIds.X) {
-				character = new MegamanX(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Zero) {
-				character = new Zero(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Vile) {
-				character = new Vile(
-					this, pos.x, pos.y, xDir, false, charNetId,
-					ownedByLocalPlayer, mk2VileOverride: mk2VileOverride
-				);
-			} else if (charNum == (int)CharIds.Axl) {
-				character = new Axl(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Sigma) {
-				if (!ownedByLocalPlayer && !loadoutSet) {
-					character = new BaseSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else if (isSigma3()) {
-					character = new Doppma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else if (isSigma2()) {
-					character = new NeoSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				} else {
-					character = new CmdSigma(
-						this, pos.x, pos.y, xDir,
-						false, charNetId, ownedByLocalPlayer
-					);
-				}
-			} else if (charNum == (int)CharIds.Rock) {
-				character = new Rock(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Blues) {
+			if (charNum == (int)CharIds.Blues) {
 				character = new Blues(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
@@ -1145,47 +1119,14 @@ public partial class Player {
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
-			} else if (charNum == (int)CharIds.BusterZero) {
-				character = new BusterZero(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.PunchyZero) {
-				character = new PunchyZero(
+			} else if (charNum == (int)CharIds.Rock || serverPlayer.isBot) {
+				character = new Rock(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
 			} else {
 				throw new Exception("Error: Non-valid char ID: " + charNum);
 			}
-			// Hyper mode overrides (POST)
-			if (Global.level.isHyperMatch() && ownedByLocalPlayer) {
-				if (isX) {
-					setUltimateArmor(true);
-				}
-				if (character is Zero zero) {
-					if (loadout.zeroLoadout.hyperMode == 0) {
-						zero.isBlack = true;
-					} else if (loadout.zeroLoadout.hyperMode == 1) {
-						zero.awakenedPhase = 1;
-					} else {
-						zero.isViral = true;
-					}
-				}
-				if (character is Axl axl) {
-					if (loadout.axlLoadout.hyperMode == 0) {
-						axl.whiteAxlTime = 100000;
-						axl.hyperAxlUsed = true;
-						var db = new DoubleBullet();
-						weapons[0] = db;
-					} else {
-						axl.stingChargeTime = 8;
-						axl.hyperAxlUsed = true;
-						currency = 9999;
-					}
-				}
-			}
-
 			lastCharacter = character;
 		}
 
@@ -1197,7 +1138,6 @@ public partial class Player {
 
 		if (isCamPlayer) {
 			Global.level.snapCamPos(character.getCamCenterPos(), null);
-			//console.log(Global.level.camX + "," + Global.level.camY);
 		}
 		warpedIn = true;
 	}
@@ -1918,45 +1858,7 @@ public partial class Player {
 
 		bool basicCheck = !Global.level.isElimination() && limboChar != null && lastDeathCanRevive && isSigma && newCharNum == 4 && currency >= reviveSigmaCost && !lastDeathWasSigmaHyper;
 		if (!basicCheck) return false;
-
-		if (false) {
-			Point deathPos = limboChar.pos;
-
-			// Get ground snapping pos
-			var rect = new Rect(deathPos.addxy(-7, 0), deathPos.addxy(7, 112));
-			var hits = Global.level.checkCollisionsShape(rect.getShape(), null);
-			Point? closestHitPoint = Helpers.getClosestHitPoint(hits, deathPos, typeof(Wall));
-			if (closestHitPoint != null) {
-				deathPos = new Point(deathPos.x, closestHitPoint.Value.y);
-			} else {
-				if (isSigma1()) {
-					return false;
-				}
-			}
-
-			// Check if ample space to revive in
-			int w = 10;
-			int h = 120;
-			rect = new Rect(new Point(deathPos.x - w / 2, deathPos.y - h), new Point(deathPos.x + w / 2, deathPos.y - 25));
-			hits = Global.level.checkCollisionsShape(rect.getShape(), null);
-			if (hits.Any(h => h.gameObject is Wall)) {
-				return false;
-			}
-
-			if (deathPos.x - 100 < 0 || deathPos.x + 100 > Global.level.width) {
-				return false;
-			}
-			foreach (var player in Global.level.players) {
-				if (player.character is WolfSigma && player.character.pos.distanceTo(deathPos) < Global.screenW) {
-					return false;
-				}
-			}
-		} else if (false) {
-			return true;
-		} else if (true) {
-			return limboChar != null && KaiserSigma.canKaiserSpawn(limboChar, out spawnPoint);
-		}
-
+	
 		return true;
 	}
 
@@ -1974,7 +1876,7 @@ public partial class Player {
 		return !Global.level.isElimination() && 
 			character?.charState is Die && lastDeathCanRevive && 
 			currency >= Blues.reviveCost && 
-			!lastDeathWasBreakMan;
+			!lastDeathWasBreakMan && character is Blues;
 	}
 
 	
@@ -2649,6 +2551,27 @@ public partial class Player {
 		return true;
 	}
 
+	public bool canUseLTank(LTank ltank) {
+		if (character is Blues blues && character != null) {
+			if (isDead) return false;
+			if (blues?.charState is WarpOut) return false;
+			if (blues != null && blues.charState.invincible) return false;
+			if (blues?.charState is OverheatShutdown or
+				OverheatShutdownStart) return false;
+			if (health >= maxHealth && blues?.shieldHP >= blues?.shieldMaxHP && blues?.coreAmmo <= 0) return false;
+			return true;
+		} 
+		return false;
+	}
+
+	public bool canUseMTank(MTank mtank) {
+		if (isDead) return false;
+		if (character.charState is WarpOut) return false;
+		if (character.charState.invincible) return false;
+
+		return true;
+	}
+
 	public void fillETank(float amount) {
 		if (character?.healAmount > 0) return;
 		var etanks = this.etanks;
@@ -2685,6 +2608,13 @@ public partial class Player {
 			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
 		}
 	}
+
+	public void delayLTank() {
+		if (isMainPlayer) {
+			BluesUpgradeMenu.lTankDelay = BluesUpgradeMenu.maxLTankDelay;
+		}
+	}
+
 
 	public void stopETankHeal() {
 		if (character != null && character.eTankHealAmount > 0) character.eTankHealAmount = 0;

@@ -377,6 +377,7 @@ public class GameMode {
 
 		Helpers.decrementTime(ref UpgradeMenu.eTankDelay);
 		Helpers.decrementTime(ref UpgradeMenu.wTankDelay);
+		Helpers.decrementFrames(ref BluesUpgradeMenu.lTankDelay);
 
 		if (!isOver) {
 			if (!Menu.inMenu && ((level.mainPlayer.warpedIn && !isWarpIn) || Global.level.mainPlayer.isSpectator) && Global.input.isPressedMenu(Control.MenuPause) && !chatMenu.recentlyExited) {
@@ -1562,7 +1563,7 @@ public class GameMode {
 						(weapon is HyperBuster hb && !hb.canShootIncludeCooldown(level.mainPlayer))) {
 						spriteIndex = grayAmmoIndex;
 					}
-					if (spriteIndex >= Global.sprites[fullBarName].frames.Count) {
+					if (spriteIndex >= Global.sprites["hud_weapon_full"].frames.Length) {
 						spriteIndex = 0;
 					}
 					Global.sprites[fullBarName].drawToHUD(spriteIndex, baseX, baseY);
@@ -1656,7 +1657,7 @@ public class GameMode {
 				);
 				int weaponIndex = killFeed.weaponIndex ?? 0;
 				weaponIndex = (
-					weaponIndex < Global.sprites["hud_killfeed_weapon"].frames.Count ? weaponIndex : 0
+					weaponIndex < Global.sprites["hud_killfeed_weapon"].frames.Length ? weaponIndex : 0
 				);
 				Global.sprites["hud_killfeed_weapon"].drawToHUD(
 					0, fromRight - nameLen - 14, fromTop + (i * yDist) - 2
@@ -2156,8 +2157,8 @@ public class GameMode {
 		if (weapon is AbsorbWeapon aw) {
 			var sprite = Global.sprites[aw.absorbedProj.sprite.name];
 
-			float w = sprite.getCurrentFrame().rect.w();
-			float h = sprite.getCurrentFrame().rect.h();
+			float w = sprite.frames[0].rect.w();
+			float h = sprite.frames[0].rect.h();
 
 			float scaleX = Helpers.clampMax(10f / w, 1);
 			float scaleY = Helpers.clampMax(10f / h, 1);
@@ -2492,11 +2493,8 @@ public class GameMode {
 		}
 
 		string netcodePingStr = "";
-		int iconXPos = 280;
 		if (level.server.netcodeModel == NetcodeModel.FavorAttacker) {
 			netcodePingStr = "<" + level.server.netcodeModelPing.ToString();
-			if (level.server.netcodeModelPing < 100) iconXPos = 260;
-			else iconXPos = 253;
 		}
 		Fonts.drawText(
 			FontType.WhiteSmall, netcodePingStr,

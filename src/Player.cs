@@ -372,9 +372,7 @@ public partial class Player {
 	public bool warpedIn = false;
 	public float readyTime;
 	public const float maxReadyTime = 1.75f;
-	public float whistleTime = 0;
 	public bool readyTextOver = false;
-	public bool playedBluesWhistle = false;
 	public ServerPlayer serverPlayer;
 	public LoadoutData loadout;
 	public bool loadoutSet;
@@ -891,20 +889,10 @@ public partial class Player {
 				grenades.RemoveAt(i);
 			}
 		}
-
-		//Protoman Whistle
-		if (!warpedInOnce && !playedBluesWhistle &&
-			character != null && character is Blues) {
-			
-			character.playSound("whistle", true, true);
-			playedBluesWhistle = true;
-			whistleTime = 3;
-		}
-
+	
 		readyTime += Global.spf;
-		if (readyTime >= maxReadyTime + whistleTime) {
+		if (readyTime >= maxReadyTime) {
 			readyTextOver = true;
-			whistleTime = 0;
 		}
 
 		if (Global.level.gameMode.isOver && aiTakeover) {
@@ -1237,62 +1225,7 @@ public partial class Player {
 		charNum = data.charNum;
 
 		Character? retChar = null;
-		if (data.charNum == (int)CharIds.X) {
-			retChar = new MegamanX(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, data.dnaNetId, true, isWarpIn: false
-			);
-		} else if (data.charNum == (int)CharIds.Zero) {
-			retChar = new Zero(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, data.dnaNetId, true, isWarpIn: false
-			);
-		} else if (data.charNum == (int)CharIds.Vile) {
-			retChar = new Vile(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, data.dnaNetId, true, isWarpIn: false,
-				mk2VileOverride: data.extraData[0] == 1, mk5VileOverride: data.extraData[0] == 2
-			);
-		} else if (data.charNum == (int)CharIds.Axl) {
-			retChar = new Axl(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, data.dnaNetId, true, isWarpIn: false
-			);
-		} else if (data.charNum == (int)CharIds.Sigma) {
-			if (data.extraData[0] == 2) {
-				retChar = new Doppma(
-					this, character.pos.x, character.pos.y, character.xDir,
-					true, data.dnaNetId, true, isWarpIn: false
-				);
-			} else if (data.extraData[0] == 1) {
-				retChar = new NeoSigma(
-					this, character.pos.x, character.pos.y, character.xDir,
-					true, data.dnaNetId, true, isWarpIn: false
-				);
-			} else {
-				retChar = new CmdSigma(
-					this, character.pos.x, character.pos.y, character.xDir,
-					true, data.dnaNetId, true, isWarpIn: false
-				);
-			}
-		} else if (data.charNum == (int)CharIds.Rock) {
-			retChar = new Rock(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, data.dnaNetId, true, isWarpIn: false
-			);
-		} else if (data.charNum == (int)CharIds.BusterZero) {
-			retChar = new BusterZero(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, data.dnaNetId, true, isWarpIn: false
-			);
-		} else if (data.charNum == (int)CharIds.PunchyZero) {
-			retChar = new PunchyZero(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, data.dnaNetId, true, isWarpIn: false
-			);
-		} else {
-			throw new Exception("Error: Non-valid char ID: " + data.charNum);
-		}
+		throw new Exception("Error: Non-valid char ID: " + data.charNum);
 
 		// Status effects.
 		retChar.burnTime = character.burnTime;
@@ -1421,66 +1354,7 @@ public partial class Player {
 		sigmaAmmo = dnaCore.rakuhouhaAmmo;
 
 		Character? retChar = null;
-		if (charNum == (int)CharIds.X) {
-			retChar = new MegamanX(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, dnaNetId, true, isWarpIn: false
-			);
-		} else if (charNum == (int)CharIds.Zero) {
-			retChar = new Zero(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, dnaNetId, true, isWarpIn: false
-			);
-		} else if (charNum == (int)CharIds.Vile) {
-			retChar = new Vile(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, dnaNetId, true, isWarpIn: false,
-				mk2VileOverride: isVileMK2, mk5VileOverride: isVileMK5
-			);
-		} else if (charNum == (int)CharIds.Axl) {
-			retChar = new Axl(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, dnaNetId, true, isWarpIn: false
-			);
-		} else if (charNum == (int)CharIds.Sigma) {
-			if (dnaCore.loadout.sigmaLoadout.sigmaForm == 2) {
-				retChar = new Doppma(
-					this, character.pos.x, character.pos.y, character.xDir,
-					true, dnaNetId, true, isWarpIn: false
-				);
-			} else if (dnaCore.loadout.sigmaLoadout.sigmaForm == 1) {
-				retChar = new NeoSigma(
-					this, character.pos.x, character.pos.y, character.xDir,
-					true, dnaNetId, true, isWarpIn: false
-				);
-			} else {
-				retChar = new CmdSigma(
-					this, character.pos.x, character.pos.y, character.xDir,
-					true, dnaNetId, true, isWarpIn: false
-				);
-			}
-		} else if (charNum == (int)CharIds.Rock) {
-			retChar = new Rock(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, dnaNetId, true, isWarpIn: false
-			);
-		} else if (charNum == (int)CharIds.BusterZero) {
-			retChar = new BusterZero(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, dnaNetId, true, isWarpIn: false
-			);
-		} else if (charNum == (int)CharIds.PunchyZero) {
-			retChar = new PunchyZero(
-				this, character.pos.x, character.pos.y, character.xDir,
-				true, dnaNetId, true, isWarpIn: false
-			);
-		} else {
-			throw new Exception("Error: Non-valid char ID: " + charNum);
-		}
-		if (retChar is Vile vile) {
-			if (isVileMK5) vile.vileForm = 2;
-			else if (isVileMK2) vile.vileForm = 1;
-		}
+		throw new Exception("Error: Non-valid char ID: " + charNum);
 		retChar.addTransformAnim();
 
 		if (isAI) {

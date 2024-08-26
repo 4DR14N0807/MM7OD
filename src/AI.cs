@@ -46,7 +46,7 @@ public class AI {
 		if (Global.level.isTraining()) mashType = 0;
 		targetUpdateFrame = targetUpdateCounter;
 		targetUpdateCounter++;
-		if (targetUpdateCounter >= Server.maxPlayerCap / 2) {
+		if (targetUpdateCounter >= 60) {
 			targetUpdateCounter = 0;
 		}
 	}

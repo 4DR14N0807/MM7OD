@@ -691,6 +691,7 @@ public class Blues : Character {
 			}
 		}
 		if (shootAnimTime == 0) {
+			shootAnimTime = 0.3f;
 			changeSprite(shootSprite, false);
 		}
 		if (shootSprite == getSprite("shoot") || shootSprite == getSprite("shoot_shield")) {
@@ -1072,6 +1073,28 @@ public class Blues : Character {
 
 		shaders.AddRange(baseShaders);
 		return shaders;
+	}
+
+	public override Collider? getGlobalCollider() {
+		(float xSize, float ySize) = getGlobalColliderSize();
+		float xOffset = 0;
+		if (isShieldFront()) {
+			xSize += 8;
+			xOffset = 4;
+		}
+		return new Collider(
+			new Rect(0, 0, xSize, ySize).getPoints(),
+			false, this, false, false, HitboxFlag.Hurtbox,
+			new Point(xOffset, 0)
+		);
+	}
+
+	public override (float, float) getGlobalColliderSize() {
+		return sprite.name switch{ 
+			"blues_slide" => (34, 12),
+			"blues_dash" or "blues_dash_shield" => (34, 30),
+			_ => (24, 30)
+		};
 	}
 
 	public override List<byte> getCustomActorNetData() {

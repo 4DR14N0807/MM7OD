@@ -631,6 +631,13 @@ public class Rock : Character {
 			hasSuperAdaptor = false;
 		}
 	}
+	
+	public override (float, float) getGlobalColliderSize() {
+		if (sprite.name == "rock_slide") {
+			return (34, 12);
+		}
+		return (24, 30);
+	}
 
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.

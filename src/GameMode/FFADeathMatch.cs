@@ -46,10 +46,10 @@ public class FFADeathMatch : GameMode {
 		placeStr = Helpers.getNthString(place);
 		var topText = "Leader: " + playerList[0].kills.ToString();
 		var botText = "Kills: " + level.mainPlayer.kills.ToString() + " [" + placeStr + "]";
-		Fonts.drawText(FontType.BlueMenu, topText, 5, 2, Alignment.Left);
-		Fonts.drawText(FontType.BlueMenu, botText, 5, 17, Alignment.Left);
+		Fonts.drawText(FontType.WhiteSmall, botText, Global.screenW - 4, 4, Alignment.Right);
+		Fonts.drawText(FontType.WhiteSmall, topText, Global.screenW - 4, 14, Alignment.Right);
 
-		drawTimeIfSet(32);
+		drawTimeIfSet(24);
 	}
 
 	public override void drawScoreboard() {

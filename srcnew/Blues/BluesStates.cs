@@ -182,6 +182,7 @@ public class BluesSlide : CharState {
 		initialSlideDir = character.xDir;
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = false;
+		blues.changeGlobalColliderOnSpriteChange(blues.sprite.name);
 	}
 }
 

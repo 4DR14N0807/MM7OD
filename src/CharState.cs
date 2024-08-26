@@ -139,6 +139,9 @@ public class CharState {
 		if (this is not Jump and not WallKick && oldState.canStopJump == false) {
 			canStopJump = false;
 		}
+		if (character is Blues) {
+			character.changeGlobalColliderOnSpriteChange(character.sprite.name);
+		}
 	}
 
 	public virtual bool canEnter(Character character) {

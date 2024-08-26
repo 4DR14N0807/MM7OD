@@ -111,7 +111,7 @@ public partial class Character : Actor, IDamagable {
 	// Some things previously in other char files used by multiple characters.
 	public int lastShootPressed;
 	public int lastShootReleased;
-	public int lastAttackFrame = -100;
+	public long lastAttackFrame = -100;
 	public int framesSinceLastAttack = 1000;
 	public float grabCooldown;
 
@@ -228,18 +228,11 @@ public partial class Character : Actor, IDamagable {
 			useGravity = false;
 		}
 
-		spriteToCollider["roll"] = getDashingCollider();
-		spriteToCollider["dash*"] = getDashingCollider();
-		spriteToCollider["crouch*"] = getCrouchingCollider();
-		spriteToCollider["ra_*"] = getRaCollider();
-		spriteToCollider["rc_*"] = getRcCollider();
 		spriteToCollider["warp_beam"] = null;
 		spriteToCollider["warp_out"] = null;
 		spriteToCollider["warp_in"] = null;
 		spriteToCollider["revive"] = null;
-		spriteToCollider["revive_to5"] = null;
 		spriteToCollider["die"] = null;
-		spriteToCollider["block"] = getBlockCollider();
 		spriteToCollider["burning"] = null;
 
 		changeState(initialCharState, true);
@@ -717,41 +710,29 @@ public partial class Character : Actor, IDamagable {
 		if (physicsCollider == null) {
 			return null;
 		}
-		float wSize = 18;
-		float hSize = 30;
-		if (sprite.name.Contains("crouch")) {
-			hSize = 22;
-		}
-		if (sprite.name.Contains("dash")) {
-			hSize = 22;
-		}
-		if (sprite.name.Contains("_ra_")) {
-			hSize = 20;
-		}
-		if (this is Rock) {
-			hSize = 35;
-			if (sprite.name.Contains("slide")) {
-				wSize = 36;
-				hSize = 12;
-			}
-		}
+		(float xSize, float ySize) = getTerrainColliderSize();
 		return new Collider(
-			new Rect(0f, 0f, wSize, hSize).getPoints(),
+			new Rect(0f, 0f, xSize, ySize).getPoints(),
 			false, this, false, false,
 			HitboxFlag.Hurtbox, Point.zero
 		);
 	}
 
 	public override Collider? getGlobalCollider() {
-		var rect = new Rect(0, 0, 18, 34);
-		var offset = new Point (0, 0);
-		if (sprite.name.Contains("_ra_")) {
-			rect.y2 = 20;
-		}
-		if (this is Rock) {
-			rect = new Rect(0, 0, 18, 39);	
-		} 
-		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, offset);
+		(float xSize, float ySize) = getGlobalColliderSize();
+		return new Collider(
+			new Rect(0, 0, xSize, ySize).getPoints(),
+			false, this, false, false, HitboxFlag.Hurtbox,
+			Point.zero
+		);
+	}
+
+	public virtual (float, float) getGlobalColliderSize() {
+		return (18, 30);
+	}
+
+	public virtual (float, float) getTerrainColliderSize() {
+		return getGlobalColliderSize();
 	}
 
 	public virtual Collider getDashingCollider() {

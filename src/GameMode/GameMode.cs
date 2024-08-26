@@ -629,7 +629,7 @@ public class GameMode {
 				renderHealthAndWeapon(drawPlayer, HUDHealthPosition.Left);
 			}
 			// Currency
-			if (!Global.level.is1v1()) {
+			if (false && !Global.level.is1v1()) {
 				Global.sprites["hud_scrap"].drawToHUD(0, 4, 138);
 				Fonts.drawText(
 					FontType.WhiteSmall,
@@ -1216,12 +1216,12 @@ public class GameMode {
 
 	public Point getHUDHealthPosition(HUDHealthPosition position, bool isHealth) {
 		float x = 0;
-		if (position == HUDHealthPosition.Left || position == HUDHealthPosition.TopLeft || position == HUDHealthPosition.BotLeft) {
-			x = isHealth ? 10 : 25;
+		if (position is HUDHealthPosition.Left or HUDHealthPosition.TopLeft or HUDHealthPosition.BotLeft) {
+			x = isHealth ? 16 : 32;
 		} else {
 			x = isHealth ? Global.screenW - 10 : Global.screenW - 25;
 		}
-		float y = Global.screenH / 2;
+		float y = 63;
 		if (position == HUDHealthPosition.TopLeft || position == HUDHealthPosition.TopRight) {
 			y -= 27;
 		} else if (position == HUDHealthPosition.BotLeft || position == HUDHealthPosition.BotRight) {
@@ -1261,6 +1261,10 @@ public class GameMode {
 		var hudHealthPosition = getHUDHealthPosition(position, true);
 		float baseX = hudHealthPosition.x;
 		float baseY = hudHealthPosition.y;
+
+		if (player.isBlues) {
+			baseY += 17;
+		}
 
 		float twoLayerHealth = 0;
 		if (isMech && player.character?.rideArmor != null && player.character.rideArmor.raNum != 5) {
@@ -1307,16 +1311,6 @@ public class GameMode {
 		baseY -= 16;
 		int barIndex = 0;
 
-		if (player.character is MegamanX mmx &&
-			(mmx.isHyperX == true || player.character?.charState is XRevive)
-		) {
-			float hpPercent = MathF.Floor(player.health / player.maxHealth * 100f);
-			if (hpPercent >= 75) barIndex = 1;
-			else if (hpPercent >= 50) barIndex = 3;
-			else if (hpPercent >= 25) barIndex = 4;
-			else barIndex = 5;
-		}
-
 		for (var i = 0; i < MathF.Ceiling(maxHealth); i++) {
 			// Draw HP
 			if (i < MathF.Ceiling(health)) {
@@ -1353,19 +1347,8 @@ public class GameMode {
 		}
 		baseY -= 16;
 
-		// Puppeteer small energy bars.
-		bool forceSmallBarsOff = false;
-		if (!Options.main.smallBarsEx || !allowSmall && maxAmmo > 16) {
-			forceSmallBarsOff = true;
-		}
-
-		// Small Bars option.
-		float ammoDisplayMultiplier = 1;
-		if (Options.main.enableSmallBars && !forceSmallBarsOff) {
-			ammoDisplayMultiplier = 0.5f;
-		}
-		for (var i = 0; i < MathF.Ceiling(maxAmmo * ammoDisplayMultiplier); i++) {
-			if (i < Math.Ceiling(ammo * ammoDisplayMultiplier)) {
+		for (var i = 0; i < MathF.Ceiling(maxAmmo); i++) {
+			if (i < Math.Ceiling(ammo)) {
 				if (ammo < grayAmmo) Global.sprites["hud_weapon_full"].drawToHUD(grayAmmoIndex, baseX, baseY);
 				else Global.sprites["hud_weapon_full"].drawToHUD(barIndex, baseX, baseY);
 			} else {
@@ -1399,81 +1382,11 @@ public class GameMode {
 			ammoDisplayMultiplier *= 0.5f;
 		}
 
-		if (player.isSigma) {
-			if (player.character == null ||
-				(player.character is KaiserSigma && player.currentMaverick == null)
-			) {
-				return;
-			}
-			if (player.currentMaverick != null && player.isMainPlayer &&
-				player.currentMaverick.canFly && player.currentMaverick.flyBar < player.currentMaverick.maxFlyBar
-			) {
-				renderAmmo(
-					baseX, baseY,
-					player.currentMaverick.flyBarIndexes.icon,
-					player.currentMaverick.flyBarIndexes.units,
-					MathF.Ceiling((player.currentMaverick.flyBar / player.currentMaverick.maxFlyBar) * 28),
-					maxAmmo: 28, allowSmall: false
-				);
-			}
-			if (player.currentMaverick != null && player.isMainPlayer && player.currentMaverick.usesAmmo) {
-				renderAmmo(
-					baseX, baseY,
-					player.currentMaverick.barIndexes.icon,
-					player.currentMaverick.barIndexes.units,
-					player.currentMaverick.ammo,
-					player.currentMaverick.grayAmmoLevel,
-					player.currentMaverick.maxAmmo
-				);
-			}
-			if (player.character is ViralSigma) {
-				renderAmmo(baseX, baseY, 61, 50, player.sigmaAmmo, grayAmmo: player.weapon.getAmmoUsage(0));
-			} else if (player.isMainPlayer && player.currentMaverick == null && !player.isSigma3()) {
-				int hudWeaponBaseIndex = 50;
-				int hudWeaponFullIndex = 39;
-				int floorOrCeil = MathInt.Ceiling(player.sigmaMaxAmmo * ammoDisplayMultiplier);
-				if (player.isSigma2()) {
-					hudWeaponBaseIndex = 51;
-					hudWeaponFullIndex = player.sigmaAmmo < 16 ? 30 : 40;
-					floorOrCeil = MathInt.Floor(player.sigmaMaxAmmo * ammoDisplayMultiplier);
-				}
-				baseY += 25;
-				Global.sprites["hud_weapon_base"].drawToHUD(hudWeaponBaseIndex, baseX, baseY);
-				baseY -= 16;
-				for (var i = 0; i < floorOrCeil; i++) {
-					if (i < Math.Ceiling(player.sigmaAmmo * ammoDisplayMultiplier)) {
-						Global.sprites["hud_weapon_full"].drawToHUD(hudWeaponFullIndex, baseX, baseY);
-					} else {
-						Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
-					}
-					baseY -= 2;
-				}
-				Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
-				return;
-			}
-			return;
-		}
-
-		if (player.isVile) {
-			baseY += 25;
-			Global.sprites["hud_weapon_base"].drawToHUD(39, baseX, baseY);
-			baseY -= 16;
-			for (var i = 0; i < MathF.Ceiling(player.vileMaxAmmo * ammoDisplayMultiplier); i++) {
-				if (i < Math.Ceiling(player.vileAmmo * ammoDisplayMultiplier)) {
-					Global.sprites["hud_weapon_full"].drawToHUD(32, baseX, baseY);
-				} else {
-					Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
-				}
-				baseY -= 2;
-			}
-			Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
-			return;
-		}
-
 		if (player.character is Blues protoman) {
-			int offset = -15;
+			baseY += 17;
+			int offset = -16;
 			if (position is HUDHealthPosition.Right or HUDHealthPosition.TopRight or HUDHealthPosition.TopRight) {
-				offset = 15;
+				offset = 16;
 			}
 			renderAmmo(
 				baseX + offset, baseY - 5 - player.maxHealth * 2, -1, 1,
@@ -1587,8 +1500,9 @@ public class GameMode {
 
 	public void drawKillFeed() {
 		var fromRight = Global.screenW - 10;
-		var fromTop = 10;
-		var yDist = 12;
+		int yDist = 12;
+		var fromTop = Global.screenH - 12 - (killFeed.Count - 1) * yDist;
+
 		for (var i = 0; i < this.killFeed.Count && i < 3; i++) {
 			var killFeed = this.killFeed[i];
 
@@ -1628,11 +1542,13 @@ public class GameMode {
 			}
 
 			if (killFeed.killer == level.mainPlayer || killFeed.victim == level.mainPlayer || killFeed.assister == level.mainPlayer) {
-				int msgLen = Fonts.measureText(FontType.FBlue, msg);
+				int msgLen = Fonts.measureText(FontType.FBlue, msg) - 12;
 				int msgHeight = 10;
 				DrawWrappers.DrawRect(
-					fromRight - msgLen - 2, fromTop - 2 + (i * yDist) - msgHeight / 2,
-					fromRight + 2, fromTop - 1 + msgHeight / 2 + (i * yDist),
+					fromRight - msgLen - 2,
+					fromTop - 2 + (i * yDist) - msgHeight / 2,
+					fromRight + 4,
+					fromTop - 1 + msgHeight / 2 + (i * yDist),
 					true, new Color(0, 0, 0, 128), 1, ZIndex.HUD,
 					isWorldPos: false, outlineColor: Color.White
 				);
@@ -2781,19 +2697,19 @@ public class GameMode {
 	}
 
 	public void drawTimeIfSet(int yPos) {
-		FontType fontColor = FontType.BlueMenu;
+		FontType fontColor = FontType.WhiteSmall;
 		string timeStr = "";
 		if (setupTime > 0) {
 			var timespan = new TimeSpan(0, 0, MathInt.Ceiling(setupTime.Value));
 			timeStr = timespan.ToString(@"m\:ss");
-			fontColor = FontType.OrangeMenu;
+			fontColor = FontType.OrangeSmall;
 		} else if (setupTime == 0 && goTime < 1) {
 			goTime += Global.spf;
 			timeStr = "GO!";
-			fontColor = FontType.RedishOrange;
+			fontColor = FontType.RedSmall;
 		} else if (remainingTime != null) {
 			if (remainingTime <= 10) {
-				fontColor = FontType.OrangeMenu;
+				fontColor = FontType.OrangeSmall;
 			}
 			var timespan = new TimeSpan(0, 0, MathInt.Ceiling(remainingTime.Value));
 			timeStr = timespan.ToString(@"m\:ss");
@@ -2802,12 +2718,12 @@ public class GameMode {
 			}
 			if (isOvertime()) {
 				timeStr = "Overtime!";
-				fontColor = FontType.RedMenu;
+				fontColor = FontType.RedSmall;
 			}
 		} else {
 			return;
 		}
-		Fonts.drawText(fontColor, timeStr, 5, yPos, Alignment.Left);
+		Fonts.drawText(fontColor, timeStr, Global.screenW - 4, yPos, Alignment.Right);
 	}
 
 	public bool isOvertime() {

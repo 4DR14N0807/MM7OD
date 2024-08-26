@@ -1362,18 +1362,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (charState.airMove && !grounded) {
 			airMove();
-					
 		}
-		//bass double jump
-		bool jumped = false;
-		if(canAirJump()
-			&& player.input.isPressed(Control.Jump, player)
-			&& charState is BassShoot){
-			if(!grounded && !jumped){
-				jumped = true;
-				new Anim(pos, "double_jump_anim", xDir, netId, true, true);}
-		}
-		
 		if (charState.canJump && (grounded || canAirJump() && flag == null)) {
 			if (player.input.isPressed(Control.Jump, player)) {
 				if (!grounded) {
@@ -1387,6 +1376,7 @@ public partial class Character : Actor, IDamagable {
 				if (charState.airSprite != null && charState.airSprite != "") {
 					changeSprite(charState.airSprite, false);
 				}
+				new Anim(pos, "double_jump_anim", xDir, netId, true, true);
 			}
 		}
 		if (charState.normalCtrl) {

@@ -70,7 +70,7 @@ public class Doppma : BaseSigma {
 		if (player.weapon is not AssassinBullet) {
 			if (player.input.isPressed(Control.Shoot, player)) {
 				attackPressed = true;
-				lastAttackFrame = Global.level.frameCount;
+				//lastAttackFrame = Global.level.frameCount;
 			}
 		}
 		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);

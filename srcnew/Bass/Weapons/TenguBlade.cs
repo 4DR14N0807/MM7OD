@@ -92,6 +92,7 @@ public class TenguBladeProj : Projectile {
 		player, "tengu_blade_proj", 0, 0.75f,
 		netProjId, player.ownedByLocalPlayer
 	) {
+		fadeSprite = "tengu_blade_proj_fade";
 		maxTime = 2;
 		projId = (int)BassProjIds.TenguBladeProj;
 
@@ -131,6 +132,7 @@ public class TenguBladeProj : Projectile {
 
 
 public class TenguBladeMelee : GenericMeleeProj {
+	
 	public TenguBladeMelee(Point pos, Player player) : base(
 		TenguBlade.netWeapon, pos, ProjIds.TenguBladeDash,
 		player, 2, 0, 0.375f
@@ -144,6 +146,7 @@ public class TenguBladeMelee : GenericMeleeProj {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
+				
 				if (damagable is Character chr && chr != null) chr.xPushVel = xDir * 180;	
 			}
 		}
@@ -157,9 +160,10 @@ public class TenguBladeDash : CharState {
 
 	int startXDir;
 	int inputXDir;
+	Anim dashSpark;
 	Bass bass = null!;
 	public TenguBladeDash() : base("tblade_dash") {
-		normalCtrl = false;
+		normalCtrl = true;
 		attackCtrl = false;
 		enterSound = "slide";
 	}
@@ -169,6 +173,11 @@ public class TenguBladeDash : CharState {
 		bass = character as Bass ?? throw new NullReferenceException();
 		character.isDashing = true;
 		//character.xPushVel = character.xDir * character.getDashSpeed() * 2;
+		dashSpark = new Anim(
+			character.getDashSparkEffectPos(character.xDir),
+			"dash_sparks", character.xDir, player.getNextActorNetId(),
+			true, sendRpc: true
+		);
 		startXDir = character.xDir;
 		player.weapon.addAmmo(-1, player);
 	}
@@ -182,7 +191,16 @@ public class TenguBladeDash : CharState {
 	public override void update() {
 		base.update();
 
+		//tengu blade dash dust
 		inputXDir = player.input.getXDir(player);
+		if (stateTime > 0.1 && !character.isUnderwater()) {
+			stateTime = 0;
+			new Anim(
+				character.getDashDustEffectPos(character.xDir),
+				"dust", character.xDir, player.getNextActorNetId(), true,
+				sendRpc: true
+			);
+		}
 
 		if (inputXDir != startXDir && inputXDir != 0) character.changeToIdleOrFall(); 
 		else if (stateFrames >= 16) character.changeState(new TenguBladeDashEnd(), true);

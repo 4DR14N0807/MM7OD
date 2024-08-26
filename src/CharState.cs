@@ -865,11 +865,12 @@ public class Dash : CharState {
 
 		character.isDashing = true;
 		character.globalCollider = character.getDashingCollider();
-		/*dashSpark = new Anim(
+		//dash spark anim
+		dashSpark = new Anim(
 			character.getDashSparkEffectPos(initialDashDir),
 			"dash_sparks", initialDashDir, player.getNextActorNetId(),
 			true, sendRpc: true
-		);*/
+		);
 	}
 
 	public override void onExit(CharState newState) {
@@ -1354,6 +1355,7 @@ public class Taunt : CharState {
 		if (player.charNum == 0) tauntTime = 0.75f;
 		if (player.charNum == 1) tauntTime = 0.7f;
 		if (player.charNum == 3) tauntTime = 0.75f;
+		if (player.charNum == (int)CharIds.Blues) tauntTime = 1.25f;
 
 		bool air = !character.grounded || character.vel.y < 0;
         defaultSprite = sprite;
@@ -1598,6 +1600,7 @@ public class Die : CharState {
 		}
 		if (character is Blues blues) {
 			player.lastDeathWasBreakMan = blues.isBreakMan;
+			blues.destroyStarCrash();
 		}
 		player.lastDeathWasSigmaHyper = character is WolfSigma or ViralSigma or KaiserSigma;
 		player.lastDeathPos = character.getCenterPos();

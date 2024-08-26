@@ -613,10 +613,10 @@ public partial class Player {
 		if (charNum >= 210) {
 			if (Global.level.is1v1()) {
 				maverick1v1 = charNum - 210;
-				charNum = 4;
+				charNum = 5;
 			} else {
-				charNum = 4;
-				playerData.charNum = 4;
+				charNum = 5;
+				playerData.charNum = 5;
 			}
 		}
 		this.charNum = charNum;
@@ -889,7 +889,14 @@ public partial class Player {
 				grenades.RemoveAt(i);
 			}
 		}
-	
+
+		//Protoman Whistle
+		if (!warpedInOnce && !playedBluesWhistle &&
+			character != null && character is Blues) {
+			playedBluesWhistle = true;
+			whistleTime = 3;
+		}
+
 		readyTime += Global.spf;
 		if (readyTime >= maxReadyTime) {
 			readyTextOver = true;

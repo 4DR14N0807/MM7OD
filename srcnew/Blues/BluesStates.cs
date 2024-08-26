@@ -214,10 +214,14 @@ public class BluesSpreadShoot : CharState {
 				character.getShootPos(), (shotAngle + angleOffset) * shootDir, type,
 				player, player.getNextActorNetId(), rpc: true
 			);
-			if (type == 1) {
-				blues.addCoreAmmo(0.5f);
+			//this way lemons and mid charge shot sounds wont conflict
+			if (type == 0) {
+				blues.playSound("buster", sendRpc: true);
 			}
-			blues.playSound("buster", sendRpc: true);
+			if (type == 1){
+				blues.addCoreAmmo(0.5f);
+				blues.playSound("buster2", sendRpc: true);
+			}
 			shotAngle -= 16;
 			shotLastFrame = character.frameIndex;
 		}
@@ -385,7 +389,7 @@ public class OverheatShutdown : CharState {
 	public override void update() {
 		base.update();
 		if (blues != null && !blues.overheating) {
-			character.changeToIdleOrFall();
+			character.changeState(new Recover(), true);
 		}
 	}
 
@@ -394,7 +398,25 @@ public class OverheatShutdown : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 	}
 }
+public class Recover : CharState {
+	Blues blues = null!;
 
+	public Recover() : base("recover") {
+		superArmor = true;
+	}
+
+	public override void update() {
+		base.update();
+		if (character.isAnimOver()) {
+			character.changeToLandingOrFall();
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+	}
+}
 
 public class BluesRevive : CharState {
 	float radius = 200;
@@ -413,6 +435,7 @@ public class BluesRevive : CharState {
 		base.onExit(newState);
 		character.useGravity = true;
 		character.removeRenderEffect(RenderEffectType.Flash);
+		character.playSound("whistle", true, true);
 		//Global.level.delayedActions.Add(new DelayedAction(() => { character.destroyMusicSource(); }, 0.75f));
 		if (blues != null) blues.isBreakMan = true;
 

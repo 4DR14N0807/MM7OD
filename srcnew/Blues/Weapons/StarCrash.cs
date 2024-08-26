@@ -47,12 +47,13 @@ public class StarCrash : Weapon {
 }
 
 public class StarCrashProj : Projectile {
-	Blues? blues;
+	Blues blues = null!;
 	float starAngle;
 	int radius = 30;
 	int coreCooldown = 50;
 	int frameCount;
 	int starFrame;
+	List<Sprite> stars = new();
 
 	public StarCrashProj(
 		Point pos, int xDir,
@@ -62,8 +63,13 @@ public class StarCrashProj : Projectile {
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.StarCrash;
-		blues = player.character as Blues;
+		blues = player.character as Blues ?? throw new NullReferenceException();
 		canBeLocal = false;
+
+		for(int i = 0; i < 3; i++) {
+			Sprite star = new Sprite("star_crash");
+			stars.Add(star);
+		}
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -115,6 +121,23 @@ public class StarCrashProj : Projectile {
 		}
 	}
 
+	public override void render(float x, float y) {
+		base.render(x,y);
+		Point center = blues.getCenterPos();
+		
+		for (int i = 0; i < 3; i++) {
+			float extraAngle = (starAngle + i * 120) % 360;
+			float xPlus = pos.x + (Helpers.cosd(extraAngle) * radius);
+			float yPlus = pos.y + (Helpers.sind(extraAngle) * radius);
+
+			stars[i].draw(
+				starFrame % 4, center.x + xPlus, center.y + yPlus, 
+				xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex
+			);
+		}
+		
+	}
+
 	public override void onDestroy() {
 		base.onDestroy();
 		blues?.destroyStarCrash();
@@ -125,23 +148,6 @@ public class StarCrashProj : Projectile {
 			float yPlus = pos.y + (Helpers.sind(extraAngle) * radius);
 
 			new Anim(new Point(xPlus, yPlus), "star_crash_fade", xDir, damager.owner.getNextActorNetId(), true, true);
-		}
-	}
-
-	public override void render(float x, float y) {
-		base.render(x, y);
-		// Main pieces render
-		for (var i = 0; i < 3; i++) {
-			float extraAngle = (starAngle + i * 120) % 360;
-			float xPlus = Helpers.cosd(extraAngle) * radius;
-			float yPlus = Helpers.sind(extraAngle) * radius;
-
-			Global.sprites["star_crash"].draw(
-				starFrame % 4, pos.x + xPlus,
-				pos.y + yPlus,
-				xDir, yDir, getRenderEffectSet(),
-				1, 1, 1, zIndex
-			);
 		}
 	}
 }

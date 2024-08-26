@@ -639,6 +639,10 @@ public class Rock : Character {
 		return (24, 30);
 	}
 
+	public override Point getCenterPos() {
+		return pos.addxy(0, -21);
+	}
+
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
 		List<byte> customData = base.getCustomActorNetData() ?? new();

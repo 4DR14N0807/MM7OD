@@ -109,7 +109,7 @@ public class ViralSigma : Character {
 	public override float getLabelOffY() {
 		return 43;
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = base.getShaders();
 		ShaderWrapper? palette = null;
@@ -154,4 +154,5 @@ public class ViralSigma : Character {
 			deductLabelY(labelCooldownOffY);
 		}
 	}
+	*/
 }

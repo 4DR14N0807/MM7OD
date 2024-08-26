@@ -283,20 +283,6 @@ public class AI {
 				);
 			}
 		}
-		if (character is KaiserSigma || character is BaseSigma sigma && sigma.isHyperSigma) {
-			int attack = Helpers.randomRange(0, 1);
-			if (attack == 0) {
-				player.release(Control.Special1);
-				player.press(Control.Special1);
-			} else if (attack == 1) {
-				player.release(Control.Shoot);
-				player.press(Control.Shoot);
-			}
-			if (Helpers.randomRange(0, 60) < 5) {
-				player.changeWeaponSlot(Helpers.randomRange(0, 2));
-			}
-			return;
-		}
 
 		if (aiState is not InJumpZone) {
 			var jumpZones = Global.level.getTriggerList(character.abstractedActor(), 0, 0, null, typeof(JumpZone));

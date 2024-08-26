@@ -827,10 +827,14 @@ public partial class Actor : GameObject {
 
 		if (this is Character) {
 			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel, 0), true, true, false);
-			move(new Point(0, yPushVel), true, false, false);
+			if (yPushVel != 0) {
+				move(new Point(0, yPushVel), true, false, false);
+			}
 		} else if (!isStatic) {
 			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel, 0), true, true, false);
-			move(new Point(0, yPushVel), true, false, false);
+			if (yPushVel != 0) {
+				move(new Point(0, yPushVel), true, false, false);
+			}
 		}
 
 		float yMod = reversedGravity ? -1 : 1;
@@ -944,13 +948,13 @@ public partial class Actor : GameObject {
 				return false;
 			}
 			if (character.invulnTime > 0) {
-				int mod10 = (int)(Global.level.frameCount % 4L);
+				long mod10 = Global.level.frameCount % 4;
 				if (mod10 < 2) return false;
 			}
 		}
 		if (this is Maverick maverick) {
 			if (maverick.invulnTime > 0) {
-				int mod10 = (int)(Global.level.frameCount % 4L);
+				long mod10 = Global.level.frameCount % 4;
 				if (mod10 < 2) return false;
 			}
 		}
@@ -1842,7 +1846,7 @@ public partial class Actor : GameObject {
 		int distance, bool isRequesterAI = false,
 		bool checkWalls = false, bool includeAllies = false
 	) {
-		List<Actor> closeActors = new();
+		HashSet<Actor> closeActors = new();
 		int halfDist = MathInt.Floor(distance / 2f);
 
 		Point checkPos = new Point(MathF.Round(pos.x), MathF.Round(pos.y));
@@ -1874,7 +1878,9 @@ public partial class Actor : GameObject {
 					continue;
 				}
 			}
-			closeActors.Add(actor);
+			if (!closeActors.Contains(actor)) {
+				closeActors.Add(actor);
+			}
 		}
 		return closeActors.ToArray();
 	}

@@ -890,13 +890,6 @@ public partial class Player {
 			}
 		}
 
-		//Protoman Whistle
-		if (!warpedInOnce && !playedBluesWhistle &&
-			character != null && character is Blues) {
-			playedBluesWhistle = true;
-			whistleTime = 3;
-		}
-
 		readyTime += Global.spf;
 		if (readyTime >= maxReadyTime) {
 			readyTextOver = true;
@@ -1049,6 +1042,7 @@ public partial class Player {
 		if (eliminated()) return false;
 		if (isAI) return true;
 		if (Global.level.is1v1()) return true;
+		if (!readyTextOver) return false;
 		if (!spawnedOnce) {
 			spawnedOnce = true;
 			return true;
@@ -1249,7 +1243,7 @@ public partial class Player {
 		// Change character.
 		character.cleanupBeforeTransform();
 		preTransformedAxl = character;
-		Global.level.gameObjects.Remove(preTransformedAxl);
+		Global.level.removeGameObject(preTransformedAxl);
 		character = retChar;
 
 		// Save old flags.
@@ -1275,7 +1269,6 @@ public partial class Player {
 		LoadoutData oldLoadout = loadout;
 		loadout = data.loadout;
 		configureWeapons();
-		configureStaticWeapons();
 		loadout = oldLoadout;
 	}
 
@@ -1333,14 +1326,11 @@ public partial class Player {
 			);
 			Global.serverClient?.rpc(RPC.axlDisguise, json);
 		}
-		maxHealth = dnaCore.maxHealth + MathF.Ceiling(heartTanks * getHeartTankModifier());
-
 		oldAxlLoadout = loadout;
 		loadout = dnaCore.loadout;
 
 		oldWeapons = weapons;
 		weapons = new List<Weapon>(dnaCore.weapons);
-		configureStaticWeapons();
 
 		if (charNum == (int)CharIds.Zero) {
 			weapons.Add(new ZSaber());
@@ -1447,7 +1437,7 @@ public partial class Player {
 		var oldPos = character.pos;
 		var oldDir = character.xDir;
 		character.destroySelf();
-		Global.level.gameObjects.Add(preTransformedAxl);
+		Global.level.addGameObject(preTransformedAxl);
 		character = preTransformedAxl;
 		character.addTransformAnim();
 		preTransformedAxl = null;
@@ -1458,7 +1448,6 @@ public partial class Player {
 		health = Math.Min(health, maxHealth);
 		loadout = oldAxlLoadout;
 		weapons = oldWeapons;
-		configureStaticWeapons();
 		weaponSlot = 0;
 
 		armorFlag = oldArmorFlag;
@@ -1506,7 +1495,6 @@ public partial class Player {
 		health = 0;
 		loadout = oldAxlLoadout;
 		configureWeapons();
-		configureStaticWeapons();
 		weaponSlot = 0;
 
 		armorFlag = oldArmorFlag;
@@ -1733,13 +1721,24 @@ public partial class Player {
 
 	public bool canReviveSigma(out Point spawnPoint) {
 		spawnPoint = Point.zero;
-		if (Global.level.isHyper1v1() && !lastDeathWasSigmaHyper && limboChar != null && isSigma && newCharNum == 4) {
+
+		if (Global.level.isHyper1v1() &&
+			!lastDeathWasSigmaHyper &&
+			limboChar != null && isSigma
+			&& newCharNum == 4
+		) {
 			return true;
 		}
-
-		bool basicCheck = !Global.level.isElimination() && limboChar != null && lastDeathCanRevive && isSigma && newCharNum == 4 && currency >= reviveSigmaCost && !lastDeathWasSigmaHyper;
-		if (!basicCheck) return false;
-	
+		if (limboChar == null ||
+			!lastDeathCanRevive ||
+			!isSigma ||
+			newCharNum != 4 ||
+			currency < reviveSigmaCost ||
+			lastDeathWasSigmaHyper
+		) {
+			return false;
+		}
+		int sigmaHypermode = 2;
 		return true;
 	}
 

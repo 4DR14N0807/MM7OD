@@ -56,7 +56,7 @@ public class Geometry : GameObject {
 				true, ZIndex.HUD + 100, true
 			);
 		}
-		else if (Global.showHitboxes && this is not BackwallZone and not JumpZone) {
+		else if (Global.showHitboxes && this is not Wall and not BackwallZone and not JumpZone) {
 			List<Point> points = collider.shape.clone(x, y).points;
 			if (points.Count == 4) {
 				points[0] = points[0].addxy(1, 1);
@@ -76,7 +76,6 @@ public class Geometry : GameObject {
 				);
 			}
 		}
-		
 	}
 
 	public virtual void onCollision(CollideData other) {

@@ -328,7 +328,10 @@ public partial class Actor {
 		}
 	}
 
-	public void move(Point amount, bool useDeltaTime = true, bool pushIncline = true, bool useIce = true, MoveClampMode clampMode = MoveClampMode.None) {
+	public void move(
+		Point amount, bool useDeltaTime = true, bool pushIncline = true,
+		bool useIce = true, MoveClampMode clampMode = MoveClampMode.None
+	) {
 		var times = useDeltaTime ? Global.spf : 1;
 
 		if (grounded && groundedIce && useIce && (
@@ -352,7 +355,8 @@ public partial class Actor {
 		if (physicsCollider == null) {
 			incPos(moveAmount);
 		}
-		//Regular collider: need to detect collision incrementally and stop moving past a collider if that's the case
+		// Regular collider: need to detect collision incrementally
+		// and stop moving past a collider if that's the case
 		else {
 			freeFromCollision();
 
@@ -382,8 +386,8 @@ public partial class Actor {
 
 	public void freeFromCollision() {
 		//Already were colliding in first place: free with path of least resistance
-		var currentCollideDatas = Global.level.checkCollisionsActor(this, 0, 0, null);
-
+		var currentCollideDatas = Global.level.checkTerrainCollision(this, 0, 0, null);
+ 
 		foreach (var collideData in currentCollideDatas) {
 			if (this is Character chara && collideData.gameObject is Character otherChara) {
 				chara.insideCharacter = true;

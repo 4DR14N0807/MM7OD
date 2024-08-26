@@ -8,7 +8,7 @@ namespace MMXOnline;
 public class WolfSigmaHeadState : CharState {
 	bool winTauntOnce;
 	Point startPos;
-	public BaseSigma sigma;
+	public WolfSigma sigma;
 
 	public WolfSigmaHeadState() : base("head") {
 		immuneToWind = true;

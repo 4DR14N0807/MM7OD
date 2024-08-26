@@ -764,7 +764,7 @@ public class GameMode {
 				FontType.WhiteSmall, Helpers.controlText("Veneco Detectado."),
 				Global.halfScreenW, 50, Alignment.Center
 			);
-		} else if (mainPlayer?.character is BaseSigma sigma && sigma.possessTarget != null) {
+		} else if (mainPlayer?.character is ViralSigma sigma && sigma.possessTarget != null) {
 			Fonts.drawText(
 				FontType.BlueMenu, Helpers.controlText(
 				$"Hold [JUMP] to possess {sigma.possessTarget.player.name}"),

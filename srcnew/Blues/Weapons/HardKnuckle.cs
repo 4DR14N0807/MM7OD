@@ -32,6 +32,7 @@ public class HardKnuckle : Weapon {
 
 public class HardKnuckleProj : Projectile {
 	bool deflected;
+	bool bouncing;
 	float spawnPointX;
 	bool canControl = true;
 	Dictionary<string, float> bounceCooldowns = new();
@@ -76,20 +77,19 @@ public class HardKnuckleProj : Projectile {
 			vel.x += Global.speedMul * xDir * (0.125f * 60f);
 			if (vel.x * xDir >= maxSpeed) {
 				vel.x = (float)xDir * maxSpeed;
+				bouncing = false;
 			}
 		}
 		// Bounce cooldown timers.
 		foreach ((string key, float val) in bounceCooldowns) {
 			bounceCooldowns[key] = Helpers.clampMin0(bounceCooldowns[key]) - Global.speedMul;
 		}
-		// Local player ends here.
-		/*if (!canControl) {
-			return;
-		}*/
 		int inputYDir = 0;
-		if (netOwner != null) inputYDir = netOwner.input.getYDir(netOwner);
+		if (netOwner != null) {
+			inputYDir = netOwner.input.getYDir(netOwner);
+		}
 		vel.y = 60 * inputYDir;
-		if (inputYDir != 0) {
+		if (ownedByLocalPlayer && (inputYDir != 0 || bouncing)) {
 			forceNetUpdateNextFrame = true;
 		}
 	}
@@ -116,6 +116,7 @@ public class HardKnuckleProj : Projectile {
 			vel.y = 0;
 		}
 		canControl = false;
+		bouncing = true;
 	}
 
 	public override void onDeflect() {
@@ -123,6 +124,13 @@ public class HardKnuckleProj : Projectile {
 		vel.x = xDir * 4 * 60;
 		vel.y = 0;
 		base.onDeflect();
+	}
+
+	public override void onReflect() {
+		deflected = true;
+		vel.x = xDir * 4 * 60;
+		vel.y = 0;
+		base.onReflect();
 	}
 }
 

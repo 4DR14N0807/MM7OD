@@ -750,8 +750,8 @@ public partial class Level {
 		var cells = new List<Cell>();
 		int startX = MathInt.Floor(shape.minX);
 		int endX = MathInt.Floor(shape.minX);
-		int startY = MathInt.Ceiling(shape.maxY);
-		int endY = MathInt.Ceiling(shape.maxY);
+		int startY = MathInt.Floor(shape.maxY);
+		int endY = MathInt.Floor(shape.maxY);
 
 		//Line case
 		if (shape.points.Count == 2) {

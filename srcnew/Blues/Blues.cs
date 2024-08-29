@@ -839,6 +839,9 @@ public class Blues : Character {
 				charState.attackCtrl || charState is ShieldDash ||
 				charState is Hurt || charState is GenericStun
 			);
+			if (charState is LadderClimb) {
+				canShieldBeActive = false;
+			}
 		}
 		return (
 			isShieldActive &&
@@ -1055,8 +1058,7 @@ public class Blues : Character {
 	}
 
 	public override List<ShaderWrapper> getShaders() {
-		List<ShaderWrapper> baseShaders = base.getShaders();
-		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper> shaders = base.getShaders();
 		ShaderWrapper? palette = null;
 
 		int index = isBreakMan ? 1 : 0;
@@ -1068,11 +1070,6 @@ public class Blues : Character {
 		if (palette != null) {
 			shaders.Add(palette);
 		}
-		if (shaders.Count == 0) {
-			return baseShaders;
-		}
-
-		shaders.AddRange(baseShaders);
 		return shaders;
 	}
 

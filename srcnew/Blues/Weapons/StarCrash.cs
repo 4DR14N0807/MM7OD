@@ -47,7 +47,7 @@ public class StarCrash : Weapon {
 }
 
 public class StarCrashProj : Projectile {
-	Blues blues = null!;
+	Blues? blues;
 	float starAngle;
 	int radius = 30;
 	int coreCooldown = 50;
@@ -63,8 +63,7 @@ public class StarCrashProj : Projectile {
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.StarCrash;
-		blues = player.character as Blues ?? throw new NullReferenceException();
-		canBeLocal = false;
+		blues = player.character as Blues;
 
 		for(int i = 0; i < 3; i++) {
 			Sprite star = new Sprite("star_crash");
@@ -86,30 +85,27 @@ public class StarCrashProj : Projectile {
 		base.update();
 		starAngle += 4;
 		if (starAngle >= 360) starAngle -= 360;
-		/*if (blues == null) {
-			if (ownedByLocalPlayer) {
-				destroySelf();
-			}
-			return;
-		}*/
 		// Sync poses with protoman.
 		if (blues != null) {
 			pos = blues.getCenterPos().round();
 			xDir = blues.xDir;
 		} 
-
 		frameCount++;
 		if (frameCount > 4) {
 			frameCount = 0;
 			starFrame++;
 		}
-
 		// Local player ends here.
-		/*if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer) {
+			if (blues == null || blues.destroyed || time >= 10) {
+				destroySelf();
+			}
 			return;
-		}*/
+		}
 		// Destroy if not linked with Protoman anymore.
-		if (blues == null || blues.destroyed || blues.starCrash != this || !blues.starCrashActive || blues.overheating) {
+		if (blues == null || blues.destroyed || blues.starCrash != this ||
+			!blues.starCrashActive || blues.overheating
+		) {
 			destroySelf();
 		}
 		// Ammo reduction.

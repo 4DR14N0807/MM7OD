@@ -139,6 +139,9 @@ public class CharState {
 		if (this is not Jump and not WallKick && oldState.canStopJump == false) {
 			canStopJump = false;
 		}
+		if (character is Blues) {
+			character.changeGlobalColliderOnSpriteChange(character.sprite.name);
+		}
 	}
 
 	public virtual bool canEnter(Character character) {
@@ -1631,13 +1634,13 @@ public class Die : CharState {
 			player.destroyCharacter();
 			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
 			var anim = new Anim(
-				character.pos, viralSigma.lastHyperSigmaSprite, 1, player.getNextActorNetId(), false, sendRpc: true
+				character.pos, viralSigma.lastViralSprite, 1, player.getNextActorNetId(), false, sendRpc: true
 			);
 			anim.ttl = 3;
 			anim.blink = true;
-			anim.frameIndex = viralSigma.lastHyperSigmaFrameIndex;
+			anim.frameIndex = viralSigma.lastViralFrameIndex;
 			anim.frameSpeed = 0;
-			anim.angle = viralSigma.lastViralSigmaAngle;
+			anim.angle = viralSigma.lastViralAngle;
 			var ede = new ExplodeDieEffect(
 				player, character.pos, character.pos, "empty", 1, character.zIndex, false, 20, 3, false
 			);

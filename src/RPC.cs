@@ -2086,7 +2086,6 @@ public class RPCBroadcastLoadout : RPC {
 		if (player == null) return;
 
 		player.loadout = loadout;
-		player.configureStaticWeapons();
 		player.loadoutSet = true;
 	}
 

@@ -5,9 +5,9 @@ namespace MMXOnline;
 
 public class Met : NeutralEnemy {
 	public Met(
-		Point pos, ushort netId, bool isLocal, bool addToLevel = true
+		Point pos, ushort netId, bool isLocal, int alliance = 150, bool addToLevel = true
 	) : base(
-		pos, netId, isLocal, !addToLevel
+		pos, netId, isLocal, alliance, addToLevel
 	) {
 
 	}

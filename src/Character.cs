@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using SFML.Graphics;
+using static SFML.Window.Keyboard;
 
 namespace MMXOnline;
 
@@ -111,8 +112,8 @@ public partial class Character : Actor, IDamagable {
 	// Some things previously in other char files used by multiple characters.
 	public int lastShootPressed;
 	public int lastShootReleased;
-	public int lastAttackFrame = -100;
-	public int framesSinceLastAttack = 1000;
+	public long lastAttackFrame = -100;
+	public long framesSinceLastAttack = 1000;
 	public float grabCooldown;
 
 	public RideArmor? startRideArmor;
@@ -228,18 +229,11 @@ public partial class Character : Actor, IDamagable {
 			useGravity = false;
 		}
 
-		spriteToCollider["roll"] = getDashingCollider();
-		spriteToCollider["dash*"] = getDashingCollider();
-		spriteToCollider["crouch*"] = getCrouchingCollider();
-		spriteToCollider["ra_*"] = getRaCollider();
-		spriteToCollider["rc_*"] = getRcCollider();
 		spriteToCollider["warp_beam"] = null;
 		spriteToCollider["warp_out"] = null;
 		spriteToCollider["warp_in"] = null;
 		spriteToCollider["revive"] = null;
-		spriteToCollider["revive_to5"] = null;
 		spriteToCollider["die"] = null;
-		spriteToCollider["block"] = getBlockCollider();
 		spriteToCollider["burning"] = null;
 
 		changeState(initialCharState, true);
@@ -445,7 +439,6 @@ public partial class Character : Actor, IDamagable {
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
 
-		// TODO: Send this to the respective classes.
 		if (acidTime > 0 && player.acidShader != null) {
 			player.acidShader.SetUniform("acidFactor", 0.25f + (acidTime / 8f) * 0.75f);
 			shaders.Add(player.acidShader);
@@ -717,41 +710,29 @@ public partial class Character : Actor, IDamagable {
 		if (physicsCollider == null) {
 			return null;
 		}
-		float wSize = 18;
-		float hSize = 30;
-		if (sprite.name.Contains("crouch")) {
-			hSize = 22;
-		}
-		if (sprite.name.Contains("dash")) {
-			hSize = 22;
-		}
-		if (sprite.name.Contains("_ra_")) {
-			hSize = 20;
-		}
-		if (this is Rock) {
-			hSize = 35;
-			if (sprite.name.Contains("slide")) {
-				wSize = 36;
-				hSize = 12;
-			}
-		}
+		(float xSize, float ySize) = getTerrainColliderSize();
 		return new Collider(
-			new Rect(0f, 0f, wSize, hSize).getPoints(),
+			new Rect(0f, 0f, xSize, ySize).getPoints(),
 			false, this, false, false,
 			HitboxFlag.Hurtbox, Point.zero
 		);
 	}
 
 	public override Collider? getGlobalCollider() {
-		var rect = new Rect(0, 0, 18, 34);
-		var offset = new Point (0, 0);
-		if (sprite.name.Contains("_ra_")) {
-			rect.y2 = 20;
-		}
-		if (this is Rock) {
-			rect = new Rect(0, 0, 18, 39);	
-		} 
-		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, offset);
+		(float xSize, float ySize) = getGlobalColliderSize();
+		return new Collider(
+			new Rect(0, 0, xSize, ySize).getPoints(),
+			false, this, false, false, HitboxFlag.Hurtbox,
+			Point.zero
+		);
+	}
+
+	public virtual (float, float) getGlobalColliderSize() {
+		return (18, 30);
+	}
+
+	public virtual (float, float) getTerrainColliderSize() {
+		return getGlobalColliderSize();
 	}
 
 	public virtual Collider getDashingCollider() {
@@ -1100,7 +1081,7 @@ public partial class Character : Actor, IDamagable {
 			flag.changePos(getCenterPos());
 		}
 
-		if (startRideArmor != null &&!Global.level.hasGameObject(startRideArmor)) {
+		if (startRideArmor != null && !Global.level.hasGameObject(startRideArmor)) {
 			startRideArmor = null;
 		}
 
@@ -1381,18 +1362,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (charState.airMove && !grounded) {
 			airMove();
-					
 		}
-		//bass double jump
-		bool jumped = false;
-		if(canAirJump()
-			&& player.input.isPressed(Control.Jump, player)
-			&& charState is BassShoot){
-			if(!grounded && !jumped){
-				jumped = true;
-				new Anim(pos, "double_jump_anim", xDir, netId, true, true);}
-		}
-		
 		if (charState.canJump && (grounded || canAirJump() && flag == null)) {
 			if (player.input.isPressed(Control.Jump, player)) {
 				if (!grounded) {
@@ -1406,6 +1376,7 @@ public partial class Character : Actor, IDamagable {
 				if (charState.airSprite != null && charState.airSprite != "") {
 					changeSprite(charState.airSprite, false);
 				}
+				new Anim(pos, "double_jump_anim", xDir, netId, true, true);
 			}
 		}
 		if (charState.normalCtrl) {
@@ -1832,29 +1803,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override Point getCenterPos() {
-		if (player.isSigma) {
-			if (player.isWolfSigma()) return pos.addxy(0, -7);
-			else if (player.isViralSigma()) return pos.addxy(0, 0);
-			return pos.addxy(0, -32);
-		}
-		if (this is Rock) {
-			if (charState is LadderClimb || charState is ShootAltLadder) {
-				float offset = 0;
-				if (xDir < 0) return pos.substractxy(offset, 22);
-				return pos.addxy(offset, -22);
-			}
-			if (!grounded) {
-				float offset = -8;
-				if (charState is DWrapped) {
-					offset = 0;
-					if (xDir < 0) return pos.substractxy(offset, 18);
-					return pos.addxy(offset, -18);
-				}
-				if (xDir < 0) return pos.substractxy(offset, 21);
-				return pos.addxy(offset, -21);
-			}
-			return pos.addxy(0, -21);
-		}
 		return pos.addxy(0, -18);
 	}
 
@@ -2172,21 +2120,11 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	// Get dist from y pos to pos at which to draw the first label
-	public float getLabelOffY() {
-		float offY = 42;
-		if (player.isZero) offY = 45;
-		if (player.isVile) offY = 50;
-		if (player.isSigma) offY = 62;
-		if (sprite.name.Contains("_ra_")) offY = 25;
-		if (player.isMainPlayer && player.isTagTeam() && player.currentMaverick != null) {
-			offY = player.currentMaverick.getLabelOffY();
+	public virtual float getLabelOffY() {
+		if (sprite.name.Contains("_ra_")) {
+			return 25;
 		}
-		if (player.isWolfSigma()) offY = 25;
-		if (player.isViralSigma()) offY = 43;
-		if (player.isKaiserSigma()) offY = 125;
-		if (player.isKaiserViralSigma()) offY = 60;
-
-		return offY;
+		return 42;
 	}
 
 	public override void render(float x, float y) {
@@ -2503,7 +2441,14 @@ public partial class Character : Actor, IDamagable {
 			if (headPos != null) {
 				//DrawWrappers.DrawCircle(headPos.Value.x, headPos.Value.y, headshotRadius, true, new Color(255, 0, 255, 128), 1, ZIndex.HUD);
 				var headRect = getHeadRect();
-				DrawWrappers.DrawRect(headRect.x1, headRect.y1, headRect.x2, headRect.y2, true, new Color(255, 0, 0, 128), 1, ZIndex.HUD);
+				DrawWrappers.DrawRect(
+					headRect.x1 + 1,
+					headRect.y1 + 1,
+					headRect.x2 - 1,
+					headRect.y2 - 1,
+					true, new Color(255, 0, 0, 50), 1, ZIndex.HUD, true,
+					new Color(255, 0, 0, 128)
+				);
 			}
 		}
 	}
@@ -2929,7 +2874,7 @@ public partial class Character : Actor, IDamagable {
 		// For fractional damage shenanigans.
 		if (damage % 1 != 0) {
 			decimal decDamage = damage % 1;
-			damage = Math.Floor(decDamage);
+			damage = Math.Floor(damage);
 			// Fully nullyfy decimal using damage savings if posible.
 			if (damageSavings >= decDamage) {
 				damageSavings -= decDamage;
@@ -3768,11 +3713,8 @@ public partial class Character : Actor, IDamagable {
 	public bool disguiseCoverBlown;
 
 	public void addTransformAnim() {
-		transformAnim = new Anim(pos, "axl_transform", xDir, null, true);
-		//playSound("transform");
-		if (ownedByLocalPlayer) {
-			Global.serverClient?.rpc(RPC.playerToggle, (byte)player.id, (byte)RPCToggleType.AddTransformEffect);
-		}
+		transformAnim = new Anim(pos, "axl_transform", xDir, player.getNextActorNetId(), true);
+		playSound("transform", sendRpc: true);
 	}
 
 	public virtual void onFlinchOrStun(CharState state) {

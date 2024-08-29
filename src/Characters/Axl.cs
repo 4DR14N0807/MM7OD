@@ -78,6 +78,8 @@ public class Axl : Character {
 	public bool shouldDrawArmNet;
 	public bool stealthActive;
 
+	public int axlHyperMode;
+
 	public Axl(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
@@ -91,6 +93,7 @@ public class Axl : Character {
 
 		muzzleFlash = new Anim(new Point(), "axl_pistol_flash", xDir, null, false);
 		muzzleFlash.visible = false;
+		axlHyperMode = player.loadout?.axlLoadout?.hyperMode ?? 0;
 	}
 
 	public void zoomIn() {
@@ -487,7 +490,7 @@ public class Axl : Character {
 				}
 				if (hyperProgress >= 1 && player.currency >= 10) {
 					hyperProgress = 0;
-					if (player.axlHyperMode == 0) {
+					if (axlHyperMode == 0) {
 						changeState(new HyperAxlStart(grounded), true);
 					} else {
 						if (!hyperAxlUsed) {
@@ -1158,10 +1161,11 @@ public class Axl : Character {
 			var target = Global.level.getClosestTarget(pos, player.alliance, true);
 			if (target != null) {
 				player.axlCursorPos = target.pos.addxy(
-					-Global.level.camX, -Global.level.camY - (target is InRideArmor ? 0 : 16)
+					-Global.level.camX,
+					-Global.level.camY - ((target as Character)?.charState is InRideArmor ? 0 : 16)
 				);
-			}
-		}*/
+			};
+		}
 
 		getMouseTargets();
 	}
@@ -1415,9 +1419,9 @@ public class Axl : Character {
 
 		bool ladderClimb = false;
 		if (charState is LadderClimb) {
-			if (!isAxlLadderShooting()) {
-				ladderClimb = true;
-			}
+			//if (!isAxlLadderShooting()) {
+			//	ladderClimb = true;
+			//}
 		} else if (charState is LadderEnd) ladderClimb = true;
 
 		return !(charState is HyperAxlStart || isWarpIn() || charState is Hurt || charState is Die || charState is GenericStun || charState is InRideArmor || charState is DodgeRoll || charState is VileMK2Grabbed || charState is KnockedDown

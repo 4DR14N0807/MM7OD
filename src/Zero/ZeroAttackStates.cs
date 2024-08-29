@@ -142,8 +142,9 @@ public class ZeroRollingSlashtate : ZeroGenericMeleeState {
 
 	public override void update() {
 		base.update();
-		if (!once && zero.sprite.loopCount >= 1) {
+		if (zero.sprite.loopCount >= 1) {
 			character.changeToIdleOrFall();
+			return;
 		}
 	}
 }

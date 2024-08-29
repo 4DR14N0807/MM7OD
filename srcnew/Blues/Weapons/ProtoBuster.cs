@@ -65,9 +65,10 @@ public class ProtoBusterAngledProj : Projectile {
 
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;
-			byteAngle -= 128;
+			this.byteAngle = byteAngle - 128;
+		} else {
+			this.byteAngle = byteAngle;
 		}
-		this.byteAngle = byteAngle;
 
 		if (type == 0) {
 			changeSprite("proto_buster_proj", true);
@@ -76,8 +77,7 @@ public class ProtoBusterAngledProj : Projectile {
 		}
 
 		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-			rpcCreateAngle(pos, player, netId, byteAngle, extraArgs);
+			rpcCreateAngle(pos, player, netId, byteAngle, (byte)type);
 		}
 	}
 

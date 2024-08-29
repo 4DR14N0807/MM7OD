@@ -834,9 +834,10 @@ public class Damager {
 
 		if (damage > 0 && character?.isDarkHoldState != true) {
 			if (damagingActor == null ||
-				character is not Blues blues ||
-				!blues.isShieldFront() ||
-				!hitFromFront(blues, damagingActor, owner, projId)
+				character is not Blues blues || !(
+					blues.isShieldFront() && hitFromFront(blues, damagingActor, owner, projId) ||
+					!blues.isShieldFront() && hitFromBehind(blues, damagingActor, owner, projId) && damage <= 1
+				)
 			) {
 				victim?.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
 			}

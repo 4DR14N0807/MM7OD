@@ -176,8 +176,9 @@ public class ProtoStrikeProj : Projectile {
 
 	public override void render(float x, float y) {
 		long lastZIndex = zIndex;
-		//alpha = 0.5f;
-		//base.render(x, y);
+		alpha = 0.5f;
+		addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
+		base.render(x, y);
 		alpha = 1;
 		zIndex = ZIndex.Character - 1000;
 		addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);

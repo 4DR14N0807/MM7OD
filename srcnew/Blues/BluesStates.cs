@@ -121,12 +121,12 @@ public class ShieldDash : CharState {
 	}
 
 	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
+		blues.shieldCustomState = blues.isShieldActive;
+		base.onEnter(oldState);
 		initialXDir = character.xDir;
 		character.isDashing = true;
 		character.vel.y = 0;
-		blues.shieldCustomState = blues.isShieldActive;
 	}
 
 	public override void onExit(CharState newState) {
@@ -154,9 +154,12 @@ public class BluesSlide : CharState {
 
 	public override void update() {
 		base.update();
-		if (player.input.getXDir(player) == -initialSlideDir ||
-			slideTime >= Global.spf * 30 ||
-			Global.level.checkCollisionActor(character, 24 * character.xDir, 0) != null
+		if (
+			player.input.getXDir(player) == -initialSlideDir ||
+			stateFrames >= 30 || (
+				stateFrames >= 8 && character.deltaPos.x == 0 &&
+				Global.level.checkCollisionActor(character, character.xDir, 0) != null
+			)
 		) {
 			character.changeToIdleOrFall();
 			return;
@@ -164,9 +167,8 @@ public class BluesSlide : CharState {
 		Point move = new(blues.getSlideSpeed() * initialSlideDir, 0);
 		character.move(move);
 
-		slideTime += Global.spf;
-		if (stateTime >= Global.spf * 3 && particles > 0) {
-			stateTime = 0;
+		if (slideTime >= 3 && particles > 0) {
+			slideTime = 0;
 			particles--;
 			dust = new Anim(
 				character.getDashDustEffectPos(initialSlideDir),
@@ -174,6 +176,8 @@ public class BluesSlide : CharState {
 				sendRpc: true
 			);
 			dust.vel.y = (-particles - 1) * 20;
+		} else {
+			slideTime += Global.speedMul;
 		}
 	}
 
@@ -206,7 +210,7 @@ public class BluesSpreadShoot : CharState {
 		if (character.frameIndex != shotLastFrame) {
 			int angleOffset = 1;
 			int shootDir = blues.getShootXDir();
-			int type = (blues.overheating ? 0 : 1);
+			int type = blues.overdrive ? 2 : (blues.overheating ? 0 : 1);
 			if (shootDir == -1) {
 				angleOffset = 128;
 			}
@@ -221,6 +225,10 @@ public class BluesSpreadShoot : CharState {
 			if (type == 1){
 				blues.addCoreAmmo(0.5f);
 				blues.playSound("buster2", sendRpc: true);
+			}
+			if (type == 2){
+				blues.addCoreAmmo(0.5f);
+				blues.playSound("buster3", sendRpc: true);
 			}
 			shotAngle -= 16;
 			shotLastFrame = character.frameIndex;
@@ -428,6 +436,7 @@ public class BluesRevive : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues;
+		blues.isBreakMan = true;
 		player.health = 1;
 	}
 
@@ -436,8 +445,6 @@ public class BluesRevive : CharState {
 		character.useGravity = true;
 		character.removeRenderEffect(RenderEffectType.Flash);
 		character.playSound("whistle", true, true);
-		//Global.level.delayedActions.Add(new DelayedAction(() => { character.destroyMusicSource(); }, 0.75f));
-		if (blues != null) blues.isBreakMan = true;
 
 		if (character != null) {
 			character.invulnTime = 0.5f;

@@ -48,6 +48,7 @@ public class Blues : Character {
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
+	public int specialWeaponIndex;
 	public bool starCrashActive;
 	public StarCrashProj? starCrash;
 	public HardKnuckleProj? hardKnuckleProj;
@@ -72,6 +73,7 @@ public class Blues : Character {
 		charge2Time = 105;
 		charge3Time = 170;
 
+		specialWeaponIndex = protomanLoadout;
 		specialWeapon = protomanLoadout switch {
 			0 => new NeedleCannon(),
 			1 => new HardKnuckle(),
@@ -253,11 +255,13 @@ public class Blues : Character {
 	}
 
 	public override bool changeState(CharState newState, bool forceChange = false) {
+		bool? oldScs = shieldCustomState;
+		shieldCustomState = null;
 		bool changedState = base.changeState(newState, forceChange);
 		if (!changedState) {
+			shieldCustomState = oldScs;
 			return false;
 		}
-		shieldCustomState = null;
 		if (!newState.attackCtrl || !newState.normalCtrl) {
 			shootAnimTime = 0;
 		}
@@ -306,7 +310,6 @@ public class Blues : Character {
 		}
 
 		if (!ownedByLocalPlayer) return;
-
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref redStrikeCooldown);
@@ -319,6 +322,12 @@ public class Blues : Character {
 		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
 		}
+
+		// Revive stuff.
+		if (player.canReviveBlues() && player.input.isPressed(Control.Special2, player)) {
+			reviveBlues();
+		}
+
 		// Shield HP.
 		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
 			playSound("heal");
@@ -465,10 +474,10 @@ public class Blues : Character {
 		if (overdrive && getChargeLevel() <= 0) {
 			addRenderEffect(RenderEffectType.ChargeYellow, 0.033333f, 0.1f);
 		}
-		// Revive stuff.
-		if (player.canReviveBlues() && player.input.isPressed(Control.Special2, player)) {
-			player.reviveBlues();
-		}
+	}
+
+	public void reviveBlues() {
+		changeState(new BluesRevive(), true);
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
@@ -572,7 +581,7 @@ public class Blues : Character {
 
 	public void shoot(int chargeLevel) {
 		int lemonNum = -1;
-		int type = isBreakMan ? 1 : 0;
+		int type = overdrive ? 1 : 0;
 
 		if (chargeLevel < 2) {
 			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
@@ -596,7 +605,7 @@ public class Blues : Character {
 		int xDir = getShootXDir();
 
 		if (chargeLevel <= 0) {
-			if (!overdrive) {
+			if (type == 0) {
 				new ProtoBusterProj(
 					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 				);
@@ -634,7 +643,7 @@ public class Blues : Character {
 			lemonCooldown = 12;
 		} else {
 			if (player.input.isHeld(Control.Up, player) && grounded && vel.y >= 0) {
-				addCoreAmmo(4);
+				addCoreAmmo(overdrive ? 6 : 4);
 				changeState(new ProtoStrike(), true);
 			} else {
 				if (type == 1) {
@@ -836,19 +845,19 @@ public class Blues : Character {
 			canShieldBeActive = shieldCustomState.Value;
 		} else {
 			canShieldBeActive = (
-				charState.attackCtrl || charState is ShieldDash ||
-				charState is Hurt || charState is GenericStun
+				charState.attackCtrl ||
+				charState.normalCtrl ||
+				charState is Hurt { stateFrames: < 2 } ||
+				charState is GenericStun { stateFrames: < 2 }
 			);
-			if (charState is LadderClimb) {
+			if (shootAnimTime > 0 || charState is LadderClimb) {
 				canShieldBeActive = false;
 			}
 		}
 		return (
 			isShieldActive &&
 			canShieldBeActive &&
-			shieldHP > 0 &&
-			shootAnimTime == 0 &&
-			charState is not Hurt { stateFrames: >= 2 } and not GenericStun { stateFrames: >= 2 }
+			shieldHP > 0 
 		);
 	}
 
@@ -1059,15 +1068,15 @@ public class Blues : Character {
 
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = base.getShaders();
-		ShaderWrapper? palette = null;
 
-		int index = isBreakMan ? 1 : 0;
-		palette = player.breakManShader;
-
-		palette?.SetUniform("palette", index);
-		palette?.SetUniform("paletteTexture", Global.textures["blues_hyperpalette"]);
-
-		if (palette != null) {
+		if (player.bluesScarfShader != null && !overheating && !overdrive) {
+			ShaderWrapper palette = player.bluesScarfShader;
+			palette.SetUniform("palette", specialWeaponIndex + 1);
+			shaders.Add(palette);
+		}
+		if (player.breakManShader != null && isBreakMan) {
+			ShaderWrapper palette = player.breakManShader;
+			palette.SetUniform("palette", 1);
 			shaders.Add(palette);
 		}
 		return shaders;
@@ -1088,6 +1097,14 @@ public class Blues : Character {
 	}
 
 	public override (float, float) getGlobalColliderSize() {
+		return sprite.name switch{ 
+			"blues_slide" => (34, 22),
+			"blues_dash" or "blues_dash_shield" => (34, 30),
+			_ => (24, 30)
+		};
+	}
+
+	public override (float, float) getTerrainColliderSize() {
 		return sprite.name switch{ 
 			"blues_slide" => (34, 12),
 			"blues_dash" or "blues_dash_shield" => (34, 30),

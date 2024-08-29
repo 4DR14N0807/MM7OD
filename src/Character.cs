@@ -2133,21 +2133,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		currentLabelY = -getLabelOffY();
 
-		
-		if (rideArmor == null && rideChaser == null && rideArmorPlatform == null) {
-			base.render(x, y);
-		} else if (rideArmorPlatform != null) {
-			var rideArmorPos = rideArmorPlatform.pos;
-			var charPos = getMK5RideArmorPos().addxy(0, 1);
-			base.render(rideArmorPos.x + charPos.x - pos.x, rideArmorPos.y + charPos.y - pos.y);
-		} else if (rideArmor != null) {
-			var rideArmorPos = rideArmor.pos;
-			var charPos = getCharRideArmorPos();
-			base.render(rideArmorPos.x + charPos.x - pos.x, rideArmorPos.y + charPos.y - pos.y);
-		} else if (rideChaser != null) {
-			var rideChaserPos = rideChaser.pos;
-			base.render(rideChaserPos.x - pos.x, rideChaserPos.y - pos.y);
-		}
+		base.render(x, y);
 
 		if (charState != null) {
 			charState.render(x, y);
@@ -2155,12 +2141,6 @@ public partial class Character : Actor, IDamagable {
 
 		if (chargeEffect != null) {
 			chargeEffect.render(getParasitePos().add(new Point(x, y)));
-		}
-
-		if (player.isX && sprite.name.Contains("frozen")) {
-			Global.sprites["frozen_block"].draw(
-				0, pos.x + x - (xDir * 2), pos.y + y + 1, xDir, 1, null, 1, 1, 1, zIndex + 1
-			);
 		}
 
 		if (isCrystalized) {
@@ -2177,18 +2157,6 @@ public partial class Character : Actor, IDamagable {
 			Global.level.is1v1() || Global.level.server.fixedCamera
 		);
 
-		if (Global.level.mainPlayer.isSpectator && player == Global.level.specPlayer) {
-			drawCursorChar = true;
-		}
-		if (Global.overrideDrawCursorChar) drawCursorChar = true;
-
-		if (!isWarpIn() && drawCursorChar && player.currentMaverick == null) {
-			Global.sprites["cursor"].draw(
-				0, pos.x + x, pos.y + y + currentLabelY, 1, 1, null, 1, 1, 1, zIndex + 1
-			);
-			deductLabelY(labelCursorOffY);
-		}
-
 		bool shouldDrawName = false;
 		bool shouldDrawHealthBar = false;
 		string overrideName = "";
@@ -2203,58 +2171,12 @@ public partial class Character : Actor, IDamagable {
 					shouldDrawName = true;
 				}
 			}
-			// Special case: labeling the own player's disguised Axl
-			else if (player.isMainPlayer && player.isDisguisedAxl && 
-				Global.level.gameMode.isTeamMode && player.disguise != null
-			) {
-				overrideName = player.disguise.targetName;
-				shouldDrawName = true;
-			}
-			// Special case: labeling an enemy player's disguised Axl
-			else if (
-				!player.isMainPlayer && player.isDisguisedAxl &&
-				Global.level.gameMode.isTeamMode &&
-				player.alliance != Global.level.mainPlayer.alliance &&
-				player.disguise != null
-			) {
-				overrideName = player.disguise.targetName;
-				overrideColor = Global.level.gameMode.teamFonts[Global.level.mainPlayer.alliance];
-				shouldDrawName = true;
-				shouldDrawHealthBar = true;
-			}
-			// Special case: drawing enemy team name/health as disguised Axl
-			else if (!player.isMainPlayer && Global.level.mainPlayer.isDisguisedAxl &&
-				Global.level.gameMode.isTeamMode &&
-				player.alliance != Global.level.mainPlayer.alliance &&
-				!isStealthy(Global.level.mainPlayer.alliance)
-			) {
-				overrideColor = FontType.Grey;
-				shouldDrawName = true;
-				shouldDrawHealthBar = true;
-			}
 			// Basic case, drawing alliance of teammates in team modes
 			else if (
 				!player.isMainPlayer && player.alliance == Global.level.mainPlayer.alliance &&
 				Global.level.gameMode.isTeamMode
 			) {
 				shouldDrawName = true;
-				shouldDrawHealthBar = true;
-			}
-			// X with scan
-			else if (!player.isMainPlayer && Global.level.mainPlayer.isX &&
-			  	Global.level.mainPlayer.hasHelmetArmor(2) && player.scanned &&
-				!isStealthy(Global.level.mainPlayer.alliance)
-			) {
-				shouldDrawName = true;
-				shouldDrawHealthBar = true;
-			}
-			// Axl target
-			else if (
-				!player.isMainPlayer &&
-				Global.level.mainPlayer.character is Axl axl &&
-				axl.axlCursorTarget == this &&
-				!isStealthy(Global.level.mainPlayer.alliance)
-			) {
 				shouldDrawHealthBar = true;
 			}
 		}
@@ -2264,19 +2186,6 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (shouldDrawName || Global.overrideDrawName && overrideName != "") {
 			drawName(overrideName, overrideColor);
-		}
-
-		if (!hideNoShaderIcon()) {
-			float dummy = 0;
-			getHealthNameOffsets(out bool shieldDrawn, ref dummy);
-			if (player.isX && !Global.shaderWrappers.ContainsKey("palette") && player != Global.level.mainPlayer && !isWarpIn() && !(charState is Die) && player.weapon.index != 0) {
-				int overrideIndex = player.weapon.index;
-				if (player.weapon is NovaStrike) {
-					overrideIndex = 95;
-				}
-				Global.sprites["hud_weapon_icon"].draw(overrideIndex, pos.x, pos.y - 8 + currentLabelY, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-				deductLabelY(labelWeaponIconOffY);
-			}
 		}
 
 		bool drewETankHealing = drawETankHealing();
@@ -2381,13 +2290,6 @@ public partial class Character : Actor, IDamagable {
 				deductLabelY(labelCooldownOffY);
 			}
 		}
-
-		if (player.isKaiserSigma() && !player.isKaiserViralSigma()) {
-			renderDamageText(100);
-		} else {
-			renderDamageText(35);
-		}
-
 		if (Global.showAIDebug) {
 			float textPosX = pos.x;// (pos.x - Global.level.camX) / Global.viewSize;
 			float textPosY = pos.y - 50;// (pos.y - 50 - Global.level.camY) / Global.viewSize;
@@ -2433,22 +2335,6 @@ public partial class Character : Actor, IDamagable {
 						);
 					}
 				}
-			}
-		}
-
-		if (Global.showHitboxes) {
-			Point? headPos = getHeadPos();
-			if (headPos != null) {
-				//DrawWrappers.DrawCircle(headPos.Value.x, headPos.Value.y, headshotRadius, true, new Color(255, 0, 255, 128), 1, ZIndex.HUD);
-				var headRect = getHeadRect();
-				DrawWrappers.DrawRect(
-					headRect.x1 + 1,
-					headRect.y1 + 1,
-					headRect.x2 - 1,
-					headRect.y2 - 1,
-					true, new Color(255, 0, 0, 50), 1, ZIndex.HUD, true,
-					new Color(255, 0, 0, 128)
-				);
 			}
 		}
 	}

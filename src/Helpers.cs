@@ -226,7 +226,7 @@ public class Helpers {
 	}
 
 	public static ShaderWrapper cloneGenericPaletteShader(string textureName) {
-		if (!Global.textures.ContainsKey("textureName")) {
+		if (!Global.textures.ContainsKey(textureName)) {
 			return null;
 		}
 		var texture = Global.textures[textureName];

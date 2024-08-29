@@ -145,7 +145,6 @@ public class Sprite {
 		if (actor != null) {
 			if (!actor.shouldDraw()) return;
 		}
-
 		Texture bitmap = overrideTexture ?? animData.bitmap;
 
 		// Character-specific draw section
@@ -156,7 +155,7 @@ public class Sprite {
 			if (animData.textureName == "rock_default" && chara is Rock { hasSuperAdaptor: true }) {
 				bitmap = Sprite.superMegaManBitmap;
 			}
-			else if (animData.textureName == "nlues_default" && chara is Blues { isBreakMan: true }) {
+			else if (animData.textureName == "blues_default" && chara is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
 			}
 		}
@@ -176,15 +175,6 @@ public class Sprite {
 		cx = MathF.Floor(cx);
 		cy = MathF.Floor(cy);
 
-		if (scaleY == -1 && (
-				actor is MagnaCentipede ms ||
-				name.Contains("magnac_teleport") ||
-				name.Contains("magnac_notail_teleport")
-			)
-		) {
-			cy -= MagnaCentipede.constHeight;
-		}
-
 		float frameOffsetX = 0;
 		float frameOffsetY = 0;
 
@@ -193,8 +183,9 @@ public class Sprite {
 			frameOffsetY = currentFrame.offset.y * flipY;
 		}
 
-		if (shaders == null) shaders = new List<ShaderWrapper>();
-
+		if (shaders == null) {
+			shaders = new List<ShaderWrapper>();
+		}
 		if (renderEffects != null) {
 			ShaderWrapper? shader = null;
 			if (renderEffects.Contains(RenderEffectType.Hit)) {

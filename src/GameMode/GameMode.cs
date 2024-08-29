@@ -1250,13 +1250,9 @@ public class GameMode {
 		}
 
 		int frameIndex = 0;
-		if (player.charNum == (int)CharIds.PunchyZero) {
+		if (player.charNum == (int)CharIds.Blues) {
 			frameIndex = 1;
 		}
-		if (player.charNum == (int)CharIds.BusterZero) {
-			frameIndex = 1;
-		}
-		if (player.isDisguisedAxl) frameIndex = 3;
 
 		var hudHealthPosition = getHUDHealthPosition(position, true);
 		float baseX = hudHealthPosition.x;
@@ -1337,7 +1333,7 @@ public class GameMode {
 	public void renderAmmo(
 		float baseX, float baseY, int baseIndex,
 		int barIndex, float ammo, float grayAmmo = 0, float maxAmmo = 32,
-		bool allowSmall = true
+		bool allowSmall = true, string barSprite = "hud_weapon_full"
 	) {
 		baseY += 25;
 		if (baseIndex >= 0) {
@@ -1349,8 +1345,12 @@ public class GameMode {
 
 		for (var i = 0; i < MathF.Ceiling(maxAmmo); i++) {
 			if (i < Math.Ceiling(ammo)) {
-				if (ammo < grayAmmo) Global.sprites["hud_weapon_full"].drawToHUD(grayAmmoIndex, baseX, baseY);
-				else Global.sprites["hud_weapon_full"].drawToHUD(barIndex, baseX, baseY);
+				if (ammo < grayAmmo) {
+					Global.sprites["hud_weapon_full"].drawToHUD(grayAmmoIndex, baseX, baseY);
+				}
+				else {
+					Global.sprites[barSprite].drawToHUD(barIndex, baseX, baseY);
+				}
 			} else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 			}
@@ -1392,32 +1392,37 @@ public class GameMode {
 				baseX + offset, baseY - 5 - player.maxHealth * 2, -1, 1,
 				MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP
 			);
-			int coreAmmoColor = 4;
-			if (protoman.overheating && Global.frameCount % 6 >= 3) {
-				coreAmmoColor = 6;
+			int coreAmmoColor = 0;
+			if ((protoman.overheating || protoman.overdrive) && Global.frameCount % 6 >= 3) {
+				coreAmmoColor = 2;
 			}
 			renderAmmo(
-				baseX, baseY, -2, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo), maxAmmo: protoman.coreMaxAmmo
+				baseX, baseY, -2, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo),
+				maxAmmo: protoman.coreMaxAmmo, barSprite: "hud_weapon_full_blues"
 			);
 			if (protoman.overdrive) {
 				int yPos = MathInt.Ceiling(9 + baseY);
-				int color = 2;
+				int color = 1;
 				if (Global.frameCount % 6 >= 3) {
-					color = 6;
+					color = 3;
+				}
+				float alpha = 1;
+				if (Global.frameCount % 4 >= 2) {
+					alpha = 0.25f;
 				}
 				for (var i = 0; i < protoman.overdriveAmmo; i++) {
-					Global.sprites["hud_weapon_full"].drawToHUD(color, baseX, yPos);
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, alpha);
 					yPos -= 2;
 				}
 			}
 			if (!protoman.overheating && protoman.ownedByLocalPlayer) {
 				int baseAmmo = MathInt.Floor(protoman.coreAmmo);
-				int baseColor = 0;
-				int filledColor = 4;
+				int baseColor = 2;
+				int filledColor = 0;
 				if (protoman.overdrive) {
 					baseAmmo = MathInt.Floor(protoman.overdriveAmmo);
 					baseColor = 3;
-					filledColor = 3;
+					filledColor = 1;
 				}
 				int yPos = MathInt.Ceiling(9 + baseY - MathF.Ceiling(baseAmmo) * 2);
 
@@ -1431,14 +1436,14 @@ public class GameMode {
 					if (i < actualUse) {
 						color = filledColor;
 					}
-					Global.sprites["hud_weapon_full"].drawToHUD(color, baseX, yPos);
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos);
 					yPos -= 2;
 				}
 			}
 
 			if (protoman.redStrikeCooldown > 0) {
-				Global.sprites["hud_blues_weapon_icon"].drawToHUD(3, 12, 162);
-				drawWeaponSlotCooldown(12, 162, protoman.redStrikeCooldown / (4 * 60));
+				Global.sprites["hud_blues_weapon_icon"].drawToHUD(3, 18, 114);
+				drawWeaponSlotCooldown(18, 114, protoman.redStrikeCooldown / (4 * 60));
 			}
 			return;
 		}

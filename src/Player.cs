@@ -118,8 +118,6 @@ public partial class Player {
 	public bool lastDeathWasVileMK5;
 	public bool lastDeathWasSigmaHyper;
 	public bool lastDeathWasXHyper;
-	public bool bluesRespawn = false;
-	public bool lastDeathWasBreakMan;
 	public const int zeroHyperCost = 10;
 	public const int zBusterZeroHyperCost = 8;
 	public const int AxlHyperCost = 10;
@@ -467,7 +465,8 @@ public partial class Player {
 	public ShaderWrapper rockPaletteShader = Helpers.cloneShaderSafe("rockPalette");
 	public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
 	public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
-	public ShaderWrapper breakManShader = Helpers.cloneShaderSafe("paletteBreakMan");
+	public ShaderWrapper breakManShader = Helpers.cloneGenericPaletteShader("blues_hyperpalette");
+	public ShaderWrapper bluesScarfShader = Helpers.cloneGenericPaletteShader("blues_palette");
 	public ShaderWrapper bassPaletteShader = Helpers.cloneShaderSafe("bassPalette");
 
 	// Character specific data populated on RPC request
@@ -1746,20 +1745,16 @@ public partial class Player {
 		return !Global.level.isElimination() && armorFlag == 0 && character?.charState is Die && lastDeathCanRevive && isX && newCharNum == 0 && currency >= reviveXCost && !lastDeathWasXHyper;
 	}
 
-	public void reviveBlues() {
-		currency -= Blues.reviveCost;
-		bluesRespawn = true;
-		character.changeState(new BluesRevive(), true);
-	}
-
 	public bool canReviveBlues() {
-		return !Global.level.isElimination() && 
-			character?.charState is Die && lastDeathCanRevive && 
-			currency >= Blues.reviveCost && 
-			!lastDeathWasBreakMan && character is Blues;
+		return ( 
+			character is Blues blues &&
+			!blues.isBreakMan &&
+			blues.charState is Die dieState &&
+			!dieState.respawnTimerOn &&
+			lastDeathCanRevive && 
+			currency >= Blues.reviveCost
+		);
 	}
-
-	
 
 	public void reviveVile(bool toMK5) {
 		currency -= reviveVileCost;
@@ -1908,42 +1903,18 @@ public partial class Player {
 	}
 
 	public void destroyCharacter() {
-		respawnTime = getRespawnTime();// * (suicided ? 2 : 1);
-		randomTip = Tips.getRandomTip(charNum);
-
 		if (character == null) {
 			return;
 		}
-
-		if (isAxl) {
-			//axlBulletTypeBought[6] = false;
-			//if (axlBulletType == (int)AxlBulletWeaponType.AncientGun) axlBulletType = 0;
-		}
-
-		if (isZero && awakenedCurrencyEnd != null && currency >= awakenedCurrencyEnd) {
-			currency = awakenedCurrencyEnd.Value;
-			awakenedCurrencyEnd = null;
-		}
-
-		if (!character.player.isVile && !character.player.isSigma) {
-			character.playSound("die");
-			/*
-			if (character.player == Global.level.mainPlayer)
-			{
-				Global.playSound("die");
-			}
-			else
-			{
-				character.playSound("die");
-			}
-			*/
-			new DieEffect(character.getCenterPos(), charNum);
-		}
-
 		character.destroySelf();
 		character = null;
 
 		onCharacterDeath();
+	}
+	
+	public void startDeathTimer() {
+		respawnTime = getRespawnTime();
+		randomTip = Tips.getRandomTip(charNum);
 	}
 
 	// Must be called on any character death

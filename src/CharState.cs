@@ -1569,7 +1569,9 @@ public class Crystalized : CharState {
 }
 
 public class Die : CharState {
-	bool sigmaHasMavericks;
+	int frames;
+	public bool hidden;
+	public bool respawnTimerOn;
 
 	public Die() : base("die") {
 	}
@@ -1579,120 +1581,16 @@ public class Die : CharState {
 		character.useGravity = false;
 		character.stopMoving();
 		character.stopCharge();
-		//new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
-		character.stingChargeTime = 0;
-		if (character is MegamanX mmx) {
-			mmx.removeBarrier();
-			player.lastDeathWasXHyper = mmx.isHyperX;
-		} else {
-			player.lastDeathWasXHyper = false;
-		}
-		if (character.ownedByLocalPlayer && character.player.isDisguisedAxl) {
-			character.player.revertToAxlDeath();
-			character.changeSpriteFromName("die", true);
-		}
-		if (character is Vile vile) {
-			player.lastDeathWasVileMK2 = vile.isVileMK2 == true;
-			player.lastDeathWasVileMK5 = vile.isVileMK5 == true;
-		} else {
-			player.lastDeathWasVileMK2 = false;
-			player.lastDeathWasVileMK5 = false;
-		}
+
 		if (character is Blues blues) {
-			player.lastDeathWasBreakMan = blues.isBreakMan;
 			blues.destroyStarCrash();
 		}
-		player.lastDeathWasSigmaHyper = character is WolfSigma or ViralSigma or KaiserSigma;
 		player.lastDeathPos = character.getCenterPos();
-		//why is this here
-		if (player.isAI) player.selectedRAIndex = Helpers.randomRange(0, 3);
-		sigmaHasMavericks = player.isSigma && player.mavericks.Count > 0;
-
-		if (character.ownedByLocalPlayer && character is WolfSigma wolfSigma) {
-			player.destroyCharacter();
-			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
-			var anim = new Anim(
-				character.pos, "sigma_wolf_head_drop", 1, player.getNextActorNetId(), false, sendRpc: true
-			);
-			anim.useGravity = true;
-			anim.ttl = 3;
-			anim.blink = true;
-			anim.collider.wallOnly = true;
-			var ede = new ExplodeDieEffect(
-				player, character.pos, character.pos, "empty", 1, character.zIndex, false, 20, 3, false
-			);
-			ede.host = anim;
-			Global.level.addEffect(ede);
-		}
-		else if (character.ownedByLocalPlayer && character is ViralSigma viralSigma) {
-			player.destroyCharacter();
-			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
-			var anim = new Anim(
-				character.pos, viralSigma.lastViralSprite, 1, player.getNextActorNetId(), false, sendRpc: true
-			);
-			anim.ttl = 3;
-			anim.blink = true;
-			anim.frameIndex = viralSigma.lastViralFrameIndex;
-			anim.frameSpeed = 0;
-			anim.angle = viralSigma.lastViralAngle;
-			var ede = new ExplodeDieEffect(
-				player, character.pos, character.pos, "empty", 1, character.zIndex, false, 20, 3, false
-			);
-			ede.host = anim;
-			Global.level.addEffect(ede);
-		} else if (character.ownedByLocalPlayer && character is KaiserSigma kaiserSigma) {
-			player.destroyCharacter();
-			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
-			string deathSprite = "";
-			if (kaiserSigma.lastHyperSigmaSprite.StartsWith("kaisersigma_virus")) {
-				deathSprite = kaiserSigma.lastHyperSigmaSprite;
-				Point explodeCenterPos = character.pos.addxy(0, -16);
-				var ede = new ExplodeDieEffect(
-					player, explodeCenterPos, explodeCenterPos,
-					"empty", 1, character.zIndex, false, 16, 3, false
-				);
-				Global.level.addEffect(ede);
-			} else {
-				deathSprite = kaiserSigma.lastHyperSigmaSprite + "_body";
-				if (!Global.sprites.ContainsKey(deathSprite)) {
-					deathSprite = "kaisersigma_idle";
-				}
-				Point explodeCenterPos = character.pos.addxy(0, -55);
-				var ede = new ExplodeDieEffect(
-					player, explodeCenterPos, explodeCenterPos, "empty",
-					1, character.zIndex, false, 60, 3, false
-				);
-				Global.level.addEffect(ede);
-
-				var headAnim = new Anim(
-					character.pos, kaiserSigma.lastHyperSigmaSprite, 1,
-					player.getNextActorNetId(), false, sendRpc: true
-				);
-				headAnim.ttl = 3;
-				headAnim.blink = true;
-				headAnim.setFrameIndexSafe(kaiserSigma.lastHyperSigmaFrameIndex);
-				headAnim.xDir = kaiserSigma.lastHyperSigmaXDir;
-				headAnim.frameSpeed = 0;
-			}
-
-			var anim = new Anim(
-				character.pos, deathSprite, 1, player.getNextActorNetId(),
-				false, sendRpc: true, zIndex: ZIndex.Background + 1000
-			);
-			anim.ttl = 3;
-			anim.blink = true;
-			anim.setFrameIndexSafe(kaiserSigma.lastHyperSigmaFrameIndex);
-			anim.xDir = kaiserSigma.lastHyperSigmaXDir;
-			anim.frameSpeed = 0;
-		}
-		/*if (character is Zero zero) {
-			if (zero.isNightmareZeroBS.getValue()) {
-				character.playSound("zndie", sendRpc: true);
-			}
-		}*/
 	}
 
 	public override void onExit(CharState newState) {
+		character.visible = true;
+		base.onExit(newState);
 	}
 
 	public override void update() {
@@ -1700,89 +1598,32 @@ public class Die : CharState {
 		character.vel.x = 0;
 		character.vel.y = 0;
 		base.update();
+
+		if (!hidden && stateTime >= 0.75f) {
+			hidden = true;
+			character.visible = false;
+			new DieEffect(character.getCenterPos(), player.charNum);
+			character.playSound("die");
+		}
 		if (!character.ownedByLocalPlayer) {
 			return;
 		}
-		if (sigmaHasMavericks) {
-			if (stateTime > 0.75f && !once) {
-				once = true;
-				player.destroySigmaEffect();
-				character.visible = false;
-			}
-
-			if (once) {
-				/*
-				// This code would allow controlling Mavs after death,
-				// but would result in camera issues and spectate issues that need to be resolved first.
-				if (player.currentMaverick == null)
-				{
-					if (player.isPuppeteer())
-					{
-						foreach (var weapon in new List<Weapon>(player.weapons))
-						{
-							if (weapon is MaverickWeapon mw && mw.maverick != null)
-							{
-								player.weapons.RemoveAll(w => w is SigmaMenuWeapon);
-								character.becomeMaverick(mw.maverick);
-								player.weaponSlot = player.weapons.IndexOf(weapon);
-								return;
-							}
-						}
-					}
-				}
-				else
-				{
-					return;
-				}
-				*/
-
-				if (!player.isTagTeam()) {
-					foreach (var weapon in new List<Weapon>(player.weapons)) {
-						if (weapon is MaverickWeapon mw && mw.maverick != null) {
-							mw.maverick.changeState(new MExit(mw.maverick.pos, true), true);
-						}
-					}
-				}
-
-				player.destroySigma();
-			}
-		} else if (player.isVile || player.isSigma) {
-			if (stateTime > 0.75f && !once) {
-				once = true;
-				character.visible = false;
-				player.explodeDieStart();
-			}
-
-			if (stateTime > 2.25f) {
-				destroyRideArmor();
-				player.explodeDieEnd();
-			}
-		} else {
-			if (stateTime > 0.75f) {
-				destroyRideArmor();
+		if (hidden && !respawnTimerOn && frames >= 60) {
+			player.startDeathTimer();
+			respawnTimerOn = true;
+			if (player.getRespawnTime() <= 3) {
 				player.destroyCharacter();
-				Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
 			}
 		}
-	}
-
-	public void destroyRideArmor() {
-		if (character.startRideArmor != null) {
-			character.startRideArmor.selfDestructTime = Global.spf;
-			RPC.actorToggle.sendRpc(character.startRideArmor.netId, RPCActorToggleType.StartMechSelfDestruct);
+		if (stateTime >= 2) {
+			player.destroyCharacter();
+			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
 		}
+		frames++;
 	}
 
 	public override bool canExit(Character character, CharState newState) {
-		if (character.charState is Die &&
-			newState is not VileRevive and
-			not WolfSigmaRevive and
-			not ViralSigmaRevive and
-			not KaiserSigmaRevive and
-			not XReviveStart and
-			not XRevive and
-			not BluesRevive
-		) {
+		if (newState is not BluesRevive and not NetLimbo { allowResurection: true }) {
 			return false;
 		}
 		return base.canExit(character, newState);
@@ -1896,6 +1737,8 @@ public class GenericGrabbedState : CharState {
 }
 
 public class NetLimbo : CharState {
+	public bool allowResurection;
+
 	public NetLimbo() : base("not_a_real_sprite") {
 
 	}

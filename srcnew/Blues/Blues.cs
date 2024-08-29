@@ -1080,11 +1080,11 @@ public class Blues : Character {
 		if (scarfPalette != null) shaders.Add(scarfPalette);
 		if (palette != null) shaders.Add(palette);
 
-		if (shaders.Count == 0) {
+		/*if (shaders.Count == 0) {
 			return baseShaders;
 		}
 
-		shaders.AddRange(baseShaders);
+		shaders.AddRange(baseShaders);*/
 		return shaders;
 	}
 

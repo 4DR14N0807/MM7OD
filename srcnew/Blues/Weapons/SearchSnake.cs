@@ -11,7 +11,7 @@ public class SearchSnake : Weapon {
 		descriptionV2 = "Releases snake-like missiles\nthat crawl across surfaces.";
 		defaultAmmoUse = 2;
 
-		index = (int)RockWeaponIds.SearchSnake;
+		index = (int)BluesWeaponIds.SearchSnake;
 		fireRateFrames = 45;
 	}
 

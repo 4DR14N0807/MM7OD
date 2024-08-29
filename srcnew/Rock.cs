@@ -324,7 +324,7 @@ public class Rock : Character {
 	}
 
 	public override bool canJump() {
-		if (isSlideColliding) return false;
+		if (isSlideColliding && charState is Slide) return false;
 
 		return base.canJump();
 	}

@@ -303,17 +303,6 @@ public enum RockWeaponIds {
 	SARocketPunch,
 	SAArrowSlash,
 	LegBreaker,
-	GeminiLaser,
-	HardKnuckle,
-	SearchSnake,
-	SparkShock,
-	PowerStone,
-	WaterWave,
-	GyroAttack,
-	StarCrash,
-	NeedleCannon,
-	NapalmBomb,
-	GravityHold,
 }
 
 public enum BassProjIds {

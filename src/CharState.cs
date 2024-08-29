@@ -841,6 +841,7 @@ public class Dash : CharState {
 	public int initialDashDir;
 	public bool stop;
 	public Anim dashSpark;
+	public bool isColliding;
 
 	public Dash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
 		enterSound = "slide";
@@ -895,8 +896,10 @@ public class Dash : CharState {
 		dashBackwardsCode(character, initialDashDir);
 
 		base.update();
+		
+		isColliding = Global.level.checkCollisionActor(character, 0, -10) != null;
 
-		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
+		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop && !isColliding) {
 			dashTime = 50;
 		}
 		float speedModifier = 1;
@@ -920,10 +923,13 @@ public class Dash : CharState {
 				stop = true;
 			} else {
 				if (character.grounded) {
-					if (inputXDir != 0) {
-						character.changeState(new Idle(), true);
-					} else {
-						character.changeState(new Run(), true);
+					if (!isColliding) {
+						if (inputXDir != 0) {
+							character.changeState(new Run(), true);
+						} else {
+							//character.changeState(new Idle(), true);
+							character.changeState(new DashEnd(), true);
+						}
 					}
 				} else {
 					character.changeState(new Fall(), true);

@@ -12,7 +12,7 @@ public class SparkShock : Weapon {
 						"temporarily paralyze enemies.";
 		defaultAmmoUse = 3;
 
-		index = (int)RockWeaponIds.SparkShock;
+		index = (int)BluesWeaponIds.SparkShock;
 		fireRateFrames = 60;
 	}
 

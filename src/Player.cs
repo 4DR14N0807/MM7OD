@@ -470,6 +470,7 @@ public partial class Player {
 	public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
 	public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
 	public ShaderWrapper breakManShader = Helpers.cloneShaderSafe("paletteBreakMan");
+	public ShaderWrapper bluesScarfShader = Helpers.cloneShaderSafe("blues_palette");
 	public ShaderWrapper bassPaletteShader = Helpers.cloneShaderSafe("bassPalette");
 
 	// Character specific data populated on RPC request

@@ -4,6 +4,17 @@ using SFML.Graphics;
 
 namespace MMXOnline;
 
+public enum BluesWeaponIds {
+	NeedleCannon = 1,
+	HardKnuckle,
+	SearchSnake,
+	SparkShock,
+	GravityHold,
+	PowerStone,
+	GyroAttack,
+	StarCrash,
+}
+
 [ProtoContract]
 public class BluesLoadout {
 	[ProtoMember(1)]

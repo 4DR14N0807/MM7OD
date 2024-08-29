@@ -12,7 +12,7 @@ public class GravityHold : Weapon {
 		descriptionV2 = "";
 		defaultAmmoUse = 6;
 
-		index = (int)RockWeaponIds.GravityHold;
+		index = (int)BluesWeaponIds.GravityHold;
 		fireRateFrames = 55;
 		hasCustomAnim = true;
 	}

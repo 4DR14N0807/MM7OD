@@ -131,3 +131,22 @@ public class BassShootLadder : CharState {
 		};
 	}
 }
+
+
+public class DashEnd : CharState {
+	public DashEnd() : base("dash_end", "") {
+		normalCtrl = true;
+		attackCtrl = true;
+	}
+
+	public override void update() {
+		base.update();
+
+		float inputXDir = player.input.getInputDir(player).x;
+
+		if (character.isAnimOver() || inputXDir != 0) {
+			character.changeToIdleOrFall();
+			return;
+		}
+	}
+}

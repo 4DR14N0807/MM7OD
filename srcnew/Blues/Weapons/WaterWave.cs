@@ -10,7 +10,7 @@ public class WaterWave : Weapon {
 		descriptionV2 = "A weapon that uses high pressure to\ninject compressed water in one direction.";
 		defaultAmmoUse = 4;
 
-		index = (int)RockWeaponIds.WaterWave;
+		//index = (int)RockWeaponIds.WaterWave;
 		fireRateFrames = 50;
 	}
 

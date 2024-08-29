@@ -436,6 +436,7 @@ public class BluesRevive : CharState {
 		character.removeRenderEffect(RenderEffectType.Flash);
 		character.playSound("whistle", true, true);
 		//Global.level.delayedActions.Add(new DelayedAction(() => { character.destroyMusicSource(); }, 0.75f));
+		character.destroyMusicSource();
 		if (blues != null) blues.isBreakMan = true;
 
 		if (character != null) {

@@ -299,7 +299,10 @@ public class Blues : Character {
 
 		if (!Global.level.isHyper1v1()) {
 			if (isBreakMan) { 
-				if (musicSource == null) addMusicSource("breakman", getCenterPos(), true);
+				if (musicSource == null) {
+					Global.level.delayedActions.Add( 
+						new DelayedAction(() => { addMusicSource("breakman", getCenterPos(), true); }, 3f) );
+				} 
 			} else {
 				destroyMusicSource();
 			}
@@ -1057,16 +1060,23 @@ public class Blues : Character {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
+		ShaderWrapper? scarfPalette = null;
 
-		int index = isBreakMan ? 1 : 0;
+		int index = isBreakMan ? 1 : 0; // Break Man swap palette
 		palette = player.breakManShader;
-
+		 
 		palette?.SetUniform("palette", index);
 		palette?.SetUniform("paletteTexture", Global.textures["blues_hyperpalette"]);
 
-		if (palette != null) {
-			shaders.Add(palette);
-		}
+		int scarfColor = specialWeapon.index;
+		scarfPalette = player.bluesScarfShader;
+
+		scarfPalette?.SetUniform("palette", scarfColor);
+		scarfPalette?.SetUniform("paletteTexture", Global.textures["blues_palette_texture"]);
+
+		if (scarfPalette != null) shaders.Add(scarfPalette);
+		if (palette != null) shaders.Add(palette);
+
 		if (shaders.Count == 0) {
 			return baseShaders;
 		}

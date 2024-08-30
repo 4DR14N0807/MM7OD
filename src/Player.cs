@@ -1361,12 +1361,10 @@ public partial class Player {
 		//retChar.heal(maxHealth);
 
 		// Speed and state.
-		if (character.grounded) {
-			retChar.changeState(new Idle(), true);
-		} else if (character.charState is Jump) {
+		if (character.charState.canStopJump) {
 			retChar.changeState(new Jump(), true);
 		} else {
-			retChar.changeState(new Fall(), true);
+			retChar.changeToIdleOrFall();
 		}
 		retChar.vel = character.vel;
 		retChar.slideVel = character.slideVel;
@@ -1458,12 +1456,10 @@ public partial class Player {
 		character.ownedByLocalPlayer = ownedByLocalPlayer;
 
 		if (ownedByLocalPlayer) {
-			if (oldChar.grounded) {
-				character.changeState(new Idle(), true);
-			} else if (character.charState is Jump) {
+			if (oldChar.charState.canStopJump) {
 				character.changeState(new Jump(), true);
 			} else {
-				character.changeState(new Fall(), true);
+				character.changeToIdleOrFall();
 			}
 			character.vel = oldChar.vel;
 			character.slideVel = oldChar.slideVel;

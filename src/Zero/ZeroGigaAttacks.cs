@@ -218,7 +218,7 @@ public class Rakuhouha : CharState {
 		}
 
 		if (character.isAnimOver()) {
-			character.changeState(new Idle());
+			character.changeToIdleOrFall();
 		}
 	}
 
@@ -375,7 +375,7 @@ public class Rekkoha : CharState {
 		}
 
 		if (character.isAnimOver()) {
-			character.changeState(new Idle());
+			character.changeToIdleOrFall();
 		}
 	}
 

@@ -27,7 +27,7 @@ public class Blues : Character {
 	public bool overdrive;
 	public float overdriveAmmo = 28;
 	public float overdriveAmmoDecreaseCooldown;
-	public float overdriveAmmoMaxCooldown = 13;
+	public float overdriveAmmoMaxCooldown = 15;
 	public float redStrikeCooldown = 0;
 
 	// Shield vars.
@@ -172,10 +172,15 @@ public class Blues : Character {
 	}
 
 	public override bool canCharge() {
-		if (flag != null || !charState.attackCtrl || overheating || charState is ProtoStrike) {
+		if (overheating) {
 			return false;
 		}
-		return base.canCharge();
+		if (charState.attackCtrl || charState.normalCtrl ||
+			charState is ShieldDash or BluesSlide or Hurt or GenericStun or Burning
+		) {
+			return base.canCharge();
+		}
+		return false;
 	}
 
 	public bool canShieldDash() {

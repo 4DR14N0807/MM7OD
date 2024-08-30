@@ -617,7 +617,7 @@ public class Blues : Character {
 					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
 				);
 				playSound("buster2", sendRpc: true);
-				addCoreAmmo(1);
+				addCoreAmmo(0.75f);
 			}
 			playSound("buster", sendRpc: true);
 			//resetCoreCooldown(45);

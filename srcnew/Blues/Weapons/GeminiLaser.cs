@@ -9,7 +9,7 @@ public class GeminiLaser : Weapon {
 		descriptionV2 = "Temp.";
 		defaultAmmoUse = 3;
 
-        index = (int)RockWeaponIds.GeminiLaser;
+        //index = (int)RockWeaponIds.GeminiLaser;
         fireRateFrames = 60;
     }
 

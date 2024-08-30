@@ -12,7 +12,7 @@ public class NapalmBomb : Weapon {
 		descriptionV2 = "";
 		defaultAmmoUse = 3;
 
-		index = (int)RockWeaponIds.NapalmBomb;
+		//index = (int)RockWeaponIds.NapalmBomb;
 		fireRateFrames = 40;
 	}
 

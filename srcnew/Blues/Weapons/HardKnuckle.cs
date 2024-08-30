@@ -11,7 +11,7 @@ public class HardKnuckle : Weapon {
 		descriptionV2 = "Fires out a large missile shaped like a fist,\ncan damage more than one target.";
 		defaultAmmoUse = 4;
 
-		index = (int)RockWeaponIds.HardKnuckle;
+		index = (int)BluesWeaponIds.HardKnuckle;
 		fireRateFrames = 40;
 		hasCustomAnim = true;
 	}

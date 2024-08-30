@@ -87,6 +87,7 @@ public class Slide : CharState {
 public class SlideEnd : CharState {
 
 	public SlideEnd() : base("slide_end", "shoot", "") {
+		normalCtrl = true;
 		attackCtrl = true;
 	}
 
@@ -102,10 +103,8 @@ public class SlideEnd : CharState {
 		base.update();
 
 		float inputXDir = player.input.getInputDir(player).x;
-		bool canMove = character.player.input.isHeld(Control.Left, player) ||
-		character.player.input.isHeld(Control.Right, player);
 
-		if (stateFrames >= 5 || canMove) {
+		if (stateFrames >= 5 || inputXDir != 0) {
 			character.changeToIdleOrFall();
 			return;
 		}

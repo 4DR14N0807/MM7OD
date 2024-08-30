@@ -11,7 +11,7 @@ public class PowerStone : Weapon {
 		descriptionV2 = "Summons three stones that spiral around.\nCan be used behind the shield.";
 		defaultAmmoUse = 5;
 
-		index = (int)RockWeaponIds.PowerStone;
+		index = (int)BluesWeaponIds.PowerStone;
 		fireRateFrames = 90;
 		hasCustomAnim = true;
 	}

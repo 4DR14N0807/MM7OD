@@ -126,7 +126,7 @@ public class WolfSigmaHead : Actor, IDamagable {
 	}
 
 	public WolfSigmaHead(Point pos, Player player, ushort netId, bool ownedByLocalPlayer, bool rpc = false) :
-		base("sigma_wolf_head", pos, netId, ownedByLocalPlayer, false) {
+		base("", pos, netId, ownedByLocalPlayer, false) {
 		useGravity = false;
 		this.owner = player;
 		xDir = 1;

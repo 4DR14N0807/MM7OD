@@ -303,7 +303,10 @@ public class Blues : Character {
 
 		if (!Global.level.isHyper1v1()) {
 			if (isBreakMan) { 
-				if (musicSource == null) addMusicSource("breakman", getCenterPos(), true);
+				if (musicSource == null) {
+					Global.level.delayedActions.Add( 
+						new DelayedAction(() => { addMusicSource("breakman", getCenterPos(), true); }, 3f) );
+				} 
 			} else {
 				destroyMusicSource();
 			}

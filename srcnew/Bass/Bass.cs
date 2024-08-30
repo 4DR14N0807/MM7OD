@@ -252,6 +252,10 @@ public class Bass : Character {
 		return base.canShoot();
 	}
 
+	public override bool canChangeWeapons() {
+		return base.canChangeWeapons() && charState is not LightningBoltState;
+	}
+
 	public override bool canAirJump() {
 		return dashedInAir == 0 && rootTime <= 0 && charState is not BassShootLadder;
 	}

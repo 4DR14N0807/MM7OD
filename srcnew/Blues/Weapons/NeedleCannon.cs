@@ -7,7 +7,7 @@ public class NeedleCannon : Weapon {
 
 	public NeedleCannon() : base() {
 		// Tecnical data.
-		index = (int)RockWeaponIds.NeedleCannon;
+		index = (int)BluesWeaponIds.NeedleCannon;
 		fireRateFrames = 6;
 		defaultAmmoUse = 1.2f;
 

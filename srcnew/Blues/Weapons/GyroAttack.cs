@@ -11,7 +11,7 @@ public class GyroAttack : Weapon {
 		descriptionV2 = "A propeller weapon that can\nbe aimed in 2 diferent directions.";
 		defaultAmmoUse = 2;
 
-		index = (int)RockWeaponIds.GyroAttack;
+		index = (int)BluesWeaponIds.GyroAttack;
 		fireRateFrames = 50;
 	}
 

@@ -139,7 +139,7 @@ public partial class Level {
 			return;
 		}
 		if (go is Actor actor) {
-			Collider terrainCollider = actor.getTerrainCollider();
+			Collider? terrainCollider = actor.getTerrainCollider();
 			if (terrainCollider != null) {
 				allCollidersShape = terrainCollider.shape;
 			}

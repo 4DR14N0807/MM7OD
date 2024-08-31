@@ -8,7 +8,6 @@ using SFML.System;
 namespace MMXOnline;
 
 public class GameMode {
-	public Blues? blues;
 	public const string Deathmatch = "deathmatch";
 	public const string TeamDeathmatch = "team deathmatch";
 	public const string CTF = "ctf";

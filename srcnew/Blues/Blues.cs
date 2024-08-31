@@ -1074,6 +1074,14 @@ public class Blues : Character {
 		}
 	}
 
+	public override void onFlagPickup(Flag flag) {
+		base.onFlagPickup(flag);
+		stopCharge();
+		if (starCrash != null) {
+			destroyStarCrash();
+		}
+	}
+
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = base.getShaders();
 

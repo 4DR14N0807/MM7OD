@@ -229,20 +229,6 @@ public class Weapon {
 		};
 	}
 
-
-	public static List<Weapon> getAllProtoManWeapons() {
-		return new List<Weapon>() 
-		{
-				new GeminiLaser(),
-				new HardKnuckle(),
-				new SearchSnake(),
-				new SparkShock(),
-				new PowerStone(),
-				new GyroAttack(),
-				new StarCrash(),
-		};
-	}
-
 	public static List<Weapon> getAllMM7Weapons() {
 		return new List<Weapon>() 
 		{

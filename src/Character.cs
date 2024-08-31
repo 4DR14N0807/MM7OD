@@ -3117,7 +3117,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void onFlagPickup(Flag flag) {
+	public virtual void onFlagPickup(Flag flag) {
 		if (isCharging()) {
 			stopCharge();
 		}

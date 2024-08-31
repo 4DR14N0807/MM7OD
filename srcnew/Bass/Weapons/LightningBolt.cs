@@ -24,6 +24,37 @@ public class LightningBolt : Weapon {
 	}
 }
 
+public class LightningBoltSpawn : Anim {
+
+	int pieces;
+	float spriteHeight;
+	Sprite spr;
+
+	public LightningBoltSpawn(
+		Point pos, int xDir, ushort? netId, bool destroyOnEnd, bool rpc = false
+	) : base(
+		pos, "lightning_bolt_body", xDir, netId, destroyOnEnd, rpc
+	) {
+		zIndex = ZIndex.Character - 10;
+		spr = new Sprite(base.sprite.name);
+		spriteHeight = spr.animData.frames[0].rect.h();
+	}
+
+	public override void render(float x, float y) {
+		base.render(x,y);
+
+		for (int i = 1; i < 4; i ++) {
+			int dirX = i % 2 != 0 ? xDir * -1 : xDir;
+			float offset = dirX != xDir ? -2 * xDir : 0;
+
+			Global.sprites[sprite.name].draw(
+				frameIndex, pos.x + offset, pos.y - (i * spriteHeight),
+				dirX, 1, null, 1, 1, 1, zIndex
+			);
+		}
+	}
+}
+
 
 public class LightningBoltState : CharState {
 
@@ -43,12 +74,15 @@ public class LightningBoltState : CharState {
 		character.stopMoving();
 		character.frameSpeed = 0;
 		new Anim(character.pos, "lightning_bolt_anim", character.xDir,
-			character.player.getNextActorNetId(), true);
+			character.player.getNextActorNetId(), true); 
 
 		aim = new Anim(startAimPos, "lightning_bolt_anim", character.xDir,
 			character.player.getNextActorNetId(), true);
 		aim.frameSpeed = 0;
 		aim.alpha /= 2;
+
+		new LightningBoltSpawn(character.getCenterPos(), character.xDir,
+		character.player.getNextActorNetId(), true, true);
 	}
 
 	public override void update() {
@@ -92,7 +126,7 @@ public class LightningBoltState : CharState {
 public class LightningBoltProj : Projectile {
 
 	float spawnPosY;
-	int bodySpriteHeight = 24;
+	float bodySpriteHeight;
 	string bodySprite = "lightning_bolt_body";
 	int timeInFrames;
 
@@ -107,6 +141,7 @@ public class LightningBoltProj : Projectile {
 		projId = (int)BassProjIds.LightningBolt;
 		maxTime = 0.5f;
 		setIndestructableProperties();
+		bodySpriteHeight = new Sprite(bodySprite).animData.frames[0].rect.h();
 
 		spawnPosY = pos.y;
 		base.vel.y = 600;
@@ -124,6 +159,11 @@ public class LightningBoltProj : Projectile {
 		if (isAnimOver()) destroySelf();
 		
 		timeInFrames++;
+
+		Rect rect = collider._shape.getRect();
+		rect.y1 = -bodySpriteHeight;
+		rect.y2 = getPiecesAmount() * bodySpriteHeight;
+		collider._shape = rect.getShape();
 	}
 
 	public override void render(float x, float y) {
@@ -132,10 +172,11 @@ public class LightningBoltProj : Projectile {
 		int pieces = getPiecesAmount();
 
 		for (int i = 0; i < pieces; i++) {
-			int dirX = i % 2 != 0 ? -1 : 1;
+			int dirX = i % 2 != 0 ? xDir * -1 : xDir;
+			float offset = dirX != xDir ? -2 * xDir : 0;
 
 			Global.sprites[bodySprite].draw(
-				frameIndex, pos.x, pos.y - (i * bodySpriteHeight),
+				frameIndex, pos.x + offset, pos.y - (i * bodySpriteHeight),
 				dirX, 1, null, 1, 1, 1, zIndex
 			);
 		}

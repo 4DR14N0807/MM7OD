@@ -2140,8 +2140,8 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		currentLabelY = -getLabelOffY();
-
 		base.render(x, y);
+		renderDamageText(35);
 
 		if (charState != null) {
 			charState.render(x, y);

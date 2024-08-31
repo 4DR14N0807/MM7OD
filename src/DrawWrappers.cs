@@ -10,11 +10,11 @@ public class DrawableWrapper {
 	public List<ShaderWrapper> shaders;
 	public Drawable drawable;
 	public Color color;
-	public uint[]? size;
+	public int[]? size;
 
 	public DrawableWrapper(
 		List<ShaderWrapper> shaders, Drawable drawable, Color color,
-		uint[]? size = null
+		int[]? size = null
 	) {
 		shaders?.RemoveAll(s => s == null);
 		this.shaders = shaders;
@@ -62,33 +62,38 @@ public class DrawLayer : Transformable, Drawable {
 				sprite.Scale = new Vector2f(1, 1);
 				sprite.Rotation = 0;
 				sprite.Color = Color.White;
+				// Get textures.
+				int encodeKey = (oneOff.size[0]*397) ^ oneOff.size[1];
+				RenderTexture front;
+				RenderTexture back;
+				(front, back) = Global.renderTextures[encodeKey];
 				// Create a clear texture first.
-				Global.renderTexture.Clear(new Color(0, 0, 0, 0));
-				Global.renderTexture.Display();
+				back.Clear(new Color(0, 0, 0, 0));
+				back.Display();
 				renderStates.Shader = oneOff.shaders[0].getShader();
-				Global.renderTexture.Draw(sprite, renderStates);
+				back.Draw(sprite, renderStates);
 				// Iterate shaders.
 				for (int num = 1; num < oneOff.shaders.Count; num++) {
 					// Clear image.
 					renderStates = new RenderStates(states);
-					Global.renderTextureTemp.Clear(new Color(0, 0, 0, 0));
-					Global.renderTextureTemp.Display();
+					front.Clear(new Color(0, 0, 0, 0));
+					front.Display();
 					// Apply shader and draw.
 					renderStates.Shader = oneOff.shaders[num].getShader();
-					Global.renderTextureTemp.Draw(
-						new SFML.Graphics.Sprite(Global.renderTexture.Texture), renderStates
+					front.Draw(
+						new SFML.Graphics.Sprite(back.Texture), renderStates
 					);
 					// Swap.
 					(
-						Global.renderTextureTemp,
-						Global.renderTexture
+						front,
+						back
 					) = (
-						Global.renderTexture,
-						Global.renderTextureTemp
+						back,
+						front
 					);
 				}
 				// Final result.
-				var finalSprite = new SFML.Graphics.Sprite(Global.renderTexture.Texture);
+				var finalSprite = new SFML.Graphics.Sprite(back.Texture);
 				finalSprite.Position = originalPosition;
 				finalSprite.Origin = originalOrigin;
 				finalSprite.Scale = originalScale;
@@ -288,7 +293,7 @@ public partial class DrawWrappers {
 		if (isWorldPos) {
 			DrawLayer drawLayer = getDrawLayer(depth);
 			drawLayer.oneOffs.Add(
-				new DrawableWrapper(shaders, sprite, sprite.Color, [(uint)sw, (uint)sh])
+				new DrawableWrapper(shaders, sprite, sprite.Color, [(int)sw, (int)sh])
 			);
 		} else {
 			drawToHUD(sprite);

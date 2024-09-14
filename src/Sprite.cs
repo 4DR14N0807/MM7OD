@@ -551,7 +551,7 @@ public class AnimData {
 			// Rendertexture creation.
 			int sprWidth = MathInt.Ceiling(x2 - x1);
 			int sprHeight = MathInt.Ceiling(y2 - y1);
-			int encodeKey = (sprWidth*397) ^ sprHeight;
+			int encodeKey = (sprWidth * 397) ^ sprHeight;
 			if (!Global.renderTextures.ContainsKey(encodeKey)) {
 				Global.renderTextures[encodeKey] = (
 					new RenderTexture((uint)sprWidth, (uint)sprHeight),

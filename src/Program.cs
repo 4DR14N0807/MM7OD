@@ -20,14 +20,14 @@ using static SFML.Window.Keyboard;
 namespace MMXOnline;
 
 class Program {
-#if WINDOWS
+	#if WINDOWS
 	[STAThread]
-#endif
+	#endif
 	static void Main(string[] args) {
 		if (args.Length > 0 && args[0] == "-relay") {
-#if WINDOWS
+		#if WINDOWS
 			AllocConsole();
-#endif
+		#endif
 			RelayServer.ServerMain(args);
 		} else {
 			int mode = 0;
@@ -261,7 +261,6 @@ class Program {
 				Menu.change(new ErrorMenu(error, new MainMenu()));
 			}
 		}
-
 		while (window.IsOpen) {
 			mainLoop(window);
 		}
@@ -395,30 +394,9 @@ class Program {
 
 	private static void render() {
 		if (Global.levelStarted()) {
-			Helpers.tryWrap(Global.level.render, false);
-		}
-
-		if (Global.levelStarted()) {
-			Helpers.tryWrap(Menu.render, false);
+			Global.level.render();
 		} else {
 			Menu.render();
-		}
-
-		if (Options.main.showFPS && Global.level != null && Global.level.started) {
-			int vfps = MathInt.Round(Global.currentFPS);
-			int fps = MathInt.Round(Global.logicFPS);
-			float yPos = 200;
-			if (Global.level.gameMode.shouldDrawRadar()) {
-				yPos = 219;
-			}
-			Fonts.drawText(
-				FontType.WhiteSmall, "VFPS:" + vfps.ToString(), Global.screenW - 9, yPos - 10,
-				Alignment.Right
-			);
-			Fonts.drawText(
-				FontType.WhiteSmall, "FPS:" + fps.ToString(), Global.screenW - 9, yPos,
-				Alignment.Right
-			);
 		}
 		// TODO: Make this work for errors.
 		//if (Global.debug) {
@@ -433,8 +411,6 @@ class Program {
 			Fonts.drawText(FontType.Red, Global.debugString3, 20, 40);
 			*/
 		//}
-
-		DevConsole.drawConsole();
 	}
 
 	/// <summary>
@@ -1289,10 +1265,10 @@ class Program {
 				deltaTime = 0;
 			}
 			deltaTimeSavings = deltaTime;
-			videoUpdatesThisSecond++;
 			Global.isSkippingFrames = false;
 			Global.input.clearInput();
 			lastUpdateTime = timeNow;
+			videoUpdatesThisSecond++;
 			window.Clear(clearColor);
 			render();
 			window.Display();
@@ -1386,6 +1362,7 @@ class Program {
 				continue;
 			}
 			window.Clear(clearColor);
+
 			for (int i = 0; i < loadText.Count; i++) {
 				Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
 			}

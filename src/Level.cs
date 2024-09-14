@@ -1802,12 +1802,12 @@ public partial class Level {
 		// At this point all drawing should be HUD/menu elements only
 		level.gameMode.render();
 
-		if (mainPlayer.readyTime > 0) {
-			if (mainPlayer.readyTime < 0.4) {
-				int frameIndex = (int)Math.Round((mainPlayer.readyTime / 0.4) * 13);
+		if (level.mainPlayer.readyTime > 0) {
+			if (level.mainPlayer.readyTime < 0.4) {
+				int frameIndex = (int)Math.Round((level.mainPlayer.readyTime / 0.4) * 13);
 				Global.sprites["ready"].drawToHUD(frameIndex, (Global.screenW / 2) - 21, Global.screenH / 2);
-			} else if (mainPlayer.readyTime < 1.75) {
-				if ((int)Math.Round(mainPlayer.readyTime * 7.5) % 2 == 0) {
+			} else if (level.mainPlayer.readyTime < 1.75) {
+				if ((int)Math.Round(level.mainPlayer.readyTime * 7.5) % 2 == 0) {
 					Global.sprites["ready"].drawToHUD(13, (Global.screenW / 2) - 21, Global.screenH / 2);
 				}
 			}

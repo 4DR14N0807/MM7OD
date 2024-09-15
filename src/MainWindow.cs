@@ -12,7 +12,6 @@ public partial class Global {
 	public static bool fullscreen;
 
 	public static Dictionary<int, (RenderTexture, RenderTexture)> renderTextures = new();
-
 	public static RenderTexture screenRenderTexture = null!;
 	public static RenderTexture srtBuffer1 = null!;
 	public static RenderTexture srtBuffer2 = null!;

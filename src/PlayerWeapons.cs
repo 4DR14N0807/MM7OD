@@ -336,6 +336,7 @@ label:
 				//weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();
 			}
 		}
+		weaponSlot = 0;
 	}
 
 	private Weapon getAxlBullet(int axlBulletType) {

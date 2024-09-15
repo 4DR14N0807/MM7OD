@@ -155,24 +155,6 @@ public class CharState {
 				return false;
 			}
 		}
-		if (character.player.isViralSigma()) {
-			return this is ViralSigmaBeamState ||
-				this is ViralSigmaIdle || this is
-				ViralSigmaTaunt ||
-				this is ViralSigmaShoot ||
-				this is ViralSigmaTackle ||
-				this is ViralSigmaPossessStart ||
-				this is ViralSigmaPossess ||
-				this is Die;
-		}
-		if (character is KaiserSigma) {
-			return (
-				this is KaiserSigmaBaseState ||
-				this is KaiserSigmaRevive ||
-				this is KaiserSigmaVirusState ||
-				this is Die
-			);
-		}
 		if (character.charState is WarpOut && this is not WarpIn) {
 			return false;
 		}
@@ -436,6 +418,7 @@ public class WarpIn : CharState {
 			}
 
 			if (character.isAnimOver()) {
+				character.grounded = true;
 				character.changeToIdleOrFall();
 			}
 			return;

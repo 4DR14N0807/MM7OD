@@ -675,7 +675,6 @@ public partial class Player {
 				loadoutSet = true;
 			}
 		}
-
 		configureWeapons();
 
 		is1v1Combatant = !isSpectator;
@@ -813,13 +812,13 @@ public partial class Player {
 	}
 
 	public ushort getNextATransNetId() {
-		if (curATransNetId < getStartNetId() + 1) {
-			curATransNetId = (ushort)(getStartNetId() + 1);
+		if (curATransNetId < getStartNetId()) {
+			curATransNetId = (ushort)(getStartNetId());
 		}
 		ushort retId = curATransNetId;
 		curATransNetId++;
 		if (curATransNetId >= getStartNetId() + 10) {
-			curATransNetId = (ushort)(getStartNetId() + 1);
+			curATransNetId = (ushort)(getStartNetId());
 		}
 		return retId;
 	}
@@ -992,10 +991,11 @@ public partial class Player {
 		}
 
 		// Never spawn a character if it already exists
-		if (character == null) {
+		if (character == null && ownedByLocalPlayer) {
 			bool sendRpc = ownedByLocalPlayer;
-			var charNetId = getCharActorNetId();
 			if (shouldRespawn()) {
+				ushort charNetId = getNextATransNetId();
+
 				if (Global.level.gameMode is TeamDeathMatch && Global.level.teamNum > 2) {
 					List<Player> spawnPoints = Global.level.players.FindAll(
 						p => p.teamAlliance == teamAlliance && p.health > 0 && p.character != null
@@ -1005,7 +1005,10 @@ public partial class Player {
 						Point warpInPos = Global.level.getGroundPosNoKillzone(
 							randomChar.pos, Global.screenH
 						) ?? randomChar.pos;
-						spawnCharAtPoint(warpInPos, randomChar.xDir, charNetId, sendRpc);
+						spawnCharAtPoint(
+							newCharNum, getCharSpawnData(newCharNum),
+							warpInPos, randomChar.xDir, charNetId, sendRpc
+						);
 					} else {
 						var spawnPoint = Global.level.getSpawnPoint(this, !warpedInOnce);
 						int spawnPointIndex = Global.level.spawnPoints.IndexOf(spawnPoint);
@@ -1062,36 +1065,60 @@ public partial class Player {
 
 		var spawnPoint = Global.level.spawnPoints[spawnPointIndex];
 
-		spawnCharAtPoint(new Point(spawnPoint.pos.x, spawnPoint.getGroundY()), spawnPoint.xDir, charNetId, sendRpc);
+		spawnCharAtPoint(
+			newCharNum, getCharSpawnData(newCharNum),
+			new Point(spawnPoint.pos.x, spawnPoint.getGroundY()), spawnPoint.xDir, charNetId, sendRpc
+		);
 	}
 
-	public void spawnCharAtPoint(Point pos, int xDir, ushort charNetId, bool sendRpc) {
+	
+	public byte[] getCharSpawnData(int charNum) {
+		if (ownedByLocalPlayer) {
+			applyLoadoutChange();
+			syncLoadout();
+		}
+		if (charNum == (int)CharIds.X) {
+			return [
+				(byte)loadout.xLoadout.weapon1,
+				(byte)loadout.xLoadout.weapon2,
+				(byte)loadout.xLoadout.weapon3,
+				(byte)loadout.xLoadout.melee
+			];
+		}
+		if (charNum == (int)CharIds.Axl) {
+			return [
+				(byte)loadout.axlLoadout.weapon2,
+				(byte)loadout.axlLoadout.weapon3,
+			];
+		}
+		if (charNum == (int)CharIds.Sigma) {
+			return [
+				(byte)loadout.sigmaLoadout.sigmaForm
+			];
+		}
+		return [];
+	}
+
+	public void spawnCharAtPoint(
+		int spawnCharNum, byte[] extraData,
+		Point pos, int xDir, ushort charNetId, bool sendRpc
+	) {
 		if (sendRpc) {
-			RPC.spawnCharacter.sendRpc(pos, xDir, id, charNetId);
+			RPC.spawnCharacter.sendRpc(spawnCharNum, extraData, pos, xDir, id, charNetId);
 		}
 
 		if (Global.level.gameMode.isTeamMode) {
 			alliance = newAlliance;
 		}
 
-		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
-		charNum = newCharNum;
-		if (isMainPlayer) {
-			previousLoadout = loadout;
-			applyLoadoutChange();
-			hyperChargeSlot = Global.level.is1v1() ? 0 : Options.main.hyperChargeSlot;
-			currentMaverickCommand = (
-				Options.main.maverickStartFollow ? MaverickAIBehavior.Follow : MaverickAIBehavior.Defend
-			);
-		} else if (isAI && Global.level.isTraining()) {
-			previousLoadout = loadout;
-			applyLoadoutChange();
-			hyperChargeSlot = Global.level.is1v1() ? 0 : Options.main.hyperChargeSlot;
-			currentMaverickCommand = (
-				Options.main.maverickStartFollow ? MaverickAIBehavior.Follow : MaverickAIBehavior.Defend
-			);
+		if (character != null) {
+			return;
 		}
-
+		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
+		newCharNum = spawnCharNum;
+		charNum = spawnCharNum;
+		previousLoadout = loadout;
+		applyLoadoutChange();
 		configureWeapons();
 		maxHealth = getMaxHealth();
 		health = maxHealth;
@@ -1107,23 +1134,25 @@ public partial class Player {
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
-			} else if (charNum == (int)CharIds.Rock || serverPlayer.isBot) {
+			} else {
+				newCharNum = (int)CharIds.Rock;
+				charNum = newCharNum;
 				character = new Rock(
 					this, pos.x, pos.y, xDir,
 					false, charNetId, ownedByLocalPlayer
 				);
-			} else {
-				throw new Exception("Error: Non-valid char ID: " + charNum);
 			}
 			lastCharacter = character;
 		}
+		lastCharacter = character;
 
 		if (isAI) {
 			character.addAI();
 		}
 
-		if (character.rideArmor != null) character.rideArmor.xDir = xDir;
-
+		if (character.rideArmor != null) {
+			character.rideArmor.xDir = xDir;
+		}
 		if (isCamPlayer) {
 			Global.level.snapCamPos(character.getCamCenterPos(), null);
 		}

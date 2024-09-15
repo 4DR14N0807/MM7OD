@@ -13,13 +13,13 @@ public class DrawableWrapper {
 	public int[]? size;
 
 	public DrawableWrapper(
-		List<ShaderWrapper> shaders, Drawable drawable, Color color,
-		int[]? size = null
+		List<ShaderWrapper> shaders, Drawable drawable,
+		Color? color = null, int[]? size = null
 	) {
 		shaders?.RemoveAll(s => s == null);
 		this.shaders = shaders;
 		this.drawable = drawable;
-		this.color = color;
+		this.color = color ?? Color.White;
 		this.size = size;
 	}
 }
@@ -63,7 +63,14 @@ public class DrawLayer : Transformable, Drawable {
 				sprite.Rotation = 0;
 				sprite.Color = Color.White;
 				// Get textures.
-				int encodeKey = (oneOff.size[0]*397) ^ oneOff.size[1];
+				int encodeKey = (oneOff.size[0] * 397) ^ oneOff.size[1];
+				// If something goes off.
+				if (!Global.renderTextures.ContainsKey(encodeKey)) {
+					Global.renderTextures[encodeKey] = (
+						new RenderTexture((uint)oneOff.size[0], (uint)oneOff.size[1]),
+						new RenderTexture((uint)oneOff.size[0], (uint)oneOff.size[1])
+					);
+				}
 				RenderTexture front;
 				RenderTexture back;
 				(front, back) = Global.renderTextures[encodeKey];
@@ -292,9 +299,7 @@ public partial class DrawWrappers {
 
 		if (isWorldPos) {
 			DrawLayer drawLayer = getDrawLayer(depth);
-			drawLayer.oneOffs.Add(
-				new DrawableWrapper(shaders, sprite, sprite.Color, [(int)sw, (int)sh])
-			);
+			drawLayer.oneOffs.Add(new DrawableWrapper(shaders, sprite, sprite.Color, [(int)sw, (int)sh]));
 		} else {
 			drawToHUD(sprite);
 		}

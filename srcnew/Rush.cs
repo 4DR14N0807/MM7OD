@@ -57,7 +57,7 @@ public class Rush : Actor, IDamagable {
 			return getJetCollider();
 		}
 		return new Collider(
-			new Rect(0f, 0f, 26, 22).getPoints(),
+			new Rect(0f, 0f, 34, 22).getPoints(),
 			false, this, false, false,
 			HitboxFlag.Hurtbox, new Point(0, 0)
 		);
@@ -70,7 +70,7 @@ public class Rush : Actor, IDamagable {
 
 	public override Collider getGlobalCollider() {
 		int yHeight = 22;
-		var rect = new Rect(0, 0, 26, yHeight);
+		var rect = new Rect(0, 0, 34, yHeight);
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
 
@@ -192,6 +192,10 @@ public class Rush : Actor, IDamagable {
 	}
 
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	}
+
+	public override void onDestroy() {
+		if (character is Rock rock && rock.rush != null) rock.rush = null!; 
 	}
 }
 

@@ -18,7 +18,9 @@ public class RemoteMine : Weapon {
 	public override bool canShoot(int chargeLevel, Player player) {
 		Bass? bass = player.character as Bass;
 
-		return bass?.rMine == null && base.canShoot(chargeLevel, player);
+		return
+		bass?.rMine == null && bass?.rMineExplosion == null &&
+		base.canShoot(chargeLevel, player);
 	}
 	public override void shoot(Character character, params int[] args) {
 		Point shootPos = character.getShootPos();
@@ -117,6 +119,7 @@ public class RemoteMineExplosionProj : Projectile {
 	int expTime;
 	Anim? part;
 	int animLap;
+	Bass bass = null!;
 
 	public RemoteMineExplosionProj(
 		Point pos, int xDir, Player player, 
@@ -130,6 +133,8 @@ public class RemoteMineExplosionProj : Projectile {
 		maxTime = 0.75f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
+		bass = player.character as Bass ?? throw new NullReferenceException();
+		bass.rMineExplosion = this;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
@@ -181,5 +186,11 @@ public class RemoteMineExplosionProj : Projectile {
 
 			if (part.destroyed) part = null;
 		} 
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+
+		bass.rMineExplosion = null!;
 	}	
 }

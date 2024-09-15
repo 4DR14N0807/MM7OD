@@ -628,11 +628,11 @@ public class GameMode {
 				renderHealthAndWeapon(drawPlayer, HUDHealthPosition.Left);
 			}
 			// Currency
-			if (false && !Global.level.is1v1()) {
-				Global.sprites["hud_scrap"].drawToHUD(0, 4, 138);
+			if (!Global.level.is1v1()) {
+				Global.sprites["hud_scrap"].drawToHUD(0, 4, 108);
 				Fonts.drawText(
 					FontType.WhiteSmall,
-					"x" + drawPlayer.currency.ToString(), 22, 140, Alignment.Left
+					"x" + drawPlayer.currency.ToString(), 22, 110, Alignment.Left
 				);
 			}
 			if (drawPlayer.character is MegamanX mmx && mmx.unpoShotCount > 0) {
@@ -1950,6 +1950,10 @@ public class GameMode {
 			} else if (mew.mechaniloidType == MechaniloidType.Fish && level.mainPlayer.fishMechaniloidCount() > 0) {
 				drawWeaponText(x, y, level.mainPlayer.fishMechaniloidCount().ToString());
 			}
+		}
+
+		if (weapon is MagicCard && level.mainPlayer.character is Bass bass && bass.cardsCount > 0) {
+			drawWeaponText(x, y - 18, bass.cardsCount.ToString());
 		}
 
 		if (weapon is MagnetMine && level.mainPlayer.magnetMines.Count > 0) {

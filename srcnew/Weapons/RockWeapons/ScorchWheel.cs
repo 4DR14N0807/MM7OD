@@ -372,6 +372,7 @@ public class Burning : CharState {
 		character.stopMoving();
 		player.delayETank();
 		player.delayLTank();
+		character.isBurnState = true;
 	}
 
 	public override void onExit(CharState newState) {
@@ -382,6 +383,7 @@ public class Burning : CharState {
 		character.useGravity = true;
 		player.delayETank();
 		player.delayLTank();
+		character.isBurnState = false;
 	}
 
 	public override void update() {

@@ -320,6 +320,8 @@ public enum BassProjIds {
 	TenguBladeProj,
 	TenguBladeDash,
 	MagicCard,
+	MagicCardSSpawn,
+	MagicCardS,
 }
 
 public enum BluesProjIds  {

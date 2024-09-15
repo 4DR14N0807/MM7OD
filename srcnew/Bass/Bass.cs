@@ -11,9 +11,13 @@ public class Bass : Character {
 	public SpreadDrillProj? sDrill;
 	public SpreadDrillMediumProj? sDrillM;
 	public RemoteMineProj? rMine;
+	public RemoteMineExplosionProj? rMineExplosion;
 	public float wBurnerAngle;
 	public int wBurnerAngleMod = 1;
 	public float tBladeDashCooldown;
+	public int cardsCount;
+	public float showNumberTime;
+	public int lastCardNumber;
 
 	// Modes.
 	public bool isSuperBass;
@@ -48,6 +52,9 @@ public class Bass : Character {
 		base.update();
 		Helpers.decrementFrames(ref weaponCooldown);
 		Helpers.decrementFrames(ref tBladeDashCooldown);
+		Helpers.decrementFrames(ref showNumberTime);
+
+		if (showNumberTime > 0) drawCardNumber(lastCardNumber);
 
 		// Shoot controls.
 		bool shootPressed;
@@ -226,6 +233,15 @@ public class Bass : Character {
 		return indices.Select(index => {
 			return getAllWeapons().Find(w => w.index == index).clone();
 		}).ToList();;
+	}
+
+	public void drawCardNumber(int number) {
+		Point center = getCenterPos();
+
+		Global.sprites["magic_card_numbers"].draw(
+			number, center.x, center.y - 16, 
+			1, 1, null, 1, 1, 1, zIndex + 10
+		);
 	}
 
 	public override string getSprite(string spriteName) {

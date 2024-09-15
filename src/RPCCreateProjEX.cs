@@ -81,6 +81,8 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.CopyVisionLemon, CopyVisionLemon.rpcInvoke },
 		//{ (int)BassProjIds.IceWall, IceWallProj.rpcInvoke },
 		{ (int)BassProjIds.MagicCard, MagicCardProj.rpcInvoke },
+		{ (int)BassProjIds.MagicCardSSpawn, MagicCardSpecialSpawn.rpcInvoke },
+		{ (int)BassProjIds.MagicCardS, MagicCardSpecialProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMine, RemoteMineProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMineExplosion, RemoteMineExplosionProj.rpcInvoke },
 		{ (int)BassProjIds.SpreadDrill, SpreadDrillProj.rpcInvoke },

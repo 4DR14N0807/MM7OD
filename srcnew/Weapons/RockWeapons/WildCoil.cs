@@ -118,7 +118,6 @@ public class WildCoilChargedProj : Projectile {
 	int bounceCounter;
 	int bounceBuff;
 	bool bouncedOnce;
-	Anim outline;
 
 	public WildCoilChargedProj(
 		Point pos, int xDir, Player player, 
@@ -146,10 +145,6 @@ public class WildCoilChargedProj : Projectile {
 		if (type == 0) vel.x = speed * xDir;
 		else vel.x = -speed * xDir;
 
-		outline = new Anim(pos, "wild_coil_outline1", xDir, player.getNextActorNetId(), false, true);
-		outline.frameIndex = 3;
-		outline.frameSpeed = 0;
-
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
@@ -171,21 +166,15 @@ public class WildCoilChargedProj : Projectile {
 		if (soundCooldown > 0) Helpers.decrementTime(ref soundCooldown);
 
 		bounceBuff = (int)bounceCounter / bounceReq;
-		outline?.changePos(pos);
-		if (bouncedOnce && outline != null) outline.frameIndex = frameIndex;
 
 		if (bounceBuff < 3) {
 			switch (bounceBuff) {
 				case 1:
-					damager.damage = 3;
-					damager.flinch = 4;
-					outline?.changeSprite("wild_coil_outline2", false);
+					updateDamager(3, 4);
 					break;
 
 				case 2:
-					damager.damage = 3;
-					damager.flinch = Global.halfFlinch;
-					outline?.changeSprite("wild_coil_outline3", false);
+					updateDamager(3, Global.halfFlinch);
 					break;
 			}
 		}
@@ -194,9 +183,7 @@ public class WildCoilChargedProj : Projectile {
 
 	public override void onHitWall(CollideData other) {
 		//if (!ownedByLocalPlayer) return;
-
 		var normal = other.hitData.normal ?? new Point(0, -1);
-
 
 		if (!normal.isSideways()) {
 			changeSprite("wild_coil_charge_jump", true);
@@ -219,13 +206,24 @@ public class WildCoilChargedProj : Projectile {
 
 			if (frameIndex > 0) {
 				frameIndex = 0;
-				outline.frameIndex = 0;
 			}
 		} else destroySelf(); 	
 	}
 
-	public override void onDestroy() {
-		base.onDestroy();
-		if (outline != null) outline.destroySelf();
+	public override void render(float x, float y) {
+		base.render(x, y);
+		int frame = bouncedOnce ? frameIndex : 3;
+
+		Global.sprites[getOutline()].draw(
+			frame, pos.x, pos.y, xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex
+		);
+	}
+
+	string getOutline() {
+		return bounceBuff switch  {
+			0 => "wild_coil_outline1",
+			1 => "wild_coil_outline2",
+			_ => "wild_coil_outline3"
+		};
 	}
 }

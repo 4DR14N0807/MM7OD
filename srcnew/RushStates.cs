@@ -348,10 +348,16 @@ public class RushSearchState : RushState {
 	void getRandomItem(int dice) {
 		var pl = Global.level.mainPlayer;
 		var clonePos = pickupPos.clone();
+		string text = "";
+		FontType font;
 
 		// 20 Bolts.
-		if (dice is > 95) {
+		if (dice is > 95)
+		{
 			Global.playSound("upgrade");
+			text = "20 BOLTS!!!";
+			font = FontType.Green;
+
 			var pickups = new List<Pickup>() {
 				new SmallBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
 				true, true),
@@ -360,45 +366,72 @@ public class RushSearchState : RushState {
 				new LargeBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
 				true, true),
 			};
+
 			foreach (var pickup in pickups) {
 				float velX = Helpers.randomRange(1, 60) * Helpers.randomRange(-1, 1);
 				pickup.vel = new Point(velX, -360);
-			} return; 
-		} else if (dice is >= 86 and <= 95) {
+			}
+		} 
+		else if (dice is >= 86 and <= 95) 
+		{
 			// Large HP/Ammo capsule.
 			Global.playSound("upgrade");
 			if (dice % 2 == 0) {
+				text = "LARGE HEALTH CAPSULE!";
+				font = FontType.Yellow;
 				new LargeHealthPickup(pl, clonePos, pl.getNextActorNetId(), 
 				true, true) {vel = new Point(0, -360)};
 			} else {
+				text = "LARGE AMMO CAPSULE!";
+				font = FontType.Orange;
 				new LargeAmmoPickup(pl, clonePos, pl.getNextActorNetId(), 
 				true, true) {vel = new Point(0, -360)};
-			} return;
-		} else if (dice is >= 71 and <= 85) {
+			}
+		} 
+		else if (dice is >= 71 and <= 85) 
+		{
 			// Small HP/Ammo capsule.
 			Global.playSound("rush_search_end");
 			if (dice % 2 == 0) {
+				text = "Small health capsule";
+				font = FontType.Yellow;
 				new SmallHealthPickup(pl, clonePos, pl.getNextActorNetId(), 
 				true, true) {vel = new Point(0, -360)};
 			} else {
+				text = "Small ammo capsule";
+				font = FontType.Orange;
 				new SmallAmmoPickup(pl, clonePos, pl.getNextActorNetId(), 
 				true, true) {vel = new Point(0, -360)};
-			} return;
-		} else if (dice is >= 41 and <= 70) {
+			}
+		}
+		else if (dice is >= 41 and <= 70) 
+		{
 			//5 Bolts.
 			Global.playSound("rush_search_end");
+			text = "5 Bolts";
+			font = FontType.Green;
 			new SmallBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
-			true, true)  {vel = new Point(0, -360)}; return;
-		} else if (dice is >= 6 and <= 40) {
+			true, true)  {vel = new Point(0, -360)};
+		}
+		else if (dice is >= 6 and <= 40) 
+		{
 			// Trash.
 			Global.playSound("rush_search_end");
+			text = "Try Again.";
+			font = FontType.Grey;
 			pickup = new Trash(pickupPos, rush.player.getNextActorNetId(), 
-			sendRpc: true); return;
-		} else {
+			sendRpc: true); 
+		} 
+		else 
+		{
 			// Bomb.
 			Global.playSound("rush_search_end");
+			text = "KA-BOOM";
+			font = FontType.Red;
 			new RSBombProj(pickupPos, 1, rush.player, rush.player.getNextActorNetId(), true);
-		} return;
+		}
+
+		Fonts.drawText(font, text, Global.halfScreenW, 64, Alignment.Center);
 	}
 }
 
@@ -464,7 +497,7 @@ public class RushWarpOut : RushState {
 		
 		if (time >= 60) {
 			rush.destroySelf();
-			if (rock != null) rock.rush = null!;
+			//if (rock != null) rock.rush = null!;
 		} 
 	}
 }

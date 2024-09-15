@@ -145,7 +145,7 @@ public class ShootAlt : CharState {
 	}
 
 	public override bool canEnter(Character character) {
-		if (character.charState is Burning) return false;
+		if (character.isBurnState) return false;
 		return base.canEnter(character);
 	}
 

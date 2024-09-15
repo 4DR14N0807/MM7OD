@@ -839,6 +839,26 @@ public class OptionsMenu : IMainMenu {
 					},
 					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
 				),
+				//Switch Shield Dash input.
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.switchDashInput);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"SWITCH DASH INPUT:",
+							pos.x, pos.y
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.switchDashInput),
+							pos.x + 200, pos.y
+						);
+					},
+					"If enabled, you will use shield dash with \n" + "slide input and viceversa."
+				)
 			};
 		} else if (charNum == 7) {
 			menuOptions = new List<MenuOption>() {

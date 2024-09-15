@@ -309,8 +309,7 @@ public class Blues : Character {
 		if (!Global.level.isHyper1v1()) {
 			if (isBreakMan) { 
 				if (musicSource == null) {
-					Global.level.delayedActions.Add( 
-						new DelayedAction(() => { addMusicSource("breakman", getCenterPos(), true); }, 3f) );
+					addMusicSource("breakman", getCenterPos(), true);
 				} 
 			} else {
 				destroyMusicSource();
@@ -486,6 +485,7 @@ public class Blues : Character {
 
 	public void reviveBlues() {
 		changeState(new BluesRevive(), true);
+		player.currency -= reviveCost;
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
@@ -494,6 +494,10 @@ public class Blues : Character {
 	}
 
 	public override bool normalCtrl() {
+		//For getting the slide and shield dash input
+		bool shieldDash = shieldDashInput();
+		bool slide = slideInput();
+
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
@@ -531,14 +535,12 @@ public class Blues : Character {
 				}
 			}
 		}
-		if (player.input.isPressed(Control.Jump, player) &&
-			player.input.isHeld(Control.Down, player) &&
-			canSlide()
-		) {
+		if (slide && canSlide()) 
+		{
 			changeState(new BluesSlide(), true);
 			return true;
 		}
-		if (player.input.isPressed(Control.Dash, player) && canShieldDash()) {
+		if (shieldDash && canShieldDash()) {
 			addCoreAmmo(2);
 			changeState(new ShieldDash(), true);
 			return true;
@@ -842,6 +844,24 @@ public class Blues : Character {
 			3 => 6,
 			_ => 6
 		};
+	}
+
+	public bool shieldDashInput() {
+		if (Options.main.switchDashInput) {
+			return 
+				player.input.isPressed(Control.Jump, player) &&
+				player.input.isHeld(Control.Down, player);
+		}
+		return player.input.isPressed(Control.Dash, player);
+	}
+
+	public bool slideInput() {
+		if (Options.main.switchDashInput) {
+			return player.input.isPressed(Control.Dash, player);
+		}
+		return
+			player.input.isPressed(Control.Jump, player) &&
+			player.input.isHeld(Control.Down, player);
 	}
 
 	public bool isShieldFront() {

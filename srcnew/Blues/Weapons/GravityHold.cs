@@ -78,7 +78,7 @@ public class GravityHoldProj : Projectile {
 		if (r >= midR) {
 			changeColor = true;
 		}
-		if (!effect) {
+		if (!effect && ownedByLocalPlayer) {
 			new GravityHoldEffect(pos, damager.owner.character, damager.owner.character.grounded);
 			effect = true;
 		}

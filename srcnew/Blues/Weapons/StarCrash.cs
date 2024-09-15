@@ -47,7 +47,7 @@ public class StarCrash : Weapon {
 }
 
 public class StarCrashProj : Projectile {
-	Blues? blues;
+	Blues blues;
 	float starAngle;
 	int radius = 30;
 	int coreCooldown = 50;
@@ -63,7 +63,7 @@ public class StarCrashProj : Projectile {
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.StarCrash;
-		blues = player.character as Blues;
+		blues = player.character as Blues ?? throw new NullReferenceException();
 
 		for(int i = 0; i < 3; i++) {
 			Sprite star = new Sprite("star_crash");
@@ -119,12 +119,12 @@ public class StarCrashProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x,y);
-		Point center = blues.getCenterPos();
+		Point center = pos;
 		
 		for (int i = 0; i < 3; i++) {
 			float extraAngle = (starAngle + i * 120) % 360;
-			float xPlus = pos.x + (Helpers.cosd(extraAngle) * radius);
-			float yPlus = pos.y + (Helpers.sind(extraAngle) * radius);
+			float xPlus = (Helpers.cosd(extraAngle) * radius);
+			float yPlus = (Helpers.sind(extraAngle) * radius);
 
 			stars[i].draw(
 				starFrame % 4, center.x + xPlus, center.y + yPlus, 

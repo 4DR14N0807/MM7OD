@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MMXOnline;
 
@@ -21,14 +22,39 @@ public class MagicCard : Weapon {
 		if (character is not Bass bass) {
 			return;
 		}
+
 		Point shootPos = character.getShootPos();
 		float shootAngle = bass.getShootAngle(true, false);
 		Player player = character.player;
 
-		var card = new MagicCardProj(
-			shootPos, character.getShootXDir(), shootAngle, player, player.getNextActorNetId(), true
-		);
-		cardsOnField.Add(card);
+		int effect = 0;
+		bass.cardsCount++;
+
+		if (bass.cardsCount >= 7) {
+			bass.cardsCount = 0;
+			addAmmo(-3, player);
+			bass.playSound("upgrade");
+			effect = Helpers.randomRange(1,4);
+			// 0: No effect.
+			// 1: xDir flip.
+			// 2: Duplicate on collision.
+			// 3: Ammo refill.
+			// 4: Multiple Cards.
+
+			bass.showNumberTime = 60;
+			bass.lastCardNumber = effect;
+		}
+
+		if (effect >= 4) {
+			new MagicCardSpecialSpawn(shootPos, character.getShootXDir(), 
+				player, shootAngle, player.getNextActorNetId(), true);
+		} else {
+			var card = new MagicCardProj(
+				this, shootPos, character.getShootXDir(), shootAngle, 
+				player, player.getNextActorNetId(), effect, true
+			);
+			cardsOnField.Add(card);
+		}
 	}
 }
 
@@ -39,23 +65,33 @@ public class MagicCardProj : Projectile {
 	float maxReverseTime;
 	const float projSpeed = 480;
 	public Pickup? pickup;
+	Weapon wep;
+	int effect;
+	int hits;
+	float startAngle;
 
 	public MagicCardProj(
-		Point pos, int xDir, float byteAngle, 
-		Player player, ushort? netProjId, bool rpc = false
+		Weapon weapon, Point pos, int xDir, float byteAngle, Player player, 
+		ushort? netProjId, int effect = 0, bool rpc = false
 	) : base (
 		MagicCard.netWeapon, pos, xDir, 0, 1,
-		player, "magic_card_proj", 0, 0, 
+		player, "magic_card_proj", 0, 0.3f, 
 		netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BassProjIds.MagicCard;
 		maxTime = 3f;
 		maxReverseTime = 0.45f;
-		this.byteAngle = byteAngle;
-		shooter = player.character;
-		vel = Point.createFromByteAngle(byteAngle) * 425;
-		canBeLocal = false;
 
+		this.byteAngle = byteAngle;
+		startAngle = byteAngle;
+		this.effect = effect;
+		wep = weapon;
+		shooter = player.character;
+		destroyOnHit = effect != 3;
+
+		vel = Point.createFromByteAngle(byteAngle) * 425;	
+		
+		canBeLocal = false;
 		if (rpc) {
 			rpcCreateByteAngle(pos, player, netId, byteAngle, (byte)(xDir + 1));
 		}
@@ -63,7 +99,8 @@ public class MagicCardProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MagicCardProj(
-			arg.pos, arg.extraData[0] - 1, arg.byteAngle, arg.player, arg.netId
+			MagicCard.netWeapon, arg.pos, arg.extraData[0] - 1, 
+			arg.byteAngle, arg.player, arg.netId
 		);
 	}
 
@@ -75,7 +112,9 @@ public class MagicCardProj : Projectile {
 			return;
 		}
 
-		if (!reversed && time > maxReverseTime) reversed = true;
+		if (!ownedByLocalPlayer) return;
+
+		if (hits >= 3 || time > maxReverseTime) reversed = true;
 
 		if (reversed) {
 			vel = new Point(0, 0);
@@ -95,7 +134,13 @@ public class MagicCardProj : Projectile {
 			move(speed);
 			byteAngle = speed.byteAngle;
 
-			if (pos.distanceTo(returnPos) < 10) {
+			if (pos.distanceTo(returnPos) < 16) {
+				foreach (Weapon w in shooter.player.weapons) {
+					if (w == wep) {
+						w.addAmmo(getAmmo(), shooter.player);
+						continue;
+					} 
+				}
 				destroySelf();
 			}
 		}
@@ -130,6 +175,35 @@ public class MagicCardProj : Projectile {
 			}
 			destroySelf();
 		}
+
+		if (effect == 2) {
+			var proj = other.gameObject as Projectile;
+			
+			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
+				destroySelf();
+
+				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, 1, true);
+				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, -1, true);
+			}
+		}
+	}
+
+	public override void onHitDamagable(IDamagable damagable) {
+		base.onHitDamagable(damagable);
+
+		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
+				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
+			) {
+				if (damagable is not Character chr) return;
+				else {
+
+					if (effect == 1) chr.xDir *= -1;
+					hits++;
+					if (hits >= 4) destroySelf();
+				}
+			}
+		}
 	}
 
 	public override void onDestroy() {
@@ -137,6 +211,145 @@ public class MagicCardProj : Projectile {
 		if (pickup != null) {
 			pickup.useGravity = true;
 			pickup.collider.isTrigger = false;
+		}
+	}
+
+	float getAmmo() {
+		if (effect != 3 || hits == 0) return 1;
+		return 2 * hits;
+	}
+}
+
+public class MagicCardSpecialSpawn : Projectile {
+
+	float cooldown;
+	int count = 1;
+	float startAngle;
+
+	public MagicCardSpecialSpawn(
+		Point pos, int xDir, Player player, float startAngle,
+		ushort? netProjId, bool rpc = false
+	) : base(
+		MagicCard.netWeapon, pos, xDir, 0, 0,
+		player, "generic_explosion", 0, 0, netProjId,
+		player.ownedByLocalPlayer
+	) {
+		projId = (int)BassProjIds.MagicCardSSpawn;
+		setIndestructableProperties();
+		maxTime = 2;
+		this.startAngle = startAngle;
+		
+		if (rpc) {
+			byte[] extraArgs = new byte[] { (byte)startAngle };
+
+			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new MagicCardSpecialSpawn(
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
+		);
+	}
+
+	public override void update() {
+		base.update();
+
+		Helpers.decrementFrames(ref cooldown);
+
+		if (cooldown <= 0) {
+
+			float t = count;
+			if (t % 2 == 0) {
+				t /= 2;
+				t *= -1;
+			} else {
+				t = MathF.Ceiling(t / 2);
+			}
+
+			new MagicCardSpecialProj(pos, xDir, damager.owner, 
+				damager.owner.getNextActorNetId(), startAngle, (int)t, true);
+
+			count++;
+			cooldown = 9;
+
+			if (count >= 5) destroySelf();
+		} 
+	}
+}
+
+
+public class MagicCardSpecialProj : Projectile {
+
+	int type;
+	Actor? closestEnemy;
+
+	public MagicCardSpecialProj(
+		Point pos, int xDir, Player player, ushort? netProjId, 
+		float startAngle, int type, bool rpc = false
+	) : base(
+		MagicCard.netWeapon, pos, xDir, 425, 1,
+		player, "magic_card_proj", 0, 0, 
+		netProjId, player.ownedByLocalPlayer
+	) {
+		projId = (int)BassProjIds.MagicCardS;
+		maxTime = 3;
+		this.type = type;
+		base.byteAngle = (type * 10) + startAngle;
+		if (xDir < 0 && startAngle != 128) byteAngle = -byteAngle + 128;
+		vel = Point.createFromByteAngle(byteAngle.Value).times(speed);
+
+		if (rpc) {
+			byte[] extraArgs = new byte[] { (byte)startAngle, (byte)type };
+
+			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new MagicCardSpecialProj(
+			arg.pos, arg.xDir, arg.player, arg.netId,
+			arg.extraData[0], arg.extraData[1] 
+		);
+	}
+
+	public override void update() {
+		base.update();
+
+		if (time >= 0.33f) followTarget();
+		else byteAngle = vel.byteAngle;
+	}
+
+	public void followTarget() {
+		if (closestEnemy == null) {
+			closestEnemy = Global.level.getClosestTarget(
+			new Point (pos.x, pos.y),
+			damager.owner.alliance,
+			false, 200
+			);
+		} else {
+			Point enemyPos = closestEnemy.getCenterPos();
+			float moveSpeed = 425;
+			stopMovingWeak();
+			Point speed = pos.directionToNorm(enemyPos).times(moveSpeed);
+			byteAngle = speed.byteAngle;
+
+			// X axis follow.
+			if (pos.x < enemyPos.x) {
+				move(new Point(moveSpeed, 0));
+				if (pos.x > enemyPos.x) { pos.x = enemyPos.x; }
+			} else if (pos.x > enemyPos.x) {
+				move(new Point(-moveSpeed, 0));
+				if (pos.x < enemyPos.x) { pos.x = enemyPos.x; }
+			}
+			// Y axis follow.
+			if (pos.y < enemyPos.y) {
+				move(new Point(0, moveSpeed));
+				if (pos.y > enemyPos.y) { pos.y = enemyPos.y; }
+			} else if (pos.y > enemyPos.y) {
+				move(new Point(0, -moveSpeed));
+				if (pos.y < enemyPos.y) { pos.y = enemyPos.y; }
+			}
 		}
 	}
 }

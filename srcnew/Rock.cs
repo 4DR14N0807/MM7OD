@@ -339,7 +339,7 @@ public class Rock : Character {
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (charState is LegBreakerState) return false;
-		if (charState is Burning) return false;
+		if (isBurnState) return false;
 		if (rootTime > 0) return false;
 		return true;
 	}

@@ -103,6 +103,7 @@ public partial class Character : Actor, IDamagable {
 	public float burningRecoveryCooldown;
 	public bool isDarkHoldState;
 	public bool isStrikeChainState;
+	public bool isBurnState; //Scorch Wheel burn.
 
 	public float limboRACheckCooldown;
 	public RideArmor? rideArmor;
@@ -413,7 +414,7 @@ public partial class Character : Actor, IDamagable {
 	
 	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
-		if (charState is Burning) return;
+		if (isBurnState) return;
 		if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
@@ -960,24 +961,24 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		if (burnStunStacks > 0 && charState is not Burning) {
-			burnEffectTime += Global.spf;
-			if (burnEffectTime >= Global.spf * 11) {
+			burnEffectTime += Global.speedMul;
+			if (burnEffectTime >= 11) {
 				burnEffectTime = 0;
 
 				Point burnPos = getCenterPos();
 
-				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
+				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
 
 				if (burnStunStacks >= 2) {
-					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
 				}
 				if (burnStunStacks >= 3) {
-					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
-					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -60)};
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
+					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -60)};
 				}
 				if (burnStunStacks >= 4) {
-					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, player.getNextActorNetId(), true, true, host: this);
-					new Anim(burnPos.addRand(16, 16), "dust", 1, player.getNextActorNetId(), true, true, host: this) {vel = new Point(0, -120)};
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
+					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -120)};
 				}
 			}	
 		}
@@ -1621,7 +1622,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void burnStun(Player attacker) {
-		if (charState is Burning) return;
+		if (isBurnState) return;
 
 		changeState(new Burning(-xDir, attacker), true);
 	}
@@ -3233,7 +3234,7 @@ public partial class Character : Actor, IDamagable {
 		isDWrapped = true;
 		useGravity = false;
 		stopMoving();
-		changeSpriteFromName("idle", true);
+		//changeSpriteFromName("idle", true);
 		//if (globalCollider != null) globalCollider.isClimbable = true;
 		//new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, null, true);
 		//playSound("hit");
@@ -3671,7 +3672,8 @@ public partial class Character : Actor, IDamagable {
 			player.isDefenderFavored,
 			invulnTime > 0,
 			isDarkHoldState,
-			isStrikeChainState
+			isStrikeChainState,
+			isBurnState
 		]));
 
 		// Bool mask. Pos 5.
@@ -3710,7 +3712,11 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)MathF.Ceiling(vaccineTime * 30));
 			boolMask[6] = true;
 		}
-		if (rideArmor?.netId != null && rideArmor.netId != 0 ||
+		if (burnStunStacks > 0) {
+			customData.Add((byte)burnStunStacks);
+			boolMask[7] = true;
+		}
+		/*if (rideArmor?.netId != null && rideArmor.netId != 0 ||
 			rideChaser?.netId != null && rideChaser.netId != 0
 		) {
 			if (rideArmor != null) {
@@ -3718,8 +3724,9 @@ public partial class Character : Actor, IDamagable {
 			} else {
 				customData.AddRange(BitConverter.GetBytes(rideChaser?.netId ?? ushort.MaxValue));
 			}
-			boolMask[7] = true;
-		}
+			boolMask[8] = true;
+		}*/
+
 		// Add the final value of the bool mask.
 		customData[boolMaskPos] = Helpers.boolArrayToByte(boolMask);
 
@@ -3743,6 +3750,7 @@ public partial class Character : Actor, IDamagable {
 		invulnTime = (boolData[1] ? 1 : 0);
 		isDarkHoldState = boolData[2];
 		isStrikeChainState = boolData[3];
+		isBurnState = boolData[4];
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[6]);
@@ -3777,6 +3785,10 @@ public partial class Character : Actor, IDamagable {
 			pos++;
 		}
 		if (boolMask[7]) {
+			burnStunStacks = data[pos];
+			pos++;
+		}
+		if (boolMask[8]) {
 			Actor? vehicleActor = Global.level.getActorByNetId(BitConverter.ToUInt16(data[pos..(pos+2)]));
 			if (vehicleActor is RideArmor rav) {
 				rideArmor = rav;

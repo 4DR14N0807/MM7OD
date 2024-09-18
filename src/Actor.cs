@@ -308,7 +308,7 @@ public partial class Actor : GameObject {
 			return;
 		}
 		if (sprite.name == spriteName) {
-			if (this is not Character && resetFrame) {
+			if (resetFrame) {
 				sprite.restart();
 			}
 			return;

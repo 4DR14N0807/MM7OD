@@ -3700,9 +3700,15 @@ public partial class Character : Actor, IDamagable {
 		customData.Add(0);
 
 		// Add each status effect and enabled their respective flag.
-		if (acidTime > 0) {
-			customData.Add((byte)MathF.Ceiling(acidTime * 20));
-			boolMask[0] = true;
+		if (rideArmor?.netId != null && rideArmor.netId != 0 ||
+			rideChaser?.netId != null && rideChaser.netId != 0
+		) {
+			if (rideArmor != null) {
+				customData.AddRange(BitConverter.GetBytes(rideArmor?.netId ?? ushort.MaxValue));
+			} else {
+				customData.AddRange(BitConverter.GetBytes(rideChaser?.netId ?? ushort.MaxValue));
+			}
+			boolMask[8] = true;
 		}
 		if (burnTime > 0) {
 			customData.Add((byte)MathF.Ceiling(burnTime * 30));
@@ -3732,16 +3738,6 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)burnStunStacks);
 			boolMask[7] = true;
 		}
-		/*if (rideArmor?.netId != null && rideArmor.netId != 0 ||
-			rideChaser?.netId != null && rideChaser.netId != 0
-		) {
-			if (rideArmor != null) {
-				customData.AddRange(BitConverter.GetBytes(rideArmor?.netId ?? ushort.MaxValue));
-			} else {
-				customData.AddRange(BitConverter.GetBytes(rideChaser?.netId ?? ushort.MaxValue));
-			}
-			boolMask[8] = true;
-		}*/
 
 		// Add the final value of the bool mask.
 		customData[boolMaskPos] = Helpers.boolArrayToByte(boolMask);
@@ -3773,8 +3769,19 @@ public partial class Character : Actor, IDamagable {
 		int pos = 7;
 		// Update and increase pos as we go.
 		if (boolMask[0]) {
-			acidTime = data[pos] / 30f;
-			pos++;
+			Actor? vehicleActor = Global.level.getActorByNetId(BitConverter.ToUInt16(data[pos..(pos+2)]));
+			if (vehicleActor is RideArmor rav) {
+				rideArmor = rav;
+				rav.zIndex = zIndex - 10;
+			}
+			else if (vehicleActor is RideChaser rcv) {
+				rideChaser = rcv;
+				rcv.zIndex = zIndex - 10;
+			}
+			pos += 2;
+		} else {
+			rideArmor = null;
+			rideChaser = null;
 		}
 		if (boolMask[1]) {
 			burnTime = data[pos] / 30f;
@@ -3804,21 +3811,7 @@ public partial class Character : Actor, IDamagable {
 			burnStunStacks = data[pos];
 			pos++;
 		}
-		if (boolMask[8]) {
-			Actor? vehicleActor = Global.level.getActorByNetId(BitConverter.ToUInt16(data[pos..(pos+2)]));
-			if (vehicleActor is RideArmor rav) {
-				rideArmor = rav;
-				rav.zIndex = zIndex - 10;
-			}
-			else if (vehicleActor is RideChaser rcv) {
-				rideChaser = rcv;
-				rcv.zIndex = zIndex - 10;
-			}
-			pos += 2;
-		} else {
-			rideArmor = null;
-			rideChaser = null;
-		}
+		
 	}
 }
 

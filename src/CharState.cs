@@ -887,7 +887,7 @@ public class Dash : CharState {
 
 		base.update();
 		
-		isColliding = Global.level.checkCollisionActor(character, 0, -10) != null;
+		isColliding = Global.level.checkTerrainCollisionOnce(character, 0, -10) != null;
 
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop && !isColliding) {
 			dashTime = 50;

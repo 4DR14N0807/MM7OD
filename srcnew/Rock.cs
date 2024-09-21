@@ -445,7 +445,7 @@ public class Rock : Character {
 	}
 
 	public bool canRideRushJet() {
-		return charState is Fall && Global.level.checkCollisionActor(this, 0, -20) == null;
+		return charState is Fall && Global.level.checkTerrainCollisionOnce(this, 0, -20) == null;
 	}
 
 	public static List<Weapon> getAllRushWeapons() {

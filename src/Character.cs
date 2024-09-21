@@ -1259,7 +1259,7 @@ public partial class Character : Actor, IDamagable {
 			vel.y = 0;
 		}
 
-		if (Global.level.checkCollisionActor(this, 0, 1) != null) {
+		if (Global.level.checkTerrainCollisionOnce(this, 0, 1) != null) {
 			if (gHolded && gHoldModifier > 0) {
 				Damager.applyDamage(
 					gHoldOwner, 2, 1, Global.halfFlinch, this,

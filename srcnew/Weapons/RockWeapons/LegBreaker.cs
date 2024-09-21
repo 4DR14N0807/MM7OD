@@ -55,7 +55,7 @@ public class LegBreakerState : CharState {
 		float inputXDir = player.input.getInputDir(player).x;
 		bool cancel = player.input.isPressed(getOppositeDir(initialSlideDir), player);
 
-		if (Global.level.checkCollisionActor(character, 0, -24) != null) isColliding = true;
+		if (Global.level.checkTerrainCollisionOnce(character, 0, -24) != null) isColliding = true;
 		else isColliding = false;
 
 		if (stateTime >= Global.spf * 30 && !isColliding) {

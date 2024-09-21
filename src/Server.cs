@@ -571,7 +571,13 @@ public class Server {
 				}
 			} else if (im.MessageType == NetIncomingMessageType.Data) {
 				byte rpcIndexByte = im.ReadByte();
-				RPC rpcTemplate = RPC.templates[rpcIndexByte];
+				RPC rpcTemplate;
+				if (rpcIndexByte >= RPC.templates.Length) {
+					rpcTemplate = new RPCUnknown();
+					rpcTemplate.index = rpcIndexByte;
+				} else {
+					rpcTemplate = RPC.templates[rpcIndexByte];
+				}
 				if (rpcTemplate.isServerMessage) {
 					processServerMessage(im, rpcTemplate);
 				} else {
@@ -882,9 +888,20 @@ public class Server {
 
 			om.Write(rpcIndexByte);
 			om.Write(argCount);
+			byte[] bytes;
 
-			var bytes = im.ReadBytes(argCount);
-			foreach (var b in bytes) {
+			// Safetly for Unknown RPCs.
+			if (rpcTemplate is RPCUnknown) {
+				bytes = new byte[argCount];
+				if (!im.TryReadBytes(bytes)) {
+					return;
+				}
+			}
+			// For know ones we just can and should crash.
+			else {
+				bytes = im.ReadBytes(argCount);
+			}
+			foreach (byte b in bytes) {
 				om.Write(b);
 			}
 

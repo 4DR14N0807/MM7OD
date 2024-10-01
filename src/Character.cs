@@ -447,7 +447,7 @@ public partial class Character : Actor, IDamagable {
 		if (oilTime > 0 && player.oilShader != null) {
 			player.oilShader.SetUniform("oilFactor", 0.25f + (oilTime / 8f) * 0.75f);
 			shaders.Add(player.oilShader);
-		}
+		} 
 		/*
 		if (vaccineTime > 0 && player.vaccineShader != null) {
 			player.vaccineShader.SetUniform("vaccineFactor", vaccineTime / 8f);
@@ -466,6 +466,10 @@ public partial class Character : Actor, IDamagable {
 		if (burnStunStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
 			player.burnStateShader.SetUniform("burnStateStacks", burnStunStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
+		}
+		if (player.evilEnergyStacks > 0 && player.evilEnergyShader != null && this is Bass) {
+			player.evilEnergyShader.SetUniform("evilEnergyStacks", player.evilEnergyStacks / 2);
+			shaders.Add(player.evilEnergyShader);
 		}
 		return shaders;
 	}
@@ -1741,6 +1745,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (charState is WarpOut) return true;
 		if (charState is WolfSigmaRevive || charState is ViralSigmaRevive || charState is KaiserSigmaRevive) return true;
+		if (charState is SuperBassStart) return true;
 		return false;
 	}
 
@@ -3008,6 +3013,7 @@ public partial class Character : Actor, IDamagable {
 				}
 
 				killer.awardCurrency();
+				killer.onKillEffects(false);
 				//killer.currency += 10;
 			} else if (Global.level.gameMode.level.is1v1()) {
 				// In 1v1 the other player should always be considered a killer to prevent suicide
@@ -3022,6 +3028,7 @@ public partial class Character : Actor, IDamagable {
 				assister.addKill();
 
 				assister.awardCurrency(false);
+				assister.onKillEffects(true);
 				//assister.currency += 5;
 			}
 			//bool isSuicide = killer == null || killer == player;

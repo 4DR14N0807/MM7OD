@@ -322,6 +322,10 @@ public enum BassProjIds {
 	MagicCard,
 	MagicCardSSpawn,
 	MagicCardS,
+	SuperBassLemon,
+	SuperBassShot,
+	ChamoBuster,
+	SuperBassRocketPunch,
 }
 
 public enum BluesProjIds  {
@@ -802,6 +806,8 @@ public enum ProjIds {
 	ProtoStrike,
 	ProtoStrikeLvl2,
 	TenguBladeDash,
+	BassKick,
+	SonicCrusher,
 
 	// Special damage types.
 	SelfDmg = 30000,

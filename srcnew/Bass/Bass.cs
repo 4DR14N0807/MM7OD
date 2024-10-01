@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SFML.Graphics;
 
 namespace MMXOnline;
 
@@ -18,9 +19,18 @@ public class Bass : Character {
 	public int cardsCount;
 	public float showNumberTime;
 	public int lastCardNumber;
+	public SuperBassRP? sbRocketPunch;
 
 	// Modes.
 	public bool isSuperBass;
+	public const int TrebleBoostCost = 75;
+	public int phase;
+	public int[] evilEnergy = new int[2] {0,0};
+	public int evilEnergy2;
+	public const int MaxEvilEnergy = 28;
+	public float flyTime;
+	public const float MaxFlyTime = 240;
+	bool refillFly;
 	
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -34,6 +44,7 @@ public class Bass : Character {
 	) {
 		charId = CharIds.Bass;
 		player.weapons = getLoadout();
+		charge1Time = 50;
 	}
 
 	public override bool canAddAmmo() {
@@ -48,13 +59,51 @@ public class Bass : Character {
 		return hasEmptyAmmo;
 	}
 
+	public bool canGoSuperBass() {
+		return(
+			charState is not Die && charState.normalCtrl &&
+			!isSuperBass && player.currency >= TrebleBoostCost &&
+			player.evilEnergyStacks <= 0 && player.pendingEvilEnergyStacks <= 0
+		);
+	}
+
+	public void setSuperBass() {
+		isSuperBass = true;
+		phase = 1;
+		player.changeWeaponSlot(0);
+		player.weapons.Clear();
+		player.weapons.Add(new SBassBuster());
+	}
+
+	public void nextPhase(int level) {
+		phase = level;
+		player.pendingEvilEnergyStacks = level - 1;
+	}
+
 	public override void update() {
 		base.update();
 		Helpers.decrementFrames(ref weaponCooldown);
 		Helpers.decrementFrames(ref tBladeDashCooldown);
 		Helpers.decrementFrames(ref showNumberTime);
+		if (refillFly) Helpers.decrementFrames(ref flyTime);
+
+		if (flyTime > MaxFlyTime) flyTime = MaxFlyTime;
 
 		if (showNumberTime > 0) drawCardNumber(lastCardNumber);
+		for (int i = 0; i < evilEnergy.Length; i++) {
+			if (evilEnergy[i] > MaxEvilEnergy) evilEnergy[i] = MaxEvilEnergy;
+		}
+
+		//Hypermode Music.
+		if (!Global.level.isHyper1v1()) {
+			if (isSuperBass) { 
+				if (musicSource == null) {
+					addMusicSource("basstheme", getCenterPos(), true);
+				} 
+			} else {
+				destroyMusicSource();
+			}
+		}
 
 		// Shoot controls.
 		bool shootPressed;
@@ -71,7 +120,50 @@ public class Bass : Character {
 		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
 			wBurnerAngleMod = 1;
 			wBurnerAngle = 0;
-		} 
+		}
+
+		if (isSuperBass) chargeLogic(shoot);
+
+		quickAdaptorUpgrade(); 
+	}
+
+	public override void render(float x, float y) {
+		base.render(x,y);
+
+		if (player.isMainPlayer && (charState is BassFly || flyTime > 0)) {
+			float healthPct = Helpers.clamp01((MaxFlyTime - flyTime) / MaxFlyTime);
+			float sy = -27;
+			float sx = 20;
+			if (xDir == -1) sx = 90 - 20;
+			drawFlightMeter(healthPct, sx, sy);
+		}
+	}
+
+	public void quickAdaptorUpgrade() {
+		if (!player.input.isHeld(Control.Special2, player)) {
+			hyperProgress = 0;
+			return;
+		}
+		if (!(charState is WarpIn) && canGoSuperBass()) {
+
+			player.currency -= TrebleBoostCost;
+			player.character.changeState(new SuperBassStart(), true);
+			return;
+		}
+		if (hyperProgress < 1) {
+			return;
+		}
+		hyperProgress = 0;
+	}
+
+	public void drawFlightMeter(float healthPct, float sx, float sy) {
+		float healthBarInnerWidth = 30;
+		Color color = Color.Magenta;
+		float width = Helpers.clampMax(MathF.Ceiling(healthBarInnerWidth * healthPct), healthBarInnerWidth);
+		if (healthPct <= 0.5f) color = Color.Red;
+
+		DrawWrappers.DrawRect(pos.x - 47 + sx, pos.y - 16 + sy, pos.x - 42 + sx, pos.y + 16 + sy, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
+		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
 	}
 
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
@@ -93,20 +185,24 @@ public class Bass : Character {
 	public override int getHitboxMeleeId(Collider hitbox) {
 		return (int)(sprite.name switch {
 			"bass_tblade_dash" => MeleeIds.TenguBladeDash,
+			"sbass_kick" => MeleeIds.Kick,
+			"sbass_soniccrusher" => MeleeIds.SonicCrusher,
 			_ => MeleeIds.None
 		});
 	}
 
 	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
 		Point projPos = pos ?? new Point(0, 0);
+		Damager damager = sonicCrusherDamager();
 		Projectile? proj = id switch {
-			/*(int)MeleeIds.TenguBladeDash => new GenericMeleeProj(
-				new TenguBlade(), projPos, ProjIds.TenguBladeDash, player, 2, 0, 0.375f,
-				addToLevel: addToLevel
-
-			),*/
 			(int)MeleeIds.TenguBladeDash => new TenguBladeMelee(
 				projPos, player
+			),
+			(int)MeleeIds.Kick => new GenericMeleeProj(
+				new Weapon(), projPos, ProjIds.BassKick, player, 2, Global.halfFlinch, 0.75f
+			),
+			(int)MeleeIds.SonicCrusher => new GenericMeleeProj(
+				new Weapon(), projPos, ProjIds.SonicCrusher, player, damager.damage, damager.flinch, 0.75f
 			),
 			
 			_ => null
@@ -118,6 +214,15 @@ public class Bass : Character {
 	public enum MeleeIds {
 		None = -1,
 		TenguBladeDash,
+		Kick,
+		SonicCrusher,
+	}
+
+	Damager sonicCrusherDamager() {
+		float damage = flyTime < MaxFlyTime ? 2 : 1;
+		int flinch = flyTime < MaxFlyTime / 2 ? Global.halfFlinch : 0;
+
+		return new Damager(player, damage, flinch, 0);
 	}
 
 	public bool canUseTBladeDash() {
@@ -129,7 +234,26 @@ public class Bass : Character {
 		if (player.input.isPressed(Control.Dash, player) && canUseTBladeDash()) {
 			changeState(new TenguBladeDash(), true);
 			return true;
+		} 
+
+		if (isSuperBass) {
+			if (player.input.isPressed(Control.Jump, player) && !grounded && dashedInAir <= 0) {
+				dashedInAir++;
+				refillFly = false;
+				changeState(new BassFly(), true);
+				return true;
+			}
+			
+			if (
+				player.input.isHeld(Control.Special2, player) && 
+				charState is not EnergyCharge && 
+				(evilEnergy[(int)Helpers.clampMax(phase - 1, 1)] < MaxEvilEnergy)
+			) {
+				changeState(new EnergyCharge(), true);
+				return true;
+			}
 		}
+
 		return base.normalCtrl();
 	}
 
@@ -137,22 +261,40 @@ public class Bass : Character {
 		int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
 		if (framesSinceLastShootPressed <= 6) {
 			if (weaponCooldown <= 0 && player.weapon.canShoot(0, player)) {
-				shoot();
+				shoot(getChargeLevel());
 				return true;
 			}
 		}
+
+		if (isSuperBass && player.input.isPressed(Control.Special1, player)) {
+			if (grounded) {
+				changeState(new BassKick(), true);
+				return true;
+			} else {
+				float? vel = null;
+				if (charState is BassFly bfly) vel = bfly.getFlightMove().x;
+				
+				changeState(new SonicCrusher(vel), true);
+				refillFly = false;
+				return true;
+			}
+		}
+
 		return base.attackCtrl();
 	}
 
-	public void shoot() {
+	public void shoot(int chargeLevel) {
 		turnToInput(player.input, player);
-		if (player.weapon is not TenguBlade) {
+		if (player.weapon is not TenguBlade && charState is not BassFly) {
 			if (charState is LadderClimb or BassShootLadder) changeState(new BassShootLadder(), true);
 			else changeState(new BassShoot(), true);
+		} else {
+			changeSprite(getSprite(charState.shootSprite), true);
 		}
-		player.weapon.shoot(this, 0);
+		player.weapon.shoot(this, chargeLevel);
 		weaponCooldown = player.weapon.fireRateFrames;
 		player.weapon.addAmmo(-player.weapon.getAmmoUsage(0), player);
+		stopCharge();
 	}
 
 	public int getShootYDir(bool allowDown = false, bool allowDiagonal = true) {
@@ -245,7 +387,8 @@ public class Bass : Character {
 	}
 
 	public override string getSprite(string spriteName) {
-		return "bass_" + spriteName;
+		string prefix = isSuperBass ? "sbass_" : "bass_";
+		return prefix + spriteName;
 	}
 
 	public override bool canCrouch() {
@@ -261,13 +404,25 @@ public class Bass : Character {
 
 	public override bool canShoot() {
 		if (weaponCooldown > 0 ||
-			charState is Dash
+			charState is Dash ||
+			sbRocketPunch != null
 		) {
 			return false;
 		}
 		return base.canShoot();
 	}
 
+	public override bool canCharge() {
+		return base.canCharge() && isSuperBass && charState.attackCtrl;
+	}
+
+	public override bool chargeButtonHeld() {
+		return player.input.isHeld(Control.Shoot, player);
+	}
+
+	public override int maxChargeLevel() {
+		return 2;
+	}
 	public override bool canChangeWeapons() {
 		return base.canChangeWeapons() && charState is not LightningBoltState;
 	}
@@ -282,6 +437,11 @@ public class Bass : Character {
 
 	public override bool canWallClimb() {
 		return false;
+	}
+
+	public override void landingCode(bool useSound = true) {
+		base.landingCode(useSound);
+		refillFly = true;
 	}
 
 	public override void aiAttack(Actor target) {
@@ -300,7 +460,7 @@ public class Bass : Character {
 			return;
 		}
 		if (canShoot()) {
-			shoot();
+			shoot(getChargeLevel());
 		}
 	}
 
@@ -315,7 +475,8 @@ public class Bass : Character {
 		palette?.SetUniform("palette", index);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_palette_texture"]);
 
-		if (palette != null) {
+		//We don't apply palette shader on hypermode.
+		if (palette != null && !isSuperBass) {
 			shaders.Add(palette);
 		}
 		if (shaders.Count == 0) {

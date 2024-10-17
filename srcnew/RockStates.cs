@@ -38,7 +38,7 @@ public class Slide : CharState {
 		float inputXDir = player.input.getInputDir(player).x;
 		bool cancel = player.input.isPressed(getOppositeDir(initialSlideDir), player);
 
-		if (Global.level.checkCollisionActor(character, 0, -24) != null && rock != null) rock.isSlideColliding = true;
+		if (Global.level.checkTerrainCollisionOnce(character, 0, -24) != null && rock != null) rock.isSlideColliding = true;
 		else if (rock != null) rock.isSlideColliding = false;
 		
 		if ((slideTime > 30 || stop) && rock != null && !rock.isSlideColliding) {
@@ -310,7 +310,7 @@ public class RockDoubleJump : CharState {
 
 		if (anim != null) anim.changePos(character.pos);
 
-		CollideData collideData = Global.level.checkCollisionActor(character, character.xDir, 0);
+		CollideData collideData = Global.level.checkTerrainCollisionOnce(character, character.xDir, 0);
 		if (collideData != null && character.ownedByLocalPlayer) {
 			character.move(new Point(0, jumpSpeedY));
 		}

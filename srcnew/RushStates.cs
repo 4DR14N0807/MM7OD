@@ -111,7 +111,7 @@ public class RushWarpIn : RushState {
 	}
 
 	public bool canLand(Actor rActor) {
-		if (Global.level.checkCollisionActor(rActor, rActor.xDir, 1) == null) {
+		if (Global.level.checkTerrainCollisionOnce(rActor, rActor.xDir, 1) == null) {
 			return false;
 		}
 		List<CollideData> hits = Global.level.getTriggerList(rActor, rActor.xDir, 1, null, new Type[] { typeof(KillZone) });
@@ -248,7 +248,7 @@ public class RushJetState : RushState {
 			if (xDir == rush.xDir * -1) jetSpeedX = 60;
 			else jetSpeedX = 120;
 
-			if (yDir != 0 && Global.level.checkCollisionActor(rush, 0, yDir * 48) == null) jetSpeedY = yDir * 60;
+			if (yDir != 0 && Global.level.checkTerrainCollisionOnce(rush, 0, yDir * 48) == null) jetSpeedY = yDir * 60;
 			else jetSpeedY = 0;
 		} else {
 			maxDecAmmoCooldown = 45;

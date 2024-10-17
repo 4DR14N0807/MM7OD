@@ -1257,9 +1257,9 @@ public class GameMode {
 		float baseX = hudHealthPosition.x;
 		float baseY = hudHealthPosition.y;
 
-		if (player.isBlues) {
+		//if (player.isBlues) {
 			baseY += 17;
-		}
+		//}
 
 		float twoLayerHealth = 0;
 		if (isMech && player.character?.rideArmor != null && player.character.rideArmor.raNum != 5) {
@@ -1306,12 +1306,19 @@ public class GameMode {
 		baseY -= 16;
 		int barIndex = 0;
 
-		for (var i = 0; i < MathF.Ceiling(maxHealth); i++) {
+		for (var i = 0; i < MathF.Ceiling(player.getMaxHealth()); i++) {
+			float trueHP = player.getMaxHealth() - (player.evilEnergyStacks * player.hpPerStack); 
 			// Draw HP
 			if (i < MathF.Ceiling(health)) {
 				Global.sprites["hud_health_full"].drawToHUD(barIndex, baseX, baseY);
 			} else if (i < MathInt.Ceiling(health) + damageSavings) {
 				Global.sprites["hud_health_full"].drawToHUD(4, baseX, baseY);
+			} 
+			//Evil Energy lost HP
+			else if (i >= trueHP && player.character != null && !player.character.destroyed) {
+				float t = player.evilEnergyTime / 10f;
+				int color = Global.frameCount % t <= 10 ? 1 : 2;
+				Global.sprites["hud_energy_full"].drawToHUD(color, baseX, baseY);
 			} else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 			}
@@ -1320,6 +1327,7 @@ public class GameMode {
 			if (twoLayerHealth > 0 && i < MathF.Ceiling(twoLayerHealth)) {
 				Global.sprites["hud_health_full"].drawToHUD(2, baseX, baseY);
 			}
+
 
 			baseY -= 2;
 		}
@@ -1335,10 +1343,13 @@ public class GameMode {
 		bool allowSmall = true, string barSprite = "hud_weapon_full"
 	) {
 		baseY += 25;
+		int stacks = mainPlayer.pendingEvilEnergyStacks;
 		if (baseIndex >= 0) {
 			Global.sprites["hud_weapon_base"].drawToHUD(baseIndex, baseX, baseY);
 		} else if (baseIndex == -2) {
 			Global.sprites["hud_core_base"].drawToHUD(0, baseX, baseY);
+		} else if (baseIndex == -3) {
+			Global.sprites["hud_energy_base"].drawToHUD(stacks, baseX, baseY);
 		}
 		baseY -= 16;
 
@@ -1355,7 +1366,11 @@ public class GameMode {
 			}
 			baseY -= 2;
 		}
-		Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
+		if (baseIndex == -3) {
+			Global.sprites["hud_energy_top"].drawToHUD(stacks, baseX, baseY);
+		} else {
+			Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
+		}
 	}
 
 	public bool shouldDrawWeaponAmmo(Player player, Weapon weapon) {
@@ -1445,6 +1460,44 @@ public class GameMode {
 				drawWeaponSlotCooldown(18, 114, protoman.redStrikeCooldown / (4 * 60));
 			}
 			return;
+		} else if (player.character is Bass bass && bass.isSuperBass) {
+			int energy = bass.evilEnergy[0];
+			int energy2 = bass.evilEnergy[1];
+			int maxEnergy = Bass.MaxEvilEnergy;
+			int stacks = player.pendingEvilEnergyStacks;
+			bool charging = bass.charState is EnergyCharge or EnergyIncrease;
+			//int offset = -16;
+
+			baseY += 17;
+			if (position is HUDHealthPosition.Right or HUDHealthPosition.TopRight or HUDHealthPosition.TopRight) {
+				//offset = 16;
+			}
+
+			// Level 1 Evil Energy Bar.
+			int color = energy >= maxEnergy ? 3 : 1;
+			color = Global.frameCount % 6 >= 3 ? 4 : color;
+ 
+			renderAmmo(
+				baseX, baseY, -3, color, MathF.Ceiling(energy),
+				maxAmmo: maxEnergy, barSprite: "hud_energy_full"
+			); 
+
+			//Bar Base skull eyes
+			if ((charging || energy2 >= maxEnergy) && Global.frameCount % 3 == 0) {
+				Global.sprites["hud_energy_eyes"].drawToHUD(stacks, baseX, baseY + 25);
+			}
+
+			//Level 2 Evil Energy Bar.
+			if (energy2 > 0) {
+				int yPos = MathInt.Ceiling(9 + baseY);
+				int color2 = energy2 >= maxEnergy ? 7 : 5;
+				color2 = Global.frameCount % 6 >= 3 ? 8 : color2;
+				
+				for (int i = 0; i < energy2; i++) {
+					Global.sprites["hud_energy_full"].drawToHUD(color2, baseX, yPos);
+					yPos -= 2;
+				}
+			}
 		}
 
 		// This runs once per character.
@@ -1461,7 +1514,7 @@ public class GameMode {
 		}
 
 		if (shouldDrawWeaponAmmo(player, weapon)) {
-			baseY += 25;
+			baseY += 42;
 			string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
 			string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 			Global.sprites[baseBarName].drawToHUD(weapon.weaponBarBaseIndex, baseX, baseY);

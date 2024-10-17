@@ -158,7 +158,7 @@ public class BluesSlide : CharState {
 			player.input.getXDir(player) == -initialSlideDir ||
 			stateFrames >= 30 || (
 				stateFrames >= 8 && character.deltaPos.x == 0 &&
-				Global.level.checkCollisionActor(character, character.xDir, 0) != null
+				Global.level.checkTerrainCollisionOnce(character, character.xDir, 0) != null
 			)
 		) {
 			character.changeToIdleOrFall();

@@ -443,7 +443,6 @@ public partial class Player {
 	public ShaderWrapper acidShader = Helpers.cloneShaderSafe("acid");
 	public ShaderWrapper oilShader = Helpers.cloneShaderSafe("oil");
 	public ShaderWrapper igShader = Helpers.cloneShaderSafe("freezeSlow");
-	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
 	public ShaderWrapper infectedShader = Helpers.cloneShaderSafe("infected");
 	//public ShaderWrapper frozenCastleShader = Helpers.cloneShaderSafe("frozenCastle");
 	//public ShaderWrapper possessedShader = Helpers.cloneShaderSafe("possessed");
@@ -462,6 +461,8 @@ public partial class Player {
 	public ShaderWrapper darkHoldScreenShader = Helpers.cloneShaderSafe("darkHoldScreen");
 
 	// New shaders.
+	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
+	public ShaderWrapper evilEnergyShader = Helpers.cloneShaderSafe("evil_energy");
 	public ShaderWrapper rockPaletteShader = Helpers.cloneShaderSafe("rockPalette");
 	public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
 	public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
@@ -490,6 +491,13 @@ public partial class Player {
 	public float possessedTime;
 	public const float maxPossessedTime = 12;
 	public Player possesser;
+
+	//Evil Energy stuff.
+	public int pendingEvilEnergyStacks;
+	public int evilEnergyStacks;
+	public float evilEnergyTime;
+	public float evilEnergyMaxTime = 1800;
+	public float hpPerStack = 4;
 
 	public List<MagnetMineProj> magnetMines = new List<MagnetMineProj>();
 	public List<RaySplasherTurret> turrets = new List<RaySplasherTurret>();
@@ -659,6 +667,7 @@ public partial class Player {
 		}
 
 		maxHealth = getMaxHealth();
+		if (charNum == (int)CharIds.Bass) maxHealth -= evilEnergyStacks * hpPerStack;
 		health = maxHealth;
 
 		aiArmorPath = new List<int>() { 1, 2, 3 }.GetRandomItem();
@@ -916,6 +925,18 @@ public partial class Player {
 			return;
 		}
 
+		//Evil Energy Timer.
+		if (character != null && !character.destroyed && character is Bass) {
+			Helpers.decrementFrames(ref evilEnergyTime);
+		} 
+
+		if (evilEnergyTime == 0 && evilEnergyStacks > 0) {
+			evilEnergyTime = evilEnergyMaxTime;
+			evilEnergyStacks--;
+			maxHealth += hpPerStack;
+			character?.playSound("heal");
+		}
+
 		vileFormToRespawnAs = 0;
 		hyperSigmaRespawn = false;
 		hyperXRespawn = false;
@@ -1120,7 +1141,13 @@ public partial class Player {
 		previousLoadout = loadout;
 		applyLoadoutChange();
 		configureWeapons();
+		if (pendingEvilEnergyStacks > 0 && charNum == (int)CharIds.Bass ) {
+			evilEnergyStacks = pendingEvilEnergyStacks;
+			pendingEvilEnergyStacks = 0;
+			evilEnergyTime = evilEnergyMaxTime;
+		}
 		maxHealth = getMaxHealth();
+		if (charNum == (int)CharIds.Bass) maxHealth -= evilEnergyStacks * hpPerStack;
 		health = maxHealth;
 
 		if (character == null) {
@@ -1713,6 +1740,20 @@ public partial class Player {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
 		return 0;
+	}
+
+	public void onKillEffects(bool isAssist) {
+		if (!ownedByLocalPlayer || character == null) {
+			return; 
+		}
+
+		if (!isAssist) {
+			if (character is Bass bass) {
+				if (bass.evilEnergy[bass.phase - 1] < Bass.MaxEvilEnergy) {
+					bass.evilEnergy[bass.phase - 1] += 7;
+				} 
+			}
+		}
 	}
 
 	public int getRespawnTime() {

@@ -322,7 +322,7 @@ public class CharState {
 				if (Math.Abs(character.pos.x - midX) < 12) {
 					var rect = ladders[0].otherCollider.shape.getRect();
 					var snapX = (rect.x1 + rect.x2) / 2;
-					if (Global.level.checkCollisionActor(character, snapX - character.pos.x, 0) == null) {
+					if (Global.level.checkTerrainCollisionOnce(character, snapX - character.pos.x, 0) == null) {
 						float? incY = null;
 						if (isGround) incY = -10;
 						character.changeState(new LadderClimb(ladder, midX, incY));
@@ -337,7 +337,7 @@ public class CharState {
 				var rect = ladders[0].otherCollider.shape.getRect();
 				var snapX = (rect.x1 + rect.x2) / 2;
 				float xDist = snapX - character.pos.x;
-				if (MathF.Abs(xDist) < 10 && Global.level.checkCollisionActor(character, xDist, 30) == null) {
+				if (MathF.Abs(xDist) < 10 && Global.level.checkTerrainCollisionOnce(character, xDist, 30) == null) {
 					var midX = ladders[0].otherCollider.shape.getRect().center().x;
 					character.changeState(new LadderClimb(ladder, midX));
 					character.move(new Point(0, 30), false);
@@ -374,6 +374,7 @@ public class CharState {
 public class WarpIn : CharState {
 	public bool warpSoundPlayed;
 	public float destY;
+	public float destX;
 	public float startY;
 	public Anim warpAnim;
 	bool warpAnimOnce;
@@ -419,6 +420,8 @@ public class WarpIn : CharState {
 
 			if (character.isAnimOver()) {
 				character.grounded = true;
+				character.pos.y = destY;
+				character.pos.x = destX;
 				character.changeToIdleOrFall();
 			}
 			return;
@@ -470,6 +473,7 @@ public class WarpIn : CharState {
 		character.visible = false;
 		character.frameSpeed = 0;
 		destY = character.pos.y;
+		destX = character.pos.x;
 		startY = character.pos.y;
 
 		if (player.warpedInOnce || Global.debug) {
@@ -883,7 +887,7 @@ public class Dash : CharState {
 
 		base.update();
 		
-		isColliding = Global.level.checkCollisionActor(character, 0, -10) != null;
+		isColliding = Global.level.checkTerrainCollisionOnce(character, 0, -10) != null;
 
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop && !isColliding) {
 			dashTime = 50;
@@ -1261,7 +1265,7 @@ public class LadderClimb : CharState {
 		if (!ladder.collider.isCollidingWith(character.physicsCollider) || MathF.Abs(yDist) < 12) {
 			if (player.input.isHeld(Control.Up, player)) {
 				var targetY = ladderTop - 1;
-				if (Global.level.checkCollisionActor(character, 0, targetY - character.pos.y) == null && MathF.Abs(targetY - character.pos.y) < 20) {
+				if (Global.level.checkTerrainCollisionOnce(character, 0, targetY - character.pos.y) == null && MathF.Abs(targetY - character.pos.y) < 20) {
 					character.changeState(new LadderEnd(targetY));
 				}
 			} else {
@@ -1680,7 +1684,7 @@ public class GenericGrabbedState : CharState {
 		if (character.pos.distanceTo(destPos) > 25) lerp = true;
 		Point lerpPos = lerp ? Point.lerp(character.pos, destPos, 0.25f) : destPos;
 
-		var hit = Global.level.checkCollisionActor(character, lerpPos.x - character.pos.x, lerpPos.y - character.pos.y);
+		var hit = Global.level.checkTerrainCollisionOnce(character, lerpPos.x - character.pos.x, lerpPos.y - character.pos.y);
 		if (hit?.gameObject is Wall) {
 			return false;
 		}

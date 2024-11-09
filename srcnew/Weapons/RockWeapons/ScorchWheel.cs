@@ -13,7 +13,7 @@ public class ScorchWheel : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 14;
 		ammo = maxAmmo;
-		fireRateFrames = 60;
+		fireRate = 60;
 		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };
 	}
 

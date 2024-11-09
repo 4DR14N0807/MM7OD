@@ -299,6 +299,7 @@ public partial class Player {
 		
 	};
 	// Getter functions.
+	public Dictionary<int, int> charHeartTanksBackup = new Dictionary<int, int>();
 	public int heartTanks {
 		get {
 			if (!ownedByLocalPlayer) {

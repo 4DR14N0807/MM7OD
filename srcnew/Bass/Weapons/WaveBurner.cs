@@ -13,7 +13,7 @@ public class WaveBurner : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRateFrames = 4;
+		fireRate = 4;
 		isStream = true;
 		maxAmmo = 168;
 		ammo = maxAmmo;

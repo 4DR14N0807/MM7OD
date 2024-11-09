@@ -12,7 +12,7 @@ public class TenguBlade : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRateFrames = 60;
+		fireRate = 60;
 	}
 
 	public override void shoot(Character character, params int[] args) {

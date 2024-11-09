@@ -8,7 +8,7 @@ public class SBassBuster : Weapon {
 	public static SBassBuster netWeapon = new();
 	public SBassBuster() : base() {
 		index = (int)BassWeaponIds.SuperBassBuster;
-		fireRateFrames = 15;
+		fireRate = 15;
 		drawAmmo = false;
 	}
 

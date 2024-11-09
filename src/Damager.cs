@@ -619,6 +619,7 @@ public class Damager {
 					if (victim is not Blues) {
 						victim?.playSound("hit");
 					}
+				}
 			}
 		}
 		// Ride armor section
@@ -774,26 +775,22 @@ public class Damager {
 						}
 						flinch = 0;
 						damage = 0;
-
 						//maverick.playSound("ding");
-
-						if (owner.ownedByLocalPlayer &&
+						/* if (owner.ownedByLocalPlayer &&
 							owner.character is Zero zero &&
 							!zero.hypermodeActive()
 						) {      //What in the..
 							if (GenericMeleeProj.isZSaberClang(projId)) {
 								owner.character.changeState(new ZeroClang(-owner.character.xDir));
 							}
-						}
+						} */
 					}
 				}
 			}
 			if (damage > 0) {
 				if (flinch > 0 && !isOnFlinchCooldown) {
 					if (weakness) {
-
 						//victim.playSound("weakness");
-
 					} else {
 						victim?.playSound("hurt");
 					}

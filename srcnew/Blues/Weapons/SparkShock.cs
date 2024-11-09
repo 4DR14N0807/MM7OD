@@ -13,7 +13,7 @@ public class SparkShock : Weapon {
 		defaultAmmoUse = 3;
 
 		index = (int)BluesWeaponIds.SparkShock;
-		fireRateFrames = 60;
+		fireRate = 60;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

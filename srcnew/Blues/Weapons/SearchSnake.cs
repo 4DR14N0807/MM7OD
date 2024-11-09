@@ -12,7 +12,7 @@ public class SearchSnake : Weapon {
 		defaultAmmoUse = 2;
 
 		index = (int)BluesWeaponIds.SearchSnake;
-		fireRateFrames = 45;
+		fireRate = 45;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

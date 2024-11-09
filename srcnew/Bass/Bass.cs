@@ -292,7 +292,7 @@ public class Bass : Character {
 			changeSprite(getSprite(charState.shootSprite), true);
 		}
 		player.weapon.shoot(this, chargeLevel);
-		weaponCooldown = player.weapon.fireRateFrames;
+		weaponCooldown = player.weapon.fireRate;
 		player.weapon.addAmmo(-player.weapon.getAmmoUsage(0), player);
 		stopCharge();
 	}
@@ -493,9 +493,9 @@ public class Bass : Character {
 
 		// Per-character data.
 		int weaponIndex = player.weapon.index;
-		if (weaponIndex == (int)WeaponIds.HyperBuster) {
+		/* if (weaponIndex == (int)WeaponIds.HyperBuster) {
 			weaponIndex = player.weapons[player.hyperChargeSlot].index;
-		}
+		} */
 		customData.Add((byte)weaponIndex);
 		customData.Add((byte)MathF.Ceiling(player.weapon?.ammo ?? 0));
 	

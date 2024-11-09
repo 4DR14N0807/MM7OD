@@ -9,7 +9,7 @@ public class ThunderBolt : Weapon {
 
 	public ThunderBolt() : base() {
 		index = (int)RockWeaponIds.ThunderBolt;
-		fireRateFrames = 40;
+		fireRate = 40;
 		weaponSlotIndex = (int)RockWeaponSlotIds.ThunderBolt;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.ThunderBolt;
 		weaponBarIndex = weaponBarBaseIndex;

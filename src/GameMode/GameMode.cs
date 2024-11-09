@@ -1382,7 +1382,7 @@ public class GameMode {
 		if (weapon.weaponSlotIndex == 0) return false;
 		if (!player.weapon.drawAmmo) return false;
 		if (weapon is NovaStrike && level.isHyper1v1()) return false;
-		if (weapon is Buster buster) return false;
+		if (weapon is RockBuster buster) return false;
 		if (weapon is SARocketPunch) return false;
 
 		return true;

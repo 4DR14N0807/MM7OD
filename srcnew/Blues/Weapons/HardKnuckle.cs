@@ -12,7 +12,7 @@ public class HardKnuckle : Weapon {
 		defaultAmmoUse = 4;
 
 		index = (int)BluesWeaponIds.HardKnuckle;
-		fireRateFrames = 40;
+		fireRate = 40;
 		hasCustomAnim = true;
 	}
 

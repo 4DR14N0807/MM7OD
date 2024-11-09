@@ -14,7 +14,7 @@ public class SpreadDrill : Weapon {
 		weaponBarIndex = index;
 		maxAmmo = 7;
 		ammo = maxAmmo;
-		fireRateFrames = 90;
+		fireRate = 90;
 		descriptionV2 = (
 			"Shoots a drill that spread by pressing SPECIAL." + "\n" +
 			"Slowdown on hit, the smaller the drill the faster the drill."

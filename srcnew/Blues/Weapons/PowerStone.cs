@@ -12,7 +12,7 @@ public class PowerStone : Weapon {
 		defaultAmmoUse = 5;
 
 		index = (int)BluesWeaponIds.PowerStone;
-		fireRateFrames = 90;
+		fireRate = 90;
 		hasCustomAnim = true;
 	}
 
@@ -24,7 +24,7 @@ public class PowerStone : Weapon {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
-		(character as Blues)?.resetCoreCooldown(fireRateFrames + 10);
+		(character as Blues)?.resetCoreCooldown(fireRate + 10);
 
 		if (args[1] == 1) {
 			if (character.charState is not LadderClimb) character.changeState(new BluesShootAlt(this), true);

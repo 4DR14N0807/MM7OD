@@ -15,7 +15,7 @@ public class RockBuster : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.MegaBuster;
 		//shootSounds = new List<string>() {"buster", "buster2", "buster3", ""};
-		fireRateFrames = 9;
+		fireRate = 9;
 		description = new string[] { "Rock's default weapon.", "Can be charged to deal more damage." };
 	}
 

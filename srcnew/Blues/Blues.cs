@@ -235,7 +235,7 @@ public class Blues : Character {
 		starCrashActive = false;
 
 		if (specialWeapon is StarCrash) {
-			specialWeapon.shootCooldown = specialWeapon.fireRateFrames;
+			specialWeapon.shootCooldown = specialWeapon.fireRate;
 		}
 	}
 
@@ -696,7 +696,7 @@ public class Blues : Character {
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
-		specialWeapon.shootCooldown = specialWeapon.fireRateFrames;
+		specialWeapon.shootCooldown = specialWeapon.fireRate;
 		specialWeapon.shoot(this, chargeLevel, extraArg);
 		addCoreAmmo(specialWeapon.getAmmoUsage(chargeLevel));
 	}

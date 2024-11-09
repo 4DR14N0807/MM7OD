@@ -8,7 +8,7 @@ public class NeedleCannon : Weapon {
 	public NeedleCannon() : base() {
 		// Tecnical data.
 		index = (int)BluesWeaponIds.NeedleCannon;
-		fireRateFrames = 6;
+		fireRate = 6;
 		defaultAmmoUse = 1.2f;
 
 		// Display data.
@@ -17,7 +17,7 @@ public class NeedleCannon : Weapon {
 
 		// Auto-calculation for ammo per second text.
 		decimal ammoUseDec = Decimal.Parse(defaultAmmoUse.ToString());
-		decimal chps = ammoUseDec * (60m / (decimal)fireRateFrames);
+		decimal chps = ammoUseDec * (60m / (decimal)fireRate);
 		string chpsString = Math.Ceiling(chps).ToString("#");
 
 		// Ammo use text.

@@ -11,7 +11,7 @@ public class BassBuster : Weapon {
 		index = (int)BassWeaponIds.BassBuster;
 		displayName = "BASS BUSTER";
 		weaponSlotIndex = index;
-		fireRateFrames = 6;
+		fireRate = 6;
 		isStream = true;
 	}
 

@@ -14,7 +14,7 @@ public class StarCrash : Weapon {
 		ammoUseText = (1 / coreCooldown * 60).ToGBString() + " per second";
 
 		index = (int)BluesWeaponIds.StarCrash;
-		fireRateFrames = 60;
+		fireRate = 60;
 		hasCustomAnim = true;
 	}
 

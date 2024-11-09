@@ -13,7 +13,7 @@ public class NapalmBomb : Weapon {
 		defaultAmmoUse = 3;
 
 		//index = (int)RockWeaponIds.NapalmBomb;
-		fireRateFrames = 40;
+		fireRate = 40;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

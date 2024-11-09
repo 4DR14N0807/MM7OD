@@ -11,7 +11,7 @@ public class JunkShield : Weapon {
 	public static JunkShield netWeapon = new JunkShield();
 	public JunkShield() : base() {
 		shootSounds = new string[] { "", "", "", "" };
-		fireRateFrames = 60;
+		fireRate = 60;
 		index = (int)RockWeaponIds.JunkShield;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.JunkShield;
 		weaponBarIndex = weaponBarBaseIndex;

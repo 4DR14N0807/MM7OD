@@ -226,7 +226,7 @@ public class Sprite {
 		float xDirArg = flipX * scaleX;
 		float yDirArg = flipY * scaleY;
 
-		Texture bitmap = animData.bitmap;
+		//Texture bitmap = animData.bitmap;
 
 		bool isCompositeSprite = false;
 		List<Texture> compositeBitmaps = new();
@@ -236,7 +236,7 @@ public class Sprite {
 		float flippedExtraW = 0;
 		float extraXOff = 0;
 
-			compositeBitmaps.Add(bitmap);
+		compositeBitmaps.Add(bitmap);
 		/* 	if (armors[2] > 0) {
 				compositeBitmaps.Add(xArmorHelmetBitmap[armors[2] - 1]);
 			}
@@ -252,8 +252,7 @@ public class Sprite {
 			if (compositeBitmaps.Count > 1) {
 				isCompositeSprite = true;
 			}
-		}
-
+		
 		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
 			if (alpha >= 1 && (
 				renderEffects.Contains(RenderEffectType.BlueShadow) ||
@@ -355,31 +354,6 @@ public class Sprite {
 					time = 0.25f
 				});
 			}
-			if (renderEffects.Contains(RenderEffectType.SpeedDevilTrail) && character != null && Global.shaderWrappers.ContainsKey("speedDevilTrail")) {
-				for (int i = character.lastFiveTrailDraws.Count - 1; i >= 0; i--) {
-					Trail trail = character.lastFiveTrailDraws[i];
-					if (character.isDashing) {
-						trail.action.Invoke(trail.time);
-					}
-					trail.time -= Global.spf;
-					if (trail.time <= 0) character.lastFiveTrailDraws.RemoveAt(i);
-				}
-
-				var shaderList = new List<ShaderWrapper>();
-
-				var speedDevilShader = character.player.speedDevilShader;
-				shaderList.Add(speedDevilShader);
-
-				if (character.lastFiveTrailDraws.Count > 1) character.lastFiveTrailDraws.PopFirst();
-
-				character.lastFiveTrailDraws.Add(new Trail() {
-					action = (float time) => {
-						speedDevilShader?.SetUniform("alpha", time * 2);
-						DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaderList, true);
-					},
-					time = 0.125f
-				});
-			}
 		}
 		DrawWrappers.DrawTexture(
 			bitmap,
@@ -389,21 +363,7 @@ public class Sprite {
 				currentFrame.rect.h() + extraY,
 				x + frameOffsetX, y + frameOffsetY - extraYOff,
 				zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true
-			);
-
-		if (isUPX) {
-			var upShaders = new List<ShaderWrapper>(shaders);
-			if (Global.isOnFrameCycle(5)) {
-				if (Global.shaderWrappers.ContainsKey("hit")) {
-					upShaders.Add(Global.shaderWrappers["hit"]);
-				}
-			}
-			DrawWrappers.DrawTexture(Global.textures["XUPGlow"], currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, upShaders, true);
-		}
-
-		if (animData.isAxlSprite && drawAxlArms) {
-			DrawWrappers.DrawTexture(axlArmBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, 0, alpha, shaders, true);
-		}
+		);
 	}
 
 	public bool needsX3BusterCorrection() {

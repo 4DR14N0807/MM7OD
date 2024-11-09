@@ -188,7 +188,7 @@ public class Rock : Character {
 
 		int chargedNS = hasChargedNoiseCrush ? 1 : 0;
 		
-		weaponCooldown = player.weapon.fireRateFrames;
+		weaponCooldown = player.weapon.fireRate;
 		player.weapon.shoot(this, chargeLevel, chargedNS);
 		player.weapon.addAmmo(-player.weapon.getAmmoUsage(chargeLevel), player);
 		if (oldShootAnimTime <= 0.25f) {
@@ -649,9 +649,9 @@ public class Rock : Character {
 
 		// Per-character data.
 		int weaponIndex = player.weapon.index;
-		if (weaponIndex == (int)WeaponIds.HyperBuster) {
+		/* if (weaponIndex == (int)WeaponIds.HyperBuster) {
 			weaponIndex = player.weapons[player.hyperChargeSlot].index;
-		}
+		} */
 		customData.Add((byte)weaponIndex);
 		customData.Add((byte)MathF.Ceiling(player.weapon?.ammo ?? 0));
 

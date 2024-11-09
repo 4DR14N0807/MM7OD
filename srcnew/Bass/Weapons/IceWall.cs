@@ -14,7 +14,7 @@ public class IceWall : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRateFrames = 120;
+		fireRate = 120;
 	}
 
 	public override void shoot(Character character, params int[] args) {

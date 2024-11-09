@@ -259,7 +259,9 @@ public partial class Player {
 			}
 		}
 
-		if (isRock) {
+		// Nota: Esto da error, sin embargo aun no conozco si es importante o no
+
+		/* if (isRock) {
 			if (character.getChargeLevel() >= 2) {
 				newWeapon.shootTime = 0;
 			} else {
@@ -270,7 +272,7 @@ public partial class Player {
 					newWeapon.shootTime = Math.Max(newWeapon.shootTime, oldWeapon.shootTime);
 				}
 			}
-		}
+		} */
 	}
 
 	public void weaponLeft() {

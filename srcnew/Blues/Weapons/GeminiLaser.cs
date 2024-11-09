@@ -10,7 +10,7 @@ public class GeminiLaser : Weapon {
 		defaultAmmoUse = 3;
 
         //index = (int)RockWeaponIds.GeminiLaser;
-        fireRateFrames = 60;
+        fireRate = 60;
     }
 
     public override float getAmmoUsage(int chargeLevel) {

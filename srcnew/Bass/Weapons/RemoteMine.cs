@@ -12,7 +12,7 @@ public class RemoteMine : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRateFrames = 45;
+		fireRate = 45;
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {

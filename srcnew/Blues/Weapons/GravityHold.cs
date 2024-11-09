@@ -13,7 +13,7 @@ public class GravityHold : Weapon {
 		defaultAmmoUse = 6;
 
 		index = (int)BluesWeaponIds.GravityHold;
-		fireRateFrames = 55;
+		fireRate = 55;
 		hasCustomAnim = true;
 	}
 

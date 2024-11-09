@@ -15,7 +15,7 @@ public class MagicCard : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRateFrames = 20;
+		fireRate = 20;
 	}
 
 	public override void shoot(Character character, params int[] args) {

@@ -6,13 +6,15 @@ public class PreOptionsMenu : IMainMenu {
 	public int selectY;
 	public int[] optionPos = new int[9];
 	public int lineH = 10;
+	public MainMenu? prevMenu1;
 	public IMainMenu prevMenu;
 	public string message;
 	public Action yesAction;
 	public bool inGame;
 	public bool isAxl;
 	public float startX = 32;
-
+	public float Time = 1, Time2;
+	public bool Confirm = false, Confirm2 = false;
 	public PreOptionsMenu(IMainMenu prevMenu, bool inGame) {
 		this.prevMenu = prevMenu;
 		this.inGame = inGame;
@@ -21,7 +23,19 @@ public class PreOptionsMenu : IMainMenu {
 		}
 	}
 
+	public void TimeUpdate() {
+		if (!inGame) {
+			if (Confirm == false) Time -= Global.spf * 2;
+			if (Time <= 0) {
+				Confirm = true;
+				Time = 0;
+			}
+			if (Global.input.isPressedMenu(Control.MenuBack)) Confirm2 = true;
+			if (Confirm2 == true) Time2 += Global.spf * 2;
+		}
+	}
 	public void update() {
+		TimeUpdate();
 		Helpers.menuUpDown(ref selectY, 0, 5);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			int? charNum = null;
@@ -31,7 +45,20 @@ public class PreOptionsMenu : IMainMenu {
 
 
 			Menu.change(new OptionsMenu(this, inGame, charNum, selectY));
-		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
+		} 
+		if  (Global.input.isPressedMenu(Control.MenuConfirm)) {
+			if (selectY == 8) {Menu.change(new PreControlMenu(this, false));}
+		}
+		if (Time2 >= 1 && !inGame) {
+			Menu.change(prevMenu);
+			if (prevMenu1 != null) {		
+				prevMenu1.Time = 0;
+				prevMenu1.Time2 = 1;
+				prevMenu1.Confirm = false;
+				prevMenu1.Confirm2 = false;
+			}
+		}
+		else if (Global.input.isPressedMenu(Control.MenuBack) && inGame) {
 			Menu.change(prevMenu);
 		}
 	}
@@ -68,5 +95,9 @@ public class PreOptionsMenu : IMainMenu {
 		Fonts.drawText(menuFont, "BASS SETTINGS", startX, optionPos[5], selected: selectY == 5);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 198, Alignment.Center);
+		if (!inGame) {
+			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time);
+			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time2);
+		}
 	}
 }

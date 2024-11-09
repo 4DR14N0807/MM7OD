@@ -63,6 +63,10 @@ public class Server {
 	[ProtoMember(34)] public byte teamNum = 2;
 	[ProtoMember(35)] public int altPlayTo;
 
+
+	[JsonIgnore]
+	public bool favorHost = true;
+
 	[JsonIgnore]
 	public int redScore;
 	[JsonIgnore]
@@ -102,7 +106,7 @@ public class Server {
 	public const byte getServersQueryByte = 0;
 	public const byte getServerQueryByte = 1;
 
-	public const int maxPlayerCap = 30;
+	public const int maxPlayerCap = 25;
 
 	public Server(
 		decimal gameVersion, Region? region,

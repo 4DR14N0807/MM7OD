@@ -22,6 +22,7 @@ public class ChargeEffect {
 	public List<ChargeParticle> chargeParts;
 	public bool active = false;
 	public Character character;
+	string? chargePart;
 
 	public ChargeEffect() {
 		chargeParts = new List<ChargeParticle>();
@@ -90,7 +91,7 @@ public class ChargeEffect {
 				//part.pos.y = Helpers.moveTo(part.pos.y, 0, Global.spf * 70);
 				part.pos.y -= Global.speedMul * 4;
 			}
-			string chargePart = chargeLevel switch {
+			chargePart = chargeLevel switch {
 				>2 => "charge_part_1",
 				_ => "charge_part_1"
 			};

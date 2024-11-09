@@ -4,25 +4,16 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class Weapon {
-	public string[] shootSounds = { "" };
+	public string[] shootSounds = { "", "", "", ""};
 	public float ammo;
 	public float maxAmmo;
-	public float rateOfFire {
-		get => fireRateFrames / 60f;
-		set => fireRateFrames = value * 60f;
-	}
-	public float fireRateFrames;
+	public float fireRate;
+	public float shootCooldown;
+	public float altShotCooldown;
 	public float? switchCooldown;
+	public float? switchCooldownFrames;
 	public float soundTime = 0;
 	public bool isStream = false;
-	public float shootTime {
-		get => shootCooldown / 60f;
-		set => shootCooldown = value * 60f;
-	}
-	public float shootCooldown;
-	public float altShootTime;
-	public float streamTime;
-
 	public string displayName = "";
 	public string[] description = {""};
 	public string descriptionV2 = "";
@@ -32,8 +23,6 @@ public class Weapon {
 	public Damager? damager;
 	public int type; // For "swappable category" weapons, like techniques, vile weapon sections, etc.
 	public int streams;
-	public int maxStreams;
-	public float streamCooldown;
 
 	public int index;
 	public int killFeedIndex;
@@ -73,17 +62,16 @@ public class Weapon {
 	public string effect = "";
 	public string Flinch = "";
 	public string FlinchCD = "";
-	public int wsy = 162;
 
 	public Weapon() {
 		ammo = 28;
 		maxAmmo = 28;
-		rateOfFire = 0.15f;
+		fireRate = 9;
 		effect = "";
-		damage = "0/0";
-		hitcooldown = "0/0";
-		Flinch = "0/0";
-		FlinchCD = "0/0";
+		damage = "0";
+		hitcooldown = "0";
+		Flinch = "0";
+		FlinchCD = "0";
 		ammousage = getAmmoUsage(0);
 	}
 
@@ -100,7 +88,7 @@ public class Weapon {
 	public static List<Weapon> getAllSwitchableWeapons(AxlLoadout axlLoadout) {
 		var weaponList = new List<Weapon>() {
 			new GigaCrush(),
-			new HyperBuster(),
+			new HyperCharge(),
 			new NovaStrike(null),
 			new DoubleBullet(),
 			new DNACore(),
@@ -163,14 +151,14 @@ public class Weapon {
 	public static List<Weapon> getAllXWeapons() {
 		return new List<Weapon>()
 		{
-				new Buster(),
-				new Torpedo(),
-				new Sting(),
+				new XBuster(),
+				new HomingTorpedo(),
+				new ChameleonSting(),
 				new RollingShield(),
 				new FireWave(),
-				new Tornado(),
+				new StormTornado(),
 				new ElectricSpark(),
-				new Boomerang(),
+				new BoomerangCutter(),
 				new ShotgunIce(),
 				new CrystalHunter(),
 				new BubbleSplash(),
@@ -187,7 +175,7 @@ public class Weapon {
 				new RaySplasher(),
 				new GravityWell(),
 				new FrostShield(),
-				new TunnelFang(),
+				new TornadoFang(),
 				new RockBuster(),
 				new FreezeCracker(),
 				new SlashClawWeapon(null),
@@ -354,6 +342,10 @@ public class Weapon {
 		else return 1;
 	}
 
+	public virtual float getAmmoUsageEX(int chargeLevel, Character character) {
+		return getAmmoUsage(chargeLevel);
+	}
+
 	public virtual void rechargeAmmo(float maxRechargeTime) {
 		rechargeCooldown -= Global.spf;
 		if (rechargeCooldown < 0) {
@@ -369,8 +361,8 @@ public class Weapon {
 		}
 	}
 	public bool isCooldownPercentDone(float percent) {
-		if (rateOfFire == 0) { return true; }
-		return (shootTime / rateOfFire) < (1 - percent);
+		if (fireRate == 0) { return true; }
+		return (shootCooldown / fireRate) <= (1 - percent);
 	}
 
 	public void addAmmo(float amount, Player player) {
@@ -411,13 +403,11 @@ public class Weapon {
 	}
 	
 	public virtual void update() {
-		if (soundTime > 0) {
-			soundTime = Helpers.clampMin(soundTime - Global.spf, 0);
-		}
+		Helpers.decrementFrames(ref soundTime);
 		Helpers.decrementFrames(ref shootCooldown);
-		Helpers.decrementTime(ref altShootTime);
+		Helpers.decrementFrames(ref altShotCooldown);
 		if (timeSinceLastShoot != null) {
-			timeSinceLastShoot += Global.spf;
+			timeSinceLastShoot += Global.speedMul;
 		}
 	}
 
@@ -436,7 +426,11 @@ public class Weapon {
 			if (weaponHealCount >= 1) {
 				weaponHealCount = 0;
 				if (isAlwaysOn || character.player.weapon == this) {
-					character.playSound("heal", forcePlay: true);
+					if (character.player.hasArmArmor(3)) {
+						character.playSound("healX3", forcePlay: true);
+					} else {
+						character.playSound("heal", forcePlay: true);
+					}
 				}
 			}
 		}

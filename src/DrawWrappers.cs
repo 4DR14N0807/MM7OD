@@ -7,7 +7,7 @@ using SFML.System;
 namespace MMXOnline;
 
 public class DrawableWrapper {
-	public List<ShaderWrapper> shaders;
+	public List<ShaderWrapper>? shaders;
 	public Drawable drawable;
 	public Color color;
 	public int[]? size;
@@ -38,18 +38,27 @@ public class DrawLayer : Transformable, Drawable {
 			// No shaders.
 			if (oneOff.shaders == null || oneOff.shaders.Count == 0) {
 				target.Draw(oneOff.drawable);
+				if (oneOff.drawable is SFML.Graphics.Sprite sprite) {
+					sprite.Dispose();
+				}
 			}
 			// One shader.
-			else if (oneOff.shaders.Count == 1 && oneOff.color == Color.White) {
+			else if (oneOff.shaders.Count == 1 && oneOff.color == Color.White || oneOff.size == null) {
 				RenderStates renderStates = new RenderStates(states);
 				renderStates.Shader = oneOff.shaders[0].getShader();
 				target.Draw(oneOff.drawable, renderStates);
+				if (oneOff.drawable is SFML.Graphics.Sprite sprite) {
+					sprite.Dispose();
+				}
 			}
 			// Multi-shader.
 			else {
 				var sprite = oneOff.drawable as SFML.Graphics.Sprite;
 				if (sprite == null) {
 					continue;
+				}
+				if (oneOff.size[0] <= 0 || oneOff.size[0] <= 0) {
+					return;
 				}
 				RenderStates renderStates = new RenderStates(states);
 				Vector2f originalPosition = sprite.Position;
@@ -79,6 +88,7 @@ public class DrawLayer : Transformable, Drawable {
 				back.Display();
 				renderStates.Shader = oneOff.shaders[0].getShader();
 				back.Draw(sprite, renderStates);
+				sprite.Dispose();
 				// Iterate shaders.
 				for (int num = 1; num < oneOff.shaders.Count; num++) {
 					// Clear image.
@@ -87,9 +97,11 @@ public class DrawLayer : Transformable, Drawable {
 					front.Display();
 					// Apply shader and draw.
 					renderStates.Shader = oneOff.shaders[num].getShader();
+					SFML.Graphics.Sprite spr = new(back.Texture);
 					front.Draw(
-						new SFML.Graphics.Sprite(back.Texture), renderStates
+						spr, renderStates
 					);
+					spr.Dispose();
 					// Swap.
 					(
 						front,
@@ -109,6 +121,7 @@ public class DrawLayer : Transformable, Drawable {
 
 				renderStates = new RenderStates(states);
 				target.Draw(finalSprite, renderStates);
+				finalSprite.Dispose();
 			}
 		}
 	}

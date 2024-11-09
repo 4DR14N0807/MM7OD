@@ -654,7 +654,7 @@ public class GameMode {
 					yStart += 12;
 				}
 				int xStart = 11;
-				if (zero.gigaAttack.shootTime > 0) {
+				if (zero.gigaAttack.shootCooldown > 0) {
 					drawZeroGigaCooldown(zero.gigaAttack, y: yStart);
 					xStart += 15;
 				}
@@ -686,7 +686,7 @@ public class GameMode {
 					);*/
 					yStart += 12;
 				}
-				if (punchyZero.gigaAttack.shootTime > 0) {
+				if (punchyZero.gigaAttack.shootCooldown > 0) {
 					drawZeroGigaCooldown(punchyZero.gigaAttack, xStart, yStart);
 					xStart += 15;
 				}
@@ -1024,6 +1024,7 @@ public class GameMode {
 		sprite.Scale = new Vector2f(0.25f, 0.25f);
 		Global.window.SetView(DrawWrappers.hudView);
 		Global.window.Draw(sprite);
+		sprite.Dispose();
 
 		if (level.mainPlayer.isSigma) {
 			foreach (Maverick maverick in level.mainPlayer.mavericks) {
@@ -1269,7 +1270,10 @@ public class GameMode {
 			twoLayerHealth = player.character.rideArmor.goliathHealth;
 			frameIndex = player.character.rideArmor.raNum;
 			baseX = getHUDHealthPosition(position, false).x;
-			mechBarExists = true;
+			mechBarExists = false;
+			if (player.weapon.drawAmmo) {
+				baseX += 15;
+			}
 			damageSavings = 0;
 		}
 		if (isMech && player.character?.rideArmorPlatform != null) {
@@ -1530,7 +1534,7 @@ public class GameMode {
 					if (weapon.drawGrayOnLowAmmo && weapon.ammo < weapon.getAmmoUsage(0) ||
 						(weapon is GigaCrush && !weapon.canShoot(0, player)) ||
 						(weapon is NovaStrike && !weapon.canShoot(0, player)) ||
-						(weapon is HyperBuster hb && !hb.canShootIncludeCooldown(level.mainPlayer))) {
+						(weapon is HyperCharge hb && !hb.canShootIncludeCooldown(level.mainPlayer))) {
 						spriteIndex = grayAmmoIndex;
 					}
 					if (spriteIndex >= Global.sprites["hud_weapon_full"].frames.Length) {
@@ -1544,6 +1548,9 @@ public class GameMode {
 			}
 			Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
 		}
+		//if (shouldDrawWeaponAmmo(player, weapon) && player.isIris) {
+		//	Global.sprites["iris_hud"].drawToHUD(0, 25, 125);
+		//}
 	}
 
 	public void addKillFeedEntry(KillFeedEntry killFeed, bool sendRpc = false) {
@@ -1739,11 +1746,15 @@ public class GameMode {
 
 			Fonts.drawText(
 				FontType.Grey,
-				"Start GridItem Count: " + level.startGridCount, topLeftX, topLeftY + (currentLineH += lineHeight)
+				"GridItem Count: " +
+				level.startGridCount + "-" + level.getGridCount(),
+				topLeftX, topLeftY + (currentLineH += lineHeight)
 			);
 			Fonts.drawText(
 				FontType.Grey,
-				"Current GridItem Count: " + level.getGridCount(), topLeftX, topLeftY + (currentLineH += lineHeight)
+				"TGridItem Count: " +
+				level.startTGridCount + "-" + level.getTGridCount(),
+				topLeftX, topLeftY + (currentLineH += lineHeight)
 			);
 
 			Fonts.drawText(
@@ -1792,7 +1803,7 @@ public class GameMode {
 			if (napalmNum < 0) napalmNum = 0;
 			if (napalmNum > 2) napalmNum = 0;
 			Global.sprites["hud_hawk_bombs"].drawToHUD(
-				napalmNum, x, y, alpha: vilePilot.napalmWeapon.shootTime == 0 ? 1 : 0.5f
+				napalmNum, x, y, alpha: vilePilot.napalmWeapon.shootCooldown == 0 ? 1 : 0.5f
 			);
 			Fonts.drawText(
 				FontType.Grey, "x" + vilePilot.rideArmor.hawkBombCount.ToString(), x + 10, y - 4
@@ -1829,7 +1840,7 @@ public class GameMode {
 		if (player.character is MegamanX mmx && mmx.hasFgMoveEquipped() && mmx.canAffordFgMove()) {
 			int x = gigaWeaponX, y = 159;
 			Global.sprites["hud_weapon_icon"].drawToHUD(mmx.hasHadoukenEquipped() ? 112 : 113, x, y);
-			float cooldown = Helpers.progress(player.fgMoveAmmo, 32f);
+			float cooldown = Helpers.progress(player.fgMoveAmmo, 1920f);
 			drawWeaponSlotCooldown(x, y, cooldown);
 		}
 
@@ -1886,7 +1897,7 @@ public class GameMode {
 			var weapon = player.weapons[i];
 			var x = startX + (i * width);
 			var y = startY;
-			if (weapon is HyperBuster hb) {
+			if (weapon is HyperCharge hb) {
 				bool canShootHyperBuster = hb.canShootIncludeCooldown(player);
 				Color lineColor = canShootHyperBuster ? Color.White : Helpers.Gray;
 
@@ -1955,10 +1966,10 @@ public class GameMode {
 
 	public void drawZeroGigaCooldown(Weapon weapon, int x = 11, int y = 159) {
 		// This runs once per character.
-		if (weapon == null || weapon.shootTime <= 0) {
+		if (weapon == null || weapon.shootCooldown <= 0) {
 			return;
 		}
-		float cooldown = Helpers.progress(weapon.shootTime, weapon.rateOfFire);
+		float cooldown = Helpers.progress(weapon.shootCooldown, weapon.fireRate);
 		drawGigaWeaponCooldown(weapon.weaponSlotIndex, 1 - cooldown, x, y);
 	}
 
@@ -1983,7 +1994,7 @@ public class GameMode {
 		if (selected) {
 			if (!weapon.canShoot(0, mainPlayer)) {
 				drawWeaponStateOverlay(x, y, 2);
-			} else if (weapon.shootTime > 0 && weapon.rateOfFire > 10f/60f && weapon.drawCooldown) {
+			} else if (weapon.shootCooldown > 0 && weapon.fireRate > 10 && weapon.drawCooldown) {
 				drawWeaponStateOverlay(x, y, 1);
 			} else if (selected) {
 				drawWeaponStateOverlay(x, y, 0);
@@ -2025,23 +2036,32 @@ public class GameMode {
 			drawTransformPreviewInfo(dnaCore, x, y);
 		}
 
-		if (weapon is HyperBuster &&
-			!mainPlayer.isSpectator &&
-			mainPlayer.weapons[level.mainPlayer.hyperChargeSlot].ammo == 0
-		) {
-			drawWeaponSlotAmmo(x, y, 0);
-		} else if (weapon is HyperBuster hb) {
-			drawWeaponSlotCooldown(x, y, hb.shootTime / hb.getRateOfFire(level.mainPlayer));
-		} else if (weapon is NovaStrike ns) {
-			drawWeaponSlotCooldown(x, y, ns.shootTime / ns.rateOfFire);
+
+		if (mainPlayer.isX && mainPlayer.character != null && mainPlayer.character.charState is not XRevive) {
+			MegamanX mmx = null!;
+			if (mainPlayer.character != null && !mainPlayer.character.destroyed) {
+				mmx = mainPlayer.character as MegamanX ?? throw new NullReferenceException();
+			}
+
+			if (weapon is HyperCharge &&
+				!mainPlayer.isSpectator &&
+				mainPlayer.weapons[level.mainPlayer.hyperChargeSlot].ammo == 0
+			) {
+				drawWeaponSlotAmmo(x, y, 0);
+			} else if (weapon is HyperCharge hb) {
+				drawWeaponSlotCooldown(x, y, mmx.hyperchargeCooldown / hb.getRateOfFire(level.mainPlayer));
+			} else if (weapon is NovaStrike ns) {
+				drawWeaponSlotCooldown(x, y, mmx.novaStrikeCooldown / ns.fireRate);
+			}
 		}
+		 
 		if (weapon is SigmaMenuWeapon) {
-			drawWeaponSlotCooldown(x, y, weapon.shootTime / 4);
+			drawWeaponSlotCooldown(x, y, weapon.shootCooldown / 4);
 		}
 
 		if (Global.debug && Global.quickStart && weapon is AxlWeapon aw2 && weapon is not DNACore) {
-			drawWeaponSlotCooldownBar(x, y, aw2.shootTime / aw2.rateOfFire);
-			drawWeaponSlotCooldownBar(x, y, aw2.altShootTime / aw2.altFireCooldown, true);
+			drawWeaponSlotCooldownBar(x, y, aw2.shootCooldown / aw2.fireRate);
+			drawWeaponSlotCooldownBar(x, y, aw2.altShotCooldown / aw2.altFireCooldown, true);
 		}
 
 		MaverickWeapon? mw = weapon as MaverickWeapon;
@@ -2052,7 +2072,7 @@ public class GameMode {
 				float mMaxHealth = mw.maverick?.maxHealth ?? maxHealth;
 				if (!mw.summonedOnce) mHealth = 0;
 				drawWeaponSlotAmmo(x, y, mHealth / mMaxHealth);
-				drawWeaponSlotCooldown(x, y, mw.shootTime / MaverickWeapon.summonerCooldown);
+				drawWeaponSlotCooldown(x, y, mw.shootCooldown / MaverickWeapon.summonerCooldown);
 			} else if (level.mainPlayer.isPuppeteer()) {
 				float mHealth = mw.maverick?.health ?? mw.lastHealth;
 				float mMaxHealth = mw.maverick?.maxHealth ?? maxHealth;
@@ -2320,12 +2340,12 @@ public class GameMode {
 			if (sigmaForm == 0) weapons.Add(new Weapon() {
 				weaponSlotIndex = 111,
 				ammo = dnaCore.rakuhouhaAmmo,
-				maxAmmo = 32,
+				maxAmmo = 20,
 			});
 			if (sigmaForm == 1) weapons.Add(new Weapon() {
 				weaponSlotIndex = 110,
 				ammo = dnaCore.rakuhouhaAmmo,
-				maxAmmo = 32,
+				maxAmmo = 28,
 			});
 		}
 		int counter = 0;

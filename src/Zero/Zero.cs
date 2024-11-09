@@ -216,13 +216,13 @@ public class Zero : Character {
 
 	// Shoot logic and stuff.
 	public override bool canShoot() {
-		return (!charState.invincible &&
+		return (!charState.invincible && !isInvulnerable() &&
 			(charState.attackCtrl || (charState.altCtrls.Length >= 2 && charState.altCtrls[1]))
 		);
 	}
 	
 	public override bool canCharge() {
-		return (
+		return ( !isInvulnerable
 			(charState.attackCtrl || getChargeLevel() > 0) &&
 			(player.currency > 0 || freeBusterShots > 0) &&
 			donutsPending == 0
@@ -470,7 +470,7 @@ public class Zero : Character {
 		int yDir = player.input.getYDir(player);
 		// Giga attacks.
 		if (yDir == 1 && specialPressed) {
-			if (gigaAttack.shootTime <= 0 && gigaAttack.ammo >= gigaAttack.getAmmoUsage(0)) {
+			if (gigaAttack.shootCooldown <= 0 && gigaAttack.ammo >= gigaAttack.getAmmoUsage(0)) {
 				if (gigaAttack is RekkohaWeapon) {
 					gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
 					changeState(new Rekkoha(gigaAttack), true);
@@ -530,7 +530,7 @@ public class Zero : Character {
 
 	public bool airAttacks() {
 		int yDir = player.input.getYDir(player);
-		if (yDir == -1 && canAirDash() && airRisingUses == 0 && flag == null && (
+		if (yDir == -1 && airRisingUses == 0 && flag == null && (
 			(uppercutA.type == (int)RisingType.RisingFang && shootPressed) ||
 			(uppercutS.type == (int)RisingType.RisingFang && specialPressed)
 		)) {
@@ -560,7 +560,11 @@ public class Zero : Character {
 		}
 		// Air attack.
 		if (shootPressed) {
-			changeState(new ZeroAirSlashState(), true);
+			if (charState is WallSlide wallSlide) {
+				changeState(new ZeroMeleeWall(wallSlide.wallDir, wallSlide.wallCollider), true);
+			} else {
+				changeState(new ZeroAirSlashState(), true);
+			}
 			return true;
 		}
 		return false;
@@ -606,6 +610,16 @@ public class Zero : Character {
 		return runSpeed * getRunDebuffs();
 	}
 
+	public override float getDashSpeed() {
+		if (flag != null || !isDashing) {
+			return getRunSpeed();
+		}
+		float dashSpeed = 210;
+		if (isBlack) {
+			dashSpeed *= 1.15f;
+		}
+		return dashSpeed * getRunDebuffs();
+	}
 	public override string getSprite(string spriteName) {
 		return "zero_" + spriteName;
 	}
@@ -796,7 +810,6 @@ public class Zero : Character {
 				RyuenjinWeapon.staticWeapon, projPos, ProjIds.Ryuenjin, player, 4, 0, 0.2f,
 				addToLevel: addToLevel
 			),
-			// Deals +2 burn damage to total is 5.
 			(int)MeleeIds.Denjin => new GenericMeleeProj(
 				DenjinWeapon.staticWeapon, projPos, ProjIds.Denjin, player, 3, Global.defFlinch, 0.1f,
 				addToLevel: addToLevel

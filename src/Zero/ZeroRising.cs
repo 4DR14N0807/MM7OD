@@ -14,13 +14,17 @@ public class RyuenjinWeapon : Weapon {
 	public RyuenjinWeapon() : base() {
 		//damager = new Damager(player, 4, 0, 0.2f);
 		index = (int)WeaponIds.Ryuenjin;
-		rateOfFire = 0.25f;
+		fireRate = 15;
 		weaponBarBaseIndex = 23;
 		weaponBarIndex = weaponBarBaseIndex;
 		killFeedIndex = 11;
 		type = (int)RisingType.Ryuenjin;
 		displayName = "Ryuenjin";
 		description = new string[] { "A fiery uppercut that burns enemies." };
+		damage = "4";
+		hitcooldown = "0.2";
+		Flinch = "0";
+		effect = "Burn DOT: 2 Seconds.";
 	}
 
 	public static Weapon getWeaponFromIndex(int index) {
@@ -37,12 +41,16 @@ public class DenjinWeapon : Weapon {
 	public DenjinWeapon() : base() {
 		//damager = new Damager(player, 3, Global.defFlinch, 0.1f);
 		index = (int)WeaponIds.EBlade;
-		rateOfFire = 0.25f;
+		fireRate = 15;
 		weaponBarBaseIndex = 41;
 		killFeedIndex = 36;
 		type = (int)RisingType.Denjin;
 		displayName = "Denjin";
 		description = new string[] { "An electrical uppercut that flinches enemies", "and can hit multiple times." };
+		damage = "3";
+		hitcooldown = "0.1";
+		Flinch = "26";
+		effect = "None.";
 	}
 }
 
@@ -52,12 +60,16 @@ public class RisingFangWeapon : Weapon {
 	public RisingFangWeapon() : base() {
 		//damager = new Damager(player, 2, 0, 0.5f);
 		index = (int)WeaponIds.Rising;
-		rateOfFire = 0.1f;
+		fireRate = 6;
 		weaponBarBaseIndex = 41;
 		killFeedIndex = 83;
 		type = (int)RisingType.RisingFang;
 		displayName = "Rising";
 		description = new string[] { "A fast, element-neutral uppercut.", "Can be used in the air to gain height." };
+		damage = "2";
+		hitcooldown = "0.5";
+		Flinch = "0";
+		effect = "Can be used in the air to gain height.";
 	}
 }
 
@@ -190,8 +202,6 @@ public class ZeroUppercut : CharState {
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		if (type == RisingType.RisingFang) {
-			zero.airRisingUses++;
-		}
+		zero.airRisingUses++;	
 	}
 }

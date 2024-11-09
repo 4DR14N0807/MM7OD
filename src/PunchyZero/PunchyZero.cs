@@ -177,7 +177,7 @@ public class PunchyZero : Character {
 	}
 
 	public override bool canCharge() {
-		return (player.currency > 0 || freeBusterShots > 0) && donutsPending == 0;
+		return (player.currency > 0 || freeBusterShots > 0) && donutsPending == 0 && !isInvulnerableAttack();
 	}
 
 	public override bool chargeButtonHeld() {
@@ -459,7 +459,7 @@ public class PunchyZero : Character {
 			return true;
 		}
 		if (yDir == 1) {
-			if (gigaAttack.shootTime > 0 || gigaAttack.ammo < gigaAttack.getAmmoUsage(0)) {
+			if (gigaAttack.shootCooldown > 0 || gigaAttack.ammo < gigaAttack.getAmmoUsage(0)) {
 				return false;
 			}
 			if (gigaAttack is RekkohaWeapon) {
@@ -488,6 +488,10 @@ public class PunchyZero : Character {
 
 	public override bool isToughGuyHyperMode() {
 		return isBlack || isGenmuZero;
+	}
+	public override bool canShoot() {
+		if (isInvulnerableAttack()) return false;
+		return base.canShoot();
 	}
 
 	public override List<ShaderWrapper> getShaders() {
@@ -544,7 +548,7 @@ public class PunchyZero : Character {
 			"zero_shoryuken" => MeleeIds.Uppercut,
 			"zero_megapunch" => MeleeIds.StrongPunch,
 			"zero_dropkick" => MeleeIds.DropKick,
-			"zero_projswing" or "zero_projswing_air" => MeleeIds.SaberSwing,
+			"zero_projswing" or "zero_projswing_air" or "zero_wall_slide_attack" => MeleeIds.SaberSwing,
 			_ => MeleeIds.None
 		});
 	}

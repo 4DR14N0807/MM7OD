@@ -6,8 +6,8 @@ namespace MMXOnline;
 
 public class PlasmaGun : AxlWeapon {
 	public PlasmaGun(int altFire) : base(altFire) {
-		//shootSounds = new List<string>() { "", "", "", "" };
-		rateOfFire = 1.5f;
+		//shootSounds = new string[] { "plasmaGun", "plasmaGun", "plasmaGun", "plasmaGun" };
+		fireRate = 90;
 		altFireCooldown = 2f;
 		index = (int)WeaponIds.PlasmaGun;
 		weaponBarBaseIndex = 36;

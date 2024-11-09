@@ -41,6 +41,7 @@ public enum CharIds {
 	WolfSigma = 100,
 	ViralSigma,
 	KaiserSigma,
+	RagingChargeX,
 	// Non-vanilla chars start here.
 }
 
@@ -51,7 +52,7 @@ public class CharSelection {
 	public int mappedCharMaverick;
 	public string sprite;
 	public int frameIndex;
-	public Point offset = new Point(0, 0);
+	public Point offset = new Point(0, 45);
 
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
@@ -245,7 +246,7 @@ public class SelectCharacterMenu : IMainMenu {
 		// Draw character + box
 		var charPosX1 = Global.halfScreenW;
 		var charPosY1 = 85;
-		Global.sprites["playerbox"].drawToHUD(0, charPosX1, charPosY1);
+		Global.sprites["playerbox"].drawToHUD(0, charPosX1, charPosY1+2);
 		string sprite = charSelection.sprite;
 		int frameIndex = charSelection.frameIndex;
 		float yOff = Global.sprites[sprite].frames[0].offset.y;
@@ -300,7 +301,7 @@ public class SelectCharacterMenu : IMainMenu {
 		if (!isInGame) {
 			Fonts.drawTextEX(
 				FontType.Grey, "[OK]: Continue, [BACK]: Back\n[MLEFT]/[MRIGHT]: Change character",
-				Global.screenW * 0.5f, 178, Alignment.Center
+				Global.screenW * 0.5f, 182, Alignment.Center
 			);
 		} else {
 			if (!Global.isHost) {

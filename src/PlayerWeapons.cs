@@ -215,10 +215,6 @@ public partial class Player {
 			selectedRAIndex = 0;
 		}
 
-		if (isX) {
-			character.stingChargeTime = 0;
-		}
-
 		Weapon oldWeapon = weapon;
 		if (oldWeapon is MechMenuWeapon mmw) {
 			mmw.isMenuOpened = false;
@@ -233,7 +229,9 @@ public partial class Player {
 			mw.isMenuOpened = false;
 		}
 
-		if (isX) {
+		character.onWeaponChange(oldWeapon, newWeapon);
+
+		/* if (isX) {
 			if (character.getChargeLevel() >= 2) {
 				newWeapon.shootTime = 0;
 			} else {
@@ -247,9 +245,9 @@ public partial class Player {
 				if (newWeapon is NovaStrike ns) {
 					ns.shootTime = 0;
 				}
-				*/
+				
 			}
-		}
+		} */
 
 		if (character is Axl axl) {
 			if (oldWeapon is AxlWeapon) {
@@ -320,7 +318,7 @@ label:
 
 		if (ownedByLocalPlayer) {
 			if (isRock) {
-				Rock rock = character as Rock;
+				Rock? rock = character as Rock;
 				if (Global.level.isTraining() && !Global.level.server.useLoadout) {
 					weapons = Weapon.getAllRockWeapons().Select(w => w.clone()).ToList();
 				}  else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomRockLoadout) {
@@ -361,7 +359,7 @@ label:
 	public int getLastWeaponIndex() {
 		int miscSlots = 0;
 		if (weapons.Any(w => w is GigaCrush)) miscSlots++;
-		if (weapons.Any(w => w is HyperBuster)) miscSlots++;
+		if (weapons.Any(w => w is HyperCharge)) miscSlots++;
 		if (weapons.Any(w => w is NovaStrike)) miscSlots++;
 		return weapons.Count - miscSlots;
 	}
@@ -373,8 +371,8 @@ label:
 	}
 
 	public void addHyperCharge() {
-		if (!weapons.Any(w => w is HyperBuster)) {
-			weapons.Insert(getLastWeaponIndex(), new HyperBuster());
+		if (!weapons.Any(w => w is HyperCharge)) {
+			weapons.Insert(getLastWeaponIndex(), new HyperCharge());
 		}
 	}
 
@@ -392,10 +390,10 @@ label:
 	}
 
 	public void removeHyperCharge() {
-		if (weapon is HyperBuster) {
+		if (weapon is HyperCharge) {
 			weaponSlot = 0;
 		}
-		weapons.RemoveAll(w => w is HyperBuster);
+		weapons.RemoveAll(w => w is HyperCharge);
 	}
 
 	public void removeGigaCrush() {

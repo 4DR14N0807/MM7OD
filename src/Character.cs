@@ -23,8 +23,8 @@ public partial class Character : Actor, IDamagable {
 	public Player player;
 	public bool isDashing;
 	public float shootTime {
-		get { return player.weapon.shootTime; }
-		set { player.weapon.shootTime = value; }
+		get { return player.weapon.shootCooldown; }
+		set { player.weapon.shootCooldown = value; }
 	}
 	public bool changedStateInFrame;
 	public bool pushedByTornadoInFrame;
@@ -280,6 +280,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) return;
 		if (isInvulnerable()) return;
 		if (isVaccinated()) return;
+		if (charState.invincible) return;
 
 		Damager damager = new Damager(attacker, 0, 0, 0);
 		if (infectedTime == 0 || infectedDamager == null) {
@@ -293,6 +294,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) return;
 		if (isInvulnerable()) return;
 		if (isVaccinated()) return;
+		if (charState.invincible) return;
 
 		changeState(new DarkHoldState(this, darkHoldTime), true);
 	}
@@ -301,7 +303,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer ||
 			(this as MegamanX)?.chargedRollingShieldProj != null ||
 			isInvulnerable() ||
-			isVaccinated()
+			isVaccinated() || charState.invincible
 		) {
 			return;
 		}
@@ -326,7 +328,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer ||
 			(this as MegamanX)?.chargedRollingShieldProj != null ||
 			isInvulnerable() ||
-			isVaccinated()
+			isVaccinated() || charState.invincible
 		) {
 			return;
 		}
@@ -353,7 +355,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer ||
 			(this as MegamanX)?.chargedRollingShieldProj != null ||
 			isInvulnerable() ||
-			isVaccinated()
+			isVaccinated() || charState.invincible
 		) {
 			return;
 		}
@@ -611,6 +613,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canShoot() {
+		// should we? if (Global.serverClient?.isLagging() == true) return false;
 		return charState.attackCtrl;
 	}
 
@@ -631,6 +634,8 @@ public partial class Character : Actor, IDamagable {
 		if (charState is Die || charState is VileRevive || charState is XReviveStart || charState is XRevive) return false;
 		if (player.currentMaverick != null && player.isTagTeam()) return false;
 		if (isWarpOut()) return false;
+		if (Global.serverClient?.isLagging() == true) return false;
+		if (charState is KaiserSigmaRevive || charState is WolfSigmaRevive || charState is ViralSigmaRevive) return false;
 		return true;
 	}
 
@@ -701,7 +706,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void hook(Projectile strikeChainProj) {
-		bool isChargedStrikeChain = strikeChainProj is StrikeChainProj scp && scp.isCharged;
+		bool isChargedStrikeChain = strikeChainProj is StrikeChainProjCharged;
 		bool flinch = (isChargedStrikeChain || strikeChainProj is WSpongeSideChainProj);
 		changeState(new StrikeChainHooked(strikeChainProj, flinch), true);
 	}
@@ -946,7 +951,7 @@ public partial class Character : Actor, IDamagable {
 					acidHurtCooldown = 0;
 				}
 				acidDamager?.applyDamage(
-					this, player.weapon is TunnelFang,
+					this, player.weapon is TornadoFang,
 					new AcidBurst(), this, (int)ProjIds.AcidBurstPoison,
 					overrideDamage: 1f
 				);
@@ -1239,7 +1244,7 @@ public partial class Character : Actor, IDamagable {
 			usedWtank = null;
 		}
 
-		if (ai != null && !Global.isSkippingFrames) {
+		if (ai != null ) {
 			ai.update();
 		}
 
@@ -1312,15 +1317,17 @@ public partial class Character : Actor, IDamagable {
 			changeState(new Fall());
 		}
 		if (canWallClimb() &&
-			(charState.normalCtrl || charState.airMove || charState is WallSlide) &&
 			!grounded && vel.y >= 0 &&
-			wallKickTimer <= 0 &&
+			wallKickTimer <= 0 && (
+				charState.normalCtrl || charState.airMove ||
+				charState is WallSlide || charState is WallSlideAttack { canCancel: true }
+			) &&
 			player.input.isPressed(Control.Jump, player) &&
 			(charState.wallKickLeftWall != null || charState.wallKickRightWall != null)
 		) {
 			dashedInAir = 0;
 			if (player.input.isHeld(Control.Dash, player) &&
-				(charState.useDashJumpSpeed || charState is WallSlide)
+				(charState.useDashJumpSpeed || charState is WallSlide or WallSlideAttack)
 			) {
 				isDashing = true;
 				dashedInAir++;
@@ -1341,12 +1348,12 @@ public partial class Character : Actor, IDamagable {
 					wallKickDir -= 1;
 				}
 			}
-			if (wallKickDir != 0) {
-				xDir = -wallKickDir;
-			}
 			wallKickTimer = maxWallKickTime;
-			if (charState.normalCtrl || charState is WallSlide) {
+			if (charState.normalCtrl || charState is WallSlide or WallSlideAttack) {
 				changeState(new WallKick(), true);
+				if (wallKickDir != 0) {
+					xDir = -wallKickDir;
+				}
 			} else {
 				playSound("jump", sendRpc: true);
 			}
@@ -1378,8 +1385,8 @@ public partial class Character : Actor, IDamagable {
 
 				vel.y = -getJumpPower();
 				playSound("jump", sendRpc: true);
-				if (charState.airSprite != null && charState.airSprite != "") {
-					changeSprite(charState.airSprite, false);
+				if (charState.airSprite != "") {
+					changeSpriteFromName(charState.airSprite, false);
 				}
 				new Anim(pos, "double_jump_anim", xDir, netId, true, true);
 			}
@@ -1692,17 +1699,21 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (isCharging()) {
 			chargeSound.play();
-			int level = getChargeLevel();
-			var renderGfx = RenderEffectType.ChargeBlue;
-			renderGfx = level switch {
-				1 => RenderEffectType.ChargeBlue,
-				2 => RenderEffectType.ChargeYellow,
-				3 => RenderEffectType.ChargePink,
-				4 => RenderEffectType.ChargeOrange,
-				_ => RenderEffectType.ChargeGreen
-			};
-			addRenderEffect(renderGfx, 0.033333f, 0.1f);
-			chargeEffect.update(getChargeLevel(), 0);
+			int chargeType = 0;
+			if (!sprite.name.Contains("ra_hide")) {
+				int level = getChargeLevel();
+				var renderGfx = RenderEffectType.ChargeBlue;
+				renderGfx = level switch {
+					1 => RenderEffectType.ChargeBlue,
+					2 => RenderEffectType.ChargeYellow,
+					3 when (chargeType == 2) => RenderEffectType.ChargeOrange,
+					3 => RenderEffectType.ChargePink,
+					_ when (chargeType == 1) => RenderEffectType.ChargeGreen,
+					_ => RenderEffectType.ChargeOrange
+				};
+				addRenderEffect(renderGfx, 0.033333f, 0.1f);
+			}
+			chargeEffect.update(getChargeLevel(), chargeType);
 		}
 	}
 
@@ -2937,7 +2948,7 @@ public partial class Character : Actor, IDamagable {
 						);
 					}
 				}
-				var hyperBuster = player.weapons.FirstOrDefault(w => w is HyperBuster);
+				var hyperBuster = player.weapons.FirstOrDefault(w => w is HyperCharge);
 				if (hyperBuster != null) {
 					float currentAmmo = hyperBuster.ammo;
 					hyperBuster.addAmmo(gigaAmmoToAdd, player);
@@ -3178,7 +3189,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		if (charState is Hurt hurtState) {
-			if (hurtState.stateFrames <= flinchFrames) {
+			if (flinchFrames >= hurtState.flinchLeft) {
 				// You can probably add a check here that sets "hurtState.yStartPos" to null if you.
 				// Want to add a flinch attack that pushes up on chain-flinch.
 				changeState(new Hurt(dir, flinchFrames, false, hurtState.flinchYPos), true);
@@ -3273,7 +3284,7 @@ public partial class Character : Actor, IDamagable {
 	// PARASITE SECTION
 	public void addParasite(Player attacker) {
 		if (!ownedByLocalPlayer) return;
-		if (this is Character character && (character.charState.invincible || character.isInvulnerable())) return;
+		if (charState.invincible || isInvulnerable()) return;
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
 		parasiteTime = Global.spf;
 		parasiteDamager = damager;
@@ -3431,10 +3442,6 @@ public partial class Character : Actor, IDamagable {
 		if (deltaPos.y > 210 * Global.spf) damagePercent = 0.75f;
 		if (deltaPos.y > 300 * Global.spf) damagePercent = 1;
 		return damagePercent;
-	}
-
-	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
-		return base.getProjFromHitbox(hitbox, centerPoint);
 	}
 
 	public void releaseGrab(Actor grabber, bool sendRpc = false) {
@@ -3639,6 +3646,8 @@ public partial class Character : Actor, IDamagable {
 		if (bigBubble != null) bigBubble.destroySelf();
 	}
 
+	public virtual void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {}
+
 	public virtual void onExitState(CharState oldState, CharState newState) {
 
 	}
@@ -3696,7 +3705,8 @@ public partial class Character : Actor, IDamagable {
 			invulnTime > 0,
 			isDarkHoldState,
 			isStrikeChainState,
-			isBurnState
+			isBurnState,
+			charState.immuneToWind
 		]));
 
 		// Bool mask. Pos 5.
@@ -3763,13 +3773,14 @@ public partial class Character : Actor, IDamagable {
 		player.currency = data[4];
 
 		// Bool variables.
-		bool[] boolData = Helpers.byteToBoolArray(data[5]);
+		bool[] boolData = Helpers.byteToBoolArray(data[6]);
 
 		player.isDefenderFavoredNonOwner = boolData[0];
 		invulnTime = (boolData[1] ? 1 : 0);
 		isDarkHoldState = boolData[2];
 		isStrikeChainState = boolData[3];
 		isBurnState = boolData[4];
+		charState.immuneToWind = boolData[5];
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[6]);

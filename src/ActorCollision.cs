@@ -70,10 +70,6 @@ public partial class Actor {
 			if (stdColl == null) {
 				return null;
 			}
-			Collider? lvColl = getTerrainCollider();
-			if (lvColl != null) {
-				return lvColl;
-			}
 			return stdColl;
 		}
 	}
@@ -236,7 +232,6 @@ public partial class Actor {
 		Point centerPoint = hitbox.shape.getRect().center();
 		Projectile? proj = getProjFromHitbox(hitbox, centerPoint);
 		if (proj != null) {
-			proj.hitboxActor = this;
 			proj.globalCollider = hitbox.clone();
 		}
 		return proj;
@@ -268,12 +263,18 @@ public partial class Actor {
 	}
 
 	public void incPos(Point amount) {
+		if (amount == Point.zero) {
+			return;
+		}
 		Global.level.removeFromGrid(this);
 		pos.inc(amount);
 		Global.level.addToGrid(this);
 	}
 
 	public void changePos(Point newPos) {
+		if (newPos == pos) {
+			return;
+		}
 		Global.level.removeFromGrid(this);
 		pos = newPos;
 		Global.level.addToGrid(this);
@@ -333,6 +334,9 @@ public partial class Actor {
 		Point amount, bool useDeltaTime = true, bool pushIncline = true,
 		bool useIce = true, MoveClampMode clampMode = MoveClampMode.None
 	) {
+		if (amount == Point.zero) {
+			return;
+		}
 		var times = useDeltaTime ? Global.spf : 1;
 
 		if (grounded && groundedIce && useIce && (
@@ -395,17 +399,14 @@ public partial class Actor {
 				otherChara.insideCharacter = true;
 				continue;
 			}
-
 			Point? freeVec = null;
 			if (this is RideChaser rc && physicsCollider != null) {
 				// Hack to make ride chasers not get stuck on inclines
 				freeVec = physicsCollider.shape.getMinTransVectorDir(collideData.otherCollider.shape, new Point(0, -1));
 			}
-
 			if ((freeVec == null || freeVec.Value.magnitude > 20) && physicsCollider != null) {
 				freeVec = physicsCollider.shape.getMinTransVector(collideData.otherCollider.shape);
 			}
-
 			if (freeVec == null) {
 				return;
 			}

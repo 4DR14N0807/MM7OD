@@ -108,7 +108,6 @@ public class VileRevive : CharState {
 		//character.addMusicSource("drdoppler", character.getCenterPos(), false);
 		if (!isMK5) {
 			drDopplerAnim = new Anim(character.pos.addxy(30 * character.xDir, -15), "drdoppler", -character.xDir, null, false);
-			drDopplerAnim.fadeIn = true;
 			drDopplerAnim.blink = true;
 		} else {
 			if (vile.startRideArmor != null) {

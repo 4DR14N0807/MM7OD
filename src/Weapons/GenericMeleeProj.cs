@@ -136,9 +136,6 @@ public class GenericMeleeProj : Projectile {
 		}
 		string SaberShotFade = "zsaber_shot_fade";
 		string SaberSlashFade = "zsaber_slash_fade";
-		string SparkVerticalFade = "sword_sparks_vertical";
-		//string SparkElectricFade = "tunnelfang_sparks";
-		//string PunchSpark = "sword_sparks_horizontal";
 		if (ownedByLocalPlayer) {
 			if (isZSaberEffect() || projId == (int)ProjIds.X6Saber || projId == (int)ProjIds.XSaber) {
 				new Anim(hitPoint.Value, SaberShotFade, xDir,
@@ -161,20 +158,6 @@ public class GenericMeleeProj : Projectile {
 					new Anim(hitPoint.Value, SaberSlashFade, xDir*-1,
 						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
 					break;
-				case (int)ProjIds.Rakukojin: 
-					new Anim(hitPoint.Value, SparkVerticalFade, xDir,
-						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-					break;
-			/*	case (int)ProjIds.Raijingeki: We need better hit effect sprites
-				case (int)ProjIds.Raijingeki2: 
-					new Anim(hitPoint.Value, SparkElectricFade, xDir,
-						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-					break;
-				case (int)ProjIds.PZeroPunch: 
-				case (int)ProjIds.PZeroPunch2: 
-					new Anim(hitPoint.Value, PunchSpark, xDir,
-						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-					break; */
 			}
 		}
 		return null;

@@ -267,7 +267,7 @@ public class AI {
 		if (target != null && target.destroyed) {
 			target = null;
 		}
-		if (!Global.isSkippingFrames && Global.level.nonSkippedframeCount % 60 == targetUpdateFrame) {
+		if (Global.level.frameCount % 60 == targetUpdateFrame) {
 			if (target != null && (
 					target.destroyed ||
 					character.pos.distanceTo(target.pos) > 400 ||
@@ -441,7 +441,7 @@ public class AI {
 			// can possibly cause bugs if you put that value
 			// funny enough fighting Nightmare Zero with 0.01 is pretty much as MMX6 LV 4 Xtreme mode :skull:
 			shootTime += Global.spf;
-			if (shootTime > 0.08) {
+			if (shootTime > 18f/60f) {
 				shootTime = 0;
 			}
 			*/
@@ -526,7 +526,7 @@ public class AI {
 			weaponTime += Global.spf;
 			if (weaponTime > 5) {
 				weaponTime = 0;
-				var wasBuster = (player.weapon is Buster or AxlBullet);
+				var wasBuster = (player.weapon is XBuster or AxlBullet);
 				player.changeWeaponSlot(getRandomWeaponIndex());
 				if (wasBuster && maxChargeTime > 0) {
 					maxChargeTime = 4.25f * 60f;
@@ -534,7 +534,7 @@ public class AI {
 			}
 		}
 
-		if (player.weapon != null && player.weapon.ammo <= 0 && player.weapon is not Buster or AxlBullet) {
+		if (player.weapon != null && player.weapon.ammo <= 0 && player.weapon is not XBuster or AxlBullet) {
 			player.changeWeaponSlot(getRandomWeaponIndex());
 		}
 
@@ -594,7 +594,7 @@ public class AI {
 			int FrostShield = player.weapons.FindIndex(w => w is FrostShield);
 			int TriadThunder = player.weapons.FindIndex(w => w is TriadThunder);
 			int GravityWell = player.weapons.FindIndex(w => w is GravityWell);
-			int TunnelFang = player.weapons.FindIndex(w => w is TunnelFang);
+			int TornadoFang = player.weapons.FindIndex(w => w is TornadoFang);
 			int AcidBurst = player.weapons.FindIndex(w => w is AcidBurst);
 			int ParasiticBomb = player.weapons.FindIndex(w => w is ParasiticBomb);
 			int CrystalHunter = player.weapons.FindIndex(w => w is CrystalHunter);
@@ -602,10 +602,10 @@ public class AI {
 			int SpinWheel = player.weapons.FindIndex(w => w is SpinWheel);
 			int ElectricSpark = player.weapons.FindIndex(w => w is ElectricSpark);
 			int RollingShield = player.weapons.FindIndex(w => w is RollingShield);
-			int Tornado = player.weapons.FindIndex(w => w is Tornado);
-			int Torpedo = player.weapons.FindIndex(w => w is Torpedo);
-			int Sting = player.weapons.FindIndex(w => w is Sting);
-			int Boomerang = player.weapons.FindIndex(w => w is Boomerang);
+			int Tornado = player.weapons.FindIndex(w => w is StormTornado);
+			int Torpedo = player.weapons.FindIndex(w => w is HomingTorpedo);
+			int Sting = player.weapons.FindIndex(w => w is ChameleonSting);
+			int Boomerang = player.weapons.FindIndex(w => w is BoomerangCutter);
 			int ShotgunIce = player.weapons.FindIndex(w => w is ShotgunIce);
 			int SonicSlicer = player.weapons.FindIndex(w => w is SonicSlicer);
 			int StrikeChain = player.weapons.FindIndex(w => w is StrikeChain);
@@ -647,7 +647,7 @@ public class AI {
 								// Tunnel Fang
 								case 4:
 									if (isTargetSuperClose)
-										megamanX.player.changeWeaponSlot(TunnelFang);
+										megamanX.player.changeWeaponSlot(TornadoFang);
 									megamanX.player.press(Control.Shoot);
 									break;
 								// Acid Burst
@@ -889,7 +889,7 @@ public class AI {
 						}
 						break;
 					case 8:
-						int hyperbuster = player.weapons.FindIndex(w => w is HyperBuster);
+						int hyperbuster = player.weapons.FindIndex(w => w is HyperCharge);
 						if (player.hasArmArmor(3)) {
 							player.changeWeaponSlot(hyperbuster);
 							if (megamanX.player.weapon.ammo >= 16) {
@@ -901,7 +901,7 @@ public class AI {
 					case 9:
 						if (Helpers.randomRange(0, 30) < 5) {
 							megamanX.player.changeWeaponSlot(0);
-							megamanX.shoot(true);
+							megamanX.shoot(megamanX.getChargeLevel());
 						}
 						break;
 					case 10:
@@ -1072,7 +1072,7 @@ public class AI {
 						zero.slideVel = zero.xDir * zero.getDashSpeed() * 2f;
 						break;		
 					case 5 when zero.grounded:
-						if (zero.gigaAttack.shootTime <= 0 && zero.gigaAttack.ammo >= zero.gigaAttack.getAmmoUsage(0)) {
+						if (zero.gigaAttack.shootCooldown <= 0 && zero.gigaAttack.ammo >= zero.gigaAttack.getAmmoUsage(0)) {
 							if (zero.gigaAttack is RekkohaWeapon) {
 								zero.gigaAttack.addAmmo(-zero.gigaAttack.getAmmoUsage(0), player);
 								zero.changeState(new Rekkoha(zero.gigaAttack), true);
@@ -1137,7 +1137,7 @@ public class AI {
 								zero.changeState(new ZeroCrouchSlashState(), true);
 								break;
 							case 3:
-								if (zero.gigaAttack.shootTime <= 0 && zero.gigaAttack.ammo >= zero.gigaAttack.getAmmoUsage(0)) {
+								if (zero.gigaAttack.shootCooldown <= 0 && zero.gigaAttack.ammo >= zero.gigaAttack.getAmmoUsage(0)) {
 									if (zero.gigaAttack is RekkohaWeapon) {
 										zero.gigaAttack.addAmmo(-zero.gigaAttack.getAmmoUsage(0), player);
 										zero.changeState(new Rekkoha(zero.gigaAttack), true);
@@ -1301,33 +1301,38 @@ public class AI {
 			}
 		}
 	}
-	/*public void zeroAIDodge(Character zero3, GameObject go) {
-		var proj = go as Projectile;
-				if (proj != null && proj.damager.owner.alliance != player.alliance) {
-					if (player.character is Zero zero) {
-						//Projectile is not 
-						if (!(projId == (int)ProjIds.RollingShieldCharged || projId == (int)ProjIds.RollingShield
-							|| projId == (int)ProjIds.MagnetMine || projId == (int)ProjIds.FrostShield
-							|| projId == (int)ProjIds.FrostShieldAir || projId == (int)ProjIds.FrostShieldChargedPlatform)	
-							) {
-							// If a projectile is close to Zero
-							if (character != null && proj.isFacing(character) &&
-								character.withinX(proj, 100) && character.withinY(proj, 30) && 
-								!player.isDead && zero.charState.canAttack() && zero.sprite.name != null &&
-								(zero.charState is not HyperZeroStart or LadderClimb or DarkHoldState or Hurt
-								 or GenericStun or Die or WarpIn or WarpOut or WallSlide or WallKick or SwordBlock)
-							) {
-								//Do i have giga attack ammo available?
-								if (zero.gigaAttack.ammo >= 8f && zero.grounded) {
-									//RAKUHOUHA!
-									player.press(Control.Special1);
-									player.press(Control.Down);
-								} else if (!(projId == (int)ProjIds.SwordBlock) && zero.grounded) {
-									//If he hasn't do "Block"						
-									zero.turnToInput(player.input, player);
-									zero.changeState(new SwordBlock());
-								}
-							}
+	/*public void zeroAIDodge(Character zero3) {
+		Helpers.decrementTime(ref blocktime);
+		foreach (GameObject gameObject in zero3.getCloseActors(64, true, false, false)) {
+			if (gameObject is Projectile proj && player.character is Zero zero
+			&& proj.damager.owner.alliance != player.alliance && zero.charState.attackCtrl) { 					
+				//Projectile is not 
+				if (!(proj.projId == (int)ProjIds.RollingShieldCharged || proj.projId == (int)ProjIds.RollingShield
+					|| proj.projId == (int)ProjIds.MagnetMine || proj.projId == (int)ProjIds.FrostShield || proj.projId == (int)ProjIds.FrostShieldCharged 
+					|| proj.projId == (int)ProjIds.FrostShieldAir || proj.projId == (int)ProjIds.FrostShieldChargedPlatform || proj.projId == (int)ProjIds.FrostShieldPlatform)	
+				){					
+					if (zero.gigaAttack.shootCooldown <= 0 && zero.grounded) {
+						switch (zero.gigaAttack) {
+							case RekkohaWeapon when zero.gigaAttack.ammo >= 28:
+								zero.gigaAttack.addAmmo(-zero.gigaAttack.getAmmoUsage(0), player);
+								zero.changeState(new Rekkoha(zero.gigaAttack), true);
+								break;
+							case CFlasher when zero.gigaAttack.ammo >= 7:
+								zero.gigaAttack.addAmmo(-zero.gigaAttack.getAmmoUsage(0), player);
+								zero.changeState(new Rakuhouha(new CFlasher()), true);
+								break;
+							case RakuhouhaWeapon when zero.gigaAttack.ammo >= 14:
+								zero.gigaAttack.addAmmo(-zero.gigaAttack.getAmmoUsage(0), player);
+								zero.changeState(new Rakuhouha(new RakuhouhaWeapon()), true);
+								break;
+							case DarkHoldWeapon when zero.gigaAttack.ammo >= 14 && zero.isViral:
+								zero.gigaAttack.addAmmo(-zero.gigaAttack.getAmmoUsage(0), player);
+								zero.changeState(new Rakuhouha(new DarkHoldWeapon()), true);
+								break;
+							case ShinMessenkou when zero.gigaAttack.ammo >= 14 && zero.isAwakened:
+								zero.gigaAttack.addAmmo(-zero.gigaAttack.getAmmoUsage(0), player);
+								zero.changeState(new Rakuhouha(new ShinMessenkou()), true);
+								break;
 						}
 					}
 				}	
@@ -1385,19 +1390,30 @@ public class AI {
 	}
 	public void knuckleZeroAIDodge(PunchyZero pzero) {
 		foreach (GameObject gameObject in pzero.getCloseActors(64, true, false, false)) {
-			if (gameObject is Projectile proj) {
-				if (proj.damager.owner.alliance != player.alliance) {
-					if (player.character is PunchyZero pzero1 &&
-						!pzero1.isInvulnerable() && pzero.parryCooldown == 0 && pzero.charState.canAttack()) {
-						if (character != null && proj.isFacing(character) && character.withinX(proj, 100) && character.withinY(proj, 30)) {
-							if (pzero.gigaAttack.ammo >= 16 && pzero.grounded) {
-								player.press(Control.Special1);
-								player.press(Control.Down);
-							} else {
-								pzero1.turnToInput(player.input, player);
-								pzero1.changeState(new PZeroParry(), true);
-							}
-						}
+			if (gameObject is Projectile proj && player.character is PunchyZero pzero1
+			&& proj.damager.owner.alliance != player.alliance && pzero.charState.attackCtrl) { 									
+				if (pzero1.gigaAttack.shootCooldown <= 0 && pzero1.grounded) {
+					switch (pzero1.gigaAttack) {
+						case RekkohaWeapon when pzero1.gigaAttack.ammo >= 28:
+							pzero1.gigaAttack.addAmmo(-pzero1.gigaAttack.getAmmoUsage(0), player);
+							pzero1.changeState(new Rekkoha(pzero1.gigaAttack), true);
+							break;
+						case CFlasher when pzero1.gigaAttack.ammo >= 7:
+							pzero1.gigaAttack.addAmmo(-pzero1.gigaAttack.getAmmoUsage(0), player);
+							pzero1.changeState(new Rakuhouha(new CFlasher()), true);
+							break;
+						case RakuhouhaWeapon when pzero1.gigaAttack.ammo >= 14:
+							pzero1.gigaAttack.addAmmo(-pzero1.gigaAttack.getAmmoUsage(0), player);
+							pzero1.changeState(new Rakuhouha(new RakuhouhaWeapon()), true);
+							break;
+						case DarkHoldWeapon when pzero1.gigaAttack.ammo >= 14 && pzero1.isViral:
+							pzero1.gigaAttack.addAmmo(-pzero1.gigaAttack.getAmmoUsage(0), player);
+							pzero1.changeState(new Rakuhouha(new DarkHoldWeapon()), true);
+							break;
+						case ShinMessenkou when pzero1.gigaAttack.ammo >= 14 && pzero1.isAwakened:
+							pzero1.gigaAttack.addAmmo(-pzero1.gigaAttack.getAmmoUsage(0), player);
+							pzero1.changeState(new Rakuhouha(new ShinMessenkou()), true);
+							break;
 					}
 				}
 			}
@@ -1454,18 +1470,17 @@ public class AI {
 	}
 	public void busterzeroAIDodge(BusterZero bzero) {
 		foreach (GameObject gameObject in bzero.getCloseActors(64, true, false, false)) {
-			if (gameObject is Projectile proj) {
-				if (proj.damager.owner.alliance != player.alliance) {
-					if (gameObject is not FrostShieldProj or FrostShieldProjAir
-						or FrostShieldProjCharged or FrostShieldProjGround or FrostShieldProjPlatform //HOW MANY OF U EXIST
-						) {
-						if (player.character is BusterZero bzero1) {
-							if (character != null && !bzero1.isInvulnerable() && proj.isFacing(character) &&
-								character.withinX(proj, 100) && character.withinY(proj, 30)) {
-								player.press(Control.Special1);
-							}
-						}
-					}
+			if (gameObject is Projectile proj && player.character is BusterZero bzero1
+			&& proj.damager.owner.alliance != player.alliance && bzero1.charState.attackCtrl) { 					
+				//Projectile is not 
+				if (!(proj.projId == (int)ProjIds.RollingShield || proj.projId == (int)ProjIds.FrostShield || proj.projId == (int)ProjIds.SwordBlock
+					|| proj.projId == (int)ProjIds.FrostShieldAir || proj.projId == (int)ProjIds.FrostShieldChargedPlatform || proj.projId == (int)ProjIds.FrostShieldPlatform)	
+				){									
+					if (bzero1.zSaberCooldown == 0) {
+						bzero1.turnToInput(player.input, player);
+						bzero1.changeState(new BusterZeroMelee(), true);
+						bzero1.zSaberCooldown = 36;
+					}											
 				}
 			}
 		}

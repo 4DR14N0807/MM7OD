@@ -219,6 +219,16 @@ class Program {
 		loadText[loadText.Count - 1] = $"Loaded {Global.musics.Count} Songs.";
 
 		loadText.Add("Nerfing Rock..."); // Calculating checksum...
+		if (Global.renderTextureQueue.Count > 0) {
+			loadText.Add("Creating render textures...");
+			int textureCount = Global.renderTextureQueue.Count;
+			loadLoopRTexture(loadText, window, Global.renderTextureQueue.ToArray());
+			Global.renderTextureQueue.Clear();
+			Global.renderTextureQueueKeys.Clear();
+			loadText[loadText.Count - 1] = $"Created {textureCount} render textures.";
+		}
+
+		loadText.Add("Calculating checksum...");
 		loadMultiThread(loadText, window, Global.computeChecksum);
 		loadText[loadText.Count - 1] = "Nerfed."; // Checksum OK.
 
@@ -234,6 +244,11 @@ class Program {
 				region.computePing();
 			}
 		});
+
+		drawLoadST(loadText, window);
+
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
 
 		// Force startup config to be fetched
 		Menu.change(new MainMenu());
@@ -296,8 +311,8 @@ class Program {
 	private static void update() {
 		if (Global.levelStarted()) {
 			Global.level.update();
-			if (!Global.isSkippingFrames) {
-				Global.level.clearOldActors();
+			if (Global.serverClient != null && Global.level.nonSkippedframeCount % 300 == 0) {
+				new Task(Global.level.clearOldActors).Start();
 			}
 		}
 		Menu.update();
@@ -811,18 +826,18 @@ class Program {
 				spriteFilePaths[(fileSplit*5)..],
 			};
 			string[] fileChecksums = new string[6];
-			List<Task> threads = new();
+			List<Task> tasks = new();
 			for (int i = 0; i < treadedFilePaths.Length; i++) {
 				int j = i;
-				Task tempThread = new Task(() => { fileChecksums[j] = loadSpritesSub(treadedFilePaths[j]); });
-				threads.Add(tempThread);
-				tempThread.ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
-				tempThread.Start();
+				Task tempTask = new Task(() => { fileChecksums[j] = loadSpritesSub(treadedFilePaths[j]); });
+				tasks.Add(tempTask);
+				tempTask.ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
+				tempTask.Start();
 			}
-			while (threads.Count > 0) {
-				for (int i = 0; i < threads.Count; i++) {
-					if (threads[i].Status >= TaskStatus.RanToCompletion) {
-						threads.Remove(threads[i]);
+			while (tasks.Count > 0) {
+				for (int i = 0; i < tasks.Count; i++) {
+					if (tasks[i].Status >= TaskStatus.RanToCompletion) {
+						tasks.Remove(tasks[i]);
 						i = 0;
 					}
 				}
@@ -1229,7 +1244,7 @@ class Program {
 			}
 			// Disable frameskip in the menu.
 			if (Global.level != null) {
-				useFrameSkip = true;
+				useFrameSkip = false;
 			} else {
 				useFrameSkip = false;
 			}
@@ -1330,8 +1345,13 @@ class Program {
 	}
 
 	public static void loadMultiThread(List<String> loadText, RenderWindow window, Action loadFunct) {
-		Task loadTread = Task.Run(loadFunct).ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
+		Global.isLoading = true;
+		Task loadTread = new Task(loadFunct);
+		loadTread.ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
+		loadTread.Start();
 		loadLoop(loadText, window, loadTread);
+
+		Global.isLoading = false;
 	}
 
 	public static void loadExceptionHandler(Task task) {
@@ -1376,7 +1396,80 @@ class Program {
 			lastUpdateTime = timeNow;
 			window.DispatchEvents();
 			window.Display();
+
 			exit = (loadTread.Status >= TaskStatus.RanToCompletion);
 		}
+	}
+
+	public static void loadLoopRTexture(List<String> loadText, RenderWindow window, (uint width, uint height)[] textures) {
+		// Variables for stuff.
+		decimal deltaTime = 0;
+		decimal lastUpdateTime = 0;
+		decimal fpsLimit = (TimeSpan.TicksPerSecond / 60m);
+		Color clearColor = Color.Black;
+		Stopwatch watch = new Stopwatch();
+		int pos = textures.Length - 1;
+
+		// Main loop itself.
+		while (window.IsOpen && pos > 0) {
+			DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
+			TimeSpan timeSpam = (DateTimeOffset.UtcNow - Global.UnixEpoch);
+			long timeNow = timeSpam.Ticks;
+
+			// Framerate calculations.
+			deltaTime = (timeNow - lastUpdateTime) / fpsLimit;
+			if (deltaTime >= 1) {
+			} else {
+				continue;
+			}
+			window.Clear(clearColor);
+
+			for (int i = 0; i < loadText.Count; i++) {
+				Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
+			}
+			Fonts.drawText(
+				FontType.Grey,
+				UtcNow.Day + "/" + UtcNow.Month + "/" + UtcNow.Year + " " +
+				UtcNow.ToString("0:hh:mm:sstt", CultureInfo.InvariantCulture),
+				8, Global.screenH - 15, isLoading: true
+			);
+
+			lastUpdateTime = timeNow;
+			window.DispatchEvents();
+			window.Display();
+			watch.Restart();
+
+			for (; pos >= 0; pos--) {
+				int encodeKey = ((int)textures[pos].width * 397) ^ (int)textures[pos].height;
+				if (!Global.renderTextures.ContainsKey(encodeKey)) {
+					Global.renderTextures[encodeKey] = (
+						new RenderTexture((uint)textures[pos].width, (uint)textures[pos].height),
+						new RenderTexture((uint)textures[pos].width, (uint)textures[pos].height)
+					);
+				}
+				if (watch.ElapsedTicks >= fpsLimit) {
+					break;
+				}
+			}
+		}
+	}
+
+	public static void drawLoadST(List<String> loadText, RenderWindow window) {
+		DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
+		Color clearColor = Color.Black;
+		window.Clear(clearColor);
+
+		for (int i = 0; i < loadText.Count; i++) {
+			Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
+		}
+		Fonts.drawText(
+			FontType.Grey,
+			UtcNow.Day + "/" + UtcNow.Month + "/" + UtcNow.Year + " " +
+			UtcNow.ToString("0:hh:mm:sstt", CultureInfo.InvariantCulture),
+			8, Global.screenH - 15, isLoading: true
+		);
+
+		window.DispatchEvents();
+		window.Display();
 	}
 }

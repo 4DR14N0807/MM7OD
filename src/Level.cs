@@ -18,10 +18,10 @@ public partial class Level {
 	public Dictionary<ushort, Actor> destroyedActorsById = new();
 	public List<Actor> mapSprites = new List<Actor>();
 
-	public HashSet<GameObject>[,] grid;
-	public HashSet<GameObject>[,] terrainGrid;
-	public HashSet<int[]> populatedGrids = new();
-	public HashSet<int[]> populatedTerrainGrids = new();
+	public List<GameObject>[,] grid;
+	public List<GameObject>[,] terrainGrid;
+	public HashSet<(int x, int y)> populatedGrids = new();
+	//public HashSet<(int x, int y)> populatedTerrainGrids = new();
 	public Dictionary<int, Rect> gridsPopulatedByGo = new();
 	public Dictionary<int, Rect> terrainGridsPopulatedByGo = new();
 	public HashSet<int> collidedGObjs = new();
@@ -112,6 +112,7 @@ public partial class Level {
 
 	public int startGoCount;
 	public int startGridCount;
+	public int startTGridCount;
 	public int flaggerCount;
 
 	public const ushort maxReservedNetId = firstNormalNetId - 1;
@@ -850,6 +851,7 @@ public partial class Level {
 
 		startGoCount = gameObjects.Count;
 		startGridCount = getGridCount();
+		startTGridCount = getTGridCount();
 
 		//var p = Global.level.mainPlayer;
 		//new Mechaniloid(new Point(128, 128), p, 1, new MechaniloidWeapon(p, MechaniloidType.Hopper), MechaniloidType.Hopper, p.getNextActorNetId(), true);
@@ -909,7 +911,7 @@ public partial class Level {
 		if (instance.properties.nonCtfOnly == true && Global.level.server.gameMode.Contains(GameMode.CTF)) return true;
 		if (instance.properties.nonKothOnly == true && Global.level.server.gameMode.Contains(GameMode.KingOfTheHill)) return true;
 		if (instance.properties.dmOnly == true && !Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
-
+		if (Global.level.server?.customMatchSettings?.pickupItems == false) return true;
 		return false;
 	}
 
@@ -972,7 +974,7 @@ public partial class Level {
 		foreach (var magnetMine in magnetMines) {
 			var player = getPlayerById(magnetMine.playerId);
 			if (player == null) continue;
-			new MagnetMineProj(new MagnetMine(), new Point(magnetMine.x, magnetMine.y), 1, 1, player, magnetMine.netId);
+			new MagnetMineProj(new MagnetMine(), new Point(magnetMine.x, magnetMine.y), 1, player, magnetMine.netId);
 		}
 	}
 
@@ -1162,7 +1164,6 @@ public partial class Level {
 		time += Global.spf;
 
 		updateLevelShaders();
-
 		checkAfk();
 
 		Global.input.updateAimToggle(mainPlayer);
@@ -1173,7 +1174,7 @@ public partial class Level {
 			syncValue = Helpers.lerp(syncValue, hostSyncValue.Value, Global.spf * 5f);
 		}
 
-		foreach (var platform in movingPlatforms) {
+		foreach (MovingPlatform platform in movingPlatforms) {
 			platform.update(syncValue);
 		}
 
@@ -1183,7 +1184,7 @@ public partial class Level {
 			if (speedX != 0 || speedY != 0) {
 				parallaxOffsets[i] = parallaxOffsets[i].add(new Point(Global.spf * speedX, Global.spf * speedY));
 
-				var parallaxTextures = levelData.getParallaxTextures(parallaxes[i].path);
+				Texture[,] parallaxTextures = levelData.getParallaxTextures(parallaxes[i].path);
 				if (parallaxTextures == null) continue;
 
 				Point size = Helpers.getTextureArraySize(parallaxTextures);
@@ -1202,8 +1203,8 @@ public partial class Level {
 			else if (Global.frameCount % 40 == 20) new Anim(new Point(1728, 690 + 10), "bubbles", 1, null, false) { vel = new Point(-100, 0), ttl = 4 };
 		}
 
-		foreach (var key in recentClipCount.Keys.ToList()) {
-			var val = recentClipCount[key];
+		foreach (string key in recentClipCount.Keys.ToList()) {
+			List<float> val = recentClipCount[key];
 			for (var i = val.Count - 1; i >= 0; i--) {
 				val[i] += Global.spf;
 				if (val[i] >= 0.05) {
@@ -1212,20 +1213,6 @@ public partial class Level {
 			}
 			recentClipCount[key] = val;
 		}
-
-		//this.gameMode.checkIfWin();
-
-		// Sort players by score
-		/*players.Sort((a, b) => {
-			if (a.kills > b.kills) return -1;
-			else if (a.kills == b.kills) {
-				if (a.deaths < b.deaths) return -1;
-				else if (a.deaths == b.deaths) return 0;
-				else return 1;
-			} else {
-				return 1;
-			}
-		});*/
 
 		for (int i = delayedActions.Count - 1; i >= 0; i--) {
 			delayedActions[i].time -= Global.spf;
@@ -1243,118 +1230,179 @@ public partial class Level {
 			playerY = camPlayer.character.getCamCenterPos().y;
 		}
 
-		bool isNon1v1Elimination = Global.level.isNon1v1Elimination();
-		var gos = gameObjects.ToList();
-		try {
-			foreach (GameObject go in gos) {
-				if (isTimeSlowed(go, out float slowAmount)) {
-					Global.speedMul = slowAmount;
-					go.localSpeedMul = slowAmount;
-				}
-				go.preUpdate();
-				go.statePreUpdate();
-				Global.speedMul = 1;
+		List<GameObject> gos = gameObjects.ToList();
+		foreach (GameObject go in gos) {
+			if (go.iDestroyed) {
+				continue;
 			}
-			foreach (var ms in mapSprites) {
-				ms.sprite?.update();
+			if (isTimeSlowed(go, out float slowAmount)) {
+				Global.speedMul = slowAmount;
+				go.localSpeedMul = slowAmount;
 			}
-			foreach (var go in gos) {
-				if (isTimeSlowed(go, out float slowAmount)) {
-					Global.speedMul = slowAmount;
-					go.localSpeedMul = slowAmount;
-				}
-				go.update();
-				go.stateUpdate();
-				if (isNon1v1Elimination && gameMode.virusStarted > 0 && go is Actor actor && actor.ownedByLocalPlayer && go is IDamagable damagable) {
-					Rect szRect = gameMode.safeZoneRect;
-					if (actor.collider != null) {
-						Rect colRect = actor.collider.shape.getRect();
-						float w4 = colRect.w() / 4;
-						float h4 = colRect.h() / 4;
-						colRect.x1 += w4;
-						colRect.y1 += h4;
-						colRect.x2 -= w4;
-						colRect.y2 -= h4;
-						if (!szRect.overlaps(colRect)) {
-							if (!damagable.projectileCooldown.ContainsKey("sigmavirus")) {
-								damagable.projectileCooldown["sigmavirus"] = 0;
-							}
-							if (damagable.projectileCooldown["sigmavirus"] == 0) {
-								actor.playSound("hit");
-								actor.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
-								damagable.applyDamage(2, null, null, null, null);
-								damagable.projectileCooldown["sigmavirus"] = 1;
-							}
-						}
-					}
-				}
-				Global.speedMul = 1;
-			}
-			// Collision shenanigans.
-			collidedGObjs = new();
-			foreach (var gridData in populatedGrids.ToArray()) {
-				// Initalize data.
-				HashSet<GameObject> currentGrid = grid[gridData[0], gridData[1]];
-				HashSet<GameObject> currentTerrainGrid = terrainGrid[gridData[0], gridData[1]];
-				// Awfull GM19 order code.
-				GameObject[] gameObjects = currentGrid.ToArray();
-				// Iterate trough populated grids.
-				for (int i = 0; i < gameObjects.Length - 1; i++) {
-					for (int j = i; j < gameObjects.Length; j++) {
-						// Skip terrain coliding with eachother.
-						if (gameObjects[i] is Geometry or CrackedWall && gameObjects[j] is Geometry or CrackedWall) {
-							continue;
-						}
-						// Get order independent hash.
-						int hash = gameObjects[i].GetHashCode() ^ gameObjects[j].GetHashCode();
-						// Skip checked objects.
-						if (collidedGObjs.Contains(hash)) {
-							continue;
-						}
-						// Skip destroyed stuff.
-						if (gameObjects[i] is Actor { destroyed: true } || gameObjects[j] is Actor { destroyed: true }) {
-							continue;
-						}
-						// Add to hash as we check.
-						collidedGObjs.Add(hash);
-						// Do preliminary collision checks and skip if we do not instersect.
-						if (!checkLossyCollision(gameObjects[i], gameObjects[j])) {
-							continue;
-						}
-						(List<CollideData> iDatas, List<CollideData> jDatas) = getTriggerExact(
-							gameObjects[i], gameObjects[j]
-						);
-						if (iDatas.Count > 0) {
-							Global.speedMul = gameObjects[i].localSpeedMul;
-							iDatas = organizeTriggers(iDatas);
-							foreach (CollideData collideDataI in iDatas) {
-								gameObjects[i].registerCollision(collideDataI);
-							}
-							Global.speedMul = 1;
-						}
-						if (jDatas.Count > 0) {
-							Global.speedMul = gameObjects[j].localSpeedMul;
-							jDatas = organizeTriggers(jDatas);
-							foreach (CollideData collideDataJ in jDatas) {
-								gameObjects[j].registerCollision(collideDataJ);
-							}
-							Global.speedMul = 1;
-						}
-					}
-				}
-			}
-			foreach (GameObject go in gos) {
-				if (isTimeSlowed(go, out float slowAmount)) {
-					Global.speedMul = slowAmount;
-					go.localSpeedMul = slowAmount;
-				}
-				go.postUpdate();
-				go.statePostUpdate();
-				Global.speedMul = 1;
-				go.netUpdate();
-			}
-		} finally {
+			go.preUpdate();
+			go.statePreUpdate();
 			Global.speedMul = 1;
+		}
+
+		foreach (Actor ms in mapSprites) {
+			ms.sprite?.update();
+		}
+
+		foreach (var go in gos) {
+			if (go.iDestroyed) {
+				continue;
+			}
+			if (isTimeSlowed(go, out float slowAmount)) {
+				Global.speedMul = slowAmount;
+				go.localSpeedMul = slowAmount;
+			}
+			go.update();
+			go.stateUpdate();
+			if (isNon1v1Elimination() &&
+				gameMode.virusStarted > 0 && go is Actor actor &&
+				actor.ownedByLocalPlayer && go is IDamagable damagable
+			) {
+				var szRect = gameMode.safeZoneRect;
+				if (actor.collider != null) {
+					var colRect = actor.collider.shape.getRect();
+					var w4 = colRect.w() / 4;
+					var h4 = colRect.h() / 4;
+					colRect.x1 += w4;
+					colRect.y1 += h4;
+					colRect.x2 -= w4;
+					colRect.y2 -= h4;
+					if (!szRect.overlaps(colRect)) {
+						if (!damagable.projectileCooldown.ContainsKey("sigmavirus")) {
+							damagable.projectileCooldown["sigmavirus"] = 0;
+						}
+						if (damagable.projectileCooldown["sigmavirus"] == 0) {
+							actor.playSound("hit");
+							actor.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+							damagable.applyDamage(2, null, null, null, null);
+							damagable.projectileCooldown["sigmavirus"] = 1;
+						}
+					}
+				}
+			}
+			Global.speedMul = 1;
+		}
+
+		// Collision shenanigans.
+		collidedGObjs.Clear();
+		(int x, int y)[] arrayGrid = populatedGrids.ToArray();
+		foreach ((int x, int y)gridData in arrayGrid) {
+			// Initalize data.
+			List<GameObject> currentGrid = new(grid[gridData.x, gridData.y]);
+			List<GameObject>? currentTerrainGrid = null;
+			if (terrainGrid[gridData.x, gridData.y].Count >= 1) {
+				currentTerrainGrid = new List<GameObject>(terrainGrid[gridData.x, gridData.y]);
+			}
+			// Iterate trough populated grids.
+			for (int i = 0; i < currentGrid.Count; i++) {
+				// Skip terrain.
+				if (currentGrid[i] is Geometry or CrackedWall) {
+					continue;
+				}
+				// Skip destroyed stuff.
+				if (currentGrid[i].iDestroyed) {
+					continue;
+				}
+				for (int j = i; j < currentGrid.Count; j++) {
+					// Exit if we get destroyed.
+					if (currentGrid[i].iDestroyed) {
+						break;
+					}
+					// Skip terrain coliding with eachother.
+					if (currentGrid[j] is Geometry or CrackedWall) {
+						continue;
+					}
+					// Get order independent hash.
+					int hash = currentGrid[i].GetHashCode() ^ currentGrid[j].GetHashCode();
+					// Skip checked objects.
+					if (collidedGObjs.Contains(hash)) {
+						continue;
+					}
+					// Add to hash as we check.
+					collidedGObjs.Add(hash);
+					// Skip destroyed stuff.
+					if (currentGrid[j].iDestroyed) {
+						continue;
+					}
+					// Do preliminary collision checks and skip if we do not instersect.
+					if (!checkLossyCollision(currentGrid[i], currentGrid[j])) {
+						continue;
+					}
+					(List<CollideData> iDatas, List<CollideData> jDatas) = getTriggerExact(
+						currentGrid[i], currentGrid[j]
+					);
+					if (iDatas.Count > 0) {
+						Global.speedMul = currentGrid[i].localSpeedMul;
+						iDatas = organizeTriggers(iDatas);
+						foreach (CollideData collideDataI in iDatas) {
+							currentGrid[i].registerCollision(collideDataI);
+						}
+						Global.speedMul = 1;
+					}
+					if (jDatas.Count > 0) {
+						Global.speedMul = currentGrid[j].localSpeedMul;
+						jDatas = organizeTriggers(jDatas);
+						foreach (CollideData collideDataJ in jDatas) {
+							currentGrid[j].registerCollision(collideDataJ);
+						}
+						Global.speedMul = 1;
+					}
+				}
+				// Continue if we get destroyed.
+				if (currentTerrainGrid == null || currentGrid[i].iDestroyed) {
+					continue;
+				}
+				foreach (GameObject wallObj in currentTerrainGrid) {
+					// Get order independent hash.
+					int hash = currentGrid[i].GetHashCode() ^ wallObj.GetHashCode();
+
+					if (currentGrid[i] is not Actor actor || wallObj is not Geometry geometry) {
+						continue;
+					}
+					// Skip checked objects.
+					if (collidedGObjs.Contains(hash)) {
+						continue;
+					}
+					// Add to hash as we check.
+					collidedGObjs.Add(hash);
+					// Do preliminary collision checks and skip if we do not instersect.
+					if (!checkLossyCollision(currentGrid[i], wallObj)) {
+						continue;
+					}
+					(CollideData? iData, CollideData? jData) = getTriggerTerrain(
+						actor, geometry
+					);
+					if (iData != null) {
+						Global.speedMul = currentGrid[i].localSpeedMul;
+						currentGrid[i].registerCollision(iData);
+						Global.speedMul = 1;
+					}
+					if (jData != null) {
+						Global.speedMul = wallObj.localSpeedMul;
+						wallObj.registerCollision(jData);
+						Global.speedMul = 1;
+					}
+				}
+			}
+			Global.speedMul = 1;
+		}
+
+		foreach (GameObject go in gos) {
+			if (go.iDestroyed) {
+				continue;
+			}
+			if (isTimeSlowed(go, out float slowAmount)) {
+				Global.speedMul = slowAmount;
+				go.localSpeedMul = slowAmount;
+			}
+			go.postUpdate();
+			go.statePostUpdate();
+			Global.speedMul = 1;
+			go.netUpdate();
 		}
 
 		if (camPlayer.character != null) {
@@ -1536,7 +1584,6 @@ public partial class Level {
 		}
 
 		//this.getTotalCountInGrid();
-
 		updateMusicSources();
 	}
 
@@ -1656,6 +1703,9 @@ public partial class Level {
 		}
 
 		foreach (var go in gameObjects) {
+			if (go.iDestroyed) {
+				continue;
+			}
 			go.render(0, 0);
 		}
 		foreach (var ms in mapSprites) {
@@ -1664,8 +1714,8 @@ public partial class Level {
 		foreach (var effect in effects) {
 			effect.render(0, 0);
 		}
-		Dictionary<long, DrawLayer> drawObjCopy = DrawWrappers.walDrawObjects;
-		DrawWrappers.walDrawObjects = new();
+		Dictionary<long, DrawLayer> drawObjCopy = new(DrawWrappers.walDrawObjects);
+		DrawWrappers.walDrawObjects.Clear();
 
 		renderResult(this, srt, drawObjCopy);
 	}
@@ -1786,6 +1836,8 @@ public partial class Level {
 			} else {
 				Global.window.Draw(screenSprite);
 			}
+
+			screenSprite.Dispose();
 		}
 
 		foreach (var deferredAction in DrawWrappers.deferredTextDraws) {
@@ -1930,6 +1982,66 @@ public partial class Level {
 						Fonts.drawText(
 							FontType.DarkPurple,
 							grid[x, y].Count.ToString(),
+							(x * cellWidth),
+							offset + (y * cellWidth) + 1,
+							isWorldPos: true,
+							depth: ZIndex.HUD - 10,
+							alpha: 192
+						);
+						offset = 0;
+					}
+				}
+			}
+			Global.debugString2 = "Grid item count: " + gridItemCount.ToString();
+		}
+		else if (Global.showTerrainGridHitboxes) {
+			int gridItemCount = 0;
+			int offset = 0;
+			int startGridX = MathInt.Floor(camX / cellWidth);
+			int endGridX = MathInt.Ceiling((camX + Global.screenW) / cellWidth);
+			int startGridY = MathInt.Floor(camY / cellWidth);
+			int endGridY = MathInt.Ceiling((camY + Global.screenH) / cellWidth);
+
+			bool drawPos = (cellWidth >= 32);
+			int firstRowSize = 10;
+			string separator = "-";
+			if (cellWidth < 48) {
+				separator = "\n";
+				firstRowSize = 20;
+			}
+
+			startGridX = MathInt.Clamp(startGridX, 0, grid.GetLength(0));
+			endGridX = MathInt.Clamp(endGridX, 0, grid.GetLength(0));
+			startGridY = MathInt.Clamp(startGridY, 0, grid.GetLength(1));
+			endGridY = MathInt.Clamp(endGridY, 0, grid.GetLength(1));
+
+			for (int y = startGridY; y < endGridY; y++) {
+				for (int x = startGridX; x < endGridX; x++) {
+					if (terrainGrid[x, y].Count > 0) {
+						gridItemCount += terrainGrid[x, y].Count;
+						DrawWrappers.DrawRect(
+							x * cellWidth,
+							y * cellWidth,
+							cellWidth + (x * cellWidth) - 1,
+							cellWidth + (y * cellWidth) - 1,
+							true, new Color(200, 255, 200, 64), 1,
+							ZIndex.HUD - 15, true, new Color(128, 255, 128, 128)
+						);
+						if (cellWidth >= 32) {
+							Fonts.drawText(
+								FontType.Purple,
+								x.ToString() + separator + y.ToString(),
+								(x * cellWidth) + 1,
+								(y * cellWidth) + 1,
+								isWorldPos: true,
+								depth: ZIndex.HUD - 10,
+								alpha: 192
+							);
+							offset += firstRowSize;
+						}
+						Fonts.drawText(
+							FontType.DarkPurple,
+							terrainGrid[x, y].Count.ToString(),
 							(x * cellWidth),
 							offset + (y * cellWidth) + 1,
 							isWorldPos: true,
@@ -2442,9 +2554,10 @@ public partial class Level {
 	}
 
 	public void clearOldActors() {
-		foreach ((ushort actorId, Actor actor) in destroyedActorsById) {
+		Dictionary<ushort, Actor> destroyedActorsByIdClone = new(destroyedActorsById);
+		foreach ((ushort actorId, Actor actor) in destroyedActorsByIdClone) {
 			long framesDestroyed = frameCount - actor.destroyedOnFrame;
-			if (framesDestroyed >= 1200) {
+			if (framesDestroyed >= 240) {
 				destroyedActorsById.Remove(actorId);
 			}
 		}

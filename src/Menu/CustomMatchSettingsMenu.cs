@@ -9,19 +9,20 @@ public class CustomMatchSettings {
 	[ProtoMember(2)] public int startCurrency = 0;
 	[ProtoMember(3)] public int startHeartTanks;
 	[ProtoMember(4)] public int startSubTanks;
-	[ProtoMember(5)] public int healthModifier = 10;
-	[ProtoMember(5)] public int damageModifier = 1;
-	[ProtoMember(6)] public int sameCharNum = -1;
-	[ProtoMember(7)] public int redSameCharNum = -1;
-	[ProtoMember(8)] public int maxHeartTanks = 4;
-	[ProtoMember(9)] public int heartTankHp = 1;
-	[ProtoMember(10)] public int startETanks;
-	[ProtoMember(11)] public int startWTanks;
-	[ProtoMember(12)] public int maxETanks = 2;
-	[ProtoMember(13)] public int maxWTanks = 2;
-
-	//[ProtoMember(8)] public int redDamageModifier = 1;
-	//[ProtoMember(6)] public int redHealthModifier = 1;
+	[ProtoMember(5)] public int healthModifier;
+	[ProtoMember(5)] public int damageModifier;
+	[ProtoMember(6)] public int sameCharNum;
+	[ProtoMember(7)] public int redSameCharNum;
+	[ProtoMember(8)] public int maxHeartTanks;
+	[ProtoMember(9)] public int startETanks;
+	[ProtoMember(10)] public int startWTanks;
+	[ProtoMember(11)] public int maxETanks;
+	[ProtoMember(12)] public int maxWTanks;
+	[ProtoMember(13)] public int heartTankHp;
+	[ProtoMember(14)] public int heartTankCost;
+	[ProtoMember(15)] public int currencyGain;
+	[ProtoMember(16)] public int respawnTime;
+	[ProtoMember(17)] public bool pickupItems;
 
 	public CustomMatchSettings() {
 	}
@@ -37,6 +38,12 @@ public class CustomMatchSettings {
 			sameCharNum = -1,
 			redSameCharNum = -1,
 			maxETanks = 2,
+			maxHeartTanks = 8,
+			heartTankHp = 1,
+			heartTankCost = 2,
+			currencyGain = 1,
+			respawnTime = 5,
+			pickupItems = true,
 		};
 	}
 }
@@ -69,7 +76,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				(Point pos, int index) => {
 					Fonts.drawText(
 						FontType.Blue,
-						"1v1 Hyper mode match: " +
+						"1v1 or Hypermode Match : " +
 						Helpers.boolYesNo(savedMatchSettings.customMatchSettings.hyperModeMatch),
 						pos.x, pos.y, selected: selectArrowPosY == 0
 					);
@@ -292,6 +299,55 @@ public class CustomMatchSettingsMenu : IMainMenu {
 						"RED MONO CHARACTER: " +
 						getSameCharString(savedMatchSettings.customMatchSettings.redSameCharNum),
 						pos.x, pos.y, selected: selectArrowPosY == 8
+					);
+				}
+			)
+		);
+		//Currency Gain Custom Setting
+		menuOptions.Add(
+			new MenuOption(startX, currentY += lineH,
+				() => {
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.currencyGain, 1, 10, true);
+				},
+				(Point pos, int index) => {
+					Fonts.drawText(
+						FontType.Blue,
+						"Currency Gain modifier: " +
+						savedMatchSettings.customMatchSettings.currencyGain.ToString(),
+						pos.x, pos.y, selected: selectArrowPosY == 12
+					);
+				}
+			)
+		);
+		//Respawn Time Custom Setting
+		menuOptions.Add(
+			new MenuOption(startX, currentY += lineH,
+				() => {
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.respawnTime, 1, 8, true);
+				},
+				(Point pos, int index) => {
+					Fonts.drawText(
+						FontType.Blue,
+						"Respawn Time modifier: " +
+						savedMatchSettings.customMatchSettings.respawnTime.ToString(),
+						pos.x, pos.y, selected: selectArrowPosY == 13
+					);
+				}
+			)
+		);
+		//
+		menuOptions.Add(
+			new MenuOption(
+				startX, currentY += lineH,
+				() => {
+					Helpers.menuLeftRightBool(ref savedMatchSettings.customMatchSettings.pickupItems);
+				},
+				(Point pos, int index) => {
+					Fonts.drawText(
+						FontType.Blue,
+						"Pick up items: " +
+						Helpers.boolYesNo(savedMatchSettings.customMatchSettings.pickupItems),
+						pos.x, pos.y, selected: selectArrowPosY == 14
 					);
 				}
 			)

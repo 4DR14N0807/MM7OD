@@ -49,6 +49,9 @@ public class DNACore : AxlWeapon {
 		frozenCastle = character.player.frozenCastle;
 		speedDevil = character.player.speedDevil;
 		ultimateArmor = character is MegamanX { hasUltimateArmor: true };
+		if (charNum == 11) {
+			charNum = 1;
+		}
 		if (character is MegamanX) {
 			weapons = loadout.xLoadout.getWeaponsFromLoadout(character.player);
 		}
@@ -91,7 +94,7 @@ public class DNACore : AxlWeapon {
 		} else if (character is Axl axl && axl.isWhiteAxl()) {
 			hyperMode = DNACoreHyperMode.WhiteAxl;
 		}
-		rateOfFire = 1f;
+		fireRate = 60;
 		index = (int)WeaponIds.DNACore;
 		weaponBarBaseIndex = 30 + charNum;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -110,7 +113,7 @@ public class DNACore : AxlWeapon {
 		charNum = 0;
 		name = "error";
 		loadout = null!;
-		rateOfFire = 1f;
+		fireRate = 60;
 		index = (int)WeaponIds.DNACore;
 		weaponBarBaseIndex = 30 + charNum;
 		weaponBarIndex = weaponBarBaseIndex;

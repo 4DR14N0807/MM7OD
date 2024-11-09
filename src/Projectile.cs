@@ -36,7 +36,6 @@ public class Projectile : Actor {
 	bool damagedOnce;
 	//public int? destroyFrames;
 	public Player ownerPlayer;
-	public Actor? hitboxActor;
 
 	public bool isMelee;
 	public int meleeId = -1;
@@ -355,7 +354,7 @@ public class Projectile : Actor {
 	}
 
 	public bool canBeParried() {
-		return (this is GenericMeleeProj || this is SigmaSlashProj);
+		return isMelee;
 	}
 
 	public override void onCollision(CollideData other) {
@@ -374,7 +373,6 @@ public class Projectile : Actor {
 			}
 		}
 
-		
 		var isSaber = GenericMeleeProj.isZSaberClang(projId);
 		if (isSaber && owner.character?.isCCImmune() != true) {
 			// Case 1: hitting a clangable projectile.
@@ -557,13 +555,19 @@ public class Projectile : Actor {
 				}
 
 				if (shouldDealDamage(damagable)) {
-					if (!isDefenderFavored()) {
-						if (ownedByLocalPlayer) {
+					if (Global.level.server.favorHost && Global.level.server.isP2P) {
+						if (Global.serverClient?.isHost == true) {
 							damager.applyDamage(damagable, weakness, weapon, this, projId);
 						}
 					} else {
-						if (damagable.actor().ownedByLocalPlayer) {
-							damager.applyDamage(damagable, weakness, weapon, this, projId);
+						if (!isDefenderFavored()) {
+							if (ownedByLocalPlayer) {
+								damager.applyDamage(damagable, weakness, weapon, this, projId);
+							}
+						} else {
+							if (damagable.actor().ownedByLocalPlayer) {
+								damager.applyDamage(damagable, weakness, weapon, this, projId);
+							}
 						}
 					}
 				}
@@ -574,8 +578,7 @@ public class Projectile : Actor {
 			bool isMaverickHealProj = projId == (int)ProjIds.MorphMCScrap || projId == (int)ProjIds.MorphMPowder;
 			if (ownedByLocalPlayer &&
 				(damagable != damager.owner.character || isMaverickHealProj) &&
-				damagable is Maverick &&
-				!damager.owner.mavericks.Contains(damagable) &&
+				(damagable is not Maverick || !damager.owner.mavericks.Contains(damagable)) &&
 				damagable.canBeHealed(damager.owner.alliance) && healAmount > 0
 			) {
 				if (Global.serverClient == null || damagableActor?.ownedByLocalPlayer == true) {
@@ -583,7 +586,11 @@ public class Projectile : Actor {
 				} else {
 					RPC.heal.sendRpc(owner, damagableActor?.netId ?? ushort.MaxValue, healAmount);
 				}
-				if (other.gameObject is not Projectile) onHitDamagable(damagable);
+				onHitDamagable(damagable);
+				if (destroyOnHit) {
+					destroySelf(fadeSprite, fadeSound, favorDefenderProjDestroy: isDefenderFavoredAndOwner());
+				}
+			//	if (other.gameObject is not Projectile) onHitDamagable(damagable);
 			}
 
 			//bool isNoiseCrush = projId == (int)RockProjIds.NoiseCrush;
@@ -619,6 +626,13 @@ public class Projectile : Actor {
 	public virtual void onHitDamagable(IDamagable damagable) {
 		if (destroyOnHit) {
 			damagedOnce = true;
+			if (Global.level.server.isP2P && Global.level.server.favorHost) {
+				if (Global.serverClient?.isHost != true) {
+					return;
+				}
+				destroySelf(fadeSprite, fadeSound, doRpcEvenIfNotOwned: true);
+				return;
+			}
 			destroySelf(fadeSprite, fadeSound, favorDefenderProjDestroy: isDefenderFavoredAndOwner());
 		}
 	}

@@ -8,8 +8,9 @@ namespace MMXOnline;
 
 public partial class Actor : GameObject {
 	public Sprite sprite; //Current sprite
-	public bool useTerrainGrid { get; set; } = true;
+	public bool useTerrainGrid { get; set; } = false;
 	public bool useActorGrid { get; set; } = true;
+	public bool iDestroyed => destroyed;
 
 	public int frameIndex {
 		get => sprite.frameIndex;
@@ -461,6 +462,18 @@ public partial class Actor : GameObject {
 		deltaPos = pos.subtract(prevPos);
 		prevPos = pos;
 
+		if (locallyControlled && sprite != null) {
+			int oldFrameIndex = sprite.frameIndex;
+			sprite?.update();
+
+			if (sprite != null && sprite.frameIndex != oldFrameIndex) {
+				string spriteFrameKey = sprite.name + "/" + sprite.frameIndex.ToString(CultureInfo.InvariantCulture);
+				if (spriteFrameToSounds.ContainsKey(spriteFrameKey)) {
+					playSound(spriteFrameToSounds[spriteFrameKey], sendRpc: true);
+				}
+			}
+		}
+
 		if (!useFrameProjs) {
 			return;
 		}
@@ -473,14 +486,12 @@ public partial class Actor : GameObject {
 
 		// Delete old stuff.
 		foreach (string key in spriteFrameToProjs.Keys) {
-			if (key != spriteKey) {
-				if (spriteFrameToProjs[key] != null) {
-					foreach (Projectile proj in spriteFrameToProjs[key]) {
-						proj.destroySelf();
-					}
+			if (spriteFrameToProjs[key] != null) {
+				foreach (Projectile proj in spriteFrameToProjs[key]) {
+					proj.destroySelf();
 				}
-				spriteFrameToProjs.Remove(key);
 			}
+			spriteFrameToProjs.Remove(key);
 		}
 		// Move if same frame.
 		if (spriteFrameToProjs.GetValueOrDefault(spriteKey) != null) {
@@ -610,17 +621,6 @@ public partial class Actor : GameObject {
 				timeStopTime = 0;
 			}
 		};
-		if (locallyControlled && sprite != null) {
-			int oldFrameIndex = sprite.frameIndex;
-			sprite?.update();
-
-			if (sprite != null && sprite.frameIndex != oldFrameIndex) {
-				string spriteFrameKey = sprite.name + "/" + sprite.frameIndex.ToString(CultureInfo.InvariantCulture);
-				if (spriteFrameToSounds.ContainsKey(spriteFrameKey)) {
-					playSound(spriteFrameToSounds[spriteFrameKey], sendRpc: true);
-				}
-			}
-		}
 
 		bool wading = isWading();
 		bool underwater = isUnderwater();
@@ -1158,6 +1158,9 @@ public partial class Actor : GameObject {
 	}
 
 	public virtual bool shouldRender(float x, float y) {
+		if (destroyed) {
+			return false;
+		}
 		// Don't draw things without sprites or with the "null" sprite.
 		if (sprite.name == "null" || currentFrame == null) {
 			return false;
@@ -1368,10 +1371,10 @@ public partial class Actor : GameObject {
 
 		if (!destroyed) {
 			destroyed = true;
-			destroyedOnFrame = Global.level.frameCount;
-			if (netId != null &&
-				Global.level.actorsById.ContainsKey(netId.Value) &&
-				Global.level.actorsById[netId.Value] == this
+			destroyedOnFrame = Global.frameCount;
+			if (Global.serverClient != null &&
+				netId is not null &&
+				Global.level.actorsById.ContainsKey(netId.Value)
 			) {
 				Global.level.actorsById.Remove(netId.Value);
 				Global.level.destroyedActorsById[netId.Value] = this;
@@ -1806,10 +1809,7 @@ public partial class Actor : GameObject {
 	}
 
 	public CollideData? getHitWall(float x, float y) {
-		var hits = Global.level.checkTerrainCollision(this, x, y, checkPlatforms: true);
-		var bestWall = hits.FirstOrDefault(h => h.gameObject is Wall wall && !wall.collider.isClimbable);
-		if (bestWall != null) return bestWall;
-		return hits.FirstOrDefault();
+		return Global.level.checkTerrainCollisionOnce(this, x, y, checkPlatforms: true);
 	}
 
 	public void setRaColorShader() {

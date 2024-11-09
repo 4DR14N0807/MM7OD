@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO.Hashing;
 using System.Linq;
@@ -30,7 +30,7 @@ public partial class Global {
 	public const string checksumPrefix = "[Community Edition]";
 	// Use this to make sure the checksum varies.
 	// Better to use together with "checksumPrefix" and be diferent from it.
-	public const string checksumPrefix2 = "CE-A12-RC1-6";
+	public const string checksumPrefix2 = "CE-A12-RC1-6-T2";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;
 	// For displaying the name of the mod in the version string.
@@ -44,6 +44,8 @@ public partial class Global {
 	// Some terminology related stuff.
 	public static string nameCoin = "Bolt";
 	public static string nameCoins = "Bolts";
+
+	public static bool isLoading;
 
 	public static void promptDebugSettings() {
 		//testDocumentsInDebug = Helpers.showMessageBoxYesNo("Test documents in debug?", "Debug Settings");
@@ -111,9 +113,9 @@ public partial class Global {
 	// Network options to simulate lag when developing locally.
 	// Note, both relay server and client use this so if both are built and
 	// run using these settings, values will be doubled
-	public static float simulatedLatency = 0.1f;
-	public static float simulatedPacketLoss = 0f;
-	public static float simulatedDuplicates = 0.00f;
+	public static float simulatedLatency = 0;
+	public static float simulatedPacketLoss = 0;
+	public static float simulatedDuplicates = 0;
 
 	// Rarely used
 	public static bool? overrideFullscreen = null;
@@ -140,6 +142,7 @@ public partial class Global {
 
 	public static bool showHitboxes = false;
 	public static bool showGridHitboxes = false;
+	public static bool showTerrainGridHitboxes = false;
 	public static bool showAIDebug = false;
 	public static bool debugDrop = false;
 	public static bool debugCharMovement = false;

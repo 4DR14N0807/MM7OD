@@ -10,7 +10,7 @@ public class XUPParry : Weapon {
 	public static XUPParry netWeapon = new XUPParry();
 
 	public XUPParry() : base() {
-		rateOfFire = 0.75f;
+		fireRate = 45;
 		index = (int)WeaponIds.UPParry;
 		killFeedIndex = 168;
 	}
@@ -35,18 +35,18 @@ public class XUPParryStartState : CharState {
 		}
 	}
 
-	public void counterAttack(Player damagingPlayer, Actor damagingActor, float damage) {
-		Actor counterAttackTarget = null;
-		Projectile absorbedProj = null;
+	public void counterAttack(Player? damagingPlayer, Actor? damagingActor, float damage) {
+		Actor? counterAttackTarget = null;
+		Projectile? absorbedProj = null;
 		
-		if (player.weapon is Buster { isUnpoBuster: true }) {
+		if (player.weapon is XBuster { isUnpoBuster: true }) {
 			player.weapon.ammo = player.weapon.maxAmmo;
 		}
 		
 		if (damagingActor is GenericMeleeProj gmp) {
 			counterAttackTarget = gmp.owningActor;
 		} else if (damagingActor is Projectile proj) {
-			if (!proj.canBeParried() && proj.shouldVortexSuck) {
+			if (!proj.isMelee && proj.shouldVortexSuck) {
 				absorbedProj = proj;
 				absorbedProj.destroySelfNoEffect(doRpcEvenIfNotOwned: true);
 			}
@@ -255,8 +255,8 @@ public class UPParryRangedProj : Projectile {
 }
 
 public class XUPParryProjState : CharState {
-	Projectile otherProj;
-	Anim absorbAnim;
+	Projectile? otherProj;
+	Anim? absorbAnim;
 	bool shootProj;
 	bool absorbThenShoot;
 	public XUPParryProjState(Projectile otherProj, bool shootProj, bool absorbThenShoot) : base("unpo_parry_attack", "", "", "") {
@@ -322,7 +322,7 @@ public class XUPParryProjState : CharState {
 
 public class XUPPunch : Weapon {
 	public XUPPunch(Player player) : base() {
-		rateOfFire = 0.75f;
+		fireRate = 45;
 		index = (int)WeaponIds.UPPunch;
 		killFeedIndex = 167;
 		damager = new Damager(player, 3, Global.defFlinch, 0.5f);
@@ -359,7 +359,7 @@ public class XUPPunchState : CharState {
 
 public class XUPGrab : Weapon {
 	public XUPGrab() : base() {
-		rateOfFire = 0.75f;
+		fireRate = 45;
 		index = (int)WeaponIds.UPGrab;
 		killFeedIndex = 92;
 	}
@@ -628,7 +628,7 @@ public class XReviveStart : CharState {
 			"drlight", -character.xDir, player.getNextActorNetId(), false, sendRpc: true
 		);
 		drLightAnim.blink = true;
-		int busterIndex = player.weapons.FindIndex(w => w is Buster);
+		int busterIndex = player.weapons.FindIndex(w => w is XBuster);
 		if (busterIndex >= 0) {
 			player.changeWeaponSlot(busterIndex);
 		}
@@ -648,6 +648,7 @@ public class XRevive : CharState {
 
 	public XRevive() : base("revive_shake") {
 		invincible = true;
+		immuneToWind = true;
 	}
 
 	public override void update() {
@@ -659,15 +660,18 @@ public class XRevive : CharState {
 			player.health = 1;
 			character.addHealth(player.maxHealth);
 
-			player.weapons.RemoveAll(w => w is not Buster);
-			if (player.weapons.Count == 0) {
+			player.weapons.RemoveAll(w => w is not XBuster);
+			player.weapons.Add(new RagingChargeBuster());
+			player.weaponSlot = 0;
+			
+			/* if (player.weapons.Count == 0) {
 				player.weapons.Add(new Buster());
 			}
 			var busterWeapon = player.weapons.FirstOrDefault(w => w is Buster) as Buster;
 			if (busterWeapon != null) {
 				busterWeapon.setUnpoBuster(mmx);
-			}
-			player.weaponSlot = 0;
+			} */
+			
 
 			once = true;
 			var flash = new Anim(character.pos.addxy(0, -33), "up_flash", character.xDir, player.getNextActorNetId(), true, sendRpc: true);
@@ -701,7 +705,7 @@ public class XRevive : CharState {
 		character.useGravity = true;
 		mmx.isHyperX = true;
 		Global.level.addToGrid(character);
-		mmx.invulnTime = mmx.maxParryCooldown;
+		mmx.invulnTime = 2;
 	}
 }
 

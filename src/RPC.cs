@@ -127,6 +127,8 @@ public class RPC {
 		matchOver,
 		endMatchRequest,
 		// General stuff.
+		applyDamage,
+		heal,
 		updateActor,
 		destroyActor,
 		actorToggle,
@@ -146,7 +148,6 @@ public class RPC {
 		broadcastLoadout,
 		switchCharacter,
 		reflectProj,
-		heal,
 		commandGrabPlayer,
 		addDamageText,
 		changeDamage,
@@ -462,13 +463,9 @@ public class RPCShoot : RPC {
 		int weaponIndex = arguments[9];
 
 		var player = Global.level.getPlayerById(playerId);
-		/*(player?.character as MegamanX)?.shootRpc(
+		/* (player?.character as MegamanX)?.shootRpc(
 			new Point(xPos, yPos), weaponIndex, xDir, chargeLevel, projNetId, false
-		);*/
-
-		/*(player?.character as Rock)?.shootRpc(
-			new Point(xPos, yPos), weaponIndex, xDir, chargeLevel, projNetId, false
-		);*/
+		); */
 	}
 }
 
@@ -571,6 +568,7 @@ public enum RPCToggleType {
 	StartDWrap,
 	StopDwrap,
 	StrikeChainReversed,
+	StrikeChainChargedReversed,
 	StockCharge,
 	UnstockCharge,
 	StartRaySplasher,
@@ -613,6 +611,8 @@ public class RPCPlayerToggle : RPC {
 			player.character?.dwrapEnd();
 		} else if (toggleId == RPCToggleType.StrikeChainReversed) {
 			(player?.character as MegamanX)?.strikeChainProj?.reverseDir();
+		} else if (toggleId == RPCToggleType.StrikeChainChargedReversed) {
+			(player?.character as MegamanX)?.strikeChainChargedProj?.reverseDir();
 		} else if (toggleId == RPCToggleType.StockCharge) {
 			if (player?.character is MegamanX mmx) {
 				mmx.stockedCharge = true;

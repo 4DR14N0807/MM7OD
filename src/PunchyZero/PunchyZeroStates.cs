@@ -245,7 +245,6 @@ public class PZeroParry : CharState {
 	}
 
 	public void counterAttack(Player damagingPlayer, Actor? damagingActor) {
-		zero.parryCooldown = 0;
 		Actor? counterAttackTarget = null;
 		bool isMelee = false;
 		if (damagingActor is Projectile proj) {
@@ -284,7 +283,7 @@ public class PZeroParry : CharState {
 	public override void onExit(CharState newState) {
 		character.specialState = (int)SpecialStateIds.None;
 		base.onExit(newState);
-		zero.parryCooldown = 30;
+		zero.parryCooldown = 60;
 	}
 
 	public bool canParry(Actor? actor, int projId) {
@@ -394,7 +393,7 @@ public class PZeroShoryuken : CharState {
 		if (character.sprite.frameIndex >= 3 && !jumpedYet) {
 			jumpedYet = true;
 			character.dashedInAir++;
-			character.vel.y = -character.getJumpPower() * 1.2f;
+			character.vel.y = -character.getJumpPower() * 1.45f;
 			character.playSound("punch2", sendRpc: true);
 		}
 
@@ -684,7 +683,7 @@ public class PunchyZeroHadangekiWall : CharState {
 			);
 		}
 		if (character.isAnimOver()) {
-			character.changeState(new WallSlide(wallDir, wallCollider));
+			character.changeState(new WallSlide(wallDir, wallCollider) { enterSound = "" });
 			character.sprite.frameIndex = character.sprite.totalFrameNum - 1;
 		}
 	}

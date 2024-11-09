@@ -7,8 +7,8 @@ namespace MMXOnline;
 public struct Cell {
 	public int x;
 	public int y;
-	public HashSet<GameObject> gameobjects;
-	public Cell(int x, int y, HashSet<GameObject> gameobjects) {
+	public List<GameObject> gameobjects;
+	public Cell(int x, int y, List<GameObject> gameobjects) {
 		this.x = x;
 		this.y = y;
 		this.gameobjects = gameobjects;
@@ -23,13 +23,13 @@ public partial class Level {
 		int xCellCount = MathInt.Ceiling((decimal)width / (decimal)cellWidth);
 		int yCellCount = MathInt.Ceiling((decimal)height / (decimal)cellWidth);
 		//console.log("Creating grid with width " + hCellCount + " and height " + vCellCount);
-		grid = new HashSet<GameObject>[xCellCount, yCellCount];
-		terrainGrid = new HashSet<GameObject>[xCellCount, yCellCount];
+		grid = new List<GameObject>[xCellCount, yCellCount];
+		terrainGrid = new List<GameObject>[xCellCount, yCellCount];
 
 		for (var x = 0; x < xCellCount; x++) {
 			for (var y = 0; y < yCellCount; y++) {
-				grid[x, y] = new HashSet<GameObject>();
-				terrainGrid[x, y] = new HashSet<GameObject>();
+				grid[x, y] = new List<GameObject>();
+				terrainGrid[x, y] = new List<GameObject>();
 			}
 		}
 	}
@@ -131,7 +131,7 @@ public partial class Level {
 			for (int y = (int)dataPos.y1; y <= dataPos.y2; y++) {
 				grid[x, y].Remove(go);
 				if (grid[x, y].Count == 0) {
-					populatedGrids.Remove([x, y]);
+					populatedGrids.Remove((x, y));
 				}
 			}
 		}
@@ -158,7 +158,7 @@ public partial class Level {
 		foreach (Cell cell in getGridCells(allCollidersShape.Value)) {
 			if (!grid[cell.x, cell.y].Contains(go)) {
 				if (grid[cell.x, cell.y].Count == 0) {
-					populatedGrids.Add([cell.x, cell.y]);
+					populatedGrids.Add((cell.x, cell.y));
 				}
 				grid[cell.x, cell.y].Add(go);
 			}
@@ -194,6 +194,18 @@ public partial class Level {
 			for (int y = 0; y < grid.GetLength(1); y++) {
 				if (grid[x, y].Count > 0) {
 					gridItemCount += grid[x, y].Count;
+				}
+			}
+		}
+		return gridItemCount;
+	}
+
+	public int getTGridCount() {
+		int gridItemCount = 0;
+		for (int x = 0; x < terrainGrid.GetLength(0); x++) {
+			for (int y = 0; y < terrainGrid.GetLength(1); y++) {
+				if (grid[x, y].Count > 0) {
+					gridItemCount += terrainGrid[x, y].Count;
 				}
 			}
 		}
@@ -239,16 +251,15 @@ public partial class Level {
 
 	public void modifyObjectGridGroups(GameObject obj, bool isActor, bool isTerrain) {
 		if (isActor) {
-			addToGrid(obj);
+			addToActorGrid(obj);
 			obj.useActorGrid = true;
 		} else {
-			removeFromGrid(obj);
+			removeFromActorGrid(obj);
 			obj.useActorGrid = false;
 		}
 		if (isTerrain) {
 			addTerrainToGrid(obj);
 			obj.useTerrainGrid = true;
-
 		} else {
 			removeFromTerrainGrid(obj);
 			obj.useTerrainGrid = false;
@@ -404,7 +415,7 @@ public partial class Level {
 	}
 
 	public CollideData checkCollisionShape(Shape shape, List<GameObject>? exclusions) {
-		var gameObjects = getGameObjectsInSameCell(shape);
+		var gameObjects = getTerrainInSameCell(shape);
 		foreach (var go in gameObjects) {
 			if (go.collider == null) continue;
 			if (go is not Actor && go.collider.isTrigger) continue;
@@ -582,7 +593,7 @@ public partial class Level {
 	public List<CollideData> raycastAll(Point pos1, Point pos2, List<Type> classNames, bool isChargeBeam = false) {
 		var hits = new List<CollideData>();
 		var shape = new Shape(new List<Point>() { pos1, pos2 });
-		var gameObjects = getTerrainInSameCell(shape);
+		List<GameObject> gameObjects = getTerrainInSameCell(shape);
 		foreach (var go in gameObjects) {
 			if (go.collider == null) continue;
 			if (!isOfClass(go, classNames)) continue;
@@ -767,9 +778,9 @@ public partial class Level {
 		for (int x = (int)dataPos.x1; x <= dataPos.x2; x++) {
 			for (int y = (int)dataPos.y1; y <= (int)dataPos.y2; y++) {
 				terrainGrid[x, y].Remove(go);
-				if (terrainGrid[x, y].Count == 0) {
-					populatedTerrainGrids.Remove([x, y]);
-				}
+				/*if (terrainGrid[x, y].Count == 0) {
+					populatedTerrainGrids.Remove((x, y));
+				}*/
 			}
 		}
 		terrainGridsPopulatedByGo.Remove(hash);
@@ -779,7 +790,7 @@ public partial class Level {
 		Actor actor, float incX, float incY, Point? vel = null, bool autoVel = false,
 		bool checkPlatforms = false
 	) {
-		return checkTerrainCollision(actor, incX, incY, vel, autoVel, checkPlatforms).FirstOrDefault();
+		return checkTerrainCollision(actor, incX, incY, vel, autoVel, true, checkPlatforms).FirstOrDefault();
 	}
 
 	public List<CollideData> checkTerrainCollision(
@@ -793,11 +804,6 @@ public partial class Level {
 		if (terrainCollider == null) {
 			terrainCollider = actor.standartCollider;
 		}
-		if (actor.spriteToCollider.ContainsKey(actor.sprite.name) &&
-			actor.spriteToCollider[actor.sprite.name] == null
-		) {
-			return collideDatas;
-		}
 		// If there is no collider we return.
 		if (actor.standartCollider == null) {
 			return collideDatas;
@@ -806,7 +812,7 @@ public partial class Level {
 			vel = new Point(incX, incY);
 		}
 		Shape actorShape = actor.collider.shape.clone(incX, incY);
-		GameObject[] gameObjects = getTerrainInSameCell(actorShape);
+		List<GameObject> gameObjects = getTerrainInSameCell(actorShape);
 		foreach (GameObject go in gameObjects) {
 			if (go == actor) continue;
 			if (go.collider == null) continue;
@@ -815,7 +821,7 @@ public partial class Level {
 				isTrigger = false;
 			}
 			if (isTrigger) continue;
-			HitData hitData = actorShape.intersectsShape(go.collider.shape, vel);
+			HitData? hitData = actorShape.intersectsShape(go.collider.shape, vel);
 			if (hitData != null) {
 				collideDatas.Add(new CollideData(actor.collider, go.collider, vel, isTrigger, go, hitData));
 				if (returnOne) {
@@ -827,18 +833,20 @@ public partial class Level {
 		return collideDatas;
 	}
 
-	public GameObject[] getTerrainInSameCell(Shape shape) {
+	public List<GameObject> getTerrainInSameCell(Shape shape) {
 		List<Cell> cells = getTerrainCells(shape);
-		HashSet<GameObject> retGameobjects = new();
+		List<GameObject> retGameobjects = new();
+		HashSet<GameObject> gameobjectsChecked = new();
 		foreach (Cell cell in cells) {
 			if (cell.gameobjects == null) continue;
 			foreach (GameObject go in cell.gameobjects) {
-				if (!retGameobjects.Contains(go)) {
+				if (!gameobjectsChecked.Contains(go)) {
+					gameobjectsChecked.Add(go);
 					retGameobjects.Add(go);
 				}
 			}
 		}
-		return retGameobjects.ToArray();
+		return retGameobjects;
 	}
 
 	//Optimize this function, it will be called a lot
@@ -924,11 +932,11 @@ public partial class Level {
 		}
 		foreach (Collider collider1 in collidersOne) {
 			foreach (Collider collider2 in collidersTwo) {
-				bool isTrigger1 = false;
+				bool isTrigger1 = true;
 				if (firstActor != null) {
 					isTrigger1 = shouldTrigger(firstActor, secondObj, collider1, collider2, new Point(0, 0));
 				}
-				bool isTrigger2 = false;
+				bool isTrigger2 = true;
 				if (secondActor != null) {
 					isTrigger2 = shouldTrigger(secondActor, secondObj, collider1, collider2, new Point(0, 0));
 				}
@@ -944,6 +952,26 @@ public partial class Level {
 		}
 
 		return (triggers1, triggers2);;
+	}
+
+	public (CollideData?, CollideData?) getTriggerTerrain(Actor actor, Geometry geometry) {
+		CollideData? triggerActor = null;
+		CollideData? triggerTerrain = null;
+		Collider? actorCollider = actor.getTerrainCollider() ?? actor.physicsCollider ?? actor.collider;
+		if (actorCollider == null) {
+			return (triggerActor, triggerTerrain);
+		}
+		Collider geometryCollider = geometry.collider;
+		if (geometryCollider == null) {
+			return (triggerActor, triggerTerrain);
+		}
+		bool isTrigger = shouldTrigger(actor, geometry, actorCollider, geometryCollider, new Point(0, 0));
+		HitData? hitData = actorCollider.shape.intersectsShape(geometryCollider.shape);
+		if (hitData != null) {
+			triggerActor = new CollideData(actorCollider, geometryCollider, null, isTrigger, geometry, hitData);
+			triggerTerrain = new CollideData(geometryCollider, actorCollider, null, isTrigger, actor, hitData);
+		}
+		return (triggerActor, triggerTerrain);
 	}
 
 	public List<CollideData> organizeTriggers(List<CollideData> triggerList) {

@@ -4,8 +4,8 @@ namespace MMXOnline;
 
 public class IceGattling : AxlWeapon {
 	public IceGattling(int altFire) : base(altFire) {
-		//shootSounds = new List<string>() { "", "", "", "" };
-		rateOfFire = 0.1f;
+		//shootSounds = new string[] { "iceGattling", "iceGattling", "iceGattling", "gaeaShield" };
+		fireRate = 6;
 		index = (int)WeaponIds.IceGattling;
 		weaponBarBaseIndex = 37;
 		weaponSlotIndex = 57;

@@ -13,7 +13,6 @@ public class Sprite {
 	public string name;
 	public Collider[] hitboxes;
 	public Collider[][] frameHitboxes;
-
 	public float time;
 	public int frameIndex;
 	public float frameSpeed = 1;
@@ -39,7 +38,7 @@ public class Sprite {
 
 	public float tempOffY = 0;
 	public float tempOffX = 0;
-	
+
 	public int totalFrameNum => (animData.frames.Length);
 	
 	public List<Trail> lastFiveTrailDraws = new List<Trail>();
@@ -55,11 +54,11 @@ public class Sprite {
 		loopStartFrame = animData.loopStartFrame;
 
 		hitboxes = new Collider[animData.hitboxes.Length];
-		for (int i = 0; i < hitboxes.Length; i++){
+		for (int i = 0; i < hitboxes.Length; i++) {
 			hitboxes[i] = animData.hitboxes[i].clone();
 		}
 		frameHitboxes = new Collider[animData.frames.Length][];
-		for (int i = 0; i < animData.frames.Length; i++){
+		for (int i = 0; i < animData.frames.Length; i++) {
 			int length = animData.frames[i].hitboxes.Length;
 			frameHitboxes[i] = new Collider[length];
 			for (int j = 0; j < length; j++) {
@@ -227,13 +226,52 @@ public class Sprite {
 		float xDirArg = flipX * scaleX;
 		float yDirArg = flipY * scaleY;
 
+		Texture bitmap = animData.bitmap;
+
+		bool isCompositeSprite = false;
+		List<Texture> compositeBitmaps = new();
+		float extraY = 0;
+		float extraYOff = 0;
+		float extraW = 0;
+		float flippedExtraW = 0;
+		float extraXOff = 0;
+
+			compositeBitmaps.Add(bitmap);
+		/* 	if (armors[2] > 0) {
+				compositeBitmaps.Add(xArmorHelmetBitmap[armors[2] - 1]);
+			}
+			if (armors[0] > 0) {
+				compositeBitmaps.Add(xArmorBootsBitmap[armors[0] - 1]);
+			}
+			if (armors[1] > 0) {
+				compositeBitmaps.Add(xArmorBodyBitmap[armors[1] - 1]);
+			}
+			if (armors[3] > 0) {
+				compositeBitmaps.Add(xArmorArmBitmap[armors[3] - 1]);
+			} */
+			if (compositeBitmaps.Count > 1) {
+				isCompositeSprite = true;
+			}
+		}
+
 		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
-			if (renderEffects.Contains(RenderEffectType.BlueShadow) && alpha >= 1) {
-				var blueShader = Helpers.cloneShaderSafe("outline_blue");
-				if (blueShader != null) {
-					blueShader.SetUniform(
+			if (alpha >= 1 && (
+				renderEffects.Contains(RenderEffectType.BlueShadow) ||
+				renderEffects.Contains(RenderEffectType.RedShadow) ||
+				renderEffects.Contains(RenderEffectType.GreenShadow)
+			)) {
+				ShaderWrapper? outlineShader = null;
+				if (renderEffects.Contains(RenderEffectType.BlueShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_blue");
+				} else if (renderEffects.Contains(RenderEffectType.RedShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_red");
+				} else if (renderEffects.Contains(RenderEffectType.GreenShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_green");
+				}
+				if (outlineShader != null) {
+					outlineShader.SetUniform(
 						"textureSize",
-						new SFML.Graphics.Glsl.Vec2(bitmap.Size.X, bitmap.Size.Y)
+						new SFML.Graphics.Glsl.Vec2(currentFrame.rect.w() + 2, currentFrame.rect.h() + 2)
 					);
 					DrawWrappers.DrawTexture(
 						bitmap,
@@ -243,45 +281,55 @@ public class Sprite {
 						y + frameOffsetY - (1 * yDirArg),
 						zIndex,
 						cx, cy, xDirArg, yDirArg, angle, alpha,
-						new List<ShaderWrapper>() { blueShader }, true
+						[outlineShader], true
 					);
 				}
-			} else if (renderEffects.Contains(RenderEffectType.RedShadow) && alpha >= 1) {
-				var redShader = Helpers.cloneShaderSafe("outline_red");
-				if (redShader != null) {
-					redShader.SetUniform(
-						"textureSize",
-						new SFML.Graphics.Glsl.Vec2(bitmap.Size.X, bitmap.Size.Y)
-					);
-					DrawWrappers.DrawTexture(
-						bitmap,
-						currentFrame.rect.x1 - 1, currentFrame.rect.y1 - 1,
-						currentFrame.rect.w() + 2, currentFrame.rect.h() + 2,
-						x + frameOffsetX - (1 * xDirArg),
-						y + frameOffsetY - (1 * yDirArg),
-						zIndex - 10,
-						cx, cy, xDirArg, yDirArg, angle, alpha,
-						new List<ShaderWrapper>() { redShader }, true
-					);
+			}
+		
+			if (name is "boomerk_dash" or "boomerk_bald_dash" && (animTime > 0 || frameIndex > 0)) {
+				if (Global.isOnFrameCycle(4)) {
+					var trail = lastTwoBkTrailDraws.ElementAtOrDefault(5);
+					if (trail != null) {
+						trail.action.Invoke(trail.time);
+						trail.time -= Global.spf;
+					}
+				} else {
+					var trail = lastTwoBkTrailDraws.ElementAtOrDefault(9);
+					if (trail != null) {
+						trail.action.Invoke(trail.time);
+						trail.time -= Global.spf;
+					}
 				}
-			} else if (renderEffects.Contains(RenderEffectType.GreenShadow) && alpha >= 1) {
-				var greenShader = Helpers.cloneShaderSafe("outline_green");
-				if (greenShader != null) {
-					greenShader.SetUniform(
-						"textureSize",
-						new SFML.Graphics.Glsl.Vec2(bitmap.Size.X, bitmap.Size.Y)
-					);
-					DrawWrappers.DrawTexture(
-						bitmap,
-						currentFrame.rect.x1 - 1, currentFrame.rect.y1 - 1,
-						currentFrame.rect.w() + 2, currentFrame.rect.h() + 2,
-						x + frameOffsetX - (1 * xDirArg),
-						y + frameOffsetY - (1 * yDirArg),
-						zIndex,
-						cx, cy, xDirArg, yDirArg, angle, alpha,
-						new List<ShaderWrapper>() { greenShader }, true
-					);
+
+				var shaderList = new List<ShaderWrapper>();
+				if (Global.shaderWrappers.ContainsKey("boomerkTrail")) {
+					ShaderWrapper boomerkTrail = Global.shaderWrappers["boomerkTrail"];
+					boomerkTrail.SetUniform("paletteTexture", Global.textures["boomerkTrailPalette"]);
+					shaderList.Add(boomerkTrail);
 				}
+
+				if (lastTwoBkTrailDraws.Count > 10) {
+					lastTwoBkTrailDraws.PopFirst();
+				}
+				lastTwoBkTrailDraws.Add(new Trail() {
+					action = (float time) => {
+						DrawWrappers.DrawTexture(
+							bitmap,
+							animData.frames[1].rect.x1,
+							animData.frames[1].rect.y1,
+							animData.frames[1].rect.w(),
+							animData.frames[1].rect.h(),
+							x + frameOffsetX, y + frameOffsetY,
+							zIndex, cx, cy,
+							xDirArg, yDirArg,
+							angle, alpha,
+							shaderList, true
+						);
+					},
+					time = 0.25f
+				});
+			} else {
+				lastTwoBkTrailDraws.Clear();
 			}
 
 			if (renderEffects.Contains(RenderEffectType.Trail)) {
@@ -307,16 +355,60 @@ public class Sprite {
 					time = 0.25f
 				});
 			}
-		}
+			if (renderEffects.Contains(RenderEffectType.SpeedDevilTrail) && character != null && Global.shaderWrappers.ContainsKey("speedDevilTrail")) {
+				for (int i = character.lastFiveTrailDraws.Count - 1; i >= 0; i--) {
+					Trail trail = character.lastFiveTrailDraws[i];
+					if (character.isDashing) {
+						trail.action.Invoke(trail.time);
+					}
+					trail.time -= Global.spf;
+					if (trail.time <= 0) character.lastFiveTrailDraws.RemoveAt(i);
+				}
 
-		float extraYOff = 0;
+				var shaderList = new List<ShaderWrapper>();
+
+				var speedDevilShader = character.player.speedDevilShader;
+				shaderList.Add(speedDevilShader);
+
+				if (character.lastFiveTrailDraws.Count > 1) character.lastFiveTrailDraws.PopFirst();
+
+				character.lastFiveTrailDraws.Add(new Trail() {
+					action = (float time) => {
+						speedDevilShader?.SetUniform("alpha", time * 2);
+						DrawWrappers.DrawTexture(bitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaderList, true);
+					},
+					time = 0.125f
+				});
+			}
+		}
 		DrawWrappers.DrawTexture(
 			bitmap,
-			currentFrame.rect.x1, currentFrame.rect.y1 - extraYOff,
-			currentFrame.rect.w(), currentFrame.rect.h() + extraYOff,
-			x + frameOffsetX, y + frameOffsetY - extraYOff, zIndex,
-			cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true
-		);
+			currentFrame.rect.x1,
+			currentFrame.rect.y1 - extraYOff,
+				currentFrame.rect.w(),
+				currentFrame.rect.h() + extraY,
+				x + frameOffsetX, y + frameOffsetY - extraYOff,
+				zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true
+			);
+
+		if (isUPX) {
+			var upShaders = new List<ShaderWrapper>(shaders);
+			if (Global.isOnFrameCycle(5)) {
+				if (Global.shaderWrappers.ContainsKey("hit")) {
+					upShaders.Add(Global.shaderWrappers["hit"]);
+				}
+			}
+			DrawWrappers.DrawTexture(Global.textures["XUPGlow"], currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, upShaders, true);
+		}
+
+		if (animData.isAxlSprite && drawAxlArms) {
+			DrawWrappers.DrawTexture(axlArmBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, 0, alpha, shaders, true);
+		}
+	}
+
+	public bool needsX3BusterCorrection() {
+		return name.Contains("mmx_shoot") || name.Contains("mmx_run_shoot") || name.Contains("mmx_fall_shoot") || name.Contains("mmx_jump_shoot") || name.Contains("mmx_dash_shoot") || name.Contains("mmx_ladder_shoot")
+			|| name.Contains("mmx_wall_slide_shoot") || name.Contains("mmx_up_dash_shoot") || name.Contains("mmx_wall_kick_shoot");
 	}
 
 	public Frame getCurrentFrame(int frameIndex = -1) {
@@ -329,7 +421,7 @@ public class Sprite {
 		if (frameIndex < 0) {
 			return animData.frames[0];
 		}
-		if	(frameIndex >= animData.frames.Length) {
+		if (frameIndex >= animData.frames.Length) {
 			return animData.frames[animData.frames.Length - 1];
 		}
 		return animData.frames[frameIndex];
@@ -344,7 +436,7 @@ public class Sprite {
 		if (frameIndex < 0) {
 			return 0;
 		}
-		if	(frameIndex >= animData.frames.Length) {
+		if (frameIndex >= animData.frames.Length) {
 			return animData.frames.Length - 1;
 		}
 		return frameIndex;
@@ -471,16 +563,16 @@ public class AnimData {
 		this.name = name;
 		this.customMapName = customMapName;
 		string alignmentText = Convert.ToString(spriteJson.alignment);
-		
+
 		(baseAlignmentX, baseAlignmentY) = alignmentText switch {
-			"topmid"   => (0.5f, 0f),
-			"topright" => (1f,   0f),
-			"midleft"  => (0f,   0.5f),
-			"center"   => (0.5f, 0.5f),
-			"midright" => (1f,   0.5f),
-			"botleft"  => (0f,   1f),
-			"botmid"   => (0.5f, 1f),
-			"botright" => (1f,   1f),
+			"topmid" => (0.5f, 0f),
+			"topright" => (1f, 0f),
+			"midleft" => (0f, 0.5f),
+			"center" => (0.5f, 0.5f),
+			"midright" => (1f, 0.5f),
+			"botleft" => (0f, 1f),
+			"botmid" => (0.5f, 1f),
+			"botright" => (1f, 1f),
 			_ => (0, 0),
 		};
 
@@ -543,23 +635,50 @@ public class AnimData {
 			float durationSeconds = (float)Convert.ToDouble(frameJson["duration"]);
 			float durationFrames = MathF.Round(durationSeconds * 60);
 
+			if (x1 > x2) {
+				(x1, x2) = (x2, x1);
+			}
+			if (y1 > y2) {
+				(y1, y2) = (y2, y1);
+			}
+			// Rendertexture creation.
+			int sprWidth = MathInt.Ceiling(x2 - x1);
+			int sprHeight = MathInt.Ceiling(y2 - y1);
+			if (sprWidth > 1024) {
+				sprWidth = 1024;
+				x2 = x1 + 1024;
+			}
+			if (sprHeight > 1024) {
+				sprHeight = 1024;
+				y2 = y1 + 1024;
+			}
+
+			if (sprWidth <= 0 || sprHeight <= 0) {
+				throw new Exception("Error loading sprite " + name);
+			}
 			Frame frame = new Frame(
 				new Rect(x1, y1, x2, y2),
 				durationFrames,
 				new Point(offsetX, offsetY)
 			);
 
-			// Rendertexture creation.
-			int sprWidth = MathInt.Ceiling(x2 - x1);
-			int sprHeight = MathInt.Ceiling(y2 - y1);
 			int encodeKey = (sprWidth * 397) ^ sprHeight;
-			if (!Global.renderTextures.ContainsKey(encodeKey)) {
+			if (Global.isLoading) {
+				if (!Global.renderTextureQueueKeys.Contains(encodeKey)) {
+					lock (Global.renderTextureQueueKeys) {
+						Global.renderTextureQueueKeys.Add(encodeKey);
+					}
+					lock (Global.renderTextureQueue) {
+						Global.renderTextureQueue.Add(((uint)sprWidth, (uint)sprHeight));
+					}
+				}
+			}
+			else if (!Global.renderTextures.ContainsKey(encodeKey)) {
 				Global.renderTextures[encodeKey] = (
 					new RenderTexture((uint)sprWidth, (uint)sprHeight),
 					new RenderTexture((uint)sprWidth, (uint)sprHeight)
 				);
 			}
-
 			if (frameJson["POIs"] != null) {
 				List<Point> framePOIs = new();
 				List<String> framePoiTags = new();
@@ -630,11 +749,11 @@ public class AnimData {
 	public AnimData cloneAnimSlow() {
 		AnimData clonedSprite = (AnimData)MemberwiseClone();
 		clonedSprite.hitboxes = new Collider[hitboxes.Length];
-		for (int i = 0; i < hitboxes.Length; i++){
+		for (int i = 0; i < hitboxes.Length; i++) {
 			clonedSprite.hitboxes[i] = hitboxes[i].clone();
 		}
 		clonedSprite.frames = new Frame[frames.Length];
-		for (int i = 0; i < frames.Length; i++){
+		for (int i = 0; i < frames.Length; i++) {
 			clonedSprite.frames[i] = frames[i].clone();
 		}
 		return clonedSprite;

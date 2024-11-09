@@ -317,7 +317,7 @@ public class SelectWeaponMenu : IMainMenu {
 			int[] strongAgainstMaverickIndices = getStrongAgainstMaverickFrameIndex(wi);
 			int weakAgainstMaverickIndex = getWeakAgainstMaverickFrameIndex(wi);
 			string damage = weapon.damage;
-			string rateOfFire = weapon.rateOfFire.ToString();
+			string rateOfFire = weapon.fireRate.ToString();
 			string ammousage = weapon.ammousage.ToString();
 			string effect = weapon.effect;
 			string hitcooldown = weapon.hitcooldown;
@@ -402,45 +402,69 @@ public class SelectWeaponMenu : IMainMenu {
 	}
 
 	private int getWeakAgainstMaverickFrameIndex(int wi) {
-		if (wi == (int)WeaponIds.Torpedo) return new ArmoredArmadilloWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.Sting) return new BoomerangKuwangerWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.RollingShield) return new SparkMandrillWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.FireWave) return new StormEagleWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.Tornado) return new StingChameleonWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.ElectricSpark) return new ChillPenguinWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.Boomerang) return new LaunchOctopusWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.ShotgunIce) return new FlameMammothWeapon(null).weaponSlotIndex;
-
-		if (wi == (int)WeaponIds.StrikeChain) return new OverdriveOstrichWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.SpinWheel) return new WireSpongeWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.BubbleSplash) return new WheelGatorWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.SpeedBurner) return new BubbleCrabWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.SilkShot) return new FlameStagWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.MagnetMine) return new MorphMothWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.CrystalHunter) return new MagnaCentipedeWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.SonicSlicer) return new CrystalSnailWeapon(null).weaponSlotIndex;
-
-		if (wi == (int)WeaponIds.AcidBurst) return new BlizzardBuffaloWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.ParasiticBomb) return new GravityBeetleWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.TriadThunder) return new TunnelRhinoWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.SpinningBlade) return new VoltCatfishWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.RaySplasher) return new CrushCrawfishWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.GravityWell) return new NeonTigerWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.FrostShield) return new BlastHornetWeapon(null).weaponSlotIndex;
-		if (wi == (int)WeaponIds.TunnelFang) return new ToxicSeahorseWeapon(null).weaponSlotIndex;
-
-		return 0;
+		switch (wi) {
+			case (int)WeaponIds.HomingTorpedo:
+				return new ArmoredArmadilloWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.ChameleonSting:
+				return new BoomerangKuwangerWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.RollingShield:
+				return new SparkMandrillWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.FireWave:
+				return new StormEagleWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.StormTornado:
+				return new StingChameleonWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.ElectricSpark:
+				return new ChillPenguinWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.BoomerangCutter:
+				return new LaunchOctopusWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.ShotgunIce:
+				return new FlameMammothWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.StrikeChain:
+				return new OverdriveOstrichWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.SpinWheel:
+				return new WireSpongeWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.BubbleSplash:
+				return new WheelGatorWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.SpeedBurner:
+				return new BubbleCrabWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.SilkShot:
+				return new FlameStagWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.MagnetMine:
+				return new MorphMothWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.CrystalHunter:
+				return new MagnaCentipedeWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.SonicSlicer:
+				return new CrystalSnailWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.AcidBurst:
+				return new BlizzardBuffaloWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.ParasiticBomb:
+				return new GravityBeetleWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.TriadThunder:
+				return new TunnelRhinoWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.SpinningBlade:
+				return new VoltCatfishWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.RaySplasher:
+				return new CrushCrawfishWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.GravityWell:
+				return new NeonTigerWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.FrostShield:
+				return new BlastHornetWeapon(null).weaponSlotIndex;
+			case (int)WeaponIds.TornadoFang:
+				return new ToxicSeahorseWeapon(null).weaponSlotIndex;
+			default:
+				return 0;
+		}
 	}
 
 	private int[] getStrongAgainstMaverickFrameIndex(int weaponIndex) {
 		return weaponIndex switch {
-			(int)WeaponIds.Torpedo => new int[] { new BoomerangKuwangerWeapon(null).weaponSlotIndex },
-			(int)WeaponIds.Sting => new int[] { new StormEagleWeapon(null).weaponSlotIndex },
+			(int)WeaponIds.HomingTorpedo => new int[] { new BoomerangKuwangerWeapon(null).weaponSlotIndex },
+			(int)WeaponIds.ChameleonSting => new int[] { new StormEagleWeapon(null).weaponSlotIndex },
 			(int)WeaponIds.RollingShield => new int[] { new LaunchOctopusWeapon(null).weaponSlotIndex },
 			(int)WeaponIds.FireWave => new int[] { new ChillPenguinWeapon(null).weaponSlotIndex },
-			(int)WeaponIds.Tornado => new int[] { new FlameMammothWeapon(null).weaponSlotIndex },
+			(int)WeaponIds.StormTornado => new int[] { new FlameMammothWeapon(null).weaponSlotIndex },
 			(int)WeaponIds.ElectricSpark => new int[] { new ArmoredArmadilloWeapon(null).weaponSlotIndex },
-			(int)WeaponIds.Boomerang => new int[] { new StingChameleonWeapon(null).weaponSlotIndex },
+			(int)WeaponIds.BoomerangCutter => new int[] { new StingChameleonWeapon(null).weaponSlotIndex },
 			(int)WeaponIds.ShotgunIce => new int[] {
 				new SparkMandrillWeapon(null).weaponSlotIndex,
 				new VelguarderWeapon(null).weaponSlotIndex
@@ -466,7 +490,7 @@ public class SelectWeaponMenu : IMainMenu {
 			(int)WeaponIds.RaySplasher => new int[] { new GravityBeetleWeapon(null).weaponSlotIndex },
 			(int)WeaponIds.GravityWell => new int[] { new BlastHornetWeapon(null).weaponSlotIndex },
 			(int)WeaponIds.FrostShield => new int[] { new ToxicSeahorseWeapon(null).weaponSlotIndex },
-			(int)WeaponIds.TunnelFang => new int[] { new VoltCatfishWeapon(null).weaponSlotIndex },
+			(int)WeaponIds.TornadoFang => new int[] { new VoltCatfishWeapon(null).weaponSlotIndex },
 			_ => new int[] { }
 		};
 	}

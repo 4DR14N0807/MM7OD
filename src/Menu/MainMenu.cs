@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using SFML.Graphics;
 using static SFML.Window.Keyboard;
 
@@ -8,7 +9,10 @@ namespace MMXOnline;
 public class MainMenu : IMainMenu {
 	public const int startPos = 119;
 	public const int yDistance = 13;
-
+	public float Time;
+	public float Time2;
+	public bool Confirm = false;
+	public bool Confirm2 = true;
 	public int selectY;
 	public Point[] optionPos = {
 		new Point(122, startPos),
@@ -67,10 +71,12 @@ public class MainMenu : IMainMenu {
 			);
 			return;
 		}
-
-		Helpers.menuUpDown(ref selectY, 0, 6);
-
-		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
+		
+		if (Time == 0) Helpers.menuUpDown(ref selectY, 0, 5);
+		TimeUpdate();
+		if (Time >= 1) {
+			Time = 0;
+			Confirm = false;
 			// Before joining or creating make sure client is up to date
 			if (selectY == 0 || selectY == 1) {
 				Menu.change(new PreJoinOrHostMenu(this, selectY == 0));
@@ -78,15 +84,239 @@ public class MainMenu : IMainMenu {
 				Menu.change(new HostMenu(this, null, true, true));
 			} else if (selectY == 3) {
 				Menu.change(new PreLoadoutMenu(this));
+			//} else if (selectY == 4) {
+			//	Menu.change(new PreControlMenu(this, false));
 			} else if (selectY == 4) {
-				Menu.change(new PreControlMenu(this, false));
-			} else if (selectY == 5) {
 				Menu.change(new PreOptionsMenu(this, false));
-			} else if (selectY == 6) {
+			} else if (selectY == 5) {
 				System.Environment.Exit(1);
 			}
 		}
+		MenuConfirmSound();
+		DebugVoid();
+	}
 
+	public void render() {
+		float startX = Global.screenW / 2;
+
+		/*
+		string selectionImage = "";
+		if (selectY == 0) selectionImage = "joinserver";
+		else if (selectY == 1) selectionImage = "hostserver";
+		else if (selectY == 2) selectionImage = "vscpu";
+		else if (selectY == 3) selectionImage = "loadout";
+		else if (selectY == 4) selectionImage = "controls";
+		else if (selectY == 5) selectionImage = "options";
+		else if (selectY == 6) selectionImage = "quit";
+		*/
+		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0);
+		DrawWrappers.DrawTextureHUD(Global.textures["mainmenutitle"], 0, 0);
+		Global.sprites["cursor"].drawToHUD(0, startX - 53, startPos + 4 + (selectY * yDistance));
+		//DrawWrappers.DrawTextureHUD(Global.textures["cursor"], startX - 10, startPos - 2 + (selectY * yDistance));
+		//DrawWrappers.DrawTextureHUD(Global.textures[selectionImage], 208, 107);
+		//DrawWrappers.DrawTextureHUD(Global.textures["mainmenubox"], 199, 98);
+
+		Fonts.drawText(FontType.Grey, "JOIN MATCH", startX, optionPos[0].y, alignment: Alignment.Center, selected: selectY == 0);
+		Fonts.drawText(FontType.Grey, "CREATE MATCH", startX, optionPos[1].y, alignment: Alignment.Center,  selected: selectY == 1);
+		Fonts.drawText(FontType.Grey, "VS. CPU", startX, optionPos[2].y, alignment: Alignment.Center, selected: selectY == 2);
+		Fonts.drawText(FontType.Grey, "LOADOUT", startX, optionPos[3].y, alignment: Alignment.Center, selected: selectY == 3);
+		Fonts.drawText(FontType.Grey, "CONTROLS", startX, optionPos[4].y, alignment: Alignment.Center, selected: selectY == 4);
+		Fonts.drawText(FontType.Grey, "SETTINGS", startX, optionPos[5].y, alignment: Alignment.Center, selected: selectY == 5);
+		Fonts.drawText(FontType.Grey, "QUIT", startX, optionPos[6].y, alignment: Alignment.Center, selected: selectY == 6);
+
+		Fonts.drawTextEX(
+			FontType.Grey, "[MUP]/[MDOWN]: Change selection, [OK]: Choose",
+			Global.screenW / 2, Global.screenH - 12, Alignment.Center
+		);
+
+		if (state == 0) {
+			float top = Global.screenH * 0.4f;
+
+			//DrawWrappers.DrawRect(5, top - 20, Global.screenW - 5, top + 60, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
+			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
+			Fonts.drawText(FontType.Grey, "Type in a multiplayer name", Global.screenW / 2, top, Alignment.Center);
+
+			float xPos = Global.screenW * 0.33f;
+			Fonts.drawText(FontType.Grey, playerName, xPos, 20 + top, Alignment.Left);
+			if (blinkTime >= 0.5f) {
+				//float width = Helpers.measureText(TCat.Default, playerName).x;
+				float width = Fonts.measureText(FontType.Grey, playerName);
+				Fonts.drawText(FontType.Grey, "<", xPos + width + 3, 20 + top, Alignment.Left);
+			}
+
+			Fonts.drawText(FontType.Grey, "Press Enter to continue", Global.screenW / 2, 40 + top, Alignment.Center);                                           
+		} else if (state == 1) {
+			float top = Global.screenH * 0.25f;
+			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
+			Fonts.drawText(FontType.Grey, "Loading...", Global.screenW / 2, top, Alignment.Center);
+		} else {
+			string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
+			int offset = 2;
+			
+			Fonts.drawText(FontType.WhiteSmall, Global.shortForkName + " " + Global.versionName, 2, offset);
+
+			if (Global.checksum != Global.prodChecksum) {
+				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 10);
+				offset += 10;
+			}
+			if (Global.radminIP != "") {
+				//Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
+			}
+		}
+	}
+	public void TimeUpdate() {
+		if (Global.input.isPressedMenu(Control.MenuConfirm)) Confirm = true;
+		if (Confirm == true) Time += Global.spf * 2;
+		if (Confirm2 == false) Time2 -= Global.spf * 2;
+		if (Time2 <= 0) {
+			Confirm2 = false;
+			Time2 = 0;
+		}
+	}
+	public void RenderCharacters() {
+		float WD = Global.halfScreenW-46;
+		switch (Options.main.preferredCharacter) {
+			case 0:
+				Global.sprites["menu_megaman"].drawToHUD(0,WD - 42, startPos - 3 + (selectY * yDistance));
+				break;
+			case 1:
+				Global.sprites["menu_zero"].drawToHUD(0,WD - 42, selectY == 5 ? startPos - 8 + (selectY * yDistance) 
+				: startPos - 2 + (selectY * yDistance));
+				break;
+			case 2:
+				Global.sprites["menu_vile"].drawToHUD(0,WD - 42,  selectY == 5 ? startPos - 8 + (selectY * yDistance) 
+				: startPos - 2 + (selectY * yDistance));
+				break;
+			case 3:
+				Global.sprites["menu_axl"].drawToHUD(0,WD - 42, selectY == 5 ? startPos - 8 + (selectY * yDistance) 
+				: startPos + (selectY * yDistance));
+				break;
+			case 4:
+				switch (Options.main.sigmaLoadout.sigmaForm) {
+					case 0:
+						Global.sprites["menu_sigma"].drawToHUD(0,WD - 42, selectY == 5 ? startPos - 16 + (selectY * yDistance) 
+						: startPos + (selectY * yDistance));
+						break;
+					case 1:
+						Global.sprites["menu_sigma"].drawToHUD(1,WD - 42, selectY == 5 ? startPos - 16 + (selectY * yDistance) 
+						: startPos + (selectY * yDistance));
+						break;
+					case 2:
+						Global.sprites["menu_sigma"].drawToHUD(2,WD - 42, selectY == 5 ? startPos - 17 + (selectY * yDistance) 
+						: startPos + (selectY * yDistance));
+						break;
+				}
+				break;
+			default:
+				Global.sprites["menu_megaman"].drawToHUD(0,WD - 42, startPos - 2 + (selectY * yDistance));
+				break;
+		}
+	}
+	public void MenuConfirmSound() {
+		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
+			switch (Options.main.preferredCharacter) {
+				case 0: //X
+					switch (Helpers.randomRange(0,2)) {
+						case 0:
+							Global.playSound("buster3", false);
+							break;
+						case 1:
+							Global.playSound("buster2", false);
+							break;
+						case 2:
+							Global.playSound("buster4", false);
+							break;
+					}
+					break;
+				case 1: //Z
+					switch (Helpers.randomRange(0,2)) {
+						case 0:
+							Global.playSound("buster3X3", false);
+							break;
+						case 1:
+							Global.playSound("zerosaberx3", false);
+							break;
+						case 2:
+							Global.playSound("raijingeki", false);
+							break;
+					}
+					break;
+				case 2: //V
+					switch (Helpers.randomRange(0,2)) {
+						case 0:
+							Global.playSound("frontrunner", false);
+							break;
+						case 1:
+							Global.playSound("rocketPunch", false);
+							break;
+						case 2:
+							Global.playSound("ridepunchX3", false);
+							break;
+					}
+					break;
+				case 3: //Axl
+					switch (Helpers.randomRange(0,2)) {
+						case 0:
+							Global.playSound("assassinate", false);
+							break;
+						case 1:
+							Global.playSound("axlBulletCharged", false);
+							break;
+						case 2:
+							Global.playSound("rocketShoot", false);
+							break;
+					}
+					break;
+				case 4:
+					switch (Options.main.sigmaLoadout.sigmaForm) {
+						case 0: //Commander
+							switch (Helpers.randomRange(0,3)) {
+								case 0:
+									Global.playSound("sigmaSaber", false);
+									break;
+								case 1:
+									Global.playSound("energyBall", false);
+									break;
+								case 2:
+									Global.playSound("warpIn", false);
+									break;
+								case 3:
+									Global.playSound("wolfSigmaThunderX1", false);
+									break;
+							}
+						break;
+						case 1: //Neo
+							switch (Helpers.randomRange(0,2)) {
+								case 0:
+									Global.playSound("sigma2start", false);
+									break;
+								case 1:
+									Global.playSound("sigma2shoot", false);
+									break;
+								case 2:
+									Global.playSound("sigma2slash", false);
+									break;
+							}
+						break;
+						case 2: //Doppma
+							switch (Helpers.randomRange(0,1)) {
+								case 0:
+									Global.playSound("sigma3shoot", false);
+									break;
+								case 1:
+									Global.playSound("kaiserSigmaCharge", false);
+									break;
+							}
+						break;
+					}
+					break;
+				default:
+					Global.playSound("buster3", false);
+					break;
+			}
+		}
+	}
+	public void DebugVoid() {
 		if (Global.debug) {
 			//DEBUGSTAGE
 			if (Global.quickStartOnline) {
@@ -173,75 +403,6 @@ public class MainMenu : IMainMenu {
 				Global.level = new Level(localServer.getLevelData(), SelectCharacterMenu.playerData, localServer.extraCpuCharData, false);
 				Global.level.teamNum = localServer.teamNum;
 				Global.level.startLevel(localServer, false);
-			}
-		}
-	}
-
-	public void render() {
-		float startX = Global.screenW / 2;
-
-		/*
-		string selectionImage = "";
-		if (selectY == 0) selectionImage = "joinserver";
-		else if (selectY == 1) selectionImage = "hostserver";
-		else if (selectY == 2) selectionImage = "vscpu";
-		else if (selectY == 3) selectionImage = "loadout";
-		else if (selectY == 4) selectionImage = "controls";
-		else if (selectY == 5) selectionImage = "options";
-		else if (selectY == 6) selectionImage = "quit";
-		*/
-		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0);
-		DrawWrappers.DrawTextureHUD(Global.textures["mainmenutitle"], 0, 0);
-		Global.sprites["cursor"].drawToHUD(0, startX - 53, startPos + 4 + (selectY * yDistance));
-		//DrawWrappers.DrawTextureHUD(Global.textures["cursor"], startX - 10, startPos - 2 + (selectY * yDistance));
-		//DrawWrappers.DrawTextureHUD(Global.textures[selectionImage], 208, 107);
-		//DrawWrappers.DrawTextureHUD(Global.textures["mainmenubox"], 199, 98);
-
-		Fonts.drawText(FontType.Grey, "JOIN MATCH", startX, optionPos[0].y, alignment: Alignment.Center, selected: selectY == 0);
-		Fonts.drawText(FontType.Grey, "CREATE MATCH", startX, optionPos[1].y, alignment: Alignment.Center,  selected: selectY == 1);
-		Fonts.drawText(FontType.Grey, "VS. CPU", startX, optionPos[2].y, alignment: Alignment.Center, selected: selectY == 2);
-		Fonts.drawText(FontType.Grey, "LOADOUT", startX, optionPos[3].y, alignment: Alignment.Center, selected: selectY == 3);
-		Fonts.drawText(FontType.Grey, "CONTROLS", startX, optionPos[4].y, alignment: Alignment.Center, selected: selectY == 4);
-		Fonts.drawText(FontType.Grey, "SETTINGS", startX, optionPos[5].y, alignment: Alignment.Center, selected: selectY == 5);
-		Fonts.drawText(FontType.Grey, "QUIT", startX, optionPos[6].y, alignment: Alignment.Center, selected: selectY == 6);
-
-		Fonts.drawTextEX(
-			FontType.Grey, "[MUP]/[MDOWN]: Change selection, [OK]: Choose",
-			Global.screenW / 2, Global.screenH - 12, Alignment.Center
-		);
-
-		if (state == 0) {
-			float top = Global.screenH * 0.4f;
-
-			//DrawWrappers.DrawRect(5, top - 20, Global.screenW - 5, top + 60, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
-			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
-			Fonts.drawText(FontType.Grey, "Type in a multiplayer name", Global.screenW / 2, top, Alignment.Center);
-
-			float xPos = Global.screenW * 0.33f;
-			Fonts.drawText(FontType.Grey, playerName, xPos, 20 + top, Alignment.Left);
-			if (blinkTime >= 0.5f) {
-				//float width = Helpers.measureText(TCat.Default, playerName).x;
-				float width = Fonts.measureText(FontType.Grey, playerName);
-				Fonts.drawText(FontType.Grey, "<", xPos + width + 3, 20 + top, Alignment.Left);
-			}
-
-			Fonts.drawText(FontType.Grey, "Press Enter to continue", Global.screenW / 2, 40 + top, Alignment.Center);                                           
-		} else if (state == 1) {
-			float top = Global.screenH * 0.25f;
-			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
-			Fonts.drawText(FontType.Grey, "Loading...", Global.screenW / 2, top, Alignment.Center);
-		} else {
-			string versionText = Global.shortForkName + " v" + Global.version + " " + Global.subVersionShortName;
-			int offset = 2;
-			
-			Fonts.drawText(FontType.WhiteSmall, Global.shortForkName + " " + Global.versionName, 2, offset);
-
-			if (Global.checksum != Global.prodChecksum) {
-				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 10);
-				offset += 10;
-			}
-			if (Global.radminIP != "") {
-				//Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
 			}
 		}
 	}

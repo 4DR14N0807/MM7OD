@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SFML.Graphics;
@@ -275,6 +275,9 @@ public class CrackedWall : Actor, IDamagable {
 	}
 
 	public void move(Point deltaPos) {
+		if (deltaPos == Point.zero) {
+			return;
+		}
 		Global.level.removeFromGrid(this);
 		incPos(deltaPos);
 		Global.level.addToGrid(this);
@@ -310,9 +313,9 @@ public class CrackedWall : Actor, IDamagable {
 		if (projId == (int)ProjIds.BlastLauncher) return null;
 		if (projId == (int)ProjIds.BlastLauncherSplash) return null;
 		if (projId == (int)ProjIds.SpinWheel) return 1;
-		if (projId == (int)ProjIds.TunnelFang) return null;
-		if (projId == (int)ProjIds.TunnelFang2) return null;
-		if (projId == (int)ProjIds.TunnelFangCharged) return null;
+		if (projId == (int)ProjIds.TornadoFang) return null;
+		if (projId == (int)ProjIds.TornadoFang2) return null;
+		if (projId == (int)ProjIds.TornadoFangCharged) return null;
 		if (projId == (int)ProjIds.TriadThunderQuake) return null;
 		if (projId == (int)ProjIds.Headbutt && cw?.flag == 1) return 12;
 		if (projId == (int)ProjIds.VileMissile) return null;
@@ -431,6 +434,9 @@ public class KillZone : Geometry {
 	}
 
 	public void move(Point deltaPos) {
+		if (deltaPos == Point.zero) {
+			return;
+		}
 		Global.level.removeFromGrid(this);
 		for (int i = 0; i < collider._shape.points.Count; i++) {
 			Point point = collider._shape.points[i];

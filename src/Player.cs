@@ -13,7 +13,8 @@ public partial class Player {
 	public Character lastCharacter;
 	public bool ownedByLocalPlayer;
 	public int? awakenedCurrencyEnd;
-	public float fgMoveAmmo = 32;
+	public float fgMoveAmmo = 1920;
+	public float fgMoveMaxAmmo = 1920;
 	public bool isDefenderFavoredNonOwner;
 
 	public bool isDefenderFavored {
@@ -147,7 +148,24 @@ public partial class Player {
 	public bool isBass { get { return charNum == (int)CharIds.Bass; } }
 
 
-	public float health;
+	public float healthBackup;
+	public float _health;
+	public float health {
+		get {
+			if (!ownedByLocalPlayer) {
+				return _health;
+			}
+			if (healthBackup != _health * curMul) {
+				throw new OverflowException();
+			}
+			return _health;
+		}
+		set {
+			_health = value;
+			healthBackup = value * curMul;
+		}
+	}
+
 	public float maxHealth;
 	public bool isDead {
 		get {
@@ -282,12 +300,26 @@ public partial class Player {
 	};
 	// Getter functions.
 	public int heartTanks {
-		get { return charHeartTanks[isDisguisedAxl ? 3 : charNum]; }
-		set { charHeartTanks[isDisguisedAxl ? 3 : charNum] = value; }
+		get {
+			if (!ownedByLocalPlayer) {
+				return charHeartTanks[isDisguisedAxl ? 3 : charNum];
+			}
+			if (charHeartTanksBackup.GetValueOrDefault(isDisguisedAxl ? 3 : charNum)
+				!=
+				charHeartTanks[isDisguisedAxl ? 3 : charNum] * curMul
+			) {
+				throw new OverflowException();
+			}
+			return charHeartTanks[isDisguisedAxl ? 3 : charNum];
+		}
+		set {
+			charHeartTanks[isDisguisedAxl ? 3 : charNum] = value;
+			charHeartTanksBackup[isDisguisedAxl ? 3 : charNum] = value * curMul;
+		}
 	}
 
 	// Currency
-	public const int maxCharCurrencyId = 10;
+	public const int maxCharCurrencyId = 12;
 	public static int curMul = Helpers.randomRange(2, 8);
 	public int[] charCurrencyBackup = new int[maxCharCurrencyId];
 	public int[] charCurrency = new int[maxCharCurrencyId];
@@ -300,7 +332,7 @@ public partial class Player {
 				!=
 				charCurrency[isDisguisedAxl ? 3 : charNum]
 			) {
-				throw new Exception("Error, corrupted currency value");
+				throw new OverflowException();
 			}
 			return charCurrency[isDisguisedAxl ? 3 : charNum];
 		}
@@ -1442,7 +1474,7 @@ public partial class Player {
 		character.cleanupBeforeTransform();
 		character = retChar;
 		if (weapon != null) {
-			weapon.shootTime = 0.25f;
+			weapon.shootCooldown = 0.25f;
 		}
 
 		if (character is Zero zero) {
@@ -1729,7 +1761,10 @@ public partial class Player {
 		if (isRock) fillETank(0);
 
 		int toAdd = isKiller ? 10 : 5;
-		currency += toAdd;
+		
+		if (Global.level?.server?.customMatchSettings != null) {
+			currency += Global.level.server.customMatchSettings.currencyGain;
+		} else currency+= toAdd;
 	}
 
 	public int getStartCurrency() {
@@ -1760,11 +1795,15 @@ public partial class Player {
 		if (Global.level.isTraining() || Global.level.isRace()) {
 			return 2;
 		}
-		if (Global.level.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
-			return 8;
-		}
-		if (Global.level.gameMode is KingOfTheHill) {
-			return 7;
+		if (Global.level?.server?.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.respawnTime;
+		} else {
+			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
+				return 8;
+			}
+			if (Global.level?.gameMode is KingOfTheHill) {
+				return 7;
+			}
 		}
 		return 5;
 	}

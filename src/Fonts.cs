@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,24 +11,28 @@ public class Fonts {
 	public static void drawTextEX(
 		FontType fontType, string textStr, float x, float y,
 		Alignment alignment = Alignment.Left, bool isWorldPos = false, bool selected = false,
-		FontType? selectedFont = null, long depth = 0
+		FontType? selectedFont = null, long depth = 0, byte? alpha = null, Color? color = null
 	) {
 		drawText(
 			fontType, Helpers.controlText(textStr), x, y,
 			alignment, isWorldPos, selected,
-			selectedFont, depth
+			selectedFont, depth, alpha, color
 		);
 	}
 
 	public static void drawText(
 		FontType fontType, string textStr, float x, float y,
 		Alignment alignment = Alignment.Left, bool isWorldPos = false, bool selected = false,
-		FontType? selectedFont = null, long depth = ZIndex.HUD, byte? alpha = null, bool isLoading = false
+		FontType? selectedFont = null, long depth = ZIndex.HUD, byte? alpha = null, Color? color = null,
+		bool isLoading = false
 	) {
 		// To prevent crashes.
 		if (string.IsNullOrEmpty(textStr)) { return; }
 		if (isWorldPos && Global.level == null) { return; }
 		// Get the font propieties.
+		if (color == null) {
+			color = Color.White;
+		}
 		string[] textLines = textStr.Split('\n');
 		string fontStr = "";
 		if (!selected) {
@@ -111,6 +115,7 @@ public class Fonts {
 				}
 				// Add to array.
 				DrawWrappers.addToVertexArray(batchDrawable, textSprite);
+				textSprite.Dispose();
 			}
 		}
 		// For the loading screen.
@@ -125,7 +130,7 @@ public class Fonts {
 				DrawWrappers.walDrawObjects[depth] = new DrawLayer();
 			}
 			drawLayer = DrawWrappers.walDrawObjects[depth];
-			drawLayer.oneOffs.Add(new DrawableWrapper(null, batchDrawable, Color.White));
+			drawLayer.oneOffs.Add(new DrawableWrapper(null, batchDrawable, color.Value));
 		} else {
 			if (!deferred) {
 				DrawWrappers.drawToHUD(batchDrawable);

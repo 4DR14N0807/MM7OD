@@ -160,7 +160,7 @@ public class Options {
 
 		hyperChargeSlot = Helpers.clamp(hyperChargeSlot, 0, 2);
 		sigmaWeaponSlot = Helpers.clamp(sigmaWeaponSlot, 0, 2);
-		preferredCharacter = Helpers.clamp(preferredCharacter, 5, 5);
+		preferredCharacter = Helpers.clamp(preferredCharacter, 5, 7);
 
 		xLoadout.validate();
 		zeroLoadout.validate();

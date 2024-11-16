@@ -11,6 +11,7 @@ public class SARocketPunch : Weapon {
 		index = (int)RockWeaponIds.SARocketPunch;
 		killFeedIndex = 0;
 		weaponSlotIndex = (int)RockWeaponSlotIds.SARocketPunch;
+		hasCustomAnim = true;
 	}
 
 		public override bool canShoot(int chargeLevel, Player player) {

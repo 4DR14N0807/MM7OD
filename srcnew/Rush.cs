@@ -161,15 +161,29 @@ public class Rush : Actor, IDamagable {
 
 		if (rushState is RushWarpIn && other.isGroundHit()) changeState(new RushIdle());
 
-		/*if (chr == null || chr.charState is Die) return;
+		if (chr == null || chr.charState is Die) return;
 
-		if (chr == netOwner.character && chr.charState is Fall &&
-			chr != null && !usedCoil && rushState is RushIdle) {
-			changeState(new RushCoil());
-			chr.vel.y = -chr.getJumpPower() * 1.75f;
-			chr.changeState(new Jump(), true);
-			usedCoil = true;
-		}*/
+		if (chr == netOwner?.character && chr.charState is Fall && chr != null ) {
+			
+			//Rush Coil detection
+			if (!usedCoil && rushState is RushIdle && type == 0) {
+				changeState(new RushCoil());
+				chr.vel.y = -chr.getJumpPower() * 1.5f;
+				chr.changeState(new Jump(), true);
+				chr.rushWeapon.addAmmo(-4, chr.player);
+				usedCoil = true;
+			}
+			//Rush Jet detection
+			if (
+				rushState is RushJetState && chr.canRideRushJet() && 
+				chr.charState is not RushJetRide && chr.charState.normalCtrl
+			) {
+				//chr.changeState(new RushJetRide(), true);
+				//chr.grounded = true;
+			}
+			
+		}
+
 	}
 
 	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {

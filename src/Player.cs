@@ -1183,27 +1183,25 @@ public partial class Player {
 		if (charNum == (int)CharIds.Bass) maxHealth -= evilEnergyStacks * hpPerStack;
 		health = maxHealth;
 
-		if (character == null) {
-			if (charNum == (int)CharIds.Blues) {
-				character = new Blues(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else if (charNum == (int)CharIds.Bass) {
-				character = new Bass(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			} else {
-				newCharNum = (int)CharIds.Rock;
-				charNum = newCharNum;
-				character = new Rock(
-					this, pos.x, pos.y, xDir,
-					false, charNetId, ownedByLocalPlayer
-				);
-			}
-			lastCharacter = character;
+		if (charNum == (int)CharIds.Rock) {
+			character = new Rock(
+				this, pos.x, pos.y, xDir,
+				false, charNetId, ownedByLocalPlayer
+			);
+		} else if (charNum == (int)CharIds.Blues) {
+			character = new Blues(
+				this, pos.x, pos.y, xDir,
+				false, charNetId, ownedByLocalPlayer
+			);
+		} else if (charNum == (int)CharIds.Bass) {
+			character = new Bass(
+				this, pos.x, pos.y, xDir,
+				false, charNetId, ownedByLocalPlayer
+			);
+		} else {
+			throw new Exception("Error: Non-valid char ID: " + charNum);
 		}
+
 		lastCharacter = character;
 
 		if (isAI) {

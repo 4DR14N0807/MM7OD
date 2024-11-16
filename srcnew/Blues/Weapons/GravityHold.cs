@@ -22,10 +22,10 @@ public class GravityHold : Weapon {
 	}
 
 	public override void shoot(Character character, params int[] args) {
-		if (character.charState is not LadderClimb) {
+		if (character.charState is not LadderClimb lc) {
 			character.changeState(new BluesGravityHold(), true);
 		} else {
-			character.changeState(new BluesShootAltLadder(this), true);
+			character.changeState(new BluesShootAltLadder(this, lc.ladder), true);
 		}
 	}
 }
@@ -52,6 +52,7 @@ public class GravityHoldProj : Projectile {
 		shouldShieldBlock = false;
 		destroyOnHit = false;
 		midR = maxR / 2;
+		netcodeOverride = NetcodeModel.FavorDefender;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);

@@ -157,35 +157,18 @@ public class ShootAlt : CharState {
 
 		if (stateWeapon is JunkShield) {
 			if (!fired && character.frameIndex == 2) {
+				stateWeapon.getProjs(character, new int[] {});
 				fired = true;
-				new JunkShieldProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), true);
 			}
 		} else if (stateWeapon is ScorchWheel) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 				fired = true;
-
-				if (character.isUnderwater()) {
-					new UnderwaterScorchWheelProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
-				} else {
-					new ScorchWheelSpawn(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
-				}
+				stateWeapon.getProjs(character, new int[] {});
 			}
 		} else if (stateWeapon is WildCoil) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
-
 				fired = true;	
-				Point shootPos = character.getFirstPOI() ?? character.getCenterPos();
-				Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
-
-				if (chargeLv >= 2) {
-					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
-					character.playSound("buster3", sendRpc: true);
-				} else {
-					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
-					character.playSound("buster2", sendRpc: true);
-				}
+				stateWeapon.getProjs(character , new int[] {chargeLv});
 			}
 		} else {
 			if (!fired && character.frameIndex >= 6) {
@@ -210,13 +193,15 @@ public class ShootAltLadder : CharState {
 	Weapon ladderWeapon;
 	bool fired;
 	int chargeLv;
+	Ladder ladder;
 
 	//Adrián: This is used for weapons with different shoot anims (Wild Coil, Junk Shield, etc) while being in a ladder.
-	public ShootAltLadder(Weapon ladderWeapon, int chargeLv, bool underwater = false) : 
+	public ShootAltLadder(Ladder ladder, Weapon ladderWeapon, int chargeLv, bool underwater = false) : 
 	base(underwater ? "ladder_shoot_swell" : "ladder_shoot2") {
 		normalCtrl = false;
 		this.ladderWeapon = ladderWeapon;
 		this.chargeLv = chargeLv;
+		this.ladder = ladder;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -227,44 +212,25 @@ public class ShootAltLadder : CharState {
 	public override void update() {
 		base.update();
 
-		var ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
-		var midX = ladders[0].otherCollider.shape.getRect().center().x;
+		var midX = ladder.collider.shape.getRect().center().x;
 		float offset = character.xDir < 0 ? 20 : 0;
 		Point centerPos = character.getCenterPos();
 		centerPos.x += offset;
 
 		if (ladderWeapon is JunkShield) {
 			if (!fired && character.frameIndex == 1) {
+				ladderWeapon.getProjs(character, new int[] {});
 				fired = true;
-				new JunkShieldProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), true);
 			}
 		} else if (ladderWeapon is ScorchWheel) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 				fired = true;
-				character.getShootXDir();
-
-				if (character.isUnderwater()) {
-					new UnderwaterScorchWheelProj(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
-				} else {
-					new ScorchWheelSpawn(character.getCenterPos(), character.getShootXDir(), player, player.getNextActorNetId(true), rpc: true);
-				}
+				ladderWeapon.getProjs(character, new int[] {});
 			}
 		} else if (ladderWeapon is WildCoil) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
-
 				fired = true;
-				Point shootPos = character.getFirstPOI() ?? character.getCenterPos();
-				Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
-
-				if (chargeLv >= 2) {
-					new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-					new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
-					character.playSound("buster3", sendRpc: true);
-				} else {
-					new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-					new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
-					character.playSound("buster2", sendRpc: true);
-				}
+				ladderWeapon.getProjs(character , new int[] {chargeLv});
 			}
 		} else {
 			if (!fired && character.frameIndex >= 6) {
@@ -272,7 +238,7 @@ public class ShootAltLadder : CharState {
 			}
 		}
 
-		if (character.isAnimOver()) character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
+		if (character.isAnimOver()) character.changeState(new LadderClimb(ladder, midX), true);
 	}
 }
 

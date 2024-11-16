@@ -111,7 +111,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 			Helpers.menuLeftRightInc(ref cursors[selCursorIndex].index, 0, 2, playSound: true);
 		}
 
-		Helpers.menuUpDown(ref selCursorIndex, 0, 3);
+		Helpers.menuUpDown(ref selCursorIndex, 0, 2);
 
 		//Adrián: Random Loadout feature (via Loadout menu)
 		
@@ -198,7 +198,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 		float leftArrowPos = startX2 - 15;
 
 		Global.sprites["cursor"].drawToHUD(0, startX, startY + (selCursorIndex * wepH));
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 3; i++) {
 			float yPos = startY - 6 + (i * wepH);
 
 			if (Global.frameCount % 60 < 30) {
@@ -211,7 +211,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 				);
 			}
 
-			if (i == 3) {
+			/* if (i == 3) {
 				Fonts.drawText(FontType.BlueMenu, "RUSH ", 40, yPos, selected: selCursorIndex == i);
 
 				for (int j = 0; j < 3; j++) {
@@ -226,7 +226,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 					}
 				}
 				break;
-			}
+			} */
 
 			Fonts.drawText(FontType.BlueMenu,"Slot " + (i + 1).ToString(), 40, yPos, selected: selCursorIndex == i);
 

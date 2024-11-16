@@ -45,6 +45,7 @@ public class Sprite {
 	public List<Trail> lastTwoBkTrailDraws = new List<Trail>();
 
 	internal static Texture superMegaManBitmap = null!;
+	internal static Texture superMegaManArmlessBitmap = null!;
 	internal static Texture breakManBitmap = null!;
 
 	public Sprite(string spritename) {
@@ -152,8 +153,8 @@ public class Sprite {
 			if (chara.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
-			if (animData.textureName == "rock_default" && chara is Rock { hasSuperAdaptor: true }) {
-				bitmap = Sprite.superMegaManBitmap;
+			if (animData.textureName == "rock_default" && chara is Rock rock && rock.hasSuperAdaptor) {
+				bitmap = rock.armless ? Sprite.superMegaManArmlessBitmap : Sprite.superMegaManBitmap;
 			}
 			else if (animData.textureName == "blues_default" && chara is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
@@ -212,6 +213,8 @@ public class Sprite {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_blue");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeRed)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_red");
+			} else if (renderEffects.Contains(RenderEffectType.NCrushCharge)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargeNCrush");
 			}
 			if (shader != null) {
 				shaders.Add(shader);
@@ -783,6 +786,8 @@ public class AnimData {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_blue");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeRed)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_red");
+			} else if (renderEffects.Contains(RenderEffectType.NCrushCharge)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargeNCrush");
 			}
 			if (shader != null) {
 				shaders.Add(shader);

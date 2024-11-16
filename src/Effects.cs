@@ -92,7 +92,7 @@ public class ChargeEffect {
 				part.pos.y -= Global.speedMul * 4;
 			}
 			chargePart = chargeLevel switch {
-				>2 => "charge_part_1",
+				>2 => "charge_part_2",
 				_ => "charge_part_1"
 			};
 			if (chargeType == 1) {
@@ -101,6 +101,8 @@ public class ChargeEffect {
 					>=3 => "charge_part_2",
 					_ => "charge_part_1"
 				};
+			} else if (chargeType == 2) {
+				chargePart = "noise_crush_charge_part";
 			}
 			part.changeSprite(chargePart, true);
 			part.time += Global.spf * 20;

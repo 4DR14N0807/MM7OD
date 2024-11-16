@@ -109,7 +109,7 @@ public class HardKnuckleProj : Projectile {
 		if (deflected) {
 			return;
 		}
-		new Anim(pos, "hard_knuckle_proj_hit", xDir, netId, true, true);
+		new Anim(pos, "hard_knuckle_proj_hit", xDir, damager.owner.getNextActorNetId(), true, false);
 
 		vel.x = xDir * (-2 * 60);
 		if (canControl) {

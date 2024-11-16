@@ -120,9 +120,9 @@ public class MainMenu : IMainMenu {
 		Fonts.drawText(FontType.Grey, "CREATE MATCH", startX, optionPos[1].y, alignment: Alignment.Center,  selected: selectY == 1);
 		Fonts.drawText(FontType.Grey, "VS. CPU", startX, optionPos[2].y, alignment: Alignment.Center, selected: selectY == 2);
 		Fonts.drawText(FontType.Grey, "LOADOUT", startX, optionPos[3].y, alignment: Alignment.Center, selected: selectY == 3);
-		Fonts.drawText(FontType.Grey, "CONTROLS", startX, optionPos[4].y, alignment: Alignment.Center, selected: selectY == 4);
-		Fonts.drawText(FontType.Grey, "SETTINGS", startX, optionPos[5].y, alignment: Alignment.Center, selected: selectY == 5);
-		Fonts.drawText(FontType.Grey, "QUIT", startX, optionPos[6].y, alignment: Alignment.Center, selected: selectY == 6);
+		Fonts.drawText(FontType.Grey, "OPTIONS", startX, optionPos[4].y, alignment: Alignment.Center, selected: selectY == 4);
+		//Fonts.drawText(FontType.Grey, "SETTINGS", startX, optionPos[5].y, alignment: Alignment.Center, selected: selectY == 5);
+		Fonts.drawText(FontType.Grey, "QUIT", startX, optionPos[5].y, alignment: Alignment.Center, selected: selectY == 5);
 
 		Fonts.drawTextEX(
 			FontType.Grey, "[MUP]/[MDOWN]: Change selection, [OK]: Choose",
@@ -311,7 +311,7 @@ public class MainMenu : IMainMenu {
 					}
 					break;
 				default:
-					Global.playSound("buster3", false);
+					//Global.playSound("buster3", false);
 					break;
 			}
 		}

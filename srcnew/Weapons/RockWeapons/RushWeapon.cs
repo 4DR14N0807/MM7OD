@@ -10,7 +10,9 @@ public class RushWeapon : Weapon {
 	public RushWeapon() : base() {
 		maxAmmo = 28;
 		ammo = maxAmmo;
+		weaponSlotIndex = (int)RockWeaponSlotIds.RushSearch;
 		displayName = "";
+		hasCustomAnim = true;
 	}
 	public override float getAmmoUsage(int chargeLevel) {
 		return 0;
@@ -21,13 +23,15 @@ public class RushWeapon : Weapon {
 		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
 		Player player = character.player;
+		int type = 0;
+		if (player.input.isHeld(Control.Up, player)) type = 1;
+		else if (player.input.isHeld(Control.Down, player)) type = 2;
 
 		if (player.character is Rock rock) {
-			if (!rock.canCallRush()) return;
+			if (!rock.canCallRush(type)) return;
 			if (rock.rush != null) {
 				rock.rush.changeState(new RushWarpOut());
 			} else {
-				int type = rock.rushWeaponIndex;
 				rock.rush = new Rush(shootPos, player, xDir, player.getNextActorNetId(), true, type, true);
 			}
 		}

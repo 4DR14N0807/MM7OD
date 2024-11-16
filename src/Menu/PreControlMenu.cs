@@ -27,11 +27,11 @@ public class PreControlMenu : IMainMenu {
 		if (Global.input.isPressedMenu(Control.MenuLeft)) {
 			cursorToCharNum[selArrowPosY]--;
 			if (cursorToCharNum[selArrowPosY] < -2) {
-				cursorToCharNum[selArrowPosY] = 6;
+				cursorToCharNum[selArrowPosY] = 2;
 			}
 		} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 			cursorToCharNum[selArrowPosY]++;
-			if (cursorToCharNum[selArrowPosY] > 6) {
+			if (cursorToCharNum[selArrowPosY] > 2) {
 				cursorToCharNum[selArrowPosY] = -2;
 			}
 		}
@@ -60,7 +60,7 @@ public class PreControlMenu : IMainMenu {
 		}
 		if (rawCharNum == 5) {
 			charNum = 4;
-		}
+		} 
 	}
 
 	public string getLeftRightStr(string str) {
@@ -123,9 +123,9 @@ public class PreControlMenu : IMainMenu {
 		return charNum switch {
 			-2 => "(Menu)",
 			-1 => "(All)",
-			0 => "(X)",
-			1 => "(Zero)",
-			2 => "(Vile)",
+			0 => "(Rockman)",
+			1 => "(Protoman)",
+			2 => "(Bass)",
 			3 => "(Directional Axl)",
 			4 => "(Cursor Axl)",
 			5 => "(Sigma)",

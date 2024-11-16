@@ -27,8 +27,8 @@ public class PowerStone : Weapon {
 		(character as Blues)?.resetCoreCooldown(fireRate + 10);
 
 		if (args[1] == 1) {
-			if (character.charState is not LadderClimb) character.changeState(new BluesShootAlt(this), true);
-			else character.changeState(new BluesShootAltLadder(this), true);
+			if (character.charState is not LadderClimb lc) character.changeState(new BluesShootAlt(this), true);
+			else character.changeState(new BluesShootAltLadder(this, lc.ladder), true);
 		} else if (args[1] == 2) {
 			new PowerStoneProj(shootPos, xDir, character.player, 0, character.player.getNextActorNetId(), true);
 			new PowerStoneProj(shootPos, xDir, character.player, 1, character.player.getNextActorNetId(), true);

@@ -219,6 +219,7 @@ public class RushJetState : RushState {
 		rush.globalCollider = rush.getJetCollider();
 		rush.useGravity = false;
 		rock = rush.character as Rock;
+		Global.level.modifyObjectGridGroups(rush, isActor: true, isTerrain: true);
 	}
 
 	public override void onExit(RushState newState) {
@@ -432,6 +433,9 @@ public class RushSearchState : RushState {
 		}
 
 		Fonts.drawText(font, text, Global.halfScreenW, 64, Alignment.Center);
+		Global.level.gameMode.setHUDErrorMessage(
+			player, text, false
+		);
 	}
 }
 
@@ -516,7 +520,7 @@ public class Trash : Anim {
 	public override void update() {
 		base.update();
 		//add a fade anim on destroy
-		if(time >= 2){
+		if(time >= 2 || checkCollision(0, 1) != null){
 			destroySelf();
 			new Anim(pos,"dust", xDir, netId, true, sendRpc: true);
 		}

@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class SlashClawWeapon : Weapon {
 	public SlashClawWeapon(Player player) : base() {
-		damager = new Damager(player, 3, 0, 0.5f);
+		damager = new Damager(player, 2, 0, 0.25f);
 		index = (int)RockWeaponIds.SlashClaw;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.SlashClaw;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -14,16 +14,16 @@ public class SlashClawWeapon : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 18;
 		ammo = maxAmmo;
-		fireRate = 60;
-		description = new string[] { "Fast melee attack, requires proper spacing.", "No tiene flinch." };
+		fireRate = 45;
+		description = new string[] { "Fast melee attack, able to pierce shields.", "No tiene flinch." };
 	}
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb) {
-			character.changeState(new SlashClawLadder(), true);
+		if (character.charState is LadderClimb lc) {
+			character.changeState(new SlashClawLadder(lc.ladder), true);
 		} else {
 			character.changeState(new SlashClawState(), true);
 		}
@@ -68,8 +68,12 @@ public class SlashClawState : CharState {
 
 
 public class SlashClawLadder : CharState {
-	public SlashClawLadder() : base("ladder_slashclaw") {
+
+	public Ladder ladder;
+
+	public SlashClawLadder(Ladder ladder) : base("ladder_slashclaw") {
 		normalCtrl = false;
+		this.ladder = ladder;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -79,9 +83,8 @@ public class SlashClawLadder : CharState {
 	}
 
 	public override void update() {
-		var ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
-		var midX = ladders[0].otherCollider.shape.getRect().center().x;
+		var midX = ladder.collider.shape.getRect().center().x;
 
-		if (character.isAnimOver()) character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
+		if (character.isAnimOver()) character.changeState(new LadderClimb(ladder, midX), true);
 	}
 }

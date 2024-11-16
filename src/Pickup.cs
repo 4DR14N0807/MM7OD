@@ -192,8 +192,7 @@ public class LargeBoltPickup : Pickup {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 
-		bool isColliding = other.isGroundHit() || other.isCeilingHit() 
-			|| other.isSideWallHit();
+		bool isColliding = Global.level.checkTerrainCollisionOnce(this, 0, 1) != null;
 
 		if (isColliding && isFalling) {
 			stopMoving();
@@ -224,8 +223,7 @@ public class SmallBoltPickup : Pickup {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 
-		bool isColliding = other.isGroundHit() || other.isCeilingHit() 
-			|| other.isSideWallHit();
+		bool isColliding = Global.level.checkTerrainCollisionOnce(this, 0, 1) != null;
 
 		if (isColliding && isFalling) {
 			stopMoving();

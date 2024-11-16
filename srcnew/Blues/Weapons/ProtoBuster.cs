@@ -81,7 +81,7 @@ public class ProtoBusterAngledProj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreateAngle(pos, player, netId, byteAngle, (byte)type);
+			rpcCreateByteAngle(pos, player, netId, byteAngle, (byte)type);
 		}
 	}
 

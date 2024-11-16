@@ -226,8 +226,8 @@ public class Blues : Character {
 		return grounded && overheating;
 	}
 
-	public void destroyStarCrash() {
-		if (starCrash != null) {
+	public void destroyStarCrash(bool destroy = true) {
+		if (starCrash != null && destroy) {
 			starCrash.destroySelf();
 		}
 		starCrash = null;
@@ -365,7 +365,7 @@ public class Blues : Character {
 				if (overdriveAmmoDecreaseCooldown <= 0) { overdriveAmmoDecreaseCooldown = 0; }
 			};
 		} else {
-			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
+			if (starCrash == null) Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
 		}
 		if (coreAmmoDecreaseCooldown <= 0 && !overdrive) {
@@ -433,7 +433,7 @@ public class Blues : Character {
 		}
 
 		// For the shooting animation.
-		if (shootAnimTime > 0) {
+		if (shootAnimTime > 0 || charState is LadderClimb) {
 			shootAnimTime -= Global.spf;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;

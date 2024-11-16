@@ -206,15 +206,16 @@ public class ControlMenu : IMainMenu {
 
 		string subtitle = charNum switch {
 			-2 => "MENU CONTROLS",
-			0 => "X CONTROLS",
-			1 => "ZERO CONTROLS",
-			2 => "VILE CONTROLS",
+			0 => "ROCKMAN CONTROLS",
+			1 => "PROTOMAN CONTROLS",
+			2 => "BASS CONTROLS",
 			3 when (axlAimMode == 0) => "AXL CONTROLS (CURSOR)",
 			3 when (axlAimMode == 1) => "AXL CONTROLS (ANGULAR)",
 			3 => "AXL CONTROLS (DIRECTIONAL)",
 			4 => "SIGMA CONTROLS",
 			5 => "ROCKMAN CONTROLS",
-			6 => "ROCKMAN CONTROLS",
+			6 => "PROTOMAN CONTROLS",
+			7 => "BASS CONTROLS",
 			_ => "GENERAL CONTROLS"
 		};
 		Fonts.drawText(FontType.BlueMenu, subtitle, Global.halfScreenW, 14, Alignment.Center);

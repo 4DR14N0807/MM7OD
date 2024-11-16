@@ -43,12 +43,14 @@ public class DangerWrap : Weapon {
 		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
 		Player player = character.player;
+		int input = player.input.getYDir(player);
+		if (player.input.getXDir(player) != 0) input = 2;
 
-		if (player.input.isHeld(Control.Down, player)) {
-
-			dangerMines.Add(new DangerWrapMineProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true));
+		if (input == 1) {
+			dangerMines.Add(
+				new DangerWrapMineProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true));
 		} else {
-			new DangerWrapBubbleProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
+			new DangerWrapBubbleProj(shootPos, xDir, player, 0, player.getNextActorNetId(), input, true);
 		}
 		player.character.playSound("buster2", sendRpc: true);
 	}
@@ -58,15 +60,15 @@ public class DangerWrap : Weapon {
 public class DangerWrapBubbleProj : Projectile, IDamagable {
 
 	public int type;
+	int input;
 	public float health = 1;
 	public float heightMultiplier = 1f;
 	private bool spawnedBomb = false;
 	Anim? bomb;
 
 	public DangerWrapBubbleProj(
-		Point pos, int xDir,
-		Player player, int type, ushort netProjId,
-		bool rpc = false
+		Point pos, int xDir, Player player, int type, 
+		ushort netProjId, int input = 0, bool rpc = false
 	) : base(
 		DangerWrap.netWeapon, pos, xDir, 0, 0,
 		player, "danger_wrap_start", 0, 0.5f, netProjId,
@@ -79,16 +81,17 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 		useGravity = false;
 		canBeLocal = false;
 		this.type = type;
+		this.input = input;
 
 		if (type == 1) {
 			vel.x = 60 * xDir;
 			changeSprite("danger_wrap_bubble", false);
 			fadeSprite = "generic_explosion";
 
-			if (player.input.isHeld(Control.Up, player)) {
+			if (input == -1) {
 				vel.x /= 7.5f;
 				heightMultiplier = 1.6f;
-			} else if (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player)) {
+			} else if (input == 2) {
 				vel.x *= 3f;
 				heightMultiplier = 0.65f;
 			}
@@ -123,7 +126,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 			time = 0;
 			new DangerWrapBubbleProj(
 				pos, xDir, damager.owner, 1,
-				damager.owner.getNextActorNetId(true), rpc: true
+				damager.owner.getNextActorNetId(true), input, rpc: true
 			);
 			destroySelfNoEffect();
 		}
@@ -147,8 +150,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 	}
 
 	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
-		health -= damage;
-		if (health <= 0) {
+		if (damage > 0) {
 			destroySelf();
 		}
 	}
@@ -460,7 +462,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 
 		if (bomb != null) {
 			bomb.changePos(getCenterPos());
-			if(bubbleFrames >= 120) bomb.changeSprite("danger_wrap_bomb_active", true);
+			if(bubbleFrames >= 120) bomb.changeSprite("danger_wrap_bomb_active", false);
 		}
 
 		if (bubbleFrames >= 180 && character.dWrapDamager != null) {

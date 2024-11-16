@@ -11,7 +11,7 @@ public class JunkShield : Weapon {
 	public static JunkShield netWeapon = new JunkShield();
 	public JunkShield() : base() {
 		shootSounds = new string[] { "", "", "", "" };
-		fireRate = 60;
+		fireRate = 75;
 		index = (int)RockWeaponIds.JunkShield;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.JunkShield;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -25,130 +25,202 @@ public class JunkShield : Weapon {
 	public override bool canShoot(int chargeLevel, Player player) {
 		Rock? rock = player.character as Rock;
 
-		return rock?.junkShield == null && base.canShoot(chargeLevel, player);
+		return rock?.junkShieldProjs.Count <= 0 && base.canShoot(chargeLevel, player);
 	}
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb) {
-				character.changeState(new ShootAltLadder(this, chargeLevel), true);
+		if (character.charState is LadderClimb lc) {
+				character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
 		} else {
 			character.changeState(new ShootAlt(this, chargeLevel), true);
+		}
+	}
+
+	public override void getProjs(Character character, params int[] args) {
+		for (int i = 0; i < 3; i++) {
+			new JunkShieldMagnet(
+				character.getCenterPos(), character.xDir, character,
+				character.player.getNextActorNetId(), i * 85	
+			);
+		}
+	}
+}
+
+public class JunkShieldMagnet : Anim {
+
+	Character character;
+	float timer;
+	float startAng;
+	float ang;
+	float radius;
+	bool once;
+
+	public JunkShieldMagnet(
+		Point pos, int xDir, Character character, ushort? netId, float ang
+	) : base(
+		pos, "junk_shield_magnet", xDir, netId, false, true
+	) {
+		this.character = character;
+		this.ang = ang;
+		startAng = ang;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (radius < 30) radius += 0.5f;
+		ang += 5;
+
+		changePos(character.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
+
+		timer += Global.speedMul;
+		if (timer >= 30 && !once && startAng == 0) {
+			once = true;
+			for (int i = 0; i < 8; i++) {
+				new JunkShieldPiece(
+					character.getCenterPos(), character.xDir, character,
+					character.player.getNextActorNetId(), i * 32, this
+				);
+			};
+		} else if (timer >= 60) destroySelf();
+	}
+}
+
+public class JunkShieldPiece : Anim {
+
+	Character character;
+	Anim magnet;
+	float startAng;
+	float ang;
+	float radius = 80;
+	public JunkShieldPiece(
+		Point pos, int xDir, Character character, ushort? netId, float ang, Anim magnet
+	) : base(
+		pos, "junk_shield_pieces", xDir, netId, false, true
+	) {
+		frameSpeed = 0;
+		frameIndex = Helpers.randomRange(0, 3);
+		this.character = character;
+		this.magnet = magnet;
+		startAng = ang;
+		this.ang = ang;
+		changePos(character.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+	}
+
+	public override void update() {
+		base.update();
+
+		if (magnet == null || magnet.destroyed) {
+			destroySelf();
+			return;
+		}
+
+		if (radius > 30) radius -= 2;
+		ang += 5;
+		changePos(character.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+
+		if (startAng != 0) return;
+
+		Point pos = character.getCenterPos();
+		int xDir = character.xDir;
+		Player player = character.player;
+
+		for (int i = 0; i < 3; i++) {
+			//Main pices
+			float ang = 85 * i;
+			var parent = new JunkShieldProj(pos, xDir, player, ang, player.getNextActorNetId(), true)
+			{ frameIndex = 5, isParent = true };
+
+			for (int j = 0; j < 2; j++) {
+				//Smol pieces
+				float angs = ang + (j * 42.5f);
+				bool small = j == 1;
+				int frame = small ? Helpers.randomRange(0, 1) : Helpers.randomRange(2, 4);
+				if (MathF.Ceiling(angs) % 85 == 0 || angs == 0) angs -= 12;
+
+				var son = new JunkShieldProj(pos, xDir, player, angs, player.getNextActorNetId(), true)
+				{ frameIndex = frame, smallestSon = small };
+
+				son.parent = parent;
+				parent.sons.Add(son);
+			}
 		}
 	}
 }
 
 
 public class JunkShieldProj : Projectile {
-	public int HP = 6;
-	public float healthDecCooldown;
+
+	public JunkShieldProj? parent;
+	public bool isParent;
+	public List<JunkShieldProj?> sons = new();
+	public bool smallestSon;
+	bool threw;
 	Player player;
-	Rock? rock;
-	Point centerPos;
-	public List<Sprite> mainProjs = new List<Sprite>();
-	int mainProjsCount = 3;
-	public List<Sprite> otherProjs = new List<Sprite>();
-	int otherProjsCount = 6;
-	float projAngle;
+	Rock rock = null!;
+	float ang;
 	float radius = 30;
-	public List<int> randomPieces = new List<int>();
-	LoopingSound sound;
+	bool sound;
 
 	public JunkShieldProj(
 		Point pos, int xDir, Player player, 
-		ushort netProjId, bool rpc = false
+		float ang, ushort netProjId, bool rpc = false
 	) : base(
 		JunkShield.netWeapon, pos, xDir, 0, 1, 
-		player, "junk_shield_proj", 0, 0.25f, 
+		player, "junk_shield_pieces", 0, 0.25f, 
 		netProjId, player.ownedByLocalPlayer) 
 	{
 		projId = (int)RockProjIds.JunkShield;
+		rock = player.character as Rock ?? throw new NullReferenceException();
+		rock.junkShieldProjs.Add(this);
+		
 		destroyOnHit = false;
-		rock = player.character as Rock;
-		if (rock != null) rock.junkShield = this;
-		sound = new LoopingSound("charge_start", "charge_loop", this);
+		frameSpeed = 0;
+		
 		this.player = player;
+		this.ang = ang;
+		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
 		canBeLocal = false;
 
-		for (int i = 0; i < mainProjsCount; i++) {
-			Sprite mainProjSprite = new Sprite("junk_shield_pieces");
-			mainProjSprite.frameIndex = 5;
-			mainProjSprite.frameSpeed = 0;
-			mainProjs.Add(mainProjSprite);
-		}
+		if (rpc) {
+			byte[] extraArgs = new byte[] { (byte)ang };
 
-		for (int i = 0; i < otherProjsCount; i++) {
-			Sprite otherProjSprite = new Sprite("junk_shield_pieces");
-			randomPieces.Add(Helpers.randomRange(0, 4));
-			otherProjSprite.frameSpeed = 0;
-			otherProjs.Add(otherProjSprite);
+			rpcCreate(pos, player, netProjId, xDir, extraArgs);
 		}
-
-		if (rpc) rpcCreate(pos, player, netProjId, xDir);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new JunkShieldProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
 		);
 	}
 
 	public override void update() {
 		base.update();
 
-		if (projAngle >= 256) projAngle = 0;
-		projAngle += 5;
+		if (parent != null && parent.destroyed && smallestSon) destroySelf();
+		if (threw) return;
 
-		if (rock != null) {
-			xDir = rock.getShootXDir();
-			pos = rock.getCenterPos().round();
-		}
+		ang += 5;
+		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
 
-		if (sound != null) sound.play();
+		if (!ownedByLocalPlayer) return;
 
-		if (healthDecCooldown > 0) {
-			healthDecCooldown += Global.spf;
-			if (healthDecCooldown > damager.hitCooldown) healthDecCooldown = 0;
-		}
-
-		if (HP <= 0 || rock == null || rock.charState is Die || (rock.player.weapon is not JunkShield)) {
+		if (rock == null || rock.charState is Die || (rock.player.weapon is not JunkShield)) {
 			destroySelfNoEffect();
 			return;
 		}
 
-		if (time >= Global.spf * 15 && player.input.isPressed(Control.Shoot, player)) {
+		if (time >= (Global.speedMul * 15) / 60 && player.input.isPressed(Control.Shoot, player)) {
 			shootProjs();
 			rock.weaponCooldown = 60;
-		}
-	}
-
-	public override void render(float x, float y) {
-		base.render(x, y);
-		if (rock != null) centerPos = rock.getCenterPos().round();
-		float hpCount = HP;
-		float extra = HP % 2;
-		mainProjsCount = (int)(hpCount + extra) / 2;
-
-		//main pieces render
-		for (var i = 0; i < mainProjsCount; i++) {
-			float extraAngle = projAngle + i * 85;
-			if (extraAngle >= 256) extraAngle -= 256;
-			float xPlus = Helpers.cosd(extraAngle * 1.40625f) * radius;
-			float yPlus = Helpers.sind(extraAngle * 1.40625f) * radius;
-			if (rock != null) xDir = rock.getShootXDir();
-			mainProjs[i].draw(5, centerPos.x + xPlus, centerPos.y + yPlus, xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex);
-		}
-
-		//small pieces render
-		for (var i = 0; i < HP; i++) {
-			float extraAngle = (projAngle + i * 42.5f) - 10;
-			if (extraAngle >= 256) extraAngle -= 256;
-			float xPlus = Helpers.cosd(extraAngle * 1.40625f) * radius;
-			float yPlus = Helpers.sind(extraAngle * 1.40625f) * radius;
-			if (rock != null) xDir = rock.getShootXDir();
-			otherProjs[i].draw(randomPieces[i], centerPos.x + xPlus, centerPos.y + yPlus, xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex);
 		}
 	}
 
@@ -160,79 +232,55 @@ public class JunkShieldProj : Projectile {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
-				HP--;
+				destroySelf();
 			}
 		}
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
-		sound.stop();
-		if (rock != null) rock.junkShield = null;
+		rock.junkShieldProjs.Remove(this);
 	}
 
 	public void shootProjs() {
-		int hpCount = HP;
-		int extra = HP % 2;
-		int actualCount = (hpCount + extra) / 2;
-		destroySelfNoEffect();
-
-		for (var i = 0; i < actualCount; i++) {
-			var angleToShoot = (int)projAngle + (85 * i);
-			if (angleToShoot >= 256) angleToShoot -= 256;
-			if (rock != null) new JunkShieldShootProj(rock.getCenterPos(), rock.getShootXDir(), damager.owner, angleToShoot, damager.owner.getNextActorNetId(true), true);
+		if (parent != null && parent.destroyed && !smallestSon) {
+			threw = true;
+			changePos(rock.getCenterPos());
+			shoot(ang + 12);
+			playSound("thunder_bolt");
 		}
-		Global.playSound("thunder_bolt");
+		else if (isParent) {
+			threw = true;
+			changePos(rock.getCenterPos());
+			float a = ang;
+			shoot(a);
+			playSound("thunder_bolt");
+
+			foreach(var son in sons) {
+				if (son == null) continue;
+				int i = 1;
+				son.threw = true;
+				son.changePos(rock.getCenterPos());
+				Global.level.delayedActions.Add(
+					new DelayedAction(() => {
+						son?.shoot(a);
+					},
+					0.15f * i
+
+					)
+				);
+				i++;
+			}
+		}
 	}
-}
 
-
-public class JunkShieldShootProj : Projectile {
-
-	int shootAngle;
-	const int projSpeed = 180;
-	Rock? rock;
-
-	public JunkShieldShootProj(
-		Point pos, int xDir, Player player, 
-		int angle, ushort netProjId, bool rpc = false
-	) : base(
-		JunkShield.netWeapon, pos, xDir, 0, 2, 
-		player, "junk_shield_shoot_proj", 0, 0.5f, 
-		netProjId, player.ownedByLocalPlayer) 
-	{
-		projId = (int)RockProjIds.JunkShieldPiece;
-		rock = player.character as Rock;
+	public void shoot(float a) {
+		updateDamager(2);
+		damager.hitCooldown = 1;
+		vel = Point.createFromByteAngle(a).times(180);
+		time = 0;
 		maxTime = 0.75f;
-		shootAngle = angle;
-		rock = player.character as Rock;
-		if (rock != null) base.xDir = rock.getShootXDir();
-		canBeLocal = false;
-		fadeOnAutoDestroy = true;
-
-		if (base.xDir < 0) {
-			int angleFix;
-			if (shootAngle <= 128) angleFix = 128 - shootAngle;
-			else angleFix = (256 - shootAngle) + 128;
-
-			shootAngle = angleFix;
-		}
-
-		frameIndex = (int)shootAngle / 16;
-		frameSpeed = 0;
-
-		base.vel = Point.createFromByteAngle(angle) * projSpeed;
-
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)angle };
-
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
-		}
-	}
-
-	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new JunkShieldShootProj(
-			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
-		);
+		destroyOnHit = true;
+		rock.junkShieldProjs.Remove(this);
 	}
 }

@@ -23,10 +23,27 @@ public class WildCoil : Weapon {
 		base.shoot(character, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb) {
-			character.changeState(new ShootAltLadder(this, chargeLevel), true);
+		if (character.charState is LadderClimb lc) {
+			character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
 		} else {
 			character.changeState(new ShootAlt(this, chargeLevel), true);
+		}
+	}
+
+	public override void getProjs(Character character, params int[] args) {
+		Point shootPos = character.getFirstPOI() ?? character.getCenterPos();
+		Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
+		Player player = character.player;
+		int chargeLv = args[0];
+
+		if (chargeLv >= 2) {
+			new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+			new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
+			character.playSound("buster3", sendRpc: true);
+		} else {
+			new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
+			new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
+			character.playSound("buster2", sendRpc: true);
 		}
 	}
 
@@ -185,7 +202,7 @@ public class WildCoilChargedProj : Projectile {
 		//if (!ownedByLocalPlayer) return;
 		var normal = other.hitData.normal ?? new Point(0, -1);
 
-		if (!normal.isSideways()) {
+		if (normal.isCeilingNormal() || normal.isGroundNormal()) {
 			changeSprite("wild_coil_charge_jump", true);
 			bouncedOnce = true;
 

@@ -115,7 +115,6 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.ThunderBolt, ThunderBoltProj.rpcInvoke },
 		{ (int)RockProjIds.ThunderBoltSplit, ThunderBoltSplitProj.rpcInvoke },
 		{ (int)RockProjIds.JunkShield, JunkShieldProj.rpcInvoke},
-		{ (int)RockProjIds.JunkShieldPiece, JunkShieldShootProj.rpcInvoke},
 		{ (int)RockProjIds.ScorchWheelSpawn, ScorchWheelSpawn.rpcInvoke},
 		{ (int)RockProjIds.ScorchWheel, ScorchWheelProj.rpcInvoke},
 		//{ (int)RockProjIds.ScorchWheelLoop, ScorchWheelProjLoop.rpcInvoke},

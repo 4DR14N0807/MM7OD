@@ -49,19 +49,19 @@ public class BluesShootAltLadder : CharState {
 
 	Weapon stateWeapon;
 	bool fired;
-	List<CollideData> ladders;
+	Ladder ladder;
 	float midX; 
-	public BluesShootAltLadder(Weapon wep) : base("ladder_shoot2") {
+	public BluesShootAltLadder(Weapon wep, Ladder ladder) : base("ladder_shoot2") {
 		normalCtrl = false;
 		stateWeapon = wep;
+		this.ladder = ladder;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.useGravity = false;
-		ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
-		midX = ladders[0].otherCollider.shape.getRect().center().x;
+		midX = ladder.collider.shape.getRect().center().x;
 	}
 
 	public override void update() {
@@ -73,7 +73,7 @@ public class BluesShootAltLadder : CharState {
 		}
 
 		if (character.isAnimOver()) {
-			character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
+			character.changeState(new LadderClimb(ladder, midX), true);
 		}
 	}
 }
@@ -187,6 +187,11 @@ public class BluesSlide : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = false;
 		blues.changeGlobalColliderOnSpriteChange(blues.sprite.name);
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		//character.stopMovingWeak();
 	}
 }
 
@@ -428,14 +433,14 @@ public class Recover : CharState {
 
 public class BluesRevive : CharState {
 	float radius = 200;
-	Blues? blues;
+	Blues blues = null!;
 	public BluesRevive() : base("revive") {
 		invincible = true;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues;
+		blues = character as Blues ?? throw new NullReferenceException();
 		blues.isBreakMan = true;
 		player.health = 1;
 	}

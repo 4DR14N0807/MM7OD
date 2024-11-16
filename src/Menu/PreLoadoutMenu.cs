@@ -67,7 +67,7 @@ public class PreLoadoutMenu : IMainMenu {
 			if (selectY == 2) {
 				Menu.change(new BassWeaponMenu(this, false));
 			}
-		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
+		} //else if (Global.input.isPressedMenu(Control.MenuBack)) {
 			if (Time2 >= 1) {
 				Menu.change(prevMenu);
 				prevMenu.Time = 0;
@@ -75,7 +75,7 @@ public class PreLoadoutMenu : IMainMenu {
 				prevMenu.Confirm = false;
 				prevMenu.Confirm2 = false;
 			}
-		} 
+		//} 
 		
 	}
 

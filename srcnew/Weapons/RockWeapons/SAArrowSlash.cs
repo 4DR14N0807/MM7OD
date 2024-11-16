@@ -8,6 +8,7 @@ public class ArrowSlash : Weapon {
 	public ArrowSlash() : base() {
 		index = (int)RockWeaponIds.SAArrowSlash;
 		killFeedIndex = 0;
+		hasCustomAnim = true;
 	}
 }
 
@@ -66,6 +67,7 @@ public class SAArrowSlashState : CharState {
 	bool fired;
 
 	public SAArrowSlashState() : base("sa_arrowslash", "", "", "") {
+		airMove = true;
 	}
 
 	public override bool canEnter(Character character) {

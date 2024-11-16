@@ -393,7 +393,7 @@ public class OptionsMenu : IMainMenu {
 				new MenuOption(
 					30, startY,
 					() => {
-						Helpers.menuLeftRightInc(ref Options.main.preferredCharacter, 5, 5);
+						Helpers.menuLeftRightInc(ref Options.main.preferredCharacter, 5, 7);
 					},
 					(Point pos, int index) => {
 						string preferredChar = Character.charDisplayNames[Options.main.preferredCharacter];
@@ -579,7 +579,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Preferred server region for hosting matches.\nChoose the one with lowest ping."
 				),
-				// Preferred character
+				/* // Preferred character
 				new MenuOption(
 					30, startY,
 					() => {
@@ -597,7 +597,7 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"Choose a default character the game will\npre-select for you."
-				),
+				), */
 				// Hide Menu Helper Text
 				/*new MenuOption(
 					30, startY,

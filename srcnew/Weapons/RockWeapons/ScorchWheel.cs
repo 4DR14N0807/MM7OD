@@ -21,10 +21,28 @@ public class ScorchWheel : Weapon {
 		base.shoot(character, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb) {
-			character.changeState(new ShootAltLadder(this, chargeLevel, character.isUnderwater()), true);
+		if (character.charState is LadderClimb lc) {
+			character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel, character.isUnderwater()), true);
 		} else {
 			character.changeState(new ShootAlt(this, chargeLevel, character.isUnderwater()), true);
+		}
+	}
+
+	public override void getProjs(Character character, params int[] args) {
+		Player player = character.player;
+
+		if (character.isUnderwater()) {
+			new UnderwaterScorchWheelProj
+			(
+				character.getCenterPos(), character.getShootXDir(), 
+				player, player.getNextActorNetId(true), rpc: true
+			);
+		} else {
+			new ScorchWheelSpawn
+			(
+				character.getCenterPos(), character.getShootXDir(), player, 
+				player.getNextActorNetId(true), rpc: true
+			);
 		}
 	}
 }

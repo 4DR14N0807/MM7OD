@@ -29,7 +29,8 @@ public enum RenderEffectType {
 
 	// MM7 Charges
 	RBlueCharge,
-	RGreenCharge
+	RGreenCharge,
+	NCrushCharge,
 }
 
 public class RenderEffect {

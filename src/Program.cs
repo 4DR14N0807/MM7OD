@@ -894,6 +894,7 @@ class Program {
 
 		// Set up special sprites.
 		Sprite.superMegaManBitmap = Global.textures["rock_superadaptor"];
+		Sprite.superMegaManArmlessBitmap = Global.textures["rock_superadaptor_armless"];
 		Sprite.breakManBitmap = Global.textures["blues_breakman"];
 		//Sprite.superBassBitmap = Global.textures["bass_super"];
 	}

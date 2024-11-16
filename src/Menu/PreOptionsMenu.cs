@@ -36,18 +36,18 @@ public class PreOptionsMenu : IMainMenu {
 	}
 	public void update() {
 		TimeUpdate();
-		Helpers.menuUpDown(ref selectY, 0, 5);
+		Helpers.menuUpDown(ref selectY, 0, 6);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			int? charNum = null;
-			if (selectY == 3) charNum = 5;
-			else if (selectY == 4) charNum = 6;
-			else if (selectY == 5) charNum = 7;
+			if (selectY == 4) charNum = 5;
+			else if (selectY == 5) charNum = 6;
+			else if (selectY == 6) charNum = 7;
 
 
 			Menu.change(new OptionsMenu(this, inGame, charNum, selectY));
 		} 
 		if  (Global.input.isPressedMenu(Control.MenuConfirm)) {
-			if (selectY == 8) {Menu.change(new PreControlMenu(this, false));}
+			if (selectY == 3) {Menu.change(new PreControlMenu(this, false));}
 		}
 		if (Time2 >= 1 && !inGame) {
 			Menu.change(prevMenu);
@@ -85,14 +85,10 @@ public class PreOptionsMenu : IMainMenu {
 		Fonts.drawText(menuFont, "GENERAL SETTINGS", startX, optionPos[0], selected: selectY == 0);
 		Fonts.drawText(menuFont, "GAMEPLAY SETTINGS", startX, optionPos[1], selected: selectY == 1);
 		Fonts.drawText(menuFont, "GRAPHICS SETTINGS", startX, optionPos[2], selected: selectY == 2);
-		//Fonts.drawText(menuFont, "X settings", startX, optionPos[3], selected: selectY == 3);
-		//Fonts.drawText(menuFont, "Zero settings", startX, optionPos[4], selected: selectY == 4);
-		//Fonts.drawText(menuFont, "Vile settings", startX, optionPos[5], selected: selectY == 5);
-		//Fonts.drawText(menuFont, "Axl settings", startX, optionPos[6], selected: selectY == 6);
-		//Fonts.drawText(menuFont, "Sigma settings", startX, optionPos[7], selected: selectY == 7);
-		Fonts.drawText(menuFont, "MEGAMAN SETTINGS", startX, optionPos[3], selected: selectY == 3);
-		Fonts.drawText(menuFont, "PROTOMAN SETTINGS", startX, optionPos[4], selected: selectY == 4);
-		Fonts.drawText(menuFont, "BASS SETTINGS", startX, optionPos[5], selected: selectY == 5);
+		Fonts.drawText(menuFont, "CONTROLS", startX, optionPos[3], selected: selectY == 3);
+		Fonts.drawText(menuFont, "MEGAMAN SETTINGS", startX, optionPos[4], selected: selectY == 4);
+		Fonts.drawText(menuFont, "PROTOMAN SETTINGS", startX, optionPos[5], selected: selectY == 5);
+		Fonts.drawText(menuFont, "BASS SETTINGS", startX, optionPos[6], selected: selectY == 6);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 198, Alignment.Center);
 		if (!inGame) {

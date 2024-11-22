@@ -44,8 +44,8 @@ public class ItemSpawner {
 		if (Global.level.levelData.isTraining()) respawnTime = 1;
 		if (time > respawnTime) {
 			time = 0;
-			var ra = new RideArmor(Global.level.mainPlayer, pos.clone(), rideArmorType, id, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-			ra.xDir = xDir;
+			//var ra = new RideArmor(Global.level.mainPlayer, pos.clone(), rideArmorType, id, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+			//ra.xDir = xDir;
 		}
 	}
 
@@ -82,6 +82,7 @@ public class ItemSpawner {
 	}
 
 	public void spawnRc() {
+		return;
 		time = 0;
 		var rc = new RideChaser(Global.level.mainPlayer, pos.clone(), id, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
 		rc.xDir = xDir;

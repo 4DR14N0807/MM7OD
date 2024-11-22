@@ -78,7 +78,7 @@ public class RPCCreateActor : RPC {
 		if (createId == (int)NetActorCreateId.RaySplasherTurret) {
 			new RaySplasherTurret(pos, player, 1, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.RideArmor) {
-			new RideArmor(player, pos, 0, 0, netProjByte, false);
+			//new RideArmor(player, pos, 0, 0, netProjByte, false);
 		} else if  (createId == (int)NetActorCreateId.DWrapBigBubble) {
 			new DWrapBigBubble(pos, player, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.Rush) {
@@ -168,7 +168,7 @@ public class RPCCreateActor : RPC {
 		} else if (createId == (int)NetActorCreateId.DrDoppler) {
 			new DrDoppler(player, pos, pos, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.RideChaser) {
-			new RideChaser(player, pos, 0, netProjByte, false);
+			//new RideChaser(player, pos, 0, netProjByte, false);
 		}
 	}
 }

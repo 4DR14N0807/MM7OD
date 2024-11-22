@@ -227,7 +227,7 @@ public class DevConsole {
 		new Command("moth", (args) => becomeMoth()),
 		new Command("airevive", (args) => aiRevive()),
 		new Command("aigiga", (args) => aiGiga()),
-		new Command("rc", (args) => spawnRideChaser()),
+		//new Command("rc", (args) => spawnRideChaser()),
 		new Command("aidebug", (args) => aiDebug(false)),
 		new Command("aispec", (args) => aiDebug(true)),
 		// Offline only

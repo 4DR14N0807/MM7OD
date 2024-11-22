@@ -625,7 +625,8 @@ public partial class Player {
 			if (leaderKills >= 8) return 1;
 		}*/
 
-		return 0;
+		//return 0;
+		return getStartETanks();
 	}
 
 	public int getSameCharNum() {
@@ -1762,8 +1763,8 @@ public partial class Player {
 		int toAdd = isKiller ? 10 : 5;
 		
 		if (Global.level?.server?.customMatchSettings != null) {
-			currency += Global.level.server.customMatchSettings.currencyGain;
-		} else currency+= toAdd;
+			currency += Global.level.server.customMatchSettings.currencyGain * toAdd;
+		} else currency += toAdd;
 	}
 
 	public int getStartCurrency() {
@@ -1782,7 +1783,7 @@ public partial class Player {
 		}
 
 		if (!isAssist) {
-			if (character is Bass bass) {
+			if (character is Bass bass && bass.isSuperBass) {
 				if (bass.evilEnergy[bass.phase - 1] < Bass.MaxEvilEnergy) {
 					bass.evilEnergy[bass.phase - 1] += 7;
 				} 

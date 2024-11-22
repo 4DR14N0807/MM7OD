@@ -314,7 +314,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 						FontType.Blue,
 						"Currency Gain modifier: " +
 						savedMatchSettings.customMatchSettings.currencyGain.ToString(),
-						pos.x, pos.y, selected: selectArrowPosY == 12
+						pos.x, pos.y, selected: selectArrowPosY == 9
 					);
 				}
 			)
@@ -330,7 +330,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 						FontType.Blue,
 						"Respawn Time modifier: " +
 						savedMatchSettings.customMatchSettings.respawnTime.ToString(),
-						pos.x, pos.y, selected: selectArrowPosY == 13
+						pos.x, pos.y, selected: selectArrowPosY == 10
 					);
 				}
 			)
@@ -347,7 +347,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 						FontType.Blue,
 						"Pick up items: " +
 						Helpers.boolYesNo(savedMatchSettings.customMatchSettings.pickupItems),
-						pos.x, pos.y, selected: selectArrowPosY == 14
+						pos.x, pos.y, selected: selectArrowPosY == 11
 					);
 				}
 			)

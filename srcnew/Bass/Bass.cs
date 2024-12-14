@@ -43,7 +43,7 @@ public class Bass : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Bass;
-		player.weapons = getLoadout();
+		weapons = getLoadout();
 		charge1Time = 50;
 	}
 
@@ -420,7 +420,7 @@ public class Bass : Character {
 		return player.input.isHeld(Control.Shoot, player);
 	}
 
-	public override int maxChargeLevel() {
+	public override int getMaxChargeLevel() {
 		return 2;
 	}
 	public override bool canChangeWeapons() {

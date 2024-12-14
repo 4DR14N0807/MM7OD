@@ -102,8 +102,8 @@ public class DevConsole {
 	}
 
 	public static void fillETank(string[] args) {
-		if (Global.level.mainPlayer.etanks.Count < 1) {
-			Global.level.mainPlayer.etanks.Add(new ETank());
+		if (Global.level.mainPlayer.ETanks.Count < 1) {
+			Global.level.mainPlayer.ETanks.Add(new ETank());
 		}
 		Global.level.mainPlayer.fillETank(12);
 	}

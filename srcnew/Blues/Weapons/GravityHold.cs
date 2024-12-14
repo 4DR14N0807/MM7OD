@@ -87,7 +87,7 @@ public class GravityHoldProj : Projectile {
 			foreach (Actor actor in getCloseActors(160)) {
 				if (actor.ownedByLocalPlayer &&
 					actor is Character chara &&
-					!chara.isCCImmune() &&
+					//!chara.isCCImmune() &&
 					!chara.grounded &&
 					chara.getCenterPos().distanceTo(pos) <= maxR + 20 &&
 					chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) &&

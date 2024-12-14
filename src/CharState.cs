@@ -1422,7 +1422,7 @@ public class Frozen : CharState {
 		if (character.freezeInvulnTime > 0) return false;
 		if (character.isInvulnerable()) return false;
 		if (character.isVaccinated()) return false;
-		return !character.isCCImmune() && !character.charState.invincible;
+		return /* !character.isCCImmune() && */ !character.charState.invincible;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -1515,7 +1515,7 @@ public class Crystalized : CharState {
 		if (!character.ownedByLocalPlayer) return false;
 		if (character.isInvulnerable()) return false;
 		if (character.isVaccinated()) return false;
-		return !character.isCCImmune() && !character.charState.invincible;
+		return /* !character.isCCImmune() && */ !character.charState.invincible;
 	}
 
 	public override void onEnter(CharState oldState) {

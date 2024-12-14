@@ -378,7 +378,7 @@ public class Axl : Character {
 			stingChargeTime -= Global.spf;
 
 			if (stingChargeTime <= 0) {
-				player.delaySubtank();
+				player.delayETank();
 				stingChargeTime = 0;
 			}
 		}

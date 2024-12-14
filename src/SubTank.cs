@@ -10,7 +10,7 @@ public class SubTank {
 
 	public void use(Character character) {
 		character.addHealth(health);
-		character.usedSubtank = this;
+		/* character.usedSubtank = this; */
 		RPC.useSubtank.sendRpc(character.netId, (int)health);
 	}
 

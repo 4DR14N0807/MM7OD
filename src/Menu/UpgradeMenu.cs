@@ -46,8 +46,8 @@ public class UpgradeMenu : IMainMenu {
 		optionPositions.Add(new Point(startX, 120));
 		optionPositions.Add(new Point(startX, 140));
 
-		if (selectArrowPosY >= Global.level.mainPlayer.etanks.Count + 1) {
-			selectArrowPosY = Global.level.mainPlayer.etanks.Count;
+		if (selectArrowPosY >= Global.level.mainPlayer.ETanks.Count + 1) {
+			selectArrowPosY = Global.level.mainPlayer.ETanks.Count;
 		}
 
 		/* 		if (selectArrowPosY >= Global.level.mainPlayer.wtanks.Count + 1) {
@@ -57,7 +57,7 @@ public class UpgradeMenu : IMainMenu {
 
 	public int getMaxIndex() {
 		var mainPlayer = Global.level.mainPlayer;
-		if (selectArrowPosX == 0) return Math.Clamp(1 + mainPlayer.etanks.Count, 1, getMaxETanks());
+		if (selectArrowPosX == 0) return Math.Clamp(1 + mainPlayer.ETanks.Count, 1, getMaxETanks());
 		return Math.Clamp(1 + mainPlayer.wtanks.Count, 1, getMaxWTanks());
 	}
 
@@ -186,24 +186,24 @@ public class UpgradeMenu : IMainMenu {
 
 			//ETANKS SECTION
 			if (selectArrowPosX == 0) {
-				if (mainPlayer.etanks.Count <= selectArrowPosY) {
-					if (mainPlayer.etanks.Count < getMaxETanks() && mainPlayer.currency >= eTankCost) {
+				if (mainPlayer.ETanks.Count <= selectArrowPosY) {
+					if (mainPlayer.ETanks.Count < getMaxETanks() && mainPlayer.currency >= eTankCost) {
 						mainPlayer.currency -= eTankCost;
-						mainPlayer.etanks.Add(new ETank());
+						mainPlayer.ETanks.Add(new ETank());
 						Global.playSound("upgrade");
-					} else if (mainPlayer.etanks.InRange(selectArrowPosY)) {
+					} else if (mainPlayer.ETanks.InRange(selectArrowPosY)) {
 						
-						if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.etanks[selectArrowPosY]))) {
-							mainPlayer.etanks[selectArrowPosY - 1].use(mainPlayer, mainPlayer.character);
-							mainPlayer.etanks.RemoveAt(selectArrowPosY - 1);
+						if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.ETanks[selectArrowPosY]))) {
+							mainPlayer.ETanks[selectArrowPosY - 1].use(mainPlayer, mainPlayer.character);
+							mainPlayer.ETanks.RemoveAt(selectArrowPosY - 1);
 						}
 					}
 				}
 
-				else if (mainPlayer.etanks.InRange(selectArrowPosY)) {
-					if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.etanks[selectArrowPosY]))) {
-						mainPlayer.etanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
-						mainPlayer.etanks.RemoveAt(selectArrowPosY);
+				else if (mainPlayer.ETanks.InRange(selectArrowPosY)) {
+					if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.ETanks[selectArrowPosY]))) {
+						mainPlayer.ETanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
+						mainPlayer.ETanks.RemoveAt(selectArrowPosY);
 					}
 				}
 			}
@@ -270,13 +270,13 @@ public class UpgradeMenu : IMainMenu {
 
 		//ETANKS RENDER
 		for (int i = 0; i < getMaxETanks(); i++) {
-			if (i > mainPlayer.etanks.Count) continue;
+			if (i > mainPlayer.ETanks.Count) continue;
 			bool canUseEtank = true;
-			bool buyOrUse = mainPlayer.etanks.Count < i + 1;
+			bool buyOrUse = mainPlayer.ETanks.Count < i + 1;
 			string buyOrUseStr = buyOrUse ? "BUY E-TANK" : "USE E-TANK";
 			var optionPos = new Point(optionPositionsX[0], optionPositionsY[i]);
 			if (!buyOrUse) {
-				var etank = mainPlayer.etanks[i];
+				var etank = mainPlayer.ETanks[i];
 				canUseEtank = mainPlayer.canUseEtank(etank);
 
 				Global.sprites["menu_etank"].drawToHUD(0, optionPos.x + 6, optionPos.y - 8);

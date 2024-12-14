@@ -255,9 +255,21 @@ public partial class Player {
 	
 
 	// Getter functions.
-	public List<ETank> Etanks {
+	public List<ETank> ETanks {
 		get { return charETanks[isDisguisedAxl ? 3 : charNum]; }
 		set { charETanks[isDisguisedAxl ? 3 : charNum] = value; }
+	}
+	public List<WTank> wtanks {
+		get { return charWTanks[isDisguisedAxl ? 3 : charNum];}
+		set { charWTanks[isDisguisedAxl ? 3 : charNum] = value;}
+	}
+	public List<LTank> ltanks {
+		get { return charLTanks[charNum]; }
+		set { charLTanks[charNum] = value;}
+	}
+	public List<MTank> mtanks {
+		get { return charMTanks[charNum]; }
+		set { charMTanks[charNum] = value;}
 	}
 	public int heartTanks {
 		get {
@@ -676,7 +688,7 @@ public partial class Player {
 	}
 
 	public bool hasAllItems() {
-		return etanks.Count >= 4 && heartTanks >= 8;
+		return ETanks.Count >= 4 && heartTanks >= 8;
 	}
 
 	public static float getBaseHealth() {
@@ -2413,12 +2425,12 @@ public partial class Player {
 	}
 
 	public bool hasETankCapacity() {
-		var etanks = this.etanks;
-		for (int i = 0; i < etanks.Count; i++) {
-			if (etanks[i].health < ETank.maxHealth) {
+		var Etanks = this.ETanks;
+		for (int i = 0; i < Etanks.Count; i++) {
+			if (Etanks[i].health < ETank.maxHealth) {
 				return true;
 			}
-		}
+		} 
 		return false;
 	}
 
@@ -2471,7 +2483,7 @@ public partial class Player {
 
 	public void fillETank(float amount) {
 		if (character?.healAmount > 0) return;
-		var etanks = this.etanks;
+		var etanks = this.ETanks;
 		for (int i = 0; i < etanks.Count; i++) {
 			if (etanks[i].health < ETank.maxHealth) {
 				etanks[i].health += amount;

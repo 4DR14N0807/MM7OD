@@ -420,7 +420,7 @@ public class Rock : Character {
 		return hasEmptyAmmo;
 	}
 
-	public override int maxChargeLevel() {
+	public override int getMaxChargeLevel() {
 		return 2;
 	}
 

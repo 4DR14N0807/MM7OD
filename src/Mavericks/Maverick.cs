@@ -87,7 +87,7 @@ public class Maverick : Actor, IDamagable {
 	public float strikerTime;
 	public int attackDir;
 	public SubTank usedSubtank;
-	public ETank usedETank;
+	public SubTank usedETank;
 	public float netSubtankHealAmount;
 	public float netETankHealAmount;
 	public float invulnTime = 0;
@@ -1036,7 +1036,7 @@ public class Maverick : Actor, IDamagable {
 
 		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 14 * (health / SubTank.maxHealth);
+		float yPos = 14 * (health / ETank.maxHealth);
 		DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
 
 		deductLabelY(labelSubtankOffY);

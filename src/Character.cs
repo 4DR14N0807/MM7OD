@@ -406,7 +406,7 @@ public partial class Character : Actor, IDamagable {
 	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
 		if (isBurnState) return;
-		if (isCCImmune()) return;
+		//if (isCCImmune()) return;
 		if (isInvulnerable()) return;
 
 		burningRecoveryCooldown = 0;
@@ -2935,13 +2935,13 @@ public partial class Character : Actor, IDamagable {
 
 	public void addHealth(float amount, bool fillEtank = true) {
 		if (health >= maxHealth && fillEtank) {
-			player.fillEtank(amount);
+			player.fillETank(amount);
 		}
 		healAmount += amount;
 	}
 
 	public void addETankHealth(float amount, bool fillEtank = true) {
-		if (player.health >= player.maxHealth && fillEtank) {
+		if (health >= maxHealth && fillEtank) {
 			player.fillETank(amount);
 		}
 		eTankHealAmount += (int)amount;
@@ -2989,14 +2989,15 @@ public partial class Character : Actor, IDamagable {
 	public virtual void onFlagPickup(Flag flag) {
 		if (isCharging()) {
 			stopCharge();
-		if (flag == null) {
-			return;
-		}
-		dropFlagProgress = 0;
-		this.flag = flag;
+			if (flag == null) {
+				return;
+			}
+			dropFlagProgress = 0;
+			this.flag = flag;
 
-		if (player.isDisguisedAxl && player.ownedByLocalPlayer) {
-			player.revertToAxl();
+			if (player.isDisguisedAxl && player.ownedByLocalPlayer) {
+				player.revertToAxl();
+			}
 		}
 	}
 

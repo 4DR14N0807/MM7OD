@@ -374,8 +374,8 @@ public class Burning : CharState {
 			character.isInvulnerable() ||
 			character.charState.stunResistant ||
 			character.grabInvulnTime > 0 ||
-			character.charState.invincible ||
-			character.isCCImmune()
+			character.charState.invincible
+			//character.isCCImmune()
 		) {
 			return false;
 		}

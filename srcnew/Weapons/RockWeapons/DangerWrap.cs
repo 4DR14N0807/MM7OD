@@ -340,7 +340,7 @@ public class DWrapped : CharState {
 		if (!character.ownedByLocalPlayer) return false;
 		if (character.isInvulnerable()) return false;
 		if (character.isVaccinated()) return false;
-		return !character.isCCImmune() && !character.charState.invincible;
+		return /* !character.isCCImmune() &&  */!character.charState.invincible;
 	}
 
 	/*public override bool canExit(Character character, CharState newState) {

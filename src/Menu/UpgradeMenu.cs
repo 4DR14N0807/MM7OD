@@ -61,14 +61,14 @@ public class UpgradeMenu : IMainMenu {
 		return Math.Clamp(1 + mainPlayer.wtanks.Count, 1, getMaxWTanks());
 	}
 
-	public int getHeartTankCost() {
+	public static int getHeartTankCost() {
 		/*if (Global.level.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.heartTankCost;
 		}*/
 		return 2;
 	}
 
-	public int getMaxHeartTanks() {
+	public static int getMaxHeartTanks() {
 		return Global.level.server?.customMatchSettings?.maxHeartTanks ?? 8;
 	}
 

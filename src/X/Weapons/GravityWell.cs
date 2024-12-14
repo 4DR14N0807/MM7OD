@@ -15,7 +15,7 @@ public class GravityWell : Weapon {
 		killFeedIndex = 45;
 		weaknessIndex = (int)WeaponIds.RaySplasher;
 		damage = "2/4";
-		effect = "Disables Gravity to the enemy. C: Super Armor.";
+		effect = "Disables Gravity to the enemy. C: Super Armor.\nUncharged won't give assists.";
 		hitcooldown = "0.5";
 		Flinch = "0/26";
 		maxAmmo = 16;
@@ -36,7 +36,7 @@ public class GravityWell : Weapon {
 		if (chargeLevel < 3) {
 			var proj = new GravityWellProj(this, pos, xDir, player, player.getNextActorNetId(), true);
 			if (character.ownedByLocalPlayer && character is MegamanX mmx) {
-				mmx.gravityWell = proj;
+				mmx.linkedGravityWell = proj;
 			}
 		} else {
 			if (!character.ownedByLocalPlayer) return;
@@ -48,12 +48,12 @@ public class GravityWell : Weapon {
 		if (player.character is not MegamanX mmx) {
 			return false;
 		}
-		if (chargeLevel >= 3 || mmx.stockedCharge == true) {
+		if (chargeLevel >= 3 || mmx.stockedBuster == true) {
 			return base.canShoot(chargeLevel, player) && (
 				mmx.chargedGravityWell == null || mmx.chargedGravityWell.destroyed
 			);
 		}
-		return base.canShoot(chargeLevel, player) && (mmx.gravityWell == null || mmx.gravityWell.destroyed);
+		return base.canShoot(chargeLevel, player) && (mmx.linkedGravityWell == null || mmx.linkedGravityWell.destroyed);
 	}
 }
 
@@ -240,7 +240,7 @@ public class GravityWellProj : Projectile, IDamagable {
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		var actor = damagable.actor();
-		if (actor is Character chr && chr.isCCImmune()) return;
+		if (actor is Character chr && chr.isStatusImmune()) return;
 		if (actor is not Character && actor is not RideArmor && actor is not Maverick) return;
 
 		float mag = 100;
@@ -261,10 +261,10 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 	public bool started;
 	float velY = -300;
 	public GravityWellProjCharged(
-		Weapon weapon, Point pos, int xDir, int yDir, 
+		Point pos, int xDir, int yDir, 
 		Player player, ushort netProjId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 0, player, "gravitywell_charged", 
+		GravityWell.netWeapon, pos, xDir, 0, 0, player, "gravitywell_charged", 
 		0, 0, netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 4;
@@ -281,7 +281,7 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new GravityWellProjCharged(
-			GravityWell.netWeapon, arg.pos, arg.xDir, 
+			arg.pos, arg.xDir, 
 			arg.extraData[0], arg.player, arg.netId
 		);
 	}
@@ -328,7 +328,7 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 
 			if (actor != null && actor.ownedByLocalPlayer) {
 				if (chr != null && chr.player.alliance == damager.owner.alliance) continue;
-				if (chr != null && chr.isCCImmune()) continue;
+				if (chr != null && chr.isStatusImmune()) continue;
 				if (ra != null && ra.character == null) continue;
 				if (ra != null && ra.player != null && ra.player.alliance == damager.owner.alliance) continue;
 				if (rc != null && rc.character == null) continue;
@@ -401,7 +401,7 @@ public class GravityWellChargedState : CharState {
 			stateTime = 0;
 			if (mmx != null) {
 				mmx.chargedGravityWell = new GravityWellProjCharged(
-					player.weapon, character.getShootPos(), 1,
+					character.getShootPos(), 1,
 					player.input.isHeld(Control.Down, player) ? -1 : 1,
 					player, player.getNextActorNetId(), rpc: true
 				);

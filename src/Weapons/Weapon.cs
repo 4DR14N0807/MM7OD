@@ -89,7 +89,7 @@ public class Weapon {
 		var weaponList = new List<Weapon>() {
 			new GigaCrush(),
 			new HyperCharge(),
-			new NovaStrike(null),
+			new HyperNovaStrike(),
 			new DoubleBullet(),
 			new DNACore(),
 			new VileMissile(VileMissileType.ElectricShock),
@@ -167,7 +167,7 @@ public class Weapon {
 				new SonicSlicer(),
 				new StrikeChain(),
 				new MagnetMine(),
-				new SpeedBurner(null),
+				new SpeedBurner(),
 				new AcidBurst(),
 				new ParasiticBomb(),
 				new TriadThunder(),
@@ -382,7 +382,7 @@ public class Weapon {
 	}
 
 	public void addAmmo(float amount, Player player) {
-		if (player.isX && player.hasChip(3) && amount < 0) amount *= 0.5f;
+		if (player.character is MegamanX mmx && mmx.hyperArmArmor == ArmorId.Max && amount < 0) amount *= 0.5f;
 		ammo += amount;
 		ammo = Helpers.clamp(ammo, 0, maxAmmo);
 	}
@@ -415,7 +415,9 @@ public class Weapon {
 	}
 
 	public bool isCmWeapon() {
-		return type > 0 && (this is AxlBullet || this is DoubleBullet);
+		return type > 0 && (this is AxlBullet || this is DoubleBullet 
+		|| this is MettaurCrash || this is BeastKiller || this is MachineBullets
+		|| this is RevolverBarrel || this is AncientGun);
 	}
 	
 	public virtual void update() {
@@ -441,7 +443,7 @@ public class Weapon {
 			ammo = Helpers.clampMax(ammo + ammoDisplayScale, maxAmmo);
 			if (weaponHealCount >= 1) {
 				weaponHealCount = 0;
-				if (isAlwaysOn || character.player.weapon == this) {
+				if (isAlwaysOn || character.currentWeapon == this) {
 					if (character.player.hasArmArmor(3)) {
 						character.playSound("healX3", forcePlay: true);
 					} else {

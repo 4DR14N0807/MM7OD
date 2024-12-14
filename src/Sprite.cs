@@ -149,8 +149,22 @@ public class Sprite {
 		Texture bitmap = overrideTexture ?? animData.bitmap;
 
 		// Character-specific draw section
-		if (actor is Character chara) {
-			if (chara.flattenedTime > 0) {
+		int[]? armors = null;
+		bool drawAxlArms = true;
+		bool hyperBusterReady = false;
+		bool isUPX = false;
+		bool isUltX = false;
+		Character? character = actor as Character;
+		if (character != null) {
+			if (character is MegamanX mmx) {
+				armors = new int[] {
+					(int)mmx.legArmor,
+					(int)mmx.chestArmor,
+					(int)mmx.helmetArmor,
+					(int)mmx.armArmor
+				};
+			}
+			if (character.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
 			if (animData.textureName == "rock_default" && chara is Rock rock && rock.hasSuperAdaptor) {
@@ -159,6 +173,8 @@ public class Sprite {
 			else if (animData.textureName == "blues_default" && chara is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
 			}
+			isUPX = character is RagingChargeX;
+			isUltX = character is MegamanX { hasUltimateArmor: true };
 		}
 
 		Frame currentFrame = getCurrentFrame(frameIndex);
@@ -239,8 +255,88 @@ public class Sprite {
 		float flippedExtraW = 0;
 		float extraXOff = 0;
 
-		compositeBitmaps.Add(bitmap);
-		/* 	if (armors[2] > 0) {
+		if (isUltX) {
+			bitmap = Global.textures["XUltimate"];
+			extraYOff = 3;
+			extraY = 3;
+			armors = null;
+		}
+
+		if (isUPX) {
+			bitmap = Global.textures["XUP"];
+		}
+
+		if (!isUltX && armors != null && animData.isXSprite) {
+			bool isShootSprite = needsX3BusterCorrection();
+
+			if (isShootSprite) {
+				if (name.Contains("mmx_wall_slide_shoot")) {
+					flippedExtraW = 5;
+					extraW = flippedExtraW;
+					extraXOff = -flippedExtraW * flipX;
+				} else {
+					extraW = 5;
+				}
+			}
+			if (armors[2] == 2) {
+				extraYOff = 0;
+				extraY = 2;
+			}
+			var x3ArmShaders = new List<ShaderWrapper>(shaders);
+			if (hyperBusterReady) {
+				if (Global.isOnFrameCycle(5)) {
+					if (Global.shaderWrappers.ContainsKey("hit")) {
+						x3ArmShaders.Add(Global.shaderWrappers["hit"]);
+					}
+				}
+			}
+
+			compositeBitmaps.Add(bitmap);
+			if (armors[2] > 0) {
+				compositeBitmaps.Add(xArmorHelmetBitmap[armors[2] - 1]);
+			}
+			if (armors[0] > 0) {
+				compositeBitmaps.Add(xArmorBootsBitmap[armors[0] - 1]);
+			}
+			if (armors[1] > 0) {
+				compositeBitmaps.Add(xArmorBodyBitmap[armors[1] - 1]);
+			}
+			if (armors[3] > 0) {
+				compositeBitmaps.Add(xArmorArmBitmap[armors[3] - 1]);
+			}
+			if (compositeBitmaps.Count > 1) {
+				isCompositeSprite = true;
+			}
+		}
+
+		if (!isUltX && armors != null && animData.isXSprite) {
+			bool isShootSprite = needsX3BusterCorrection();
+
+			if (isShootSprite) {
+				if (name.Contains("mmx_wall_slide_shoot")) {
+					flippedExtraW = 5;
+					extraW = flippedExtraW;
+					extraXOff = -flippedExtraW * flipX;
+				} else {
+					extraW = 5;
+				}
+			}
+			if (armors[2] == 2) {
+				extraYOff = 0;
+				extraY = 2;
+			}
+
+			var x3ArmShaders = new List<ShaderWrapper>(shaders);
+			if (hyperBusterReady) {
+				if (Global.isOnFrameCycle(5)) {
+					if (Global.shaderWrappers.ContainsKey("hit")) {
+						x3ArmShaders.Add(Global.shaderWrappers["hit"]);
+					}
+				}
+			}
+
+			compositeBitmaps.Add(bitmap);
+			if (armors[2] > 0) {
 				compositeBitmaps.Add(xArmorHelmetBitmap[armors[2] - 1]);
 			}
 			if (armors[0] > 0) {
@@ -358,15 +454,43 @@ public class Sprite {
 				});
 			}
 		}
-		DrawWrappers.DrawTexture(
-			bitmap,
-			currentFrame.rect.x1,
-			currentFrame.rect.y1 - extraYOff,
+		if (!isCompositeSprite) {
+			DrawWrappers.DrawTexture(
+				bitmap,
+				currentFrame.rect.x1,
+				currentFrame.rect.y1 - extraYOff,
 				currentFrame.rect.w(),
 				currentFrame.rect.h() + extraY,
-				x + frameOffsetX, y + frameOffsetY - extraYOff,
-				zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, shaders, true
-		);
+				x + frameOffsetX,
+				y + frameOffsetY - extraYOff,
+				zIndex, cx, cy, xDirArg, yDirArg,
+				angle, alpha, shaders, true
+			);
+		} else {
+			DrawWrappers.DrawCompositeTexture(
+				compositeBitmaps.ToArray(),
+				currentFrame.rect.x1 - flippedExtraW,
+				currentFrame.rect.y1 - extraYOff,
+				currentFrame.rect.w() + extraW,
+				currentFrame.rect.h() + extraY,
+				x + frameOffsetX + extraXOff,
+				y + frameOffsetY,
+				zIndex, cx, cy, xDirArg, yDirArg,
+				angle, alpha, shaders, true
+			);
+		}
+		if (isUPX) {
+			var upShaders = new List<ShaderWrapper>(shaders);
+			if (Global.isOnFrameCycle(5)) {
+				if (Global.shaderWrappers.ContainsKey("hit")) {
+					upShaders.Add(Global.shaderWrappers["hit"]);
+				}
+			}
+			DrawWrappers.DrawTexture(Global.textures["XUPGlow"], currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, upShaders, true);
+		}
+		if (animData.isAxlSprite && drawAxlArms) {
+			DrawWrappers.DrawTexture(axlArmBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, 0, alpha, shaders, true);
+		}
 	}
 
 	public bool needsX3BusterCorrection() {

@@ -548,8 +548,8 @@ public class GameMode {
 			if (axl.isZooming() && !axl.isZoomOutPhase1Done) {
 				Point charPos = axl.getCenterPos();
 
-				float xOff = level.mainPlayer.axlScopeCursorWorldPos.x - level.camCenterX;
-				float yOff = level.mainPlayer.axlScopeCursorWorldPos.y - level.camCenterY;
+				float xOff = axl.axlScopeCursorWorldPos.x - level.camCenterX;
+				float yOff = axl.axlScopeCursorWorldPos.y - level.camCenterY;
 
 				Point bulletPos = axl.getAxlBulletPos();
 				Point scopePos = axl.getAxlScopePos();
@@ -635,7 +635,7 @@ public class GameMode {
 					"x" + drawPlayer.currency.ToString(), 22, 110, Alignment.Left
 				);
 			}
-			if (drawPlayer.character is MegamanX mmx && mmx.unpoShotCount > 0) {
+			if (drawPlayer.character is RagingChargeX mmx && mmx.unpoShotCount > 0) {
 				int x = 10, y = 156;
 				int count = mmx.unpoShotCount;
 				if (count >= 1) Global.sprites["hud_killfeed_weapon"].drawToHUD(180, x, y);
@@ -709,7 +709,10 @@ public class GameMode {
 				float cooldown = 1 - Helpers.progress(axl2.dodgeRollCooldown, Axl.maxDodgeRollCooldown);
 				drawGigaWeaponCooldown(50, cooldown, y: 170);
 			}
-			if (drawPlayer.weapons.Count > 1) {
+			if (drawPlayer.weapons == null) {
+				return;
+			}
+			if (drawPlayer.weapons!.Count > 1) {
 				drawWeaponSwitchHUD(drawPlayer);
 			} else if (drawPlayer.weapons.Count == 1 && drawPlayer.weapons[0] is MechMenuWeapon mmw) {
 				drawWeaponSwitchHUD(drawPlayer);
@@ -1380,8 +1383,8 @@ public class GameMode {
 	public bool shouldDrawWeaponAmmo(Player player, Weapon weapon) {
 		if (weapon == null) return false;
 		if (weapon.weaponSlotIndex == 0) return false;
-		if (!player.weapon.drawAmmo) return false;
-		if (weapon is NovaStrike && level.isHyper1v1()) return false;
+		if (!weapon.drawAmmo) return false;
+		if (weapon is HyperNovaStrike && level.isHyper1v1()) return false;
 		if (weapon is RockBuster buster) return false;
 		if (weapon is SARocketPunch) return false;
 
@@ -1394,10 +1397,27 @@ public class GameMode {
 		float baseY = hudHealthPosition.y;
 		bool forceSmallBarsOff = false;
 
+		// This runs once per character.
+		Weapon? weapon = player.lastHudWeapon;
+		if (player.character != null) {
+			weapon = player.weapon;
+			if (player.character is Zero zero) {
+				weapon = zero.gigaAttack;
+			}
+			if (player.character is PunchyZero punchyZero) {
+				weapon = punchyZero.gigaAttack;
+			}
+			player.lastHudWeapon = weapon;
+		}
+		// Return if there is no weapon to ren
+		if (weapon == null) {
+			return;
+		}
+
 		// Small Bars option.
-		float ammoDisplayMultiplier = 1 / player.weapon.ammoDisplayScale;
-		if (player.weapon.allowSmallBar && Options.main.enableSmallBars && !forceSmallBarsOff) {
-			ammoDisplayMultiplier *= 0.5f;
+		float ammoDisplayMultiplier = 1;
+		if (weapon.allowSmallBar && Options.main.enableSmallBars && !forceSmallBarsOff) {
+			ammoDisplayMultiplier = 0.5f;
 		}
 
 		if (player.character is Blues protoman) {
@@ -1504,19 +1524,6 @@ public class GameMode {
 			}
 		}
 
-		// This runs once per character.
-		Weapon weapon = player.lastHudWeapon;
-		if (player.character != null) {
-			weapon = player.weapon;
-			if (player.character is Zero zero) {
-				weapon = zero.gigaAttack;
-			}
-			if (player.character is PunchyZero punchyZero) {
-				weapon = punchyZero.gigaAttack;
-			}
-			player.lastHudWeapon = weapon;
-		}
-
 		if (shouldDrawWeaponAmmo(player, weapon)) {
 			baseY += 42;
 			string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
@@ -1533,7 +1540,7 @@ public class GameMode {
 					int spriteIndex = weapon.weaponBarIndex;
 					if (weapon.drawGrayOnLowAmmo && weapon.ammo < weapon.getAmmoUsage(0) ||
 						(weapon is GigaCrush && !weapon.canShoot(0, player)) ||
-						(weapon is NovaStrike && !weapon.canShoot(0, player)) ||
+						(weapon is HyperNovaStrike && !weapon.canShoot(0, player)) ||
 						(weapon is HyperCharge hb && !hb.canShootIncludeCooldown(level.mainPlayer))) {
 						spriteIndex = grayAmmoIndex;
 					}
@@ -1795,7 +1802,7 @@ public class GameMode {
 
 		if (player.character is Vile vilePilot &&
 			vilePilot.rideArmor != null &&
-			vilePilot.rideArmor == vilePilot.startRideArmor
+			vilePilot.rideArmor == vilePilot.linkedRideArmor
 			&& vilePilot.rideArmor.raNum == 2
 		) {
 			int x = 10, y = 155;
@@ -1831,7 +1838,7 @@ public class GameMode {
 			}
 		}
 		if (player.isX && Options.main.novaStrikeSpecial) {
-			Weapon? novaStrike = player.weapons.FirstOrDefault((Weapon w) => w is NovaStrike);
+			Weapon? novaStrike = player.weapons.FirstOrDefault((Weapon w) => w is HyperNovaStrike);
 			if (novaStrike != null) {
 				drawWeaponSlot(novaStrike, gigaWeaponX, 159);
 				gigaWeaponX += 18;
@@ -1944,7 +1951,7 @@ public class GameMode {
 				offsetX -= width;
 				continue;
 			}
-			if (player.isX && Options.main.novaStrikeSpecial && weapon is NovaStrike) {
+			if (player.isX && Options.main.novaStrikeSpecial && weapon is HyperNovaStrike) {
 				offsetX -= width;
 				continue;
 			}
@@ -1980,8 +1987,8 @@ public class GameMode {
 
 	public void drawWeaponSlot(Weapon weapon, float x, float y, bool selected = false) {
 		string jsonName = mainPlayer.isBass ? "hud_weapon_icon_bass" : "hud_weapon_icon";
-		if (weapon is MechMenuWeapon && !mainPlayer.isSpectator && level.mainPlayer.character?.startRideArmor != null) {
-			int index = 37 + level.mainPlayer.character.startRideArmor.raNum;
+		if (weapon is MechMenuWeapon && !mainPlayer.isSpectator && level.mainPlayer.character?.linkedRideArmor != null) {
+			int index = 37 + level.mainPlayer.character.linkedRideArmor.raNum;
 			if (index == 42) index = 119;
 			Global.sprites["hud_weapon_icon"].drawToHUD(index, x, y);
 		} else if (weapon is MechMenuWeapon && level.mainPlayer.isSelectingRA()) {
@@ -2024,35 +2031,12 @@ public class GameMode {
 			drawWeaponText(x, y, level.mainPlayer.magnetMines.Count.ToString());
 		}
 
-		if (weapon is RaySplasher && level.mainPlayer.turrets.Count > 0) {
-			// drawWeaponText(x, y, level.mainPlayer.turrets.Count.ToString());
-		}
-
 		if (weapon is BlastLauncher && level.mainPlayer.axlLoadout.blastLauncherAlt == 1 && level.mainPlayer.grenades.Count > 0) {
 			drawWeaponText(x, y, level.mainPlayer.grenades.Count.ToString());
 		}
 
 		if (weapon is DNACore dnaCore && level.mainPlayer.weapon == weapon && level.mainPlayer.input.isHeld(Control.Special1, level.mainPlayer)) {
 			drawTransformPreviewInfo(dnaCore, x, y);
-		}
-
-
-		if (mainPlayer.isX && mainPlayer.character != null && mainPlayer.character.charState is not XRevive) {
-			MegamanX mmx = null!;
-			if (mainPlayer.character != null && !mainPlayer.character.destroyed) {
-				mmx = mainPlayer.character as MegamanX ?? throw new NullReferenceException();
-			}
-
-			if (weapon is HyperCharge &&
-				!mainPlayer.isSpectator &&
-				mainPlayer.weapons[level.mainPlayer.hyperChargeSlot].ammo == 0
-			) {
-				drawWeaponSlotAmmo(x, y, 0);
-			} else if (weapon is HyperCharge hb) {
-				drawWeaponSlotCooldown(x, y, mmx.hyperchargeCooldown / hb.getRateOfFire(level.mainPlayer));
-			} else if (weapon is NovaStrike ns) {
-				drawWeaponSlotCooldown(x, y, mmx.novaStrikeCooldown / ns.fireRate);
-			}
 		}
 		 
 		if (weapon is SigmaMenuWeapon) {
@@ -2940,7 +2924,7 @@ public class GameMode {
 						Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
 					);
 					string reviveText2 = Helpers.controlText(
-						$"[CMD]: Revive as MK-V (5 {Global.nameCoins})"
+						$"[CMD]: Revive as Vile V (5 {Global.nameCoins})"
 					);
 					Fonts.drawText(
 						FontType.Green, reviveText2,
@@ -3098,9 +3082,9 @@ public class GameMode {
 		if (charNum == 0) {
 			charName = "X";
 			if (is1v1) {
-				if (player.bootsArmorNum == 1) charName += "1";
-				else if (player.bootsArmorNum == 2) charName += "2";
-				else if (player.bootsArmorNum == 3) charName += "3";
+				if (player.legArmorNum == 1) charName += "1";
+				else if (player.legArmorNum == 2) charName += "2";
+				else if (player.legArmorNum == 3) charName += "3";
 			}
 		} else if (charNum == 1) charName = "Zero";
 		else if (charNum == 2) charName = "Vile";

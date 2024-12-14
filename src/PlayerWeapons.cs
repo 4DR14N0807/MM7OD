@@ -1,43 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static SFML.Window.Keyboard;
 
 namespace MMXOnline;
 
 public partial class Player {
-	public List<Weapon> weapons = new();
+	public List<Weapon> weapons => character?.weapons ?? oldWeapons;
 	public List<Weapon> oldWeapons = new();
 
-	public Weapon nonOwnerWeapon;
-
-	public int prevWeaponSlot;
-	private int _weaponSlot;
 	public int weaponSlot {
-		get {
-			return _weaponSlot;
-		}
+		get => character?.weaponSlot ?? 0;
 		set {
-			if (_weaponSlot != value) {
-				prevWeaponSlot = _weaponSlot;
-				_weaponSlot = value;
-			}
+			if (character == null) { return; }
+			character.weaponSlot = value;
 		}
 	}
+	public Weapon? weapon => character?.currentWeapon;
 
-	public Weapon weapon {
-		get {
-			if (ownedByLocalPlayer) {
-				if (weapons.InRange(weaponSlot)) {
-					return weapons[weaponSlot];
-				}
-				return new Weapon();
-			}
-			return nonOwnerWeapon ?? new Weapon();
-		}
-	}
-
-	public Weapon lastHudWeapon = null;
+	public Weapon? lastHudWeapon = null;
 
 	public AxlWeapon? axlWeapon {
 		get {
@@ -51,10 +33,12 @@ public partial class Player {
 
 	public List<Maverick> mavericks {
 		get {
-			var mavericks = new List<Maverick>();
-			foreach (var weapon in weapons) {
-				if (weapon is MaverickWeapon mw && mw.maverick != null) {
-					mavericks.Add(mw.maverick);
+			List<Maverick> mavericks = new();
+			if (character != null) {
+				foreach (var weapon in character.weapons) {
+					if (weapon is MaverickWeapon mw && mw.maverick != null) {
+						mavericks.Add(mw.maverick);
+					}
 				}
 			}
 			return mavericks;
@@ -63,7 +47,10 @@ public partial class Player {
 
 	public MaverickWeapon? currentMaverickWeapon {
 		get {
-			foreach (var weapon in weapons) {
+			if (character == null) {
+				return null;
+			}
+			foreach (var weapon in character.weapons) {
 				if (weapon is MaverickWeapon mw && mw.maverick != null && mw.maverick == currentMaverick) {
 					return mw;
 				}
@@ -74,7 +61,7 @@ public partial class Player {
 
 	public Maverick? currentMaverick {
 		get {
-			var mw = weapons.FirstOrDefault(
+			Weapon? mw = weapons.FirstOrDefault(
 				w => w is MaverickWeapon mw && mw.maverick?.aiBehavior == MaverickAIBehavior.Control
 			);
 			return (mw as MaverickWeapon)?.maverick;
@@ -82,7 +69,7 @@ public partial class Player {
 	}
 
 	public bool shouldBlockMechSlotScroll() {
-		if (character is Vile { isVileMK5: true, startRideArmor: not null }) {
+		if (character is Vile { isVileMK5: true, linkedRideArmor: not null }) {
 			return false;
 		}
 		return Options.main.blockMechSlotScroll;
@@ -95,7 +82,7 @@ public partial class Player {
 		if (character == null) return;
 		if (!character.canChangeWeapons()) return;
 
-		if (isGridModeEnabled() && weapons.Count > 1) {
+		if (isGridModeEnabled() && character.weapons.Count > 1) {
 			if (input.isWeaponLeftOrRightHeld(this)) {
 				gridModeHeld = true;
 				if (input.isPressedMenu(Control.Up)) gridModePos.y--;
@@ -111,10 +98,10 @@ public partial class Player {
 
 				var gridPoints = gridModePoints();
 
-				for (int i = 0; i < weapons.Count; i++) {
+				for (int i = 0; i < character.weapons.Count; i++) {
 					if (i >= gridPoints.Length) break;
 					var gridPoint = gridPoints[i];
-					if (gridModePos.x == gridPoint.x && gridModePos.y == gridPoint.y && weapons.Count >= i + 1) {
+					if (gridModePos.x == gridPoint.x && gridModePos.y == gridPoint.y && character.weapons.Count >= i + 1) {
 						changeWeaponSlot(i);
 					}
 				}
@@ -142,8 +129,8 @@ public partial class Player {
 			if (isDisguisedAxl && isZero && input.isHeld(Control.Down, this)) return;
 			weaponRight();
 		} else if (character != null && !Control.isNumberBound(realCharNum, Options.main.axlAimMode)) {
-			if (isVile && weapon is MechMenuWeapon mmw &&
-				character.startRideArmor == null &&
+			if (weapon is MechMenuWeapon mmw &&
+				character.linkedRideArmor == null &&
 				shouldBlockMechSlotScroll()
 			) {
 				if (input.isPressed(Key.Num1, canControl)) {
@@ -181,10 +168,6 @@ public partial class Player {
 				} else if (input.isPressed(Key.Num4, canControl) && weapons.Count >= 4) { changeWeaponSlot(3); } else if (input.isPressed(Key.Num5, canControl) && weapons.Count >= 5) { changeWeaponSlot(4); } else if (input.isPressed(Key.Num6, canControl) && weapons.Count >= 6) { changeWeaponSlot(5); } else if (input.isPressed(Key.Num7, canControl) && weapons.Count >= 7) { changeWeaponSlot(6); } else if (input.isPressed(Key.Num8, canControl) && weapons.Count >= 8) { changeWeaponSlot(7); } else if (input.isPressed(Key.Num9, canControl) && weapons.Count >= 9) { changeWeaponSlot(8); } else if (input.isPressed(Key.Num0, canControl) && weapons.Count >= 10) { changeWeaponSlot(9); }
 			}
 		}
-	}
-
-	public void changeWeaponFromWi(int weaponIndex) {
-		nonOwnerWeapon = weapons.FirstOrDefault(w => w.index == weaponIndex) ?? nonOwnerWeapon;
 	}
 
 	public void changeToSigmaSlot() {
@@ -285,7 +268,7 @@ label:
 				if (ws < 0) ws = 0;
 			}
 		}
-		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is NovaStrike && Options.main.novaStrikeSpecial)) {
+		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is HyperNovaStrike && Options.main.novaStrikeSpecial)) {
 			ws--;
 			goto label;
 		}
@@ -302,7 +285,7 @@ label:
 		if (ws >= max) {
 			ws = 0;
 		}
-		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is NovaStrike && Options.main.novaStrikeSpecial)) {
+		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is HyperNovaStrike && Options.main.novaStrikeSpecial)) {
 			ws++;
 			goto label;
 		}
@@ -316,34 +299,37 @@ label:
 
 	public List<Weapon>? preSigmaReviveWeapons;
 	public void configureWeapons() {
-		weapons = new List<Weapon>();
+		// Save weapons for cross-life maverick HP if not an Axl.
+		var weapons = character?.weapons;
 
-		if (ownedByLocalPlayer) {
-			if (isRock) {
-				Rock? rock = character as Rock;
-				if (Global.level.isTraining() && !Global.level.server.useLoadout) {
-					weapons = Weapon.getAllRockWeapons().Select(w => w.clone()).ToList();
-				}  else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomRockLoadout) {
-					weapons = getRandomRockLoadout().Select(wep => wep.clone()).ToList();
-				} else if (Global.level.is1v1()) {
-					weapons = Weapon.getAllMM7Weapons().Select(w => w.clone()).ToList();
-				}
-				else {
-					weapons = loadout.rockLoadout.getWeaponsFromLoadout(this);
-					//weapons.Add(loadout.rockLoadout.getRushFromLoadout(this));
-				}
-			} else if (isBass) {
-				//weapons = Bass.getAllWeapons().Select(w => w.clone()).ToList();
+	/* 	if (disguise == null) {
+			oldWeapons = weapons;
+
+			if (preSigmaReviveWeapons != null) {
+				oldWeapons = preSigmaReviveWeapons;
+				preSigmaReviveWeapons = null;
 			}
-		}
+		} */
 		weaponSlot = 0;
 	}
 
 	private Weapon getAxlBullet(int axlBulletType) {
-		if (axlBulletType == (int)AxlBulletWeaponType.DoubleBullets) {
-			return new DoubleBullet();
+		switch (axlBulletType) {
+			case (int)AxlBulletWeaponType.DoubleBullets:
+				return new DoubleBullet();
+			case (int)AxlBulletWeaponType.MetteurCrash:
+				return new MettaurCrash();
+			case (int)AxlBulletWeaponType.BeastKiller:
+				return new BeastKiller();
+			case (int)AxlBulletWeaponType.MachineBullets:
+				return new MachineBullets();
+			case (int)AxlBulletWeaponType.RevolverBarrel:
+				return new RevolverBarrel();
+			case (int)AxlBulletWeaponType.AncientGun:
+				return new AncientGun();		
+			default:
+				return new AxlBullet((AxlBulletWeaponType)axlBulletType);
 		}
-		return new AxlBullet((AxlBulletWeaponType)axlBulletType);
 	}
 
 	public Weapon getAxlBulletWeapon() {
@@ -351,10 +337,21 @@ label:
 	}
 
 	public Weapon getAxlBulletWeapon(int type) {
-		if (type == (int)AxlBulletWeaponType.DoubleBullets) {
-			return new DoubleBullet();
-		} else {
-			return new AxlBullet((AxlBulletWeaponType)type);
+		switch (type) {
+			case (int)AxlBulletWeaponType.DoubleBullets:
+				return new DoubleBullet();
+			case (int)AxlBulletWeaponType.MetteurCrash:
+				return new MettaurCrash();
+			case (int)AxlBulletWeaponType.BeastKiller:
+				return new BeastKiller();
+			case (int)AxlBulletWeaponType.MachineBullets:
+				return new MachineBullets();
+			case (int)AxlBulletWeaponType.RevolverBarrel:
+				return new RevolverBarrel();
+			case (int)AxlBulletWeaponType.AncientGun:
+				return new AncientGun();			
+			default:
+				return new AxlBullet((AxlBulletWeaponType)type);
 		}
 	}
 
@@ -362,7 +359,7 @@ label:
 		int miscSlots = 0;
 		if (weapons.Any(w => w is GigaCrush)) miscSlots++;
 		if (weapons.Any(w => w is HyperCharge)) miscSlots++;
-		if (weapons.Any(w => w is NovaStrike)) miscSlots++;
+		if (weapons.Any(w => w is HyperNovaStrike)) miscSlots++;
 		return weapons.Count - miscSlots;
 	}
 
@@ -379,19 +376,22 @@ label:
 	}
 
 	public void addNovaStrike() {
-		if (!weapons.Any(w => w is NovaStrike)) {
-			weapons.Add(new NovaStrike(this));
+		if (!weapons.Any(w => w is HyperNovaStrike)) {
+			weapons.Add(new HyperNovaStrike());
 		}
 	}
 
 	public void removeNovaStrike() {
-		if (weapon is NovaStrike) {
+		if (weapon is HyperNovaStrike) {
 			weaponSlot = 0;
 		}
-		weapons.RemoveAll(w => w is NovaStrike);
+		weapons.RemoveAll(w => w is HyperNovaStrike);
 	}
 
 	public void removeHyperCharge() {
+		if (character != null) {
+
+		}
 		if (weapon is HyperCharge) {
 			weaponSlot = 0;
 		}
@@ -425,12 +425,15 @@ label:
 	}
 
 	public void updateWeapons() {
-		foreach (var weapon in weapons) {
+		if (character?.weapons == null) {
+			return;
+		}
+		foreach (var weapon in character.weapons) {
 			weapon.update();
 			if (character != null && health > 0) {
 				bool alwaysOn = false;
 				if (weapon is GigaCrush && Options.main.gigaCrushSpecial ||
-					weapon is NovaStrike && Options.main.novaStrikeSpecial
+					weapon is HyperNovaStrike && Options.main.novaStrikeSpecial
 				) {
 					alwaysOn = true;
 				}

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class NeoSigma : BaseSigma {
+	public float normalAttackCooldown;
 	public float sigmaUpSlashCooldown;
 	public float sigmaDownSlashCooldown;
 
@@ -25,6 +26,7 @@ public class NeoSigma : BaseSigma {
 			return;
 		}
 		// Cooldowns.
+		Helpers.decrementTime(ref normalAttackCooldown);
 		Helpers.decrementTime(ref sigmaUpSlashCooldown);
 		Helpers.decrementTime(ref sigmaDownSlashCooldown);
 		// For ladder and slide attacks.
@@ -58,7 +60,7 @@ public class NeoSigma : BaseSigma {
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		// Shoot button attacks.
-		if (lenientAttackPressed && saberCooldown == 0) {
+		if (lenientAttackPressed && normalAttackCooldown == 0) {
 			if (player.input.isHeld(Control.Up, player) && flag == null && grounded) {
 				if (sigmaUpSlashCooldown == 0) {
 					sigmaUpSlashCooldown = 0.75f;
@@ -73,7 +75,7 @@ public class NeoSigma : BaseSigma {
 				}
 				return true;
 			}
-			saberCooldown = sigmaSaberMaxCooldown;
+			normalAttackCooldown = sigmaSaberMaxCooldown;
 
 			if (charState is WallSlide || charState is LadderClimb) {
 				if (charState is LadderClimb) {
@@ -119,35 +121,35 @@ public class NeoSigma : BaseSigma {
 		Projectile? proj = sprite.name switch {
 			"sigma2_attack" => new GenericMeleeProj(
 				SigmaClawWeapon.netWeapon, centerPoint, ProjIds.Sigma2Claw, player,
-				2, 0, 0.2f
+				2, 0, 0.2f, addToLevel: true
 			),
 			"sigma2_attack2" => new GenericMeleeProj(
 				SigmaClawWeapon.netWeapon, centerPoint, ProjIds.Sigma2Claw2, player,
-				2, Global.halfFlinch, 0.5f
+				2, Global.halfFlinch, 0.5f, addToLevel: true
 			),
 			"sigma2_attack_air" => new GenericMeleeProj(
 				SigmaClawWeapon.netWeapon, centerPoint, ProjIds.Sigma2Claw, player,
-				3, 0, 0.375f
+				3, 0, 0.375f, addToLevel: true
 			),
 			"sigma2_attack_dash" => new GenericMeleeProj(
 				SigmaClawWeapon.netWeapon, centerPoint, ProjIds.Sigma2Claw, player,
-				3, 0, 0.375f
+				3, 0, 0.375f, addToLevel: true
 			),
 			"sigma2_upslash" or "sigma2_downslash" => new GenericMeleeProj(
 				SigmaClawWeapon.netWeapon, centerPoint, ProjIds.Sigma2UpDownClaw, player,
-				3, Global.defFlinch, 0.5f
+				3, Global.defFlinch, 0.5f, addToLevel: true
 			),
 			"sigma2_ladder_attack" => new GenericMeleeProj(
 				SigmaClawWeapon.netWeapon, centerPoint, ProjIds.Sigma2Claw, player,
-				3, 0, 0.25f
+				3, 0, 0.25f, addToLevel: true
 			),
 			"sigma2_wall_slide_attack" => new GenericMeleeProj(
 				SigmaClawWeapon.netWeapon, centerPoint, ProjIds.Sigma2Claw, player,
-				3, 0, 0.25f
+				3, 0, 0.25f, addToLevel: true
 			),
 			"sigma2_shoot2" => new GenericMeleeProj(
 				new SigmaElectricBall2Weapon(), centerPoint, ProjIds.Sigma2Ball2, player,
-				6, Global.defFlinch, 1f
+				6, Global.defFlinch, 1f, addToLevel: true
 			),
 			_ => null
 		};

@@ -26,6 +26,13 @@ public class InGameMainMenu : IMainMenu {
 		Helpers.menuUpDown(ref selectY, 0, 6);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			if (selectY == 0) {
+				int selectedCharNum = Global.level.mainPlayer.newCharNum;
+				if (Global.level.mainPlayer.character == null ||
+					Global.level.mainPlayer.character.charState is Die
+				) {
+					selectedCharNum = Global.level.mainPlayer.newCharNum;
+				}
+
 				if (isSelWepDisabled()) return;
 				if (Global.level.mainPlayer.realCharNum == 5) {
 					Menu.change(new SelectRockWeaponMenu(this, true));
@@ -36,11 +43,11 @@ public class InGameMainMenu : IMainMenu {
 				}
 				 else if (Global.level.mainPlayer.realCharNum == 4) {
 					Menu.change(new SelectSigmaWeaponMenu(this, true));
-				} else if (Global.level.mainPlayer.realCharNum == 3) {
+				} else if (selectedCharNum == 3) {
 					Menu.change(new SelectAxlWeaponMenu(this, true));
-				} else if (Global.level.mainPlayer.realCharNum == 2) {
+				} else if (selectedCharNum == 2) {
 					Menu.change(new SelectVileWeaponMenu(this, true));
-				} else if (Global.level.mainPlayer.realCharNum == 1) {
+				} else if (selectedCharNum == 1) {
 					Menu.change(new SelectZeroWeaponMenu(this, true));
 				} else {
 					Menu.change(new SelectWeaponMenu(this, true));

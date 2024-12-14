@@ -16,7 +16,7 @@ public class ShotgunIce : Weapon {
 		//shootSounds = new string[] { "shotgunIce", "shotgunIce", "shotgunIce", "icyWind" };
 		fireRate = 30;
 		damage = "2/1-2";
-		effect = "Insta Freeze enemies. Ice sled up to 12 DMG.";
+		effect = "U:Can Split.\nC: Insta Freeze enemies. Ice sled up to 12 DMG.";
 		hitcooldown = "0.01/0.5";
 		Flinch = "0";
 	}
@@ -33,7 +33,7 @@ public class ShotgunIce : Weapon {
 			pos = pos.addxy(xDir * 25, 0);
 			pos.y = mmx.pos.y;
 
-			mmx.shotgunIceChargeTime = 1.5f;
+			//mmx.shotgunIceChargeTime = 1.5f;
 
 			new ShotgunIceProjSled(this, pos, xDir, player, player.getNextActorNetId(), true);
 		}
@@ -197,8 +197,9 @@ public class ShotgunIceProjSled : Projectile {
 		fadeSound = "";
 		shouldShieldBlock = false;
 		isPlatform = true;
+		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
 		//this.collider.wallOnly = true;
-		canBeLocal = true;
+		canBeLocal = false;
 
 		if (rpc) rpcCreate(pos, player, netProjId, xDir);
 	}

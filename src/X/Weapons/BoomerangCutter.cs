@@ -16,7 +16,7 @@ public class BoomerangCutter : Weapon {
 		//shootSounds = new string[] { "boomerang", "boomerang", "boomerang", "buster3" };
 		fireRate = 30;
 		damage = "2/2";
-		effect = "Charged: Doesn't destroy on hit.";
+		effect = "Charged: Doesn't destroy on hit.\nCharged won't give assists.";
 		hitcooldown = "0/0.5";
 		Flinch = "0/26";
 	}
@@ -98,9 +98,12 @@ public class BoomerangProj : Projectile {
 				pickup.changePos(character.getCenterPos());
 			}
 			destroySelf();
-			if (character.player.weapon is BoomerangCutter) {
-				if (character.player.hasChip(3)) character.player.weapon.ammo += 0.5f;
-				else character.player.weapon.ammo++;
+			if (character.currentWeapon is BoomerangCutter bcWeapon) {
+				if (character is MegamanX mmx && mmx.hyperArmArmor == ArmorId.Max) {
+					bcWeapon.ammo += 0.5f;
+				} else {
+					bcWeapon.ammo++;
+				}
 			}
 		}
 	}

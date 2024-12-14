@@ -61,6 +61,7 @@ public class CharState {
 	public bool exitOnLanding;
 	public bool exitOnAirborne;
 	public bool useDashJumpSpeed;
+	public SpecialStateIds specialId;
 
 	public CharState(string sprite, string shootSprite = "", string attackSprite = "", string transitionSprite = "") {
 		this.sprite = string.IsNullOrEmpty(transitionSprite) ? sprite : transitionSprite;
@@ -71,12 +72,8 @@ public class CharState {
 		stateTime = 0;
 	}
 
-	public bool canShoot() {
-		return !string.IsNullOrEmpty(shootSprite) && character.canShoot();
-	}
-
-	public bool canAttack() {
-		return !string.IsNullOrEmpty(attackSprite) && !character.isInvulnerableAttack() && character.saberCooldown == 0;
+	public bool canUseShootAnim() {
+		return !string.IsNullOrEmpty(shootSprite);
 	}
 
 	public Player player {
@@ -185,7 +182,11 @@ public class CharState {
 			character.frameSpeed = 1;
 			if (character.isAnimOver() && !Global.level.gameMode.isOver) {
 				sprite = defaultSprite;
-				character.changeSpriteFromName(sprite, true);
+				if (character.shootAnimTime > 0 && shootSprite != "") {
+					character.changeSpriteFromName(shootSprite, true);
+				} else {
+					character.changeSpriteFromName(sprite, true);
+				}
 			}
 		}
 		var lastLeftWallData = character.getHitWall(-1, 0);
@@ -238,31 +239,17 @@ public class CharState {
 	}
 
 	public virtual void airTrasition() {
-		bool isGrounded = character.grounded && character.vel.y >= 0;
-
-		if (airSprite != "" && !isGrounded && wasGrounded &&
-			(landSprite == "" || character.sprite.name == character.getSprite(landSprite)) &&
-			character.sprite.name != character.getSprite(airSprite) &&
-			character.sprite.name != character.getSprite(fallSprite)
-		) {
+		if (airSprite != "" && !character.grounded && wasGrounded && sprite != airSprite) {
 			sprite = airSprite;
 			if (character.vel.y >= 0 && fallSprite != "") {
 				sprite = fallSprite;
 			}
 			int oldFrameIndex = character.sprite.frameIndex;
 			float oldFrameTime = character.sprite.frameTime;
-			character.changeSpriteFromName(sprite, airSpriteReset);
-			if (!airSpriteReset) {
-				character.sprite.frameIndex = oldFrameIndex;
-				character.sprite.frameTime = oldFrameTime;
-			}
-		}
-		else if (
-			landSprite != "" && isGrounded && !wasGrounded &&
-			(airSprite == "" || character.sprite.name == character.getSprite(airSprite)
-			|| character.sprite.name == character.getSprite(fallSprite)) &&
-			character.sprite.name != character.getSprite(landSprite)
-		) {
+			character.changeSprite(sprite, false);
+			character.sprite.frameIndex = oldFrameIndex;
+			character.sprite.frameTime = oldFrameTime;
+		} else if (landSprite != "" && character.grounded && !wasGrounded && sprite != landSprite) {
 			sprite = landSprite;
 			int oldFrameIndex = character.sprite.frameIndex;
 			float oldFrameTime = character.sprite.frameTime;
@@ -315,6 +302,9 @@ public class CharState {
 	}
 
 	public void checkLadder(bool isGround) {
+		if (character.charState is LadderClimb) {
+			return;
+		}
 		if (player.input.isHeld(Control.Up, player)) {
 			List<CollideData> ladders = Global.level.getTerrainTriggerList(character, new Point(0, 0), typeof(Ladder));
 			if (ladders != null && ladders.Count > 0 && ladders[0].gameObject is Ladder ladder) {
@@ -339,8 +329,7 @@ public class CharState {
 				float xDist = snapX - character.pos.x;
 				if (MathF.Abs(xDist) < 10 && Global.level.checkTerrainCollisionOnce(character, xDist, 30) == null) {
 					var midX = ladders[0].otherCollider.shape.getRect().center().x;
-					character.changeState(new LadderClimb(ladder, midX));
-					character.move(new Point(0, 30), false);
+					character.changeState(new LadderClimb(ladder, midX, 30));
 					character.stopCamUpdate = true;
 				}
 			}
@@ -560,7 +549,7 @@ public class Idle : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		if ((character is MegamanX { isHyperX: true } || player.health < 4)) {
+		if ((character is RagingChargeX || player.health < 4)) {
 			if (Global.sprites.ContainsKey(character.getSprite("weak"))) {
 				defaultSprite = "weak";
 				if (!inTransition()) {
@@ -595,7 +584,7 @@ public class Idle : CharState {
 		base.update();
 
 		if (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player)) {
-			if (!character.isAttacking() && !character.isSoftLocked() && character.canTurn()) {
+			if (!character.isSoftLocked() && character.canTurn()) {
 				if (player.input.isHeld(Control.Left, player)) character.xDir = -1;
 				if (player.input.isHeld(Control.Right, player)) character.xDir = 1;
 				if (player.character.canMove()) character.changeState(new Run());
@@ -1031,59 +1020,11 @@ public class AirDash : CharState {
 	}
 }
 
-public class UpDash : CharState {
-	public float dashTime = 0;
-	public string initialDashButton;
-
-	public UpDash(string initialDashButton) : base("up_dash", "up_dash_shoot") {
-		this.initialDashButton = initialDashButton;
-		attackCtrl = true;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.isDashing = true;
-		character.useGravity = false;
-		character.vel = new Point(0, -4);
-		character.dashedInAir++;
-		character.frameSpeed = 2;
-	}
-
-	public override void onExit(CharState newState) {
-		character.useGravity = true;
-		character.vel.y = 0;
-		base.onExit(newState);
-	}
-
-	public override void update() {
-		base.update();
-		if (!player.input.isHeld(initialDashButton, player)) {
-			character.changeState(new Fall());
-			return;
-		}
-
-		if (!once) {
-			once = true;
-			character.vel = new Point(0, -250);
-			new Anim(character.pos.addxy(0, -10), "dash_sparks_up", character.xDir, player.getNextActorNetId(), true, sendRpc: true);
-			//character.playSound("dash", sendRpc: true);
-		}
-
-		dashTime += Global.spf;
-		float maxDashTime = 0.4f;
-		if (character.isUnderwater()) maxDashTime *= 1.5f;
-		if (dashTime > maxDashTime) {
-			character.changeState(new Fall());
-			return;
-		}
-	}
-}
-
 public class WallSlide : CharState {
 	public int wallDir;
 	public float dustTime;
 	public Collider wallCollider;
-	MegamanX mmx;
+	MegamanX? mmx;
 
 	public WallSlide(
 		int wallDir, Collider wallCollider
@@ -1253,6 +1194,7 @@ public class LadderClimb : CharState {
 		this.snapX = MathF.Round(snapX);
 		this.incY = incY;
 		attackCtrl = true;
+		immuneToWind = true;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -1286,13 +1228,16 @@ public class LadderClimb : CharState {
 		if (inTransition() || character.rootTime > 0) {
 			return;
 		}
+		bool isAttacking = (
+			character.sprite.name != character.getSprite("ladder_climb")
+		);
 
-		if (character.isAttacking() || character.shootAnimTime > 0) {
+		if (isAttacking) {
 			character.frameSpeed = 1;
 		} else {
 			character.frameSpeed = 0;
 		}
-		if (character.canClimbLadder()) {
+		if (!isAttacking && character.canClimbLadder()) {
 			if (player.input.isHeld(Control.Up, player)) {
 				character.move(new Point(0, character.getClimbLadderSpeed() * -1));
 				//character.vel.y = character.getClimbLadderSpeed() * -1;
@@ -1316,7 +1261,7 @@ public class LadderClimb : CharState {
 				character.changeState(new Fall());
 			}
 		} else if (!player.isAI && player.input.isPressed(Control.Jump, player)) {
-			if (!character.isAttacking()) {
+			if (!isAttacking) {
 				dropFromLadder();
 			}
 		}
@@ -1361,6 +1306,7 @@ public class LadderEnd : CharState {
 			//this.character.pos.y = this.targetY;
 			character.incPos(new Point(0, targetY - character.pos.y));
 			character.stopCamUpdate = true;
+			character.grounded = true;
 			character.changeToIdleOrFall();
 		}
 	}
@@ -1615,6 +1561,21 @@ public class Die : CharState {
 		if (character is Blues blues) {
 			blues.destroyStarCrash();
 		}
+		new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
+		player.lastDeathWasXHyper = character is RagingChargeX;
+		
+		if (character.ownedByLocalPlayer && character.player.isDisguisedAxl) {
+			character.player.revertToAxlDeath();
+			character.changeSpriteFromName("die", true);
+		}
+		if (character is Vile vile) {
+			player.lastDeathWasVileMK2 = vile.isVileMK2 == true;
+			player.lastDeathWasVileMK5 = vile.isVileMK5 == true;
+		} else {
+			player.lastDeathWasVileMK2 = false;
+			player.lastDeathWasVileMK5 = false;
+		}
+		player.lastDeathWasSigmaHyper = character is WolfSigma or ViralSigma or KaiserSigma;
 		player.lastDeathPos = character.getCenterPos();
 	}
 
@@ -1648,6 +1609,13 @@ public class Die : CharState {
 		if (stateTime >= 2) {
 			player.destroyCharacter();
 			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
+		}
+	} 
+
+	public void destroyRideArmor() {
+		if (character.linkedRideArmor != null) {
+			character.linkedRideArmor.selfDestructTime = Global.spf;
+			RPC.actorToggle.sendRpc(character.linkedRideArmor.netId, RPCActorToggleType.StartMechSelfDestruct);
 		}
 		frames++;
 	}

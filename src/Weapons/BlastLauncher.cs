@@ -18,7 +18,7 @@ public class BlastLauncher : AxlWeapon {
 		sprite = "axl_arm_blastlauncher";
 		flashSprite = "axl_pistol_flash_charged";
 		chargedFlashSprite = "axl_pistol_flash_charged";
-		altFireCooldown = 1.5f;
+		altFireCooldown = 90;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -78,14 +78,15 @@ public class GrenadeProj : Projectile, IDamagable {
 		}
 
 		if (type == 1) {
-			fadeSound = "";
+			projId = (int)ProjIds.BlastLauncherMineGrenadeProj;
+			//fadeSound = "explosion";
 			fadeSprite = "explosion";
 		}
 
 		vel.x = speed * bulletDir.x;
 		vel.y = speed * bulletDir.y;
 
-		projId = (int)ProjIds.BlastLauncher;
+		projId = (int)ProjIds.BlastLauncherGrenadeProj;
 		useGravity = true;
 		collider.wallOnly = true;
 		destroyOnHit = false;
@@ -217,7 +218,7 @@ public class GrenadeExplosionProj : Projectile {
 		this.directHitXDir = directHitXDir;
 		this.type = type;
 		destroyOnHit = false;
-		projId = (int)ProjIds.BlastLauncherSplash;
+		projId = (int)ProjIds.BlastLauncherGrenadeSplash;
 		//playSound("grenadeExplode");
 		shouldShieldBlock = false;
 		rands = new List<int>();

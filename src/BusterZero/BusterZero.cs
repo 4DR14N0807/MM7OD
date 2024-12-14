@@ -11,6 +11,7 @@ public class BusterZero : Character {
 	public bool stockedSaber;
 	public List<DZBusterProj> zeroLemonsOnField = new();
 	public ZBusterSaber meleeWeapon = new();
+	public int lastShootPressed;
 
 	public BusterZero(
 		Player player, float x, float y, int xDir,
@@ -26,11 +27,11 @@ public class BusterZero : Character {
 		if (stockedBusterLv > 0 || stockedSaber) {
 			var renderGfx = stockedBusterLv switch {
 				_ when stockedSaber || stockedBusterLv == 2 => RenderEffectType.ChargeGreen,
-				1 => RenderEffectType.ChargePink,
-				2 => RenderEffectType.ChargeOrange,
+				1 or 3 => RenderEffectType.ChargePink,
+				2 or 4 => RenderEffectType.ChargeOrange,
 				_ => RenderEffectType.ChargeBlue
 			};
-			addRenderEffect(renderGfx, 0.033333f, 0.1f);
+			addRenderEffect(renderGfx, 2, 6);
 		}
 		if (!ownedByLocalPlayer) {
 			return;
@@ -51,7 +52,7 @@ public class BusterZero : Character {
 
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
-			shootAnimTime -= Global.spf;
+			shootAnimTime -= Global.speedMul;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
 				changeSpriteFromName(charState.defaultSprite, false);
@@ -63,6 +64,7 @@ public class BusterZero : Character {
 		// Charge and release charge logic.
 		chargeLogic(shoot);
 	}
+
 	public override void chargeGfx() {
 		if (ownedByLocalPlayer) {
 			chargeEffect.stop();
@@ -78,7 +80,7 @@ public class BusterZero : Character {
 				3 => RenderEffectType.ChargePink,
 				_ => RenderEffectType.ChargeGreen,
 			};
-			addRenderEffect(renderGfx, 0.033333f, 0.1f);
+			addRenderEffect(renderGfx, 2, 6);
 			chargeEffect.update(getChargeLevel(), chargeType);
 		}
 	}
@@ -129,25 +131,21 @@ public class BusterZero : Character {
 			}
 			int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
 			if (shootPressed || framesSinceLastShootPressed < 6) {
-				if (stockedBusterLv == 1) {
+				if (stockedBusterLv >= 1) {
 					if (charState is WallSlide) {
-						shoot(1);
+						int chargeLevel = stockedBusterLv;
+						if (stockedBusterLv >= 3) {
+							stockedBusterLv -= 2;
+							chargeLevel = stockedBusterLv;
+						} else {
+							stockedBusterLv = 0;
+						}
+						shoot(chargeLevel);
 						lemonCooldown = 22;
-						stockedBusterLv = 0;
-						return true;
-					}
-					changeState(new BusterZeroDoubleBuster(true, true), true);
-					return true;
-				}
-				if (stockedBusterLv == 2) {
-					if (charState is WallSlide) {
-						shoot(2);
-						lemonCooldown = 22;
-						stockedBusterLv = 0;
 						lastShootPressed = 0;
 						return true;
 					}
-					changeState(new BusterZeroDoubleBuster(true, false), true);
+					changeState(new BusterZeroDoubleBuster(true, stockedBusterLv), true);
 					return true;
 				}
 				if (stockedSaber) {
@@ -194,7 +192,7 @@ public class BusterZero : Character {
 				this.xDir = 1;
 			}
 		}
-		shootAnimTime = 0.3f;
+		shootAnimTime = DefaultShootAnimTime;
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
@@ -225,7 +223,7 @@ public class BusterZero : Character {
 				return;
 			} else {
 				shootAnimTime = 0;
-				changeState(new BusterZeroDoubleBuster(false, true), true);
+				changeState(new BusterZeroDoubleBuster(false, 3), true);
 			}
 		}
 		else if (chargeLevel >= 4) {
@@ -237,12 +235,16 @@ public class BusterZero : Character {
 				return;
 			} else {
 				shootAnimTime = 0;
-				changeState(new BusterZeroDoubleBuster(false, false), true);
+				changeState(new BusterZeroDoubleBuster(false, 4), true);
 			}
 		}
 		if (chargeLevel >= 1) {
 			stopCharge();
 		}
+	}
+
+	public override int getMaxChargeLevel() {
+		return 4;
 	}
 
 	// This can run on both owners and non-owners. So data used must be in sync.
@@ -257,7 +259,9 @@ public class BusterZero : Character {
 		Projectile? proj = id switch {
 			(int)MeleeIds.SaberSwing => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.DZMelee, player,
-				isBlackZero ? 4 : 3, Global.defFlinch, 0.5f, isReflectShield: true, addToLevel: addToLevel
+				isBlackZero ? 4 : 3, Global.defFlinch, 0.5f, isReflectShield: true,
+				isZSaberClang : true, isZSaberEffect : true,
+				addToLevel: addToLevel
 			),
 			_ => null
 		};

@@ -19,15 +19,33 @@ public partial class Character : Actor, IDamagable {
 		"Proto Man",
 		"Bass",
 	};
-	public CharState charState;
+
+	// Health.
+	public decimal health;
+	public decimal maxHealth;
+	
+	// Player linked data.
 	public Player player;
+	public int currency;
+
+	public List<Weapon> weapons = new();
+	public int weaponSlot;
+	public Weapon? currentWeapon { get {
+		if (weaponSlot < 0 || weaponSlot >= weapons.Count) {
+			return null;
+		}
+		return weapons[weaponSlot];
+	}}
+	
+
+	// Statemachine stuff.
+	public CharState charState;
 	public bool isDashing;
-	public float shootTime {
-		get { return player.weapon.shootCooldown; }
-		set { player.weapon.shootCooldown = value; }
-	}
+
+	// Movement and charge.
 	public bool changedStateInFrame;
 	public bool pushedByTornadoInFrame;
+
 	public float chargeTime;
 	public float charge1Time = 30;
 	public float charge2Time = 105;
@@ -35,15 +53,13 @@ public partial class Character : Actor, IDamagable {
 	public float charge4Time = 255;
 	public float hyperProgress;
 
-	public Point? sigmaHeadGroundCamCenterPos;
-	public float chargeFlashTime;
 	public ChargeEffect chargeEffect;
+	public const float DefaultShootAnimTime = 18;
 	public float shootAnimTime = 0;
 	public AI? ai;
-	public float headbuttAirTime = 0;
 	public int dashedInAir = 0;
 	public float healAmount = 0;
-	public SubTank? usedSubtank;
+	public ETank? usedSubtank;
 	public ETank? usedEtank;
 	public WTank? usedWtank;
 	public float netSubtankHealAmount;
@@ -58,7 +74,6 @@ public partial class Character : Actor, IDamagable {
 	public float healthBarInnerWidth;
 	public float slideVel = 0;
 	public Flag? flag;
-	public float stingChargeTime;
 	public bool isCrystalized;
 	public bool isDWrapped;
 	public bool insideCharacter;
@@ -67,20 +82,7 @@ public partial class Character : Actor, IDamagable {
 	public List<Trail> lastFiveTrailDraws = new List<Trail>();
 	public LoopingSound chargeSound;
 
-	//public ShaderWrapper possessedShader;
-	//public ShaderWrapper acidShader;
-	//public ShaderWrapper igShader;
-	//public ShaderWrapper oilShader;
-	//public ShaderWrapper infectedShader;
-	//public ShaderWrapper frozenCastleShader;
-	//public ShaderWrapper vaccineShader;
-	//public ShaderWrapper darkHoldShader;
-
-	public float headshotRadius {
-		get {
-			return 6f;
-		}
-	}
+	public readonly float headshotRadius = 6;
 
 	public decimal damageSavings = 0;
 	public decimal damageDebt = 0;
@@ -88,7 +90,6 @@ public partial class Character : Actor, IDamagable {
 	public bool stopCamUpdate = false;
 	public Anim? warpBeam;
 	public float flattenedTime;
-	public float saberCooldown;
 
 	public const float maxLastAttackerTime = 5;
 
@@ -111,24 +112,16 @@ public partial class Character : Actor, IDamagable {
 	public Player lastGravityWellDamager;
 
 	// Some things previously in other char files used by multiple characters.
-	public int lastShootPressed;
-	public int lastShootReleased;
-	public long lastAttackFrame = -100;
-	public long framesSinceLastAttack = 1000;
-	public float grabCooldown;
-
-	public RideArmor? startRideArmor;
+	public RideArmor? linkedRideArmor;
 	public RideArmor? rideArmorPlatform;
-	public const float maxCalldownMechCooldown = 2;
 	public bool alreadySummonedNewMech;
 
 	// Was on Axl.cs before
-	public int lastXDir;
 	public Anim? transformAnim;
 	float transformSmokeTime;
+	public int fakeAlliance;
 
 	// For states with special propieties.
-	public int specialState = 0;
 	// For doublejump.
 	public float lastJumpPressedTime;
 
@@ -141,14 +134,9 @@ public partial class Character : Actor, IDamagable {
 	public CharIds charId;
 
 	// Random stuff.
-	public List<Tuple<string, int>> lastDTInputs = new List<Tuple<string, int>>();
-	public string holdingDTDash = "";
-	const int doubleDashFrames = 20;
 	public float dropFlagProgress;
 	public float dropFlagCooldown;
 	public bool dropFlagUnlocked;
-	long originalZIndex;
-	bool viralOnce;
 
 	// Status effects.
 	// Acid
@@ -156,8 +144,7 @@ public partial class Character : Actor, IDamagable {
 	public float acidTime;
 	public float acidHurtCooldown;
 	// Infected
-	public Damager? infectedDamager;
-	public float infectedTime;
+	public float virusTime;
 	// Oil
 	public Damager? oilDamager;
 	public float oilTime;
@@ -202,6 +189,9 @@ public partial class Character : Actor, IDamagable {
 	// Ctrl data
 	public int altCtrlsLength = 1;
 
+	// Etc.
+	public int camOffsetX;
+
 	// Main character class starts here.
 	public Character(
 		Player player, float x, float y, int xDir,
@@ -241,7 +231,6 @@ public partial class Character : Actor, IDamagable {
 		visible = isVisible;
 
 		chargeTime = 0;
-		chargeFlashTime = 0;
 		useFrameProjs = true;
 
 		chargeSound = new LoopingSound("charge_start", "charge_loop", this);
@@ -256,6 +245,9 @@ public partial class Character : Actor, IDamagable {
 
 		chargeEffect = new ChargeEffect();
 		lastGravityWellDamager = player;
+		maxHealth = (decimal)player.getMaxHealth();
+		health = 1;
+		healAmount = (float)maxHealth - 1;
 	}
 
 	public override void onStart() {
@@ -276,18 +268,15 @@ public partial class Character : Actor, IDamagable {
 	}
 	public bool isVaccinated() { return vaccineTime > 0; }
 
-	public void addInfectedTime(Player attacker, float time) {
+	public void addVirusTime(Player attacker, float time) {
 		if (!ownedByLocalPlayer) return;
 		if (isInvulnerable()) return;
 		if (isVaccinated()) return;
 		if (charState.invincible) return;
 
 		Damager damager = new Damager(attacker, 0, 0, 0);
-		if (infectedTime == 0 || infectedDamager == null) {
-			infectedDamager = damager;
-		} else if (infectedDamager.owner != damager.owner) return;
-		infectedTime += time;
-		if (infectedTime > 8) infectedTime = 8;
+		virusTime += time;
+		if (virusTime > 8) virusTime = 8;
 	}
 
 	public void addDarkHoldTime(float darkHoldTime, Player attacker) {
@@ -301,7 +290,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void addAcidTime(Player attacker, float time) {
 		if (!ownedByLocalPlayer ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isDotImmune() ||
 			isInvulnerable() ||
 			isVaccinated() || charState.invincible
 		) {
@@ -326,7 +315,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void addOilTime(Player attacker, float time) {
 		if (!ownedByLocalPlayer ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isDebuffImmune() ||
 			isInvulnerable() ||
 			isVaccinated() || charState.invincible
 		) {
@@ -353,7 +342,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void addBurnTime(Player? attacker, Weapon weapon, float time) {
 		if (!ownedByLocalPlayer ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isDotImmune() ||
 			isInvulnerable() ||
 			isVaccinated() || charState.invincible
 		) {
@@ -398,7 +387,7 @@ public partial class Character : Actor, IDamagable {
 	public void addIgFreezeProgress(float amount, int freezeTime = 120) {
 		if (freezeInvulnTime > 0) return;
 		if (frozenTime > 0) return;
-		if (isCCImmune()) return;
+		if (isStatusImmune()) return;
 		if (isInvulnerable()) return;
 		if (isVaccinated()) return;
 		if (charState.invincible) return;
@@ -428,17 +417,6 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public bool isCStingInvisible() {
-		return this is MegamanX { stingActive: true };
-	}
-
-	public bool isCStingInvisibleGraphics() {
-		return this is MegamanX {
-			hasUltimateArmor: false,
-			stingActive: true,
-		};
-	}
-
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = new List<ShaderWrapper>();
 
@@ -461,8 +439,8 @@ public partial class Character : Actor, IDamagable {
 			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 4);
 			shaders.Add(player.igShader);
 		}
-		if (infectedTime > 0 && player.infectedShader != null) {
-			player.infectedShader.SetUniform("infectedFactor", infectedTime / 8f);
+		if (virusTime > 0 && player.infectedShader != null) {
+			player.infectedShader.SetUniform("infectedFactor", virusTime / 8f);
 			shaders.Add(player.infectedShader);
 		}
 		if (burnStunStacks > 0 && !sprite.name.Contains("burning") && player.burnStateShader != null) {
@@ -474,10 +452,6 @@ public partial class Character : Actor, IDamagable {
 			shaders.Add(player.evilEnergyShader);
 		}
 		return shaders;
-	}
-
-	public bool isInvisibleEnemy() {
-		return player.alliance != Global.level.mainPlayer.alliance;
 	}
 
 	public void splashLaserKnockback(Point splashDeltaPos) {
@@ -499,8 +473,6 @@ public partial class Character : Actor, IDamagable {
 	// Stuck in place and can't do any action but still can activate controls, etc.
 	public virtual bool isSoftLocked() {
 		if (charState is WarpOut) return true;
-		if (player.currentMaverick != null) return true;
-		//if (player.weapon is MaverickWeapon mw && mw.isMenuOpened) return true;
 		return false;
 	}
 
@@ -508,9 +480,9 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) {
 			return false;
 		}
-		if (this is Vile vile && vile.isShootingLongshotGizmo) {
+		/* if (this is Vile vile && vile.isShootingLongshotGizmo) {
 			return false;
-		}
+		} */
 		if (isDWrapped) return false;
 
 		return true;
@@ -521,9 +493,9 @@ public partial class Character : Actor, IDamagable {
 			return false;
 		}
 		// TODO: Move this to axl.cs
-		if (isAimLocked()) {
+		/* if (isAimLocked()) {
 			return false;
-		}
+		} */
 		if (rootTime > 0) return false;
 		if (bigBubble != null) return false;
 		if (isSoftLocked()) {
@@ -537,7 +509,6 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) return false;
 		if (charState is WallKick wallKick && wallKick.stateTime < 0.25f) return false;
 		if (isSoftLocked()) return false;
-		if (isAttacking()) return false;
 		return flag == null;
 	}
 
@@ -567,9 +538,6 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool canWallClimb() {
 		if (rideArmorPlatform != null) return false;
 		if (isSoftLocked()) return false;
-		if (charState is VileHover) {
-			return !player.input.isHeld(Control.Jump, player);
-		}
 		return true;
 	}
 
@@ -577,9 +545,6 @@ public partial class Character : Actor, IDamagable {
 		if (!charState.normalCtrl) return false;
 		if (rideArmorPlatform != null) return false;
 		if (isSoftLocked()) return false;
-		if (charState is VileHover) {
-			return !player.input.isHeld(Control.Jump, player);
-		}
 		return true;
 	}
 
@@ -592,10 +557,7 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) {
 			return false;
 		}
-		if (shootAnimTime > 0 ||
-			isAttacking() ||
-			isSoftLocked()
-		) {
+		if (shootAnimTime > 0 || isSoftLocked()) {
 			return false;
 		}
 		return true;
@@ -613,7 +575,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canShoot() {
-		// should we? if (Global.serverClient?.isLagging() == true) return false;
 		return charState.attackCtrl;
 	}
 
@@ -634,8 +595,25 @@ public partial class Character : Actor, IDamagable {
 		if (charState is Die || charState is VileRevive || charState is XReviveStart || charState is XRevive) return false;
 		if (player.currentMaverick != null && player.isTagTeam()) return false;
 		if (isWarpOut()) return false;
-		if (Global.serverClient?.isLagging() == true) return false;
+		if (Global.serverClient != null) {
+			if (Global.serverClient.isLagging() == true) return false;
+			if (player.serverPlayer.connection?.AverageRoundtripTime >= 1000) return false;
+		}
 		if (charState is KaiserSigmaRevive || charState is WolfSigmaRevive || charState is ViralSigmaRevive) return false;
+		return true;
+	}
+
+	public virtual bool canKeepFlag() {
+		if (player.isPossessed()) return false;
+		if (health <= 0) return false;
+		if (isInvulnerable()) return false;
+		if (isCCImmuneHyperMode()) return false;
+		if (charState is Die) return false;
+		if (isWarpOut()) return false;
+		if (Global.serverClient != null) {
+			if (Global.serverClient.isLagging() == true) return false;
+			if (player.serverPlayer.connection?.AverageRoundtripTime >= 1000) return false;
+		}
 		return true;
 	}
 
@@ -646,29 +624,8 @@ public partial class Character : Actor, IDamagable {
 		return true;
 	}
 
-	public bool isAimLocked() {
-		if (!player.isAxl) return false;
-		if (player.input.isPositionLocked(player) && Options.main.axlAimMode == 0) {
-			return true;
-		}
-		if (Options.main.axlAimMode == 0 && !Options.main.moveInDiagAim && !isDashing &&
-			(grounded || charState is Hover || player.input.isHeld(Control.Shoot, player) || player.input.isHeld(Control.Special1, player)) &&
-			(player.input.isHeld(Control.Up, player) || player.input.isHeld(Control.Down, player))) {
-			return true;
-		}
-		return false;
-	}
-
 	public virtual float getRunSpeed() {
-		float runSpeed = Physics.WalkSpeed;
-		if (player.isX) {
-			if (charState is XHover) {
-				runSpeed = Physics.WalkSpeed;
-			}
-		} else if (player.isVile && player.speedDevil) {
-			runSpeed *= 1.1f;
-		}
-		return runSpeed * getRunDebuffs();
+		return Physics.WalkSpeed * getRunDebuffs();
 	}
 
 	public float getRunDebuffs() {
@@ -765,11 +722,6 @@ public partial class Character : Actor, IDamagable {
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
 
-	public Collider getSigmaHeadCollider() {
-		var rect = new Rect(0, 0, 14, 20);
-		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
-	}
-
 	public virtual Collider getBlockCollider() {
 		var rect = new Rect(0, 0, 18, 34);
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
@@ -780,7 +732,6 @@ public partial class Character : Actor, IDamagable {
 		insideCharacter = false;
 		changedStateInFrame = false;
 		pushedByTornadoInFrame = false;
-		lastXDir = xDir;
 		if (grounded && !isDashing) {
 			dashedInAir = 0;
 		}
@@ -809,7 +760,7 @@ public partial class Character : Actor, IDamagable {
 				return;
 			}
 			if (!killZone.killInvuln && player.isKaiserSigma()) return;
-			if (!killZone.killInvuln && this is MegamanX { stingActive: true} ) return;
+			if (!killZone.killInvuln && this is MegamanX { stingActiveTime: >0 } ) return;
 			if (!killZone.killInvuln && this is Axl { stealthActive: true} ) return;
 			if (rideArmor != null && rideArmor.rideArmorState is RADropIn) return;
 			killZone.applyDamage(this);
@@ -893,8 +844,8 @@ public partial class Character : Actor, IDamagable {
 		if (Global.level.gameMode.isTeamMode && Global.level.mainPlayer != player) {
 			int alliance = player.alliance;
 			// If this is an enemy disguised Axl, change the alliance
-			if (player.alliance != Global.level.mainPlayer.alliance && player.isDisguisedAxl) {
-				alliance = Global.level.mainPlayer.alliance;
+			if (player.alliance != Global.level.mainPlayer.alliance && player.isDisguisedAxl && !disguiseCoverBlown) {
+				alliance = fakeAlliance;
 			}
 			RenderEffectType? allianceEffect = alliance switch {
 				0 => RenderEffectType.BlueShadow,
@@ -918,23 +869,23 @@ public partial class Character : Actor, IDamagable {
 			oilTime = 0;
 			burnTime = 0;
 			acidTime = 0;
-			infectedTime = 0;
+			virusTime = 0;
 			vaccineTime -= Global.spf;
 			if (vaccineTime <= 0) {
 				vaccineTime = 0;
 			}
 		}
 
-		if (infectedTime > 0) {
-			infectedTime -= Global.spf;
-			if (infectedTime <= 0) {
-				infectedTime = 0;
+		if (virusTime > 0) {
+			virusTime -= Global.spf;
+			if (virusTime <= 0) {
+				virusTime = 0;
 			}
 		}
 
 		if (oilTime > 0) {
 			oilTime -= Global.spf;
-			if (isUnderwater() || charState.invincible || isCCImmune()) {
+			if (isUnderwater() || charState.invincible || isStatusImmune()) {
 				oilTime = 0;
 			}
 			if (oilTime <= 0) {
@@ -961,7 +912,7 @@ public partial class Character : Actor, IDamagable {
 						vel = new Point(0, -50)
 					};
 			}
-			if (isUnderwater() || charState.invincible || isCCImmune()) {
+			if (isUnderwater() || charState.invincible || isStatusImmune()) {
 				acidTime = 0;
 			}
 			if (acidTime <= 0) {
@@ -1041,7 +992,7 @@ public partial class Character : Actor, IDamagable {
 				}
 				burnDamager?.applyDamage(this, false, burnWeapon, this, (int)ProjIds.Burn, overrideDamage: 1f);
 			}
-			if (isUnderwater() || charState.invincible || isCCImmune()) {
+			if (isUnderwater() || charState.invincible || isStatusImmune()) {
 				burnTime = 0;
 			}
 			if (burnTime <= 0) {
@@ -1091,8 +1042,8 @@ public partial class Character : Actor, IDamagable {
 			flag.changePos(getCenterPos());
 		}
 
-		if (startRideArmor != null && !Global.level.hasGameObject(startRideArmor)) {
-			startRideArmor = null;
+		if (linkedRideArmor != null && !Global.level.hasGameObject(linkedRideArmor)) {
+			linkedRideArmor = null;
 		}
 
 		if (transformAnim != null) {
@@ -1112,63 +1063,13 @@ public partial class Character : Actor, IDamagable {
 				transformAnim = null;
 			}
 		}
-
-		/*
-		if (!ownedByLocalPlayer || player.isAI)
-		{
-			if (isInvisibleBS.getValue() && player.alliance != Global.level.mainPlayer.alliance)
-			{
-				alpha -= Global.spf * 4;
-				if (alpha < 0) alpha = 0;
-				removeRenderEffect(RenderEffectType.StockedCharge);
-				removeRenderEffect(RenderEffectType.StockedSaber);
-			}
-			else
-			{
-				alpha += Global.spf * 4;
-				if (alpha > 1) alpha = 1;
-			}
-		}
-		*/
 		// Cutoff point for things that run but aren't owned by the player
 		if (!ownedByLocalPlayer) {
 			base.update();
-
-			if (sprite.name.Contains("sigma2_viral")) {
-				if (!viralOnce) {
-					viralOnce = true;
-					xScale = 0;
-					yScale = 0;
-					originalZIndex = zIndex;
-				}
-
-				if (sprite.name.Contains("sigma2_viral_possess")) {
-					setzIndex(ZIndex.Actor);
-				} else {
-					setzIndex(originalZIndex);
-				}
-			}
-
 			return;
 		}
 		updateParasite();
 		updateBubble();
-
-		if (stingChargeTime > 0) {
-			if (player.isX) {
-				stingChargeTime -= Global.spf;
-
-				player.weapon.ammo -= (Global.spf * 3 * (player.hasChip(3) ? 0.5f : 1));
-				if (player.weapon.ammo < 0) player.weapon.ammo = 0;
-				stingChargeTime = player.weapon.ammo;
-			} else {
-				stingChargeTime -= Global.spf;
-			}
-			if (stingChargeTime <= 0) {
-				player.delayETank();
-				stingChargeTime = 0;
-			}
-		}
 
 		if (pos.y > Global.level.killY && !isWarpIn() && charState is not WarpOut) {
 			if (charState is WolfSigmaRevive wsr) {
@@ -1183,7 +1084,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (player.health >= player.maxHealth) {
+		if (health >= maxHealth) {
 			healAmount = 0;
 			usedEtank = null;
 		}
@@ -1193,7 +1094,7 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		//HP Capsules heal
-		if (healAmount > 0 && player.health > 0) {
+		if (healAmount > 0 && health > 0) {
 			healTime++;
 			if (healTime >= 3) {
 				healTime = 0;
@@ -1201,16 +1102,16 @@ public partial class Character : Actor, IDamagable {
 				if (usedEtank != null) {
 					usedEtank.health--;
 				}
-				player.health = Helpers.clampMax(player.health + 1, player.maxHealth);
+				health = Helpers.clampMax(health + 1, maxHealth);
 				if (acidTime > 0) {
 					acidTime--;
 					if (acidTime < 0) removeAcid();
 				}
 				if (player == Global.level.mainPlayer || playHealSound) {
-					if (!player.hasChip(2)) {
-						playSound("heal", forcePlay: true, sendRpc: true);
-					} else {
+					if (this is MegamanX { hyperHelmetActive: true, helmetArmor: ArmorId.Max }) {
 						playSound("goldenHelmetHP", forcePlay: true, sendRpc: true);
+					} else {
+						playSound("heal", forcePlay: true, sendRpc: true);
 					}
 				}
 			}
@@ -1564,7 +1465,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool isSpawning() {
-		return sprite.name.Contains("warp_in") || !visible || (player.isVile && invulnTime > 0);
+		return sprite.name.Contains("warp_in") || !visible;
 	}
 
 	public Point getCharRideArmorPos() {
@@ -1590,12 +1491,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
-		if (!isHeadbuttSprite(sprite.name) && isHeadbuttSprite(spriteName)) {
-			headbuttAirTime = Global.spf;
-		}
-		if (isHeadbuttSprite(sprite.name) && !isHeadbuttSprite(spriteName)) {
-			headbuttAirTime = 0;
-		}
 		List<Trail>? trails = sprite?.lastFiveTrailDraws;
 		base.changeSprite(spriteName, resetFrame);
 		if (trails != null && sprite != null) {
@@ -1621,14 +1516,14 @@ public partial class Character : Actor, IDamagable {
 	public bool canFreeze() {
 		return (
 			charState is not Die &&
-			(this as MegamanX)?.chargedRollingShieldProj == null &&
+			!isStunImmune() &&
 			!charState.stunResistant &&
 			!charState.invincible &&
 			invulnTime == 0 &&
 			freezeInvulnTime <= 0 &&
 			!isInvulnerable() &&
 			!isVaccinated() &&
-			!isCCImmune()
+			!isStatusImmune()
 		);
 	}
 
@@ -1649,11 +1544,11 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer ||
 			isInvulnerable() ||
 			isVaccinated() ||
-			isCCImmune() ||
+			isStatusImmune() ||
 			charState.invincible ||
 			charState.stunResistant ||
 			(charState is Die or VileMK2Grabbed) ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isStunImmune() ||
 		 	stunInvulnTime > 0
 		) {
 			return;
@@ -1669,12 +1564,12 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer ||
 			isInvulnerable() ||
 			isVaccinated() ||
-			isCCImmune() ||
+			isStatusImmune() ||
 			charState.invincible ||
 			charState.stunResistant ||
 			isCrystalized ||
 			(charState is Die) ||
-			(this as MegamanX)?.chargedRollingShieldProj != null ||
+			isStunImmune() ||
 			crystalizeInvulnTime > 0
 		) {
 			return;
@@ -1711,17 +1606,38 @@ public partial class Character : Actor, IDamagable {
 					_ when (chargeType == 1) => RenderEffectType.ChargeGreen,
 					_ => RenderEffectType.ChargeOrange
 				};
-				addRenderEffect(renderGfx, 0.033333f, 0.1f);
+				addRenderEffect(renderGfx, 2, 6);
 			}
 			chargeEffect.update(getChargeLevel(), chargeType);
 		}
 	}
 
-	public bool isCCImmune() {
-		//if (isAwakenedZeroBS.getValue() && isAwakenedGenmuZeroBS.getValue()) return true;
-		//if (isHyperSigmaBS.getValue()) return true;
-		//return false;
-		return isCCImmuneHyperMode();
+	public virtual bool isDebuffImmune() {
+		return isStatusImmune();
+	}
+
+	public virtual bool isDotImmune() {
+		return isStatusImmune();
+	}
+
+	public virtual bool isSlowImmune() {
+		return isStatusImmune();
+	}
+
+	public virtual bool isStunImmune() {
+		return isStatusImmune();
+	}
+
+	public virtual bool isPushImmune() {
+		return isTrueStatusImmune();
+	}
+
+	public virtual bool isStatusImmune() {
+		return isTrueStatusImmune() || isInvulnerable() || isVaccinated() || charState.invincible;
+	}
+
+	public virtual bool isTrueStatusImmune() {
+		return false;
 	}
 
 	public virtual bool isCCImmuneHyperMode() {
@@ -1733,7 +1649,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool isImmuneToKnockback() {
-		return charState?.immuneToWind == true || immuneToKnockback || isCCImmune();
+		return charState?.immuneToWind == true || immuneToKnockback || isStatusImmune();
 	}
 
 	// If factorHyperMode = true, then invuln frames in a hyper mode won't count as "invulnerable".
@@ -1745,10 +1661,10 @@ public partial class Character : Actor, IDamagable {
 		if (!ignoreRideArmorHide && charState is InRideArmor && (charState as InRideArmor)?.isHiding == true) {
 			return true;
 		}
-		if (!ignoreRideArmorHide && !string.IsNullOrEmpty(sprite?.name) && sprite.name.Contains("ra_hide")) return true;
-		if (specialState == (int)SpecialStateIds.AxlRoll ||
-			specialState == (int)SpecialStateIds.XTeleport || specialState == (int)SpecialStateIds.Burning
-		) {
+		if (!ignoreRideArmorHide && !string.IsNullOrEmpty(sprite?.name) && sprite.name.Contains("ra_hide")) {
+			return true;
+		}
+		if (charState.specialId == SpecialStateIds.AxlRoll || charState.specialId == SpecialStateIds.XTeleport || charState.specialId == SpecialStateIds.Burning) {
 			return true;
 		}
 		if (sprite != null && sprite.name.Contains("viral_exit")) {
@@ -1780,7 +1696,7 @@ public partial class Character : Actor, IDamagable {
 	public bool canBeGrabbed() {
 		return (
 			grabInvulnTime == 0 && !charState.invincible &&
-			!isInvulnerable() && !isCCImmune() && !isDarkHoldState
+			!isInvulnerable() && !isStatusImmune() && !isDarkHoldState
 		);
 	}
 
@@ -1807,15 +1723,12 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
-
 	public Point getDashSparkEffectPos(int xDir) {
 		return getDashDustEffectPos(xDir).addxy(6 * xDir, 4);
 	}
 
-	public Point getDashDustEffectPos(int xDir) {
+	public virtual Point getDashDustEffectPos(int xDir) {
 		float dashXPos = -24;
-		if (this is Vile) dashXPos = -30;
-		if (this is BaseSigma) dashXPos = -35;
 		return pos.addxy(dashXPos * xDir + (5 * xDir), -4);
 	}
 
@@ -1836,25 +1749,12 @@ public partial class Character : Actor, IDamagable {
 		return pos.addxy(0, -18);
 	}
 
-	public Point getParasitePos() {
-		float yOff = -18;
+	public virtual Point getParasitePos() {
 		if (sprite.name.Contains("_ra_")) {
-			float hideY = 0;
-			if (sprite.name.Contains("_ra_hide")) {
-				hideY = 22 * ((float)sprite.frameIndex / sprite.totalFrameNum);
-			}
-			yOff = -6 + hideY;
-		} else if (player.isZero) yOff = -20;
-		else if (player.isVile) yOff = -24;
-		if (player.isSigma) {
-			return getCenterPos();
-		} else if (player.isAxl) yOff = -18;
-
-		return pos.addxy(0, yOff);
+			return pos.addxy(0, -6);
+		}
+		return getCenterPos();
 	}
-
-	public int camOffsetX;
-
 
 	public virtual Actor getFollowActor() {
 		if (rideArmorPlatform != null) {
@@ -1872,55 +1772,6 @@ public partial class Character : Actor, IDamagable {
 	public virtual Point getCamCenterPos(bool ignoreZoom = false) {
 		if (rideArmorPlatform != null) {
 			return rideArmorPlatform.pos.round().addxy(0, -70);
-		}
-		if (player.isSigma) {
-			var maverick = player.currentMaverick;
-			if (maverick != null && player.isTagTeam()) {
-				if (maverick.state is MEnter me) {
-					return me.getDestPos().round().addxy(camOffsetX, -24);
-				}
-				if (maverick.state is MorphMCHangState hangState) {
-					return maverick.pos.addxy(camOffsetX, -24 + 17);
-				}
-				return maverick.pos.round().addxy(camOffsetX, -24);
-			}
-
-			if (player.isViralSigma()) {
-				return pos.round().addxy(camOffsetX, 25);
-			}
-
-			if (player.isKaiserSigma()) {
-				if (sprite.name.StartsWith("kaisersigma_virus")) return pos.addxy(camOffsetX, -12);
-				return pos.round().addxy(camOffsetX, -55);
-			}
-
-			if (player.weapon is WolfSigmaHandWeapon handWeapon && handWeapon.hand.isControlling) {
-				var hand = handWeapon.hand;
-				Point camCenter = sigmaHeadGroundCamCenterPos ?? getCenterPos();
-				if (hand.pos.x > camCenter.x + Global.halfScreenW || hand.pos.x < camCenter.x - Global.halfScreenW || hand.pos.y > camCenter.y + Global.halfScreenH || hand.pos.y < camCenter.y - Global.halfScreenH) {
-					float overFactorX = MathF.Abs(hand.pos.x - camCenter.x) - Global.halfScreenW;
-					if (overFactorX > 0) {
-						float remainder = overFactorX - Global.halfScreenW;
-						int sign = MathF.Sign(hand.pos.x - camCenter.x);
-						camCenter.x += Math.Min(overFactorX, Global.halfScreenW) * sign * 2;
-						camCenter.x += Math.Max(remainder, 0) * sign;
-					}
-
-					float overFactorY = MathF.Abs(hand.pos.y - camCenter.y) - Global.halfScreenH;
-					if (overFactorY > 0) {
-						float remainder = overFactorY - Global.halfScreenH;
-						int sign = MathF.Sign(hand.pos.y - camCenter.y);
-						camCenter.y += Math.Min(overFactorY, Global.halfScreenH) * sign * 2;
-						camCenter.y += Math.Max(remainder, 0) * sign;
-					}
-
-					return camCenter.round();
-				}
-			}
-
-			if (sigmaHeadGroundCamCenterPos != null) {
-				return sigmaHeadGroundCamCenterPos.Value;
-			}
 		}
 		if (rideArmor != null) {
 			if (ownedByLocalPlayer && rideArmor.rideArmorState is RADropIn rADropInState) {
@@ -1979,24 +1830,18 @@ public partial class Character : Actor, IDamagable {
 		return chargeTime >= charge1Time;
 	}
 
-	public Point getShootPos() {
-		var busterOffsetPos = currentFrame.getBusterOffset();
-		if (busterOffsetPos == null) {
+	public virtual Point getShootPos() {
+		var busterOffset = currentFrame.getBusterOffset();
+		if (busterOffset == null) {
 			return getCenterPos();
 		}
-		var busterOffset = (Point)busterOffsetPos;
-		busterOffset.x *= xDir;
-		if (player.weapon is RollingShield && charState is Dash) {
-			busterOffset.y -= 2;
-		}
-		return pos.add(busterOffset);
+		return pos.addxy(busterOffset.Value.x * xDir, busterOffset.Value.y);
 	}
 
 	public void stopCharge() {
 		if (chargeEffect == null) return;
 		chargeEffect.reset();
 		chargeTime = 0;
-		chargeFlashTime = 0;
 		chargeSound.stop();
 		chargeSound.reset();
 		chargeEffect.stop();
@@ -2017,33 +1862,26 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public virtual int maxChargeLevel() {
+	public virtual int getMaxChargeLevel() {
 		return 3;
 	}
 
-	public int getChargeLevel() {
+	public virtual int getChargeLevel() {
 		int chargeLevel = 0;
-		int maxCharge = maxChargeLevel();
-	
-		if (chargeTime >= charge4Time) {
+		int maxCharge = getMaxChargeLevel();
+
+		if (chargeTime < charge1Time) {
+			chargeLevel = 0;
+		} else if (chargeTime >= charge1Time && chargeTime < charge2Time) {
+			chargeLevel = 1;
+		} else if (chargeTime >= charge2Time && chargeTime < charge3Time) {
+			chargeLevel = 2;
+		} else if (chargeTime >= charge3Time && chargeTime < charge4Time) {
+			chargeLevel = 3;
+		} else if (chargeTime >= charge4Time) {
 			chargeLevel = 4;
 		}
-		else if (chargeTime >= charge3Time) {
-			chargeLevel = 3;
-		}
-		else if (chargeTime >= charge2Time) {
-			chargeLevel = 2;
-		}
-		else if (chargeTime >= charge1Time) {
-			chargeLevel = 1;
-		}
-		else {
-			chargeLevel = 0;
-		}
-		if (chargeLevel > maxCharge) {
-			chargeLevel = maxCharge;
-		}
-		return chargeLevel;
+		return Helpers.clampMax(chargeLevel, maxCharge);
 	}
 
 	public virtual void changeToIdleOrFall(string transitionSprite = "") {
@@ -2111,18 +1949,13 @@ public partial class Character : Actor, IDamagable {
 			return false;
 		}
 		changedStateInFrame = true;
-		if (shootAnimTime > 0 && newState.canShoot()) {
+		bool hasShootAnim = newState.canUseShootAnim();
+		if (shootAnimTime > 0 && hasShootAnim) {
 			changeSprite(getSprite(newState.shootSprite), true);
 		} else {
 			string spriteName = sprite.name;
-			if (newState.sprite == newState.transitionSprite &&
-				!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
-			) {
-				newState.sprite = newState.defaultSprite;
-			}
 			changeSprite(getSprite(newState.sprite), true);
-
-			if (Global.sprites.ContainsKey(getSprite(newState.sprite)) && spriteName == sprite.name) {
+			if (spriteName == sprite.name) {
 				sprite.frameIndex = 0;
 				sprite.frameTime = 0;
 				sprite.animTime = 0;
@@ -2150,6 +1983,13 @@ public partial class Character : Actor, IDamagable {
 			return 25;
 		}
 		return 42;
+	}
+
+	public override bool shouldDraw() {
+		if (invulnTime > 0) {
+			if (Global.level.frameCount % 4 < 2) { return false; }
+		}
+		return base.shouldDraw();
 	}
 
 	public override void render(float x, float y) {
@@ -2213,6 +2053,11 @@ public partial class Character : Actor, IDamagable {
 			drawName(overrideName, overrideColor);
 		}
 
+		if (!hideNoShaderIcon()) {
+			float dummy = 0;
+			getHealthNameOffsets(out bool shieldDrawn, ref dummy);
+		}
+		
 		bool drewETankHealing = drawETankHealing();
 		if (!player.isDead) {
 			bool drewStatusProgress = drawStatusProgress();
@@ -2630,30 +2475,19 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
-	public void getHealthNameOffsets(out bool shieldDrawn, ref float healthPct) {
+	public virtual void getHealthNameOffsets(out bool shieldDrawn, ref float healthPct) {
 		shieldDrawn = false;
 		if (rideArmor != null) {
 			shieldDrawn = true;
 			healthPct = rideArmor.health / rideArmor.maxHealth;
-		} else if ((this as MegamanX)?.chargedRollingShieldProj != null) {
-			shieldDrawn = true;
-			healthPct = player.weapon.ammo / player.weapon.maxAmmo;
 		}
-		/*
-		else if (player.scanned && !player.isVile)
-		{
-			shieldDrawn = true;
-			if (player.isZero) healthPct = player.rakuhouhaWeapon.ammo / player.rakuhouhaWeapon.maxAmmo;
-			else healthPct = player.weapon.ammo / player.weapon.maxAmmo;
-		}
-		*/
 	}
 
 	public void drawHealthBar() {
 		float healthBarInnerWidth = 30;
 		Color color = new Color();
 
-		float healthPct = player.health / player.maxHealth;
+		float healthPct = (float)(health / maxHealth);
 		float width = Helpers.clampMax(MathF.Ceiling(healthBarInnerWidth * healthPct), healthBarInnerWidth);
 		if (healthPct > 0.66) color = Color.Green;
 		else if (healthPct <= 0.66 && healthPct >= 0.33) color = Color.Yellow;
@@ -2703,15 +2537,15 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canBeHealed(int healerAlliance) {
-		return player.alliance == healerAlliance && player.health > 0 && player.health < player.maxHealth;
+		return player.alliance == healerAlliance && health > 0 && health < maxHealth;
 	}
 
 	public virtual void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
 		if (!allowStacking && this.healAmount > 0) return;
-		if (player.health < player.maxHealth) {
+		if (health < maxHealth) {
 			playHealSound = true;
 		}
-		commonHealLogic(healer, healAmount, player.health, player.maxHealth, drawHealText);
+		commonHealLogic(healer, (decimal)healAmount, health, maxHealth, drawHealText);
 		addHealth(healAmount, fillEtank: false);
 	}
 
@@ -2735,7 +2569,7 @@ public partial class Character : Actor, IDamagable {
 
 		// Self damaging projIds can go thru alliance check
 		bool isSelfDamaging =
-			projId == (int)ProjIds.BlastLauncherSplash ||
+			projId == (int)ProjIds.BlastLauncherGrenadeSplash ||
 			projId == (int)ProjIds.GreenSpinnerSplash ||
 			projId == (int)ProjIds.NecroBurst ||
 			projId == (int)ProjIds.SniperMissileBlast ||
@@ -2760,8 +2594,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
-		decimal originalHP = decimal.Parse(player.health.ToString());
-		decimal decimalHP = originalHP;
+		decimal originalHP = health;
 		Axl? axl = this as Axl;
 		MegamanX? mmx = this as MegamanX;
 		Blues? blues = this as Blues;
@@ -2838,10 +2671,12 @@ public partial class Character : Actor, IDamagable {
 				damageDebt += (originalDamage * extraDamage);
 			}
 			if (mmx != null) {
-				if (mmx.hasBarrier(false)) {
-					damageSavings += (originalDamage * 0.25m);
-				} else if (mmx.hasBarrier(true)) {
-					damageSavings += (originalDamage * 0.5m);
+				if (mmx.barrierActiveTime > 0) {
+					if (mmx.hyperChestArmor == ArmorId.Max) {
+						damageSavings += (originalDamage * 0.5m);
+					} else {
+						damageSavings += (originalDamage * 0.25m);
+					}
 				}
 				if (player.isX && player.hasBodyArmor(1)) {
 					damageSavings += originalDamage / 8m;
@@ -2857,8 +2692,8 @@ public partial class Character : Actor, IDamagable {
 		// This is to defend from overkill damage.
 		// Or at least attempt to.
 		if (damageSavings > 0 &&
-			decimalHP - damage <= 0 &&
-			(decimalHP + damageSavings) - damage > 0
+			health - damage <= 0 &&
+			(health + damageSavings) - damage > 0
 		) {
 			// Apply in the normal way.
 			while (damageSavings >= 1) {
@@ -2878,12 +2713,13 @@ public partial class Character : Actor, IDamagable {
 		// If somehow the damage is negative.
 		// Heals are not really applied here.
 		if (damage < 0) { damage = 0; }
+		health -= damage;
+		// Clamp to 0. We do not want to go into the negatives here.
+		if (health < 0) {
+			health = 0;
+		}
 
-		decimalHP = decimalHP - damage;
-		// We use this to attempt to reduce float errors.
-		player.health = float.Parse(decimalHP.ToString());
-
-		if (player.showTrainingDps && player.health > 0 && originalDamage > 0) {
+		if (player.showTrainingDps && health > 0 && originalDamage > 0) {
 			if (player.trainingDpsStartTime == 0) {
 				player.trainingDpsStartTime = Global.time;
 				Global.level.gameMode.dpsString = "";
@@ -2906,10 +2742,10 @@ public partial class Character : Actor, IDamagable {
 		if (originalHP > 0 && (originalDamage > 0 || damage > 0) &&
 			this is not Blues { customDamageDisplayOn: true }
 		) {
-			addDamageTextHelper(attacker, (float)damage, player.maxHealth, true);
+			addDamageTextHelper(attacker, (float)damage, (float)maxHealth, true);
 		}
-		if (player.health > 0 && (originalDamage > 0 || damage > 0) && ownedByLocalPlayer) {
-			decimal modifier = (32 / (decimal)player.maxHealth);
+		if (health > 0 && (originalDamage > 0 || damage > 0) && ownedByLocalPlayer) {
+			decimal modifier = (32 / maxHealth);
 			decimal gigaDamage = damage;
 			if (originalDamage > damage) {
 				gigaDamage = originalDamage;
@@ -2960,7 +2796,7 @@ public partial class Character : Actor, IDamagable {
 						);
 					}
 				}
-				var novaStrike = player.weapons.FirstOrDefault(w => w is NovaStrike);
+				var novaStrike = player.weapons.FirstOrDefault(w => w is HyperNovaStrike);
 				if (novaStrike != null) {
 					float currentAmmo = novaStrike.ammo;
 					novaStrike.addAmmo(gigaAmmoToAdd, player);
@@ -2971,19 +2807,17 @@ public partial class Character : Actor, IDamagable {
 						);
 					}
 				}
-				//fgMoveAmmo += gigaAmmoToAdd;
-				//if (fgMoveAmmo > 32) fgMoveAmmo = 32;
 			}
 			if (this is NeoSigma) {
 				player.sigmaAmmo = Helpers.clampMax(player.sigmaAmmo + gigaAmmoToAdd, player.sigmaMaxAmmo);
 			}
 		}
 
-		if (attacker != null && weaponIndex != null && damage > 0) {
+		if ((damage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
 			damageHistory.Add(new DamageEvent(attacker, weaponIndex.Value, projId, false, Global.time));
 		}
 
-		if (player.health <= 0) {
+		if (health <= 0) {
 			if (player.showTrainingDps && player.trainingDpsStartTime > 0) {
 				float timeToKill = Global.time - player.trainingDpsStartTime;
 				float dps = player.trainingDpsTotalDamage / timeToKill;
@@ -2995,13 +2829,13 @@ public partial class Character : Actor, IDamagable {
 			killPlayer(attacker, null, weaponIndex, projId);
 		} else {
 			if (mmx != null && player.hasBodyArmor(3) && damage > 0) {
-				mmx.addBarrier(charState is Hurt);
+				mmx.activateMaxBarrier(charState is Hurt or GenericStun);
 			}
 		}
 	}
 
 	public void killPlayer(Player? killer, Player? assister, int? weaponIndex, int? projId) {
-		player.health = 0;
+		health = 0;
 		int? assisterProjId = null;
 		int? assisterWeaponId = null;
 		if (charState is not Die || !ownedByLocalPlayer) {
@@ -3100,8 +2934,8 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void addHealth(float amount, bool fillEtank = true) {
-		if (player.health >= player.maxHealth && fillEtank) {
-			player.fillETank(amount);
+		if (health >= maxHealth && fillEtank) {
+			player.fillEtank(amount);
 		}
 		healAmount += amount;
 	}
@@ -3114,7 +2948,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void fillHealthToMax() {
-		healAmount += player.maxHealth;
+		healAmount += (float)Math.Ceiling(maxHealth);
 	}
 
 	public virtual void addAmmo(float amount) {
@@ -3155,22 +2989,12 @@ public partial class Character : Actor, IDamagable {
 	public virtual void onFlagPickup(Flag flag) {
 		if (isCharging()) {
 			stopCharge();
+		if (flag == null) {
+			return;
 		}
 		dropFlagProgress = 0;
 		this.flag = flag;
-		stingChargeTime = 0;
 
-		if (this is MegamanX mmx) {
-			if (mmx.chargedRollingShieldProj != null) {
-				mmx.chargedRollingShieldProj.destroySelf();
-			}
-			mmx.popAllBubbles();
-			mmx.stockedCharge = false;
-			mmx.stockedX3Buster = false;
-			if (mmx.beeSwarm != null) {
-				mmx.beeSwarm.destroy();
-			}
-		}
 		if (player.isDisguisedAxl && player.ownedByLocalPlayer) {
 			player.revertToAxl();
 		}
@@ -3409,11 +3233,6 @@ public partial class Character : Actor, IDamagable {
 		if (charState is not Hurt) changeToIdleOrFall();*/
 	}
 
-
-	public virtual bool isInvisible() {
-		return stingChargeTime > 0 && player.isX;
-	}
-
 	public bool genmuImmune(Player owner) {
 		return false;
 	}
@@ -3475,10 +3294,6 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
-	public virtual bool isAttacking() {
-		return sprite.name.Contains("attack");
-	}
-
 	public bool canLandOnRideArmor() {
 		if (charState is Fall) return true;
 		if (charState is VileHover vh && vh.fallY > 0) return true;
@@ -3487,7 +3302,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void getOffMK5Platform() {
 		if (rideArmorPlatform != null) {
-			if (rideArmorPlatform != startRideArmor) {
+			if (rideArmorPlatform != linkedRideArmor) {
 				rideArmorPlatform.character = null;
 				rideArmorPlatform.changeState(new RADeactive(), true);
 			}
@@ -3496,34 +3311,39 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool canAffordRideArmor() {
-		if (Global.level.is1v1()) return player.health > (player.maxHealth / 2);
+		if (Global.level.is1v1()) {
+			return health > Math.Floor(maxHealth / 2);
+		}
 		return player.currency >= Vile.callNewMechCost;
 	}
 
 	public void buyRideArmor() {
-		if (Global.level.is1v1()) player.health -= (player.maxHealth / 2);
-		else player.currency -= Vile.callNewMechCost * (player.selectedRAIndex >= 4 ? 2 : 1);
+		if (Global.level.is1v1()) {
+			health -= Math.Floor(maxHealth / 2);
+			return;
+		}
+		player.currency -= Vile.callNewMechCost * (player.selectedRAIndex >= 4 ? 2 : 1);
 	}
 
 	public virtual void onMechSlotSelect(MechMenuWeapon mmw) {
-		if (startRideArmor == null) {
+		if (linkedRideArmor == null) {
 			if (!mmw.isMenuOpened) {
 				mmw.isMenuOpened = true;
 				return;
 			}
 		}
 
-		if (startRideArmor == null) {
+		if (linkedRideArmor == null) {
 			if (alreadySummonedNewMech) {
 				Global.level.gameMode.setHUDErrorMessage(player, "Can only summon a mech once per life");
 			} else if (canAffordRideArmor()) {
 				if (!(charState is Idle || charState is Run || charState is Crouch)) return;
 				alreadySummonedNewMech = true;
-				if (startRideArmor != null) startRideArmor.selfDestructTime = 1000;
+				if (linkedRideArmor != null) linkedRideArmor.selfDestructTime = 1000;
 				buyRideArmor();
 				mmw.isMenuOpened = false;
 				int raIndex = player.selectedRAIndex;
-				startRideArmor = new RideArmor(
+				linkedRideArmor = new RideArmor(
 					player, pos, raIndex, 0, player.getNextActorNetId(), true, sendRpc: true
 				);
 			}
@@ -3546,17 +3366,16 @@ public partial class Character : Actor, IDamagable {
 			} else {
 				updateAxlDirectionalAim();
 			}
-		}
 		*/
 
-		if (this is Zero) {
+		if (this is Zero or PunchyZero or BusterZero or Vile) {
 			player.changeWeaponControls();
 		}
 
 		if (player.weapon is UndisguiseWeapon) {
 			bool shootPressed = player.input.isPressed(Control.Shoot, player);
 			bool altShootPressed = player.input.isPressed(Control.Special1, player);
-			if ((shootPressed || altShootPressed) && !isCCImmuneHyperMode()) {
+			if ((shootPressed || altShootPressed)) {
 				undisguiseTime = 0.33f;
 				DNACore lastDNA = player.lastDNACore;
 				int lastDNAIndex = player.lastDNACoreIndex;
@@ -3597,7 +3416,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (player.weapon is AssassinBullet && (player.isVile || player.isSigma)) {
+		if (player.weapon is AssassinBullet && (this is Vile or BaseSigma)) {
 			if (player.input.isHeld(Control.Shoot, player)) {
 				increaseCharge();
 			} else {
@@ -3694,8 +3513,8 @@ public partial class Character : Actor, IDamagable {
 		customData.Add(0);
 
 		// Always on values.
-		customData.Add((byte)MathF.Ceiling(player.health));
-		customData.Add((byte)MathF.Ceiling(player.maxHealth));
+		customData.Add((byte)Math.Ceiling(health));
+		customData.Add((byte)Math.Ceiling(maxHealth));
 		customData.Add((byte)player.alliance);
 		customData.Add((byte)player.currency);
 
@@ -3743,8 +3562,8 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)MathF.Ceiling(oilTime * 30));
 			boolMask[4] = true;
 		}
-		if (infectedTime > 0) {
-			customData.Add((byte)MathF.Ceiling(infectedTime * 30));
+		if (virusTime > 0) {
+			customData.Add((byte)MathF.Ceiling(virusTime * 30));
 			boolMask[5] = true;
 		}
 		if (vaccineTime > 0) {
@@ -3767,10 +3586,10 @@ public partial class Character : Actor, IDamagable {
 
 	public override void updateCustomActorNetData(byte[] data) {
 		// Always on values.
-		player.health = data[1];
-		player.maxHealth = data[2];
+		health = data[1];
+		maxHealth = data[2];
 		player.alliance = data[3];
-		player.currency = data[4];
+		currency = data[4];
 
 		// Bool variables.
 		bool[] boolData = Helpers.byteToBoolArray(data[6]);
@@ -3818,7 +3637,7 @@ public partial class Character : Actor, IDamagable {
 			pos++;
 		}
 		if (boolMask[5]) {
-			infectedTime = data[pos] / 30f;
+			virusTime = data[pos] / 30f;
 			pos++;
 		}
 		if (boolMask[6]) {

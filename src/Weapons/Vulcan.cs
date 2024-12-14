@@ -32,6 +32,9 @@ public class Vulcan : Weapon {
 			projSprite = "vulcan_proj";
 			description = new string[] { "With a range of approximately 20 feet,", "this vulcan is easy to use." };
 			vileWeight = 2;
+			ammousage = vileAmmoUsage;
+			damage = "1";
+			effect = "None.";
 		} else if (vulcanType == VulcanType.DistanceNeedler) {
 			fireRate = 15;
 			displayName = "Distance Needler";
@@ -42,6 +45,10 @@ public class Vulcan : Weapon {
 			weaponSlotIndex = 59;
 			description = new string[] { "This vulcan has good range and speed,", "but cannot fire rapidly." };
 			vileWeight = 2;
+			ammousage = vileAmmoUsage;
+			damage = "2";
+			hitcooldown = "0.2";
+			effect = "Won't destroy on hit.";
 		} else if (vulcanType == VulcanType.BuckshotDance) {
 			fireRate = 8;
 			displayName = "Buckshot Dance";
@@ -52,6 +59,9 @@ public class Vulcan : Weapon {
 			weaponSlotIndex = 60;
 			description = new string[] { "The scattering power of this vulcan", "results in less than perfect aiming." };
 			vileWeight = 4;
+			ammousage = 0.3;
+			damage = "1";
+			effect = "Splits.";
 		}
 	}
 
@@ -60,7 +70,7 @@ public class Vulcan : Weapon {
 		if (string.IsNullOrEmpty(vile.charState.shootSprite)) return;
 
 		Player player = vile.player;
-		if (vile.tryUseVileAmmo(vileAmmoUsage)) {
+		if (vile.tryUseVileAmmo(vileAmmoUsage, true)) {
 			if (vile.charState is LadderClimb) {
 				if (player.input.isHeld(Control.Left, player)) vile.xDir = -1;
 				if (player.input.isHeld(Control.Right, player)) vile.xDir = 1;
@@ -155,7 +165,7 @@ public class VulcanCharState : CharState {
 			return;
 		}
 
-		if (!player.input.isHeld(Control.Shoot, player) || !(player.weapon is Vulcan)) {
+		if (!player.input.isHeld(Control.Shoot, player)) {
 			if (isCrouch) {
 				character.changeToCrouchOrFall();
 			} else {

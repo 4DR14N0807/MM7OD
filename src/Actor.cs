@@ -44,7 +44,7 @@ public partial class Actor : GameObject {
 		}
 	}
 
-	public float localSpeedMul { get; set; } = 1;
+	public float speedMul { get; set; } = 1;
 	public bool useFrameProjs;
 	public Dictionary<string, List<Projectile>> spriteFrameToProjs = new Dictionary<string, List<Projectile>>();
 	public List<Projectile> globalProjs = new List<Projectile>();
@@ -81,6 +81,8 @@ public partial class Actor : GameObject {
 	public bool immuneToKnockback;
 	public bool isPlatform;
 	public bool isSolidWall;
+	public bool cachedUndewater;
+	public Point cachedUndewaterPos = new Point(float.MinValue, float.MinValue);
 
 	public float xFlinchPushVel = 0;
 
@@ -247,6 +249,11 @@ public partial class Actor : GameObject {
 	}
 
 	public bool isUnderwater() {
+		if (cachedUndewaterPos == pos) {
+			return cachedUndewater;
+		}
+		cachedUndewaterPos = pos;
+
 		float colliderHeight;
 		if (globalCollider == null) colliderHeight = 10;
 		else colliderHeight = globalCollider.shape.maxY - globalCollider.shape.minY;
@@ -261,9 +268,11 @@ public partial class Actor : GameObject {
 				pos.y - colliderHeight > waterRect.y1 && pos.y < waterRect.y2
 			) {
 				lastWaterY = waterRect.y1;
+				cachedUndewater = true;
 				return true;
 			}
 		}
+		cachedUndewater = false;
 		return false;
 		//if (Global.level.levelData.waterY == null) return false;
 		//if (Global.level.levelData.name == "forest2" && pos.x > 1415 && pos.x < 1888 && pos.y < 527) return false;
@@ -601,7 +610,7 @@ public partial class Actor : GameObject {
 
 		var renderEffectsToRemove = new HashSet<RenderEffectType>();
 		foreach (var kvp in renderEffects) {
-			kvp.Value.time -= Global.spf;
+			kvp.Value.time -= Global.speedMul;
 			if (kvp.Value.time <= 0) {
 				renderEffectsToRemove.Add(kvp.Key);
 			}
@@ -716,16 +725,6 @@ public partial class Actor : GameObject {
 		if (useGravity && !grounded) {
 			if (underwater) {
 				grav *= 0.5f;
-			}
-			if (this is MegamanX mmx) {
-				int bubbleCount = mmx.chargedBubbles.Count;
-				float modifier = 1;
-				if (underwater) {
-					modifier = 1 - (0.01f * bubbleCount);
-				} else {
-					modifier = 1 - (0.05f * bubbleCount);
-				}
-				grav *= modifier;
 			}
 			if (grav > 0 && vel.y < terminalVelDown) {
 				vel.y += grav * Global.speedMul;
@@ -934,29 +933,8 @@ public partial class Actor : GameObject {
 	}
 
 	// The code here needs to work for non-owners too. So all variables in it needs to be synced.
-	public bool shouldDraw() {
-		if (!visible) return false;
-		if (this is Character character) {
-			/*
-			if (this is Axl axl && axl.isStealthModeSynced() && character.isInvisibleEnemy()) {
-				return false;
-			}
-			*/
-			if (character.isCStingInvisibleGraphics() && this is MegamanX mmx && mmx.cStingPaletteTime % 3 == 0) {
-				return false;
-			}
-			if (character.invulnTime > 0) {
-				long mod10 = Global.level.frameCount % 4;
-				if (mod10 < 2) return false;
-			}
-		}
-		if (this is Maverick maverick) {
-			if (maverick.invulnTime > 0) {
-				long mod10 = Global.level.frameCount % 4;
-				if (mod10 < 2) return false;
-			}
-		}
-		return true;
+	public virtual bool shouldDraw() {
+		return visible;
 	}
 
 	public void getKillerAndAssister(
@@ -979,10 +957,14 @@ public partial class Actor : GameObject {
 				if (secondLastAttacker.attacker == killer) continue;
 
 				// Non-suicide case: prevent assists aggressively
-				if (killer != ownPlayer) {
-					if (secondLastAttacker.envKillOnly && weaponIndex != null) continue;
-					if (Damager.unassistable(secondLastAttacker.projId)) continue;
-					if (Global.time - secondLastAttacker.time > 4) continue;
+				if (killer != ownPlayer && (
+						secondLastAttacker.envKillOnly && weaponIndex != null ||
+						Global.time - secondLastAttacker.time > 4 ||
+						Global.time - secondLastAttacker.time > 0.5f && Damager.lowTimeAssist(secondLastAttacker.projId) ||
+						Damager.unassistable(secondLastAttacker.projId)
+					)
+				) {
+					continue;
 				}
 				// Suicide case: grant assists liberally to "punish" suicider more
 				else if (Global.time - secondLastAttacker.time > 10) {
@@ -1211,8 +1193,12 @@ public partial class Actor : GameObject {
 	}
 
 	public void commonHealLogic(Player healer, float healAmount, float currentHealth, float maxHealth, bool drawHealText) {
+		commonHealLogic(healer, (decimal)healAmount, (decimal)currentHealth, (decimal)maxHealth, drawHealText);
+	}
+
+	public void commonHealLogic(Player healer, decimal healAmount, decimal currentHealth, decimal maxHealth, bool drawHealText) {
 		if (drawHealText && ownedByLocalPlayer) {
-			float reportAmount = Helpers.clampMax(healAmount, maxHealth - currentHealth);
+			float reportAmount = (float)Helpers.clampMax(healAmount, maxHealth - currentHealth);
 			if (reportAmount == 0) {
 				bool hasETankCapacity = false;
 				if (this is Character chr && chr.player.hasETankCapacity()) hasETankCapacity = true;
@@ -1337,6 +1323,12 @@ public partial class Actor : GameObject {
 		if (renderEffects.ContainsKey(type)) return;
 		renderEffects[type] = new RenderEffect(type, flashTime, time);
 	}
+
+	public void addRenderEffect(RenderEffectType type) {
+		if (renderEffects.ContainsKey(type)) return;
+		renderEffects[type] = new RenderEffect(type, 0, float.MaxValue);
+	}
+
 
 	public void removeRenderEffect(RenderEffectType type) {
 		renderEffects.Remove(type);
@@ -1488,7 +1480,7 @@ public partial class Actor : GameObject {
 	public SoundWrapper createSoundWrapper(SoundBufferWrapper soundBuffer) {
 		if (this is Character chara) {
 			string charName = chara switch {
-				MegamanX => "mmx",
+				MegamanX or RagingChargeX => "mmx",
 				Zero => "zero",
 				PunchyZero => "pzero",
 				BusterZero => "dzero",

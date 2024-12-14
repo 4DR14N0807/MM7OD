@@ -71,6 +71,8 @@ public partial class Level {
 	public bool camSetFirstTime;
 	public float camX;
 	public float camY;
+	float lastCameraXDelta;
+	float lastCameraXDeltaTimer;
 	public float zoomScale;
 	public long frameCount;
 	public int nonSkippedframeCount;
@@ -944,7 +946,6 @@ public partial class Level {
 					new Point(hostPlayer.charXPos, hostPlayer.charYPos),
 					hostPlayer.charXDir, (ushort)hostPlayer.charNetId, false
 				);
-				player.changeWeaponFromWi(hostPlayer.weaponIndex);
 				if (hostPlayer.charRollingShieldNetId != null) {
 					new RollingShieldProjCharged(
 						player.weapon, player.character.pos,
@@ -1237,7 +1238,7 @@ public partial class Level {
 			}
 			if (isTimeSlowed(go, out float slowAmount)) {
 				Global.speedMul = slowAmount;
-				go.localSpeedMul = slowAmount;
+				go.speedMul = slowAmount;
 			}
 			go.preUpdate();
 			go.statePreUpdate();
@@ -1254,7 +1255,7 @@ public partial class Level {
 			}
 			if (isTimeSlowed(go, out float slowAmount)) {
 				Global.speedMul = slowAmount;
-				go.localSpeedMul = slowAmount;
+				go.speedMul = slowAmount;
 			}
 			go.update();
 			go.stateUpdate();
@@ -1277,7 +1278,7 @@ public partial class Level {
 						}
 						if (damagable.projectileCooldown["sigmavirus"] == 0) {
 							actor.playSound("hit");
-							actor.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+							actor.addRenderEffect(RenderEffectType.Hit, 3, 6);
 							damagable.applyDamage(2, null, null, null, null);
 							damagable.projectileCooldown["sigmavirus"] = 1;
 						}
@@ -1336,7 +1337,7 @@ public partial class Level {
 						currentGrid[i], currentGrid[j]
 					);
 					if (iDatas.Count > 0) {
-						Global.speedMul = currentGrid[i].localSpeedMul;
+						Global.speedMul = currentGrid[i].speedMul;
 						iDatas = organizeTriggers(iDatas);
 						foreach (CollideData collideDataI in iDatas) {
 							currentGrid[i].registerCollision(collideDataI);
@@ -1344,7 +1345,7 @@ public partial class Level {
 						Global.speedMul = 1;
 					}
 					if (jDatas.Count > 0) {
-						Global.speedMul = currentGrid[j].localSpeedMul;
+						Global.speedMul = currentGrid[j].speedMul;
 						jDatas = organizeTriggers(jDatas);
 						foreach (CollideData collideDataJ in jDatas) {
 							currentGrid[j].registerCollision(collideDataJ);
@@ -1377,12 +1378,12 @@ public partial class Level {
 						actor, geometry
 					);
 					if (iData != null) {
-						Global.speedMul = currentGrid[i].localSpeedMul;
+						Global.speedMul = currentGrid[i].speedMul;
 						currentGrid[i].registerCollision(iData);
 						Global.speedMul = 1;
 					}
 					if (jData != null) {
-						Global.speedMul = wallObj.localSpeedMul;
+						Global.speedMul = wallObj.speedMul;
 						wallObj.registerCollision(jData);
 						Global.speedMul = 1;
 					}
@@ -1397,7 +1398,7 @@ public partial class Level {
 			}
 			if (isTimeSlowed(go, out float slowAmount)) {
 				Global.speedMul = slowAmount;
-				go.localSpeedMul = slowAmount;
+				go.speedMul = slowAmount;
 			}
 			go.postUpdate();
 			go.statePostUpdate();
@@ -1409,12 +1410,33 @@ public partial class Level {
 			if (!camPlayer.character.stopCamUpdate) {
 				Point camPos = camPlayer.character.getCamCenterPos();
 				Actor? followActor = camPlayer.character?.getFollowActor();
-				Point expectedCamPos = computeCamPos(camPos, new Point(playerX, playerY));
 
-				float moveDeltaX = camX - MathF.Round(playerX);
-				float moveDeltaY = camY - MathF.Round(playerY);
+				float extraPos = 0;//MathF.Floor(MathF.Abs(followActor.deltaPos.x));
+				if (extraPos >= 4) {
+					extraPos = extraPos * 16 * MathF.Sign(followActor.deltaPos.x);
+					if (lastCameraXDelta == 0 ||
+						extraPos > 0 && extraPos * 100 > lastCameraXDelta ||
+						extraPos < 0 && extraPos * 100 < lastCameraXDelta
+					) {
+						float speed = 100;
+						if (MathF.Sign(lastCameraXDelta) != MathF.Sign(extraPos)) {
+							speed = 600;
+						}
+						lastCameraXDelta = Helpers.moveTo(lastCameraXDelta, extraPos * 100, speed, true);
+					}
+					lastCameraXDeltaTimer = 30;
+				} else {
+					if (lastCameraXDeltaTimer <= 0) {
+						lastCameraXDelta = Helpers.moveTo(lastCameraXDelta, 0, 350, true);
+						extraPos = 0;
+					} else {
+						lastCameraXDeltaTimer--;
+					}
+				}
+				extraPos = MathF.Round(lastCameraXDelta / 100f);
 
-				float fullDeltaX = MathF.Round(expectedCamPos.x) - camX;
+				Point expectedCamPos = computeCamPos(camPos, new Point(playerX + extraPos, playerY));
+				float fullDeltaX = MathF.Round(expectedCamPos.x + extraPos) - camX;
 				float fullDeltaY = MathF.Round(expectedCamPos.y) - camY;
 
 				if (followActor != null && followActor.grounded == false) {
@@ -1423,7 +1445,6 @@ public partial class Level {
 							(not WallKick and not WallSlide and not LadderClimb) or InRideChaser
 					) {
 						if (!unlockfollow) {
-							moveDeltaY = 0;
 							fullDeltaY = 0;
 						}
 					} else {
@@ -1439,16 +1460,20 @@ public partial class Level {
 				if (camPlayer.character?.charState is not InRideChaser &&
 					(camPlayer.character as Axl)?.isZooming() != true
 				) {
-					int camSpeed = 8;
-					if (MathF.Abs(deltaX) > camSpeed) {
-						deltaX = camSpeed * MathF.Sign(fullDeltaX);
+					int camSpeedX = 4;
+					int camSpeedY = 4;
+					float diference;
+					if (MathF.Abs(deltaX) > camSpeedX) {
+						diference = MathF.Floor(MathF.Abs((camSpeedX - MathF.Abs(deltaX)) / 24f));
+						deltaX = (camSpeedX + diference) * MathF.Sign(fullDeltaX);
 					}
-					if (MathF.Abs(deltaY) > camSpeed) {
-						deltaY = camSpeed * MathF.Sign(fullDeltaY);
+					if (MathF.Abs(deltaY) > camSpeedY) {
+						diference = MathF.Floor(MathF.Abs((camSpeedY - MathF.Abs(deltaY)) / 24f));
+						deltaY = (camSpeedY + diference) * MathF.Sign(fullDeltaY);
 					}
 				}
 
-				updateCamPos(deltaX, deltaY);
+				updateCamPos(deltaX, deltaY, playerX + extraPos, playerY);
 			} else {
 				shakeX = 0;
 				shakeY = 0;
@@ -1457,8 +1482,8 @@ public partial class Level {
 			if (camPlayer.character is Axl axl && axl.isZooming()) {
 				Player p = camPlayer.character.player;
 
-				p.axlScopeCursorWorldPos.x = Helpers.clamp(p.axlScopeCursorWorldPos.x, camCenterX - Global.halfViewScreenW, camCenterX + Global.halfViewScreenW);
-				p.axlScopeCursorWorldPos.y = Helpers.clamp(p.axlScopeCursorWorldPos.y, camCenterY - Global.halfViewScreenH, camCenterY + Global.halfViewScreenH);
+				axl.axlScopeCursorWorldPos.x = Helpers.clamp(axl.axlScopeCursorWorldPos.x, camCenterX - Global.halfViewScreenW, camCenterX + Global.halfViewScreenW);
+				axl.axlScopeCursorWorldPos.y = Helpers.clamp(axl.axlScopeCursorWorldPos.y, camCenterY - Global.halfViewScreenH, camCenterY + Global.halfViewScreenH);
 			}
 		} else {
 			shakeX = 0;
@@ -1628,8 +1653,8 @@ public partial class Level {
 		bool isSlown = false;
 
 		if (actor is Character chr2) {
-			if (chr2.infectedTime > 0) {
-				slowAmount = 1 - (0.25f * (chr2.infectedTime / 8));
+			if (chr2.virusTime > 0) {
+				slowAmount = 1 - (0.25f * (chr2.virusTime / 8));
 				isSlown = true;
 			}
 		}
@@ -1638,11 +1663,11 @@ public partial class Level {
 			foreach (var cch in chargedCrystalHunters) {
 				var chr = go as Character;
 				if (chr != null && chr.player.alliance == cch.owner.alliance) continue;
-				if (chr != null && chr.isCCImmune()) continue;
+				if (chr != null && chr.isStatusImmune()) continue;
 
 				var proj = go as Projectile;
 				if (proj != null && proj.damager.owner.alliance == cch.owner.alliance) continue;
-				if (proj != null && proj.damager?.owner?.character?.isCCImmune() == true) continue;
+				if (proj != null && proj.damager?.owner?.character?.isStatusImmune() == true) continue;
 
 				var mech = go as RideArmor;
 				if (mech != null && mech.player != null && mech.player.alliance == cch.owner.alliance) continue;
@@ -2128,15 +2153,12 @@ public partial class Level {
 		return mainPlayer.weapon is WolfSigmaHandWeapon || (mainPlayer.character as Axl)?.isAnyZoom() == true;
 	}
 
-	public void updateCamPos(float deltaX, float deltaY) {
-		var playerX = camPlayer.character.getCamCenterPos().x;
-		var playerY = camPlayer.character.getCamCenterPos().y;
+	public void updateCamPos(float deltaX, float deltaY, float playerX, float playerY) {
+		bool dontMoveX = false;
+		bool dontMoveY = false;
 
-		var dontMoveX = false;
-		var dontMoveY = false;
-
-		var scaledCanvasW = Global.viewScreenW;
-		var scaledCanvasH = Global.viewScreenH;
+		uint scaledCanvasW = Global.viewScreenW;
+		uint scaledCanvasH = Global.viewScreenH;
 
 		var halfScaledCanvasW = Global.halfScreenW * Global.viewSize;
 		var halfScaledCanvasH = Global.halfScreenH * Global.viewSize;
@@ -2395,6 +2417,41 @@ public partial class Level {
 		}).ToArray();
 
 		return unoccupied.GetRandomItem();
+	}
+
+	public SpawnPoint getFirstSpawnPoint(Player player) {
+		if (Global.overrideSpawnPoint != null) {
+			var sp = spawnPoints.FirstOrDefault(s => s.name == Global.overrideSpawnPoint);
+			if (sp != null) return sp;
+		}
+		if (isRace()) {
+			return raceStartSpawnPoints[player.getSpawnIndex(raceStartSpawnPoints.Count)];
+		}
+		if (is1v1()) {
+			return spawnPoints[player.getSpawnIndex(spawnPoints.Count)];
+		}
+		if (Global.quickStart && Global.quickStartSpawn != null) {
+			return spawnPoints[Global.quickStartSpawn.Value];
+		}
+		SpawnPoint[] availableSpawns;
+		if (!gameMode.useTeamSpawns() || player.newAlliance < 0 || player.newAlliance > 1) {
+			availableSpawns = spawnPoints.Where(
+				(spawnPoint) => {
+					return (
+						spawnPoint.alliance == -1
+					);
+				}
+			).ToArray();
+		} else {
+			availableSpawns = spawnPoints.Where(
+				(spawnPoint) => {
+					return (
+						spawnPoint.alliance == player.newAlliance
+					);
+				}
+			).ToArray();
+		}
+		return availableSpawns[player.getSpawnIndex(availableSpawns.Length)];
 	}
 
 	public bool isRace() {

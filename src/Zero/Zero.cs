@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -153,7 +153,7 @@ public class Zero : Character {
 				hyperModeTimer = 0;
 				if (hyperOvertimeActive && isAwakened && player.currency >= 4) {
 					awakenedPhase = 2;
-					heal(player, player.maxHealth * 2, true);
+					heal(player, (float)maxHealth * 2, true);
 					gigaAttack.addAmmoPercentHeal(100);
 				} else {
 					awakenedPhase = 0;
@@ -186,7 +186,7 @@ public class Zero : Character {
 		}
 		// For the shooting animation.
 		if (shootAnimTime > 0) {
-			shootAnimTime -= Global.spf;
+			shootAnimTime -= Global.speedMul;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
 				changeSpriteFromName(charState.defaultSprite, false);
@@ -219,6 +219,10 @@ public class Zero : Character {
 		return (!charState.invincible && !isInvulnerable() &&
 			(charState.attackCtrl || (charState.altCtrls.Length >= 2 && charState.altCtrls[1]))
 		);
+	}
+
+	public override int getMaxChargeLevel() {
+		return isBlack ? 4 : 3;
 	}
 	
 	public override bool canCharge() {
@@ -295,7 +299,7 @@ public class Zero : Character {
 				this.xDir = 1;
 			}
 		}
-		shootAnimTime = 0.3f;
+		shootAnimTime = DefaultShootAnimTime;
 	}
 
 	public void shootDonuts(int chargeLevel) {
@@ -334,7 +338,7 @@ public class Zero : Character {
 			time / 60f, player, player.getNextActorNetId(), rpc: true
 		);
 		playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
-		shootAnimTime = 0.3f;
+		shootAnimTime = DefaultShootAnimTime;
 	}
 
 	public void updateAwakenedAura() {
@@ -424,7 +428,7 @@ public class Zero : Character {
 				  !player.isDisguisedAxl || player.input.isHeld(Control.Down, player)
 			  )
 			) {
-			if (grounded && !isAttacking()) {
+			if (grounded) {
 				turnToInput(player.input, player);
 				changeState(new SwordBlock());
 			}
@@ -750,38 +754,46 @@ public class Zero : Character {
 			// Ground
 			(int)MeleeIds.HuSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaber1, player, 2, 0, 0.25f, isReflectShield: true,
+				isZSaberEffect2: true, isZSaberClang: true,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.HaSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaber2, player, 2, 0, 0.25f, isReflectShield: true,
+				isZSaberEffect2B: true, isZSaberClang: true,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.HuhSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaber3, player,
 				3, Global.defFlinch, 0.25f, isReflectShield: true,
+				isZSaberEffect: true, isZSaberClang: true,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.CrouchSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaberCrouch, player, 3, 0, 0.25f, isReflectShield: true,
+				isZSaberEffect: true, isZSaberClang: true,
 				addToLevel: addToLevel
 			),
 			// Dash
 			(int)MeleeIds.DashSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaberDash, player, 2, 0, 0.25f, isReflectShield: true,
+				isZSaberEffect: true, isZSaberClang: true,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.Shippuuga => new GenericMeleeProj(
 				ShippuugaWeapon.staticWeapon, projPos, ProjIds.Shippuuga, player, 2, Global.halfFlinch, 0.25f,
+				isZSaberEffect: true,
 				addToLevel: addToLevel
 			),
 			// Air
 			(int)MeleeIds.AirSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaberAir, player, 2, 0, 0.25f, isReflectShield: true,
+				isZSaberEffect: true, isZSaberClang: true,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.RollingSlash =>  new GenericMeleeProj(
 				KuuenzanWeapon.staticWeapon, projPos, ProjIds.ZSaberRollingSlash, player,
 				1, 0, 0.125f, isDeflectShield: true,
+				isZSaberEffect2: true, isZSaberClang: true,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.Hyoroga => new GenericMeleeProj(
@@ -816,6 +828,7 @@ public class Zero : Character {
 			),
 			(int)MeleeIds.RisingFang => new GenericMeleeProj(
 				RisingFangWeapon.staticWeapon, projPos, ProjIds.RisingFang, player, 2, 0, 0.5f,
+				isZSaberEffect: true,
 				addToLevel: addToLevel
 			),
 			// Down specials
@@ -924,6 +937,13 @@ public class Zero : Character {
 		}
 		shaders.AddRange(baseShaders);
 		return shaders;
+	}
+
+	public override Point getParasitePos() {
+		if (sprite.name.Contains("_ra_")) {
+			return pos.addxy(0, -6);
+		}
+		return pos.addxy(0, -20);
 	}
 
 	public override float getLabelOffY() {

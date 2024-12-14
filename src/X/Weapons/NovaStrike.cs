@@ -2,14 +2,13 @@
 
 namespace MMXOnline;
 
-public class NovaStrike : Weapon {
+public class HyperNovaStrike : Weapon {
+	public static HyperNovaStrike netWeapon = new();
 	public const float ammoUsage = 14;
 
-	public NovaStrike(Player? player) : base() {
-		if (player != null) {
-			damager = new Damager(player, 4, Global.defFlinch, 0.5f);
-		}
-		//shootSounds = new string[] { "", "", "", "" };
+	public HyperNovaStrike() : base() {
+		//damager = new Damager(player, 4, Global.defFlinch, 0.5f);
+		shootSounds = new string[] { "", "", "", "" };
 		fireRate = 90;
 		index = (int)WeaponIds.NovaStrike;
 		weaponBarBaseIndex = 42;
@@ -26,8 +25,6 @@ public class NovaStrike : Weapon {
 			Point inputDir = character.player.input.getInputDir(character.player);
 			character.changeState(new NovaStrikeState(inputDir), true);
 		}
-		MegamanX mmx = character as MegamanX ?? throw new NullReferenceException();
-		mmx.novaStrikeCooldown = fireRate;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -38,7 +35,11 @@ public class NovaStrike : Weapon {
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
-		return player.character?.flag == null && ammo >= (player.hasChip(3) ? ammoUsage / 2 : ammoUsage);
+		return player.character?.flag == null && ammo >= getChipFactoredAmmoUsage(player);
+	}
+
+	public float getChipFactoredAmmoUsage(Player player) {
+		return player.character is MegamanX mmx && mmx.hyperArmArmor == ArmorId.Max ? ammoUsage / 2 : ammoUsage;
 	}
 }
 

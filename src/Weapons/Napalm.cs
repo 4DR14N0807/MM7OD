@@ -34,6 +34,10 @@ public class Napalm : Weapon {
 			fireRate = 60 * 2;
 			description = new string[] { "This napalm sports a wide horizontal", "range but cannot attack upward." };
 			vileWeight = 3;
+			ammousage = vileAmmoUsage;
+			damage = "2/1";
+			hitcooldown = "0.5";
+			effect = "None.";
 		}
 		if (napalmType == NapalmType.FireGrenade) {
 			displayName = "Flame Round";
@@ -42,6 +46,10 @@ public class Napalm : Weapon {
 			description = new string[] { "This napalm travels along the", "ground, laying a path of fire." };
 			killFeedIndex = 54;
 			vileWeight = 3;
+			ammousage = vileAmmoUsage;
+			damage = "1/2";
+			hitcooldown = "1/0.5";
+			effect = "Fire DOT: 0.5/1";
 		}
 		if (napalmType == NapalmType.SplashHit) {
 			displayName = "Splash Hit";
@@ -50,6 +58,10 @@ public class Napalm : Weapon {
 			description = new string[] { "This napalm can attack foes above,", "but has a narrow horizontal range." };
 			killFeedIndex = 79;
 			vileWeight = 3;
+			ammousage = vileAmmoUsage;
+			damage = "2/1";
+			hitcooldown = "0.5";
+			effect = "Pushes towards it.";
 		}
 	}
 
@@ -85,7 +97,7 @@ public class NapalmGrenadeProj : Projectile {
 	bool exploded;
 	public NapalmGrenadeProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
 		base(weapon, pos, xDir, 150, 2, player, "napalm_grenade", 0, 0.2f, netProjId, player.ownedByLocalPlayer) {
-		projId = (int)ProjIds.NapalmGrenade;
+		projId = (int)ProjIds.RumblingBangGrenade;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
@@ -144,7 +156,7 @@ public class NapalmPartProj : Projectile {
 	) : base(
 		weapon, pos, xDir, 0, 1, player, "napalm_part", 0, 0.5f, netProjId, player.ownedByLocalPlayer
 	) {
-		projId = (int)ProjIds.Napalm;
+		projId = (int)ProjIds.RumblingBangProj;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir, (byte)xDist);
 		}
@@ -358,7 +370,7 @@ public class NapalmAttack : CharState {
 public class MK2NapalmGrenadeProj : Projectile {
 	public MK2NapalmGrenadeProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, Point? vel = null, bool rpc = false) :
 		base(weapon, pos, xDir, 150, 1, player, "napalm_grenade2", 0, 0.2f, netProjId, player.ownedByLocalPlayer) {
-		projId = (int)ProjIds.NapalmGrenade2;
+		projId = (int)ProjIds.FlameRoundGrenade;
 		this.vel = new Point(speed * xDir, -200);
 		useGravity = true;
 		collider.wallOnly = true;
@@ -394,7 +406,7 @@ public class MK2NapalmProj : Projectile {
 	public MK2NapalmProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
 		base(weapon, pos, xDir, 100, 1f, player, "napalm2_proj", 0, 1f, netProjId, player.ownedByLocalPlayer) {
 		maxTime = 2;
-		projId = (int)ProjIds.Napalm2;
+		projId = (int)ProjIds.FlameRoundProj;
 		useGravity = true;
 		collider.wallOnly = true;
 		destroyOnHit = false;
@@ -429,7 +441,7 @@ public class MK2NapalmProj : Projectile {
 public class MK2NapalmFlame : Projectile {
 	public MK2NapalmFlame(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
 		base(weapon, pos, xDir, 0, 1, player, "napalm2_flame", 0, 1f, netProjId, player.ownedByLocalPlayer) {
-		projId = (int)ProjIds.Napalm2Flame;
+		projId = (int)ProjIds.FlameRoundFlameProj;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
@@ -460,7 +472,7 @@ public class MK2NapalmWallProj : Projectile {
 	public MK2NapalmWallProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
 		base(weapon, pos, xDir, 0, 2, player, "napalm2_wall", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
 		maxTime = 1f;
-		projId = (int)ProjIds.Napalm2Wall;
+		projId = (int)ProjIds.FlameRoundWallProj;
 		vel = new Point(0, -200);
 		destroyOnHit = false;
 		shouldShieldBlock = false;
@@ -482,7 +494,7 @@ public class SplashHitGrenadeProj : Projectile {
 	bool exploded;
 	public SplashHitGrenadeProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
 		base(weapon, pos, xDir, 150, 2, player, "napalm_sh_grenade", 0, 0.2f, netProjId, player.ownedByLocalPlayer) {
-		projId = (int)ProjIds.NapalmGrenadeSplashHit;
+		projId = (int)ProjIds.SplashHitGrenade;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
@@ -528,7 +540,7 @@ public class SplashHitProj : Projectile {
 	Player player;
 	public SplashHitProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool sendRpc = false) :
 		base(weapon, pos, 1, 0, 1, player, "napalm_sh_proj", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
-		projId = (int)ProjIds.NapalmSplashHit;
+		projId = (int)ProjIds.SplashHitProj;
 		shouldShieldBlock = false;
 		shouldVortexSuck = false;
 		destroyOnHit = false;

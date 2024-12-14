@@ -49,7 +49,7 @@ public class Damager {
 		Character? chr = victim as Character;
 
 		if (chr != null) {
-			if (chr.isCCImmune()) {
+			if (chr.isStatusImmune()) {
 				newFlinch = 0;
 				weakness = false;
 			}
@@ -97,7 +97,7 @@ public class Damager {
 		if (projId == (int)ProjIds.Hyouretsuzan2) {
 			key = ((int)ProjIds.Hyouretsuzan).ToString() + "_" + owner.id.ToString();
 		}
-		if (projId == (int)ProjIds.BlastLauncherSplash) {
+		if (projId == (int)ProjIds.BlastLauncherGrenadeSplash) {
 			key += "_" + damagingActor?.netId?.ToString();
 		}
 
@@ -326,10 +326,10 @@ public class Damager {
 				flinch = 0;
 			}
 			if ((owner?.character as Zero)?.isViral == true) {
-				character.addInfectedTime(owner, damage);
+				character.addVirusTime(owner, damage);
 			}
 			if ((owner?.character as PunchyZero)?.isViral == true) {
-				character.addInfectedTime(owner, damage);
+				character.addVirusTime(owner, damage);
 			}
 
 			switch (projId) {
@@ -342,16 +342,16 @@ public class Damager {
 					break;
 				case (int)ProjIds.SpeedBurnerCharged:
 					if (character != owner?.character)
-						character.addBurnTime(owner, new SpeedBurner(null), 1);
+						character.addBurnTime(owner, SpeedBurner.netWeapon, 1);
 					break;
 				case (int)ProjIds.SpeedBurner:
-					character.addBurnTime(owner, new SpeedBurner(null), 1);
+					character.addBurnTime(owner, SpeedBurner.netWeapon, 1);
 					break;
-				case (int)ProjIds.Napalm2Wall:
-				case (int)ProjIds.Napalm2:
+				case (int)ProjIds.FlameRoundWallProj:
+				case (int)ProjIds.FlameRoundProj:
 					character.addBurnTime(owner, new Napalm(NapalmType.FireGrenade), 1); ;
 					break;
-				case (int)ProjIds.Napalm2Flame:
+				case (int)ProjIds.FlameRoundFlameProj:
 					character.addBurnTime(owner, new Napalm(NapalmType.FireGrenade), 0.5f);
 					break;
 				case (int)ProjIds.Ryuenjin:
@@ -438,14 +438,9 @@ public class Damager {
 					character.addIgFreezeProgress(1);
 					break;
 				//Other effects
-				case (int)ProjIds.PlasmaGun:
+				case (int)ProjIds.PlasmaGunProj:
 					if (mmx != null && mmx.player.hasBodyArmor(3)) {
-						//The main shot fires an EMP burst that causes a full flinch and 
-						//destroys Rolling Shields as well as temporarily disabling X3 barriers
-						//He literally made an INFINITE DEACTIVATION
-						//I am putting this to 3, as i suppose is what he meant to 
-						//mmx.barrierCooldown = 3;
-						mmx.barrierTime = 3;
+						mmx.barrierActiveTime = 0;
 						victim?.playSound("weakness");
 					}
 					break;
@@ -472,10 +467,10 @@ public class Damager {
 					character.playSound("flamemOil");
 					break;
 				case (int)ProjIds.DarkHold:
-					character.addDarkHoldTime(4, owner);
+					character.addDarkHoldTime(DarkHoldState.totalStunTime, owner);
 					break;
 				case (int)ProjIds.MagnaCTail:
-					character.addInfectedTime(owner, 4f);
+					character.addVirusTime(owner, 4f);
 					break;
 				case (int)ProjIds.MechPunch:
 				case (int)ProjIds.MechDevilBearPunch:
@@ -496,8 +491,9 @@ public class Damager {
 			switch (weaponIndex) {
 				case (int)WeaponIds.BoomerangCutter:
 				case (int)WeaponIds.BoomerangKBoomerang:
-					if (character.player.isX)
-						character.stingChargeTime = 0;
+					if (mmx != null) {
+						mmx.stingActiveTime = 0;
+					}
 					break;
 			}
 
@@ -506,7 +502,7 @@ public class Damager {
 				flinchCooldown = projectileFlinchCooldowns[projId];
 			}
 			if (mmx != null) {
-				if (mmx.checkMaverickWeakness((ProjIds)projId)) {
+				if (XWeaknesses.checkMaverickWeakness(mmx.player, (ProjIds)projId)) {
 					weakness = true;
 					if (flinch == 0 && flinchCooldown == 0) {
 						flinchCooldown = 1;
@@ -516,7 +512,7 @@ public class Damager {
 						damage = 1;
 					}
 				}
-				if (mmx.checkWeakness((ProjIds)projId)) {
+				if (XWeaknesses.checkWeakness(mmx.player, (ProjIds)projId)) {
 					weakness = true;
 				}
 			}
@@ -594,16 +590,16 @@ public class Damager {
 					character.setHurt(hurtDir, flinch, spiked);
 				}
 				// Weakness is true and character is not frozen in Shotgun Ice.
-				else if (weakness && !isShotgunIceAndFrozen && mmx?.WeaknessT <= 0) {
+				else if (weakness && !isShotgunIceAndFrozen && mmx?.weaknessCooldown <= 0) {
 					//victim?.playSound("weakness");
 					if (!character.charState.superArmor) {
 						// Put a cooldown of 0.75s minimum.
 						if (flinchCooldown * 60 < 45) {
-							mmx.WeaknessT = 45;
+							mmx.weaknessCooldown = 45;
 						}
 						// Set weakness cooldown to the same time as flinch cooldown.
 						else {
-							mmx.WeaknessT = MathF.Ceiling(flinchCooldown * 60);
+							mmx.weaknessCooldown = MathF.Ceiling(flinchCooldown * 60);
 						}
 						if (flinch < Global.halfFlinch) {
 							flinch = Global.halfFlinch;
@@ -780,7 +776,7 @@ public class Damager {
 							owner.character is Zero zero &&
 							!zero.hypermodeActive()
 						) {      //What in the..
-							if (GenericMeleeProj.isZSaberClang(projId)) {
+							if (damagingActor is Projectile proj1 && proj1.isZSaberClang) {
 								owner.character.changeState(new ZeroClang(-owner.character.xDir));
 							}
 						} */
@@ -820,9 +816,9 @@ public class Damager {
 					!blues.isShieldFront() && hitFromBehind(blues, damagingActor, owner, projId) && damage <= 1
 				)
 			) {
-				victim?.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+				victim?.addRenderEffect(RenderEffectType.Hit, 3, 6);
 			}
-		} 
+		}
 
 		float finalDamage = damage * (weakness ? 1.5f : 1) * owner.getDamageModifier();
 
@@ -844,7 +840,7 @@ public class Damager {
 		}
 		if ((damage > 0 || finalDamage > 0) && character != null &&
 			character.ownedByLocalPlayer &&
-			character.specialState == (int)SpecialStateIds.PZeroParry &&
+			character.charState.specialId == SpecialStateIds.PZeroParry &&
 			charState is PZeroParry zeroParryState &&
 			zeroParryState.canParry(damagingActor, projId)
 		) {
@@ -900,9 +896,9 @@ public class Damager {
 			(int)ProjIds.Raijingeki2 => true,
 			(int)ProjIds.Denjin => true,
 			(int)ProjIds.PeaceOutRoller => true,
-			(int)ProjIds.PlasmaGun => true,
-			(int)ProjIds.PlasmaGun2 => true,
-			(int)ProjIds.PlasmaGun2Hyper => true,
+			(int)ProjIds.PlasmaGunProj => true,
+			(int)ProjIds.PlasmaGunBeamProj => true,
+			(int)ProjIds.PlasmaGunBeamProjHyper => true,
 			(int)ProjIds.VoltTornado => true,
 			(int)ProjIds.VoltTornadoHyper => true,
 			(int)ProjIds.SparkMSpark => true,
@@ -982,8 +978,8 @@ public class Damager {
 		if (projId >= 0 && (
 			projId == (int)ProjIds.Burn ||
 			projId == (int)ProjIds.SelfDmg ||
-			projId == (int)ProjIds.Napalm ||
-			projId == (int)ProjIds.Napalm2Flame ||
+			projId == (int)ProjIds.RumblingBangProj ||
+			projId == (int)ProjIds.FlameRoundFlameProj ||
 			projId == (int)ProjIds.MaroonedTomahawk ||
 			projId == (int)ProjIds.AcidBurstPoison
 		)) {
@@ -1040,9 +1036,80 @@ public class Damager {
 		(damageable as Character)?.addBurnStunStacks(burnStacks, attacker);
 		return null;
 	}
+	// Count for kills and assist even if it does 0 damage.
+	public static bool alwaysAssist(int? projId) {
+		if (projId == null) {
+			return false;
+		}
+		return (ProjIds)projId switch {
+			ProjIds.AcidBurst => true,
+			ProjIds.AcidBurstCharged => true,
+			ProjIds.CrystalHunter => true,
+			ProjIds.ElectricShock => true,
+			ProjIds.AirBlastProj => true,
+			_ => false
+		};
+	}
+	public static bool lowTimeAssist(int? projId) {
+		if (projId == null) {
+			return false;
+		}
+		// The GM19 list now only counts for FFA mode.
+		if (Global.level.gameMode is not FFADeathMatch) {
+			return false;
+		}
+		return projId switch {
+
+			_ => false
+		};
+	}
 
 	public static bool unassistable(int? projId) {
-		return false;
+		if (projId == null) {
+			return false;
+		}
+		// Never assist in any mode as they are DOT or self-damage. (Also Volt Tornado)
+		bool alwaysNotAssist = (ProjIds)projId switch {
+			ProjIds.Burn => true,
+			ProjIds.AcidBurstPoison => true,
+			ProjIds.SelfDmg => true,
+			ProjIds.FlameRoundFlameProj => true,
+			ProjIds.BlastLauncherMineGrenadeProj => true, 
+			ProjIds.BoundBlasterRadar => true, 
+			ProjIds.RayGunChargeBeam => true,
+			ProjIds.PlasmaGunBeamProj => true,
+			ProjIds.PlasmaGunBeamProjHyper => true,
+			ProjIds.VoltTornado => true,
+			ProjIds.VoltTornadoHyper => true,
+			ProjIds.FlameBurner => true,
+			ProjIds.FlameBurnerHyper => true,
+			_ => false
+		};
+		if (alwaysNotAssist) {
+			return true;
+		}
+		// The GM19 list now only counts for FFA mode.
+		if (Global.level.gameMode is not FFADeathMatch) {
+			return false;
+		}
+		return projId switch {
+			(int)ProjIds.Tornado => true,
+			(int)ProjIds.BoomerangCharged => true,
+			(int)ProjIds.TornadoFang => true,
+			(int)ProjIds.TornadoFang2 => true,
+			(int)ProjIds.GravityWell => true,
+			(int)ProjIds.SpinWheel => true,
+			(int)ProjIds.TriadThunder => true,
+			(int)ProjIds.TriadThunderBeam => true,
+			(int)ProjIds.DistanceNeedler => true,
+			(int)ProjIds.RumblingBangProj => true,
+			(int)ProjIds.FlameRoundWallProj => true,
+			(int)ProjIds.SplashHitProj => true,
+			(int)ProjIds.CircleBlaze => true,
+			(int)ProjIds.CircleBlazeExplosion => true,
+			(int)ProjIds.BlastLauncherGrenadeSplash => true,
+			_ => false
+		};
 	}
 
 	public static DamagerMessage? onParasiticBombDamage(IDamagable damagable, Player attacker) {
@@ -1065,8 +1132,8 @@ public class Damager {
 			(int)ProjIds.FireWaveCharged => true,
 			(int)ProjIds.SpeedBurner => true,
 			(int)ProjIds.SpeedBurnerCharged => true,
-			(int)ProjIds.Napalm2 => true,
-			(int)ProjIds.Napalm2Flame => true,
+			(int)ProjIds.FlameRoundProj => true,
+			(int)ProjIds.FlameRoundFlameProj => true,
 			(int)ProjIds.Ryuenjin => true,
 			(int)ProjIds.FlameBurner => true,
 			(int)ProjIds.FlameBurnerHyper => true,

@@ -310,8 +310,8 @@ public class CrackedWall : Actor, IDamagable {
 		if (projId == (int)ProjIds.MagnetMine) return null;
 		if (projId == (int)ProjIds.GreenSpinnerSplash) return null;
 		if (projId == (int)ProjIds.GreenSpinner) return null;
-		if (projId == (int)ProjIds.BlastLauncher) return null;
-		if (projId == (int)ProjIds.BlastLauncherSplash) return null;
+		if (projId == (int)ProjIds.BlastLauncherGrenadeProj) return null;
+		if (projId == (int)ProjIds.BlastLauncherGrenadeSplash) return null;
 		if (projId == (int)ProjIds.SpinWheel) return 1;
 		if (projId == (int)ProjIds.TornadoFang) return null;
 		if (projId == (int)ProjIds.TornadoFang2) return null;
@@ -422,13 +422,13 @@ public class KillZone : Geometry {
 			damagable.applyDamage(damage, null, null, null, null);
 			if (damagable is Character chr) {
 				chr.playSound(flinch ? "hurt" : "hit", sendRpc: true);
-				chr.addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+				chr.addRenderEffect(RenderEffectType.Hit, 3, 6);
 				if (flinch && chr.ownedByLocalPlayer) {
 					chr.changeState(new Hurt(-chr.xDir, flinch ? Global.defFlinch : 0));
 				}
 			} else {
 				damagable.actor().playSound("hit", sendRpc: true);
-				damagable.actor().addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+				damagable.actor().addRenderEffect(RenderEffectType.Hit, 3, 6);
 			}
 		}
 	}

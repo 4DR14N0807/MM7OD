@@ -56,12 +56,12 @@ public class UpgradeArmorMenu : IMainMenu {
 		if (mmx?.hasFullHyperMaxArmor == true || mmx?.hasUltimateArmor == true) {
 			return;
 		}
-		if (mmx?.hasFullHyperMaxArmor == true) {
+		/* if (mmx?.hasFullHyperMaxArmor == true) {
 			Menu.change(new UpgradeArmorMenuGolden(GoldenMenu));
 		}
 		if (mmx?.hasUltimateArmor == true) {
 			Menu.change(new UpgradeArmorMenuUAX(UAXMenu));
-		}
+		} */
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			if (selectArrowPosY == 0) {
 				if (mainPlayer.helmetArmorNum != xGame) {

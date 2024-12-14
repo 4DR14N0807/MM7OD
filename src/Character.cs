@@ -1088,8 +1088,8 @@ public partial class Character : Actor, IDamagable {
 			healAmount = 0;
 			usedEtank = null;
 		}
-		if (player.weapon.ammo >= player.weapon.maxAmmo) {
-			player.weapon.weaponHealAmount = 0;
+		if (currentWeapon?.ammo >= currentWeapon?.maxAmmo) {
+			currentWeapon.weaponHealAmount = 0;
 			usedWtank = null;
 		}
 
@@ -3381,7 +3381,7 @@ public partial class Character : Actor, IDamagable {
 				DNACore lastDNA = player.lastDNACore;
 				int lastDNAIndex = player.lastDNACoreIndex;
 				player.revertToAxl();
-				player.character.undisguiseTime = 0.33f;
+				undisguiseTime = 0.33f;
 				// To keep DNA.
 				if (altShootPressed && player.currency >= 1) {
 					player.currency -= 1;

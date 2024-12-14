@@ -167,10 +167,10 @@ public class Sprite {
 			if (character.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
-			if (animData.textureName == "rock_default" && chara is Rock rock && rock.hasSuperAdaptor) {
+			if (animData.textureName == "rock_default" && character is Rock rock && rock.hasSuperAdaptor) {
 				bitmap = rock.armless ? Sprite.superMegaManArmlessBitmap : Sprite.superMegaManBitmap;
 			}
-			else if (animData.textureName == "blues_default" && chara is Blues { isBreakMan: true }) {
+			else if (animData.textureName == "blues_default" && character is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
 			}
 			isUPX = character is RagingChargeX;
@@ -266,7 +266,7 @@ public class Sprite {
 			bitmap = Global.textures["XUP"];
 		}
 
-		if (!isUltX && armors != null && animData.isXSprite) {
+		/* if (!isUltX && armors != null && animData.isXSprite) {
 			bool isShootSprite = needsX3BusterCorrection();
 
 			if (isShootSprite) {
@@ -307,9 +307,9 @@ public class Sprite {
 			if (compositeBitmaps.Count > 1) {
 				isCompositeSprite = true;
 			}
-		}
+		} */
 
-		if (!isUltX && armors != null && animData.isXSprite) {
+		/* if (!isUltX && armors != null && animData.isXSprite) {
 			bool isShootSprite = needsX3BusterCorrection();
 
 			if (isShootSprite) {
@@ -347,11 +347,11 @@ public class Sprite {
 			}
 			if (armors[3] > 0) {
 				compositeBitmaps.Add(xArmorArmBitmap[armors[3] - 1]);
-			} */
+			} 
 			if (compositeBitmaps.Count > 1) {
 				isCompositeSprite = true;
 			}
-		
+		} */
 		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
 			if (alpha >= 1 && (
 				renderEffects.Contains(RenderEffectType.BlueShadow) ||
@@ -488,9 +488,9 @@ public class Sprite {
 			}
 			DrawWrappers.DrawTexture(Global.textures["XUPGlow"], currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, angle, alpha, upShaders, true);
 		}
-		if (animData.isAxlSprite && drawAxlArms) {
+		/* if (animData.isAxlSprite && drawAxlArms) {
 			DrawWrappers.DrawTexture(axlArmBitmap, currentFrame.rect.x1, currentFrame.rect.y1, currentFrame.rect.w(), currentFrame.rect.h(), x + frameOffsetX, y + frameOffsetY, zIndex, cx, cy, xDirArg, yDirArg, 0, alpha, shaders, true);
-		}
+		} */
 	}
 
 	public bool needsX3BusterCorrection() {

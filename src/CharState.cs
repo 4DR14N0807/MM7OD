@@ -1561,7 +1561,7 @@ public class Die : CharState {
 		if (character is Blues blues) {
 			blues.destroyStarCrash();
 		}
-		new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
+		//new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
 		player.lastDeathWasXHyper = character is RagingChargeX;
 		
 		if (character.ownedByLocalPlayer && character.player.isDisguisedAxl) {

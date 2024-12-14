@@ -105,16 +105,6 @@ public class Bass : Character {
 			}
 		}
 
-		// Shoot controls.
-		bool shootPressed;
-		if (player.weapon.isStream) {
-			shootPressed = player.input.isHeld(Control.Shoot, player);
-		} else {
-			shootPressed = player.input.isPressed(Control.Shoot, player);
-		};
-		if (shootPressed) {
-			lastShootPressed = Global.frameCount;
-		}
 		player.changeWeaponControls();
 
 		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
@@ -147,7 +137,7 @@ public class Bass : Character {
 		if (!(charState is WarpIn) && canGoSuperBass()) {
 
 			player.currency -= TrebleBoostCost;
-			player.character.changeState(new SuperBassStart(), true);
+			changeState(new SuperBassStart(), true);
 			return;
 		}
 		if (hyperProgress < 1) {
@@ -258,9 +248,16 @@ public class Bass : Character {
 	}
 
 	public override bool attackCtrl() {
-		int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
-		if (framesSinceLastShootPressed <= 6) {
-			if (weaponCooldown <= 0 && player.weapon.canShoot(0, player)) {
+		// Shoot controls.
+		bool shootPressed;
+		if (currentWeapon?.isStream == true) {
+			shootPressed = player.input.isHeld(Control.Shoot, player);
+		} else {
+			shootPressed = player.input.isPressed(Control.Shoot, player);
+		}
+
+		if (shootPressed) {
+			if (weaponCooldown <= 0 && currentWeapon?.canShoot(0, player) == true) {
 				shoot(getChargeLevel());
 				return true;
 			}
@@ -291,9 +288,9 @@ public class Bass : Character {
 		} else {
 			changeSprite(getSprite(charState.shootSprite), true);
 		}
-		player.weapon.shoot(this, chargeLevel);
-		weaponCooldown = player.weapon.fireRate;
-		player.weapon.addAmmo(-player.weapon.getAmmoUsage(0), player);
+		currentWeapon?.shoot(this, chargeLevel);
+		weaponCooldown = currentWeapon?.fireRate ?? 0;
+		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(0) ?? 0, player);
 		stopCharge();
 	}
 
@@ -469,7 +466,7 @@ public class Bass : Character {
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
 
-		int index = player.weapon.index;
+		int index = currentWeapon?.index ?? 0;
 		palette = player.bassPaletteShader;
 
 		palette?.SetUniform("palette", index);
@@ -492,12 +489,10 @@ public class Bass : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
-		int weaponIndex = player.weapon.index;
-		/* if (weaponIndex == (int)WeaponIds.HyperBuster) {
-			weaponIndex = player.weapons[player.hyperChargeSlot].index;
-		} */
+		int weaponIndex = currentWeapon?.index ?? 255;
+		byte ammo = (byte)MathF.Ceiling(currentWeapon?.ammo ?? 0);
 		customData.Add((byte)weaponIndex);
-		customData.Add((byte)MathF.Ceiling(player.weapon?.ammo ?? 0));
+		customData.Add(ammo);
 	
 		bool[] flags = [
 			isSuperBass,
@@ -513,9 +508,10 @@ public class Bass : Character {
 		data = data[data[0]..];
 
 		// Per-character data.
-		player.changeWeaponFromWi(data[0]);
-		if (player.weapon != null) {
-			player.weapon.ammo = data[1];
+		Weapon? targetWeapon = weapons.Find(w => w.index == data[0]);
+		if (targetWeapon != null) {
+			weaponSlot = weapons.IndexOf(targetWeapon);
+			targetWeapon.ammo = data[1];
 		}
 
 		bool[] flags = Helpers.byteToBoolArray(data[2]);

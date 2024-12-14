@@ -241,21 +241,6 @@ public partial class Player {
 				axl.zoomOut();
 			}
 		}
-
-		// Nota: Esto da error, sin embargo aun no conozco si es importante o no
-
-		/* if (isRock) {
-			if (character.getChargeLevel() >= 2) {
-				newWeapon.shootTime = 0;
-			} else {
-				// Switching from laggy move (like tornado) to a fast one
-				if (oldWeapon.switchCooldown != null && oldWeapon.shootTime > 0) {
-					newWeapon.shootTime = Math.Max(newWeapon.shootTime, oldWeapon.switchCooldown.Value);
-				} else {
-					newWeapon.shootTime = Math.Max(newWeapon.shootTime, oldWeapon.shootTime);
-				}
-			}
-		} */
 	}
 
 	public void weaponLeft() {

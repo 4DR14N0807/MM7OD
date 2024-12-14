@@ -2027,10 +2027,6 @@ public class GameMode {
 			drawWeaponText(x, y - 18, bass.cardsCount.ToString());
 		}
 
-		if (weapon is MagnetMine && level.mainPlayer.magnetMines.Count > 0) {
-			drawWeaponText(x, y, level.mainPlayer.magnetMines.Count.ToString());
-		}
-
 		if (weapon is BlastLauncher && level.mainPlayer.axlLoadout.blastLauncherAlt == 1 && level.mainPlayer.grenades.Count > 0) {
 			drawWeaponText(x, y, level.mainPlayer.grenades.Count.ToString());
 		}

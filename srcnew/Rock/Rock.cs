@@ -47,6 +47,7 @@ public class Rock : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Rock;
+		weapons = RockLoadoutSetup.getLoadout(player);
 
 		spriteToCollider["sa_activate_air"] = null;
 		spriteToCollider["sa_activate"] = null;
@@ -84,7 +85,7 @@ public class Rock : Character {
 		timeSinceLastShoot++;
 		if (timeSinceLastShoot >= 30) lemons = 0;
 
-		if (player.weapon.ammo >= player.weapon.maxAmmo) {
+		if (currentWeapon?.ammo >= currentWeapon?.maxAmmo) {
 			weaponHealAmount = 0;
 		}
 
@@ -180,10 +181,6 @@ public class Rock : Character {
 
 		if (!isCharging()) {
 			if (shootPressed) {
-				lastShootPressed = Global.frameCount;
-			}
-			int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
-			if (shootPressed || framesSinceLastShootPressed < 6) {
 				if (weaponCooldown <= 0) {
 					shoot(0);
 					return true;
@@ -194,7 +191,7 @@ public class Rock : Character {
 	}
 
 	public void shoot(int chargeLevel) {
-		if (!player.weapon.canShoot(chargeLevel, player)) return;
+		if (currentWeapon?.canShoot(chargeLevel, player) == false) return;
 		if (!canShoot()) return;
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
 			changeToIdleOrFall();
@@ -202,14 +199,14 @@ public class Rock : Character {
 		// Shoot anim and vars.
 		float oldShootAnimTime = shootAnimTime;
 		
-		if (!player.weapon.hasCustomAnim) setShootAnim();
+		if (currentWeapon?.hasCustomAnim == false) setShootAnim();
 
 		int chargedNS = hasChargedNoiseCrush ? 1 : 0;
 		
-		weaponCooldown = player.weapon.fireRate;
-		player.weapon.shoot(this, chargeLevel, chargedNS);
-		player.weapon.addAmmo(-player.weapon.getAmmoUsage(chargeLevel), player);
-		if (oldShootAnimTime <= 0.25f && !player.weapon.hasCustomAnim) {
+		weaponCooldown = currentWeapon?.fireRate ?? 0;
+		currentWeapon?.shoot(this, chargeLevel, chargedNS);
+		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(chargeLevel) ?? 0, player);
+		if (oldShootAnimTime <= 0.25f && currentWeapon?.hasCustomAnim == false) {
 			shootAnimTime = 0.25f;
 		}
 		stopCharge();
@@ -260,13 +257,12 @@ public class Rock : Character {
 			return;
 		}
 		if (!(charState is WarpIn) && canGoSuperAdaptor()) {
-			//hyperProgress += Global.spf;
 
 			if (!boughtSuperAdaptorOnce) {
 				player.currency -= SuperAdaptorCost;
 				boughtSuperAdaptorOnce = true;
 			}
-			player.character.changeState(new CallDownRush(), true);
+			changeState(new CallDownRush(), true);
 
 			return;
 		}
@@ -368,12 +364,9 @@ public class Rock : Character {
 		return base.canChangeWeapons();
 	}
 	public override bool canCharge() {
-		Weapon weapon = player.weapon;
 		if (flag != null) return false;
-		//if (isInvisibleBS.getValue()) return false;
 		if (player.weapons.Count == 0) return false;
 		if (isWarpIn()) return false;
-		if (player.weapons.Count == 0) return false;
 		if (invulnTime > 0) return false;
 		if (junkShieldProjs.Count > 0) return false;
 		if (sWell != null) return false;
@@ -390,7 +383,7 @@ public class Rock : Character {
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
 
-		int index = player.weapon.index;
+		int index = currentWeapon?.index ?? 0;
 		if (index > (int)RockWeaponIds.WildCoil) index = (int)RockWeaponIds.MegaBuster;
 		palette = player.rockPaletteShader;
 
@@ -460,6 +453,18 @@ public class Rock : Character {
 			changeState(new RushJetRide(), true);
 			grounded = true;
 		} */
+	}
+
+	public override void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {
+		base.onWeaponChange(oldWeapon, newWeapon);
+		
+		if (getChargeLevel() >= 2) {
+			weaponCooldown = 0;
+		} else {
+			if (oldWeapon.switchCooldownFrames != null && weaponCooldown > 0) {
+				weaponCooldown = Math.Max(weaponCooldown, oldWeapon.switchCooldownFrames.Value);
+			} 
+		}
 	}
 
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
@@ -536,7 +541,7 @@ public class Rock : Character {
 				2 => RenderEffectType.ChargeGreen,
 				_ => RenderEffectType.None,
 			};
-			addRenderEffect(renderGfx, 0.033333f, 0.1f);
+			addRenderEffect(renderGfx, 2, 6);
 			chargeEffect.character = this;
 			chargeEffect.update(level, 1);
 		}
@@ -635,12 +640,10 @@ public class Rock : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
-		int weaponIndex = player.weapon.index;
-		/* if (weaponIndex == (int)WeaponIds.HyperBuster) {
-			weaponIndex = player.weapons[player.hyperChargeSlot].index;
-		} */
+		int weaponIndex = currentWeapon?.index ?? 255;
+		byte ammo = (byte)MathF.Ceiling(currentWeapon?.ammo ?? 0);
 		customData.Add((byte)weaponIndex);
-		customData.Add((byte)MathF.Ceiling(player.weapon?.ammo ?? 0));
+		customData.Add(ammo);
 
 		customData.Add(Helpers.boolArrayToByte([
 			hasChargedNoiseCrush,
@@ -657,12 +660,13 @@ public class Rock : Character {
 		data = data[data[0]..];
 
 		// Per-character data.
-		player.changeWeaponFromWi(data[0]);
-		if (player.weapon != null) {
-			player.weapon.ammo = data[1];
+		Weapon? targetWeapon = weapons.Find(w => w.index == data[0]);
+		if (targetWeapon != null) {
+			weaponSlot = weapons.IndexOf(targetWeapon);
+			targetWeapon.ammo = data[1];
 		}
 
-		bool[] boolData = Helpers.byteToBoolArray(data[3]);
+		bool[] boolData = Helpers.byteToBoolArray(data[2]);
 		hasChargedNoiseCrush = boolData[0];
 		hasSuperAdaptor = boolData[1];
 		armless = boolData[2];

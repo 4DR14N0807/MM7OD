@@ -512,7 +512,7 @@ public class Blues : Character {
 		}
 		// Change sprite is shield mode changed.
 		if (lastShieldMode != isShieldActive) {
-			if (shootTime == 0 && charState is Idle idleState) {
+			if (shootAnimTime == 0 && charState is Idle idleState) {
 				idleState.transitionSprite = getSprite("idle_swap");
 				if (isShieldActive) {
 					idleState.transitionSprite += "_shield";
@@ -576,10 +576,6 @@ public class Blues : Character {
 
 		if (!isCharging()) {
 			if (shootPressed) {
-				lastShootPressed = Global.frameCount;
-			}
-			int framesSinceLastShootPressed = Global.frameCount - lastShootPressed;
-			if (shootPressed || framesSinceLastShootPressed < 6) {
 				if (lemonCooldown <= 0) {
 					shoot(0);
 					return true;
@@ -799,7 +795,7 @@ public class Blues : Character {
 				3 => RenderEffectType.ChargeGreen,
 				_ => RenderEffectType.ChargeBlue,
 			};
-			addRenderEffect(renderGfx, 0.033333f, 0.1f);
+			addRenderEffect(renderGfx, 2, 6);
 			chargeEffect.update(getChargeLevel(), 1);
 		}
 	}

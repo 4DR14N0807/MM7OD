@@ -218,6 +218,8 @@ public partial class Character : Actor, IDamagable {
 		} else {
 			initialCharState = new NetLimbo();
 			useGravity = false;
+			isVisible = true;
+			sprite = new Sprite(getSprite("idle"));
 		}
 
 		spriteToCollider["warp_beam"] = null;

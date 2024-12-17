@@ -912,7 +912,7 @@ public partial class Player {
 			return;
 		}
 
-		//Evil Energy Timer.
+		// Evil Energy Timer.
 		if (character != null && !character.destroyed && character is Bass) {
 			Helpers.decrementFrames(ref evilEnergyTime);
 		} 
@@ -922,80 +922,6 @@ public partial class Player {
 			evilEnergyStacks--;
 			maxHealth += hpPerStack;
 			character?.playSound("heal");
-		}
-
-		vileFormToRespawnAs = 0;
-		hyperSigmaRespawn = false;
-		hyperXRespawn = false;
-
-		if (isVile) {
-			if (isSelectingRA()) {
-				int maxRAIndex = 3;
-				if (character is Vile vile && !vile.isVileMK1) {
-					maxRAIndex = 4;
-				}
-				if (input.isPressedMenu(Control.MenuDown)) {
-					selectedRAIndex--;
-					if (selectedRAIndex < 0) selectedRAIndex = maxRAIndex;
-				} else if (input.isPressedMenu(Control.MenuUp)) {
-					selectedRAIndex++;
-					if (selectedRAIndex > maxRAIndex) selectedRAIndex = 0;
-				}
-			}
-
-			if (canReviveVile()) {
-				if (input.isPressed(Control.Special1, this) || Global.shouldAiAutoRevive) {
-					reviveVile(false);
-				} else if (input.isPressed(Control.Special2, this) && !lastDeathWasVileMK2) {
-					reviveVile(true);
-				}
-			}
-		} else if (isSigma) {
-			if (isSelectingCommand()) {
-				if (maverickWeapon.selCommandIndexX == 1) {
-					if (input.isPressedMenu(Control.MenuDown)) {
-						maverickWeapon.selCommandIndex--;
-						if (maverickWeapon.selCommandIndex < 1) {
-							maverickWeapon.selCommandIndex = MaverickWeapon.maxCommandIndex;
-						}
-					} else if (input.isPressedMenu(Control.MenuUp)) {
-						maverickWeapon.selCommandIndex++;
-						if (maverickWeapon.selCommandIndex > MaverickWeapon.maxCommandIndex) maverickWeapon.selCommandIndex = 1;
-					}
-
-					/*
-					if (maverickWeapon.selCommandIndex == 2)
-					{
-						if (input.isPressedMenu(Control.Left))
-						{
-							maverickWeapon.selCommandIndexX--;
-						}
-						else if (input.isPressedMenu(Control.Right))
-						{
-							maverickWeapon.selCommandIndexX++;
-						}
-					}
-					*/
-				} else {
-					if (input.isPressedMenu(Control.Left) && maverickWeapon.selCommandIndexX == 2) {
-						maverickWeapon.selCommandIndexX = 1;
-					} else if (input.isPressedMenu(Control.Right) && maverickWeapon.selCommandIndexX == 0) {
-						maverickWeapon.selCommandIndexX = 1;
-					}
-				}
-			}
-
-			if (canReviveSigma(out var spawnPoint) &&
-				(input.isPressed(Control.Special2, this) ||
-				Global.level.isHyper1v1() ||
-				Global.shouldAiAutoRevive)
-			) {
-				reviveSigma(2, spawnPoint);
-			}
-		} else if (isX) {
-			if (canReviveX() && (input.isPressed(Control.Special2, this) || Global.shouldAiAutoRevive)) {
-				reviveX();
-			}
 		}
 
 		// Never spawn a character if it already exists
@@ -1016,7 +942,6 @@ public partial class Player {
 					null
 				);
 			}
-			bool sendRpc = ownedByLocalPlayer;
 			if (shouldRespawn()) {
 				ushort charNetId = getNextATransNetId();
 
@@ -1025,26 +950,26 @@ public partial class Player {
 						p => p.teamAlliance == teamAlliance && p.health > 0 && p.character != null
 					);
 					if (spawnPoints.Count != 0) {
-						Character randomChar = spawnPoints[Helpers.randomRange(0, spawnPoints.Count - 1)].character;
+						Character randomChar = spawnPoints[Helpers.randomRange(0, spawnPoints.Count - 1)].character!;
 						Point warpInPos = Global.level.getGroundPosNoKillzone(
 							randomChar.pos, Global.screenH
 						) ?? randomChar.pos;
 						spawnCharAtPoint(
 							newCharNum, getCharSpawnData(newCharNum),
-							warpInPos, randomChar.xDir, charNetId, sendRpc
+							warpInPos, randomChar.xDir, charNetId, true
 						);
 					} else {
 						SpawnPoint spawnPoint = firstSpawn ?? Global.level.getSpawnPoint(this, !warpedInOnce);
 						firstSpawn = null;
 						int spawnPointIndex = Global.level.spawnPoints.IndexOf(spawnPoint);
-						spawnCharAtSpawnIndex(spawnPointIndex, charNetId, sendRpc);
+						spawnCharAtSpawnIndex(spawnPointIndex, charNetId, true);
 					}
 				}
 				else {
 					var spawnPoint = Global.level.getSpawnPoint(this, !warpedInOnce);
 					if (spawnPoint == null) return;
 					int spawnPointIndex = Global.level.spawnPoints.IndexOf(spawnPoint);
-					spawnCharAtSpawnIndex(spawnPointIndex, charNetId, sendRpc);
+					spawnCharAtSpawnIndex(spawnPointIndex, charNetId, true);
 				}
 			}
 		}
@@ -1157,45 +1082,14 @@ public partial class Player {
 				Options.main.maverickStartFollow ? MaverickAIBehavior.Follow : MaverickAIBehavior.Defend
 			);
 		}
-		if (charNum == (int)CharIds.Sigma) {
-			loadout.sigmaLoadout.sigmaForm = extraData[0];
-			if (isSigma1()) {
-				sigmaMaxAmmo = 20;
-				sigmaAmmo = sigmaMaxAmmo;
-			} else if (isSigma2()) {
-				sigmaMaxAmmo = 28;
-				sigmaAmmo = 0;
-			}
-		}
-		if (charNum == (int)CharIds.X) {
-			loadout.xLoadout.weapon1 = extraData[0];
-			loadout.xLoadout.weapon2 = extraData[1];
-			loadout.xLoadout.weapon3 = extraData[2];
-			loadout.xLoadout.melee = extraData[3];
-		}
-		if (charNum == (int)CharIds.Axl) {
-			loadout.axlLoadout.weapon2 = extraData[0];
-			loadout.xLoadout.weapon3 = extraData[1];
-		}
-		if (pendingEvilEnergyStacks > 0 && charNum == (int)CharIds.Bass ) {
+		if (pendingEvilEnergyStacks > 0 && charNum == (int)CharIds.Bass) {
 			evilEnergyStacks = pendingEvilEnergyStacks;
 			pendingEvilEnergyStacks = 0;
 			evilEnergyTime = evilEnergyMaxTime;
 		}
-		maxHealth = getMaxHealth();
-		health = maxHealth;
-		assassinHitPos = null;
-
-		bool mk2VileOverride = false;
-		// Hyper mode overrides (PRE)
-		if (Global.level.isHyper1v1() && ownedByLocalPlayer) {
-			if (isVile) {
-				mk2VileOverride = true;
-				currency = 9999;
-			}
+		if (charNum == (int)CharIds.Bass) {
+			maxHealth -= evilEnergyStacks * hpPerStack;
 		}
-		maxHealth = getMaxHealth();
-		if (charNum == (int)CharIds.Bass) maxHealth -= evilEnergyStacks * hpPerStack;
 		health = maxHealth;
 
 		if (charNum == (int)CharIds.Rock) {
@@ -1203,7 +1097,8 @@ public partial class Player {
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
-		} else if (charNum == (int)CharIds.Blues) {
+		}
+		else if (charNum == (int)CharIds.Blues) {
 			character = new Blues(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
@@ -1218,44 +1113,12 @@ public partial class Player {
 		}
 		// Do this once char has spawned and is not null.
 		configureWeapons();
-
-		// Hyper mode overrides (POST)
-		if (Global.level.isHyperMatch() && ownedByLocalPlayer) {
-			if (character is MegamanX mmx) {
-				mmx.hasUltimateArmor = true;
-			}
-			if (character is Zero zero) {
-				if (loadout.zeroLoadout.hyperMode == 0) {
-					zero.isBlack = true;
-				} else if (loadout.zeroLoadout.hyperMode == 1) {
-					zero.awakenedPhase = 1;
-				} else {
-					zero.isViral = true;
-				}
-			}
-			if (character is Axl axl) {
-				if (loadout.axlLoadout.hyperMode == 0) {
-					axl.whiteAxlTime = 100000;
-					axl.hyperAxlUsed = true;
-					var db = new DoubleBullet();
-					weapons[0] = db;
-				} else {
-					axl.stingChargeTime = 8;
-					axl.hyperAxlUsed = true;
-					currency = 9999;
-				}
-			}
-		}
-
 		lastCharacter = character;
-
+	
 		if (isAI) {
 			character.addAI();
 		}
 
-		if (character.rideArmor != null) {
-			character.rideArmor.xDir = xDir;
-		}
 		if (isCamPlayer) {
 			Global.level.snapCamPos(character.getCamCenterPos(), null);
 		}

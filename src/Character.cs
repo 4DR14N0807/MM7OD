@@ -1960,6 +1960,14 @@ public partial class Character : Actor, IDamagable {
 			changeSprite(getSprite(newState.shootSprite), true);
 		} else {
 			string spriteName = sprite.name;
+			string targetSprite = newState.sprite;
+			if (newState.sprite == newState.transitionSprite &&
+				!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
+			) {
+				targetSprite = newState.defaultSprite;
+				newState.sprite = newState.defaultSprite;
+			}
+
 			changeSprite(getSprite(newState.sprite), true);
 			if (spriteName == sprite.name) {
 				sprite.frameIndex = 0;

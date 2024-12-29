@@ -130,7 +130,7 @@ public class AI {
 				player.release(Control.Shoot);
 			}
 
-			var brakeZones = Global.level.getTriggerList(character.abstractedActor(), 0, 0, null, typeof(BrakeZone));
+			var brakeZones = Global.level.getTerrainTriggerList(character.abstractedActor(), Point.zero, null, typeof(BrakeZone));
 			if ((Global.level.gameMode as Race)?.getPlace(character.player) > 1) {
 				dashTime = 100;
 			} else {
@@ -143,7 +143,7 @@ public class AI {
 				if (dashTime < 0) dashTime = 0;
 			}
 
-			var turnZones = Global.level.getTriggerList(character.abstractedActor(), 0, 0, null, typeof(TurnZone));
+			var turnZones = Global.level.getTerrainTriggerList(character.abstractedActor(), Point.zero, null, typeof(TurnZone));
 			if (turnZones.FirstOrDefault()?.gameObject is TurnZone turnZone && turnZone.xDir != character.xDir) {
 				if (turnZone.xDir == -1) {
 					player.release(Control.Left);
@@ -155,7 +155,7 @@ public class AI {
 			}
 
 			if (jumpTime == 0) {
-				var jumpZones = Global.level.getTriggerList(character.abstractedActor(), 0, 0, null, typeof(JumpZone));
+				var jumpZones = Global.level.getTerrainTriggerList(character.abstractedActor(), Point.zero, null, typeof(JumpZone));
 				int jumpTurnZoneCount = turnZones.Count(turnZone => turnZone.gameObject is TurnZone tz && tz.jumpAfterTurn && tz.xDir == character.xDir);
 
 				if (jumpZones.Count + jumpTurnZoneCount > 0 && character.rideChaser?.grounded == true) {
@@ -249,7 +249,7 @@ public class AI {
 		}*/
 
 		if (aiState is not InJumpZone) {
-			var jumpZones = Global.level.getTriggerList(character.abstractedActor(), 0, 0, null, typeof(JumpZone));
+			var jumpZones = Global.level.getTerrainTriggerList(character.abstractedActor(), Point.zero, null, typeof(JumpZone));
 			var neighbor = (aiState as FindPlayer)?.neighbor;
 			if (neighbor != null) {
 				jumpZones = jumpZones.FindAll(j => !neighbor.isJumpZoneExcluded(j.gameObject.name));
@@ -432,30 +432,6 @@ public class AI {
 				return;
 			}
 		} 
-		//Randomly Dash
-		if (aiState.randomlyDash && character != null &&
-			character.charState is not WallKick &&
-			stopDashSpam <= 0 &&
-			!inNodeTransition && stuckTime == 0 &&
-			character.charState.normalCtrl &&
-			character.charState is not Dash or AirDash or UpDash
-		) {
-			if (Helpers.randomRange(0, 75) < 5) {
-				dashTime = Helpers.randomRange(0.3f, 0.5f);
-			}
-			if (dashTime > 0) {
-				if (character.grounded) {
-					stopDashSpam = 80;
-					character.changeState(new Dash(Control.Dash));
-				}
-				else {
-					stopDashSpam = 90;
-					character.changeState(new AirDash(Control.Dash));
-				}
-				dashTime -= Global.spf;
-				if (dashTime < 0) dashTime = 0;
-			}
-		}
 		Helpers.decrementFrames(ref stopDashSpam);
 		//Randomly Jump
 		if (aiState.randomlyJump && !inNodeTransition && stuckTime == 0) {

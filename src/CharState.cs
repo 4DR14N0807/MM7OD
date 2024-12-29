@@ -163,7 +163,8 @@ public class CharState {
 	}
 
 	public bool inTransition() {
-		return (!string.IsNullOrEmpty(transitionSprite) &&
+		return (
+			!string.IsNullOrEmpty(transitionSprite) &&
 			sprite == transitionSprite &&
 			character.sprite.name != null &&
 			character.sprite.name.Contains(transitionSprite)
@@ -1174,7 +1175,11 @@ public class LadderClimb : CharState {
 	public Ladder ladder;
 	public float snapX;
 	public float? incY;
-	public LadderClimb(Ladder ladder, float snapX, float? incY = null) : base("ladder_climb", "ladder_shoot", "ladder_attack", "ladder_start") {
+	public LadderClimb(
+		Ladder ladder, float snapX, float? incY = null
+	) : base(
+		"ladder_climb", "ladder_shoot", "ladder_attack", "ladder_start"
+	) {
 		this.ladder = ladder;
 		this.snapX = MathF.Round(snapX);
 		this.incY = incY;

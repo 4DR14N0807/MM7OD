@@ -438,7 +438,7 @@ public partial class Player {
 	//public ShaderWrapper frozenCastleShader = Helpers.cloneShaderSafe("frozenCastle");
 	//public ShaderWrapper possessedShader = Helpers.cloneShaderSafe("possessed");
 	//public ShaderWrapper vaccineShader = Helpers.cloneShaderSafe("vaccine");
-	//public ShaderWrapper darkHoldShader = Helpers.cloneShaderSafe("darkhold");
+	public ShaderWrapper darkHoldShader = Helpers.cloneShaderSafe("darkhold");
 	public ShaderWrapper speedTrailShader = Helpers.cloneShaderSafe("speedTrail");
 
 	// Maverick shaders.

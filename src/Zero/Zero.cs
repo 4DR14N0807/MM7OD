@@ -65,6 +65,10 @@ public class Zero : Character {
 	public float zeroTripleStartTime;
 	public float zeroTripleSlashEndTime;
 
+	// AI stuff.
+	public bool isWildDance;
+	public float blocktime, aiAttackCooldown;
+
 	// Creation code.
 	public Zero(
 		Player player, float x, float y, int xDir,
@@ -1033,8 +1037,6 @@ public class Zero : Character {
 			hypermodeBlink = data[2];
 		}
 	}
-	public bool isWildDance;
-	public float blocktime, aiAttackCooldown;
 	public override void aiAttack(Actor? target) {
 		bool isTargetInAir = pos.y > target?.pos.y - 20;
 		bool isTargetClose = pos.x < target?.pos.x - 10;

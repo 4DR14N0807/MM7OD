@@ -1334,5 +1334,5 @@ public class Zero : Character {
 			}
 		}
 	}
-
+	*/
 }

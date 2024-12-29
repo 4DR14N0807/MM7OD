@@ -3,15 +3,14 @@
 namespace MMXOnline;
 
 public class ArmoredArmadillo : Maverick {
-	public ArmoredAProjWeapon projWeapon = new ArmoredAProjWeapon();
-	public ArmoredAChargeReleaseWeapon chargeReleaseWeapon = new ArmoredAChargeReleaseWeapon();
-	public ArmoredARollWeapon rollWeapon;
+	public ArmoredAProjWeapon projWeapon = new();
+	public ArmoredAChargeReleaseWeapon chargeReleaseWeapon = new();
+	public ArmoredARollWeapon rollWeapon = new();
 	public const float rollTransJumpPower = 250;
 	public bool noArmor;
 
 	public ArmoredArmadillo(Player player, Point pos, Point destPos, int xDir, ushort? netId, bool ownedByLocalPlayer, bool sendRpc = false) :
 		base(player, pos, destPos, xDir, netId, ownedByLocalPlayer) {
-		rollWeapon = new ArmoredARollWeapon(player);
 		stateCooldowns.Add(typeof(MShoot), new MaverickStateCooldown(false, true, 0.6f));
 		//stateCooldowns.Add(typeof(ArmoredARollEnterState), new MaverickStateCooldown(false, false, 4));
 
@@ -73,7 +72,7 @@ public class ArmoredArmadillo : Maverick {
 			rechargeAmmo(2);
 		}
 
-		if (aiBehavior == MaverickAIBehavior.Control) {
+		if (aiBehavior == MaverickAIBehavior.Control && !player.isSummoner()) {
 			if (state is MIdle or MRun or MLand) {
 				if (shootPressed()) {
 					changeState(getShootState(false));
@@ -99,7 +98,9 @@ public class ArmoredArmadillo : Maverick {
 				}
 				var hits = Global.level.checkCollisionsShape(rect.getShape(), null);
 				foreach (var hit in hits) {
-					if (hit.gameObject is Projectile proj && proj.owner.alliance != player.alliance && MathF.Sign(proj.deltaPos.x) != xDir) {
+					if (hit.gameObject is Projectile proj && proj.owner.alliance != player.alliance &&
+						MathF.Sign(proj.deltaPos.x) != xDir
+					) {
 						shouldGuard = true;
 						break;
 					}
@@ -133,20 +134,14 @@ public class ArmoredArmadillo : Maverick {
 	}
 
 	public override MaverickState[] aiAttackStates() {
-		return new MaverickState[]
-		{
-				getShootState(true),
-				new ArmoredAGuardState(),
-				new ArmoredARollEnterState(),
-		};
+		return [
+			getShootState(true),
+			new ArmoredARollEnterState(),
+		];
 	}
 
 	public override MaverickState getRandomAttackState() {
-		var attacks = new MaverickState[]
-		{
-				getShootState(true),
-		};
-		return attacks.GetRandomItem();
+		return aiAttackStates().GetRandomItem();
 	}
 
 	private MaverickState getShootState(bool isAI) {
@@ -155,16 +150,40 @@ public class ArmoredArmadillo : Maverick {
 			new ArmoredAProj(projWeapon, pos, xDir, player, player.getNextActorNetId(), rpc: true);
 		}, null);
 		if (isAI) {
-			shootState.consecutiveData = new MaverickStateConsecutiveData(0, 6, 0.33f);
+			shootState.consecutiveData = new MaverickStateConsecutiveData(0, 2, 0.33f);
 		}
 		return shootState;
 	}
 
-	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
-		if (sprite.name.Contains("roll")) {
-			return new GenericMeleeProj(rollWeapon, centerPoint, ProjIds.ArmoredARoll, player, damage: hasNoArmor() ? 2 : 3);
-		}
-		return null;
+	// Melee IDs for attacks.
+	public enum MeleeIds {
+		None = -1,
+		Roll,
+		RollArmorless,
+	}
+
+	// This can run on both owners and non-owners. So data used must be in sync.
+	public override int getHitboxMeleeId(Collider hitbox) {
+		return (int)(sprite.name switch {
+			"armoreda_roll" => MeleeIds.Roll,
+			"armoreda_na_roll" => MeleeIds.RollArmorless,
+			_ => MeleeIds.None
+		});
+	}
+
+	// This can be called from a RPC, so make sure there is no character conditionals here.
+	public override Projectile? getMeleeProjById(int id, Point pos, bool addToLevel = true) {
+		return (MeleeIds)id switch {
+			MeleeIds.Roll => new GenericMeleeProj(
+				rollWeapon, pos, ProjIds.ArmoredARoll, player,
+				3, Global.defFlinch, 45, addToLevel: addToLevel
+			),
+			MeleeIds.RollArmorless => new GenericMeleeProj(
+				rollWeapon, pos, ProjIds.ArmoredARoll, player,
+				3, Global.defFlinch, 45, addToLevel: addToLevel
+			),
+			_ => null
+		};
 	}
 }
 
@@ -184,8 +203,7 @@ public class ArmoredAChargeReleaseWeapon : Weapon {
 }
 
 public class ArmoredARollWeapon : Weapon {
-	public ArmoredARollWeapon(Player player) {
-		damager = new Damager(player, 3, Global.defFlinch, 0.75f);
+	public ArmoredARollWeapon() {
 		index = (int)WeaponIds.ArmoredARoll;
 		killFeedIndex = 95;
 	}

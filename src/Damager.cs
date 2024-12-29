@@ -6,6 +6,10 @@ namespace MMXOnline;
 public class Damager {
 	public Player owner;
 	public float damage;
+	public float hitCooldownSeconds {
+		set => hitCooldown = MathF.Ceiling(value * 60f);
+		get => hitCooldown / 60f;
+	}
 	public float hitCooldown;
 	public int flinch; // Number of frames to flinch
 	public float knockback;
@@ -16,8 +20,8 @@ public class Damager {
 	public const float headshotModifier = 2;
 
 	public static readonly Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
-		{ (int)BluesProjIds.LemonOverdrive, 2f},
-		{ (int)BluesProjIds.LemonAngled, 2f},
+		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
+		{ (int)BluesProjIds.LemonAngled, 60 * 2},
 	};
 
 	public static readonly Dictionary<int, int> multiHitLimit = new() {
@@ -29,7 +33,7 @@ public class Damager {
 		this.owner = owner;
 		this.damage = damage;
 		this.flinch = flinch;
-		this.hitCooldown = hitCooldown;
+		hitCooldownSeconds = hitCooldown;
 		this.knockback = knockback;
 	}
 
@@ -674,8 +678,8 @@ public class Damager {
 			if (projectileFlinchCooldowns.ContainsKey(projId)) {
 				flinchCooldownTime = projectileFlinchCooldowns[projId];
 			}
-			if (!maverick.player.isTagTeam() && flinchCooldownTime < 0.75f) {
-				flinchCooldownTime = 0.75f;
+			if (!maverick.player.isTagTeam() && flinchCooldownTime < 45) {
+				flinchCooldownTime = 45;
 			}
 			if (!maverick.flinchCooldown.ContainsKey(flinchKey)) {
 				maverick.flinchCooldown[flinchKey] = 0;

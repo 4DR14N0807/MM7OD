@@ -8,6 +8,7 @@ public class MegamanX : Character {
 	// Shoot variables.
 	public float shootCooldown;
 	public int lastShootPressed;
+	public bool bufferedShotPressed => lastShootPressed < 6 || player.input.isPressed(Control.Shoot, player);
 	public float specialSaberCooldown;
 	public XBuster specialBuster;
 	public int specialButtonMode;
@@ -81,8 +82,7 @@ public class MegamanX : Character {
 	// Weapon-specific.
 	public RollingShieldProjCharged? chargedRollingShieldProj;
 	public List<BubbleSplashProjCharged> chargedBubbles = new();
-	public StrikeChainProj? strikeChainProj;
-	public StrikeChainProjCharged? strikeChainChargedProj;
+	public Projectile? strikeChainProj;
 	public GravityWellProjCharged? chargedGravityWell;
 	public SpinningBladeProjCharged? chargedSpinningBlade;
 	public FrostShieldProjCharged? chargedFrostShield;
@@ -100,6 +100,7 @@ public class MegamanX : Character {
 	public float stingPaletteTime;
 	// Other.
 	public float weaknessCooldown;
+	public float aiAttackCooldown;
 
 	// Creation code.
 	public MegamanX(
@@ -150,10 +151,17 @@ public class MegamanX : Character {
 		Helpers.decrementFrames(ref shootCooldown);
 		Helpers.decrementFrames(ref barrierCooldown);
 		Helpers.decrementFrames(ref specialSaberCooldown);
-
+		if (lastShootPressed < 100) {
+			lastShootPressed++;
+		}
+		Helpers.decrementFrames(ref aiAttackCooldown);
+		// Strike chain extending the shoot anim.
+		if (hasLastingProj() && shootAnimTime > 0) {
+			shootAnimTime = 2;
+		}
 		// For the shooting animation.
-		if (shootAnimTime > 0) {
-			shootAnimTime -= Global.speedMul;
+		if (shootAnimTime > 0 && sprite.name == getSprite(charState.shootSprite)) {
+			shootAnimTime -= speedMul;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
 				changeSpriteFromName(charState.defaultSprite, false);
@@ -171,6 +179,10 @@ public class MegamanX : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+		if (player.input.isPressed(Control.Shoot, player)) {
+			lastShootPressed = 6;
+		}
+		chargedParasiticBomb?.update();
 		gigaWeapon?.update();
 		hyperNovaStrike?.update();
 		itemTracer?.update();
@@ -194,15 +206,43 @@ public class MegamanX : Character {
 		else if (stockedBuster) {
 			addRenderEffect(RenderEffectType.ChargePink, 2, 6);
 		}
+		if (!charState.normalCtrl) {
+			lastShootPressed = 100;	
+		}
 	}
 
 	public override bool normalCtrl() {
-		if (!grounded) {
-			if (player.input.isPressed(Control.Dash, player) && canAirDash() && canDash() && flag == null) {
-				if (player.input.isHeld(Control.Up, player) && player.hasBootsArmor(3)) {
-					changeState(new UpDash(Control.Dash));
-					return true;
-				}
+		if (grounded) {
+			if (legArmor == ArmorId.Max &&
+				player.input.isPressed(Control.Dash, player) &&
+				player.input.isHeld(Control.Up, player) &&
+				canDash() && flag == null
+			) {
+				changeState(new UpDash(Control.Dash));
+				return true;
+			}
+			if (legArmor == ArmorId.Light && grounded &&
+				player.dashPressed(out string dashControlL) &&
+				canDash()
+			) {
+				changeState(new LigthDash(dashControlL), true);
+				return true;
+			}
+		} else if (!grounded) {
+			if (legArmor == ArmorId.Max &&
+				player.input.isPressed(Control.Dash, player) &&
+				player.input.isHeld(Control.Up, player) &&
+				canAirDash() && canDash() && flag == null
+			) {
+				changeState(new UpDash(Control.Dash));
+				return true;
+			}
+			if (legArmor == ArmorId.Giga && !grounded &&
+				player.dashPressed(out string dashControlG) &&
+				canAirDash() && canDash()
+			) {
+				changeState(new GigaAirDash(dashControlG), true);
+				return true;
 			}
 			if (!player.isAI && hasUltimateArmor &&
 				player.input.isPressed(Control.Jump, player) &&
@@ -227,15 +267,15 @@ public class MegamanX : Character {
 			changeState(new X6SaberState(grounded), true);
 			return true;
 		}
-		if (player.input.isPressed(Control.Shoot, player) && stockedMaxBuster) {
+		if (bufferedShotPressed && stockedMaxBuster) {
 			shoot(1, specialBuster, false);
 			return true;
 		}
-		if (player.input.isPressed(Control.Shoot, player) && stockedBuster) {
+		if (bufferedShotPressed && stockedBuster) {
 			shoot(1, currentWeapon, true);
 			return true;
 		}
-		if (!isCharging() && currentWeapon != null && (
+		if (!isCharging() && currentWeapon != null && canShoot() && (
 				player.input.isPressed(Control.Shoot, player) ||
 				currentWeapon.isStream && getChargeLevel() < 2 &&
 				player.input.isHeld(Control.Shoot, player)
@@ -253,8 +293,9 @@ public class MegamanX : Character {
 	public void shoot(int chargeLevel) {
 		shoot(chargeLevel, currentWeapon, false);
 	}
-	
+
 	public void shoot(int chargeLevel, Weapon weapon, bool busterStock) {
+		lastShootPressed = 100;
 		// Check if can shoot.
 		if (shootCooldown > 0 ||
 			weapon == null ||
@@ -263,29 +304,42 @@ public class MegamanX : Character {
 		) {
 			return;
 		}
-		// Changes to shoot animation and gets sound.
-		setShootAnim();
-		shootAnimTime = DefaultShootAnimTime;
-		string shootSound = weapon.shootSounds[chargeLevel];
 		// Calls the weapon shoot function.
 		bool useCrossShotAnim = false;
 		if (chargeLevel >= 3 && armArmor == ArmorId.Giga || busterStock) {
 			if (!busterStock) {
 				stockedBuster = true;
+			} else if (chargeLevel < 3) {
+				stockedBuster = false;
 			}
-			if (charState.normalCtrl && charState.attackCtrl) {
+			if (!weapon.hasCustomChargeAnim && charState.normalCtrl && charState.attackCtrl) {
 				useCrossShotAnim = true;
+			} else {
+				chargeLevel = 3;
 			}
 		}
+		// Changes to shoot animation and gets sound.
+		if (chargeLevel < 3 || !weapon.hasCustomChargeAnim) {
+			setShootAnim();
+			shootAnimTime = DefaultShootAnimTime;
+		}
+		string shootSound = weapon.shootSounds[chargeLevel];
+		// Shoot.
 		if (useCrossShotAnim) {
 			changeState(new X2ChargeShot(null, busterStock ? 1 : 0), true);
-			shootSound = "";
+			stopCharge();
+			return;
 		} else {
 			weapon.shoot(this, [chargeLevel, busterStock ? 1 : 0]);
 		}
 		// Sets up global shoot cooldown to the weapon shootCooldown.
-		weapon.shootCooldown = weapon.fireRate;
-		shootCooldown = weapon.fireRate;
+		float baseCooldown = weapon.getFireRate(this, chargeLevel, [busterStock ? 1 : 0]);
+		if (!stockedBuster || busterStock || weapon.fireRate <= 10) {
+			weapon.shootCooldown = baseCooldown;
+		} else {
+			weapon.shootCooldown = 10;
+		}
+		shootCooldown = weapon.shootCooldown;
 		// Add ammo.
 		weapon.addAmmo(-weapon.getAmmoUsageEX(chargeLevel, this), player);
 		// Play sound if any.
@@ -311,11 +365,6 @@ public class MegamanX : Character {
 			return getRunSpeed();
 		}
 		float dashSpeed = 3.5f * 60;
-		if (legArmor == ArmorId.Light && charState is Dash) {
-			dashSpeed *= 1.15f;
-		} else if (legArmor == ArmorId.Giga && charState is AirDash) {
-			dashSpeed *= 1.15f;
-		}
 		return dashSpeed * getRunDebuffs();
 	}
 
@@ -377,7 +426,8 @@ public class MegamanX : Character {
 	
 	public override bool canShoot() {
 		if (isInvulnerableAttack() ||
-			hasLastingProj() ||
+			hasLastingProj() && !stockedBuster && !stockedMaxBuster && !stockedSaber ||
+			hasLockingProj() ||
 			shootCooldown > 0 ||
 			invulnTime > 0 ||
 			linkedTriadThunder != null
@@ -388,15 +438,15 @@ public class MegamanX : Character {
 	}
 
 	public override bool canCharge() {
-		return !isInvulnerableAttack() && !hasLastingProj();
+		return !isInvulnerableAttack() && !hasLockingProj();
 	}
 
 	public override void increaseCharge() {
 		if (armArmor == ArmorId.Light) {
-			chargeTime += Global.speedMul * 1.5f;
+			chargeTime += speedMul * 1.5f;
 			return;
 		}
-		chargeTime += Global.speedMul;
+		chargeTime += speedMul;
 	}
 
 	public override bool chargeButtonHeld() {
@@ -404,14 +454,15 @@ public class MegamanX : Character {
 	}
 
 	public override bool canChangeWeapons() {
-		if (hasLastingProj()) {
-			return false;
-		}
 		return base.canChangeWeapons();
 	}
 
 	public override void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {
-		stingActiveTime = 0;
+		if (newWeapon is not ChameleonSting &&
+			(newWeapon is not HyperCharge || weapons[hyperChargeTarget] is not ChameleonSting)
+		) {
+			stingActiveTime = 0;
+		}
 	}
 
 	public override bool canAddAmmo() {
@@ -518,11 +569,19 @@ public class MegamanX : Character {
 
 	public bool hasLastingProj() {
 		return (
-			chargedSpinningBlade != null ||
-			chargedFrostShield != null ||
-			chargedTornadoFang != null ||
-			strikeChainProj != null ||
-			strikeChainChargedProj != null
+			chargedSpinningBlade?.destroyed == false ||
+			chargedFrostShield?.destroyed == false ||
+			chargedTornadoFang?.destroyed == false ||
+			strikeChainProj?.destroyed == false
+		);
+	}
+
+	public bool hasLockingProj() {
+		return (
+			chargedFrostShield?.destroyed == false ||
+			chargedTornadoFang?.destroyed == false ||
+			chargedSpinningBlade?.destroyed == false ||
+			linkedTriadThunder?.destroyed == false
 		);
 	}
 
@@ -535,8 +594,6 @@ public class MegamanX : Character {
 		chargedTornadoFang = null;
 		strikeChainProj?.destroySelf();
 		strikeChainProj = null;
-		strikeChainChargedProj?.destroySelf();
-		strikeChainChargedProj = null;
 	}
 	
 	public void popAllBubbles() {
@@ -569,35 +626,35 @@ public class MegamanX : Character {
 		return id switch {
 			(int)MeleeIds.SpeedBurnerCharged => new GenericMeleeProj(
 				SpeedBurner.netWeapon, projPos, ProjIds.SpeedBurnerCharged, player,
-				4, Global.defFlinch, 0.5f
+				4, Global.defFlinch, 30
 			),
 			(int)MeleeIds.LigthHeadbutt => new GenericMeleeProj(
 				LhHeadbutt.netWeapon, projPos, ProjIds.Headbutt, player,
-				2, Global.halfFlinch, 0.5f, addToLevel: addToLevel
+				2, Global.halfFlinch, 30, addToLevel: addToLevel
 			),
 			(int)MeleeIds.LigthHeadbuttEX => new GenericMeleeProj(
 				LhHeadbutt.netWeapon, projPos, ProjIds.Headbutt, player,
-				4, Global.defFlinch, 0.5f, addToLevel: addToLevel
+				4, Global.defFlinch, 30, addToLevel: addToLevel
 			),
 			(int)MeleeIds.Shoryuken => new GenericMeleeProj(
 				ShoryukenWeapon.netWeapon, projPos, ProjIds.Shoryuken, player,
-				Damager.ohkoDamage, Global.defFlinch, 0.5f, addToLevel: addToLevel
+				Damager.ohkoDamage, Global.defFlinch, 30, addToLevel: addToLevel
 			),
 			(int)MeleeIds.MaxZSaber => new GenericMeleeProj(
 				ZXSaber.netWeapon, projPos, ProjIds.XSaber, player,
-				4, Global.defFlinch, 0.5f, addToLevel: addToLevel
+				4, Global.defFlinch, 30, addToLevel: addToLevel
 			),
 			(int)MeleeIds.ZSaber => new GenericMeleeProj(
 				ZXSaber.netWeapon, projPos, ProjIds.X6Saber, player,
-				3, 0, 0.5f, addToLevel: addToLevel
+				3, 0, 30, addToLevel: addToLevel
 			),
 			(int)MeleeIds.ZSaberAir => new GenericMeleeProj(
 				ZXSaber.netWeapon, projPos, ProjIds.X6Saber, player,
-				2, 0, 0.5f, addToLevel: addToLevel
+				2, 0, 30, addToLevel: addToLevel
 			),
 			(int)MeleeIds.NovaStrike => new GenericMeleeProj(
 				HyperNovaStrike.netWeapon, projPos, ProjIds.NovaStrike, player,
-				4, Global.defFlinch, 0.5f, addToLevel: addToLevel
+				4, Global.defFlinch, 30, addToLevel: addToLevel
 			),
 			_ => null
 		};
@@ -618,7 +675,6 @@ public class MegamanX : Character {
 	// Other overrides.
 	public override void onFlinchOrStun(CharState newState) {
 		strikeChainProj?.destroySelf();
-		strikeChainChargedProj?.destroySelf();
 		// Remove all linked stuff on stun.
 		if (newState is not Hurt hurtState) {
 			removeLastingProjs();
@@ -634,9 +690,6 @@ public class MegamanX : Character {
 		bool hasChanged = base.changeState(newState, forceChange);
 		if (!hasChanged || !ownedByLocalPlayer) {
 			return hasChanged;
-		}
-		if (!newState.canUseShootAnim() && charState is not Hurt) {
-			removeLastingProjs();
 		}
 		return true;
 	}
@@ -658,11 +711,8 @@ public class MegamanX : Character {
 		bool disableRpc = false, bool doRpcEvenIfNotOwned = false,
 		bool favorDefenderProjDestroy = false
 	) {
-
 		removeLastingProjs();
 		chargedRollingShieldProj?.destroySelfNoEffect();
-		strikeChainProj?.destroySelf();
-		strikeChainChargedProj?.destroySelf();
 		chargedParasiticBomb?.destroy();
 
 		for (int i = magnetMines.Count - 1; i >= 0; i--) {
@@ -690,7 +740,23 @@ public class MegamanX : Character {
 				0, pos.x + x - (xDir * 2), pos.y + y + 1, xDir, 1, null, 1, 1, 1, zIndex + 1
 			);
 		}
+		float backupAlpha = alpha;
+		if (stingActiveTime > 0) {
+			if (stingPaletteTime > 6) {
+				stingPaletteTime = 0;
+				stingPaletteIndex++;
+				if (stingPaletteIndex >= 9) {
+					stingPaletteIndex = 0;
+				}
+			} else {
+				stingPaletteTime++;
+			}
+			if (stingPaletteTime % 4 <= 1) {
+				alpha *= 0.25f;
+			}
+		}
 		base.render(x, y);
+		alpha = backupAlpha;
 	}
 
 	public override List<ShaderWrapper> getShaders() {
@@ -698,6 +764,15 @@ public class MegamanX : Character {
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
 		int index = player.weapon.index;
+
+		if (stingActiveTime > 0 && stingPaletteIndex != 0){
+			palette = player.xStingPaletteShader;
+			palette.SetUniform("palette", stingPaletteIndex);
+
+			shaders.Add(palette);
+			shaders.AddRange(baseShaders);
+			return shaders;
+		}
 
 		if (index >= (int)WeaponIds.GigaCrush) {
 			index = 0;
@@ -714,7 +789,6 @@ public class MegamanX : Character {
 		palette = player.xPaletteShader;
 
 		palette?.SetUniform("palette", index);
-		palette?.SetUniform("paletteTexture", Global.textures["paletteTexture"]);
 
 		if (palette != null) {
 			shaders.Add(palette);
@@ -811,4 +885,93 @@ public class MegamanX : Character {
 		hyperHelmetActive = armorBoolData[3];
 		hasUltimateArmor = armorBoolData[4];
 	}
+	public override void aiAttack(Actor? target) {
+		bool isTargetInAir = pos.y < target?.pos.y - 20;
+		bool isTargetClose = pos.x < target?.pos.x - 10;
+		bool isFacingTarget = (pos.x < target?.pos.x && xDir == 1) || (pos.x >= target?.pos.x && xDir == -1);
+		int Xattack = Helpers.randomRange(0, 7);
+		if (charState.normalCtrl) {
+			player.press(Control.Shoot);
+		} 
+		if (canShoot() && canChangeWeapons() && player != null &&
+		 charState is not LadderClimb && player.weapon != null && aiAttackCooldown <= 0) {
+			switch (Xattack) {
+				case 0 when getMaxChargeLevel() >= 3 && isFacingTarget:
+					player.release(Control.Shoot);		
+					break;
+				case 1 when target is MegamanX or Axl or Vile or NeoSigma && hasHadoukenEquipped() && canUseFgMove() && isTargetClose: 
+					player.currency -= 3;
+					changeState(new Hadouken(), true);
+					break;
+				case 2 when isTargetInAir && isTargetClose && hasShoryukenEquipped() && canUseFgMove():
+					player.currency -= 3;
+					changeState(new Shoryuken(isUnderwater()), true);
+					break;
+				case 3 when !hasAnyArmor && specialSaberCooldown <= 0:
+					specialSaberCooldown = 60;
+					changeState(new X6SaberState(grounded), true);
+					break;
+				case 4 when hasUltimateArmor:
+					int novaStrikeSlot = player.weapons.FindIndex(w => w is HyperNovaStrike);
+					player.changeWeaponSlot(novaStrikeSlot);
+					if (player.weapon.ammo >= 16) {
+						player.press(Control.Shoot);
+					} else { player.changeWeaponSlot(getRandomWeaponIndex()); }
+					break;
+				case 5 when player.hasBodyArmor(2):
+					int gCrushSlot = player.weapons.FindIndex(w => w is GigaCrush);			
+					player.changeWeaponSlot(gCrushSlot);
+					if (player.weapon.ammo >= 28)
+						player.press(Control.Shoot);
+					else {
+						player.changeWeaponSlot(getRandomWeaponIndex());
+					}
+					break;
+				case 6 when player.hasArmArmor(3):
+					int hyperbuster = player.weapons.FindIndex(w => w is HyperCharge);
+					player.changeWeaponSlot(hyperbuster);
+					if (player.weapon.ammo >= 16) {
+						player.press(Control.Shoot);
+						player.release(Control.Shoot);
+					} else { player.changeWeaponSlot(getRandomWeaponIndex()); }
+					break;
+				case 7 when stockedBuster || stockedMaxBuster || stockedSaber:
+					player.press(Control.Shoot);
+					player.release(Control.Shoot);
+					break;
+				default:
+					player.release(Control.Shoot);
+					break;
+			}
+			aiAttackCooldown = 10;
+		}
+		base.aiAttack(target);
+	}
+	public override void aiDodge(Actor? target) {
+		int RollingShield = player.weapons.FindIndex(w => w is RollingShield);
+		int novaStrikeSlot = player.weapons.FindIndex(w => w is HyperNovaStrike);
+		foreach (GameObject gameObject in getCloseActors(64, true, false, false)) {
+			if (player != null && player.weapon != null &&
+			aiAttackCooldown <= 0 && gameObject is Projectile proj && 
+			proj.damager.owner.alliance != player.alliance) {
+				if (player.weapon.ammo > 0) {
+					player.changeWeaponSlot(RollingShield);
+					player.press(Control.Shoot);
+					player.release(Control.Shoot);
+				} else if (hasUltimateArmor) {
+					player.changeWeaponSlot(novaStrikeSlot);
+					if (player.weapon.ammo >= 16) {
+						player.press(Control.Shoot);
+					} else { player.changeWeaponSlot(getRandomWeaponIndex()); }
+				}
+			}
+		}
+		base.aiDodge(target);
+	}
+	public override void aiUpdate() {
+		//Buying UAX and Golden Armor goes here
+		base.aiUpdate();
+	}
+
+
 }

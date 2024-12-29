@@ -44,8 +44,11 @@ public class FFADeathMatch : GameMode {
 		List<Player> playerList = GameMode.getOrderedPlayerList();
 		int place = playerList.IndexOf(level.mainPlayer) + 1;
 		placeStr = Helpers.getNthString(place);
-		var topText = "Leader: " + playerList[0].kills.ToString();
-		var botText = "Kills: " + level.mainPlayer.kills.ToString() + " [" + placeStr + "]";
+		string topText = "Leader: 0";
+		if (playerList.Count > 0) {
+			topText = "Leader: " + playerList[0].kills.ToString();
+		}
+		string botText = "Kills: " + level.mainPlayer.kills.ToString() + " [" + placeStr + "]";
 		Fonts.drawText(FontType.WhiteSmall, botText, Global.screenW - 4, 4, Alignment.Right);
 		Fonts.drawText(FontType.WhiteSmall, topText, Global.screenW - 4, 14, Alignment.Right);
 

@@ -6,7 +6,7 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class BoomerangKuwanger : Maverick {
-	public BoomerangKBoomerangWeapon boomerangWeapon = new BoomerangKBoomerangWeapon();
+	public BoomerangKBoomerangWeapon boomerangWeapon = new();
 	public BoomerangKDeadLiftWeapon deadLiftWeapon;
 	public bool bald;
 	public float dashSoundCooldown;
@@ -17,7 +17,6 @@ public class BoomerangKuwanger : Maverick {
 		stateCooldowns.Add(typeof(MShoot), new MaverickStateCooldown(false, true, 0.75f));
 		//stateCooldowns.Add(typeof(BoomerKDeadLiftState), new MaverickStateCooldown(false, true, 0.75f));
 		deadLiftWeapon = new BoomerangKDeadLiftWeapon(player);
-
 		gravityModifier = 1.25f;
 
 		weapon = new Weapon(WeaponIds.BoomerangKGeneric, 97);
@@ -134,11 +133,29 @@ public class BoomerangKuwanger : Maverick {
 		return attacks.GetRandomItem();
 	}
 
-	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
-		if (sprite.name.Contains("boomerk_deadlift")) {
-			return new GenericMeleeProj(deadLiftWeapon, centerPoint, ProjIds.BoomerangKDeadLift, player, damage: 0, flinch: 0, hitCooldown: 0, owningActor: this);
-		}
-		return null;
+	// Melee IDs for attacks.
+	public enum MeleeIds {
+		None = -1,
+		DeadLift,
+	}
+
+	// This can run on both owners and non-owners. So data used must be in sync.
+	public override int getHitboxMeleeId(Collider hitbox) {
+		return (int)(sprite.name switch {
+			"boomerk_deadlift" => MeleeIds.DeadLift,
+			_ => MeleeIds.None
+		});
+	}
+
+	// This can be called from a RPC, so make sure there is no character conditionals here.
+	public override Projectile? getMeleeProjById(int id, Point pos, bool addToLevel = true) {
+		return (MeleeIds)id switch {
+			MeleeIds.DeadLift => new GenericMeleeProj(
+				deadLiftWeapon, pos, ProjIds.BoomerangKDeadLift, player,
+				0, 0, 0, addToLevel: addToLevel
+			),
+			_ => null
+		};
 	}
 
 	public void setTeleportCooldown() {
@@ -156,9 +173,9 @@ public class BoomerangKBoomerangWeapon : Weapon {
 
 public class BoomerangKDeadLiftWeapon : Weapon {
 	public BoomerangKDeadLiftWeapon(Player player) {
-		damager = new Damager(player, 4, Global.defFlinch, 0.5f);
 		index = (int)WeaponIds.BoomerangKDeadLift;
 		killFeedIndex = 97;
+		damager = new Damager(player, 4, Global.defFlinch, 0.5f);
 	}
 }
 #endregion
@@ -450,7 +467,7 @@ public class BoomerKDeadLiftState : MaverickState {
 }
 
 public class DeadLiftGrabbed : GenericGrabbedState {
-	public Character grabbedChar;
+	public Character? grabbedChar;
 	public bool launched;
 	float launchTime;
 	public DeadLiftGrabbed(BoomerangKuwanger grabber) : base(grabber, 1, "") {
@@ -467,7 +484,7 @@ public class DeadLiftGrabbed : GenericGrabbedState {
 				character.changeToIdleOrFall();
 				return;
 			}
-			if (character.stopCeiling()) {
+			if (Global.level.checkTerrainCollisionOnce(character, 0, -1) != null) {
 				new BoomerangKDeadLiftWeapon((grabber as Maverick).player).applyDamage(character, false, character, (int)ProjIds.BoomerangKDeadLift);
 				//character.playSound("crash", sendRpc: true);
 				character.shakeCamera(sendRpc: true);

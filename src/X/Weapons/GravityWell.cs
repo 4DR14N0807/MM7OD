@@ -20,6 +20,7 @@ public class GravityWell : Weapon {
 		Flinch = "0/26";
 		maxAmmo = 16;
 		ammo = maxAmmo;
+		hasCustomChargeAnim = true;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -125,9 +126,13 @@ public class GravityWellProj : Projectile, IDamagable {
 		return owner.input.isPressed(Control.Shoot, owner) && owner.weapon is GravityWell;
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		updateProjectileCooldown();
+	}
+
 	public override void update() {
 		base.update();
-		updateProjectileCooldown();
 		if (!ownedByLocalPlayer) return;
 		if (destroyed) return;
 		if (state == 0) {
@@ -286,9 +291,13 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 		);
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		updateProjectileCooldown();
+	}
+
 	public override void update() {
 		base.update();
-		updateProjectileCooldown();
 
 		var ceilHits = Global.level.getTriggerList(this, 0, velY * Global.spf, null, typeof(Wall));
 		if (ceilHits.Count == 0) {

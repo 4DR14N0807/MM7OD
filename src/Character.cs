@@ -201,9 +201,9 @@ public partial class Character : Actor, IDamagable {
 		null!, new Point(x, y), netId, ownedByLocalPlayer, dontAddToLevel: true
 	) {
 		this.player = player;
+		netOwner = player;
 		this.xDir = xDir;
 
-		isDashing = false;
 		splashable = true;
 		// Intialize state as soon as posible.
 		charState = new NetLimbo();
@@ -640,11 +640,14 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual float getDashSpeed() {
+		return (3.45f * 60f) * getRunDebuffs();
+	}
+
+	public virtual float getDashOrRunSpeed() {
 		if (flag != null || !isDashing) {
 			return getRunSpeed();
 		}
-		float dashSpeed = 3.5f * 60;
-		return dashSpeed * getRunDebuffs();
+		return getDashSpeed();
 	}
 
 	public virtual float getJumpPower() {
@@ -731,6 +734,7 @@ public partial class Character : Actor, IDamagable {
 
 	public override void preUpdate() {
 		base.preUpdate();
+		updateProjectileCooldown();
 		insideCharacter = false;
 		changedStateInFrame = false;
 		pushedByTornadoInFrame = false;
@@ -774,7 +778,7 @@ public partial class Character : Actor, IDamagable {
 			character.player.alliance != player.alliance
 		) {
 			Damager.applyDamage(
-				player, 3, 1f, Global.defFlinch, character, false,
+				player, 3, 60, Global.defFlinch, character, false,
 				(int)WeaponIds.CrystalHunter, 20, this,
 				(int)ProjIds.CrystalHunterDash
 			);
@@ -1016,8 +1020,6 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		updateProjectileCooldown();
-
 		igFreezeRecoveryCooldown += Global.spf;
 		if (igFreezeRecoveryCooldown > 0.2f) {
 			igFreezeRecoveryCooldown = 0;
@@ -1147,7 +1149,7 @@ public partial class Character : Actor, IDamagable {
 			usedWtank = null;
 		}
 
-		if (ai != null ) {
+		if (ai != null) {
 			ai.update();
 		}
 
@@ -1163,7 +1165,7 @@ public partial class Character : Actor, IDamagable {
 			if (gravityWellModifier < 0 && vel.y < -300) {
 				Damager.applyDamage(
 					lastGravityWellDamager,
-					4, 0.5f, Global.halfFlinch, this,
+					4, 30, Global.halfFlinch, this,
 					false, (int)WeaponIds.GravityWell, 45, this,
 					(int)ProjIds.GravityWellCharged
 				);
@@ -1285,12 +1287,11 @@ public partial class Character : Actor, IDamagable {
 				} else {
 					grounded = false;
 				}
-
+				if (player.input.isHeld(Control.Dash, player) && charState.useDashJumpSpeed && canDash()) { 
+					isDashing = true;
+				}
 				vel.y = -getJumpPower();
 				playSound("jump", sendRpc: true);
-				if (charState.airSprite != "") {
-					changeSpriteFromName(charState.airSprite, false);
-				}
 				new Anim(pos, "double_jump_anim", xDir, netId, true, true);
 			}
 		}
@@ -1428,7 +1429,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (!wallKickMove && xDpadDir != 0) {
 			Point moveSpeed = new Point();
-			if (canMove()) { moveSpeed.x = getDashSpeed() * xDpadDir; }
+			if (canMove()) { moveSpeed.x = getDashOrRunSpeed() * xDpadDir; }
 			if (canTurn()) { xDir = xDpadDir; }
 			if (moveSpeed.magnitude > 0) { move(moveSpeed); }
 		}
@@ -1950,6 +1951,9 @@ public partial class Character : Actor, IDamagable {
 		if (!newState.canEnter(this)) {
 			return false;
 		}
+		CharState oldState = charState;
+		oldState.onExit(newState);
+
 		changedStateInFrame = true;
 		bool hasShootAnim = newState.canUseShootAnim();
 		if (shootAnimTime > 0 && hasShootAnim) {
@@ -1966,8 +1970,6 @@ public partial class Character : Actor, IDamagable {
 				sprite.visible = true;
 			}
 		}
-		CharState oldState = charState;
-		oldState.onExit(newState);
 
 		charState = newState;
 		newState.onEnter(oldState);
@@ -3258,14 +3260,6 @@ public partial class Character : Actor, IDamagable {
 		return retProjs;
 	}
 
-	public float getKaiserStompDamage() {
-		float damagePercent = 0.25f;
-		if (deltaPos.y > 150 * Global.spf) damagePercent = 0.5f;
-		if (deltaPos.y > 210 * Global.spf) damagePercent = 0.75f;
-		if (deltaPos.y > 300 * Global.spf) damagePercent = 1;
-		return damagePercent;
-	}
-
 	public void releaseGrab(Actor grabber, bool sendRpc = false) {
 		charState.releaseGrab();
 		if (!ownedByLocalPlayer) {
@@ -3502,12 +3496,18 @@ public partial class Character : Actor, IDamagable {
 		chargeGfx();
 	}
 
-	public virtual void aiUpdate(Actor? target) { }
+	public virtual void aiUpdate() { }
 
-	public virtual void aiAttack(Actor target) { }
+	public virtual void aiAttack(Actor? target) { }
 
 	public virtual void aiDodge(Actor? target) { }
 
+	public int getRandomWeaponIndex() {
+		if (player.weapons.Count == 0) return 0;
+		List<Weapon> weapons = player.weapons.FindAll(w => w is not DNACore).ToList();
+		return weapons.IndexOf(weapons.GetRandomItem());
+	}
+	
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = new();
 

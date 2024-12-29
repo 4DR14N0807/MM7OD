@@ -4,6 +4,7 @@
 		<LangVersion>preview</LangVersion>
 		<AssemblyName>MM7OD</AssemblyName>
 		<OutputType>WinExe</OutputType>
+		<!--Nullable>annotations</Nullable-->
 		<Nullable>enable</Nullable>
 		<Version>20</Version>
 		<AssemblyVersion>20.0</AssemblyVersion>

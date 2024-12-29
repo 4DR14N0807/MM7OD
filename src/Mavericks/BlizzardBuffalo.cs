@@ -100,41 +100,50 @@ public class BlizzardBuffalo : Maverick {
 		return mshoot;
 	}
 
-	public float getStompDamage() {
-		float damagePercent = 0;
-		if (deltaPos.y > 150 * Global.spf) damagePercent = 0.5f;
-		if (deltaPos.y > 225 * Global.spf) damagePercent = 0.75f;
-		if (deltaPos.y > 300 * Global.spf) damagePercent = 1;
-		return damagePercent;
+	// Melee IDs for attacks.
+	public enum MeleeIds {
+		None = -1,
+		Dash,
+		Fall,
+		Grab,
 	}
 
-	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
-		if (sprite.name.EndsWith("_dash")) {
-			return new GenericMeleeProj(
-				weapon, centerPoint, ProjIds.BBuffaloDrag,
-				player, damage: 0, flinch: 0, hitCooldown: 0.5f, owningActor: this
-			);
-		}
-		if (sprite.name.Contains("fall")) {
-			float damagePercent = getStompDamage();
-			if (damagePercent > 0) {
-				return new GenericMeleeProj(
-					weapon, centerPoint, ProjIds.BBuffaloStomp,
-					player, damage: 4 * damagePercent, flinch: Global.defFlinch, hitCooldown: 0.5f
-				);
-			}
-		}
-		return null;
+	// This can run on both owners and non-owners. So data used must be in sync.
+	public override int getHitboxMeleeId(Collider hitbox) {
+		return (int)(sprite.name switch {
+			"bbuffalo_dash" => MeleeIds.Dash,
+			"bbuffalo_fall" => MeleeIds.Fall,
+			"bbuffalo_dash_grab" => MeleeIds.Grab,
+			_ => MeleeIds.None
+		});
+	}
+
+	// This can be called from a RPC, so make sure there is no character conditionals here.
+	public override Projectile? getMeleeProjById(int id, Point pos, bool addToLevel = true) {
+		return (MeleeIds)id switch {
+			MeleeIds.Dash => new GenericMeleeProj(
+				weapon, pos, ProjIds.BBuffaloCrash, player,
+				4, Global.defFlinch, 60, addToLevel: addToLevel
+			),
+			MeleeIds.Fall => new GenericMeleeProj(
+				weapon, pos, ProjIds.BBuffaloStomp, player,
+				4, Global.defFlinch, addToLevel: addToLevel
+			),
+			MeleeIds.Grab => new GenericMeleeProj(
+				weapon, pos, ProjIds.BBuffaloDrag, player,
+				0, 0, addToLevel: addToLevel
+			),
+			_ => null
+		};
 	}
 
 	public override void updateProjFromHitbox(Projectile proj) {
-		if (sprite.name.EndsWith("fall")) {
-			float damagePercent = getStompDamage();
-			if (damagePercent > 0) {
-				proj.damager.damage = 4 * damagePercent;
-			}
+		if (proj.projId == (int)ProjIds.BBuffaloStomp) {
+			float damage = Helpers.clamp(MathF.Floor(deltaPos.y * 0.9f), 1, 4);
+			proj.damager.damage = damage;
 		}
 	}
+
 }
 
 public class BBuffaloIceProj : Projectile {
@@ -213,11 +222,14 @@ public class BBuffaloIceProjGround : Projectile, IDamagable {
 		}
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		updateProjectileCooldown();
+	}
+
 	public override void update() {
 		base.update();
-		updateProjectileCooldown();
 		moveWithMovingPlatform();
-
 		updateHitboxes();
 	}
 
@@ -397,10 +409,9 @@ public class BBuffaloBeamProj : Projectile {
 
 public class BBuffaloShootBeamState : MaverickState {
 	bool shotOnce;
-	public Anim muzzle;
-	public BBuffaloBeamProj proj;
+	public Anim? muzzle;
+	public BBuffaloBeamProj? proj;
 	public BBuffaloShootBeamState() : base("shoot_beam", "shoot_beam_start") {
-		//enterSound = "bbuffaloBeamStart";
 	}
 
 	public override void update() {
@@ -417,7 +428,6 @@ public class BBuffaloShootBeamState : MaverickState {
 		if (proj != null && !proj.destroyed && input.isPressed(Control.Special1, player)) {
 			proj.release();
 		}
-
 		if (muzzle?.destroyed == true && proj == null) {
 			proj = new BBuffaloBeamProj(maverick.weapon, shootPos.Value.addxy(maverick.xDir * 20, 0), maverick.xDir, maverick as BlizzardBuffalo, player, player.getNextActorNetId(), sendRpc: true);
 		}
@@ -436,7 +446,7 @@ public class BBuffaloShootBeamState : MaverickState {
 
 public class BBuffaloDashState : MaverickState {
 	float dustTime;
-	Character victim;
+	Character? victim;
 	public BBuffaloDashState() : base("dash", "dash_start") {
 	}
 
@@ -464,8 +474,6 @@ public class BBuffaloDashState : MaverickState {
 		var hitWall = Global.level.checkTerrainCollisionOnce(maverick, maverick.xDir * 20, -5);
 		if (hitWall?.isSideWallHit() == true) {
 			crashAndDamage();
-			//maverick.playSound("crash", sendRpc: true);
-			maverick.shakeCamera(sendRpc: true);
 			maverick.changeState(new MIdle());
 			return;
 		}
@@ -475,6 +483,9 @@ public class BBuffaloDashState : MaverickState {
 		if (isHoldStateOver(1, 4, 2, Control.Dash)) {
 			maverick.changeToIdleOrFall();
 			return;
+		}
+		if (player.input.isPressed(Control.Special1, player)) {
+			maverick.changeSpriteFromName("dash_grab", false);
 		}
 	}
 
@@ -495,7 +506,7 @@ public class BBuffaloDashState : MaverickState {
 		*/
 
 		new BBuffaloCrashProj(maverick.weapon, maverick.pos, maverick.xDir, player, player.getNextActorNetId(), rpc: true);
-		//maverick.playSound("crash", sendRpc: true);
+		maverick.playSound("crashX3", sendRpc: true);
 		maverick.shakeCamera(sendRpc: true);
 	}
 
@@ -522,7 +533,7 @@ public class BBuffaloCrashProj : Projectile {
 	) {
 		setIndestructableProperties();
 		maxTime = 0.15f;
-
+		projId = (int)ProjIds.BBuffaloCrash;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}

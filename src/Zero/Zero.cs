@@ -67,7 +67,8 @@ public class Zero : Character {
 
 	// AI stuff.
 	public bool isWildDance;
-	public float blocktime, aiAttackCooldown;
+	public float aiBlocktime;
+	public float aiAttackCooldown;
 
 	// Creation code.
 	public Zero(
@@ -1122,8 +1123,9 @@ public class Zero : Character {
 		}
 		base.aiAttack(target);
 	}
+
 	public override void aiDodge(Actor? target) {
-		Helpers.decrementFrames(ref blocktime);
+		Helpers.decrementFrames(ref aiBlocktime);
 		foreach (GameObject gameObject in getCloseActors(64, true, false, false)) {
 			if (gameObject is Projectile proj&& proj.damager.owner.alliance != player.alliance && charState.attackCtrl) {
 				//Projectile is not 
@@ -1155,10 +1157,10 @@ public class Zero : Character {
 								break;
 						}
 					} else if (!(proj.projId == (int)ProjIds.SwordBlock) && grounded
-					&& blocktime <= 0) {
+					&& aiBlocktime <= 0) {
 						turnToInput(player.input, player);
 						changeState(new SwordBlock(), true);
-						blocktime = 40;
+						aiBlocktime = 40;
 					}
 				}
 			}

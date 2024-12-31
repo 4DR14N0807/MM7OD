@@ -52,6 +52,6 @@ public class RenderEffect {
 	}
 
 	public bool isFlashing() {
-		return time % (flashTime * 2) > flashTime;
+		return time % (flashTime * 2) > cycleTime;
 	}
 }

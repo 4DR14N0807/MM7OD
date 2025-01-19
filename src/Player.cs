@@ -1865,7 +1865,7 @@ public partial class Player {
 			limboChar = null;
 		}
 		explodeDieEffect = null;
-		Global.serverClient?.rpc(RPC.destroyCharacter, (byte)id);
+		RPC.destroyCharacter.sendRpc(this, character);
 	}
 
 	public void destroySigmaEffect() {
@@ -1882,18 +1882,30 @@ public partial class Player {
 
 		character.destroySelf();
 		character = null;
-		Global.serverClient?.rpc(RPC.destroyCharacter, (byte)id);
+		RPC.destroyCharacter.sendRpc(this, character);
 		onCharacterDeath();
 	}
 
-	public void destroyCharacter() {
+	public bool destroyCharacter() {
 		if (character == null) {
-			return;
+			return false;
 		}
 		character.destroySelf();
 		character = null;
 
 		onCharacterDeath();
+		return true;
+	}
+
+	public bool destroyCharacter(ushort netId) {
+		if (character?.netId != netId) {
+			return false;
+		}
+		character.destroySelf();
+		character = null;
+
+		onCharacterDeath();
+		return true;
 	}
 	
 	public void startDeathTimer() {

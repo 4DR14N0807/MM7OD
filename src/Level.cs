@@ -1034,7 +1034,7 @@ public partial class Level {
 		return dump;
 	}
 
-	public Player getPlayerById(int id) {
+	public Player? getPlayerById(int id) {
 		return players.Find(p => p.id == id);
 	}
 

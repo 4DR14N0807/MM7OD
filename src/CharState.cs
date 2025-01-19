@@ -1586,7 +1586,7 @@ public class Die : CharState {
 			new DieEffect(character.getCenterPos(), player.charNum);
 			character.playSound("die");
 		}
-		if (!character.ownedByLocalPlayer) {
+		if (!character.ownedByLocalPlayer || character.destroyed) {
 			return;
 		}
 		if (hidden && !respawnTimerOn && frames >= 60) {
@@ -1594,11 +1594,12 @@ public class Die : CharState {
 			respawnTimerOn = true;
 			if (player.getRespawnTime() <= 3) {
 				player.destroyCharacter();
+				RPC.destroyCharacter.sendRpc(player, character);
 			}
 		}
 		if (stateTime >= 2) {
 			player.destroyCharacter();
-			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
+			RPC.destroyCharacter.sendRpc(player, character);
 		}
 	} 
 

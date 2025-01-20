@@ -380,6 +380,7 @@ public class WarpIn : CharState {
 
 	public WarpIn(bool addInvulnFrames = true) : base("warp_in") {
 		this.addInvulnFrames = addInvulnFrames;
+		invincible = true;
 	}
 
 	public override void update() {
@@ -395,24 +396,11 @@ public class WarpIn : CharState {
 		if (warpAnim == null) {
 			character.visible = true;
 			character.frameSpeed = 1;
-			if (character is CmdSigma && character.sprite.frameIndex >= 2 && !decloaked) {
-				decloaked = true;
-				var cloakAnim = new Anim(character.getFirstPOI() ?? character.getCenterPos(), "sigma_cloak", character.xDir, player.getNextActorNetId(), true);
-				cloakAnim.vel = new Point(-25 * character.xDir, -10);
-				cloakAnim.fadeOut = true;
-				cloakAnim.setzIndex(character.zIndex - 1);
-			}
-
-			if (isSigma && player.isSigma2() && character.sprite.frameIndex >= 4 && !sigma2Once) {
-				sigma2Once = true;
-				//character.playSound("sigma2start", sendRpc: true);
-			}
-
 			if (character.isAnimOver()) {
 				character.grounded = true;
 				character.pos.y = destY;
 				character.pos.x = destX;
-				character.changeToIdleOrFall();
+				character.changeState(new WarpIdle());
 			}
 			return;
 		}
@@ -422,7 +410,7 @@ public class WarpIn : CharState {
 			character.playSound("warpin", sendRpc: true);
 		}
 
-		float yInc = Global.spf * 450 * getSigmaRoundsMod(sigmaRounds);
+		float yInc = Global.spf * 450;
 		warpAnim.incPos(new Point(0, yInc));
 
 		if (isSigma && !landOnce && warpAnim.pos.y >= destY - 1) {
@@ -437,23 +425,9 @@ public class WarpIn : CharState {
 			} else {
 				sigmaRounds++;
 				landOnce = false;
-				warpAnim.changePos(new Point(warpAnim.pos.x, destY - getSigmaYOffset(sigmaRounds)));
+				warpAnim.changePos(new Point(warpAnim.pos.x, destY));
 			}
 		}
-	}
-
-	float getSigmaRoundsMod(int aSigmaRounds) {
-		if (!isSigma) return 1;
-		return 2;
-	}
-
-	float getSigmaYOffset(int aSigmaRounds) {
-		if (aSigmaRounds == 0) return yOffset;
-		if (aSigmaRounds == 1) return yOffset;
-		if (aSigmaRounds == 2) return yOffset;
-		if (aSigmaRounds == 3) return yOffset * 0.75f;
-		if (aSigmaRounds == 4) return yOffset * 0.5f;
-		return yOffset * 0.25f;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -465,10 +439,38 @@ public class WarpIn : CharState {
 		destY = character.pos.y;
 		destX = character.pos.x;
 		startY = character.pos.y;
+	}
 
-		if (player.warpedInOnce || Global.debug) {
-			sigmaRounds = 10;
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		character.visible = true;
+		if (warpAnim != null) {
+			warpAnim.destroySelf();
 		}
+	}
+}
+
+
+public class WarpIdle : CharState {
+	public WarpIdle() : base("win") {
+		invincible = true;
+	}
+
+	public override void update() {
+		base.update();
+
+		if ((character.isAnimOver() || character.sprite.loopCount >= 1) &&
+			character.health >= character.maxHealth &&
+			(character is not Blues blues || blues.shieldHP >= blues.shieldMaxHP)
+		) {
+			character.changeToIdleOrFall();
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.stopMoving();
+		character.useGravity = false;
 	}
 
 	public override void onExit(CharState newState) {
@@ -476,13 +478,9 @@ public class WarpIn : CharState {
 		character.visible = true;
 		character.useGravity = true;
 		character.splashable = true;
-		if (warpAnim != null) {
-			warpAnim.destroySelf();
-		}
-		if (addInvulnFrames && character.ownedByLocalPlayer) {
+		if (character.ownedByLocalPlayer) {
 			character.invulnTime = (player.warpedInOnce || Global.level.joinedLate) ? 2 : 0;
 		}
-		player.warpedInOnce = true;
 	}
 }
 
@@ -1578,6 +1576,9 @@ public class Die : CharState {
 		character.xPushVel = 0;
 		character.vel.x = 0;
 		character.vel.y = 0;
+		if (!respawnTimerOn) {
+			player.respawnTime = player.getRespawnTime();
+		}
 		base.update();
 
 		if (!hidden && stateTime >= 0.75f) {
@@ -1586,21 +1587,22 @@ public class Die : CharState {
 			new DieEffect(character.getCenterPos(), player.charNum);
 			character.playSound("die");
 		}
-		if (!character.ownedByLocalPlayer || character.destroyed) {
+		if (!character.ownedByLocalPlayer) {
 			return;
 		}
 		if (hidden && !respawnTimerOn && frames >= 60) {
 			player.startDeathTimer();
 			respawnTimerOn = true;
-			if (player.getRespawnTime() <= 3) {
+			if (player.getRespawnTime() <= 3 && !character.destroyed) {
 				player.destroyCharacter();
 				RPC.destroyCharacter.sendRpc(player, character);
 			}
 		}
-		if (stateTime >= 2) {
+		if (stateTime >= 2 && frames >= 60 && !character.destroyed) {
 			player.destroyCharacter();
 			RPC.destroyCharacter.sendRpc(player, character);
 		}
+		frames++;
 	} 
 
 	public void destroyRideArmor() {
@@ -1608,7 +1610,6 @@ public class Die : CharState {
 			character.linkedRideArmor.selfDestructTime = Global.spf;
 			RPC.actorToggle.sendRpc(character.linkedRideArmor.netId, RPCActorToggleType.StartMechSelfDestruct);
 		}
-		frames++;
 	}
 
 	public override bool canExit(Character character, CharState newState) {

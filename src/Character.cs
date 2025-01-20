@@ -1091,7 +1091,7 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		//HP Capsules heal
-		if (healAmount > 0 && health > 0) {
+		if (healAmount > 0 && health > 0 && charState is not WarpIn) {
 			healTime++;
 			if (healTime >= 3) {
 				healTime = 0;

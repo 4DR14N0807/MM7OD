@@ -38,6 +38,7 @@ public class Blues : Character {
 	public decimal shieldDamageDebt;
 	public bool? shieldCustomState = null;
 	public bool customDamageDisplayOn;
+	public bool fastShieldHeal;
 
 	// Tanks
 	public bool isUsingLTank;
@@ -85,6 +86,11 @@ public class Blues : Character {
 			7 => new StarCrash(),
 			_ => new PowerStone(),
 		};
+		if (isWarpIn && ownedByLocalPlayer) {
+			shieldHP = 0;
+			healShieldHPCooldown = 81;
+			fastShieldHeal = true;
+		}
 	}
 
 	public override bool canAddAmmo() {
@@ -340,8 +346,12 @@ public class Blues : Character {
 			playSound("heal");
 			shieldHP++;
 			healShieldHPCooldown = 6;
+			if (fastShieldHeal) {
+				healShieldHPCooldown = 3; 
+			}
 			if (shieldHP >= shieldMaxHP) {
 				shieldHP = shieldMaxHP;
+				fastShieldHeal = false;
 			}
 		}
 		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive) {

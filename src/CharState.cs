@@ -130,6 +130,7 @@ public class CharState {
 		wasGrounded = character.grounded && character.vel.y >= 0;
 		if (this is not Run and not Idle and not Taunt) {
 			player.delayETank();
+			player.delayWTank();
 			player.delayLTank();
 		} 
 		wasGrounded = character.grounded;

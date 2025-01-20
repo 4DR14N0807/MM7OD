@@ -1108,7 +1108,7 @@ public class Maverick : Actor, IDamagable {
 		}
 	}
 
-	public override List<ShaderWrapper>? getShaders() {
+	/* public override List<ShaderWrapper>? getShaders() {
 		if (timeStopTime > 10) {
 			if (!Global.level.darkHoldProjs.Any(
 				dhp => dhp.screenShader != null && dhp.inRange(this))
@@ -1117,7 +1117,7 @@ public class Maverick : Actor, IDamagable {
 			}
 		}
 		return null;
-	}
+	} */
 
 	public const int CustomNetDataLength = 3;
 

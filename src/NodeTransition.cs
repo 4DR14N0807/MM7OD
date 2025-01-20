@@ -69,7 +69,7 @@ public class EnterLadderNTP : NodeTransitionPhase {
 		base.update();
 		if (yDir == -1) {
 			player.press(Control.Up);
-			//ai.doJump(1, true);
+			ai.doJump(1);
 		} else {
 			player.press(Control.Down);
 		}
@@ -120,7 +120,7 @@ public class ClimbWallNTP : NodeTransitionPhase {
 	public override void update() {
 		base.update();
 		if (character.pos.y > findPlayer.nextNode.pos.y) {
-			//ai.doJump(platformJump: true);
+			ai.doJump();
 		}
 		if (xDir == -1) {
 			player.press(Control.Left);
@@ -144,7 +144,7 @@ public class JumpToPlatformNTP : NodeTransitionPhase {
 		base.update();
 		if (character == null) return;
 		if (state == 0) {
-			//ai.doJump(1, true);
+			ai.doJump(1);
 			if (platformJumpDir >= 1) {
 				var rightWall = Global.level.checkTerrainCollisionOnce(character, platformJumpDirDist, 0);
 				if (rightWall != null && rightWall.gameObject is Wall) {
@@ -161,7 +161,7 @@ public class JumpToPlatformNTP : NodeTransitionPhase {
 				}
 			}
 		} else if (state == 1) {
-			//if (!character.grounded) ai.doJump(platformJump: true);
+			if (!character.grounded) ai.doJump();
 			if (platformJumpDir == -1) player.press(Control.Left);
 			else if (platformJumpDir == 1) player.press(Control.Right);
 		}
@@ -207,7 +207,7 @@ public class JumpToMovingPlatformNTP : NodeTransitionPhase {
 			distThreshold = (currentPlatformMoveDir == 0 ? xDistThreshold : xDistThreshold * 1.5f);
 		}
 		if (MathF.Abs(distToNextNode) < distThreshold) {
-			//ai.doJump(1, true);
+			ai.doJump(1);
 			if (distToNextNode > 0 && currentPlatformMoveDir >= 0) {
 				player.press(Control.Right);
 			} else if (distToNextNode < 0 && currentPlatformMoveDir <= 0) {

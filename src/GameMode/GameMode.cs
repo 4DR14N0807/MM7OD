@@ -288,8 +288,8 @@ public class GameMode {
 
 		for (var i = this.killFeed.Count - 1; i >= 0; i--) {
 			var killFeed = this.killFeed[i];
-			killFeed.time += Global.spf;
-			if (killFeed.time > 8) {
+			killFeed.time += 1;
+			if (killFeed.time > 60 * 8) {
 				this.killFeed.Remove(killFeed);
 			}
 		}
@@ -629,10 +629,10 @@ public class GameMode {
 			}
 			// Currency
 			if (!Global.level.is1v1()) {
-				Global.sprites["hud_scrap"].drawToHUD(0, 4, 108);
+				Global.sprites["pickup_bolt_small"].drawToHUD(0, Global.screenW - 32, 28);
 				Fonts.drawText(
 					FontType.WhiteSmall,
-					"x" + drawPlayer.currency.ToString(), 22, 110, Alignment.Left
+					"x" + drawPlayer.currency.ToString("d2"), Global.screenW - 4, 24, Alignment.Right
 				);
 			}
 			if (drawPlayer.character is RagingChargeX mmx && mmx.unpoShotCount > 0) {
@@ -1289,10 +1289,10 @@ public class GameMode {
 
 		//Health
 		renderHealth(player, position, false);
-		bool mechBarExists = renderHealth(player, position, true);
+		//bool mechBarExists = renderHealth(player, position, true);
 
 		//Weapon
-		if (!mechBarExists) renderWeapon(player, position);
+		renderWeapon(player, position);
 	}
 
 	public Point getHUDHealthPosition(HUDHealthPosition position, bool isHealth) {
@@ -1339,9 +1339,9 @@ public class GameMode {
 		float baseX = hudHealthPosition.x;
 		float baseY = hudHealthPosition.y;
 
-		//if (player.isBlues) {
+		if (player.isBlues) {
 			baseY += 17;
-		//}
+		}
 
 		float twoLayerHealth = 0;
 		if (isMech && player.character?.rideArmor != null && player.character.rideArmor.raNum != 5) {
@@ -1407,13 +1407,10 @@ public class GameMode {
 			} else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 			}
-
 			// 2-layer health
 			if (twoLayerHealth > 0 && i < MathF.Ceiling(twoLayerHealth)) {
 				Global.sprites["hud_health_full"].drawToHUD(2, baseX, baseY);
 			}
-
-
 			baseY -= 2;
 		}
 		Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
@@ -1486,16 +1483,6 @@ public class GameMode {
 				weapon = punchyZero.gigaAttack;
 			}
 			player.lastHudWeapon = weapon;
-		}
-		// Return if there is no weapon to ren
-		if (weapon == null) {
-			return;
-		}
-
-		// Small Bars option.
-		float ammoDisplayMultiplier = 1;
-		if (weapon.allowSmallBar && Options.main.enableSmallBars && !forceSmallBarsOff) {
-			ammoDisplayMultiplier = 0.5f;
 		}
 
 		if (player.character is Blues protoman) {
@@ -1594,12 +1581,23 @@ public class GameMode {
 				int yPos = MathInt.Ceiling(9 + baseY);
 				int color2 = energy2 >= maxEnergy ? 7 : 5;
 				color2 = Global.frameCount % 6 >= 3 ? 8 : color2;
-				
+
 				for (int i = 0; i < energy2; i++) {
 					Global.sprites["hud_energy_full"].drawToHUD(color2, baseX, yPos);
 					yPos -= 2;
 				}
 			}
+		}
+
+		// Return if there is no weapon to render.
+		if (weapon == null) {
+			return;
+		}
+
+		// Small Bars option.
+		float ammoDisplayMultiplier = 1;
+		if (weapon.allowSmallBar && Options.main.enableSmallBars && !forceSmallBarsOff) {
+			ammoDisplayMultiplier = 0.5f;
 		}
 
 		if (shouldDrawWeaponAmmo(player, weapon)) {
@@ -1647,10 +1645,26 @@ public class GameMode {
 		}
 	}
 
+	public float killFeedOffset() {
+		return 44;
+	}
+
+	public FontType getKillFeedTeamFonts(int team) {
+		return team switch {
+			0 => FontType.BlueSmall,
+			1 => FontType.RedSmall,
+			2 => FontType.GreenSmall,
+			3 => FontType.PurpleSmall,
+			4 => FontType.YellowSmall,
+			5 => FontType.OrangeSmall,
+			_ => FontType.WhiteSmall
+		};
+	}
+
 	public void drawKillFeed() {
-		var fromRight = Global.screenW - 10;
+		float fromRight = Global.screenW - 4;
 		int yDist = 12;
-		var fromTop = Global.screenH - 12 - (killFeed.Count - 1) * yDist;
+		float fromTop = killFeedOffset();
 
 		for (var i = 0; i < this.killFeed.Count && i < 3; i++) {
 			var killFeed = this.killFeed[i];
@@ -1660,26 +1674,55 @@ public class GameMode {
 				victimName = " (" + victimName + ")";
 			}
 
-			var msg = "";
-			var killersMsg = "";
+			FontType victimColor = FontType.WhiteSmall;
+			FontType killerColor = FontType.WhiteSmall;
+			FontType assisterColor = FontType.WhiteSmall;
+
+			if (killFeed.victim != null && killFeed.killer != null) {
+				if (!isTeamMode) {
+					if (killFeed.killer == Global.level.mainPlayer) {
+						victimColor = FontType.RedSmall;
+						killerColor = FontType.BlueSmall;
+						assisterColor = FontType.PurpleSmall;
+					}
+					else if (killFeed.assister != null && killFeed.assister == Global.level.mainPlayer) {
+						victimColor = FontType.RedSmall;
+						killerColor = FontType.PurpleSmall;
+						assisterColor = FontType.BlueSmall;
+					}
+					else if (killFeed.victim == Global.level.mainPlayer) {
+						victimColor = FontType.BlueSmall;
+						killerColor = FontType.RedSmall;
+						assisterColor = FontType.OrangeSmall;
+					} else {
+						victimColor = FontType.RedSmall;
+						killerColor = FontType.GreenSmall;
+						assisterColor = FontType.PurpleSmall;
+					}
+				} else {
+					victimColor = getKillFeedTeamFonts(killFeed.victim.teamAlliance ?? 100);
+					killerColor = getKillFeedTeamFonts(killFeed.killer.teamAlliance ?? 100);
+					if (killFeed.assister != null) {
+						assisterColor = getKillFeedTeamFonts(killFeed.assister.teamAlliance ?? 100);
+					}
+				}
+			}
+
+			string msg = "";
+			string killersMsg = "";
+			string assistMsg = "";
 			if (killFeed.killer != null) {
 				var killerMessage = "";
-				if (killFeed.killer != killFeed.victim) {
-					killerMessage = killFeed.killer.name;
-				}
-				var assisterMsg = "";
+				killerMessage = killFeed.killer.name;
+
 				if (killFeed.assister != null && killFeed.assister != killFeed.victim) {
-					assisterMsg = killFeed.assister.name;
+					assistMsg = killFeed.assister.name;
 				}
-
-				var killerAndAssister = new List<string>();
-				if (!string.IsNullOrEmpty(killerMessage)) killerAndAssister.Add(killerMessage);
-				if (!string.IsNullOrEmpty(assisterMsg)) killerAndAssister.Add(assisterMsg);
-
-				killersMsg = string.Join(" & ", killerAndAssister) + "    ";
-
-				msg = killersMsg + victimName;
-
+				killersMsg = killerMessage;
+				msg = killersMsg + " " + victimName;
+				if (assistMsg != "") {
+					msg = assistMsg + "&" + killersMsg + " " + victimName;
+				}
 			} else if (killFeed.victim != null && killFeed.customMessage == null) {
 				if (killFeed.maverickKillFeedIndex != null) {
 					msg = killFeed.victim.name + "'s Maverick died";
@@ -1690,57 +1733,51 @@ public class GameMode {
 				msg = killFeed.customMessage;
 			}
 
-			if (killFeed.killer == level.mainPlayer || killFeed.victim == level.mainPlayer || killFeed.assister == level.mainPlayer) {
-				int msgLen = Fonts.measureText(FontType.FBlue, msg) - 12;
+			if (killFeed.killer == level.mainPlayer ||
+				killFeed.victim == level.mainPlayer ||
+				killFeed.assister == level.mainPlayer
+			) {
+				int msgLen = Fonts.measureText(FontType.WhiteSmall, msg);
 				int msgHeight = 10;
 				DrawWrappers.DrawRect(
-					fromRight - msgLen - 2,
-					fromTop - 2 + (i * yDist) - msgHeight / 2,
-					fromRight + 4,
-					fromTop - 1 + msgHeight / 2 + (i * yDist),
+					fromRight - msgLen - 3,
+					fromTop + 5 + (i * yDist) - msgHeight / 2,
+					fromRight + 1,
+					fromTop + 4 + msgHeight / 2 + (i * yDist),
 					true, new Color(0, 0, 0, 128), 1, ZIndex.HUD,
 					isWorldPos: false, outlineColor: Color.White
 				);
 			}
 
-			FontType killerColor = FontType.Blue;
-			if (killFeed.killer != null && killFeed.killer.alliance == redAlliance && isTeamMode) {
-				killerColor = FontType.Red;
-			}
-			FontType victimColor = FontType.Blue;
-			if (killFeed.victim != null && killFeed.victim.alliance == redAlliance && isTeamMode) {
-				victimColor = FontType.Red;
-			}
-
 			if (killFeed.killer != null) {
-				int nameLen = Fonts.measureText(killerColor, victimName);
+				int nameLen = Fonts.measureText(FontType.WhiteSmall, victimName + " ");
 				Fonts.drawText(
-					killerColor, victimName, fromRight, fromTop + (i * yDist) - 5, Alignment.Right
+					victimColor, victimName, fromRight, fromTop + (i * yDist), Alignment.Right
 				);
 				Fonts.drawText(
-					victimColor, killersMsg, fromRight - nameLen, fromTop + (i * yDist) - 5, Alignment.Right
+					killerColor, killersMsg, fromRight - nameLen - 2, fromTop + (i * yDist), Alignment.Right
 				);
+				if (assistMsg != "") {
+					int nameLen2 = Fonts.measureText(
+						FontType.WhiteSmall, $"{killersMsg} {victimName}"
+					);
+					Fonts.drawText(
+						FontType.WhiteSmall, "&", fromRight - nameLen2 - 3, fromTop + (i * yDist), Alignment.Right
+					);
+					Fonts.drawText(
+						assisterColor, assistMsg, fromRight - nameLen2 - 12, fromTop + (i * yDist), Alignment.Right
+					);
+				}
 				int weaponIndex = killFeed.weaponIndex ?? 0;
 				weaponIndex = (
 					weaponIndex < Global.sprites["hud_killfeed_weapon"].frames.Length ? weaponIndex : 0
 				);
 				Global.sprites["hud_killfeed_weapon"].drawToHUD(
-					0, fromRight - nameLen - 14, fromTop + (i * yDist) - 2
+					0, fromRight - nameLen + 5, fromTop + (i * yDist) + 4
 				);
-				if (killFeed.maverickKillFeedIndex != null) {
-					Global.sprites["hud_killfeed_weapon"].drawToHUD(
-						killFeed.maverickKillFeedIndex.Value, fromRight - nameLen + 3, fromTop + (i * yDist) - 2
-					);
-				}
 			} else {
-				FontType fontColor = killFeed.customMessageAlliance switch {
-					GameMode.blueAlliance => FontType.Blue,
-					GameMode.redAlliance => FontType.Red,
-					_ => FontType.Grey
-				};
 				Fonts.drawText(
-					fontColor, msg, fromRight, fromTop + (i * yDist) - 5,
-					Alignment.Right
+					FontType.YellowSmall, msg, fromRight, fromTop + (i * yDist) - 5, Alignment.Right
 				);
 			}
 		}
@@ -2203,7 +2240,7 @@ public class GameMode {
 				float animProgress = mw.currencyHUDAnimTime / MaverickWeapon.currencyHUDMaxAnimTime;
 				float yOff = animProgress * 20;
 				float alpha = Helpers.clamp01(1 - animProgress);
-				Global.sprites["hud_scrap"].drawToHUD(0, x - 6, y - yOff - 10, alpha);
+				Global.sprites["pickup_bolt_small"].drawToHUD(0, x - 6, y - yOff - 10, alpha);
 				//DrawWrappers.DrawText("+1", x - 6, y - yOff - 10, Alignment.Center, )
 				Fonts.drawText(FontType.RedishOrange, "+1", x - 4, y - yOff - 15, Alignment.Left);
 			}

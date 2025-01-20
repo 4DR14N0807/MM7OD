@@ -164,7 +164,8 @@ public class CharState {
 	}
 
 	public bool inTransition() {
-		return (!string.IsNullOrEmpty(transitionSprite) &&
+		return (
+			!string.IsNullOrEmpty(transitionSprite) &&
 			sprite == transitionSprite &&
 			character.sprite.name != null &&
 			character.sprite.name.Contains(transitionSprite)
@@ -1175,7 +1176,11 @@ public class LadderClimb : CharState {
 	public Ladder ladder;
 	public float snapX;
 	public float? incY;
-	public LadderClimb(Ladder ladder, float snapX, float? incY = null) : base("ladder_climb", "ladder_shoot", "ladder_attack", "ladder_start") {
+	public LadderClimb(
+		Ladder ladder, float snapX, float? incY = null
+	) : base(
+		"ladder_climb", "ladder_shoot", "ladder_attack", "ladder_start"
+	) {
 		this.ladder = ladder;
 		this.snapX = MathF.Round(snapX);
 		this.incY = incY;
@@ -1582,7 +1587,7 @@ public class Die : CharState {
 			new DieEffect(character.getCenterPos(), player.charNum);
 			character.playSound("die");
 		}
-		if (!character.ownedByLocalPlayer) {
+		if (!character.ownedByLocalPlayer || character.destroyed) {
 			return;
 		}
 		if (hidden && !respawnTimerOn && frames >= 60) {
@@ -1590,11 +1595,12 @@ public class Die : CharState {
 			respawnTimerOn = true;
 			if (player.getRespawnTime() <= 3) {
 				player.destroyCharacter();
+				RPC.destroyCharacter.sendRpc(player, character);
 			}
 		}
 		if (stateTime >= 2) {
 			player.destroyCharacter();
-			Global.serverClient?.rpc(RPC.destroyCharacter, (byte)player.id);
+			RPC.destroyCharacter.sendRpc(player, character);
 		}
 	} 
 

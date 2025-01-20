@@ -1034,7 +1034,7 @@ public partial class Level {
 		return dump;
 	}
 
-	public Player getPlayerById(int id) {
+	public Player? getPlayerById(int id) {
 		return players.Find(p => p.id == id);
 	}
 
@@ -1677,7 +1677,7 @@ public partial class Level {
 		var actor = go as Actor;
 		if (actor == null) return false;
 
-		if (actor.timeStopTime > 10) {
+		if (actor.timeStopTime > 15) {
 			slowAmount = 0.125f;
 			return true;
 		}

@@ -303,8 +303,8 @@ public class Blues : Character {
 		base.update();
 		// For non-local players.
 		if (overheating) {
-			addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 0.1f);
-		}
+			addRenderEffect(RenderEffectType.ChargeOrange, 3, 5);
+		} 
 
 		if (!Global.level.isHyper1v1()) {
 			if (isBreakMan) { 
@@ -466,7 +466,7 @@ public class Blues : Character {
 				Anim tempAnim = new Anim(burnPos.addRand(14, 15), sprite, 1, null, true, host: this);
 				tempAnim.vel.y = -120;
 				if (overheating) {
-					tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 0.033333f, 2);
+					tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 3, 120, 5);
 				} else {
 					RenderEffectType smokeEffect = getChargeLevel() switch {
 						1 => RenderEffectType.ChargeBlue,
@@ -474,12 +474,12 @@ public class Blues : Character {
 						3 => RenderEffectType.ChargeGreen,
 						_ => RenderEffectType.ChargeYellow,
 					};
-					tempAnim.addRenderEffect(smokeEffect, 0.033333f, 2);
+					tempAnim.addRenderEffect(smokeEffect, 3, 120, 5);
 				}
 			}
 		}
 		if (overdrive && getChargeLevel() <= 0) {
-			addRenderEffect(RenderEffectType.ChargeYellow, 0.033333f, 0.1f);
+			addRenderEffect(RenderEffectType.ChargeYellow, 3, 5);
 		}
 	}
 
@@ -795,7 +795,7 @@ public class Blues : Character {
 				3 => RenderEffectType.ChargeGreen,
 				_ => RenderEffectType.ChargeBlue,
 			};
-			addRenderEffect(renderGfx, 2, 6);
+			addRenderEffect(renderGfx, 3, 5);
 			chargeEffect.update(getChargeLevel(), 1);
 		}
 	}
@@ -1024,7 +1024,7 @@ public class Blues : Character {
 			customDamageDisplayOn = true;
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
 			customDamageDisplayOn = false;
-			addRenderEffect(RenderEffectType.Hit, 0.05f, 0.1f);
+			addRenderEffect(RenderEffectType.Hit, 3, 5);
 			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("hit", sendRpc: true);
 			}

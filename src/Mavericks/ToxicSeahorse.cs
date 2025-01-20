@@ -204,8 +204,14 @@ public class TSeahorseAcid2Proj : Projectile {
 	int bounces = 0;
 	int type;
 	bool once;
-	public TSeahorseAcid2Proj(Weapon weapon, Point pos, int xDir, int type, Player player, ushort netProjId, bool rpc = false) :
-		base(weapon, pos, xDir, 300, 0, player, "tseahorse_proj_acid", 0, 0.5f, netProjId, player.ownedByLocalPlayer) {
+
+	public TSeahorseAcid2Proj(
+		Point pos, int xDir, int type,
+		Player player, ushort netProjId, bool rpc = false
+	) : base(
+		ToxicSeahorse.getWeapon(), pos, xDir, 300, 0, player, "tseahorse_proj_acid",
+		0, 0.5f, netProjId, player.ownedByLocalPlayer
+	) {
 		maxTime = 4f;
 		projId = (int)ProjIds.TSeahorseAcid2;
 		useGravity = true;
@@ -215,24 +221,21 @@ public class TSeahorseAcid2Proj : Projectile {
 		if (type == 2) vel = new Point(xDir * 50, -300);
 
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, player, netProjId, xDir, (byte)type);
 		}
 		checkBigAcidUnderwater();
 	}
 
 	public override void update() {
 		base.update();
-
 		if (sprite.name == "acidburst_charged_start" && isAnimOver()) {
 			changeSprite("acidburst_charged", true);
 			vel.x = xDir * 100;
 		}
-
 		checkBigAcidUnderwater();
 	}
 
 	public override void onHitWall(CollideData other) {
-		if (!ownedByLocalPlayer) return;
 		acidSplashEffect(other, ProjIds.TSeahorseAcid2);
 		bounces++;
 		if (bounces > 3) {
@@ -268,6 +271,12 @@ public class TSeahorseAcid2Proj : Projectile {
 		}
 		base.onHitDamagable(damagable);
 	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new TSeahorseAcid2Proj(
+			args.pos, args.xDir, args.extraData[0], args.player, args.netId
+		);
+	}
 }
 
 public class TSeahorseShoot2State : MaverickState {
@@ -282,9 +291,9 @@ public class TSeahorseShoot2State : MaverickState {
 		Point? shootPos = maverick.getFirstPOI();
 		if (!shotOnce && shootPos != null) {
 			shotOnce = true;
-			//maverick.playSound("acidBurst", sendRpc: true);
-			new TSeahorseAcid2Proj(maverick.weapon, shootPos.Value, maverick.xDir, 0, player, player.getNextActorNetId(), rpc: true);
-			new TSeahorseAcid2Proj(maverick.weapon, shootPos.Value, maverick.xDir, 1, player, player.getNextActorNetId(), rpc: true);
+			maverick.playSound("acidBurst", sendRpc: true);
+			new TSeahorseAcid2Proj(shootPos.Value, maverick.xDir, 0, player, player.getNextActorNetId(), rpc: true);
+			new TSeahorseAcid2Proj(shootPos.Value, maverick.xDir, 1, player, player.getNextActorNetId(), rpc: true);
 		}
 	}
 }

@@ -177,8 +177,12 @@ public class FlameStag : Maverick {
 public class FStagFireballProj : Projectile {
 	Wall? hitWall;
 	public bool launched;
-	public FStagFireballProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-		base(weapon, pos, xDir, 0, 2, player, "fstag_fireball_proj", 0, 0.01f, netProjId, player.ownedByLocalPlayer) {
+	public FStagFireballProj(
+		Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
+	) : base(
+		weapon, pos, xDir, 0, 2, player, "fstag_fireball_proj",
+		0, 0.01f, netProjId, player.ownedByLocalPlayer
+	) {
 		projId = (int)ProjIds.FStagFireball;
 		maxTime = 0.75f;
 
@@ -189,9 +193,8 @@ public class FStagFireballProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer) return;
 		if (isUnderwater()) {
-			destroySelf();
+			destroySelf(disableRpc: true);
 		}
 	}
 
@@ -237,6 +240,7 @@ public class FStagShoot : MaverickState {
 		}
 
 		if (fireball != null) {
+			fireball.forceNetUpdateNextFrame = true;
 			if (shootPos != null) {
 				fireball.changePos(shootPos.Value);
 			}
@@ -378,6 +382,7 @@ public class FStagDashProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+		canBeLocal = false;
 	}
 }
 

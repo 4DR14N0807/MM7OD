@@ -105,6 +105,11 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.DZBuster, DZBusterProj.rpcInvoke },
 		{ (int)ProjIds.DZBuster2, DZBuster2Proj.rpcInvoke },
 		{ (int)ProjIds.DZBuster3, DZBuster3Proj.rpcInvoke },
+		{ (int)ProjIds.VoltCSuck, VoltCSuckProj.rpcInvoke },
+		{ (int)ProjIds.TSeahorseAcid2, TSeahorseAcid2Proj.rpcInvoke },
+		{ (int)ProjIds.WSpongeSpike, WSpongeSpike.rpcInvoke },
+		//Axl
+		{ (int)ProjIds.BlackArrowGround, BlackArrowGrounded.rpcInvoke },
 		*/
 		// Rock stuff.
 		{ (int)RockProjIds.RockBuster, RockBusterProj.rpcInvoke },
@@ -164,6 +169,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.WaveBurner, WaveBurnerProj.rpcInvoke },
 		{ (int)BassProjIds.WaveBurnerUnderwater, WaveBurnerUnderwaterProj.rpcInvoke },
 		{ (int)BassProjIds.TenguBladeProj, TenguBladeProj.rpcInvoke },
+
 	};
 
 }

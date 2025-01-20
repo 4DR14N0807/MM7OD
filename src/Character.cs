@@ -429,14 +429,7 @@ public partial class Character : Actor, IDamagable {
 		if (oilTime > 0 && player.oilShader != null) {
 			player.oilShader.SetUniform("oilFactor", 0.25f + (oilTime / 8f) * 0.75f);
 			shaders.Add(player.oilShader);
-		} 
-		/*
-		if (vaccineTime > 0 && player.vaccineShader != null) {
-			player.vaccineShader.SetUniform("vaccineFactor", vaccineTime / 8f);
-			//vaccineShader?.SetUniform("vaccineFactor", 1f);
-			shaders.Add(player.vaccineShader);
 		}
-		*/
 		if (igFreezeProgress > 0 && !sprite.name.Contains("frozen") && player.igShader != null) {
 			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 4);
 			shaders.Add(player.igShader);
@@ -1960,6 +1953,14 @@ public partial class Character : Actor, IDamagable {
 			changeSprite(getSprite(newState.shootSprite), true);
 		} else {
 			string spriteName = sprite.name;
+			string targetSprite = newState.sprite;
+			if (newState.sprite == newState.transitionSprite &&
+				!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
+			) {
+				targetSprite = newState.defaultSprite;
+				newState.sprite = newState.defaultSprite;
+			}
+
 			changeSprite(getSprite(newState.sprite), true);
 			if (spriteName == sprite.name) {
 				sprite.frameIndex = 0;
@@ -2180,10 +2181,6 @@ public partial class Character : Actor, IDamagable {
 				Alignment.Center, true, depth: ZIndex.HUD
 			);
 			if (ai != null) {
-				//DrawWrappers.DrawText(
-				//	"state:" + ai.aiState.GetType().Name, textPosX, textPosY -= 10,
-				//	Alignment.Center, fontSize: fontSize, outlineColor: outlineColor
-				//);
 				var charTarget = ai.target as Character;
 				Fonts.drawText(
 					FontType.Grey, "dest:" + ai.aiState.getDestNodeName(),
@@ -2196,6 +2193,10 @@ public partial class Character : Actor, IDamagable {
 				Fonts.drawText(
 					FontType.Grey, "prev:" + ai.aiState.getPrevNodeName(), textPosX, textPosY -= 10,
 					Alignment.Center, true, depth: ZIndex.HUD
+				);
+				Fonts.drawText(
+					FontType.Grey, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
+					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
 				);
 				if (charTarget != null) {
 					Fonts.drawText(

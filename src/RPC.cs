@@ -559,9 +559,29 @@ public class RPCDestroyPlayer : RPC {
 
 	public override void invoke(params byte[] arguments) {
 		int playerId = arguments[0];
+		ushort charNetId = BitConverter.ToUInt16(arguments[1..3]);
+		Player? player = Global.level.getPlayerById(playerId);
+		// We start by trying to call the regular destroy.
+		bool destroyedChar = false;
+		if (player != null) {
+			destroyedChar = player.destroyCharacter(charNetId);
+		}
+		// If player was null attempt to destroy directly.
+		if (!destroyedChar) {
+			Actor? charObj = Global.level.getActorByNetId(charNetId);
+			charObj?.destroySelf();
+		}
+	}
 
-		var player = Global.level.getPlayerById(playerId);
-		player?.destroyCharacter();
+	public void sendRpc(Player player, Character? character) {
+		if (Global.serverClient == null || character?.netId == null) {
+			return;
+		}
+		List<byte> args = new();
+		args.Add((byte)player.id);
+		args.AddRange(BitConverter.GetBytes(character.netId.Value));
+
+		Global.serverClient?.rpc(RPC.destroyCharacter, args.ToArray());
 	}
 }
 
@@ -1253,6 +1273,7 @@ public class RPCAxlShoot : RPC {
 		var player = Global.level.getPlayerById(playerId);
 		if (player?.character == null) return;
 		//this is just a mess
+		
 		switch (projId) {
 			case (int)ProjIds.AxlBullet:
 			case (int)ProjIds.MetteurCrash:
@@ -1268,23 +1289,24 @@ public class RPCAxlShoot : RPC {
 						new AxlBulletProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
 						player.character.playSound("axlBullet");
 					} else if (projId == (int)ProjIds.MetteurCrash) {
-						var bullet = new MettaurCrashProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
+						//var bullet = new MettaurCrashProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
 						player.character.playSound("mettaurCrash");
 					} else if (projId == (int)ProjIds.BeastKiller) {
-						var	bullet = new BeastKillerProj(new BeastKiller(), pos, player, Point.createFromAngle(angle - 45), player.getNextActorNetId(), sendRpc: true);
+						/*var	bullet = new BeastKillerProj(new BeastKiller(), pos, player, Point.createFromAngle(angle - 45), player.getNextActorNetId(), sendRpc: true);
 						var	bullet1 = new BeastKillerProj(new BeastKiller(), pos, player, Point.createFromAngle(angle - 22.5f), player.getNextActorNetId(), sendRpc: true);
 						var	bullet2 = new BeastKillerProj(new BeastKiller(), pos, player, Point.createFromAngle(angle), player.getNextActorNetId(), sendRpc: true);
 						var	bullet3 = new BeastKillerProj(new BeastKiller(), pos, player, Point.createFromAngle(angle + 22.5f), player.getNextActorNetId(), sendRpc: true);
 						var	bullet4 = new BeastKillerProj(new BeastKiller(), pos, player, Point.createFromAngle(angle + 45), player.getNextActorNetId(), sendRpc: true);
+						*/
 						player.character.playSound("beastKiller");
 					} else if (projId == (int)ProjIds.MachineBullets) {
-						var bullet = new MachineBulletProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
+						//var bullet = new MachineBulletProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
 						player.character.playSound("machineBullets");
 					} else if (projId == (int)ProjIds.RevolverBarrel) {
-						var bullet = new RevolverBarrelProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
+						//var bullet = new RevolverBarrelProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
 						player.character.playSound("revolverBarrel");
 					} else if (projId == (int)ProjIds.AncientGun) {
-						var bullet = new AncientGunProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
+						//var bullet = new AncientGunProj(new AxlBullet((AxlBulletWeaponType)axlBulletWeaponType), pos, player, Point.createFromAngle(angle), netId);
 						player.character.playSound("ancientGun3");
 					}
 
@@ -1743,7 +1765,7 @@ public class RPCHeal : RPC {
 		}
 	}
 
-	public void sendRpc(Player player, ushort healNetId, int healAmount) {
+	public void sendRpc(Player player, ushort healNetId, float healAmount) {
 		var healNetIdBytes = BitConverter.GetBytes(healNetId);
 		Global.serverClient?.rpc(this, (byte)player.id, healNetIdBytes[0], healNetIdBytes[1], (byte)healAmount);
 	}

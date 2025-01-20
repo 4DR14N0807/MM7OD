@@ -378,7 +378,7 @@ public class Blues : Character {
 			if (starCrash == null) Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
 		}
-		if (coreAmmoDecreaseCooldown <= 0 && !overdrive) {
+		if (coreAmmoDecreaseCooldown <= 0 && !overdrive && charState is not BluesRevive) {
 			coreAmmo--;
 			if (coreAmmo <= 0) {
 				overheating = false;

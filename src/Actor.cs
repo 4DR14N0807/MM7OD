@@ -842,9 +842,6 @@ public partial class Actor : GameObject {
 			grounded = false;
 		} else if (physicsCollider != null && !isStatic && (canBeGrounded || useGravity)) {
 			float yDist = 1;
-			if (grounded) {
-				yDist = 300 * Global.spf;
-			}
 			yDist *= yMod;
 
 			CollideData? collideData = Global.level.checkTerrainCollisionOnce(this, 0, yDist, checkPlatforms: true);

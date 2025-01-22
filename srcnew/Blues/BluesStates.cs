@@ -433,52 +433,62 @@ public class Recover : CharState {
 
 public class BluesRevive : CharState {
 	float radius = 200;
+	float healTime = -50;
+	bool fullHP;
 	Blues blues = null!;
+
 	public BluesRevive() : base("revive") {
 		invincible = true;
+		useGravity = false;
+	}
+
+	public override void update() {
+		base.update();
+		blues.healShieldHPCooldown = 15;
+		healTime++;
+		if (!fullHP) {
+			character.addRenderEffect(RenderEffectType.Flash, 3, 5);
+			character.move(new Point(0, -10));
+		}
+		if (!fullHP && healTime >= 4) {
+			if (blues.health < blues.maxHealth) {
+				blues.health = Helpers.clampMax(blues.health + 1, blues.maxHealth);
+			}
+			else {
+				blues.shieldHP++;
+				if (blues.shieldHP >= blues.shieldMaxHP) {
+					blues.shieldHP = blues.shieldMaxHP;
+					fullHP = true;
+					blues.frameSpeed = 1;
+				}
+			}
+			blues.playSound("heal", forcePlay: true, sendRpc: true);
+			healTime = 0;
+		}
+		if (blues.frameIndex >= 1 && !once) {
+			new GravityHoldProj(
+				character.getCenterPos(), character.xDir,
+				player, player.getNextActorNetId(), true
+			);
+			once = true;
+		}
+		if (blues.isAnimOver() && fullHP) {
+			blues.changeToIdleOrFall();
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.isBreakMan = true;
-		player.health = 1;
+		blues.playSound("whistle", true, true);
+		blues.frameSpeed = 0;
+		blues.overheating = true;
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		character.useGravity = true;
 		character.removeRenderEffect(RenderEffectType.Flash);
-		character.playSound("whistle", true, true);
-
-		if (character != null) {
-			character.invulnTime = 0.5f;
-		}
-	}
-
-	public override void update() {
-		base.update();
-
-		if (radius >= 0) {
-			radius -= Global.spf * 150;
-		}
-		if (character.frameIndex < 2) {
-			if (Global.frameCount % 4 < 2) {
-				character.addRenderEffect(RenderEffectType.Flash);
-			} else {
-				character.removeRenderEffect(RenderEffectType.Flash);
-			}
-		} else {
-			character.removeRenderEffect(RenderEffectType.Flash);
-		}
-		if (character.frameIndex == 3 && !once) {
-			character.addHealth(player.maxHealth);
-			once = true;
-		}
-		if (character.ownedByLocalPlayer) {
-			if (character.isAnimOver()) {
-				character.changeToIdleOrFall();
-			}
-		}
+		blues.overheating = false;
 	}
 }

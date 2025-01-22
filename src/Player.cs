@@ -1681,10 +1681,10 @@ public partial class Player {
 				return 8;
 			}
 			if (Global.level?.gameMode is KingOfTheHill) {
-				return 7;
+				return 8;
 			}
 		}
-		return 5;
+		return 8;
 	}
 
 	public bool canReviveVile() {

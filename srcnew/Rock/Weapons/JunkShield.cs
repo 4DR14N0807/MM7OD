@@ -8,7 +8,6 @@ namespace MMXOnline;
 
 public class JunkShield : Weapon {
 
-	public static JunkShield netWeapon = new JunkShield();
 	public JunkShield() : base() {
 		shootSounds = new string[] { "", "", "", "" };
 		fireRate = 75;

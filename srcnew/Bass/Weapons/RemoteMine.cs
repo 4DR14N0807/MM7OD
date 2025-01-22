@@ -4,8 +4,6 @@ namespace MMXOnline;
 
 public class RemoteMine : Weapon {
 
-	public static RemoteMine netWeapon = new();
-
 	public RemoteMine() : base() {
 		index = (int)BassWeaponIds.RemoteMine;
 		displayName = "REMOTE MINE";

@@ -5,8 +5,6 @@ namespace MMXOnline;
 
 public class WildCoil : Weapon {
 
-	public static WildCoil netWeapon = new WildCoil();
-
 	public WildCoil() : base() {
 		index = (int)RockWeaponIds.WildCoil;
 		weaponSlotIndex = (int)RockWeaponSlotIds.WildCoil;

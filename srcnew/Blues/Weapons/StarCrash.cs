@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class StarCrash : Weapon {
-	public static StarCrash netWeapon = new();
 	public StarCrashProj? activeProj;
 
 	public StarCrash() : base() {

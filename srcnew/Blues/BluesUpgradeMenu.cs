@@ -62,15 +62,7 @@ public class BluesUpgradeMenu : IMainMenu {
 
 
 	public void update() {
-		/*if (Global.input.isPressedMenu(Control.MenuLeft)) {
-			selectArrowPosX--;
-			if (selectArrowPosX < 0) selectArrowPosX = 1;
-		}
-
-		if (Global.input.isPressedMenu(Control.MenuRight)) {
-			selectArrowPosX++;
-			if (selectArrowPosX > 1) selectArrowPosX = 0;
-		}*/
+		if (mainPlayer.character == null) return;
 
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 		if (selectArrowPosY > getMaxIndex() - 1) selectArrowPosY = getMaxIndex() - 1;

@@ -191,7 +191,7 @@ public class BluesSlide : CharState {
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		//character.stopMovingWeak();
+		character.stopMovingWeak();
 	}
 }
 
@@ -449,7 +449,7 @@ public class BluesRevive : CharState {
 		if (!fullHP) {
 			character.addRenderEffect(RenderEffectType.Flash, 3, 5);
 			character.move(new Point(0, -10));
-		}
+		} 
 		if (!fullHP && healTime >= 4) {
 			if (blues.health < blues.maxHealth) {
 				blues.health = Helpers.clampMax(blues.health + 1, blues.maxHealth);

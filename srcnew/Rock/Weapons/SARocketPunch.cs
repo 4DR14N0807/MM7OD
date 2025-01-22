@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SARocketPunch : Weapon {
+
 	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
-	public static SARocketPunch netWeapon = new SARocketPunch();
 
 	public SARocketPunch() : base() {
 		index = (int)RockWeaponIds.SARocketPunch;
@@ -71,7 +71,7 @@ public class SARocketPunchProj : Projectile {
 
 	public bool reversed;
 	public bool returned;
-	Character shooter;
+	Character shooter = null!;
 	Player player;
 	Rock? rock;
 	public float maxReverseTime;
@@ -94,7 +94,7 @@ public class SARocketPunchProj : Projectile {
 		if (rock != null) rock.saRocketPunchProj = this;
 		maxReverseTime = 0.5f;
 		this.player = player;
-		shooter = player.character;
+		shooter = player.character ?? throw new NullReferenceException();
 		destroyOnHit = false;
 		canBeLocal = false;
 

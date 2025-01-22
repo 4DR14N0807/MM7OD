@@ -5,8 +5,6 @@ namespace MMXOnline;
 
 public class WaveBurner : Weapon {
 
-	public static WaveBurner netWeapon = new();
-
 	public WaveBurner() : base() {
 		index = (int)BassWeaponIds.WaveBurner;
 		displayName = "WAVE BURNER";
@@ -19,6 +17,7 @@ public class WaveBurner : Weapon {
 		ammo = maxAmmo;
 		allowSmallBar = false;
 		ammoDisplayScale = 6;
+		ammoGainMultiplier = ammoDisplayScale;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -40,12 +39,19 @@ public class WaveBurner : Weapon {
 				bass.wBurnerAngleMod *= -1;
 				bass.wBurnerAngle = 32 * MathF.Sign(bass.wBurnerAngle);
 			}
+			if (bass.wBurnerSound == null) {
+				bass.wBurnerSound = new("waveburnerLoop", "waveburnerEnd", "waveburnerLoop", bass);
+			};
+			bass.wBurnerSound.play();
 		}
 	}
 }
 
 
 public class WaveBurnerProj : Projectile {
+
+	Character character = null!;
+
 	public WaveBurnerProj(
 		Point pos, float byteAngle, Player player,
 		ushort? netProjId, bool rpc = false
@@ -58,7 +64,9 @@ public class WaveBurnerProj : Projectile {
 		maxTime = 0.2f;
 		//this.byteAngle = byteAngle;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
-		xDir = player.character.getShootXDir();
+
+		character = player.character ?? throw new NullReferenceException();
+		xDir = character.getShootXDir();
 		canBeLocal = false;
 
 		if (rpc) {

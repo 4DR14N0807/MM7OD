@@ -5,7 +5,6 @@ namespace MMXOnline;
 
 public class LightningBolt : Weapon {
 
-	public static LightningBolt netWeapon = new();
 	public LightningBolt() : base() {
 		index = (int)BassWeaponIds.LightningBolt;
 		displayName = "LIGHTNING BOLT";

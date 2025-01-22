@@ -3,7 +3,6 @@ using System;
 namespace MMXOnline;
 
 public class WaterWave : Weapon {
-	public static GyroAttack netWeapon = new();
 
 	public WaterWave() : base() {
 		displayName = "WATER WAVE";

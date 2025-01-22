@@ -231,7 +231,7 @@ public class RushJetState : RushState {
 	public override void update() {
 		base.update();
 
-		if (rush.character.charState is RushJetRide) {
+		if (rush.isJetAndRide) {
 			rideOnce = true;
 			isRiding = true;
 			rush.changeSprite("rush_jet", true);

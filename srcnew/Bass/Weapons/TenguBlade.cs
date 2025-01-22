@@ -5,7 +5,6 @@ namespace MMXOnline;
 
 public class TenguBlade : Weapon {
 
-	public static TenguBlade netWeapon = new();
 	public TenguBlade() : base() {
 		index = (int)BassWeaponIds.TenguBlade;
 		displayName = "TENGU BLADE";
@@ -20,14 +19,14 @@ public class TenguBlade : Weapon {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 
-		if (character.charState is LadderClimb) character.changeState(new TenguBladeLadder(), true);
+		if (character.charState is LadderClimb lc) character.changeState(new TenguBladeLadder(lc.ladder), true);
 		else character.changeState(new TenguBladeState(), true);
 	}
 }
 
 
 public class TenguBladeStart : Anim {
-	Player player;
+	Character character = null!;
 	Point distance;
 
 	public TenguBladeStart(
@@ -37,20 +36,20 @@ public class TenguBladeStart : Anim {
 		pos, "tengu_blade_spawn", xDir, netId, true, 
 		sendRpc, ownedByLocalPlayer, player.character
 	) {
-		this.player = player;
-		distance = pos.directionTo(player.character.getCenterPos());
+		character = player.character ?? throw new NullReferenceException();
+		distance = pos.directionTo(character.getCenterPos());
 	}
 
 	public override void update() {
 		base.update();
 
-		changePos(player.character.getCenterPos().subtract(distance));
+		changePos(character.getCenterPos().subtract(distance));
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 
-		new TenguBladeProj(pos, xDir, player, player.getNextActorNetId(), true);
+		new TenguBladeProj(pos, xDir, character.player, character.player.getNextActorNetId(), true);
 	}
 }
 
@@ -133,9 +132,9 @@ public class TenguBladeProj : Projectile {
 
 public class TenguBladeMelee : GenericMeleeProj {
 	
-	public TenguBladeMelee(Point pos, Player player) : base(
+	public TenguBladeMelee(Point pos, Player player, bool addToLevel) : base(
 		TenguBlade.netWeapon, pos, ProjIds.TenguBladeDash,
-		player, 2, 0, 0.375f
+		player, 2, 0, 0.375f * 60, addToLevel: addToLevel
 	) {
 		projId = (int)BassProjIds.TenguBladeProj;
 	}
@@ -160,7 +159,7 @@ public class TenguBladeDash : CharState {
 
 	int startXDir;
 	int inputXDir;
-	Anim dashSpark;
+	Anim? dashSpark;
 	Bass bass = null!;
 	public TenguBladeDash() : base("tblade_dash") {
 		normalCtrl = true;
@@ -179,7 +178,7 @@ public class TenguBladeDash : CharState {
 			true, sendRpc: true
 		);
 		startXDir = character.xDir;
-		player.weapon.addAmmo(-1, player);
+		bass.currentWeapon?.addAmmo(-1, player);
 	}
 
 	public override void onExit(CharState newState) {
@@ -228,19 +227,17 @@ public class TenguBladeDashEnd : CharState {
 public class TenguBladeLadder : CharState {
 
 	bool fired;
-	List<CollideData> ladders;
-	float midX; 
+	public Ladder ladder; 
 
-	public TenguBladeLadder() : base("ladder_tblade") {
+	public TenguBladeLadder(Ladder ladder) : base("ladder_tblade") {
 		normalCtrl = false;
+		this.ladder = ladder;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.useGravity = false;
-		ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
-		midX = ladders[0].otherCollider.shape.getRect().center().x;
 	}
 
 	public override void update() {
@@ -254,7 +251,8 @@ public class TenguBladeLadder : CharState {
 		}
 
 		if (character.isAnimOver()) {
-			character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
+			float midX = ladder.collider.shape.getRect().center().x;
+			character.changeState(new LadderClimb(ladder, midX), true);
 		}
 	}
 }

@@ -5,8 +5,6 @@ namespace MMXOnline;
 
 public class ThunderBolt : Weapon {
 
-	public static ThunderBolt netWeapon = new ThunderBolt();
-
 	public ThunderBolt() : base() {
 		index = (int)RockWeaponIds.ThunderBolt;
 		fireRate = 40;

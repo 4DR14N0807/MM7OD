@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class GyroAttack : Weapon {
-	public static GyroAttack netWeapon = new();
 
 	public GyroAttack() : base() {
 		displayName = "GYRO ATTACK";

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class HardKnuckle : Weapon {
-	public static HardKnuckle netWeapon = new();
 
 	public HardKnuckle() : base() {
 		displayName = "HARD KNUCKLE";

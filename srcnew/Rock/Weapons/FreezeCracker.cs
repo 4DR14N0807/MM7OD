@@ -5,8 +5,6 @@ namespace MMXOnline;
 
 public class FreezeCracker : Weapon {
 
-	public static FreezeCracker netWeapon = new FreezeCracker();
-
 	public FreezeCracker() : base() {
 		index = (int)RockWeaponIds.FreezeCracker;
 		killFeedIndex = 0;
@@ -27,7 +25,7 @@ public class FreezeCracker : Weapon {
 		int input = player.input.getYDir(player);
 
 		new FreezeCrackerProj(shootPos, xDir, player, 0, player.getNextActorNetId(), input);
-		player.character.playSound("buster2", sendRpc: true);
+		character.playSound("buster2", sendRpc: true);
 	}
 }
 

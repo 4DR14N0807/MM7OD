@@ -1114,11 +1114,13 @@ public class Blues : Character {
 		if (player.bluesScarfShader != null && !overheating && !overdrive) {
 			ShaderWrapper palette = player.bluesScarfShader;
 			palette.SetUniform("palette", specialWeaponIndex + 1);
+			palette.SetUniform("paletteTexture", Global.textures["blues_palette_texture"]);
 			shaders.Add(palette);
 		}
 		if (player.breakManShader != null && isBreakMan) {
 			ShaderWrapper palette = player.breakManShader;
 			palette.SetUniform("palette", 1);
+			palette.SetUniform("paletteTexture", Global.textures["blues_hyperpalette"]);
 			shaders.Add(palette);
 		}
 		return shaders;

@@ -56,16 +56,9 @@ public class Rock : Character {
 
 		charge1Time = 40;
 		charge2Time = 80;
-		var rl = player.loadout.rockLoadout.rushLoadout;
-		rushWeaponIndex = rl;
-	
-		/* rushWeapon = rl switch {
-			0 => new RushCoilWeapon(),
-			1 => new RushJetWeapon(),
-			_ => new RushSearchWeapon(),
-		}; */
+
 		rushWeapon = new RushWeapon();
-		player.weapons.Add(rushWeapon);
+		weapons.Add(rushWeapon);
 
 		noiseCrushEffect = new ChargeEffect();
 		noiseCrushEffect.character = this;
@@ -160,7 +153,7 @@ public class Rock : Character {
 		bool slidePressed = player.dashPressed(out string slideControl);
 		bool arrowSlashInput = player.input.checkHadoken(player, xDir, Control.Shoot);
 
-		if (specialPressed && canCallRush(0)) {
+		if (specialPressed && canCallRush(0) && Options.main.rushSpecial) {
 			rushWeapon.shoot(this, 0);
 			return true;
 		}
@@ -281,7 +274,7 @@ public class Rock : Character {
 	}
 
 	public void drawChargedNoiseCrush(float x, float y) {
-		addRenderEffect(RenderEffectType.NCrushCharge, 0.05f, 0.1f); 
+		addRenderEffect(RenderEffectType.NCrushCharge, 2, 6); 
 		noiseCrushEffect.character = this;
 		noiseCrushEffect.update(2, 2);
 		noiseCrushEffect.render(getCenterPos());
@@ -418,7 +411,9 @@ public class Rock : Character {
 	}
 
 	public bool canRideRushJet() {
-		return charState is Fall && Global.level.checkTerrainCollisionOnce(this, 0, -20) == null;
+		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, -20);
+		Rush? rj = Global.level.checkTerrainCollisionOnce(this, 0, 1)?.gameObject as Rush;
+		return charState is Fall && collideData == null && rj != null && rj.rushState is RushJetState;
 	}
 
 	public static List<Weapon> getAllRushWeapons() {
@@ -441,18 +436,6 @@ public class Rock : Character {
 		if (charState is RockDoubleJump && wall != null) {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
 		}
-
-		/* if (isRushCoil && isGHit && charState is Fall) {		
-			rush?.changeState(new RushCoil());
-			vel.y = getJumpPower() * -1.5f;
-			changeState(new Jump(), true);
-			rushWeapon.addAmmo(-4, player);
-		} */
-
-		/* if (isRushJet && isGHit && canRideRushJet()) {
-			changeState(new RushJetRide(), true);
-			grounded = true;
-		} */
 	}
 
 	public override void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {
@@ -499,16 +482,17 @@ public class Rock : Character {
 		Point projPos = pos ?? new Point(0, 0);
 		Projectile? proj = id switch {
 			(int)MeleeIds.SlashClaw => new GenericMeleeProj(
-				new SlashClawWeapon(player), projPos, ProjIds.SlashClaw, player
+				new SlashClawWeapon(player), projPos, ProjIds.SlashClaw, player,
+				addToLevel: addToLevel
 			),
 
 			(int)MeleeIds.UnderWaterScorchWheel => new GenericMeleeProj(
 				new ScorchWheel(), projPos, ProjIds.ScorchWheelUnderwater,
-				player, 2, 0, 0.5f, addToLevel: addToLevel
+				player, 2, 0, 0.5f * 60, addToLevel: addToLevel
 			),
 
 			(int)MeleeIds.LegBreaker => new GenericMeleeProj(
-				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f,
+				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f * 60,
 				addToLevel: addToLevel
 			),
 

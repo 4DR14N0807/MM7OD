@@ -5,8 +5,6 @@ namespace MMXOnline;
 
 public class NoiseCrush : Weapon {
 
-	public static NoiseCrush netWeapon = new NoiseCrush();
-
 	public NoiseCrush() : base() {
 		index = (int)RockWeaponIds.NoiseCrush;
 		weaponSlotIndex = (int)RockWeaponSlotIds.NoiseCrush;
@@ -16,7 +14,6 @@ public class NoiseCrush : Weapon {
 		maxAmmo = 14;
 		ammo = maxAmmo;
 		fireRate = 30;
-		//shootSounds = new List<string>() {"noise_crush", "noise_crush", "", ""};
 		description = new string[] { "Weak projectile that bounces on walls.", "Catch it to get a stronger shot." };
 	}
 

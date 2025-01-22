@@ -5,9 +5,7 @@ namespace MMXOnline;
 
 public class ProtoBuster : Weapon {
 
-	public static ProtoBuster netWeapon = new();
 	public ProtoBuster() : base() {
-
 	}
 }
 

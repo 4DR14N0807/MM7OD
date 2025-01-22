@@ -1339,9 +1339,9 @@ public class GameMode {
 		float baseX = hudHealthPosition.x;
 		float baseY = hudHealthPosition.y;
 
-		if (player.isBlues) {
+		//if (player.isBlues) {
 			baseY += 17;
-		}
+		//}
 
 		float twoLayerHealth = 0;
 		if (isMech && player.character?.rideArmor != null && player.character.rideArmor.raNum != 5) {
@@ -1606,8 +1606,8 @@ public class GameMode {
 			string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 			Global.sprites[baseBarName].drawToHUD(weapon.weaponBarBaseIndex, baseX, baseY);
 			baseY -= 16;
-			for (var i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier); i++) {
-				var floorOrCeiling = Math.Ceiling(weapon.ammo * ammoDisplayMultiplier);
+			for (var i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier * weapon.ammoDisplayScale); i++) {
+				var floorOrCeiling = Math.Ceiling(weapon.ammo * ammoDisplayMultiplier * weapon.ammoDisplayScale);
 				// Weapons that cost the whole bar go here, so they don't show up as full but still grayed out
 				if (weapon.drawRoundedDown || weapon is RekkohaWeapon || weapon is GigaCrush) {
 					floorOrCeiling = Math.Floor(weapon.ammo * ammoDisplayMultiplier);
@@ -1943,7 +1943,7 @@ public class GameMode {
 		var startX = getWeaponSlotStartX(player, ref iconW, ref iconH, ref width);
 		var startY = Global.screenH - 12;
 
-		int gigaWeaponX = 11;
+		int gigaWeaponX = 16;
 
 		if (player.isX && Options.main.gigaCrushSpecial) {
 			Weapon? gigaCrush = player.weapons.FirstOrDefault((Weapon w) => w is GigaCrush);
@@ -1956,6 +1956,13 @@ public class GameMode {
 			Weapon? novaStrike = player.weapons.FirstOrDefault((Weapon w) => w is HyperNovaStrike);
 			if (novaStrike != null) {
 				drawWeaponSlot(novaStrike, gigaWeaponX, 159);
+				gigaWeaponX += 18;
+			}
+		}
+		if (player.isRock && Options.main.rushSpecial) {
+			Weapon? rushWeapon = player.weapons.FirstOrDefault((Weapon w) => w is RushWeapon);
+			if (rushWeapon != null) {
+				drawWeaponSlot(rushWeapon, gigaWeaponX, 114);
 				gigaWeaponX += 18;
 			}
 		}
@@ -2108,8 +2115,6 @@ public class GameMode {
 			Global.sprites["hud_weapon_icon"].drawToHUD(index, x, y);
 		} else if (weapon is MechMenuWeapon && level.mainPlayer.isSelectingRA()) {
 			return;
-		} else if (weapon is RushWeapon rw) {
-			Global.sprites[jsonName].drawToHUD(rw.weaponSlotIndex, x, y);
 		} else if (weapon is not AbsorbWeapon) {
 			Global.sprites[jsonName].drawToHUD(weapon.weaponSlotIndex, x, y);
 		}

@@ -6,7 +6,6 @@ using Newtonsoft.Json.Converters;
 namespace MMXOnline;
 
 public class IceWall : Weapon {
-	public static IceWall netWeapon = new();
 
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;
@@ -71,6 +70,7 @@ public class IceWallActor : Projectile {
 		maxTime = 2f;
 		destroyOnHit = false;
 		splashable = true;
+		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
 	}
 	
 	public override void update() {
@@ -112,6 +112,7 @@ public class IceWallActor : Projectile {
 		if (other.gameObject == ownChar) {
 			if (ownChar.pos.y > getTopY() + 10 && ownChar.charState is Run or Dash) {
 				startedMoving = true;
+				xDir = ownChar.xDir;
 			}
 		}
 		// Hit enemy.

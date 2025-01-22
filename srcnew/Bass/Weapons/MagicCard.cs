@@ -6,7 +6,6 @@ namespace MMXOnline;
 
 public class MagicCard : Weapon {
 
-	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new List<MagicCardProj>();
 
 	public MagicCard() : base() {
@@ -61,7 +60,7 @@ public class MagicCard : Weapon {
 
 public class MagicCardProj : Projectile {
 	bool reversed;
-	Character shooter;
+	Character shooter = null!;
 	float maxReverseTime;
 	const float projSpeed = 480;
 	public Pickup? pickup;
@@ -86,7 +85,7 @@ public class MagicCardProj : Projectile {
 		startAngle = byteAngle;
 		this.effect = effect;
 		wep = weapon;
-		shooter = player.character;
+		shooter = player.character ?? throw new NullReferenceException();
 		destroyOnHit = effect != 3;
 
 		vel = Point.createFromByteAngle(byteAngle) * 425;	

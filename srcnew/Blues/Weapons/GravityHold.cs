@@ -5,7 +5,6 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class GravityHold : Weapon {
-	public static GravityHold netWeapon = new();
 
 	public GravityHold() : base() {
 		displayName = "GRAVITY HOLD";
@@ -79,7 +78,7 @@ public class GravityHoldProj : Projectile {
 		if (r >= midR) {
 			changeColor = true;
 		}
-		if (!effect && ownedByLocalPlayer) {
+		if (!effect && ownedByLocalPlayer && damager.owner.character != null) {
 			new GravityHoldEffect(pos, damager.owner.character, damager.owner.character.grounded);
 			effect = true;
 		}
@@ -93,7 +92,7 @@ public class GravityHoldProj : Projectile {
 					chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) &&
 					chara.projectileCooldown.GetValueOrDefault(projId + "_" + owner.id) == 0
 				) {
-					chara.projectileCooldown[projId + "_" + owner.id] = 1;
+					chara.projectileCooldown[projId + "_" + owner.id] = 1 * 60;
 					chara.gHoldOwner = damager.owner;
 					chara.gHolded = true;
 					gHoldModifier = 1;

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SearchSnake : Weapon {
-	public static SearchSnake netWeapon = new();
 
 	public SearchSnake() : base() {
 		displayName = "SEARCH SNAKE";
@@ -39,7 +38,7 @@ public class SearchSnakeProj : Projectile {
 		0, 0.5f, netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.SearchSnake;
-		wallCrawlSpeed = 120;
+		wallCrawlSpeed = speed * 0.75f;
 		destroyOnHit = true;
 		fadeSprite = "generic_explosion";
 		fadeOnAutoDestroy = true;
@@ -71,24 +70,32 @@ public class SearchSnakeProj : Projectile {
 			return;
 		}
 		updateWallCrawl();
+		if (groundedOnce) updateWallCrawl();
+
 		if (!startAngleDrawing) {
 			startAngleDrawing = true;
 			return;
 		}
 	}
 
+	public override void onHitWall(CollideData other) {
+		base.onHitWall(other);
+		if (!groundedOnce) {
+			useGravity = false;
+			stopMoving();
+			changeSprite("search_snake_proj", true);
+			setupWallCrawl(new Point(xDir, -1));
+			groundedOnce = true;
+		}
+	}
+
 	public override void render(float x, float y) {
 		if (startAngleDrawing) {
-			int deltaDirY = MathF.Sign(deltaPos.y);
-			if (deltaDirY == -1) {
-				byteAngle = -64 * xDir;
-			} else if (deltaDirY == 1) {
-				byteAngle = 64 * xDir;
-			} else if (deltaPos.x < 0 && prevAngle == -64) {
-				byteAngle = 128;
-			} else {
-				byteAngle = 0;
-			} prevAngle = byteAngle ?? 0;
+			byteAngle = deltaPos.byteAngle;
+			if (xDir < 0) byteAngle = -byteAngle + 128;
+
+			if (deltaPos.y < 0 && xDir < 0) byteAngle += 128;
+			if (xDir < 0) byteAngle += 128;
 		}
 		base.render(x, y);
 	}

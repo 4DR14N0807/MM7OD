@@ -97,7 +97,6 @@ public class Weapon {
 			new VileMissile(VileMissileType.ElectricShock),
 			new VileCannon(VileCannonType.FrontRunner),
 			new Vulcan(VulcanType.CherryBlast),
-			new RushWeapon(),
 		};
 		weaponList.AddRange(getAllXWeapons());
 		weaponList.AddRange(getAllAxlWeapons(axlLoadout));

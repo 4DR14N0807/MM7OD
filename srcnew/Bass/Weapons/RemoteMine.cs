@@ -7,6 +7,8 @@ public class RemoteMine : Weapon {
 	public RemoteMine() : base() {
 		index = (int)BassWeaponIds.RemoteMine;
 		displayName = "REMOTE MINE";
+		maxAmmo = 16;
+		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
@@ -85,12 +87,14 @@ public class RemoteMineProj : Projectile {
 		var chr = other.gameObject as Character;
 		var wall = other.gameObject as Wall;
 
-		if (!landed && (chr != null || wall != null)) {
+		if (!landed && ((chr != null && chr != bass) || wall != null)) {
 			stopMoving();
 
 			if (chr != null) host = chr; 
 			changeSprite("remote_mine_land", true);
+			playSound("remotemineStick", true);
 			landed = true;
+			maxTime = 3;
 		}
 	}
 
@@ -107,6 +111,7 @@ public class RemoteMineProj : Projectile {
 		destroySelf();
 		if (ownedByLocalPlayer) {
 			new RemoteMineExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+			playSound("remotemineExplode", true);
 		}
 	}
 }

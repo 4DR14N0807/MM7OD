@@ -414,7 +414,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 		bomb = new Anim(getCenterPos(), "danger_wrap_bomb", 
 			xDir, player.getNextActorNetId(), false, true);
 
-		netActorCreateId = NetActorCreateId.Rush;
+		netActorCreateId = NetActorCreateId.DWrapBigBubble;
 		if (rpc) {
 			createActorRpc(victim.id);
 		}

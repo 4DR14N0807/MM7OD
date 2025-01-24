@@ -44,10 +44,10 @@ public class SearchSnakeProj : Projectile {
 		fadeOnAutoDestroy = true;
 		useGravity = true;
 		maxTime = 2;
-		canBeLocal = false;
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+		canBeLocal = false;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
@@ -90,6 +90,7 @@ public class SearchSnakeProj : Projectile {
 	}
 
 	public override void render(float x, float y) {
+		base.render(x, y);
 		if (startAngleDrawing) {
 			byteAngle = deltaPos.byteAngle;
 			if (xDir < 0) byteAngle = -byteAngle + 128;
@@ -97,6 +98,20 @@ public class SearchSnakeProj : Projectile {
 			if (deltaPos.y < 0 && xDir < 0) byteAngle += 128;
 			if (xDir < 0) byteAngle += 128;
 		}
-		base.render(x, y);
+	}
+
+	
+	public override List<byte> getCustomActorNetData() {
+		List<byte> customData = base.getCustomActorNetData() ?? new();
+		
+		if (byteAngle != null) customData.Add((byte)byteAngle.Value);
+
+		return customData;
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		base.updateCustomActorNetData(data);
+
+		byteAngle = data[0];
 	}
 }

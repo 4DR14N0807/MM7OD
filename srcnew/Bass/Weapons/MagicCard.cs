@@ -53,6 +53,7 @@ public class MagicCard : Weapon {
 				player, player.getNextActorNetId(), effect, true
 			);
 			cardsOnField.Add(card);
+			character.playSound("magiccard", true);
 		}
 	}
 }
@@ -159,6 +160,7 @@ public class MagicCardProj : Projectile {
 		if (other.gameObject is Pickup && pickup == null) {
 			pickup = other.gameObject as Pickup;
 			if (pickup != null) {
+				playSound("magiccardCatch", true);
 				if (!pickup.ownedByLocalPlayer) {
 					pickup.takeOwnership();
 					RPC.clearOwnership.sendRpc(pickup.netId);
@@ -183,6 +185,7 @@ public class MagicCardProj : Projectile {
 
 				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, 1, true);
 				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, -1, true);
+				playSound("magiccard", true);
 			}
 		}
 	}
@@ -268,7 +271,8 @@ public class MagicCardSpecialSpawn : Projectile {
 
 			new MagicCardSpecialProj(pos, xDir, damager.owner, 
 				damager.owner.getNextActorNetId(), startAngle, (int)t, true);
-
+			playSound("magiccard", true);
+			
 			count++;
 			cooldown = 9;
 

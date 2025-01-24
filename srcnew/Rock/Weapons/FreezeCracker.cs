@@ -12,7 +12,7 @@ public class FreezeCracker : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.FreezeCracker;
 		fireRate = 45;
-		maxAmmo = 16;
+		maxAmmo = 20;
 		ammo = maxAmmo;
 		description = new string[] { "Splits in 6 pieces when hitting a wall.", "Can be aimed up or down." };
 	}

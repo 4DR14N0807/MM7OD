@@ -120,7 +120,7 @@ public class Bass : Character {
 
 		if (isSuperBass) chargeLogic(shoot);
 
-		quickAdaptorUpgrade(); 
+		//quickAdaptorUpgrade(); 
 	}
 
 	public override void render(float x, float y) {
@@ -395,6 +395,11 @@ public class Bass : Character {
 	public override string getSprite(string spriteName) {
 		string prefix = isSuperBass ? "sbass_" : "bass_";
 		return prefix + spriteName;
+	}
+
+	
+	public override (float, float) getGlobalColliderSize() {
+		return (24, 30);
 	}
 
 	public override bool canCrouch() {

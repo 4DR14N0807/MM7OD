@@ -110,7 +110,8 @@ public class BluesWeaponMenu : IMainMenu {
 				Options.main.saveToFile();
 			}
 			
-			Menu.change(prevMenu);
+			if (inGame) Menu.exit();
+			else Menu.change(prevMenu);
 			return;
 		}
 		if (backPressed) {

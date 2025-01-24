@@ -1678,13 +1678,13 @@ public partial class Player {
 			return Global.level.server.customMatchSettings.respawnTime;
 		} else {
 			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
-				return 8;
+				return 5;
 			}
 			if (Global.level?.gameMode is KingOfTheHill) {
-				return 8;
+				return 5;
 			}
 		}
-		return 8;
+		return 5;
 	}
 
 	public bool canReviveVile() {
@@ -2186,6 +2186,11 @@ public partial class Player {
 	public void addDeath(bool isSuicide) {
 		if (isSigma && maverick1v1 == null && Global.level.isHyper1v1() && !lastDeathWasSigmaHyper) {
 			return;
+		}
+
+		if (isSuicide) {
+			kills--;
+			currency -= 5;
 		}
 
 		if (Global.serverClient == null) {

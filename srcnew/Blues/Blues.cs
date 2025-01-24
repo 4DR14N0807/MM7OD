@@ -232,8 +232,8 @@ public class Blues : Character {
 		return grounded && overheating;
 	}
 
-	public void destroyStarCrash(bool destroy = true) {
-		if (starCrash != null && destroy) {
+	public void destroyStarCrash() {
+		if (starCrash != null) {
 			starCrash.destroySelf();
 		}
 		starCrash = null;
@@ -1161,8 +1161,10 @@ public class Blues : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
+		int weaponIndex = specialWeaponIndex;
 		customData.Add((byte)MathInt.Floor(coreAmmo));
 		customData.Add((byte)MathInt.Ceiling(shieldHP));
+		customData.Add((byte)weaponIndex);
 		bool[] flags = [
 			isShieldFront(),
 			overheating,
@@ -1181,8 +1183,9 @@ public class Blues : Character {
 		// Per-character data.
 		coreAmmo = data[0];
 		shieldHP = data[1];
+		specialWeaponIndex = data[2];
 
-		bool[] flags = Helpers.byteToBoolArray(data[2]);
+		bool[] flags = Helpers.byteToBoolArray(data[3]);
 		isShieldActive = flags[0];
 		overheating = flags[1];
 		isBreakMan = flags[2];

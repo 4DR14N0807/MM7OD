@@ -10,6 +10,8 @@ public class IceWall : Weapon {
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;
 		displayName = "ICE WALL";
+		maxAmmo = 10;
+		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
@@ -21,7 +23,8 @@ public class IceWall : Weapon {
 		Point shootPos = character.getShootPos().addxy(0, 2);
 		Player player = character.player;
 
-		new IceWallActor(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
+		new IceWallProj(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
+		character.playSound("icewall", true);
 	}
 }
 
@@ -42,12 +45,12 @@ public class IceWallStart : Anim {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
-			new IceWallActor(pos, xDir, player, player.getNextActorNetId(), true);
+			new IceWallProj(pos, xDir, player, player.getNextActorNetId(), true);
 		}
 	}
 }
 	
-public class IceWallActor : Projectile {
+public class IceWallProj : Projectile {
 	float maxSpeed = 300;
 	int bounces;
 	bool startedMoving;
@@ -55,12 +58,13 @@ public class IceWallActor : Projectile {
 	Player player;
 	Collider? terrainCollider;
 
-	public IceWallActor(
+	public IceWallProj(
 		Point pos, int xDir, Player player,
 		ushort? netId, bool rpc = false
 	) : base(
 		IceWall.netWeapon, pos, xDir, 0, 0, player, "ice_wall_proj", 0, 0, netId, player.ownedByLocalPlayer
 	) {
+		projId = (int)BassProjIds.IceWall;
 		useGravity = true;
 		canBeLocal = false;
 		base.xDir = xDir;
@@ -71,6 +75,14 @@ public class IceWallActor : Projectile {
 		destroyOnHit = false;
 		splashable = true;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
+
+		if (rpc) rpcCreate(pos, player, netId, xDir);
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new IceWallProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 	
 	public override void update() {

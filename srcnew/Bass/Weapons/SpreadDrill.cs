@@ -11,7 +11,7 @@ public class SpreadDrill : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		maxAmmo = 7;
+		maxAmmo = 10;
 		ammo = maxAmmo;
 		fireRate = 90;
 		descriptionV2 = (
@@ -34,6 +34,7 @@ public class SpreadDrill : Weapon {
 		Bass? bass = character as Bass;
 
 		new SpreadDrillProj(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
+		character.playSound("spreaddrill", true);
 	}
 }
 public class SpreadDrillProj : Projectile {
@@ -158,6 +159,7 @@ public class SpreadDrillMediumProj : Projectile {
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
 				hits++;
+				playSound("spreaddrillHit", true);
 			}
 		} 
 	}
@@ -221,6 +223,7 @@ public class SpreadDrillSmallProj : Projectile {
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
 				hits++;
+				playSound("spreaddrillHit", true);
 			}
 		} 
 	}

@@ -133,6 +133,7 @@ public class WildCoilChargedProj : Projectile {
 	int bounceCounter;
 	int bounceBuff;
 	bool bouncedOnce;
+	int frame;
 
 	public WildCoilChargedProj(
 		Point pos, int xDir, Player player, 
@@ -177,7 +178,7 @@ public class WildCoilChargedProj : Projectile {
 	public override void update() {
 		base.update();
 
-		//if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer) return;
 		if (soundCooldown > 0) Helpers.decrementTime(ref soundCooldown);
 
 		bounceBuff = (int)bounceCounter / bounceReq;
@@ -193,6 +194,7 @@ public class WildCoilChargedProj : Projectile {
 					break;
 			}
 		}
+		frame = bouncedOnce ? frameIndex : 3;
 	}
 
 
@@ -227,7 +229,6 @@ public class WildCoilChargedProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		int frame = bouncedOnce ? frameIndex : 3;
 
 		Global.sprites[getOutline()].draw(
 			frame, pos.x, pos.y, xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex
@@ -240,5 +241,20 @@ public class WildCoilChargedProj : Projectile {
 			1 => "wild_coil_outline2",
 			_ => "wild_coil_outline3"
 		};
+	}
+
+	public override List<byte> getCustomActorNetData() {
+		List<byte> customData = base.getCustomActorNetData() ?? new();
+		customData.Add((byte)bounceBuff);
+		customData.Add((byte)frame);
+
+		return customData;
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		base.updateCustomActorNetData(data);
+
+		bounceBuff = data[0];
+		frame = data[1];
 	}
 }

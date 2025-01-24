@@ -57,12 +57,12 @@ public class WaveBurnerProj : Projectile {
 		ushort? netProjId, bool rpc = false
 	) : base(
 		WaveBurner.netWeapon, pos, 1, 0, 1,
-		player, "wave_burner_proj", 0, 0.25f, 
+		player, "wave_burner_proj", 0, 0.2f, 
 		netProjId, player.ownedByLocalPlayer 
 	) {
 		projId = (int)BassProjIds.WaveBurner;
 		maxTime = 0.2f;
-		//this.byteAngle = byteAngle;
+		destroyOnHit = false;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
 
 		character = player.character ?? throw new NullReferenceException();

@@ -11,7 +11,7 @@ public class ScorchWheel : Weapon {
 		weaponBarBaseIndex = (int)RockWeaponBarIds.ScorchWheel;
 		weaponBarIndex = weaponBarBaseIndex;
 		killFeedIndex = 0;
-		maxAmmo = 14;
+		maxAmmo = 16;
 		ammo = maxAmmo;
 		fireRate = 60;
 		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };

@@ -280,10 +280,19 @@ public class Rock : Character {
 		noiseCrushEffect.render(getCenterPos());
 	}
 
+	public bool isUsingRushJet() {
+		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true);
+		Rush? rj = null!;
+		if (collideData != null) rj = collideData.gameObject as Rush;
+		bool rjJet = rj != null && rj.rushState is RushJetState;
+
+		return rjJet && rj == rush;
+	}
+
 	public override bool canMove() {
 		if (charState is CallDownRush) return false;
 
-		return base.canMove();
+		return base.canMove() && !isUsingRushJet();
 	}
 
 	public override bool canJump() {
@@ -412,8 +421,14 @@ public class Rock : Character {
 
 	public bool canRideRushJet() {
 		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, -20);
-		Rush? rj = Global.level.checkTerrainCollisionOnce(this, 0, 1)?.gameObject as Rush;
-		return charState is Fall && collideData == null && rj != null && rj.rushState is RushJetState;
+		var collideDatas = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true);
+		Rush? rj = collideDatas?.gameObject as Rush;
+
+		/* foreach(var cd in collideDatas) {
+			if (cd.gameObject is Rush r) rj = r;
+		} */
+	
+		return collideData == null && rj != null/*  && rj.rushState is RushJetState */;
 	}
 
 	public static List<Weapon> getAllRushWeapons() {
@@ -426,15 +441,20 @@ public class Rock : Character {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
+		if (!ownedByLocalPlayer) return;
 
 		var wall = other.gameObject as Wall;
 		var rush = other.gameObject as Rush;
-		var isGHit = other.isGroundHit();
+		bool isGHit = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true) != null;
 		bool isRushCoil = rush != null && rush.rushState is RushIdle or RushSleep && rush.type == 0;
 		bool isRushJet = rush != null && rush.rushState is RushJetState;
 
 		if (charState is RockDoubleJump && wall != null) {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
+		}
+
+		if (isGHit && charState is Fall && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
+			rjs.once = true;
 		}
 	}
 
@@ -482,7 +502,7 @@ public class Rock : Character {
 		Point projPos = pos ?? new Point(0, 0);
 		Projectile? proj = id switch {
 			(int)MeleeIds.SlashClaw => new GenericMeleeProj(
-				new SlashClawWeapon(player), projPos, ProjIds.SlashClaw, player,
+				new SlashClawWeapon(player), projPos, ProjIds.SlashClaw, player, 2, 0, 0.25f,
 				addToLevel: addToLevel
 			),
 

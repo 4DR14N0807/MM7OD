@@ -12,7 +12,7 @@ public class ThunderBolt : Weapon {
 		weaponBarBaseIndex = (int)RockWeaponBarIds.ThunderBolt;
 		weaponBarIndex = weaponBarBaseIndex;
 		killFeedIndex = 0;
-		maxAmmo = 20;
+		maxAmmo = 24;
 		ammo = maxAmmo;
 		description = new string[] { "Powerful DPS weapon.", "Divides in 2 when hitting an enemy." };
 	}

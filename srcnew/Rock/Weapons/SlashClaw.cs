@@ -12,7 +12,7 @@ public class SlashClawWeapon : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.SlashClaw;
 		killFeedIndex = 0;
-		maxAmmo = 18;
+		maxAmmo = 24;
 		ammo = maxAmmo;
 		fireRate = 45;
 		description = new string[] { "Fast melee attack, able to pierce shields.", "No tiene flinch." };

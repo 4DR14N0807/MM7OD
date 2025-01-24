@@ -346,6 +346,7 @@ public enum BluesProjIds  {
 	PowerStone,
 	GyroAttack,
 	StarCrash,
+	StarCrash2,
 	ShieldBlock,
 	NeedleCannon,
 	ProtoStrike,

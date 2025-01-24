@@ -8,6 +8,8 @@ public class TenguBlade : Weapon {
 	public TenguBlade() : base() {
 		index = (int)BassWeaponIds.TenguBlade;
 		displayName = "TENGU BLADE";
+		maxAmmo = 24;
+		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
@@ -50,6 +52,7 @@ public class TenguBladeStart : Anim {
 		base.onDestroy();
 
 		new TenguBladeProj(pos, xDir, character.player, character.player.getNextActorNetId(), true);
+		playSound("tengublade", true);
 	}
 }
 

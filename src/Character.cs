@@ -1350,10 +1350,10 @@ public partial class Character : Actor, IDamagable {
 				return true;
 			}
 
-			if (player.input.isPressed(Control.Taunt, player)) {
+			/* if (player.input.isPressed(Control.Taunt, player)) {
 				changeState(new Taunt());
 				return true;
-			}
+			} */
 
 			if (canAirJump() && flag == null) {
 				if (player.input.isPressed(Control.Jump, player) && canJump()) {

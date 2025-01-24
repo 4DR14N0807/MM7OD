@@ -73,6 +73,9 @@ public class Rush : Actor, IDamagable {
 
 	public override Collider getGlobalCollider() {
 		int yHeight = 22;
+		if (sprite.name.Contains("rush_jet")) {
+			yHeight = 15;
+		}
 		var rect = new Rect(0, 0, 34, yHeight);
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
@@ -131,8 +134,7 @@ public class Rush : Actor, IDamagable {
 
 		//Rush Jet detection
 		if (
-			rushState is RushJetState && rock.canRideRushJet() && 
-			rock.charState is not RushJetRide
+			rushState is RushJetState && rock.canRideRushJet() 
 		) {
 			isJetAndRide = true;
 		} else {
@@ -167,9 +169,7 @@ public class Rush : Actor, IDamagable {
 		var wall = other.gameObject as Wall;
 
 		if (wall != null && rushState is RushJetState) {
-			if (other.isGroundHit() || other.isCeilingHit()) {
-				vel.x = 60 * xDir;
-			} else if (other.isSideWallHit()) changeState(new RushWarpOut());
+			if (other.isSideWallHit()) changeState(new RushWarpOut());
 		}
 
 		if (rushState is RushWarpIn && other.isGroundHit()) changeState(new RushIdle());

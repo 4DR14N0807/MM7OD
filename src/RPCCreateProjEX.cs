@@ -149,6 +149,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BluesProjIds.PowerStone, PowerStoneProj.rpcInvoke },
 		{ (int)BluesProjIds.GyroAttack, GyroAttackProj.rpcInvoke },
 		{ (int)BluesProjIds.StarCrash, StarCrashProj.rpcInvoke },
+		{ (int)BluesProjIds.StarCrash2, StarCrashProj2.rpcInvoke },
 		{ (int)BluesProjIds.ProtoStrike, ProtoStrikeProj.rpcInvoke },
 		{ (int)BluesProjIds.ProtoStrikePush, StrikeAttackPushProj.rpcInvoke },
 		{ (int)BluesProjIds.BigBangStrike, BigBangStrikeProj.rpcInvoke },
@@ -157,7 +158,7 @@ public partial class RPCCreateProj : RPC {
 		//Bass stuff.
 		{ (int)BassProjIds.BassLemon, BassBusterProj.rpcInvoke },
 		{ (int)BassProjIds.CopyVisionLemon, CopyVisionLemon.rpcInvoke },
-		//{ (int)BassProjIds.IceWall, IceWallProj.rpcInvoke },
+		{ (int)BassProjIds.IceWall, IceWallProj.rpcInvoke },
 		{ (int)BassProjIds.MagicCard, MagicCardProj.rpcInvoke },
 		{ (int)BassProjIds.MagicCardSSpawn, MagicCardSpecialSpawn.rpcInvoke },
 		{ (int)BassProjIds.MagicCardS, MagicCardSpecialProj.rpcInvoke },
@@ -169,6 +170,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.WaveBurner, WaveBurnerProj.rpcInvoke },
 		{ (int)BassProjIds.WaveBurnerUnderwater, WaveBurnerUnderwaterProj.rpcInvoke },
 		{ (int)BassProjIds.TenguBladeProj, TenguBladeProj.rpcInvoke },
+		{ (int)BassProjIds.LightningBolt, LightningBoltProj.rpcInvoke },
 
 	};
 

@@ -9,8 +9,7 @@ public class StarCrash : Weapon {
 	public StarCrash() : base() {
 		displayName = "STAR CRASH";
 		descriptionV2 = "Creates a star-shaped energy barrier\nthat reduces gravity.";
-		decimal coreCooldown = 20;
-		ammoUseText = (1 / coreCooldown * 60).ToGBString() + " per second";
+		ammoUseText = getAmmoUsage(0).ToString();
 
 		index = (int)BluesWeaponIds.StarCrash;
 		fireRate = 60;
@@ -51,7 +50,6 @@ public class StarCrashProj : Projectile {
 	Player player;
 	float starAngle;
 	int radius = 30;
-	int coreCooldown = 50;
 	int frameCount;
 	int starFrame;
 	List<Sprite> stars = new();
@@ -118,25 +116,17 @@ public class StarCrashProj : Projectile {
 		) {
 			destroySelf();
 		}
-
-		// Ammo reduction.
-		/* if (coreCooldown <= 0) {
-			coreCooldown = 20;
-			blues?.addCoreAmmo(1);
-		} else {
-			coreCooldown--;
-		} */
 	}
 
 	public void shoot() {
-		time = 0;
-		maxTime = 1f;
-		updateDamager(2);
-		vel.x = blues.xDir * 180;
-		destroyOnHit = true;
-		blues.destroyStarCrash(false);
-		threw = true;
-		changeSprite("star_crash_proj", true);
+		if (!ownedByLocalPlayer) return;
+
+		blues.destroyStarCrash();
+		new StarCrashProj2(
+			pos, xDir, damager.owner, 
+			damager.owner.getNextActorNetId(), 
+			starAngle, starFrame, true
+		);
 	}
 
 	public override void render(float x, float y) {
@@ -155,10 +145,75 @@ public class StarCrashProj : Projectile {
 		}
 		
 	}
+}
+
+
+public class StarCrashProj2 : Projectile {
+
+	int radius = 30;
+	int frameCount;
+	int starFrame;
+	List<Sprite> stars = new();
+	float starAngle;
+
+	public StarCrashProj2(
+		Point pos, int xDir, Player player, ushort? netId, 
+		float ang, int frame, bool rpc = false
+	) : base(
+		StarCrash.netWeapon, pos, xDir, 180, 2,
+		player, "star_crash_proj", 0, 0.5f, 
+		netId, player.ownedByLocalPlayer
+	) {
+		projId = (int)BluesProjIds.StarCrash2;
+		maxTime = 1;
+		starAngle = ang;
+		
+		for (int i = 0; i < 3; i++) {
+			Sprite star = new Sprite("star_crash");
+			stars.Add(star);
+		}
+
+		if (rpc) rpcCreate(pos, player, netId, xDir, new byte[] { (byte)ang, (byte)frame} );
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new StarCrashProj2(
+			args.pos, args.xDir, args.player, args.netId, 
+			args.extraData[0], args.extraData[1]
+		);
+	}
+
+	public override void update() {
+		base.update();
+
+		if (!ownedByLocalPlayer) return;
+
+		if (frameCount > 4) {
+			frameCount = 0;
+			starFrame++;
+		}
+
+		starAngle += 4;
+	}
+
+	public override void render(float x, float y) {
+		base.render(x,y);
+		Point center = pos;
+		
+		for (int i = 0; i < 3; i++) {
+			float extraAngle = (starAngle + i * 120) % 360;
+			float xPlus = (Helpers.cosd(extraAngle) * radius);
+			float yPlus = (Helpers.sind(extraAngle) * radius);
+
+			stars[i].draw(
+				starFrame % 4, center.x + xPlus, center.y + yPlus, 
+				xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex
+			);
+		}
+	}
 
 	public override void onDestroy() {
 		base.onDestroy();
-		blues?.destroyStarCrash();
 
 		for (int i = 0; i < 3; i++) {
 			float extraAngle = (starAngle + i * 120) % 360;
@@ -168,4 +223,4 @@ public class StarCrashProj : Projectile {
 			new Anim(new Point(xPlus, yPlus), "star_crash_fade", xDir, damager.owner.getNextActorNetId(), true, true);
 		}
 	}
-}
+} 

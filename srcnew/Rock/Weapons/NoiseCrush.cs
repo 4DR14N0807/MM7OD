@@ -23,6 +23,10 @@ public class NoiseCrush : Weapon {
 		return base.canShoot(chargeLevel, player);
 	}
 
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
+	}
+
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
@@ -49,6 +53,7 @@ public class NoiseCrush : Weapon {
 					new NoiseCrushProj(shootPos.addxy(12 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
 					new NoiseCrushProj(shootPos.addxy(16 * -xDir, 0), xDir, player, 2, player.getNextActorNetId(true), rpc: true);
 					character.playSound("noise_crush", sendRpc: true);
+					addAmmo(-1, player);
 				}
 			}
 	}

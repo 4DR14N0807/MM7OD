@@ -8,6 +8,8 @@ public class LightningBolt : Weapon {
 	public LightningBolt() : base() {
 		index = (int)BassWeaponIds.LightningBolt;
 		displayName = "LIGHTNING BOLT";
+		maxAmmo = 10;
+		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
@@ -106,7 +108,8 @@ public class LightningBoltState : CharState {
 			if (phase == 1) {
 				new LightningBoltProj(lightningPos, character.xDir, character.player,
 					character.player.getNextActorNetId(), true);
-
+				character.playSound("lightningbolt", true);
+				
 				phase = 2;
 			}
 
@@ -145,6 +148,14 @@ public class LightningBoltProj : Projectile {
 		spawnPosY = pos.y;
 		base.vel.y = 600;
 		frameSpeed = 0;
+
+		if (rpc) rpcCreate(pos, player, netProjId, xDir);
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new LightningBoltProj(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
 	}
 
 	public override void update() {

@@ -629,10 +629,14 @@ public class GameMode {
 			}
 			// Currency
 			if (!Global.level.is1v1()) {
-				Global.sprites["pickup_bolt_small"].drawToHUD(0, Global.screenW - 32, 28);
+				Global.sprites["pickup_bolt_large"].drawToHUD(0, Global.screenW - 60, 31);
 				Fonts.drawText(
 					FontType.WhiteSmall,
-					"x" + drawPlayer.currency.ToString("d2"), Global.screenW - 4, 24, Alignment.Right
+					"x", Global.screenW - 44, 27, Alignment.Right
+				);
+				Fonts.drawText(
+					FontType.WhiteSmall,
+					drawPlayer.currency.ToString(), Global.screenW - 43, 27, Alignment.Left
 				);
 			}
 			if (drawPlayer.character is RagingChargeX mmx && mmx.unpoShotCount > 0) {
@@ -1606,8 +1610,8 @@ public class GameMode {
 			string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 			Global.sprites[baseBarName].drawToHUD(weapon.weaponBarBaseIndex, baseX, baseY);
 			baseY -= 16;
-			for (var i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier * weapon.ammoDisplayScale); i++) {
-				var floorOrCeiling = Math.Ceiling(weapon.ammo * ammoDisplayMultiplier * weapon.ammoDisplayScale);
+			for (int i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier); i += (int)weapon.ammoDisplayScale) {
+				var floorOrCeiling = Math.Ceiling(weapon.ammo * ammoDisplayMultiplier);
 				// Weapons that cost the whole bar go here, so they don't show up as full but still grayed out
 				if (weapon.drawRoundedDown || weapon is RekkohaWeapon || weapon is GigaCrush) {
 					floorOrCeiling = Math.Floor(weapon.ammo * ammoDisplayMultiplier);
@@ -2074,6 +2078,10 @@ public class GameMode {
 				continue;
 			}
 			if (player.isX && Options.main.novaStrikeSpecial && weapon is HyperNovaStrike) {
+				offsetX -= width;
+				continue;
+			}
+			if (player.isRock && Options.main.rushSpecial && weapon is RushWeapon) {
 				offsetX -= width;
 				continue;
 			}

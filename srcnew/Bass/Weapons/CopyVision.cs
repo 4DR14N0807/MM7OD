@@ -14,13 +14,13 @@ public class CopyVision : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		killFeedIndex = 0;
-		maxAmmo = 7;
+		maxAmmo = 10;
 		ammo = maxAmmo;
 		switchCooldown = 0.75f; //gambiarrita
 		//fireRateFrames = 60;
 
 		descriptionV2 = (
-			"Create a clone that attack automatically." + "\n" +
+			"Creates a clone that attack automatically." + "\n" +
 			"Can only have one clone at once."
 		);
 	}
@@ -41,9 +41,11 @@ public class CopyVision : Weapon {
 			new CopyVisionClone(shootPos, player, character.xDir, character.player.getNextActorNetId(), true);
 			if (bass != null) bass.weaponCooldown = 120;
 			addAmmo(-1, player);
+			bass?.playSound("copyvision", true);
 		} else {
 			new BassBusterProj(shootPos, shootAngle, player, player.getNextActorNetId(), true);
 			bass.weaponCooldown = 9;
+			bass.playSound("bassbuster", true);
 		}
 
 		

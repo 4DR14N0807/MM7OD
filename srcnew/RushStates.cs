@@ -19,6 +19,7 @@ public class RushState {
 	}
 
 	public Player player => rush.player;
+	public bool once;
 
 	public virtual void onExit(RushState newState) { }
 
@@ -201,14 +202,13 @@ public class RushCoil : RushState {
 }
 
 public class RushJetState : RushState {
-	Rock? rock;
-	bool isRiding;
+	Rock rock = null!;
 	public float jetSpeedX;
 	public float jetSpeedY;
 	int decAmmoCooldown = 30;
 	int maxDecAmmoCooldown = 30;
 	int xDir;
-	int yDir;
+	Point input;
 	bool rideOnce;
 	bool playedSound;
 	public RushJetState() : base("rush_jet_start") { }
@@ -218,7 +218,7 @@ public class RushJetState : RushState {
 		rush.isPlatform = true;
 		rush.globalCollider = rush.getJetCollider();
 		rush.useGravity = false;
-		rock = rush.character as Rock;
+		rock = rush.character as Rock ?? throw new NullReferenceException();
 		Global.level.modifyObjectGridGroups(rush, isActor: true, isTerrain: true);
 	}
 
@@ -230,36 +230,35 @@ public class RushJetState : RushState {
 
 	public override void update() {
 		base.update();
-
-		if (rush.isJetAndRide) {
-			rideOnce = true;
-			isRiding = true;
-			rush.changeSprite("rush_jet", true);
-			if (!playedSound) {
-				Global.playSound("rush_jet");
-				playedSound = true;
-			}
-		} else isRiding = false;
-
-		xDir = player.input.getXDir(player);
-		yDir = player.input.getYDir(player);
+ 
+		if (!once) return;
 		
-		if (isRiding) {
-			maxDecAmmoCooldown = 30;
-			if (xDir == rush.xDir * -1) jetSpeedX = 60;
+		if (rock.isUsingRushJet()) {
+			xDir = player.input.getXDir(player);
+			input.y = player.input.getYDir(player);
+			if (xDir != 0) input.x = xDir;
+
+			if (input.x == rush.xDir * -1) jetSpeedX = 60;
 			else jetSpeedX = 120;
 
-			if (yDir != 0 && Global.level.checkTerrainCollisionOnce(rush, 0, yDir * 48) == null) jetSpeedY = yDir * 60;
-			else jetSpeedY = 0;
+			if (input.y == -1) {
+				if (Global.level.checkTerrainCollisionOnce(rock, 0, input.y * 16) == null) jetSpeedY = input.y * 60;
+				else jetSpeedY = 0;
+			} 
+			else jetSpeedY = input.y * 60;
 		} else {
+
 			maxDecAmmoCooldown = 45;
-			jetSpeedX = rideOnce ? 60 : 0;
+			jetSpeedX = once ? 60 : 0;
 			jetSpeedY = 0;
 		}
 
-		rush.vel = new Point(jetSpeedX * rush.xDir, jetSpeedY);
+		//rush.vel = new Point(jetSpeedX * rush.xDir, jetSpeedY);
+		rush.move(new Point(jetSpeedX * rush.xDir, 0));
+		rush.move(new Point(0, jetSpeedY));
+		rock?.move(new Point(0, MathF.Max(0, jetSpeedY)));
 
-		if (rideOnce) decAmmoCooldown--;
+		if (once) decAmmoCooldown--;
 		if (decAmmoCooldown <= 0) {
 			rock?.rushWeapon.addAmmo(-1, player);
 			decAmmoCooldown = maxDecAmmoCooldown;

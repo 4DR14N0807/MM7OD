@@ -35,6 +35,8 @@ public class CopyVision : Weapon {
 		Bass? bass = character as Bass;
 		float shootAngle = 0;
 
+		if (!player.ownedByLocalPlayer) return;
+
 		if (character.xDir < 0) shootAngle = 128;
 
 		if (bass?.cVclone == null) {
@@ -142,6 +144,9 @@ public class CopyVisionClone : Actor {
 	}
 	public override void onDestroy() {
 		base.onDestroy();
+
+		if (!ownedByLocalPlayer) return;
+		
 		new Anim(
 				pos.clone(), "copy_vision_exit", xDir,
 				netOwner?.getNextActorNetId(), true, sendRpc: true

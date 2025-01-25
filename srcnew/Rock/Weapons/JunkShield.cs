@@ -50,7 +50,7 @@ public class JunkShield : Weapon {
 
 public class JunkShieldMagnet : Anim {
 
-	Character character;
+	Rock rock = null!;
 	float timer;
 	float startAng;
 	float ang;
@@ -62,7 +62,8 @@ public class JunkShieldMagnet : Anim {
 	) : base(
 		pos, "junk_shield_magnet", xDir, netId, false, true
 	) {
-		this.character = character;
+		rock = character as Rock ?? throw new NullReferenceException();
+		rock.junkShieldProjs.Add(this);
 		this.ang = ang;
 		startAng = ang;
 	}
@@ -73,24 +74,29 @@ public class JunkShieldMagnet : Anim {
 		if (radius < 30) radius += 0.5f;
 		ang += 5;
 
-		changePos(character.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
+		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
 
 		timer += Global.speedMul;
 		if (timer >= 30 && !once && startAng == 0) {
 			once = true;
 			for (int i = 0; i < 8; i++) {
 				new JunkShieldPiece(
-					character.getCenterPos(), character.xDir, character,
-					character.player.getNextActorNetId(), i * 32, this
+					rock.getCenterPos(), rock.xDir, rock,
+					rock.player.getNextActorNetId(), i * 32, this
 				);
 			};
 		} else if (timer >= 60) destroySelf();
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		rock.junkShieldProjs.Remove(this);
 	}
 }
 
 public class JunkShieldPiece : Anim {
 
-	Character character;
+	Rock rock = null!;
 	Anim magnet;
 	float startAng;
 	float ang;
@@ -102,11 +108,12 @@ public class JunkShieldPiece : Anim {
 	) {
 		frameSpeed = 0;
 		frameIndex = Helpers.randomRange(0, 3);
-		this.character = character;
+		this.rock = character as Rock ?? throw new NullReferenceException();
+		rock.junkShieldProjs.Add(this);
 		this.magnet = magnet;
 		startAng = ang;
 		this.ang = ang;
-		changePos(character.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
 	}
 
 	public override void update() {
@@ -119,17 +126,20 @@ public class JunkShieldPiece : Anim {
 
 		if (radius > 30) radius -= 2;
 		ang += 5;
-		changePos(character.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
+		
+		rock.junkShieldProjs.Remove(this);
 
 		if (startAng != 0) return;
 
-		Point pos = character.getCenterPos();
-		int xDir = character.xDir;
-		Player player = character.player;
+		Point pos = rock.getCenterPos();
+		int xDir = rock.xDir;
+		Player player = rock.player;
 
 		for (int i = 0; i < 3; i++) {
 			//Main pices

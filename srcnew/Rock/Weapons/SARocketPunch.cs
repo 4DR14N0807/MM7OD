@@ -115,7 +115,7 @@ public class SARocketPunchProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (!locallyControlled) return;
+		if (!ownedByLocalPlayer) return;
 
 		if (ownedByLocalPlayer && (shooter == null || shooter.destroyed)) {
 			destroySelf("generic_explosion");

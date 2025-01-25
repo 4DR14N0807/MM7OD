@@ -836,6 +836,9 @@ public class HostMenu : IMainMenu {
 	}
 
 	public string[] mapSortOrder = new string[] {
+		//MD Maps
+		"urbanarea_md", "iceberg_md", "robotmuseum_md", "willy2_md", "willy3_md",
+		//Large Maps
 		"urbanarea", "iceberg", "recyclingplant", "substancefactory", "weatherinstitute", 
 		"dinosaurjungle", "willy3", 
 	};

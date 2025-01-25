@@ -187,10 +187,9 @@ public class Bass : Character {
 		});
 	}
 
-	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
-		Point projPos = pos ?? new Point(0, 0);
+	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
 		Damager damager = sonicCrusherDamager();
-		Projectile? proj = id switch {
+		return id switch {
 			(int)MeleeIds.TenguBladeDash => new TenguBladeMelee(
 				projPos, player, addToLevel: addToLevel
 			),
@@ -205,8 +204,6 @@ public class Bass : Character {
 			
 			_ => null
 		};
-		return proj;
-
 	}
 
 	public enum MeleeIds {
@@ -455,7 +452,10 @@ public class Bass : Character {
 		refillFly = true;
 	}
 
-	public override void aiAttack(Actor target) {
+	public override void aiAttack(Actor? target) {
+		if (target == null) {
+			return;
+		}
 		if (AI.trainingBehavior != 0) {
 			return;
 		}

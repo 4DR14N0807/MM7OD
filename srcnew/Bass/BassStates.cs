@@ -8,7 +8,7 @@ namespace MMXOnline;
 public class BassShoot : CharState {
 	Bass bass = null!;
 
-	public BassShoot() : base("not_a_real_sprite") {
+	public BassShoot() : base("shoot") {
 		attackCtrl = true;
 		airMove = true;
 		useDashJumpSpeed = true;
@@ -40,7 +40,7 @@ public class BassShoot : CharState {
 		sprite = getShootSprite(bass.getShootYDir(), bass.currentWeapon ?? throw new NullReferenceException());
 		landSprite = sprite;
 		airSprite = "jump_" + sprite;
-		//fallSprite = "fall_" + sprite;
+		fallSprite = "fall_" + sprite;
 
 		if (!bass.grounded || bass.vel.y < 0) {
 			string tempSprite = airSprite;
@@ -86,7 +86,7 @@ public class BassShootLadder : CharState {
 	Bass bass = null!;
 	public Ladder ladder;
 	float midX; 
-	public BassShootLadder(Ladder ladder) : base("spritent") {
+	public BassShootLadder(Ladder ladder) : base("ladder_shoot") {
 		normalCtrl = false;
 		attackCtrl = true;
 		canJump = true;

@@ -10,7 +10,7 @@ public class Rock : Character {
 	public float lemonTime;
 	public int lemons;
 	public float weaponCooldown;
-	public List<JunkShieldProj?> junkShieldProjs = new();
+	public List<Actor> junkShieldProjs = new();
 	public LoopingSound? junkShieldSound;
 	public ScorchWheelSpawn? sWellSpawn;
 	public ScorchWheelProj? sWell;
@@ -446,15 +446,17 @@ public class Rock : Character {
 		var wall = other.gameObject as Wall;
 		var rush = other.gameObject as Rush;
 		bool isGHit = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true) != null;
-		bool isRushCoil = rush != null && rush.rushState is RushIdle or RushSleep && rush.type == 0;
-		bool isRushJet = rush != null && rush.rushState is RushJetState;
+		bool isRushCoil = rush != null && rush == this.rush && rush.rushState is RushIdle or RushSleep && rush.type == 0;
+		bool isRushJet = rush != null && rush == this.rush  && rush.rushState is RushJetState;
 
 		if (charState is RockDoubleJump && wall != null) {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
 		}
 
-		if (isGHit && charState is Fall && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
+		if (isGHit && vel.y > 0 && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
 			rjs.once = true;
+			rush.changeSprite("rush_jet", true);
+			rush.playSound("rush_jet", true);
 		}
 	}
 
@@ -476,9 +478,11 @@ public class Rock : Character {
 			return null;
 		}
 		Projectile? proj = getMeleeProjById(meleeId, centerPoint);
+		
 		if (proj != null) {
 			proj.meleeId = meleeId;
 			proj.owningActor = this;
+			updateProjFromHitbox(proj);
 			return proj;
 		}
 		return null;
@@ -488,7 +492,7 @@ public class Rock : Character {
 		return (int)(sprite.name switch {
 			"rock_slashclaw" or
 			"rock_slashclaw_air" or
-			"rock_ladder_slashclaw" => MeleeIds.SlashClaw,
+			"rock_ladder_slashclaw" => MeleeIds.SlashClaw2,
 
 			"rock_shoot_swell" or 
 			"rock_ladder_shoot_swell" => MeleeIds.UnderWaterScorchWheel,
@@ -498,12 +502,14 @@ public class Rock : Character {
 		});
 	}
 
-	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
-		Point projPos = pos ?? new Point(0, 0);
+	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
 		Projectile? proj = id switch {
-			(int)MeleeIds.SlashClaw => new GenericMeleeProj(
-				new SlashClawWeapon(player), projPos, ProjIds.SlashClaw, player, 2, 0, 0.25f,
-				addToLevel: addToLevel
+			(int)MeleeIds.SlashClaw => new SlashClawMelee(
+				projPos, player, addToLevel: addToLevel
+			),
+
+			(int)MeleeIds.SlashClaw2 => new SlashClawMelee(
+				projPos, player, addToLevel: addToLevel
 			),
 
 			(int)MeleeIds.UnderWaterScorchWheel => new GenericMeleeProj(
@@ -526,6 +532,7 @@ public class Rock : Character {
 	public enum MeleeIds {
 		None = -1,
 		SlashClaw,
+		SlashClaw2,
 		UnderWaterScorchWheel,
 		LegBreaker,
 	}
@@ -576,7 +583,10 @@ public class Rock : Character {
 		//if (rush != null) rush.destroySelf();
 	}
 
-	public override void aiAttack(Actor target) {
+	public override void aiAttack(Actor? target) {
+		if (target == null) {
+			return;
+		} 
 		if (AI.trainingBehavior != 0) {
 			return;
 		}

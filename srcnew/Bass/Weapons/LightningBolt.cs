@@ -104,7 +104,7 @@ public class LightningBoltState : CharState {
 			}
 		}
 
-		if (character.isAnimOver()) {
+		if (character.isAnimOver() && player.ownedByLocalPlayer) {
 			if (phase == 1) {
 				new LightningBoltProj(lightningPos, character.xDir, character.player,
 					character.player.getNextActorNetId(), true);

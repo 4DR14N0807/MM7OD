@@ -1936,11 +1936,11 @@ public partial class Level {
 				yPos = 219;
 			}
 			Fonts.drawText(
-				FontType.BlueMenu, "VFPS:" + vfps.ToString(), Global.screenW - 5, yPos - 10,
+				FontType.WhiteSmall, "VFPS:" + vfps.ToString(), Global.screenW - 5, yPos - 10,
 				Alignment.Right
 			);
 			Fonts.drawText(
-				FontType.BlueMenu, "FPS:" + fps.ToString(), Global.screenW - 5, yPos,
+				FontType.WhiteSmall, "FPS:" + fps.ToString(), Global.screenW - 5, yPos,
 				Alignment.Right
 			);
 		}

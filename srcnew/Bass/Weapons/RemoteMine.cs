@@ -69,7 +69,7 @@ public class RemoteMineProj : Projectile {
 		if (time >= maxTime){
 			//ruben: cant put this as fade anim or on destroy because it will conflict with the explosion anim
 			new Anim(getCenterPos(), "remote_mine_fade_anim", xDir, 
-			netId, true, true);}
+			damager.owner.getNextActorNetId(), true, true);}
 		if (host != null) changePos(host.getCenterPos());
 		if (anim != null) anim.changePos(getCenterPos());
 
@@ -163,7 +163,7 @@ public class RemoteMineExplosionProj : Projectile {
 			if (animLap > 4) animLap = 1;
 			for (int i = 0; i < 5; i++) {
 				part = new Anim(pos, "remote_mine_explosion_part", xDir,
-					owner.getNextActorNetId(), true, true);
+					damager.owner.getNextActorNetId(), true, true);
 				
 				switch (animLap) {
 					case 1: 

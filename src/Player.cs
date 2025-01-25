@@ -2191,6 +2191,11 @@ public partial class Player {
 		if (isSuicide) {
 			kills--;
 			currency -= 5;
+
+			if (!charNumToKills.ContainsKey(realCharNum)) {
+				charNumToKills[realCharNum] = 0;
+			}
+			charNumToKills[realCharNum]--;
 		}
 
 		if (Global.serverClient == null) {

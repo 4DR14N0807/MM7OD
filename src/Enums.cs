@@ -814,6 +814,7 @@ public enum ProjIds {
 	
 	//7OD stuff
 	SlashClaw,
+	SlashClaw2,
 	ScorchWheelUnderwater,
 	LegBreaker,
 	ProtoStrike,

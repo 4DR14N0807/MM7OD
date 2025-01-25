@@ -79,12 +79,12 @@ public class FreezeCrackerProj : Projectile {
 		if (sparkleTime >= 0.06) {
 			sparkleTime = 0;
 
-			sparkle = new Anim(pos, "freeze_cracker_sparkles", 1, damager.owner.getNextActorNetId(), true)
+			if (ownedByLocalPlayer) sparkle = new Anim(pos, "freeze_cracker_sparkles", 1, damager.owner.getNextActorNetId(), true)
 			{ useGravity = true, gravityModifier = 0.5f };
 
 		}
 
-		if (type == 0 && isAnimOver()) {
+		if (type == 0 && isAnimOver() && ownedByLocalPlayer) {
 			time = 0;
 			new FreezeCrackerProj(
 				pos, xDir, damager.owner, 1, 

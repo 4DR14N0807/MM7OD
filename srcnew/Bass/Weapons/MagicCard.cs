@@ -257,6 +257,8 @@ public class MagicCardSpecialSpawn : Projectile {
 	public override void update() {
 		base.update();
 
+		if (!ownedByLocalPlayer) return;
+
 		Helpers.decrementFrames(ref cooldown);
 
 		if (cooldown <= 0) {
@@ -318,6 +320,8 @@ public class MagicCardSpecialProj : Projectile {
 
 	public override void update() {
 		base.update();
+
+		if (!ownedByLocalPlayer) return;
 
 		if (time >= 0.33f) followTarget();
 		else byteAngle = vel.byteAngle;

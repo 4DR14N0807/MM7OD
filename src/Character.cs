@@ -1367,7 +1367,7 @@ public partial class Character : Actor, IDamagable {
 					lastJumpPressedTime = 0;
 					dashedInAir++;
 					//bass double jump
-					new Anim(pos, "double_jump_anim", xDir, netId, true, true);
+					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
 					vel.y = -getJumpPower();
 					changeState(new Jump(), true);
 					return true;

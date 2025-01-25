@@ -51,6 +51,8 @@ public class TenguBladeStart : Anim {
 	public override void onDestroy() {
 		base.onDestroy();
 
+		if (!ownedByLocalPlayer) return;
+
 		new TenguBladeProj(pos, xDir, character.player, character.player.getNextActorNetId(), true);
 		playSound("tengublade", true);
 	}

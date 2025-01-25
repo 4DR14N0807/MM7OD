@@ -121,7 +121,7 @@ public class IceWallProj : Projectile {
 			return;
 		}
 		// Movement start.
-		if (other.gameObject == ownChar) {
+		if (other.gameObject == ownChar && !startedMoving) {
 			if (ownChar.pos.y > getTopY() + 10 && ownChar.charState is Run or Dash) {
 				startedMoving = true;
 				xDir = ownChar.xDir;

@@ -95,7 +95,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 				heightMultiplier = 0.65f;
 			}
 
-			if (spawnedBomb == false) {
+			if (spawnedBomb == false && ownedByLocalPlayer) {
 				Point bombPos = pos;
 
 				bomb = new Anim(bombPos, "danger_wrap_bomb", xDir, null, false);
@@ -123,10 +123,13 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 		if (type == 0 && isAnimOver()) {
 
 			time = 0;
-			new DangerWrapBubbleProj(
-				pos, xDir, damager.owner, 1,
-				damager.owner.getNextActorNetId(true), input, rpc: true
-			);
+			if (ownedByLocalPlayer) {
+				new DangerWrapBubbleProj(
+					pos, xDir, damager.owner, 1,
+					damager.owner.getNextActorNetId(true), input, rpc: true
+				);
+
+			}
 			destroySelfNoEffect();
 		}
 
@@ -232,7 +235,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	public override void onDestroy() {
 		base.onDestroy();
 
-		if (landed && didExplode) {
+		if (landed && didExplode && ownedByLocalPlayer) {
 			for (int i = 0; i < 6; i++) {
 				float x = Helpers.cosd(i * 60) * 180;
 				float y = Helpers.sind(i * 60) * 180;
@@ -240,7 +243,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			}
 
 			playSound("danger_wrap_explosion");
-			new DangerWrapExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true);
+			new DangerWrapExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
 		}
 	}
 	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
@@ -477,6 +480,6 @@ public class DWrapBigBubble : Actor, IDamagable {
 		//character.removeBubble(true);
 		character.dwrapEnd();
 		character.dwrapInvulnTime = 3;
-		new Anim(pos, "danger_wrap_big_bubble_fade", xDir, player.getNextActorNetId(), true);
+		if (player.ownedByLocalPlayer) new Anim(pos, "danger_wrap_big_bubble_fade", xDir, player.getNextActorNetId(), true);
 	}
 }

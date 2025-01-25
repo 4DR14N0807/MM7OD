@@ -298,6 +298,7 @@ public class UnderwaterScorchWheelProj : Projectile {
 		player, "empty", 0, 1,
 		netProjId, player.ownedByLocalPlayer
 	) {
+		projId = (int)RockProjIds.ScorchWheelUnderwater;
 		maxTime = 1.5f;
 		destroyOnHit = false;
 		rock = player.character as Rock;
@@ -327,7 +328,9 @@ public class UnderwaterScorchWheelProj : Projectile {
 			int yOffset = Helpers.randomRange(-12, 12);
 			centerPos = rock?.getCenterPos() ?? new Point(0, 0);
 			Global.level.delayedActions.Add(new DelayedAction(() => {
-				new BubbleAnim(new Point(centerPos.x + xOffset, centerPos.y + yOffset), "bubbles") { vel = new Point(0, -60) };
+				new BubbleAnim(
+					new Point(centerPos.x + xOffset, centerPos.y + yOffset), 
+					"bubbles", damager.owner.getNextActorNetId(), sendRpc: true) { vel = new Point(0, -60) };
 			},
 				0.1f * counter));
 			counter++;

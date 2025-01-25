@@ -1066,7 +1066,10 @@ public class Blues : Character {
 		}
 	}
 
-	public override void aiAttack(Actor target) {
+	public override void aiAttack(Actor? target) {
+		if (target == null) {
+			return;
+		}
 		if (grounded) {
 			if (shieldHP >= 1 && (shieldHP >= shieldMaxHP || aiActivateShieldOnLand)) {
 				isShieldActive = true;

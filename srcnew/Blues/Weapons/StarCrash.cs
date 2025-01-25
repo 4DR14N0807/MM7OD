@@ -215,6 +215,8 @@ public class StarCrashProj2 : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 
+		if (!ownedByLocalPlayer) return;
+
 		for (int i = 0; i < 3; i++) {
 			float extraAngle = (starAngle + i * 120) % 360;
 			float xPlus = pos.x + (Helpers.cosd(extraAngle) * radius);

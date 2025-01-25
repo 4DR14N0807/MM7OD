@@ -93,6 +93,8 @@ public class SpreadDrillProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
+
 		if (bass != null) bass.sDrill = null;
 		if (anim != null) anim.destroySelf();
 		if (anim2 != null) anim2.destroySelf();
@@ -166,6 +168,8 @@ public class SpreadDrillMediumProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+
+		if (!ownedByLocalPlayer) return;
 		if (anim != null) anim.destroySelf();
 
 		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
@@ -230,6 +234,8 @@ public class SpreadDrillSmallProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+
+		if (!ownedByLocalPlayer) return;
 		if (anim != null) anim.destroySelf();
 
 		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };

@@ -178,6 +178,7 @@ public class SmallAmmoPickup : Pickup {
 public class LargeBoltPickup : Pickup {
 
 	bool isFalling;
+	bool isColliding;
 	public LargeBoltPickup(
 		Player owner, Point pos, ushort? netId,
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -192,8 +193,6 @@ public class LargeBoltPickup : Pickup {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 
-		bool isColliding = Global.level.checkTerrainCollisionOnce(this, 0, 1) != null;
-
 		if (isColliding && isFalling) {
 			stopMoving();
 		}
@@ -203,12 +202,16 @@ public class LargeBoltPickup : Pickup {
 		base.update();
 
 		if (vel.y > 0) isFalling = true;
+		if (!tryMove(vel, out _)) {
+			isColliding = true;
+		}
 	}
 }
 
 public class SmallBoltPickup : Pickup {
 
 	bool isFalling;
+	bool isColliding;
 	public SmallBoltPickup(
 		Player owner, Point pos, ushort? netId,
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -223,8 +226,6 @@ public class SmallBoltPickup : Pickup {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 
-		bool isColliding = Global.level.checkTerrainCollisionOnce(this, 0, 1) != null;
-
 		if (isColliding && isFalling) {
 			stopMoving();
 		}
@@ -234,5 +235,8 @@ public class SmallBoltPickup : Pickup {
 		base.update();
 
 		if (vel.y > 0) isFalling = true;
+		if (!tryMove(vel, out _)) {
+			isColliding = true;
+		}
 	}
 }

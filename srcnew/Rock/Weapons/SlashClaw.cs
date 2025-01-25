@@ -32,6 +32,15 @@ public class SlashClawWeapon : Weapon {
 }
 
 
+public class SlashClawMelee : GenericMeleeProj {
+	public SlashClawMelee(Point pos, Player player, bool addToLevel) : base(
+		SlashClawWeapon.netWeapon, pos, ProjIds.SlashClaw2,
+		player, 2, 0, 0.25f * 60, addToLevel: addToLevel
+	) {
+		projId = (int)RockProjIds.SlashClaw;
+	}
+}
+
 public class SlashClawState : CharState {
 	public SlashClawState() : base("slashclaw") {
 		normalCtrl = false;

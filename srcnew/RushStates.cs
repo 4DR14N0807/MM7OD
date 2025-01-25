@@ -368,8 +368,8 @@ public class RushSearchState : RushState {
 			};
 
 			foreach (var pickup in pickups) {
-				float velX = Helpers.randomRange(1, 60) * Helpers.randomRange(-1, 1);
-				pickup.vel = new Point(velX, -360);
+				float velX = Helpers.randomRange(1, 30) * Helpers.randomRange(-1, 1);
+				pickup.vel = new Point(velX, -240);
 			}
 		} 
 		else if (dice is >= 86 and <= 95) 
@@ -411,7 +411,7 @@ public class RushSearchState : RushState {
 			text = "5 Bolts";
 			font = FontType.Green;
 			new SmallBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
-			true, true)  {vel = new Point(0, -360)};
+			true, true)  {vel = new Point(0, -240)};
 		}
 		else if (dice is >= 6 and <= 40) 
 		{

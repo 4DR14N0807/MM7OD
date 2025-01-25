@@ -8,11 +8,13 @@ namespace MMXOnline;
 
 public class Rush : Actor, IDamagable {
 	public Character character;
+	public Rock rock = null!;
 	public Player player => character.player;
 	public RushState rushState;
 	public bool usedCoil;
 	public int type;
 	public float health = 3;
+	public bool isJetAndRide;
 
 	// Object initalization happens here.
 	public Rush(
@@ -24,7 +26,8 @@ public class Rush : Actor, IDamagable {
 		// Hopefully character is not null.
 		// Character begin null only matters for the local player tho.
 		netOwner = owner;
-		this.character = owner.character;
+		this.character = owner.character ?? throw new NullReferenceException();
+		rock = character as Rock ?? throw new NullReferenceException();
 		this.type = type;
 		//syncs rush xdir with rock xdir
 		this.xDir = character.xDir;
@@ -70,6 +73,9 @@ public class Rush : Actor, IDamagable {
 
 	public override Collider getGlobalCollider() {
 		int yHeight = 22;
+		if (sprite.name.Contains("rush_jet")) {
+			yHeight = 15;
+		}
 		var rect = new Rect(0, 0, 34, yHeight);
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
@@ -125,6 +131,15 @@ public class Rush : Actor, IDamagable {
 		if (character == null || character.charState is Die || character.flag != null) {
 			changeState(new RushWarpOut());
 		}
+
+		//Rush Jet detection
+		if (
+			rushState is RushJetState && rock.canRideRushJet() 
+		) {
+			isJetAndRide = true;
+		} else {
+			isJetAndRide = false;
+		}
 	}
 
 	public override void postUpdate() {
@@ -154,9 +169,7 @@ public class Rush : Actor, IDamagable {
 		var wall = other.gameObject as Wall;
 
 		if (wall != null && rushState is RushJetState) {
-			if (other.isGroundHit() || other.isCeilingHit()) {
-				vel.x = 60 * xDir;
-			} else if (other.isSideWallHit()) changeState(new RushWarpOut());
+			if (other.isSideWallHit()) changeState(new RushWarpOut());
 		}
 
 		if (rushState is RushWarpIn && other.isGroundHit()) changeState(new RushIdle());
@@ -173,17 +186,7 @@ public class Rush : Actor, IDamagable {
 				chr.rushWeapon.addAmmo(-4, chr.player);
 				usedCoil = true;
 			}
-			//Rush Jet detection
-			if (
-				rushState is RushJetState && chr.canRideRushJet() && 
-				chr.charState is not RushJetRide && chr.charState.normalCtrl
-			) {
-				//chr.changeState(new RushJetRide(), true);
-				//chr.grounded = true;
-			}
-			
 		}
-
 	}
 
 	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {

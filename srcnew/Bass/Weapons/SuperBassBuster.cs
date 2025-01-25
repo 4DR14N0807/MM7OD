@@ -5,7 +5,6 @@ namespace MMXOnline;
 
 public class SBassBuster : Weapon {
 
-	public static SBassBuster netWeapon = new();
 	public SBassBuster() : base() {
 		index = (int)BassWeaponIds.SuperBassBuster;
 		fireRate = 15;

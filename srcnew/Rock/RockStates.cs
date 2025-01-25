@@ -276,7 +276,7 @@ public class RockDoubleJump : CharState {
 
 		if (anim != null) anim.changePos(character.pos);
 
-		CollideData collideData = Global.level.checkTerrainCollisionOnce(character, character.xDir, 0);
+		CollideData? collideData = Global.level.checkTerrainCollisionOnce(character, character.xDir, 0);
 		if (collideData != null && character.ownedByLocalPlayer) {
 			character.move(new Point(0, jumpSpeedY));
 		}
@@ -430,7 +430,7 @@ public class CoilJump : CharState {
 
 public class RushJetRide : CharState {
 	
-	Rock? rock;
+	Rock rock = null!;
 	public RushJetRide() : base("idle", "shoot") {
 		normalCtrl = false;
 		attackCtrl = true;
@@ -439,8 +439,8 @@ public class RushJetRide : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		rock = character as Rock ?? throw new NullReferenceException();
-		float rushPosX = rock.rush.getCenterPos().x;
-		character.changePos(new Point(rushPosX, rock.rush.pos.y - 16));
+		//float rushPosX = rock.rush.getCenterPos().x;
+		//character.changePos(new Point(rushPosX, rock.rush.pos.y - 16));
 	}
 
 	public override void update() {

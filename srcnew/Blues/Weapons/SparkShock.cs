@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SparkShock : Weapon {
-	public static SparkShock netWeapon = new();
+
 
 	public SparkShock() : base() {
 		displayName = "SPARK SHOCK";

@@ -5,8 +5,6 @@ namespace MMXOnline;
 
 public class FreezeCracker : Weapon {
 
-	public static FreezeCracker netWeapon = new FreezeCracker();
-
 	public FreezeCracker() : base() {
 		index = (int)RockWeaponIds.FreezeCracker;
 		killFeedIndex = 0;
@@ -14,7 +12,7 @@ public class FreezeCracker : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.FreezeCracker;
 		fireRate = 45;
-		maxAmmo = 16;
+		maxAmmo = 20;
 		ammo = maxAmmo;
 		description = new string[] { "Splits in 6 pieces when hitting a wall.", "Can be aimed up or down." };
 	}
@@ -27,7 +25,7 @@ public class FreezeCracker : Weapon {
 		int input = player.input.getYDir(player);
 
 		new FreezeCrackerProj(shootPos, xDir, player, 0, player.getNextActorNetId(), input);
-		player.character.playSound("buster2", sendRpc: true);
+		character.playSound("buster2", sendRpc: true);
 	}
 }
 
@@ -81,12 +79,12 @@ public class FreezeCrackerProj : Projectile {
 		if (sparkleTime >= 0.06) {
 			sparkleTime = 0;
 
-			sparkle = new Anim(pos, "freeze_cracker_sparkles", 1, damager.owner.getNextActorNetId(), true)
+			if (ownedByLocalPlayer) sparkle = new Anim(pos, "freeze_cracker_sparkles", 1, damager.owner.getNextActorNetId(), true)
 			{ useGravity = true, gravityModifier = 0.5f };
 
 		}
 
-		if (type == 0 && isAnimOver()) {
+		if (type == 0 && isAnimOver() && ownedByLocalPlayer) {
 			time = 0;
 			new FreezeCrackerProj(
 				pos, xDir, damager.owner, 1, 

@@ -346,6 +346,7 @@ public enum BluesProjIds  {
 	PowerStone,
 	GyroAttack,
 	StarCrash,
+	StarCrash2,
 	ShieldBlock,
 	NeedleCannon,
 	ProtoStrike,
@@ -813,6 +814,7 @@ public enum ProjIds {
 	
 	//7OD stuff
 	SlashClaw,
+	SlashClaw2,
 	ScorchWheelUnderwater,
 	LegBreaker,
 	ProtoStrike,

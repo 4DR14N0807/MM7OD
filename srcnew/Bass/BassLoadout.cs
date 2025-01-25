@@ -242,9 +242,9 @@ public class BassWeaponMenu : IMainMenu {
 			FontType.Purple, weaponTitle,
 			Global.halfScreenW, titleY2, Alignment.Center
 		);
-		Fonts.drawText(
+		/* Fonts.drawText(
 			FontType.WhiteSmall, weaponDescription,
 			Global.halfScreenW, row1Y, Alignment.Center
-		);
+		); */
 	}
 }

@@ -6,7 +6,6 @@ namespace MMXOnline;
 
 public class RushWeapon : Weapon {
 
-	public static RushWeapon netWeapon = new();
 	public RushWeapon() : base() {
 		maxAmmo = 28;
 		ammo = maxAmmo;
@@ -26,6 +25,8 @@ public class RushWeapon : Weapon {
 		int type = 0;
 		if (player.input.isHeld(Control.Up, player)) type = 1;
 		else if (player.input.isHeld(Control.Down, player)) type = 2;
+
+		if (!player.ownedByLocalPlayer) return;
 
 		if (player.character is Rock rock) {
 			if (!rock.canCallRush(type)) return;

@@ -6,7 +6,6 @@ namespace MMXOnline;
 
 public class MagicCard : Weapon {
 
-	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new List<MagicCardProj>();
 
 	public MagicCard() : base() {
@@ -54,6 +53,7 @@ public class MagicCard : Weapon {
 				player, player.getNextActorNetId(), effect, true
 			);
 			cardsOnField.Add(card);
+			character.playSound("magiccard", true);
 		}
 	}
 }
@@ -61,7 +61,7 @@ public class MagicCard : Weapon {
 
 public class MagicCardProj : Projectile {
 	bool reversed;
-	Character shooter;
+	Character shooter = null!;
 	float maxReverseTime;
 	const float projSpeed = 480;
 	public Pickup? pickup;
@@ -86,7 +86,7 @@ public class MagicCardProj : Projectile {
 		startAngle = byteAngle;
 		this.effect = effect;
 		wep = weapon;
-		shooter = player.character;
+		shooter = player.character ?? throw new NullReferenceException();
 		destroyOnHit = effect != 3;
 
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
@@ -160,6 +160,7 @@ public class MagicCardProj : Projectile {
 		if (other.gameObject is Pickup && pickup == null) {
 			pickup = other.gameObject as Pickup;
 			if (pickup != null) {
+				playSound("magiccardCatch", true);
 				if (!pickup.ownedByLocalPlayer) {
 					pickup.takeOwnership();
 					RPC.clearOwnership.sendRpc(pickup.netId);
@@ -184,6 +185,7 @@ public class MagicCardProj : Projectile {
 
 				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, 1, true);
 				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, -1, true);
+				playSound("magiccard", true);
 			}
 		}
 	}
@@ -255,6 +257,8 @@ public class MagicCardSpecialSpawn : Projectile {
 	public override void update() {
 		base.update();
 
+		if (!ownedByLocalPlayer) return;
+
 		Helpers.decrementFrames(ref cooldown);
 
 		if (cooldown <= 0) {
@@ -269,7 +273,8 @@ public class MagicCardSpecialSpawn : Projectile {
 
 			new MagicCardSpecialProj(pos, xDir, damager.owner, 
 				damager.owner.getNextActorNetId(), startAngle, (int)t, true);
-
+			playSound("magiccard", true);
+			
 			count++;
 			cooldown = 9;
 
@@ -315,6 +320,8 @@ public class MagicCardSpecialProj : Projectile {
 
 	public override void update() {
 		base.update();
+
+		if (!ownedByLocalPlayer) return;
 
 		if (time >= 0.33f) followTarget();
 		else byteAngle = vel.byteAngle;

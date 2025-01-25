@@ -142,7 +142,7 @@ public class Zero : Character {
 		Helpers.decrementFrames(ref hadangekiCooldown);
 		Helpers.decrementFrames(ref genmureiCooldown);
 		Helpers.decrementFrames(ref dashAttackCooldown);
-		Helpers.decrementFrames(ref aiAttackCooldown);
+		//Helpers.decrementFrames(ref aiAttackCooldown);
 		airSpecial.update();
 		gigaAttack.update();
 		gigaAttack.charLinkedUpdate(this, true);

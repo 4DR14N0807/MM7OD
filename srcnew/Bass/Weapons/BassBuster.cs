@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class BassBuster : Weapon {
-	public static BassBuster netWeapon = new();
+
 	public List<BassBusterProj> lemonsOnField = new List<BassBusterProj>();
 
 	public BassBuster() : base() {
@@ -44,7 +44,7 @@ public class BassBuster : Weapon {
 		var proj = new BassBusterProj(shootPos, bass.getShootAngle(), player, player.getNextActorNetId(), true);
 		new Anim(shootPos, "bass_buster_anim", character.xDir, player.getNextActorNetId(), true, true);
 		lemonsOnField.Add(proj);
-		character.playSound("buster");
+		character.playSound("bassbuster", true);
 	}
 }
 

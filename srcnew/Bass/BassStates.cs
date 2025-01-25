@@ -8,13 +8,13 @@ namespace MMXOnline;
 public class BassShoot : CharState {
 	Bass bass = null!;
 
-	public BassShoot() : base("not_a_real_sprite") {
+	public BassShoot() : base("shoot") {
 		attackCtrl = true;
 		airMove = true;
 		useDashJumpSpeed = true;
 		canJump = true;
 		canStopJump = true;
-		airSpriteReset = true;
+		//airSpriteReset = true;
 	}
 
 	public override void update() {
@@ -37,16 +37,16 @@ public class BassShoot : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 
-		sprite = getShootSprite(bass.getShootYDir(), bass.player.weapon);
+		sprite = getShootSprite(bass.getShootYDir(), bass.currentWeapon ?? throw new NullReferenceException());
 		landSprite = sprite;
 		airSprite = "jump_" + sprite;
 		fallSprite = "fall_" + sprite;
 
 		if (!bass.grounded || bass.vel.y < 0) {
 			string tempSprite = airSprite;
-			if (bass.vel.y >= 0) {
+			/* if (bass.vel.y >= 0) {
 				tempSprite = fallSprite;
-			}
+			} */
 			if (bass.sprite.name != bass.getSprite("tempSprite")) {
 				bass.changeSpriteFromName(tempSprite, false);
 			}
@@ -84,23 +84,22 @@ public class BassShoot : CharState {
 public class BassShootLadder : CharState {
 
 	Bass bass = null!;
-	List<CollideData> ladders;
+	public Ladder ladder;
 	float midX; 
-	public BassShootLadder() : base("spritent") {
+	public BassShootLadder(Ladder ladder) : base("ladder_shoot") {
 		normalCtrl = false;
 		attackCtrl = true;
 		canJump = true;
 		canStopJump = true;
+		this.ladder = ladder;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 		bass.useGravity = false;
-		ladders = Global.level.getTriggerList(character, 0, 1, null, typeof(Ladder));
-		midX = ladders[0].otherCollider.shape.getRect().center().x;
 
-		sprite = getShootSprite(bass.getShootYDir(), bass.player.weapon);
+		sprite = getShootSprite(bass.getShootYDir(), bass.currentWeapon ?? throw new NullReferenceException());
  
 		bass.changeSpriteFromName(sprite, true);
 		bass.sprite.restart();
@@ -110,7 +109,8 @@ public class BassShootLadder : CharState {
 		base.update();
 	
 		if (stateFrames >= 16) {
-			character.changeState(new LadderClimb(ladders[0].gameObject as Ladder, midX), true);
+			float midX = ladder.collider.shape.getRect().center().x;
+			character.changeState(new LadderClimb(ladder, midX), true);
 			return;
 		}
 	}
@@ -343,11 +343,14 @@ public class EnergyCharge : CharState {
 		aura = new Anim(
 			bass.pos, "sbass_aura", bass.xDir, null, false, true
 		) { zIndex = ZIndex.Character - 10 };
+		bass.stopMoving();
+		bass.gravityModifier = 0.1f;
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		aura?.destroySelf();
+		bass.gravityModifier = 1;
 	}
 
 	public override void update() {
@@ -360,26 +363,13 @@ public class EnergyCharge : CharState {
 
 		aura?.changePos(bass.pos);
 
-		if (stateFrames % 15 == 0 ) {
+		if (stateFrames % 15 == 0 && stateFrames > 0) {
 			bass.playSound("heal");
 			bass.evilEnergy[bass.phase - 1]++;
 			if (bass.evilEnergy[bass.phase - 1] >= Bass.MaxEvilEnergy) {
 				bass.nextPhase(bass.phase + 1);
 				bass.changeState(new EnergyIncrease());
 			}
-			/* if (bass.phase == 1) {
-				bass.evilEnergy++;
-				if (bass.evilEnergy >= Bass.MaxEvilEnergy) {
-					bass.nextPhase(2);
-					bass.changeState(new EnergyIncrease());
-				}
-			} else {
-				bass.evilEnergy2++;
-				if (bass.evilEnergy2 >= Bass.MaxEvilEnergy) {
-					bass.nextPhase(3);
-					bass.changeState(new EnergyIncrease());
-				}
-			} */
 		}	
 	}
 }
@@ -395,12 +385,18 @@ public class EnergyIncrease : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
+		character.gravityModifier = 0.1f;
 	}
 
 	public override void update() {
 		base.update();
 
 		if (stateFrames >= 30) character.changeToIdleOrFall();
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		character.gravityModifier = 1;
 	}
 }
 

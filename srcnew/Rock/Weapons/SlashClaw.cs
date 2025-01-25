@@ -12,7 +12,7 @@ public class SlashClawWeapon : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.SlashClaw;
 		killFeedIndex = 0;
-		maxAmmo = 18;
+		maxAmmo = 24;
 		ammo = maxAmmo;
 		fireRate = 45;
 		description = new string[] { "Fast melee attack, able to pierce shields.", "No tiene flinch." };
@@ -31,6 +31,15 @@ public class SlashClawWeapon : Weapon {
 	}
 }
 
+
+public class SlashClawMelee : GenericMeleeProj {
+	public SlashClawMelee(Point pos, Player player, bool addToLevel) : base(
+		SlashClawWeapon.netWeapon, pos, ProjIds.SlashClaw2,
+		player, 2, 0, 0.25f * 60, addToLevel: addToLevel
+	) {
+		projId = (int)RockProjIds.SlashClaw;
+	}
+}
 
 public class SlashClawState : CharState {
 	public SlashClawState() : base("slashclaw") {

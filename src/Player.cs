@@ -455,10 +455,10 @@ public partial class Player {
 	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
 	public ShaderWrapper evilEnergyShader = Helpers.cloneShaderSafe("evil_energy");
 	public ShaderWrapper rockPaletteShader = Helpers.cloneShaderSafe("rockPalette");
-	public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
-	public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
-	public ShaderWrapper breakManShader = Helpers.cloneGenericPaletteShader("blues_hyperpalette");
-	public ShaderWrapper bluesScarfShader = Helpers.cloneGenericPaletteShader("blues_palette");
+	public ShaderWrapper rockCharge1 = Helpers.cloneShaderSafe("rock_charge_texture");
+	public ShaderWrapper rockCharge2 = Helpers.cloneShaderSafe("rock_charge2_texture");
+	public ShaderWrapper breakManShader = Helpers.cloneShaderSafe("blues_hyperpalette");
+	public ShaderWrapper bluesScarfShader = Helpers.cloneShaderSafe("blues_palette");
 	public ShaderWrapper bassPaletteShader = Helpers.cloneShaderSafe("bassPalette");
 
 	// Character specific data populated on RPC request
@@ -1678,13 +1678,13 @@ public partial class Player {
 			return Global.level.server.customMatchSettings.respawnTime;
 		} else {
 			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
-				return 8;
+				return 5;
 			}
 			if (Global.level?.gameMode is KingOfTheHill) {
-				return 8;
+				return 5;
 			}
 		}
-		return 8;
+		return 5;
 	}
 
 	public bool canReviveVile() {
@@ -2186,6 +2186,16 @@ public partial class Player {
 	public void addDeath(bool isSuicide) {
 		if (isSigma && maverick1v1 == null && Global.level.isHyper1v1() && !lastDeathWasSigmaHyper) {
 			return;
+		}
+
+		if (isSuicide) {
+			kills--;
+			currency -= 5;
+
+			if (!charNumToKills.ContainsKey(realCharNum)) {
+				charNumToKills[realCharNum] = 0;
+			}
+			charNumToKills[realCharNum]--;
 		}
 
 		if (Global.serverClient == null) {

@@ -13,6 +13,7 @@ public class Bass : Character {
 	public SpreadDrillMediumProj? sDrillM;
 	public RemoteMineProj? rMine;
 	public RemoteMineExplosionProj? rMineExplosion;
+	public LoopingSound? wBurnerSound;
 	public float wBurnerAngle;
 	public int wBurnerAngleMod = 1;
 	public float tBladeDashCooldown;
@@ -110,11 +111,16 @@ public class Bass : Character {
 		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
 			wBurnerAngleMod = 1;
 			wBurnerAngle = 0;
+			if (wBurnerSound != null) {
+				wBurnerSound.stop();
+				wBurnerSound = null!;
+				//playSound("waveburnerEnd", true);
+			}
 		}
 
 		if (isSuperBass) chargeLogic(shoot);
 
-		quickAdaptorUpgrade(); 
+		//quickAdaptorUpgrade(); 
 	}
 
 	public override void render(float x, float y) {
@@ -181,24 +187,23 @@ public class Bass : Character {
 		});
 	}
 
-	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
-		Point projPos = pos ?? new Point(0, 0);
+	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
 		Damager damager = sonicCrusherDamager();
-		Projectile? proj = id switch {
+		return id switch {
 			(int)MeleeIds.TenguBladeDash => new TenguBladeMelee(
-				projPos, player
+				projPos, player, addToLevel: addToLevel
 			),
 			(int)MeleeIds.Kick => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.BassKick, player, 2, Global.halfFlinch, 0.75f
+				new Weapon(), projPos, ProjIds.BassKick, player, 2, Global.halfFlinch, 0.75f * 60,
+				addToLevel: addToLevel
 			),
 			(int)MeleeIds.SonicCrusher => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.SonicCrusher, player, damager.damage, damager.flinch, 0.75f
+				new Weapon(), projPos, ProjIds.SonicCrusher, player, damager.damage, damager.flinch, 0.75f * 60,
+				addToLevel: addToLevel
 			),
 			
 			_ => null
 		};
-		return proj;
-
 	}
 
 	public enum MeleeIds {
@@ -283,7 +288,8 @@ public class Bass : Character {
 	public void shoot(int chargeLevel) {
 		turnToInput(player.input, player);
 		if (player.weapon is not TenguBlade && charState is not BassFly) {
-			if (charState is LadderClimb or BassShootLadder) changeState(new BassShootLadder(), true);
+			if (charState is LadderClimb lc) changeState(new BassShootLadder(lc.ladder), true);
+			else if (charState is BassShootLadder bsl) changeState(new BassShootLadder(bsl.ladder), true);
 			else changeState(new BassShoot(), true);
 		} else {
 			changeSprite(getSprite(charState.shootSprite), true);
@@ -388,6 +394,11 @@ public class Bass : Character {
 		return prefix + spriteName;
 	}
 
+	
+	public override (float, float) getGlobalColliderSize() {
+		return (24, 30);
+	}
+
 	public override bool canCrouch() {
 		return false;
 	}
@@ -441,7 +452,10 @@ public class Bass : Character {
 		refillFly = true;
 	}
 
-	public override void aiAttack(Actor target) {
+	public override void aiAttack(Actor? target) {
+		if (target == null) {
+			return;
+		}
 		if (AI.trainingBehavior != 0) {
 			return;
 		}

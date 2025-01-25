@@ -6,7 +6,6 @@ namespace MMXOnline;
 public class RockBuster : Weapon {
 
 	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
-	public static RockBuster netWeapon = new RockBuster();
 
 	public RockBuster() : base() {
 		index = (int)RockWeaponIds.MegaBuster;

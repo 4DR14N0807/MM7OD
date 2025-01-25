@@ -5,8 +5,6 @@ namespace MMXOnline;
 
 public class NoiseCrush : Weapon {
 
-	public static NoiseCrush netWeapon = new NoiseCrush();
-
 	public NoiseCrush() : base() {
 		index = (int)RockWeaponIds.NoiseCrush;
 		weaponSlotIndex = (int)RockWeaponSlotIds.NoiseCrush;
@@ -16,7 +14,6 @@ public class NoiseCrush : Weapon {
 		maxAmmo = 14;
 		ammo = maxAmmo;
 		fireRate = 30;
-		//shootSounds = new List<string>() {"noise_crush", "noise_crush", "", ""};
 		description = new string[] { "Weak projectile that bounces on walls.", "Catch it to get a stronger shot." };
 	}
 
@@ -24,6 +21,10 @@ public class NoiseCrush : Weapon {
 		Rock? rock = player.character as Rock;
 		if (rock != null && rock.hasChargedNoiseCrush) return true;
 		return base.canShoot(chargeLevel, player);
+	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -52,6 +53,7 @@ public class NoiseCrush : Weapon {
 					new NoiseCrushProj(shootPos.addxy(12 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
 					new NoiseCrushProj(shootPos.addxy(16 * -xDir, 0), xDir, player, 2, player.getNextActorNetId(true), rpc: true);
 					character.playSound("noise_crush", sendRpc: true);
+					addAmmo(-1, player);
 				}
 			}
 	}

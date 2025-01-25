@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SARocketPunch : Weapon {
+
 	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
-	public static SARocketPunch netWeapon = new SARocketPunch();
 
 	public SARocketPunch() : base() {
 		index = (int)RockWeaponIds.SARocketPunch;
@@ -34,35 +34,38 @@ public class SARocketPunch : Weapon {
 	
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
 		Player player = character.player;
 		int chargeLevel = args[0];
 
 		if (player.character is Rock rock) {
-				if (chargeLevel >= 2) {
-					if (character.grounded) character.changeState(new SARocketPunchState(), true);
-					else new SARocketPunchProj(shootPos, xDir, player, player.getNextActorNetId(), true);
-					character.playSound("super_adaptor_punch", sendRpc: true);
 
-				} else if (chargeLevel == 1) {
-					new RockBusterMidChargeProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
-					character.playSound("buster2", sendRpc: true);
+			if (chargeLevel <= 1) rock.setShootAnim();
+			Point shootPos = character.getShootPos();
 
-				} else {
-					var proj = new RockBusterProj(shootPos, xDir, player, player.getNextActorNetId(), true);
-					lemonsOnField.Add(proj);
-					rock.lemons++;
-					character.playSound("buster", sendRpc: true);
+			if (chargeLevel >= 2) {
+				if (character.grounded) character.changeState(new SARocketPunchState(), true);
+				else new SARocketPunchProj(shootPos, xDir, player, player.getNextActorNetId(), true);
+				character.playSound("super_adaptor_punch", sendRpc: true);
 
-					rock.timeSinceLastShoot = 0;
-					rock.lemonTime += 20f * rock.lemons;
-					if (rock.lemonTime >= 60f) {
-						rock.lemonTime = 0;
-						rock.weaponCooldown = 30;
-					}
+			} else if (chargeLevel == 1) {
+				new RockBusterMidChargeProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
+				character.playSound("buster2", sendRpc: true);
+
+			} else {
+				var proj = new RockBusterProj(shootPos, xDir, player, player.getNextActorNetId(), true);
+				lemonsOnField.Add(proj);
+				rock.lemons++;
+				character.playSound("buster", sendRpc: true);
+
+				rock.timeSinceLastShoot = 0;
+				rock.lemonTime += 20f * rock.lemons;
+				if (rock.lemonTime >= 60f) {
+					rock.lemonTime = 0;
+					rock.weaponCooldown = 30;
 				}
 			}
+		}
 	}
 }
 
@@ -71,7 +74,7 @@ public class SARocketPunchProj : Projectile {
 
 	public bool reversed;
 	public bool returned;
-	Character shooter;
+	Character shooter = null!;
 	Player player;
 	Rock? rock;
 	public float maxReverseTime;
@@ -94,7 +97,7 @@ public class SARocketPunchProj : Projectile {
 		if (rock != null) rock.saRocketPunchProj = this;
 		maxReverseTime = 0.5f;
 		this.player = player;
-		shooter = player.character;
+		shooter = player.character ?? throw new NullReferenceException();
 		destroyOnHit = false;
 		canBeLocal = false;
 
@@ -112,7 +115,7 @@ public class SARocketPunchProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (!locallyControlled) return;
+		if (!ownedByLocalPlayer) return;
 
 		if (ownedByLocalPlayer && (shooter == null || shooter.destroyed)) {
 			destroySelf("generic_explosion");

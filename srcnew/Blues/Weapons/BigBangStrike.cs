@@ -15,6 +15,7 @@ public class BigBangStrikeProj : Projectile {
 		maxTime = 0.925f;
 		shouldShieldBlock = false;
 		reflectable = false;
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -37,18 +38,18 @@ public class BigBangStrikeProj : Projectile {
 		}
 	}
 
-	public override void onHitDamagable(IDamagable damagable) {
+	/* public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (ownedByLocalPlayer) {
 			destroySelf();
 		}
-	}
+	} */
 
 	public override void onDestroy() {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
 			var proj = new BigBangStrikeExplosionProj(
-				pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true
+				pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true
 			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
@@ -127,6 +128,7 @@ public class ProtoStrikeProj : Projectile {
 		projId = (int)BluesProjIds.ProtoStrike;
 		maxTime = 3f;
 		destroyOnHit = false;
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -141,11 +143,11 @@ public class ProtoStrikeProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (ownedByLocalPlayer) {
+		//if (ownedByLocalPlayer) {
 			if (player.character?.charState is not ProtoStrike) {
 				destroySelf();
 			}
-		}
+		//}
 
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
@@ -201,6 +203,7 @@ public class StrikeAttackPushProj : Projectile {
 		this.player = player;
 		projId = (int)BluesProjIds.ProtoStrikePush;
 		destroyOnHit = false;
+		canBeLocal = false;
 
 		if (type == 1) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
@@ -280,12 +283,12 @@ public class RedStrikeProj : Projectile {
 		}
 	}
 
-	public override void onHitDamagable(IDamagable damagable) {
+	/* public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (ownedByLocalPlayer) {
 			destroySelf();
 		}
-	}
+	} */
 
 	public override void onDestroy() {
 		base.onDestroy();
@@ -420,7 +423,7 @@ public class BigBangStrikeState : CharState {
 
 		if (blues != null) blues.coreAmmo = blues.coreMaxAmmo;
 
-		if (!fired && character.frameIndex >= 3) {
+		if (!fired && character.frameIndex >= 3 && player.ownedByLocalPlayer) {
 			int shootDir = character.getShootXDir();
 			new BigBangStrikeProj(
 				character.getShootPos().addxy(shootDir * 10, 0), shootDir,

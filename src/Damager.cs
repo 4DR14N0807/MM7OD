@@ -863,7 +863,7 @@ public class Damager {
 	public static bool isArmorPiercing(int? projId) {
 		if (projId == null) return false;
 		return projId switch {
-			(int)ProjIds.SlashClaw => true,
+			(int)RockProjIds.SlashClaw => true,
 			(int)RockProjIds.DangerWrapExplosion => true,
 			(int)RockProjIds.DangerWrapBubbleExplosion => true,
 			(int)RockProjIds.ScorchWheelBurn => true,

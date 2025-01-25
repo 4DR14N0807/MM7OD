@@ -281,6 +281,9 @@ public class SelectCharacterMenu : IMainMenu {
 			(int)CharIds.Blues =>  new string[]{
 				"Mid range character who has\ngood attack and defense\nBut it's limited by it's unstable core."
 			},
+			(int)CharIds.Bass =>  new string[]{
+				"(Unfinished)"
+			},
 			_ => new string[] { "ERROR" }
 		};
 		if (description.Length > 0) {

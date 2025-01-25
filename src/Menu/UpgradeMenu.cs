@@ -334,7 +334,7 @@ public class UpgradeMenu : IMainMenu {
 				
 				if (!canUseWTankInMenu(canUseWtank)) {
 					if (canUseWtank) {
-						GameMode.drawWeaponSlotCooldown(optionPos.x + 6, optionPos.y - 8, wTankDelay / maxWTankDelay);
+						GameMode.drawWeaponSlotCooldown(optionPos.x + 13, optionPos.y, wTankDelay / maxWTankDelay);
 						if (wTankTargets.Count == 0) {
 							buyOrUseStr = "CANNOT USE W-TANK";
 						}

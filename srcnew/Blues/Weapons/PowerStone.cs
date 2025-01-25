@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class PowerStone : Weapon {
-	public static PowerStone netWeapon = new();
 
 	public PowerStone() : base() {
 		displayName = "POWER STONE";
@@ -38,28 +37,26 @@ public class PowerStone : Weapon {
 }
 
 public class PowerStoneProj : Projectile {
-	Character character;
+	Character character = null!;
 	int stoneAngle = 120;
 	float radius = 10;
-	int type;
 
 	public PowerStoneProj(
 		Point pos, int xDir, Player player, int type, ushort? netId, bool rpc = false
 	) : base(
 		PowerStone.netWeapon, pos, xDir, 0, 2, player, "power_stone_proj",
-		0, 0.25f, netId, player.ownedByLocalPlayer
+		0, 1f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BluesProjIds.PowerStone;
 		maxTime = 1;
 
-		character = player.character;
-		this.type = type;
-		stoneAngle = type * 120;
+		character = player.character ?? throw new NullReferenceException();
+		stoneAngle = type * 85;
 		zIndex = ZIndex.Character - 10;
 
 		changePos(new Point(
-			character.getCenterPos().x + Helpers.cosd(stoneAngle) * radius,
-			character.getCenterPos().y + Helpers.sind(stoneAngle) * radius
+			character.getCenterPos().x + Helpers.cosb(stoneAngle) * radius,
+			character.getCenterPos().y + Helpers.sinb(stoneAngle) * radius
 		));
 
 		if (rpc) {
@@ -76,13 +73,12 @@ public class PowerStoneProj : Projectile {
 	public override void update() {
 		base.update();
 
-		pos.x = character.getCenterPos().x + Helpers.cosd(stoneAngle) * radius;
-		pos.y = character.getCenterPos().y + Helpers.sind(stoneAngle) * radius;
+		changePos(new Point(
+			character.getCenterPos().x + Helpers.cosb(stoneAngle) * radius,
+			character.getCenterPos().y + Helpers.sinb(stoneAngle) * radius
+		));
 
-		stoneAngle += 8;
-		if (stoneAngle >= 360) {
-			stoneAngle = 0;
-		}
+		stoneAngle += 6;
 		radius += 1.25f;
 	}
 
@@ -90,4 +86,4 @@ public class PowerStoneProj : Projectile {
 		base.onDestroy();
 		Anim.createGibEffect("power_stone_pieces_big", pos, null!, zIndex: zIndex);
 	}
-}
+} 

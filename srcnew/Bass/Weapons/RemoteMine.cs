@@ -4,11 +4,11 @@ namespace MMXOnline;
 
 public class RemoteMine : Weapon {
 
-	public static RemoteMine netWeapon = new();
-
 	public RemoteMine() : base() {
 		index = (int)BassWeaponIds.RemoteMine;
 		displayName = "REMOTE MINE";
+		maxAmmo = 16;
+		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
@@ -69,7 +69,7 @@ public class RemoteMineProj : Projectile {
 		if (time >= maxTime){
 			//ruben: cant put this as fade anim or on destroy because it will conflict with the explosion anim
 			new Anim(getCenterPos(), "remote_mine_fade_anim", xDir, 
-			netId, true, true);}
+			damager.owner.getNextActorNetId(), true, true);}
 		if (host != null) changePos(host.getCenterPos());
 		if (anim != null) anim.changePos(getCenterPos());
 
@@ -87,12 +87,14 @@ public class RemoteMineProj : Projectile {
 		var chr = other.gameObject as Character;
 		var wall = other.gameObject as Wall;
 
-		if (!landed && (chr != null || wall != null)) {
+		if (!landed && ((chr != null && chr != bass) || wall != null)) {
 			stopMoving();
 
 			if (chr != null) host = chr; 
 			changeSprite("remote_mine_land", true);
+			playSound("remotemineStick", true);
 			landed = true;
+			maxTime = 3;
 		}
 	}
 
@@ -109,6 +111,7 @@ public class RemoteMineProj : Projectile {
 		destroySelf();
 		if (ownedByLocalPlayer) {
 			new RemoteMineExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+			playSound("remotemineExplode", true);
 		}
 	}
 }
@@ -160,7 +163,7 @@ public class RemoteMineExplosionProj : Projectile {
 			if (animLap > 4) animLap = 1;
 			for (int i = 0; i < 5; i++) {
 				part = new Anim(pos, "remote_mine_explosion_part", xDir,
-					owner.getNextActorNetId(), true, true);
+					damager.owner.getNextActorNetId(), true, true);
 				
 				switch (animLap) {
 					case 1: 

@@ -10,7 +10,7 @@ public class Rock : Character {
 	public float lemonTime;
 	public int lemons;
 	public float weaponCooldown;
-	public List<JunkShieldProj?> junkShieldProjs = new();
+	public List<Actor> junkShieldProjs = new();
 	public LoopingSound? junkShieldSound;
 	public ScorchWheelSpawn? sWellSpawn;
 	public ScorchWheelProj? sWell;
@@ -56,16 +56,9 @@ public class Rock : Character {
 
 		charge1Time = 40;
 		charge2Time = 80;
-		var rl = player.loadout.rockLoadout.rushLoadout;
-		rushWeaponIndex = rl;
-	
-		/* rushWeapon = rl switch {
-			0 => new RushCoilWeapon(),
-			1 => new RushJetWeapon(),
-			_ => new RushSearchWeapon(),
-		}; */
+
 		rushWeapon = new RushWeapon();
-		player.weapons.Add(rushWeapon);
+		weapons.Add(rushWeapon);
 
 		noiseCrushEffect = new ChargeEffect();
 		noiseCrushEffect.character = this;
@@ -160,7 +153,7 @@ public class Rock : Character {
 		bool slidePressed = player.dashPressed(out string slideControl);
 		bool arrowSlashInput = player.input.checkHadoken(player, xDir, Control.Shoot);
 
-		if (specialPressed && canCallRush(0)) {
+		if (specialPressed && canCallRush(0) && Options.main.rushSpecial) {
 			rushWeapon.shoot(this, 0);
 			return true;
 		}
@@ -281,16 +274,25 @@ public class Rock : Character {
 	}
 
 	public void drawChargedNoiseCrush(float x, float y) {
-		addRenderEffect(RenderEffectType.NCrushCharge, 0.05f, 0.1f); 
+		addRenderEffect(RenderEffectType.NCrushCharge, 2, 6); 
 		noiseCrushEffect.character = this;
 		noiseCrushEffect.update(2, 2);
 		noiseCrushEffect.render(getCenterPos());
 	}
 
+	public bool isUsingRushJet() {
+		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true);
+		Rush? rj = null!;
+		if (collideData != null) rj = collideData.gameObject as Rush;
+		bool rjJet = rj != null && rj.rushState is RushJetState;
+
+		return rjJet && rj == rush;
+	}
+
 	public override bool canMove() {
 		if (charState is CallDownRush) return false;
 
-		return base.canMove();
+		return base.canMove() && !isUsingRushJet();
 	}
 
 	public override bool canJump() {
@@ -418,7 +420,15 @@ public class Rock : Character {
 	}
 
 	public bool canRideRushJet() {
-		return charState is Fall && Global.level.checkTerrainCollisionOnce(this, 0, -20) == null;
+		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, -20);
+		var collideDatas = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true);
+		Rush? rj = collideDatas?.gameObject as Rush;
+
+		/* foreach(var cd in collideDatas) {
+			if (cd.gameObject is Rush r) rj = r;
+		} */
+	
+		return collideData == null && rj != null/*  && rj.rushState is RushJetState */;
 	}
 
 	public static List<Weapon> getAllRushWeapons() {
@@ -431,28 +441,23 @@ public class Rock : Character {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
+		if (!ownedByLocalPlayer) return;
 
 		var wall = other.gameObject as Wall;
 		var rush = other.gameObject as Rush;
-		var isGHit = other.isGroundHit();
-		bool isRushCoil = rush != null && rush.rushState is RushIdle or RushSleep && rush.type == 0;
-		bool isRushJet = rush != null && rush.rushState is RushJetState;
+		bool isGHit = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true) != null;
+		bool isRushCoil = rush != null && rush == this.rush && rush.rushState is RushIdle or RushSleep && rush.type == 0;
+		bool isRushJet = rush != null && rush == this.rush  && rush.rushState is RushJetState;
 
 		if (charState is RockDoubleJump && wall != null) {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
 		}
 
-		/* if (isRushCoil && isGHit && charState is Fall) {		
-			rush?.changeState(new RushCoil());
-			vel.y = getJumpPower() * -1.5f;
-			changeState(new Jump(), true);
-			rushWeapon.addAmmo(-4, player);
-		} */
-
-		/* if (isRushJet && isGHit && canRideRushJet()) {
-			changeState(new RushJetRide(), true);
-			grounded = true;
-		} */
+		if (isGHit && vel.y > 0 && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
+			rjs.once = true;
+			rush.changeSprite("rush_jet", true);
+			rush.playSound("rush_jet", true);
+		}
 	}
 
 	public override void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {
@@ -473,9 +478,11 @@ public class Rock : Character {
 			return null;
 		}
 		Projectile? proj = getMeleeProjById(meleeId, centerPoint);
+		
 		if (proj != null) {
 			proj.meleeId = meleeId;
 			proj.owningActor = this;
+			updateProjFromHitbox(proj);
 			return proj;
 		}
 		return null;
@@ -485,7 +492,7 @@ public class Rock : Character {
 		return (int)(sprite.name switch {
 			"rock_slashclaw" or
 			"rock_slashclaw_air" or
-			"rock_ladder_slashclaw" => MeleeIds.SlashClaw,
+			"rock_ladder_slashclaw" => MeleeIds.SlashClaw2,
 
 			"rock_shoot_swell" or 
 			"rock_ladder_shoot_swell" => MeleeIds.UnderWaterScorchWheel,
@@ -495,20 +502,23 @@ public class Rock : Character {
 		});
 	}
 
-	public Projectile? getMeleeProjById(int id, Point? pos = null, bool addToLevel = true) {
-		Point projPos = pos ?? new Point(0, 0);
+	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
 		Projectile? proj = id switch {
-			(int)MeleeIds.SlashClaw => new GenericMeleeProj(
-				new SlashClawWeapon(player), projPos, ProjIds.SlashClaw, player
+			(int)MeleeIds.SlashClaw => new SlashClawMelee(
+				projPos, player, addToLevel: addToLevel
+			),
+
+			(int)MeleeIds.SlashClaw2 => new SlashClawMelee(
+				projPos, player, addToLevel: addToLevel
 			),
 
 			(int)MeleeIds.UnderWaterScorchWheel => new GenericMeleeProj(
 				new ScorchWheel(), projPos, ProjIds.ScorchWheelUnderwater,
-				player, 2, 0, 0.5f, addToLevel: addToLevel
+				player, 2, 0, 0.5f * 60, addToLevel: addToLevel
 			),
 
 			(int)MeleeIds.LegBreaker => new GenericMeleeProj(
-				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f,
+				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f * 60,
 				addToLevel: addToLevel
 			),
 
@@ -522,6 +532,7 @@ public class Rock : Character {
 	public enum MeleeIds {
 		None = -1,
 		SlashClaw,
+		SlashClaw2,
 		UnderWaterScorchWheel,
 		LegBreaker,
 	}
@@ -572,7 +583,10 @@ public class Rock : Character {
 		//if (rush != null) rush.destroySelf();
 	}
 
-	public override void aiAttack(Actor target) {
+	public override void aiAttack(Actor? target) {
+		if (target == null) {
+			return;
+		} 
 		if (AI.trainingBehavior != 0) {
 			return;
 		}

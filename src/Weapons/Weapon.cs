@@ -66,8 +66,8 @@ public class Weapon {
 	public bool hasCustomChargeAnim;
 
 	public Weapon() {
-		ammo = 28;
 		maxAmmo = 28;
+		ammo = maxAmmo;
 		fireRate = 9;
 		effect = "";
 		damage = "0";
@@ -97,7 +97,6 @@ public class Weapon {
 			new VileMissile(VileMissileType.ElectricShock),
 			new VileCannon(VileCannonType.FrontRunner),
 			new Vulcan(VulcanType.CherryBlast),
-			new RushWeapon(),
 		};
 		weaponList.AddRange(getAllXWeapons());
 		weaponList.AddRange(getAllAxlWeapons(axlLoadout));
@@ -468,7 +467,7 @@ public class Weapon {
 		if (ammoAdd < 0 || ammo >= maxAmmo) {
 			return;
 		}
-		weaponHealAmount += MathF.Ceiling(maxAmmo * ammoAdd * ammoGainMultiplier / 100f);
+		weaponHealAmount += MathF.Ceiling(maxAmmo * ammoAdd / 100f);
 		weaponHealAmount = Helpers.clampMax(weaponHealAmount, maxAmmo);
 	}
 

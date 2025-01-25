@@ -629,10 +629,14 @@ public class GameMode {
 			}
 			// Currency
 			if (!Global.level.is1v1()) {
-				Global.sprites["pickup_bolt_small"].drawToHUD(0, Global.screenW - 32, 28);
+				Global.sprites["pickup_bolt_large"].drawToHUD(0, Global.screenW - 60, 31);
 				Fonts.drawText(
 					FontType.WhiteSmall,
-					"x" + drawPlayer.currency.ToString("d2"), Global.screenW - 4, 24, Alignment.Right
+					"x", Global.screenW - 44, 27, Alignment.Right
+				);
+				Fonts.drawText(
+					FontType.WhiteSmall,
+					drawPlayer.currency.ToString(), Global.screenW - 43, 27, Alignment.Left
 				);
 			}
 			if (drawPlayer.character is RagingChargeX mmx && mmx.unpoShotCount > 0) {
@@ -1339,9 +1343,9 @@ public class GameMode {
 		float baseX = hudHealthPosition.x;
 		float baseY = hudHealthPosition.y;
 
-		if (player.isBlues) {
+		//if (player.isBlues) {
 			baseY += 17;
-		}
+		//}
 
 		float twoLayerHealth = 0;
 		if (isMech && player.character?.rideArmor != null && player.character.rideArmor.raNum != 5) {
@@ -1606,7 +1610,7 @@ public class GameMode {
 			string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 			Global.sprites[baseBarName].drawToHUD(weapon.weaponBarBaseIndex, baseX, baseY);
 			baseY -= 16;
-			for (var i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier); i++) {
+			for (int i = 0; i < MathF.Ceiling(weapon.maxAmmo * ammoDisplayMultiplier); i += (int)weapon.ammoDisplayScale) {
 				var floorOrCeiling = Math.Ceiling(weapon.ammo * ammoDisplayMultiplier);
 				// Weapons that cost the whole bar go here, so they don't show up as full but still grayed out
 				if (weapon.drawRoundedDown || weapon is RekkohaWeapon || weapon is GigaCrush) {
@@ -1943,7 +1947,7 @@ public class GameMode {
 		var startX = getWeaponSlotStartX(player, ref iconW, ref iconH, ref width);
 		var startY = Global.screenH - 12;
 
-		int gigaWeaponX = 11;
+		int gigaWeaponX = 16;
 
 		if (player.isX && Options.main.gigaCrushSpecial) {
 			Weapon? gigaCrush = player.weapons.FirstOrDefault((Weapon w) => w is GigaCrush);
@@ -1956,6 +1960,13 @@ public class GameMode {
 			Weapon? novaStrike = player.weapons.FirstOrDefault((Weapon w) => w is HyperNovaStrike);
 			if (novaStrike != null) {
 				drawWeaponSlot(novaStrike, gigaWeaponX, 159);
+				gigaWeaponX += 18;
+			}
+		}
+		if (player.isRock && Options.main.rushSpecial) {
+			Weapon? rushWeapon = player.weapons.FirstOrDefault((Weapon w) => w is RushWeapon);
+			if (rushWeapon != null) {
+				drawWeaponSlot(rushWeapon, gigaWeaponX, 114);
 				gigaWeaponX += 18;
 			}
 		}
@@ -2070,6 +2081,10 @@ public class GameMode {
 				offsetX -= width;
 				continue;
 			}
+			if (player.isRock && Options.main.rushSpecial && weapon is RushWeapon) {
+				offsetX -= width;
+				continue;
+			}
 			if (level.mainPlayer.weapon == weapon && !level.mainPlayer.isSelectingCommand()) {
 				DrawWrappers.DrawRectWH(
 					x - 7, y - 8, 14, 15, false,
@@ -2108,8 +2123,6 @@ public class GameMode {
 			Global.sprites["hud_weapon_icon"].drawToHUD(index, x, y);
 		} else if (weapon is MechMenuWeapon && level.mainPlayer.isSelectingRA()) {
 			return;
-		} else if (weapon is RushWeapon rw) {
-			Global.sprites[jsonName].drawToHUD(rw.weaponSlotIndex, x, y);
 		} else if (weapon is not AbsorbWeapon) {
 			Global.sprites[jsonName].drawToHUD(weapon.weaponSlotIndex, x, y);
 		}

@@ -1350,10 +1350,10 @@ public partial class Character : Actor, IDamagable {
 				return true;
 			}
 
-			if (player.input.isPressed(Control.Taunt, player)) {
+			/* if (player.input.isPressed(Control.Taunt, player)) {
 				changeState(new Taunt());
 				return true;
-			}
+			} */
 
 			if (canAirJump() && flag == null) {
 				if (player.input.isPressed(Control.Jump, player) && canJump()) {
@@ -1367,7 +1367,7 @@ public partial class Character : Actor, IDamagable {
 					lastJumpPressedTime = 0;
 					dashedInAir++;
 					//bass double jump
-					new Anim(pos, "double_jump_anim", xDir, netId, true, true);
+					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
 					vel.y = -getJumpPower();
 					changeState(new Jump(), true);
 					return true;

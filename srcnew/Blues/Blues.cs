@@ -235,8 +235,8 @@ public class Blues : Character {
 		return grounded && overheating;
 	}
 
-	public void destroyStarCrash(bool destroy = true) {
-		if (starCrash != null && destroy) {
+	public void destroyStarCrash() {
+		if (starCrash != null) {
 			starCrash.destroySelf();
 		}
 		starCrash = null;
@@ -1084,7 +1084,10 @@ public class Blues : Character {
 		}
 	}
 
-	public override void aiAttack(Actor target) {
+	public override void aiAttack(Actor? target) {
+		if (target == null) {
+			return;
+		}
 		if (grounded) {
 			if (shieldHP >= 1 && (shieldHP >= shieldMaxHP || aiActivateShieldOnLand)) {
 				isShieldActive = true;
@@ -1132,11 +1135,13 @@ public class Blues : Character {
 		if (player.bluesScarfShader != null && !overheating && !overdrive) {
 			ShaderWrapper palette = player.bluesScarfShader;
 			palette.SetUniform("palette", specialWeaponIndex + 1);
+			palette.SetUniform("paletteTexture", Global.textures["blues_palette_texture"]);
 			shaders.Add(palette);
 		}
 		if (player.breakManShader != null && isBreakMan) {
 			ShaderWrapper palette = player.breakManShader;
 			palette.SetUniform("palette", 1);
+			palette.SetUniform("paletteTexture", Global.textures["blues_hyperpalette"]);
 			shaders.Add(palette);
 		}
 		return shaders;
@@ -1177,8 +1182,10 @@ public class Blues : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
+		int weaponIndex = specialWeaponIndex;
 		customData.Add((byte)MathInt.Floor(coreAmmo));
 		customData.Add((byte)MathInt.Ceiling(shieldHP));
+		customData.Add((byte)weaponIndex);
 		customData.Add((byte)getChargeLevel());
 		bool[] flags = [
 			isShieldFront(),
@@ -1200,8 +1207,9 @@ public class Blues : Character {
 		coreAmmo = data[0];
 		shieldHP = data[1];
 		netChargeLevel = data[2];
+		specialWeaponIndex = data[3];
 
-		bool[] flags = Helpers.byteToBoolArray(data[3]);
+		bool[] flags = Helpers.byteToBoolArray(data[4]);
 		isShieldActive = flags[0];
 		overheating = flags[1];
 		isBreakMan = flags[2];

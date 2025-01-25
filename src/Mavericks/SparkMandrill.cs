@@ -180,7 +180,7 @@ public class SparkMPunchWeapon : Weapon {
 #region states
 public class SparkMPunchState : MaverickState {
 	public float dustTime;
-	public SparkMPunchState() : base("punch", "") {
+	public SparkMPunchState() : base("punch") {
 	}
 
 	public override void update() {
@@ -195,7 +195,7 @@ public class SparkMPunchState : MaverickState {
 
 public class SparkMDashPunchState : MaverickState {
 	public float dustTime;
-	public SparkMDashPunchState() : base("dash_punch", "") {
+	public SparkMDashPunchState() : base("dash_punch") {
 	}
 
 	public override void update() {
@@ -236,8 +236,10 @@ public class SparkMDashPunchState : MaverickState {
 public class SparkMClimbState : MaverickState {
 	Point hitPoint;
 	float climbSpeed = 100;
-	public SparkMClimbState(Point hitPoint) : base("climb", "") {
+	public SparkMClimbState(Point hitPoint) : base("climb") {
 		this.hitPoint = hitPoint;
+		aiAttackCtrl = true;
+		canBeCanceled = false;
 	}
 
 	public override void update() {
@@ -300,6 +302,8 @@ public class SparkMClimbState : MaverickState {
 
 public class SparkMFrozenState : MaverickState {
 	public SparkMFrozenState() : base("freeze") {
+		aiAttackCtrl = true;
+		canBeCanceled = false;
 	}
 
 	public override void update() {

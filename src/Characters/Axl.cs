@@ -1776,11 +1776,7 @@ public class Axl : Character {
 	}
 
 	public override float getDashSpeed() {
-		if (flag != null || !isDashing) {
-			return getRunSpeed();
-		}
-		float dashSpeed = 210;
-
+		float dashSpeed = 3.45f * 60f;;
 		if (player.axlWeapon != null && player.axlWeapon.isTwoHanded(false)) {
 			dashSpeed *= 0.875f;
 		}
@@ -1918,7 +1914,7 @@ public class Axl : Character {
 		return (player.alliance != alliance && (stealthActive || player.isDisguisedAxl && !disguiseCoverBlown));
 	}
 
-	public override bool isCCImmuneHyperMode() {
+	public override bool isNonDamageStatusImmune() {
 		return isStealthMode();
 	}
 

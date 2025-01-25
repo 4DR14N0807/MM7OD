@@ -239,7 +239,7 @@ public class VoltCTriadThunderProj : Projectile {
 }
 
 public class VoltCTriadThunderState : MaverickState {
-	public VoltCTriadThunderState() : base("spit", "") {
+	public VoltCTriadThunderState() : base("spit") {
 		exitOnAnimEnd = true;
 	}
 
@@ -310,19 +310,22 @@ public class VoltCSuckProj : Projectile {
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (vc == null) return;
-
+		if (!damagable.isPlayableDamagable()) { return; }
+		if (damagable is not Actor actor || !actor.ownedByLocalPlayer) {
+			return;
+		}
 		if (damagable is Character chr) {
 			if (!chr.ownedByLocalPlayer) return;
-			if (chr.isImmuneToKnockback()) return;
-			chr.moveToPos(vc.getFirstPOIOrDefault(), 150);
+			if (chr.isPushImmune()) return;
 		}
+		actor.moveToPos(vc.getFirstPOIOrDefault(), 150);
 	}
 }
 
 public class VoltCSuckState : MaverickState {
 	float partTime;
 	VoltCSuckProj suckProj;
-	public VoltCSuckState() : base("suck", "") {
+	public VoltCSuckState() : base("suck") {
 	}
 
 	public override void update() {
@@ -390,7 +393,7 @@ public class VoltCUpBeamProj : Projectile {
 }
 
 public class VoltCUpBeamState : MaverickState {
-	public VoltCUpBeamState() : base("thunder_vertical", "") {
+	public VoltCUpBeamState() : base("thunder_vertical") {
 		exitOnAnimEnd = true;
 	}
 
@@ -460,7 +463,7 @@ public class VoltCSpecialState : MaverickState {
 	VoltCBarrierProj barrierProj1;
 	VoltCBarrierProj barrierProj2;
 	const float drainAmmoRate = 6;
-	public VoltCSpecialState() : base("charge_start", "") {
+	public VoltCSpecialState() : base("charge_start") {
 		superArmor = true;
 	}
 
@@ -538,7 +541,9 @@ public class VoltCSpecialState : MaverickState {
 }
 
 public class VoltCBounce : MaverickState {
-	public VoltCBounce() : base("jump", "") {
+	public VoltCBounce() : base("jump") {
+		aiAttackCtrl = true;
+		canBeCanceled = false;
 	}
 
 	public override void update() {

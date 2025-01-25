@@ -1013,6 +1013,10 @@ public class RideArmor : Actor, IDamagable {
 		return shaders;
 	}
 
+	public bool isPlayableDamagable() {
+		return true;
+	}
+
 	public void creditKill(Player? killer, Player? assister, int? weaponIndex) {
 		if (killer != null && killer != player) {
 			/*
@@ -1449,7 +1453,7 @@ public class RAGrab : RideArmorState {
 }
 
 public class RATaunt : RideArmorState {
-	public RATaunt() : base("ridearmor_taunt", "", "", "") {
+	public RATaunt() : base("ridearmor_taunt") {
 	}
 
 	public override void update() {
@@ -1887,7 +1891,7 @@ public class RACalldown : RideArmorState {
 }
 
 public class RAChainCharge : RideArmorState {
-	public RAChainCharge() : base("ridearmor_charge", "", "") {
+	public RAChainCharge() : base("ridearmor_charge") {
 	}
 
 	public override void onEnter(RideArmorState? oldState) {
@@ -1935,7 +1939,7 @@ public class RAChainChargeDash : RideArmorState {
 	string dashControl;
 	public float dashTime;
 	public bool isSlow;
-	public RAChainChargeDash(string dashControl, bool isSlow) : base("ridearmor_charge_dash", "", "") {
+	public RAChainChargeDash(string dashControl, bool isSlow) : base("ridearmor_charge_dash") {
 		this.dashControl = dashControl;
 		this.isSlow = isSlow;
 		//enterSound = "dash";
@@ -1996,7 +2000,7 @@ public class RAChainAttack : RideArmorState {
 	float frame5Time;
 	MechChainProj? mcp;
 	int once;
-	public RAChainAttack() : base("ridearmor_chain", "", "") {
+	public RAChainAttack() : base("ridearmor_chain") {
 	}
 
 	public Point chainOrigin() {
@@ -2055,7 +2059,7 @@ public class RAChainAttack : RideArmorState {
 public class RAGoliathShoot : RideArmorState {
 	bool grounded;
 	bool once;
-	public RAGoliathShoot(bool grounded) : base(grounded ? "ridearmor_shoot" : "ridearmor_jump_shoot", "", "") {
+	public RAGoliathShoot(bool grounded) : base(grounded ? "ridearmor_shoot" : "ridearmor_jump_shoot") {
 		this.grounded = grounded;
 	}
 

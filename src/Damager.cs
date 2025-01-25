@@ -282,13 +282,13 @@ public class Damager {
 			if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
 
 			if (projId == (int)ProjIds.CrystalHunter && weakness) {
-				damage = 4;
+				damage = 2;
 				weakness = false;
 				flinch = 0;
 				//victim?.playSound("weakness");
 			}
 			if (projId == (int)ProjIds.CSnailMelee && character != null && character.isCrystalized) {
-				damage *= 2;
+				damage += 1;
 			}
 		}
 		
@@ -326,7 +326,7 @@ public class Damager {
 			if (character.isAlwaysHeadshot() && (projId == (int)ProjIds.RevolverBarrel || projId == (int)ProjIds.AncientGun)) {
 				damage *= 1.5f;
 			}
-			if (character.ownedByLocalPlayer && character.charState.superArmor) {
+			if (character.ownedByLocalPlayer && character.isFlinchImmune()) {
 				flinch = 0;
 			}
 			if ((owner?.character as Zero)?.isViral == true) {
@@ -520,9 +520,8 @@ public class Damager {
 					weakness = true;
 				}
 			}
-
-			if (!character.charState.superArmor &&
-				!character.isInvulnerable(true, true) &&
+			if (!character.isFlinchImmune() &&
+				!character.isInvulnerable(false, true) &&
 				!isDot(projId) && (
 				owner?.character is Zero zero && zero.isBlack ||
 				owner?.character is PunchyZero pzero && pzero.isBlack
@@ -555,8 +554,7 @@ public class Damager {
 					flinchCooldown = 0;
 				}
 			}
-
-			if (flinchCooldown > 0) {
+			if (flinchCooldown > 0 && flinch > 0) {
 				int flinchKey = getFlinchKeyFromProjId(projId);
 				if (!character.flinchCooldown.ContainsKey(flinchKey)) {
 					character.flinchCooldown[flinchKey] = 0;
@@ -565,19 +563,6 @@ public class Damager {
 					flinch = 0;
 				} else {
 					character.flinchCooldown[flinchKey] = flinchCooldown;
-				}
-			}
-
-			if ((character as Vile)?.isVileMK2 == true && damage > 0 && !isArmorPiercing(projId)) {
-				if (hitFromBehind(character, damagingActor, owner, projId)) {
-					damage--;
-
-					if (damage < 1) {
-						damage = 0;
-
-						//character.playSound("ding");
-
-					}
 				}
 			}
 			//Damage above 0
@@ -595,8 +580,8 @@ public class Damager {
 				}
 				// Weakness is true and character is not frozen in Shotgun Ice.
 				else if (weakness && !isShotgunIceAndFrozen && mmx?.weaknessCooldown <= 0) {
-					//victim?.playSound("weakness");
-					if (!character.charState.superArmor) {
+					victim?.playSound("weakness");
+					if (!character.isFlinchImmune()) {
 						// Put a cooldown of 0.75s minimum.
 						if (flinchCooldown * 60 < 45) {
 							mmx.weaknessCooldown = 45;
@@ -624,10 +609,6 @@ public class Damager {
 		}
 		// Ride armor section
 		else if (rideArmor != null) {
-			// Beast Killer damage amp
-			if (projId == (int)ProjIds.BeastKiller || projId == (int)ProjIds.AncientGun) {
-				damage *= 2;
-			}
 			// Ride armor flinch push system.
 			float tempPush = 0;
 			if (flinch > 0 && rideArmor.ownedByLocalPlayer && owner != null) {
@@ -649,163 +630,6 @@ public class Damager {
 				victim?.playSound("hit");
 			}
 		}
-		// Maverick section
-		else if (maverick != null) {
-			if (projId == (int)ProjIds.BeastKiller || projId == (int)ProjIds.AncientGun) {
-				damage *= 2;
-			}
-			// Weakness system.
-			weakness = maverick.checkWeakness(
-				(WeaponIds)weaponIndex, (ProjIds)projId, out MaverickState newState, owner?.isSigma ?? true
-			);
-			if (weakness && damage < 2 && projId is (int)ProjIds.CrystalHunter or (int)ProjIds.CSnailCrystalHunter) {
-				damage = 2;
-			}
-			if (weakness && damage < 1 && (
-				projId == (int)ProjIds.AcidBurst ||
-				projId == (int)ProjIds.TSeahorseAcid1 ||
-				projId == (int)ProjIds.TSeahorseAcid2
-			)) {
-				damage = 1;
-			}
-			if (weakness && damage < 2 && projId == (int)ProjIds.ParasiticBomb) {
-				damage = 2;
-			}
-			// Get flinch cooldown index.
-			bool isOnFlinchCooldown = false;
-			float flinchCooldownTime = 0;
-			int flinchKey = getFlinchKeyFromProjId(projId);
-			if (projectileFlinchCooldowns.ContainsKey(projId)) {
-				flinchCooldownTime = projectileFlinchCooldowns[projId];
-			}
-			if (!maverick.player.isTagTeam() && flinchCooldownTime < 45) {
-				flinchCooldownTime = 45;
-			}
-			if (!maverick.flinchCooldown.ContainsKey(flinchKey)) {
-				maverick.flinchCooldown[flinchKey] = 0;
-			}
-			// Weakness states and flinch weakness.
-			if (newState != null && maverick.weaknessCooldown == 0) {
-				maverick.weaknessCooldown = 1.75f;
-				flinch = 0;
-				if (maverick.ownedByLocalPlayer) {
-					maverick.changeState(newState, true);
-				}
-			}
-			// Weakness flinch.
-			else if (weakness && !isOnFlinchCooldown) {
-				if (flinch <= 0) {
-					flinchCooldownTime = 0.75f;
-					flinch = Global.miniFlinch;
-				} else if (flinch < Global.halfFlinch) {
-					flinch = Global.halfFlinch;
-				} else if (flinch < Global.defFlinch) {
-					flinch = Global.defFlinch;
-				} else if (flinch < Global.defFlinch) {
-					flinch = Global.superFlinch;
-				}
-			}
-			// Superarmor.
-			if (maverick.state.superArmor) {
-				flinch = 0;
-			}
-			// Set flinch cooldown if it exists.
-			if (flinch > 0) {
-				if (maverick.flinchCooldown[flinchKey] > 0) {
-					isOnFlinchCooldown = true;
-				} else {
-					maverick.flinchCooldown[flinchKey] = flinchCooldownTime;
-				}
-			}
-			// For backshield and similar stuff.
-			if (!weakness) {
-				// Flinch reduction.
-				if (flinch > 0) {
-					if (!maverick.player.isTagTeam()) {
-						flinch = 0;
-					}
-					if (maverick.player.isTagTeam()) {
-						// Large mavericks
-						if (maverick.armorClass == Maverick.ArmorClass.Heavy) {
-							if (flinch <= Global.miniFlinch) {
-								flinch = 0;
-							} else {
-								flinch = Global.miniFlinch;
-							}
-						}
-						// Medium mavericks
-						else if (maverick.armorClass == Maverick.ArmorClass.Medium) {
-							if (flinch <= Global.miniFlinch) {
-								flinch = 0;
-							} else if (flinch <= Global.halfFlinch) {
-								flinch = Global.miniFlinch;
-							} else {
-								flinch = Global.halfFlinch;
-							}
-						}
-					}
-				}
-				if (maverick is ArmoredArmadillo aa) {
-					if ((hitFromBehind(maverick, damagingActor, owner, projId) ||
-						maverick.sprite.name == "armoreda_roll"
-						) && !aa.hasNoArmor() && !isArmorPiercingOrElectric(projId)
-					) {
-						damage = MathF.Floor(damage * 0.5f);
-						if (damage == 0) {
-
-							//maverick.playSound("ding");
-
-						}
-					}
-				}
-				/*
-				if (maverick is CrystalSnail cs) {
-					if ((hitFromBehind(maverick, damagingActor, owner)) && !cs.noShell) {
-						damage = 0;
-						maverick.playSound("m10ding");
-					}
-				}
-				*/
-				if (maverick.sprite.name == "armoreda_block" && damage > 0 && !isArmorPiercingOrElectric(projId)) {
-					if (hitFromFront(maverick, damagingActor, owner, projId)) {
-						if (maverick.ownedByLocalPlayer && damage > 2 &&
-							damagingActor is Projectile proj && proj.shouldVortexSuck && proj.destroyOnHit
-						) {
-							maverick.changeState(new ArmoredAGuardChargeState(damage * 2));
-						}
-						flinch = 0;
-						damage = 0;
-						//maverick.playSound("ding");
-						/* if (owner.ownedByLocalPlayer &&
-							owner.character is Zero zero &&
-							!zero.hypermodeActive()
-						) {      //What in the..
-							if (damagingActor is Projectile proj1 && proj1.isZSaberClang) {
-								owner.character.changeState(new ZeroClang(-owner.character.xDir));
-							}
-						} */
-					}
-				}
-			}
-			if (damage > 0) {
-				if (flinch > 0 && !isOnFlinchCooldown) {
-					if (weakness) {
-						//victim.playSound("weakness");
-					} else {
-						victim?.playSound("hurt");
-					}
-					if (newState == null && maverick.ownedByLocalPlayer) {
-						int hurtDir = -maverick.xDir;
-						if (!hitFromFront(maverick, damagingActor, owner, projId)) {
-							hurtDir *= -1;
-						}
-						maverick.changeState(new MHurt(hurtDir, flinch), true);
-					}
-				} else {
-					victim?.playSound("hit");
-				}
-			}
-		}
 		// Misc section
 		else {
 			if (damage > 0) {
@@ -824,8 +648,13 @@ public class Damager {
 			}
 		}
 
-		float finalDamage = damage * (weakness ? 1.5f : 1) * owner.getDamageModifier();
-
+		float finalDamage = damage;
+		if (weakness && damage > 0) {
+			damage += 1;
+		}
+		if (owner != null) {
+			finalDamage *= owner.getDamageModifier();
+		}
 		if (finalDamage > 0 && character != null &&
 			character.ownedByLocalPlayer && charState is XUPParryStartState parryState &&
 			parryState.canParry() && !isDot(projId)
@@ -854,10 +683,6 @@ public class Damager {
 		damagable?.applyDamage(finalDamage, owner, damagingActor, weaponKillFeedIndex, projId);
 
 		return true;
-	}
-
-	public static bool isArmorPiercingOrElectric(int? projId) {
-		return isArmorPiercing(projId) || isElectric(projId);
 	}
 
 	public static bool isArmorPiercing(int? projId) {
@@ -946,7 +771,7 @@ public class Damager {
 		);
 	}
 
-	public static bool hitFromFront(Actor actor, Actor damager, Player? projOwner, int projId) {
+	public static bool hitFromFront(Actor actor, Actor? damager, Player? projOwner, int projId) {
 		return hitFromSub(
 			actor, damager,
 			projOwner, projId,

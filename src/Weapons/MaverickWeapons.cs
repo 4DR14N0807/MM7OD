@@ -169,6 +169,8 @@ public class SigmaMenuWeapon : Weapon {
 		weaponSlotIndex = 65;
 		displayName = "Sigma";
 		fireRate = 60 * 4;
+		drawAmmo = false;
+		drawCooldown = false;
 	}
 }
 
@@ -245,7 +247,7 @@ public class VelguarderWeapon : MaverickWeapon {
 }
 
 public class WireSpongeWeapon : MaverickWeapon {
-	public WireSpongeWeapon(Player? player) : base(player) {
+	public WireSpongeWeapon(Player player) : base(player) {
 		index = (int)WeaponIds.WireSponge;
 		weaponSlotIndex = 75;
 		displayName = "Wire Sponge";

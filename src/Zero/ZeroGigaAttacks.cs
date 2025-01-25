@@ -347,9 +347,10 @@ public class Rekkoha : CharState {
 	int loop;
 	public RekkohaEffect? effect;
 	public Weapon weapon;
-	public Rekkoha(Weapon weapon) : base("rekkoha", "", "", "") {
+	public Rekkoha(Weapon weapon) : base("rekkoha") {
 		this.weapon = weapon;
 		invincible = true;
+		immuneToWind = true;
 	}
 
 	public override void update() {
@@ -635,7 +636,9 @@ public class DarkHoldProj : Projectile {
 			foreach (GameObject gameObject in getCloseActors(MathInt.Ceiling(radius + 50))) {
 				if (gameObject != this && gameObject is Actor actor && actor.locallyControlled && inRange(actor)) {
 					// For characters.
-					if (actor is Character chara && chara.darkHoldInvulnTime <= 0) {
+					if (actor is Character chara && chara.darkHoldInvulnTime <= 0 &&
+						actor is not KaiserSigma and not ViralSigma and not WolfSigma
+					) {
 						if (timeInFrames >= 30) {
 							continue;
 						}
@@ -652,8 +655,10 @@ public class DarkHoldProj : Projectile {
 						}
 						continue;
 					}
-					// For maverick and rides
-					if (actor is RideArmor or Maverick or Mechaniloid or RideChaser) {
+					// For maverick and rides... and battle bodies.
+					if (actor is RideArmor or Maverick or Mechaniloid or RideChaser or 
+						KaiserSigma or ViralSigma or WolfSigma
+					) {
 						if (actor.timeStopTime > 0) {
 							continue;
 						}
@@ -750,7 +755,7 @@ public class DarkHoldState : CharState {
 	}
 
 	public override bool canEnter(Character character) {
-		if (character.darkHoldInvulnTime > 0 || character.isTrueStatusImmune()) {
+		if (character.darkHoldInvulnTime > 0 || character.isTimeImmune()) {
 			return false;
 		}
 		return base.canEnter(character);

@@ -58,6 +58,7 @@ public class CharState {
 	public bool airMove;
 	public bool canJump;
 	public bool canStopJump;
+	public bool stoppedJump;
 	public bool exitOnLanding;
 	public bool exitOnAirborne;
 	public bool useDashJumpSpeed;
@@ -134,8 +135,8 @@ public class CharState {
 			player.delayLTank();
 		} 
 		wasGrounded = character.grounded;
-		if (this is not Jump and not WallKick && oldState.canStopJump == false) {
-			canStopJump = false;
+		if (this is not Jump and not WallKick && (!oldState.canStopJump || oldState.stoppedJump)) {
+			stoppedJump = true;
 		}
 		if (character is Blues) {
 			character.changeGlobalColliderOnSpriteChange(character.sprite.name);
@@ -684,7 +685,6 @@ public class Crouch : CharState {
 
 public class SwordBlock : CharState {
 	public SwordBlock() : base("block") {
-		immuneToWind = true;
 		superArmor = true;
 		exitOnAirborne = true;
 		attackCtrl = true;
@@ -1593,15 +1593,12 @@ public class Die : CharState {
 		}
 		if (hidden && !respawnTimerOn && frames >= 60) {
 			player.startDeathTimer();
-			respawnTimerOn = true;
 			if (player.getRespawnTime() <= 3 && !character.destroyed) {
-				player.destroyCharacter();
-				RPC.destroyCharacter.sendRpc(player, character);
+				player.destroyCharacter(true);
 			}
 		}
 		if (stateTime >= 2 && frames >= 60 && !character.destroyed) {
-			player.destroyCharacter();
-			RPC.destroyCharacter.sendRpc(player, character);
+			player.destroyCharacter(true);
 		}
 		frames++;
 	} 

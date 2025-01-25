@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MMXOnline;
 
@@ -94,7 +95,8 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.FrontRunner, VileCannonProj.rpcInvoke },
 		{ (int)ProjIds.FatBoy, VileCannonProj.rpcInvoke },
 		{ (int)ProjIds.LongshotGizmo, VileCannonProj.rpcInvoke },
-		{ (int)ProjIds.LongshotGizmo, VileCannonProj.rpcInvoke },
+		// Zero
+		{ (int)ProjIds.SuiretsusanProj, SuiretsusenProj.rpcInvoke },
 		// Buster Zero
 		{ (int)ProjIds.DZBuster, DZBusterProj.rpcInvoke },
 		{ (int)ProjIds.DZBuster2, DZBuster2Proj.rpcInvoke },
@@ -108,6 +110,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.VoltCSuck, VoltCSuckProj.rpcInvoke },
 		{ (int)ProjIds.TSeahorseAcid2, TSeahorseAcid2Proj.rpcInvoke },
 		{ (int)ProjIds.WSpongeSpike, WSpongeSpike.rpcInvoke },
+		{ (int)ProjIds.BBuffaloIceProj, BBuffaloIceProj.rpcInvoke },
 		//Axl
 		{ (int)ProjIds.BlackArrowGround, BlackArrowGrounded.rpcInvoke },
 		*/
@@ -185,6 +188,7 @@ public struct ProjParameters {
 	public byte[] extraData;
 	public float angle;
 	public float byteAngle;
+	public Actor owner;
 }
 
 public delegate Projectile ProjCreate(ProjParameters arg);

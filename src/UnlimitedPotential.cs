@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using SFML.Graphics;
 
 namespace MMXOnline;
 
-// If fixing parry code also fix kknuckle parry
 public class XUPParryStartState : CharState {
 	RagingChargeX mmx;
 
-	public XUPParryStartState() : base("unpo_parry_start", "", "", "") {
+	public XUPParryStartState() : base("unpo_parry_start") {
 	}
 
 	public override void update() {
@@ -33,9 +31,10 @@ public class XUPParryStartState : CharState {
 			player.weapon.ammo = player.weapon.maxAmmo;
 		}
 		
-		if (damagingActor is GenericMeleeProj gmp) {
-			counterAttackTarget = gmp.owningActor;
-		} else if (damagingActor is Projectile proj) {
+		if (damagingActor is Projectile proj) {
+			if (proj.owningActor != null) {
+				counterAttackTarget = proj.owningActor;
+			}
 			if (!proj.isMelee && proj.shouldVortexSuck) {
 				absorbedProj = proj;
 				absorbedProj.destroySelfNoEffect(doRpcEvenIfNotOwned: true);
@@ -48,7 +47,7 @@ public class XUPParryStartState : CharState {
 				bool absorbThenShoot = false;
 				//character.playSound("upParryAbsorb", sendRpc: true);
 				if (!player.input.isWeaponLeftOrRightHeld(player)) {
-					mmx.unpoAbsorbedProj = absorbedProj;
+					mmx.absorbedProj = absorbedProj;
 					//character.player.weapons.Add(new AbsorbWeapon(absorbedProj));
 				} else {
 					shootProj = true;
@@ -93,7 +92,7 @@ public class XUPParryStartState : CharState {
 }
 
 public class ParriedState : CharState {
-	public ParriedState() : base("grabbed", "", "", "") {
+	public ParriedState() : base("grabbed") {
 	}
 
 	public override bool canEnter(Character character) {
@@ -147,7 +146,7 @@ public class UPParryMeleeProj : Projectile {
 public class XUPParryMeleeState : CharState {
 	Actor counterAttackTarget;
 	float damage;
-	public XUPParryMeleeState(Actor counterAttackTarget, float damage) : base("unpo_parry_attack", "", "", "") {
+	public XUPParryMeleeState(Actor counterAttackTarget, float damage) : base("unpo_parry_attack") {
 		invincible = true;
 		this.counterAttackTarget = counterAttackTarget;
 		this.damage = damage;
@@ -239,7 +238,7 @@ public class XUPParryProjState : CharState {
 	Anim? absorbAnim;
 	bool shootProj;
 	bool absorbThenShoot;
-	public XUPParryProjState(Projectile otherProj, bool shootProj, bool absorbThenShoot) : base("unpo_parry_attack", "", "", "") {
+	public XUPParryProjState(Projectile otherProj, bool shootProj, bool absorbThenShoot) : base("unpo_parry_attack") {
 		this.otherProj = otherProj;
 		invincible = true;
 		this.shootProj = shootProj;
@@ -304,7 +303,7 @@ public class XUPParryProjState : CharState {
 public class XUPPunchState : CharState {
 	float slideVelX;
 	bool isGrounded;
-	public XUPPunchState(bool isGrounded) : base(isGrounded ? "unpo_punch" : "unpo_air_punch", "", "", "") {
+	public XUPPunchState(bool isGrounded) : base(isGrounded ? "unpo_punch" : "unpo_air_punch") {
 		this.isGrounded = isGrounded;
 		landSprite = "unpo_punch";
 		airMove = true;
@@ -334,7 +333,7 @@ public class XUPGrabState : CharState {
 	float leechTime = 1;
 	public bool victimWasGrabbedSpriteOnce;
 	float timeWaiting;
-	public XUPGrabState(Character? victim) : base("unpo_grab", "", "", "") {
+	public XUPGrabState(Character? victim) : base("unpo_grab") {
 		this.victim = victim;
 		grabTime = UPGrabbed.maxGrabTime;
 	}

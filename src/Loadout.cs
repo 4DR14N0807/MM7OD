@@ -56,7 +56,7 @@ public class XLoadout {
 	}
 
 	public static XLoadout createRandom() {
-		var randomXWeapons = Weapon.getRandomXWeapons();
+		List<int> randomXWeapons = Weapon.getRandomXWeapons();
 		return new XLoadout() {
 			weapon1 = randomXWeapons[0],
 			weapon2 = randomXWeapons[1],

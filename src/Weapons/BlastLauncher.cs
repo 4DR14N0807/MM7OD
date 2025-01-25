@@ -203,6 +203,10 @@ public class GrenadeProj : Projectile, IDamagable {
 		);
 		destroySelfNoEffect();
 	}
+
+	public bool isPlayableDamagable() {
+		return false;
+	}
 }
 
 public class GrenadeExplosionProj : Projectile {

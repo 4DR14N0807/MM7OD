@@ -365,7 +365,7 @@ public partial class Player {
 	public LoadoutData loadout;
 	public bool loadoutSet;
 	public LoadoutData previousLoadout;
-	public LoadoutData oldAxlLoadout;
+	public LoadoutData? atransLoadout;
 	public AxlLoadout axlLoadout { get { return loadout.axlLoadout; } }
 
 	public bool frozenCastlePurchased;
@@ -373,11 +373,8 @@ public partial class Player {
 
 	// Note: Every time you add an armor, add an "old" version and update DNA Core code appropriately
 	public ushort armorFlag;
-	public ushort oldArmorFlag;
 	public bool frozenCastle;
-	public bool oldFrozenCastle;
 	public bool speedDevil;
-	public bool oldSpeedDevil;
 
 	public Disguise? disguise;
 
@@ -494,7 +491,7 @@ public partial class Player {
 	public List<WSpongeSpike> seeds = new List<WSpongeSpike>();
 	public List<Actor> mechaniloids = new List<Actor>();
 
-	ExplodeDieEffect explodeDieEffect;
+	public ExplodeDieEffect explodeDieEffect;
 	public Character limboChar;
 	public bool suicided;
 
@@ -850,9 +847,6 @@ public partial class Player {
 	}
 
 	public bool isCrouchHeld() {
-		if (isControllingPuppet()) {
-			return true;
-		}
 		if (character == null) {
 			return false;
 		}
@@ -873,37 +867,21 @@ public partial class Player {
 	}
 
 	public void update() {
-		for (int i = copyShotDamageEvents.Count - 1; i >= 0; i--) {
-			if (Global.time - copyShotDamageEvents[i].time > 2) {
-				copyShotDamageEvents.RemoveAt(i);
-			}
-		}
-
-		for (int i = grenades.Count - 1; i >= 0; i--) {
-			if (grenades[i].destroyed || grenades[i] == null) {
-				grenades.RemoveAt(i);
-			}
-		}
-
 		readyTime += Global.spf;
 		if (readyTime >= maxReadyTime) {
 			readyTextOver = true;
 		}
-
 		if (Global.level.gameMode.isOver && aiTakeover) {
 			aiTakeover = false;
 			isAI = false;
 			if (character != null) character.ai = null;
 		}
-
 		if (!Global.level.gameMode.isOver) {
 			respawnTime -= Global.spf;
 		}
-
 		if (Global.canControlKillscore && Global.isOnFrame(30)) {
 			RPC.updatePlayer.sendRpc(id, kills, deaths);
 		}
-
 		if (character == null && respawnTime <= 0 && eliminated()) {
 			if (Global.serverClient != null && isMainPlayer) {
 				RPC.makeSpectator.sendRpc(id, true);
@@ -912,19 +890,16 @@ public partial class Player {
 			}
 			return;
 		}
-
 		// Evil Energy Timer.
 		if (character != null && !character.destroyed && character is Bass) {
 			Helpers.decrementFrames(ref evilEnergyTime);
 		} 
-
 		if (evilEnergyTime == 0 && evilEnergyStacks > 0) {
 			evilEnergyTime = evilEnergyMaxTime;
 			evilEnergyStacks--;
 			maxHealth += hpPerStack;
 			character?.playSound("heal");
 		}
-
 		// Never spawn a character if it already exists
 		if (character == null && ownedByLocalPlayer) {
 			if (!warpedInOnce && firstSpawn == null) {
@@ -1044,7 +1019,9 @@ public partial class Player {
 		}
 		if (charNum == (int)CharIds.Sigma) {
 			return [
-				(byte)loadout.sigmaLoadout.sigmaForm
+				(byte)loadout.sigmaLoadout.sigmaForm,
+				(byte)loadout.sigmaLoadout.maverick1,
+				(byte)loadout.sigmaLoadout.maverick2
 			];
 		}
 		return [];
@@ -1062,7 +1039,7 @@ public partial class Player {
 			alliance = newAlliance;
 		}
 
-		if (character != null) {
+		if (character != null && charNetId == character.netId) {
 			return;
 		}
 		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
@@ -1106,6 +1083,11 @@ public partial class Player {
 			);
 		} else if (charNum == (int)CharIds.Bass) {
 			character = new Bass(
+				this, pos.x, pos.y, xDir,
+				false, charNetId, ownedByLocalPlayer
+			);
+		} else if  (charNum == (int)CharIds.KaiserSigma) {
+			character = new KaiserSigma(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
@@ -1219,6 +1201,38 @@ public partial class Player {
 		disguise = new Disguise(data.targetName);
 		charNum = data.charNum;
 
+		// We temporally change loadout to populate it.
+		LoadoutData oldLoadout = loadout;
+		// If somehow even after all the safeguards fail we use the default one.
+		if (data.loadout == null) {
+			data.loadout = new();
+		}
+
+		loadout = data.loadout;
+		if (charNum == (int)CharIds.Sigma) {
+			loadout.sigmaLoadout.sigmaForm = data.extraData[0];
+			loadout.sigmaLoadout.maverick1 = data.extraData[1];
+			loadout.sigmaLoadout.maverick2 = data.extraData[2];
+			if (isSigma1()) {
+				sigmaMaxAmmo = 20;
+				sigmaAmmo = sigmaMaxAmmo;
+			} else if (isSigma2()) {
+				sigmaMaxAmmo = 28;
+				sigmaAmmo = 0;
+			}
+		}
+		if (charNum == (int)CharIds.X) {
+			loadout.xLoadout.weapon1 = data.extraData[0];
+			loadout.xLoadout.weapon2 = data.extraData[1];
+			loadout.xLoadout.weapon3 = data.extraData[2];
+			loadout.xLoadout.melee = data.extraData[3];
+		}
+		if (charNum == (int)CharIds.Axl) {
+			loadout.axlLoadout.weapon2 = data.extraData[0];
+			loadout.xLoadout.weapon3 = data.extraData[1];
+		}
+
+		// Change character.
 		Character? retChar = null;
 		throw new Exception("Error: Non-valid char ID: " + data.charNum);
 
@@ -1239,11 +1253,6 @@ public partial class Player {
 		Global.level.removeGameObject(preTransformedAxl);
 		character = retChar;
 
-		// Save old flags.
-		oldArmorFlag = armorFlag;
-		oldSpeedDevil = speedDevil;
-		oldFrozenCastle = frozenCastle;;
-
 		// Armor flags for X.
 		if (data.charNum == (int)CharIds.X) {
 			armorFlag = BitConverter.ToUInt16(
@@ -1253,15 +1262,8 @@ public partial class Player {
 				retX.hasUltimateArmor = (data.extraData[2] == 1);
 			}
 		}
-		// Store old weapons.
-		oldWeapons = weapons;
-
-		// Change weapons.
-		// We temporally change loadout to populate it.
-		if (data.loadout == null) { return; }
-		LoadoutData oldLoadout = loadout;
-		loadout = data.loadout;
-		configureWeapons();
+		// Restore old loadout and save the transformed one.
+		atransLoadout = loadout;
 		loadout = oldLoadout;
 	}
 
@@ -1278,28 +1280,17 @@ public partial class Player {
 		disguise = new Disguise(dnaCore.name);
 		charNum = dnaCore.charNum;
 
-		oldArmorFlag = armorFlag;
-		oldFrozenCastle = frozenCastle;
-		oldSpeedDevil = speedDevil;
-
-		armorFlag = dnaCore.armorFlag;
-		frozenCastle = dnaCore.frozenCastle;
-		speedDevil = dnaCore.speedDevil;
-
 		bool isVileMK2 = charNum == 2 && dnaCore.hyperMode == DNACoreHyperMode.VileMK2;
 		bool isVileMK5 = charNum == 2 && dnaCore.hyperMode == DNACoreHyperMode.VileMK5;
 
-		if (ownedByLocalPlayer) {
-			byte[]? extraData = null;
-			if (dnaCore.charNum == (int)CharIds.X) {
-				byte[] armorBytes = BitConverter.GetBytes(character.player.armorFlag);
+		// If somehow the DNA core loadout is null we copy current one.
+		if (dnaCore.loadout == null) {
+			dnaCore.loadout = loadout;
+		}
 
-				extraData = new byte[] {
-					armorBytes[0],
-					armorBytes[1],
-					dnaCore.ultimateArmor ? (byte)1 : (byte)0
-				};
-			} else if (dnaCore.charNum == (int)CharIds.Vile) {
+		if (ownedByLocalPlayer) {
+			byte[] extraData = getCharSpawnData(dnaCore.charNum);
+			if (dnaCore.charNum == (int)CharIds.Vile) {
 				extraData = new byte[1];
 				if (isVileMK2) {
 					extraData[0] = 1;
@@ -1307,9 +1298,6 @@ public partial class Player {
 				if (isVileMK5) {
 					extraData[0] = 2;
 				}
-			} else if (dnaCore.charNum == (int)CharIds.Sigma) {
-				extraData = new byte[1];
-				extraData[0] = (byte)dnaCore.loadout.sigmaLoadout.sigmaForm;
 			}
 			string json = JsonConvert.SerializeObject(
 				new RPCAxlDisguiseJson(
@@ -1319,7 +1307,7 @@ public partial class Player {
 			);
 			Global.serverClient?.rpc(RPC.axlDisguise, json);
 		}
-		oldAxlLoadout = loadout;
+		LoadoutData oldLoadout = loadout;
 		loadout = dnaCore.loadout;
 
 		Character? retChar = null;
@@ -1338,7 +1326,7 @@ public partial class Player {
 		if (charNum == (int)CharIds.PunchyZero) {
 			retChar.weapons.Add(new ZeroBuster());
 		}
-		if (charNum == (int)CharIds.Sigma) {
+		if (charNum == (int)CharIds.KaiserSigma) {
 			retChar.weapons.Add(new SigmaMenuWeapon());
 		}
 		//weapons.Add(new AssassinBullet());
@@ -1355,15 +1343,20 @@ public partial class Player {
 		//retChar.heal(maxHealth);
 
 		// Speed and state.
-		if (character.charState.canStopJump) {
-			retChar.changeState(new Jump(), true);
-		} else {
-			retChar.changeToIdleOrFall();
+		if (retChar.charId != CharIds.KaiserSigma) {
+			if (character.charState.canStopJump && !character.charState.stoppedJump) {
+				retChar.changeState(new Jump(), true);
+			} else {
+				retChar.changeToIdleOrFall();
+			}
+			retChar.vel = character.vel;
+			retChar.slideVel = character.slideVel;
+			retChar.xFlinchPushVel = character.xFlinchPushVel;
+			retChar.xIceVel = character.xIceVel;
 		}
-		retChar.vel = character.vel;
-		retChar.slideVel = character.slideVel;
-		retChar.xFlinchPushVel = character.xFlinchPushVel;
-		retChar.xIceVel = character.xIceVel;
+		retChar.health = character.health;
+		retChar.maxHealth = character.maxHealth;
+		retChar.healAmount = character.healAmount;
 
 		// Status effects.
 		retChar.burnTime = character.burnTime;
@@ -1402,18 +1395,25 @@ public partial class Player {
 			}
 			axl.axlSwapTime = 0.25f;
 		}
-
+		dnaCore.ultimateArmor = false;
 		dnaCore.usedOnce = true;
 		dnaCore.hyperMode = DNACoreHyperMode.None;
+
+		// Restore old loadout and save the transformed one.
+		atransLoadout = loadout;
+		loadout = oldLoadout;
 	}
 
 	// If you change this method change revertToAxlDeath() too
 	public void revertToAxl(ushort? backupNetId = null) {
 		disguise = null;
+		atransLoadout = null;
 		Character oldChar = character;
 
 		if (ownedByLocalPlayer) {
-			string json = JsonConvert.SerializeObject(new RPCAxlDisguiseJson(id, "", -1));
+			string json = JsonConvert.SerializeObject(
+				new RPCAxlDisguiseJson(id, "", -1, loadout, preTransformedAxl.netId.Value)
+			);
 			Global.serverClient?.rpc(RPC.axlDisguise, json);
 
 			if (character is Zero zero) {
@@ -1432,7 +1432,9 @@ public partial class Player {
 			if (backupNetId == null) {
 				throw new Exception("Error: Missing NetID on Axl trasform RPC.");
 			}
-			preTransformedAxl = new Axl(this, oldPos.x, oldPos.y, oldDir, true, backupNetId, ownedByLocalPlayer, false);
+			preTransformedAxl = new Axl(
+				this, oldPos.x, oldPos.y, oldDir, true, backupNetId, ownedByLocalPlayer, false
+			);
 		} else {
 			Global.level.addGameObject(preTransformedAxl);
 		}
@@ -1444,39 +1446,50 @@ public partial class Player {
 		character.xDir = oldDir;
 		maxHealth = getMaxHealth();
 		health = Math.Min(health, maxHealth);
-		loadout = oldAxlLoadout;
-		character.weapons = oldWeapons;
-		character.weaponSlot = 0;
-
-		armorFlag = oldArmorFlag;
-		speedDevil = oldSpeedDevil;
-		frozenCastle = oldFrozenCastle;
-
-		lastDNACore = null;
-		lastDNACoreIndex = 4;
-		character.ownedByLocalPlayer = ownedByLocalPlayer;
-
-		character.weapons.AddRange(oldChar.weapons.Where((Weapon w) => w is MaverickWeapon { summonedOnce: true }));
 
 		if (ownedByLocalPlayer) {
-			if (oldChar.charState.canStopJump) {
+			character.weaponSlot = 0;
+			lastDNACore = null;
+			lastDNACoreIndex = 4;
+
+			character.weapons.AddRange(oldChar.weapons.Where(
+				(Weapon w) => w is MaverickWeapon { summonedOnce: true } && !character.weapons.Contains(w)
+			));
+
+			character.grounded = oldChar.grounded;
+			if (oldChar.charState.canStopJump && !oldChar.grounded) {
 				character.changeState(new Jump(), true);
 			} else {
 				character.changeToIdleOrFall();
 			}
+			// Speed
 			character.vel = oldChar.vel;
 			character.slideVel = oldChar.slideVel;
 			character.xFlinchPushVel = oldChar.xFlinchPushVel;
 			character.xIceVel = oldChar.xIceVel;
+
+			// Status effects.
+			character.burnTime = oldChar.burnTime;
+			character.acidTime = oldChar.acidTime;
+			character.oilTime = oldChar.oilTime;
+			character.igFreezeProgress = oldChar.igFreezeProgress;
+			character.virusTime = oldChar.virusTime;
+
+			// Hit cooldowns.
+			character.projectileCooldown = oldChar.projectileCooldown;
+			character.flinchCooldown = oldChar.flinchCooldown;
 		}
 	}
 
 	// If you change this method change revertToAxl() too
 	public void revertToAxlDeath() {
 		disguise = null;
+		atransLoadout = null;
 
 		if (ownedByLocalPlayer) {
-			string json = JsonConvert.SerializeObject(new RPCAxlDisguiseJson(id, "", -2));
+			string json = JsonConvert.SerializeObject(
+				new RPCAxlDisguiseJson(id, "", -2, loadout, character.netId.Value)
+			);
 			Global.serverClient?.rpc(RPC.axlDisguise, json);
 
 			if (character is Zero zero) {
@@ -1489,18 +1502,14 @@ public partial class Player {
 		}
 		preTransformedAxl = null;
 		charNum = 3;
-		maxHealth = getMaxHealth();
-		health = 0;
-		loadout = oldAxlLoadout;
-		configureWeapons();
-		character.weaponSlot = 0;
-
-		armorFlag = oldArmorFlag;
-		speedDevil = oldSpeedDevil;
-		frozenCastle = oldFrozenCastle;
-
-		lastDNACore = null;
-		lastDNACoreIndex = 4;
+		if (ownedByLocalPlayer) {
+			maxHealth = getMaxHealth();
+			health = 0;
+			configureWeapons();
+			character.weaponSlot = 0;
+			lastDNACore = null;
+			lastDNACoreIndex = 4;
+		}
 		character.addTransformAnim();
 	}
 
@@ -1678,13 +1687,13 @@ public partial class Player {
 			return Global.level.server.customMatchSettings.respawnTime;
 		} else {
 			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
-				return 5;
+				return 8;
 			}
 			if (Global.level?.gameMode is KingOfTheHill) {
-				return 5;
+				return 8;
 			}
 		}
-		return 5;
+		return 8;
 	}
 
 	public bool canReviveVile() {
@@ -1794,8 +1803,6 @@ public partial class Player {
 		if (character.destroyed == false) {
 			character.destroySelf();
 		}
-		clearSigmaWeapons();
-		maxHealth = getModifiedHealth(32);
 		ushort newNetId = getNextATransNetId();
 		if (form == 0) {
 			if (Global.level.is1v1()) {
@@ -1811,7 +1818,6 @@ public partial class Player {
 				newNetId, true
 			);
 			character = kaiserSigma;
-			character.changeSprite("kaisersigma_enter", true);
 			//explodeDieEffect.changeSprite("sigma3_revive");
 			if (Global.level.is1v1() && spawnPoint.isZero()) {
 				var closestSpawn = Global.level.spawnPoints.OrderBy(
@@ -1819,14 +1825,11 @@ public partial class Player {
 				).FirstOrDefault();
 				spawnPoint = closestSpawn?.pos ?? new Point(Global.level.width / 2, character.pos.y);
 			}
-			character.changeState(new KaiserSigmaRevive(explodeDieEffect, spawnPoint), true);
 		}
 		RPC.reviveSigma.sendRpc(form, spawnPoint, id, newNetId);
 	}
 
 	public void reviveSigmaNonOwner(int form, Point spawnPoint, ushort sigmaNetId) {
-		clearSigmaWeapons();
-		maxHealth = getModifiedHealth(32);
 		if (form >= 2) {
 			character.destroySelf();
 			KaiserSigma kaiserSigma = new KaiserSigma(
@@ -1849,52 +1852,20 @@ public partial class Player {
 	public void reviveXNonOwner() {
 	}
 
-	public void explodeDieStart() {
-		respawnTime = getRespawnTime(); // * (suicided ? 2 : 1);
-		randomTip = Tips.getRandomTip(charNum);
-
-		explodeDieEffect = ExplodeDieEffect.createFromActor(character.player, character, 20, 1.5f, false);
-		Global.level.addEffect(explodeDieEffect);
-		limboChar = character;
-		character = null;
-	}
-
-	public void explodeDieEnd() {
-		if (limboChar != null) {
-			limboChar.destroySelf();
-			limboChar = null;
-		}
-		explodeDieEffect = null;
-		RPC.destroyCharacter.sendRpc(this, character);
-	}
-
 	public void destroySigmaEffect() {
 		ExplodeDieEffect.createFromActor(this, character, 25, 2, false);
 	}
 
-	public void destroySigma() {
-		respawnTime = getRespawnTime();// * (suicided ? 2 : 1);
-		randomTip = Tips.getRandomTip(charNum);
-
+	public void destroyCharacter(bool sendRpc = false) {
 		if (character == null) {
 			return;
 		}
-
 		character.destroySelf();
-		character = null;
-		RPC.destroyCharacter.sendRpc(this, character);
 		onCharacterDeath();
-	}
-
-	public bool destroyCharacter() {
-		if (character == null) {
-			return false;
+		if (sendRpc) {
+			RPC.destroyCharacter.sendRpc(this, character);
 		}
-		character.destroySelf();
 		character = null;
-
-		onCharacterDeath();
-		return true;
 	}
 
 	public bool destroyCharacter(ushort netId) {
@@ -1902,12 +1873,12 @@ public partial class Player {
 			return false;
 		}
 		character.destroySelf();
+		onCharacterDeath();
 		character = null;
 
-		onCharacterDeath();
 		return true;
 	}
-	
+
 	public void startDeathTimer() {
 		respawnTime = getRespawnTime();
 		randomTip = Tips.getRandomTip(charNum);
@@ -1915,13 +1886,24 @@ public partial class Player {
 
 	// Must be called on any character death
 	public void onCharacterDeath() {
+		delayedNewCharNum = null;
+		suicided = false;
+		unpossess();
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (delayedNewCharNum != null && Global.level.mainPlayer.charNum != delayedNewCharNum.Value) {
 			Global.level.mainPlayer.newCharNum = delayedNewCharNum.Value;
 			Global.serverClient?.rpc(RPC.switchCharacter, (byte)Global.level.mainPlayer.id, (byte)delayedNewCharNum.Value);
 		}
-		delayedNewCharNum = null;
-		suicided = false;
-		unpossess();
+		if (character == null) {
+			return;
+		}
+		foreach (Weapon weapon in character.weapons) {
+			if (weapon is MaverickWeapon mw && mw.maverick != null) {
+				mw.maverick.changeState(new MExit(mw.maverick.pos, true), true);
+			}
+		}
 	}
 
 	public void maverick1v1Kill() {

@@ -249,7 +249,9 @@ public partial class Character : Actor, IDamagable {
 		lastGravityWellDamager = player;
 		maxHealth = (decimal)player.getMaxHealth();
 		health = 1;
-		healAmount = (float)maxHealth - 1;
+		if (player.disguise == null) {
+			healAmount = (float)maxHealth - 1;
+		}
 	}
 
 	public override void onStart() {
@@ -420,7 +422,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override List<ShaderWrapper> getShaders() {
-		var shaders = new List<ShaderWrapper>();
+		List<ShaderWrapper> shaders = new();
 
 		if (acidTime > 0 && player.acidShader != null) {
 			player.acidShader.SetUniform("acidFactor", 0.25f + (acidTime / 8f) * 0.75f);
@@ -451,7 +453,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void splashLaserKnockback(Point splashDeltaPos) {
 		if (charState.invincible) return;
-		if (isImmuneToKnockback()) return;
+		if (isPushImmune()) return;
 
 		if (isClimbingLadder()) {
 			setFall();
@@ -585,8 +587,8 @@ public partial class Character : Actor, IDamagable {
 		if (player.isPossessed()) return false;
 		if (dropFlagCooldown > 0) return false;
 		if (isInvulnerable()) return false;
-		if (player.isDisguisedAxl) return false;
-		if (isCCImmuneHyperMode()) return false;
+		if (player.isDisguisedAxl && !disguiseCoverBlown) return false;
+		if (isNonDamageStatusImmune()) return false;
 		if (charState is Die || charState is VileRevive || charState is XReviveStart || charState is XRevive) return false;
 		if (player.currentMaverick != null && player.isTagTeam()) return false;
 		if (isWarpOut()) return false;
@@ -602,7 +604,7 @@ public partial class Character : Actor, IDamagable {
 		if (player.isPossessed()) return false;
 		if (health <= 0) return false;
 		if (isInvulnerable()) return false;
-		if (isCCImmuneHyperMode()) return false;
+		if (isNonDamageStatusImmune()) return false;
 		if (charState is Die) return false;
 		if (isWarpOut()) return false;
 		if (Global.serverClient != null) {
@@ -1223,13 +1225,17 @@ public partial class Character : Actor, IDamagable {
 			player.input.isPressed(Control.Jump, player) &&
 			(charState.wallKickLeftWall != null || charState.wallKickRightWall != null)
 		) {
+			// Reset airdash and disable dash speed.
 			dashedInAir = 0;
+			isDashing = false;
+			// Enable dash speed if input if pressed.
 			if (player.input.isHeld(Control.Dash, player) &&
 				(charState.useDashJumpSpeed || charState is WallSlide or WallSlideAttack)
 			) {
 				isDashing = true;
 				dashedInAir++;
 			}
+			// Jump action.
 			vel.y = -getJumpPower();
 			wallKickDir = 0;
 			if (charState.wallKickLeftWall != null) {
@@ -1246,15 +1252,24 @@ public partial class Character : Actor, IDamagable {
 					wallKickDir -= 1;
 				}
 			}
+			// Set variables.
 			wallKickTimer = maxWallKickTime;
+			charState.wallKickLeftWall = null;
+			charState.wallKickRightWall = null;
+			charState.lastLeftWall = null;
+			charState.lastRightWall = null;
+			// Set wallkick state if normal ctrl.
 			if (charState.normalCtrl || charState is WallSlide or WallSlideAttack) {
 				changeState(new WallKick(), true);
 				if (wallKickDir != 0) {
 					xDir = -wallKickDir;
 				}
-			} else {
+			}
+			// Play sound and wallkick mid-state if not.
+			else {
 				playSound("jump", sendRpc: true);
 			}
+			// GFX.
 			var wallSparkPoint = pos.addxy(12 * xDir, 0);
 			var rect = new Rect(wallSparkPoint.addxy(-2, -2), wallSparkPoint.addxy(2, 2));
 			if (Global.level.checkCollisionShape(rect.getShape(), null) != null) {
@@ -1265,10 +1280,12 @@ public partial class Character : Actor, IDamagable {
 			return true;
 		}
 		if (charState.canStopJump &&
+			!charState.stoppedJump &&
 			!grounded && vel.y < 0 &&
 			!player.input.isHeld(Control.Jump, player)
 		) {
 			vel.y = 0;
+			charState.stoppedJump = true;
 		}
 		if (charState.airMove && !grounded) {
 			airMove();
@@ -1282,6 +1299,9 @@ public partial class Character : Actor, IDamagable {
 				}
 				if (player.input.isHeld(Control.Dash, player) && charState.useDashJumpSpeed && canDash()) { 
 					isDashing = true;
+				}
+				if (charState.canStopJump) {
+					charState.stoppedJump = false;
 				}
 				vel.y = -getJumpPower();
 				playSound("jump", sendRpc: true);
@@ -1609,7 +1629,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool isDebuffImmune() {
-		return isStatusImmune();
+		return isStatusImmune() || isNonDamageStatusImmune();
 	}
 
 	public virtual bool isDotImmune() {
@@ -1617,35 +1637,49 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool isSlowImmune() {
-		return isStatusImmune();
+		return isStatusImmune() || isNonDamageStatusImmune() || isPushImmune();
 	}
 
 	public virtual bool isStunImmune() {
-		return isStatusImmune();
+		return (
+			isStatusImmune() || isInvulnerable() || isNonDamageStatusImmune() ||
+			charState.invincible || charState.stunResistant
+		);
+	}
+
+	public virtual bool isFlinchImmune() {
+		return (
+			isStatusImmune() || isInvulnerable() || isNonDamageStatusImmune() ||
+			charState.superArmor || charState.invincible
+		);
 	}
 
 	public virtual bool isPushImmune() {
+		return isTrueStatusImmune() || charState.immuneToWind == true || immuneToKnockback || isClimbingLadder();
+	}
+
+	public virtual bool isTimeImmune() {
 		return isTrueStatusImmune();
 	}
 
+	public virtual bool isGrabImmune() {
+		return isStatusImmune() || isInvulnerable() || charState.invincible || isNonDamageStatusImmune();
+	}
+
 	public virtual bool isStatusImmune() {
-		return isTrueStatusImmune() || isInvulnerable() || isVaccinated() || charState.invincible;
+		return isTrueStatusImmune() || isVaccinated();
 	}
 
 	public virtual bool isTrueStatusImmune() {
-		return false;
+		return isInvulnerable(true) || ownedByLocalPlayer && charState is Die;
 	}
 
-	public virtual bool isCCImmuneHyperMode() {
+	public virtual bool isNonDamageStatusImmune() {
 		return false;
 	}
 
 	public virtual bool isToughGuyHyperMode() {
 		return false;
-	}
-
-	public bool isImmuneToKnockback() {
-		return charState?.immuneToWind == true || immuneToKnockback || isStatusImmune();
 	}
 
 	// If factorHyperMode = true, then invuln frames in a hyper mode won't count as "invulnerable".
@@ -1654,21 +1688,23 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
 		if (isWarpIn()) return true;
 		if (invulnTime > 0) return true;
-		if (!ignoreRideArmorHide && charState is InRideArmor && (charState as InRideArmor)?.isHiding == true) {
+		if (!ignoreRideArmorHide) { 
+			if (ownedByLocalPlayer && charState is InRideArmor { isHiding: true }) {
+				return true;
+			}
+			if (sprite.name.EndsWith("ra_hide")) {
+				return true;
+			}
+			if (charState.specialId == SpecialStateIds.AxlRoll || charState.specialId == SpecialStateIds.XTeleport) {
+				return true;
+			}
+		}
+		if (sprite.name == "sigma2_viral_exit") {
 			return true;
 		}
-		if (!ignoreRideArmorHide && !string.IsNullOrEmpty(sprite?.name) && sprite.name.Contains("ra_hide")) {
+		if (ownedByLocalPlayer && charState is WarpOut or WolfSigmaRevive or ViralSigmaRevive or KaiserSigmaRevive) {
 			return true;
 		}
-		if (charState.specialId == SpecialStateIds.AxlRoll || charState.specialId == SpecialStateIds.XTeleport || charState.specialId == SpecialStateIds.Burning) {
-			return true;
-		}
-		if (sprite != null && sprite.name.Contains("viral_exit")) {
-			return true;
-		}
-		if (charState is WarpOut) return true;
-		if (charState is WolfSigmaRevive || charState is ViralSigmaRevive || charState is KaiserSigmaRevive) return true;
-		if (charState is SuperBassStart) return true;
 		return false;
 	}
 
@@ -1692,7 +1728,7 @@ public partial class Character : Actor, IDamagable {
 	public bool canBeGrabbed() {
 		return (
 			grabInvulnTime == 0 && !charState.invincible &&
-			!isInvulnerable() && !isStatusImmune() && !isDarkHoldState
+			!isInvulnerable() && !isGrabImmune() && !isDarkHoldState
 		);
 	}
 
@@ -1884,7 +1920,12 @@ public partial class Character : Actor, IDamagable {
 		if (grounded) {
 			changeState(new Idle(transitionSprite), true);
 		} else {
-			changeState(new Fall(), true);
+			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
+				changeState(new Jump() { enterSound = "" }, true);
+				frameIndex = sprite.totalFrameNum - 1;
+			} else {
+				changeState(new Fall(), true);
+			}
 		}
 	}
 
@@ -1892,7 +1933,12 @@ public partial class Character : Actor, IDamagable {
 		if (grounded) {
 			landingCode(useSound);
 		} else {
-			changeState(new Fall(), true);
+			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
+				changeState(new Jump() { enterSound = "" }, true);
+				frameIndex = sprite.totalFrameNum - 1;
+			} else {
+				changeState(new Fall(), true);
+			}
 		}
 	}
 
@@ -1900,7 +1946,12 @@ public partial class Character : Actor, IDamagable {
 		if (grounded) {
 			changeState(new Crouch(), true);
 		} else {
-			changeState(new Fall(), true);
+			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
+				changeState(new Jump() { enterSound = "" }, true);
+				frameIndex = sprite.totalFrameNum - 1;
+			} else {
+				changeState(new Fall(), true);
+			}
 		}
 	}
 
@@ -2557,9 +2608,9 @@ public partial class Character : Actor, IDamagable {
 	
 	public virtual bool isInvincible(Player attacker, int? projId) {
 		if (ownedByLocalPlayer) {
-			return charState.invincible || genmuImmune(attacker);
+			return charState.invincible;
 		} else {
-			return isSpriteInvulnerable() || genmuImmune(attacker);
+			return isSpriteInvulnerable();
 		}
 	}
 
@@ -2666,6 +2717,9 @@ public partial class Character : Actor, IDamagable {
 		// Damage increase/reduction section
 		if (!isArmorPiercing) {
 			if (charState is SwordBlock) {
+				damageSavings += (originalDamage * 0.5m);
+			}
+			if (charState is SigmaAutoBlock) {
 				damageSavings += (originalDamage * 0.25m);
 			}
 			if (charState is SigmaBlock) {
@@ -2690,7 +2744,7 @@ public partial class Character : Actor, IDamagable {
 					damageSavings += originalDamage / 8m;
 				}
 			}
-			if (this is Vile vile && vile.hasFrozenCastleBarrier()) {
+			if (this is Vile vile && vile.hasFrozenCastle) {
 				damageSavings += originalDamage * Vile.frozenCastlePercent;
 			}
 		}
@@ -2845,8 +2899,9 @@ public partial class Character : Actor, IDamagable {
 		int? assisterWeaponId = null;
 		if (charState is not Die || !ownedByLocalPlayer) {
 			player.lastDeathCanRevive = Global.anyQuickStart || Global.debug || Global.level.isTraining() || killer != null;
-			changeState(new Die(), true);
-
+			if (ownedByLocalPlayer) {
+				changeState(new Die(), true);
+			}
 			if (ownedByLocalPlayer) {
 				getKillerAndAssister(player, ref killer, ref assister, ref weaponIndex, ref assisterProjId, ref assisterWeaponId);
 			}
@@ -2992,18 +3047,11 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual void onFlagPickup(Flag flag) {
-		if (isCharging()) {
-			stopCharge();
-			if (flag == null) {
-				return;
-			}
-			dropFlagProgress = 0;
-			this.flag = flag;
-
-			if (player.isDisguisedAxl && player.ownedByLocalPlayer) {
-				player.revertToAxl();
-			}
+		if (flag == null) {
+			return;
 		}
+		dropFlagProgress = 0;
+		this.flag = flag;
 	}
 
 	public void setHurt(int dir, int flinchFrames, bool spiked) {
@@ -3383,10 +3431,6 @@ public partial class Character : Actor, IDamagable {
 				if (altShootPressed && player.currency >= 1) {
 					player.currency -= 1;
 					lastDNA.hyperMode = DNACoreHyperMode.None;
-					// Turn ultimate and golden armor into naked X
-					if (lastDNA.armorFlag >= byte.MaxValue - 1) {
-						lastDNA.armorFlag = 0;
-					}
 					// Turn ancient gun into regular axl bullet
 					if (lastDNA.weapons.Count > 0 &&
 						lastDNA.weapons[0] is AxlBullet ab &&
@@ -3495,6 +3539,10 @@ public partial class Character : Actor, IDamagable {
 			stopCharge();
 		}
 		chargeGfx();
+	}
+
+	public bool isPlayableDamagable() {
+		return true;
 	}
 
 	public virtual void aiUpdate() { }

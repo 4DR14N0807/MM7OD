@@ -198,6 +198,7 @@ public class TSeahorseAcidProj : Projectile, IDamagable {
 	public bool isInvincible(Player attacker, int? projId) => false;
 	public bool canBeHealed(int healerAlliance) => false;
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+	public bool isPlayableDamagable() { return false; }
 }
 
 public class TSeahorseAcid2Proj : Projectile {
@@ -281,7 +282,7 @@ public class TSeahorseAcid2Proj : Projectile {
 
 public class TSeahorseShoot2State : MaverickState {
 	bool shotOnce;
-	public TSeahorseShoot2State() : base("shoot2", "") {
+	public TSeahorseShoot2State() : base("shoot2") {
 		exitOnAnimEnd = true;
 	}
 
@@ -301,8 +302,8 @@ public class TSeahorseShoot2State : MaverickState {
 public class TSeahorseTeleportState : MaverickState {
 	int state = 0;
 	float shootCooldown;
-	public TSeahorseTeleportState() : base("teleport", "") {
-		enterSound = "";
+	public TSeahorseTeleportState() : base("teleport") {
+		enterSound = "tseahorseTeleportOut";
 	}
 
 	public override void update() {

@@ -518,6 +518,10 @@ public class SniperMissileProj : Projectile, IDamagable {
 		health += healAmount;
 		if (health > maxHealth) health = maxHealth;
 	}
+
+	public bool isPlayableDamagable() {
+		return false;
+	}
 }
 
 public class SniperMissileExplosionProj : Projectile {

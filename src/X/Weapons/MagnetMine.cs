@@ -167,8 +167,8 @@ public class MagnetMineProj : Projectile, IDamagable {
 		return true;
 	}
 
-	public void applyDamage(Player owner, int? weaponIndex, float damage, int? projId) {
-		//throw new NotImplementedException();
+	public bool isPlayableDamagable() {
+		return false;
 	}
 }
 

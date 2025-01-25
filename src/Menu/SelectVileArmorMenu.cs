@@ -32,13 +32,19 @@ public class SelectVileArmorMenu : IMainMenu {
 			if (selectArrowPosY == 0) {
 				if (!mainPlayer.frozenCastle && mainPlayer.currency >= Vile.frozenCastleCost) {
 					mainPlayer.frozenCastle = true;
-					//Global.playSound("ching");
+					if (mainPlayer.character is Vile vile) {
+						vile.hasFrozenCastle = true;
+					}
+					Global.playSound("ching");
 					mainPlayer.currency -= Vile.frozenCastleCost;
 				}
 			} else if (selectArrowPosY == 1) {
 				if (!mainPlayer.speedDevil && mainPlayer.currency >= Vile.speedDevilCost) {
 					mainPlayer.speedDevil = true;
-					//Global.playSound("ching");
+					if (mainPlayer.character is Vile vile) {
+						vile.hasSpeedDevil = true;
+					}
+					Global.playSound("ching");
 					mainPlayer.currency -= Vile.speedDevilCost;
 				}
 			}

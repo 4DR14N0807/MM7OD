@@ -12,7 +12,7 @@ public enum GroundSpecialType {
 public class Raijingeki : CharState {
 	bool playedSoundYet;
 	bool isAlt;
-	public Raijingeki(bool isAlt) : base(isAlt ? "raijingeki2" : "raijingeki", "", "") {
+	public Raijingeki(bool isAlt) : base(isAlt ? "raijingeki2" : "raijingeki") {
 		this.isAlt = isAlt;
 	}
 
@@ -37,7 +37,7 @@ public class Raijingeki : CharState {
 
 public class SuiretsusanState : CharState {
 	public bool isAlt;
-	public SuiretsusanState(bool isAlt) : base("spear", "") {
+	public SuiretsusanState(bool isAlt) : base("spear") {
 		this.isAlt = isAlt;
 	}
 
@@ -77,8 +77,8 @@ public class SuiretsusenProj : Projectile {
 		shouldVortexSuck = false;
 		shouldShieldBlock = false;
 		isMelee = true;
-		if (player?.character != null) {
-			owningActor = player.character;
+		if (ownerPlayer?.character != null) {
+			owningActor = ownerPlayer.character;
 		}
 
 		if (sendRpc) {
@@ -91,6 +91,11 @@ public class SuiretsusenProj : Projectile {
 		if (isAnimOver()) {
 			destroySelf();
 		}
+	}
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new SuiretsusenProj(
+			args.pos, args.xDir, args.player, args.netId
+		);
 	}
 }
 

@@ -224,6 +224,9 @@ public class LaunchOMissile : Projectile, IDamagable {
 			destroySelf();
 		}
 	}
+	public bool isPlayableDamagable() {
+		return false;
+	}
 }
 
 public class LaunchOWhirlpoolProj : Projectile {
@@ -259,12 +262,20 @@ public class LaunchOWhirlpoolProj : Projectile {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
+		if (!damagable.isPlayableDamagable()) { return; }
+
 		if (damagable is Character chr) {
 			float modifier = 1;
 			if (chr.isUnderwater()) modifier = 2;
-			if (chr.isImmuneToKnockback()) return;
+			if (chr.isPushImmune()) return;
 			float xMoveVel = MathF.Sign(pos.x - chr.pos.x);
 			chr.move(new Point(xMoveVel * 100 * modifier, 0));
+		}
+		if (damagable is Actor actor) {
+			float modifier = 1;
+			if (actor.isUnderwater()) modifier = 2;
+			float xMoveVel = MathF.Sign(pos.x - actor.pos.x);
+			actor.move(new Point(xMoveVel * 100 * modifier, 0));
 		}
 	}
 }
@@ -275,7 +286,7 @@ public class LaunchOShoot : MaverickState {
 	int shootState;
 	bool isGrounded;
 	float afterShootTime;
-	public LaunchOShoot(bool isGrounded) : base(isGrounded ? "shoot" : "air_shoot", "") {
+	public LaunchOShoot(bool isGrounded) : base(isGrounded ? "shoot" : "air_shoot") {
 		this.isGrounded = isGrounded;
 	}
 
@@ -347,7 +358,7 @@ public class LaunchOShoot : MaverickState {
 
 public class LaunchOHomingTorpedoState : MaverickState {
 	public bool shootOnce;
-	public LaunchOHomingTorpedoState() : base("ht", "") {
+	public LaunchOHomingTorpedoState() : base("ht") {
 	}
 
 	public override bool canEnter(Maverick maverick) {
@@ -386,7 +397,7 @@ public class LaunchOWhirlpoolState : MaverickState {
 	LaunchOWhirlpoolProj whirlpool;
 	float whirlpoolSoundTime;
 	int initYDir = 1;
-	public LaunchOWhirlpoolState() : base("spin", "") {
+	public LaunchOWhirlpoolState() : base("spin") {
 	}
 
 	public override bool canEnter(Maverick maverick) {
@@ -441,7 +452,7 @@ public class LaunchODrainState : MaverickState {
 	float leechTime = 0.5f;
 	public bool victimWasGrabbedSpriteOnce;
 	float timeWaiting;
-	public LaunchODrainState(Character grabbedChar) : base("drain", "") {
+	public LaunchODrainState(Character grabbedChar) : base("drain") {
 		this.victim = grabbedChar;
 	}
 

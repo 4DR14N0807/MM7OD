@@ -244,9 +244,9 @@ public class GravityWellProj : Projectile, IDamagable {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
+		if (!damagable.isPlayableDamagable()) { return; }
 		var actor = damagable.actor();
-		if (actor is Character chr && chr.isStatusImmune()) return;
-		if (actor is not Character && actor is not RideArmor && actor is not Maverick) return;
+		if (actor is Character chr && (chr.isPushImmune() || chr.isSlowImmune() || chr.isFlinchImmune())) return;
 
 		float mag = 100;
 		if (!actor.grounded) actor.vel.y = 0;
@@ -259,6 +259,8 @@ public class GravityWellProj : Projectile, IDamagable {
 	public void heal(float healAmount, bool allowStacking = true) { }
 	public bool isInvincible(Player attacker, int? projId) { return false; }
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+
+	public bool isPlayableDamagable() { return false; }
 }
 
 public class GravityWellProjCharged : Projectile, IDamagable {
@@ -337,7 +339,7 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 
 			if (actor != null && actor.ownedByLocalPlayer) {
 				if (chr != null && chr.player.alliance == damager.owner.alliance) continue;
-				if (chr != null && chr.isStatusImmune()) continue;
+				if (chr != null && chr.isPushImmune()) continue;
 				if (ra != null && ra.character == null) continue;
 				if (ra != null && ra.player != null && ra.player.alliance == damager.owner.alliance) continue;
 				if (rc != null && rc.character == null) continue;
@@ -392,13 +394,14 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 	public bool isInvincible(Player attacker, int? projId) { return false; }
 	public bool canBeHealed(int healerAlliance) { return false; }
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+	public bool isPlayableDamagable() { return false; }
 }
 
 public class GravityWellChargedState : CharState {
 	bool fired = false;
 	MegamanX? mmx;
 
-	public GravityWellChargedState() : base("point_up", "", "", "") {
+	public GravityWellChargedState() : base("point_up") {
 		superArmor = true;
 	}
 

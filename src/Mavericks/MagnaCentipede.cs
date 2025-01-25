@@ -241,7 +241,7 @@ public class MagnaCShurikenProj : Projectile {
 
 public class MagnaCShootState : MaverickState {
 	bool shotOnce;
-	public MagnaCShootState() : base("shuriken_throw", "") {
+	public MagnaCShootState() : base("shuriken_throw") {
 	}
 
 	public override void update() {
@@ -428,7 +428,7 @@ public class MagnaCMagnetMineState : MaverickState {
 	bool shotOnce;
 	public MagnaCentipede magnac;
 	public SoundWrapper sound;
-	public MagnaCMagnetMineState() : base("telekinesis", "") {
+	public MagnaCMagnetMineState() : base("telekinesis") {
 	}
 
 	public override void update() {
@@ -489,8 +489,9 @@ public class MagnaCTeleportState : MaverickState {
 	int state = 0;
 	Actor clone;
 	bool inverted;
-	public MagnaCTeleportState() : base("teleport_out", "") {
-		enterSound = "";
+	public MagnaCTeleportState() : base("teleport_out") {
+		enterSound = "magnacTeleportOut";
+		aiAttackCtrl = true;
 	}
 
 	public override void update() {
@@ -628,7 +629,7 @@ public class MagnaCMagnetPullProj : Projectile {
 		base.update();
 		foreach (GameObject go in getCloseActors(MathInt.Ceiling(radius + 50))) {
 			var chr = go as Character;
-			if (chr == null || !chr.ownedByLocalPlayer || chr.isImmuneToKnockback()) continue;
+			if (chr == null || !chr.ownedByLocalPlayer || chr.isPushImmune()) continue;
 			var damagable = go as IDamagable;
 			if (!damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)) continue;
 			if (chr.pos.distanceTo(pos) > radius + 15) continue;
@@ -651,7 +652,7 @@ public class MagnaCMagnetPullProj : Projectile {
 
 public class MagnaCMagnetPullState : MaverickState {
 	public MagnaCMagnetPullProj proj;
-	public MagnaCMagnetPullState() : base("drain_start", "") {
+	public MagnaCMagnetPullState() : base("drain_start") {
 	}
 
 	public override void update() {
@@ -703,7 +704,7 @@ public class MagnaCDrainState : MaverickState {
 	float leechTime = 0.5f;
 	public bool victimWasGrabbedSpriteOnce;
 	float timeWaiting;
-	public MagnaCDrainState(Character grabbedChar) : base("drain", "") {
+	public MagnaCDrainState(Character grabbedChar) : base("drain") {
 		this.victim = grabbedChar;
 	}
 
@@ -764,7 +765,8 @@ public class MagnaCDrainGrabbed : GenericGrabbedState {
 }
 
 public class MagnaCCeilingStartState : MaverickState {
-	public MagnaCCeilingStartState() : base("gravity_shift", "") {
+	public MagnaCCeilingStartState() : base("gravity_shift") {
+		aiAttackCtrl = true;
 	}
 
 	public override void update() {
@@ -791,7 +793,7 @@ public class MagnaCCeilingStartState : MaverickState {
 }
 
 public class MagnaCCeilingState : MaverickState {
-	public MagnaCCeilingState() : base("drain", "") {
+	public MagnaCCeilingState() : base("drain") {
 	}
 
 	public override void update() {

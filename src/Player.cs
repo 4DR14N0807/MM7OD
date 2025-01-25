@@ -783,9 +783,9 @@ public partial class Player {
 	}
 
 	// The character net id is always the first net id of the player
-	public ushort getCharActorNetId() {
-		return getStartNetId();
-	}
+	//public ushort getCharActorNetId() {
+	//return getStartNetId();
+	//}
 
 	public static int? getPlayerIdFromCharNetId(ushort charNetId) {
 		int netIdInt = charNetId;

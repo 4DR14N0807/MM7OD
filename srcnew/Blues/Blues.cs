@@ -61,6 +61,9 @@ public class Blues : Character {
 	public float aiSpecialUseTimer = 0;
 	public bool aiActivateShieldOnLand;
 
+	// Netcode stuff.
+	public int netChargeLevel;
+
 	// Creation code.
 	public Blues(
 		Player player, float x, float y, int xDir, bool isVisible,
@@ -307,12 +310,9 @@ public class Blues : Character {
 
 	public override void update() {
 		base.update();
-		// For non-local players.
-		if (overheating) {
-			addRenderEffect(RenderEffectType.ChargeOrange, 3, 5);
-		} 
 
-		if (!Global.level.isHyper1v1()) {
+		// Hypermode music.
+		if (false && !Global.level.isHyper1v1()) {
 			if (isBreakMan) { 
 				if (musicSource == null) {
 					addMusicSource("breakman", getCenterPos(), true);
@@ -322,7 +322,12 @@ public class Blues : Character {
 			}
 		}
 
-		if (!ownedByLocalPlayer) return;
+		// Netcode update ends here.
+		if (!ownedByLocalPlayer) {
+			overheatGfx();
+			return;
+		}
+
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref redStrikeCooldown);
@@ -462,7 +467,10 @@ public class Blues : Character {
 			changeSpriteFromName("idle_chargeshield", true);
 		}
 
-		// Overheating effects-
+		overheatGfx();
+	}
+
+	public void overheatGfx() {
 		if (overheating || overdrive) {
 			overheatEffectTime += Global.speedMul;
 			if (overheatEffectTime >= 3) {
@@ -478,7 +486,7 @@ public class Blues : Character {
 				if (overheating) {
 					tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 3, 120, 5);
 				} else {
-					RenderEffectType smokeEffect = getChargeLevel() switch {
+					RenderEffectType smokeEffect = drawableChargeLevel() switch {
 						1 => RenderEffectType.ChargeBlue,
 						2 => RenderEffectType.ChargePurple,
 						3 => RenderEffectType.ChargeGreen,
@@ -491,6 +499,16 @@ public class Blues : Character {
 		if (overdrive && getChargeLevel() <= 0) {
 			addRenderEffect(RenderEffectType.ChargeYellow, 3, 5);
 		}
+		else if (overheating) {
+			addRenderEffect(RenderEffectType.ChargeOrange, 3, 5);
+		}
+	}
+
+	public int drawableChargeLevel() {
+		if (!ownedByLocalPlayer) {
+			return netChargeLevel;
+		}
+		return getChargeLevel();
 	}
 
 	public void reviveBlues() {
@@ -1161,10 +1179,12 @@ public class Blues : Character {
 		// Per-character data.
 		customData.Add((byte)MathInt.Floor(coreAmmo));
 		customData.Add((byte)MathInt.Ceiling(shieldHP));
+		customData.Add((byte)getChargeLevel());
 		bool[] flags = [
 			isShieldFront(),
 			overheating,
-			isBreakMan
+			isBreakMan,
+			overdrive
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
@@ -1179,10 +1199,12 @@ public class Blues : Character {
 		// Per-character data.
 		coreAmmo = data[0];
 		shieldHP = data[1];
+		netChargeLevel = data[2];
 
-		bool[] flags = Helpers.byteToBoolArray(data[2]);
+		bool[] flags = Helpers.byteToBoolArray(data[3]);
 		isShieldActive = flags[0];
 		overheating = flags[1];
 		isBreakMan = flags[2];
+		overdrive = flags[3];
 	}
 }

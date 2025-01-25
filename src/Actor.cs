@@ -486,6 +486,18 @@ public partial class Actor : GameObject {
 			}
 		}
 
+		// Iterate and remove render effects.
+		HashSet<RenderEffectType> renderEffectsToRemove = new();
+		foreach (var kvp in renderEffects) {
+			kvp.Value.time -= speedMul;
+			if (kvp.Value.time <= 0) {
+				renderEffectsToRemove.Add(kvp.Key);
+			}
+		}
+		foreach (var renderEffect in renderEffectsToRemove) {
+			renderEffects.Remove(renderEffect);
+		}
+
 		if (!useFrameProjs) {
 			return;
 		}
@@ -609,17 +621,6 @@ public partial class Actor : GameObject {
 				createRpcTime = 0;
 				createActorRpc(netOwner.id);
 			}
-		}
-
-		var renderEffectsToRemove = new HashSet<RenderEffectType>();
-		foreach (var kvp in renderEffects) {
-			kvp.Value.time -= Global.speedMul;
-			if (kvp.Value.time <= 0) {
-				renderEffectsToRemove.Add(kvp.Key);
-			}
-		}
-		foreach (var renderEffect in renderEffectsToRemove) {
-			renderEffects.Remove(renderEffect);
 		}
 
 		if (!locallyControlled) {

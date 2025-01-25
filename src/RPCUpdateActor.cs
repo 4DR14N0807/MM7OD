@@ -152,8 +152,11 @@ public class RPCUpdateActor : RPC {
 		i += 2;
 
 		Actor? actor = Global.level.getActorByNetId(netId, true);
-
 		if (actor == null) {
+			return;
+		}
+
+		/*if (actor == null) {
 			int? playerId = Player.getPlayerIdFromCharNetId(netId);
 			if (playerId != null) {
 				var player = Global.level.getPlayerById(playerId.Value);
@@ -164,7 +167,7 @@ public class RPCUpdateActor : RPC {
 				}
 			}
 			return;
-		}
+		}*/
 
 		try {
 			if (actor != null && !actor.ownedByLocalPlayer) {

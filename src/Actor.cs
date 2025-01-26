@@ -892,7 +892,7 @@ public partial class Actor : GameObject {
 				}
 
 				//If already grounded, snap to ground further
-				CollideData collideDataCloseCheck = Global.level.checkTerrainCollisionOnce(this, 0, 0.05f * yMod);
+				CollideData? collideDataCloseCheck = Global.level.checkTerrainCollisionOnce(this, 0, 0.05f * yMod);
 				if (collideDataCloseCheck == null) {
 					var yVel = new Point(0, yDist);
 					var mtv = Global.level.getMtvDir(

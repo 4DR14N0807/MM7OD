@@ -6,6 +6,7 @@ using Newtonsoft.Json.Converters;
 namespace MMXOnline;
 
 public class IceWall : Weapon {
+	public static IceWall netWeapon = new();
 
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;

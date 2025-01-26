@@ -433,13 +433,13 @@ public class Helpers {
 		return x << 16 | y;
 	}
 
-#if WINDOWS
+#if OS_WINDOWS
 	[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 	public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 #endif
 
 	public static void showMessageBox(string message, string caption) {
-#if WINDOWS
+#if OS_WINDOWS
 		if (Global.window != null) {
 			Global.window.SetMouseCursorVisible(true);
 		}
@@ -453,7 +453,7 @@ public class Helpers {
 	}
 
 	public static bool showMessageBoxYesNo(string message, string caption) {
-#if WINDOWS
+#if OS_WINDOWS
 		if (Global.window != null) {
 			Global.window.SetMouseCursorVisible(true);
 		}

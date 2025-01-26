@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class ThunderBolt : Weapon {
+	public static ThunderBolt netWeapon = new();
 
 	public ThunderBolt() : base() {
 		index = (int)RockWeaponIds.ThunderBolt;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MMXOnline;
 
@@ -104,10 +105,10 @@ public struct Shape {
 	public HitData? intersectsShape(Shape other, Point? vel = null) {
 		Global.collisionCalls++;
 
-		if (minX > other.maxX ||
-			maxX < other.minX ||
-			minY > other.maxY ||
-			maxY < other.minY			
+		if (minX >= other.maxX ||
+			maxX <= other.minX ||
+			minY >= other.maxY ||
+			maxY <= other.minY
 		) {
 			return null;
 		}

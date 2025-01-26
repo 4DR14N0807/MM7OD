@@ -381,66 +381,7 @@ public class Sprite {
 						xDirArg, yDirArg, angle, alpha,
 						[outlineShader], true
 					);
-					if (animData.isAxlSprite && drawAxlArms) {
-						DrawWrappers.DrawTexture(
-							axlArmBitmap,
-							currentFrame.rect.x1 - 1, currentFrame.rect.y1 - 1,
-							currentFrame.rect.w() + 2, currentFrame.rect.h() + 2,
-							x, y, zIndex - 10,
-							cx - (frameOffsetX - (1 * xDirArg)) * xDirArg,
-							cy - (frameOffsetY - (1 * yDirArg)) * yDirArg,
-							xDirArg, yDirArg, angle, alpha,
-							[outlineShader], true
-						);
-					}
 				}
-			}
-		
-			if (name is "boomerk_dash" or "boomerk_bald_dash" && (animTime > 0 || frameIndex > 0)) {
-				if (Global.isOnFrameCycle(4)) {
-					var trail = lastTwoBkTrailDraws.ElementAtOrDefault(5);
-					if (trail != null) {
-						trail.action.Invoke(trail.time);
-						trail.time -= Global.spf;
-					}
-				} else {
-					var trail = lastTwoBkTrailDraws.ElementAtOrDefault(9);
-					if (trail != null) {
-						trail.action.Invoke(trail.time);
-						trail.time -= Global.spf;
-					}
-				}
-
-				var shaderList = new List<ShaderWrapper>();
-				if (Global.shaderWrappers.ContainsKey("boomerkTrail")) {
-					ShaderWrapper boomerkTrail = Global.shaderWrappers["boomerkTrail"];
-					boomerkTrail.SetUniform("paletteTexture", Global.textures["boomerkTrailPalette"]);
-					shaderList.Add(boomerkTrail);
-				}
-
-				if (lastTwoBkTrailDraws.Count > 10) {
-					lastTwoBkTrailDraws.PopFirst();
-				}
-				lastTwoBkTrailDraws.Add(new Trail() {
-					action = (float time) => {
-						DrawWrappers.DrawTexture(
-							bitmap,
-							animData.frames[1].rect.x1,
-							animData.frames[1].rect.y1,
-							animData.frames[1].rect.w(),
-							animData.frames[1].rect.h(),
-							x, y, zIndex,
-							cx - frameOffsetX * xDirArg,
-							cy - frameOffsetY * yDirArg,
-							xDirArg, yDirArg,
-							angle, alpha,
-							shaderList, true
-						);
-					},
-					time = 0.25f
-				});
-			} else {
-				lastTwoBkTrailDraws.Clear();
 			}
 
 			if (renderEffects.Contains(RenderEffectType.Trail)) {

@@ -5,6 +5,7 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class RushWeapon : Weapon {
+	public static RushWeapon netWeapon = new();
 
 	public RushWeapon() : base() {
 		maxAmmo = 28;

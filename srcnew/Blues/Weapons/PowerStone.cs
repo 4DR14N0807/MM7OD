@@ -4,14 +4,15 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class PowerStone : Weapon {
+	public static PowerStone netWeapon = new();
 
 	public PowerStone() : base() {
 		displayName = "POWER STONE";
 		descriptionV2 = "Summons three stones that spiral around.\nCan be used behind the shield.";
-		defaultAmmoUse = 5;
+		defaultAmmoUse = 6;
 
 		index = (int)BluesWeaponIds.PowerStone;
-		fireRate = 90;
+		fireRate = 55;
 		hasCustomAnim = true;
 	}
 

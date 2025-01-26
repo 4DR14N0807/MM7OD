@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class HardKnuckle : Weapon {
+	public static HardKnuckle netWeapon = new();
 
 	public HardKnuckle() : base() {
 		displayName = "HARD KNUCKLE";
@@ -11,7 +12,7 @@ public class HardKnuckle : Weapon {
 		defaultAmmoUse = 4;
 
 		index = (int)BluesWeaponIds.HardKnuckle;
-		fireRate = 40;
+		fireRate = 45;
 		hasCustomAnim = true;
 	}
 

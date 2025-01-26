@@ -938,28 +938,13 @@ public class GameMode {
 	}
 
 	public bool shouldDrawRadar() {
-		if (Global.level.isRace()) return true;
-		if (level.is1v1()) return false;
-		if (level.mainPlayer == null) return false;
-		if (level.mainPlayer.isX && level.mainPlayer.hasHelmetArmor(3)) {
+		if (Global.level.isRace()) {
 			return true;
 		}
-		if (level.mainPlayer.isAxl && level.boundBlasterAltProjs.Any(b => b.state == 1)) {
-			return true;
+		if (level.is1v1() || level.mainPlayer?.isSpectator != false) {
+			return false;
 		}
-		if (level.mainPlayer.isSigma && level.mainPlayer.currentMaverick == null) {
-			if (level.mainPlayer.isPuppeteer() || level.mainPlayer.isSummoner()) {
-				return level.mainPlayer.mavericks.Count > 0;
-			}
-		}
-		if (level.mainPlayer.isSigma && level.mainPlayer.currentMaverick != null) {
-			if (level.mainPlayer.isPuppeteer()) {
-				return level.mainPlayer.health > 0;
-			} else if (level.mainPlayer.isSummoner()) {
-				return level.mainPlayer.mavericks.Count > 1;
-			}
-		}
-		return false;
+		return true;
 	}
 
 	void drawRadar() {

@@ -5,8 +5,9 @@ using System.Security;
 namespace MMXOnline;
 
 public class SlashClawWeapon : Weapon {
-	public SlashClawWeapon(Player player) : base() {
-		damager = new Damager(player, 2, 0, 0.25f);
+	public static SlashClawWeapon netWeapon = new();
+
+	public SlashClawWeapon() : base() {
 		index = (int)RockWeaponIds.SlashClaw;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.SlashClaw;
 		weaponBarIndex = weaponBarBaseIndex;

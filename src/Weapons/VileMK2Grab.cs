@@ -71,7 +71,6 @@ public class VileMK2GrabState : CharState {
 		}
 		if (newState is not VileMK2GrabState && victim != null) {
 			victim.grabInvulnTime = 2;
-			victim.stunInvulnTime = 1;
 			victim?.releaseGrab(character, true);
 		}
 	}

@@ -5,11 +5,12 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class GravityHold : Weapon {
+	public static GravityHold netWeapon = new();
 
 	public GravityHold() : base() {
 		displayName = "GRAVITY HOLD";
 		descriptionV2 = "";
-		defaultAmmoUse = 6;
+		defaultAmmoUse = 5;
 
 		index = (int)BluesWeaponIds.GravityHold;
 		fireRate = 55;
@@ -86,7 +87,7 @@ public class GravityHoldProj : Projectile {
 			foreach (Actor actor in getCloseActors(160)) {
 				if (actor.ownedByLocalPlayer &&
 					actor is Character chara &&
-					//!chara.isCCImmune() &&
+					!chara.isPushImmune() &&
 					!chara.grounded &&
 					chara.getCenterPos().distanceTo(pos) <= maxR + 20 &&
 					chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) &&
@@ -96,9 +97,7 @@ public class GravityHoldProj : Projectile {
 					chara.gHoldOwner = damager.owner;
 					chara.gHolded = true;
 					gHoldModifier = 1;
-					if (chara.charState is Jump) {
-						chara.changeState(new Fall());
-					}
+					chara.charState.stoppedJump = true;
 					chara.vel.y = 800;
 				}
 			}

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class WildCoil : Weapon {
+	public static WildCoil netWeapon = new();
 
 	public WildCoil() : base() {
 		index = (int)RockWeaponIds.WildCoil;

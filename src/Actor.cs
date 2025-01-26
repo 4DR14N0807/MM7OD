@@ -119,7 +119,7 @@ public partial class Actor : GameObject {
 	public float gravityWellModifier = 1;
 	// Gravity Hold Stuff
 	public float gHoldModifier = 1;
-	public Player? gHoldOwner;
+	public Player gHoldOwner = Player.stagePlayer;
 	public bool gHolded;
 	public int gHoldTime;
 
@@ -839,18 +839,15 @@ public partial class Actor : GameObject {
 		}
 
 		float yMod = reversedGravity ? -1 : 1;
-		if (chr?.charState is VileMK2Grabbed) {
-			grounded = false;
-		} else if (physicsCollider != null && !isStatic && (canBeGrounded || useGravity)) {
+		if (physicsCollider != null && !isStatic && (canBeGrounded || useGravity)) {
 			float yDist = 1;
-			if (grounded && vel.y * yMod >= 0) {
-				yDist = 4;
+			if (grounded && vel.y * yMod >= 0 && lastPos.y >= pos.y) {
+				yDist = 5;
 			}
 			yDist *= yMod;
-
 			CollideData? collideData = Global.level.checkTerrainCollisionOnce(this, 0, yDist, checkPlatforms: true);
 
-			var hitActor = collideData?.gameObject as Actor;
+			Actor? hitActor = collideData?.gameObject as Actor;
 			bool isPlatform = false;
 			bool tooLowOnPlatform = false;
 			if (hitActor?.isPlatform == true) {
@@ -875,7 +872,7 @@ public partial class Actor : GameObject {
 				landingVelY = vel.y;
 				vel.y = 0;
 
-				var hitWall = collideData.gameObject as Wall;
+				Wall? hitWall = collideData.gameObject as Wall;
 				if (hitWall?.isMoving == true) {
 					move(hitWall.deltaMove, useDeltaTime: false);
 				} else if (hitWall != null && hitWall.moveX != 0) {
@@ -1661,7 +1658,7 @@ public partial class Actor : GameObject {
 
 	public void destroyGHold() {
 		gHolded = false;
-		gHoldOwner = null;
+		gHoldOwner = Player.stagePlayer;
 		useGravity = true;
 	}
 

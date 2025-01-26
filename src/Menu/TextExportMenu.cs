@@ -15,7 +15,7 @@ public class TextExportMenu : IMainMenu {
 	string fileError;
 	float fileTime;
 	float clipboardTime;
-#if WINDOWS
+#if OS_WINDOWS
 	bool canCopyToClipboard = true;
 #else
 	bool canCopyToClipboard = false;
@@ -65,7 +65,7 @@ public class TextExportMenu : IMainMenu {
 		} else if (Global.input.isPressedMenu(Control.MenuConfirm) &&
 			canCopyToClipboard && clipboardTime == 0
 		) {
-#if WINDOWS
+#if OS_WINDOWS
 			SetClipboard(text);
 			clipboardTime = 2;
 #endif

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class GyroAttack : Weapon {
+	public static GyroAttack netWeapon = new();
 
 	public GyroAttack() : base() {
 		displayName = "GYRO ATTACK";
@@ -11,7 +12,7 @@ public class GyroAttack : Weapon {
 		defaultAmmoUse = 2;
 
 		index = (int)BluesWeaponIds.GyroAttack;
-		fireRate = 50;
+		fireRate = 35;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -34,7 +35,7 @@ public class GyroAttackProj : Projectile {
 
 	public GyroAttackProj(Point pos, int xDir, Player player, ushort? netId, bool rpc = false) :
 	base(GyroAttack.netWeapon, pos, xDir, projSpeed, 2, player, "gyro_attack_proj", 0, 0, netId, player.ownedByLocalPlayer) {
-		maxTime = 0.625f;
+		maxTime = 35 * 60;
 		projId = (int)BluesProjIds.GyroAttack;
 		netOwner = player;
 		canBeLocal = false;

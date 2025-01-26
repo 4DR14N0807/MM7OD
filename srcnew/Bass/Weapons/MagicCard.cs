@@ -5,7 +5,7 @@ using System.Linq;
 namespace MMXOnline;
 
 public class MagicCard : Weapon {
-
+	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new List<MagicCardProj>();
 
 	public MagicCard() : base() {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace MMXOnline;
 
 public class JunkShield : Weapon {
+	public static JunkShield netWeapon = new();
 
 	public JunkShield() : base() {
 		shootSounds = new string[] { "", "", "", "" };

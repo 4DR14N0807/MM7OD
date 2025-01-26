@@ -235,10 +235,7 @@ public class Blues : Character {
 		return grounded && overheating;
 	}
 
-	public void destroyStarCrash() {
-		if (starCrash != null) {
-			starCrash.destroySelf();
-		}
+	public void delinkStarCrash() {
 		starCrash = null;
 		gravityModifier = 1;
 		starCrashActive = false;
@@ -308,6 +305,26 @@ public class Blues : Character {
 		return player.input.isHeld(Control.Shoot, player);
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		// Cooldowns.
+		Helpers.decrementFrames(ref lemonCooldown);
+		Helpers.decrementFrames(ref redStrikeCooldown);
+		Helpers.decrementFrames(ref lTankCoreHealTime);
+		Helpers.decrementFrames(ref lTankHealShieldCooldown);
+		if (lTankHealShieldAmount <= 0) {
+			Helpers.decrementFrames(ref healShieldHPCooldown);
+		}
+		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
+			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
+		}
+		// Core ammo regen.
+		if (!isCharging() || chargeTime > charge3Time + (overdrive ? 20 : 10)) {
+			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
+			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
+		}
+	}
+
 	public override void update() {
 		base.update();
 
@@ -316,7 +333,7 @@ public class Blues : Character {
 			if (isBreakMan) { 
 				if (musicSource == null) {
 					addMusicSource("breakman", getCenterPos(), true);
-				} 
+				}
 			} else {
 				destroyMusicSource();
 			}
@@ -328,22 +345,13 @@ public class Blues : Character {
 			return;
 		}
 
-		// Cooldowns.
-		Helpers.decrementFrames(ref lemonCooldown);
-		Helpers.decrementFrames(ref redStrikeCooldown);
-		Helpers.decrementFrames(ref lTankCoreHealTime);
-		Helpers.decrementFrames(ref lTankHealShieldCooldown);
-		if (lTankHealShieldAmount <= 0) {
-			Helpers.decrementFrames(ref healShieldHPCooldown);
-		}
+		// Special weapon stuff.
 		specialWeapon.update();
-		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
-			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
-		}
 
 		// Revive stuff.
 		if (player.canReviveBlues() && player.input.isPressed(Control.Special2, player)) {
-			reviveBlues();
+			changeState(new BluesRevive(), true);
+			player.currency -= reviveCost;
 		}
 
 		// Shield HP.
@@ -359,14 +367,16 @@ public class Blues : Character {
 				fastShieldHeal = false;
 			}
 		}
+
 		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive) {
 			if (isBreakMan) {
 				overdrive = true;
 				overdriveAmmo = coreMaxAmmo;
-				destroyStarCrash();
 			} else {
 				overheating = true;
 			}
+			starCrash?.destroySelf();
+			delinkStarCrash();
 			setHurt(-xDir, 12, false);
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
@@ -379,9 +389,6 @@ public class Blues : Character {
 				overdriveAmmoDecreaseCooldown -= Global.speedMul / 2f;
 				if (overdriveAmmoDecreaseCooldown <= 0) { overdriveAmmoDecreaseCooldown = 0; }
 			};
-		} else {
-			if (starCrash == null) Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
-			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
 		}
 		if (coreAmmoDecreaseCooldown <= 0 && !overdrive && charState is not BluesRevive) {
 			coreAmmo--;
@@ -394,6 +401,7 @@ public class Blues : Character {
 				coreAmmoDecreaseCooldown = 12;
 			}
 		}
+
 		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive) {
 			overdriveAmmo--;
 			if (overdriveAmmo <= 0) {
@@ -403,8 +411,7 @@ public class Blues : Character {
 				playSound("danger_wrap_explosion", sendRpc: true);
 				stopCharge();
 			}
-			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
-			overdriveAmmoMaxCooldown = 13;
+			overdriveAmmoDecreaseCooldown = 10;
 		}
 
 		// L-Tank check
@@ -413,6 +420,7 @@ public class Blues : Character {
 		) {
 			isUsingLTank = false;
 		}
+
 		// L-Tank Core cooling.
 		if (lTankCoreHealAmount > 0 && lTankCoreHealTime <= 0) {
 			lTankCoreHealAmount--;
@@ -420,8 +428,8 @@ public class Blues : Character {
 			playSound("heal");
 			if (overdrive) {
 				overdriveAmmo++;
-				if (overdriveAmmo >= 28) {
-					overdriveAmmo = 28;
+				if (overdriveAmmo >= coreMaxAmmo) {
+					overdriveAmmo = coreMaxAmmo;
 					lTankCoreHealAmount = 0;
 					lTankCoreHealTime = 0;
 				}	
@@ -434,6 +442,7 @@ public class Blues : Character {
 				}
 			}
 		}
+
 		// L-Tank Shield HP Heal.
 		if (lTankHealShieldAmount > 0 && lTankHealShieldCooldown <= 0) {
 			shieldHP++;
@@ -460,13 +469,17 @@ public class Blues : Character {
 				}
 			}
 		}
+
 		// Shoot logic.
 		chargeLogic(shoot);
+
+		// Charge animations.
 		int requiredCharge = (isBreakMan ? 1 : 2);
 		if (isShieldActive && getChargeLevel() >= requiredCharge && sprite.name == getSprite("idle_shield")) {
 			changeSpriteFromName("idle_chargeshield", true);
 		}
 
+		// Overheat stuff.
 		overheatGfx();
 	}
 
@@ -509,11 +522,6 @@ public class Blues : Character {
 			return netChargeLevel;
 		}
 		return getChargeLevel();
-	}
-
-	public void reviveBlues() {
-		changeState(new BluesRevive(), true);
-		player.currency -= reviveCost;
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
@@ -914,16 +922,15 @@ public class Blues : Character {
 	}
 
 	public override void applyDamage(
-		float fDamage,
-		Player? attacker, Actor? actor,
+		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
-		// Disable shield on any damage.
-		if (damage > 0) {
+		// Disable shield on any non DOT damage.
+		if (damage > 0 && !Damager.isDot(projId)) {
 			healShieldHPCooldown = 180;
 		}
 		// Do shield checks only if damage exists and a actor too.
@@ -1125,7 +1132,7 @@ public class Blues : Character {
 		base.onFlagPickup(flag);
 		stopCharge();
 		if (starCrash != null) {
-			destroyStarCrash();
+			delinkStarCrash();
 		}
 	}
 
@@ -1185,7 +1192,6 @@ public class Blues : Character {
 		int weaponIndex = specialWeaponIndex;
 		customData.Add((byte)MathInt.Floor(coreAmmo));
 		customData.Add((byte)MathInt.Ceiling(shieldHP));
-		customData.Add((byte)weaponIndex);
 		customData.Add((byte)getChargeLevel());
 		bool[] flags = [
 			isShieldFront(),
@@ -1207,9 +1213,8 @@ public class Blues : Character {
 		coreAmmo = data[0];
 		shieldHP = data[1];
 		netChargeLevel = data[2];
-		specialWeaponIndex = data[3];
 
-		bool[] flags = Helpers.byteToBoolArray(data[4]);
+		bool[] flags = Helpers.byteToBoolArray(data[3]);
 		isShieldActive = flags[0];
 		overheating = flags[1];
 		isBreakMan = flags[2];

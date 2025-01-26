@@ -1397,141 +1397,6 @@ public class Win : CharState {
 		character.useGravity = false;
 	}
 }
- 
-public class Frozen : CharState {
-	public float startFreezeTime;
-	public float freezeTime;
-	public Frozen(float freezeTime) : base("frozen") {
-		this.startFreezeTime = freezeTime;
-		this.freezeTime = freezeTime;
-	}
-
-	public override bool canEnter(Character character) {
-		if (!base.canEnter(character)) return false;
-		if (character.freezeInvulnTime > 0) return false;
-		if (character.isInvulnerable()) return false;
-		if (character.isVaccinated()) return false;
-		return /* !character.isCCImmune() && */ !character.charState.invincible;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		if (character.vel.y < 0) character.vel.y = 0;
-		//character.playSound("igFreeze");
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-		character.breakFreeze(player, sendRpc: true);
-		character.freezeInvulnTime = 2;
-	}
-
-	public override void update() {
-		base.update();
-
-		freezeTime -= player.mashValue();
-		if (freezeTime <= 0) {
-			freezeTime = 0;
-			character.changeState(new Idle(), true);
-		}
-	}
-}
-
-public class Stunned : CharState {
-	public float stunTime = 2;
-	public Anim stunAnim;
-	public Stunned() : base("lose") {
-	}
-
-	public override bool canEnter(Character character) {
-		if (!base.canEnter(character) ||
-			character.stunInvulnTime > 0 ||
-			character.isInvulnerable() ||
-			character.charState.stunResistant ||
-			character.grabInvulnTime > 0 ||
-			character.isVaccinated() ||
-			//character.charState is Frozen ||
-			character.charState is VileMK2Grabbed ||
-			(character as MegamanX)?.chargedRollingShieldProj != null ||
-			character.charState.invincible
-		) {
-			return false;
-		}
-		return true;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		if (!character.ownedByLocalPlayer) return;
-		stunAnim = new Anim(character.getCenterPos(), "vile_stun_static", 1, character.player.getNextActorNetId(), false, sendRpc: true);
-		stunAnim.setzIndex(character.zIndex + 100);
-		if (character.vel.y < 0) character.vel.y = 0;
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-		if (!character.ownedByLocalPlayer) return;
-		stunAnim?.destroySelf();
-		character.stunInvulnTime = 2;
-	}
-
-	public override void update() {
-		base.update();
-
-		if (player.isX && character.player.hasArmor(2)) character.changeSprite("mmx_lose_x2", true);
-		if (player.isX && character.player.hasArmor(3)) character.changeSprite("mmx_lose_x3", true);
-
-		if (!character.ownedByLocalPlayer) return;
-		if (stunAnim != null) stunAnim.pos = character.getCenterPos();
-
-		stunTime -= player.mashValue();
-		if (stunTime <= 0) {
-			stunTime = 0;
-			character.changeState(new Idle(), true);
-		}
-	}
-}
-
-public class Crystalized : CharState {
-	public float crystalizedTime;
-	public Crystalized(int crystalizedTime) : base("idle") {
-		this.crystalizedTime = crystalizedTime;
-	}
-
-	public override bool canEnter(Character character) {
-		if (!base.canEnter(character)) return false;
-		if (character.crystalizeInvulnTime > 0) return false;
-		if (!character.ownedByLocalPlayer) return false;
-		if (character.isInvulnerable()) return false;
-		if (character.isVaccinated()) return false;
-		return /* !character.isCCImmune() && */ !character.charState.invincible;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.crystalizeStart();
-		character.frameSpeed = 0;
-		Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StartCrystalize);
-		if (character.player.isAxl) character.changeSprite("axl_crystalized", true);
-	}
-
-	public override void onExit(CharState newState) {
-		character.crystalizeInvulnTime = 2;
-		character.crystalizeEnd();
-		character.frameSpeed = 1;
-		Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StopCrystalize);
-		base.onExit(newState);
-	}
-
-	public override void update() {
-		base.update();
-		crystalizedTime -= player.mashValue();
-		if (crystalizedTime <= 0) {
-			crystalizedTime = 0;
-			character.changeState(new Idle(), true);
-		}
-	}
-}
 
 public class Die : CharState {
 	int frames;
@@ -1548,7 +1413,7 @@ public class Die : CharState {
 		character.stopCharge();
 
 		if (character is Blues blues) {
-			blues.destroyStarCrash();
+			blues.delinkStarCrash();
 		}
 		//new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
 		player.lastDeathWasXHyper = character is RagingChargeX;
@@ -1716,9 +1581,6 @@ public class GenericGrabbedState : CharState {
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		character.grabInvulnTime = 2;
-		if (this is VileMK2Grabbed) {
-			character.stunInvulnTime = 1;
-		}
 		character.useGravity = true;
 		character.setzIndex(savedZIndex);
 	}

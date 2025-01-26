@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class TenguBlade : Weapon {
+	public static TenguBlade netWeapon = new();
 
 	public TenguBlade() : base() {
 		index = (int)BassWeaponIds.TenguBlade;

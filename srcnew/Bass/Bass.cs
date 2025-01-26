@@ -46,6 +46,8 @@ public class Bass : Character {
 		charId = CharIds.Bass;
 		weapons = getLoadout();
 		charge1Time = 50;
+		
+		maxHealth -= (decimal)player.evilEnergyStacks * (decimal)player.hpPerStack;
 	}
 
 	public override bool canAddAmmo() {

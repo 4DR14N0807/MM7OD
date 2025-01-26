@@ -279,17 +279,6 @@ label:
 
 	public List<Weapon>? preSigmaReviveWeapons;
 	public void configureWeapons() {
-		// Save weapons for cross-life maverick HP if not an Axl.
-		var weapons = character?.weapons;
-
-	/* 	if (disguise == null) {
-			oldWeapons = weapons;
-
-			if (preSigmaReviveWeapons != null) {
-				oldWeapons = preSigmaReviveWeapons;
-				preSigmaReviveWeapons = null;
-			}
-		} */
 		weaponSlot = 0;
 	}
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SpreadDrill : Weapon {
+	public static SpreadDrill netWeapon = new();
 
 	public SpreadDrill() : base() {
 		index = (int)BassWeaponIds.SpreadDrill;

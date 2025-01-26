@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class FreezeCracker : Weapon {
+	public static FreezeCracker netWeapon = new();
 
 	public FreezeCracker() : base() {
 		index = (int)RockWeaponIds.FreezeCracker;

@@ -145,40 +145,6 @@ public class GenericMeleeProj : Projectile {
 	}
 
 	public override DamagerMessage? onDamage(IDamagable? damagable, Player? attacker) {	
-		Point? hitPoint = (damagable as Actor)?.getCenterPos() ?? new Point(0,0);
-		Collider? hitbox = getGlobalCollider();
-		Collider? collider = (damagable as Actor)?.collider;
-		if (hitbox?.shape != null && collider?.shape != null) {
-			var hitboxCenter = hitbox.shape.getRect().center();
-			var hitCenter = collider.shape.getRect().center();
-			hitPoint = new Point((hitboxCenter.x + hitCenter.x) * 0.5f, (hitboxCenter.y + hitCenter.y) * 0.5f);
-		}
-		string SaberShotFade = "zsaber_shot_fade";
-		string SaberSlashFade = "zsaber_slash_fade";
-		if (ownedByLocalPlayer) {
-			if (isZSaberEffectBool(false, false)) {
-				new Anim(hitPoint.Value, SaberShotFade, xDir,
-					Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-			}
-			switch (projId) {
-				case (int)ProjIds.ZSaber1:
-				case (int)ProjIds.ZSaberRollingSlash:
-				case (int)BassProjIds.TenguBladeProj: 
-				
-					new Anim(hitPoint.Value, "tengu_blade_proj_hit", xDir,
-						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-					break;
-				case (int)ProjIds.ZSaberAir: 
-				
-					new Anim(hitPoint.Value, SaberSlashFade, xDir,
-						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-					break;
-				case (int)ProjIds.ZSaber2: 
-					new Anim(hitPoint.Value, SaberSlashFade, xDir*-1,
-						Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-					break;
-			}
-		}
 		return null;
 	}
 	public override void onDestroy() {

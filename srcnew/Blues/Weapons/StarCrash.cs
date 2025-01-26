@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class StarCrash : Weapon {
+	public static StarCrash netWeapon = new();
 	public StarCrashProj? activeProj;
 
 	public StarCrash() : base() {
@@ -20,7 +21,7 @@ public class StarCrash : Weapon {
 		if (activeProj?.destroyed == false) {
 			return 4;
 		}
-		return 0;
+		return 2;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -28,8 +29,7 @@ public class StarCrash : Weapon {
 		Blues blues = character as Blues ?? throw new NullReferenceException();
 
 		if (activeProj?.destroyed == false || blues.starCrash != null || blues.starCrashActive) {
-			//blues.destroyStarCrash();
-			//activeProj?.destroySelf();
+			blues.delinkStarCrash();
 			activeProj?.shoot();
 			activeProj = null;
 		} else {
@@ -121,7 +121,7 @@ public class StarCrashProj : Projectile {
 	public void shoot() {
 		if (!ownedByLocalPlayer) return;
 
-		blues.destroyStarCrash();
+		blues.delinkStarCrash();
 		new StarCrashProj2(
 			pos, xDir, damager.owner, 
 			damager.owner.getNextActorNetId(), 
@@ -132,7 +132,7 @@ public class StarCrashProj : Projectile {
 	public override void render(float x, float y) {
 		base.render(x,y);
 		Point center = pos;
-		
+
 		for (int i = 0; i < 3; i++) {
 			float extraAngle = (starAngle + i * 120) % 360;
 			float xPlus = (Helpers.cosd(extraAngle) * radius);

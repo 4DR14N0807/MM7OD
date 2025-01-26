@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class NoiseCrush : Weapon {
+	public static NoiseCrush netWeapon = new();
 
 	public NoiseCrush() : base() {
 		index = (int)RockWeaponIds.NoiseCrush;

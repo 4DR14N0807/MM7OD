@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class ScorchWheel : Weapon {
+	public static ScorchWheel netWeapon = new();
 
 	public ScorchWheel() : base() {
 		index = (int)RockWeaponIds.ScorchWheel;

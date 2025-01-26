@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SearchSnake : Weapon {
+	public static SearchSnake netWeapon = new();
 
 	public SearchSnake() : base() {
 		displayName = "SEARCH SNAKE";
@@ -11,7 +12,7 @@ public class SearchSnake : Weapon {
 		defaultAmmoUse = 2;
 
 		index = (int)BluesWeaponIds.SearchSnake;
-		fireRate = 45;
+		fireRate = 35;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

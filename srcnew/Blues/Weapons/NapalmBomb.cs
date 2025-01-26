@@ -5,6 +5,7 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class NapalmBomb : Weapon {
+	public static NapalmBomb netWeapon = new();
 
 	public NapalmBomb() : base() {
 		displayName = "NAPALM BOMB";

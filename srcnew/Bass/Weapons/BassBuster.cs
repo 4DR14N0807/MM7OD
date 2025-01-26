@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class BassBuster : Weapon {
-
+	public static BassBuster netWeapon = new();
 	public List<BassBusterProj> lemonsOnField = new List<BassBusterProj>();
 
 	public BassBuster() : base() {

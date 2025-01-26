@@ -5,6 +5,7 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class DangerWrap : Weapon {
+	public static DangerWrap netWeapon = new();
 
 	public List<DangerWrapMineProj> dangerMines = new List<DangerWrapMineProj>();
 
@@ -57,7 +58,6 @@ public class DangerWrap : Weapon {
 
 
 public class DangerWrapBubbleProj : Projectile, IDamagable {
-
 	public int type;
 	int input;
 	public float health = 1;
@@ -172,6 +172,9 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
 	}
 
+	public bool isPlayableDamagable() {
+		return false;
+	}
 }
 
 
@@ -266,6 +269,10 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	}
 
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	}
+
+	public bool isPlayableDamagable() {
+		return false;
 	}
 }
 
@@ -395,7 +402,6 @@ public class DWrapped : CharState {
 
 
 public class DWrapBigBubble : Actor, IDamagable {
-
 	public Character character = null!;
 	public Player player => character.player;
 	public float health = 4;
@@ -481,5 +487,9 @@ public class DWrapBigBubble : Actor, IDamagable {
 		character.dwrapEnd();
 		character.dwrapInvulnTime = 3;
 		if (player.ownedByLocalPlayer) new Anim(pos, "danger_wrap_big_bubble_fade", xDir, player.getNextActorNetId(), true);
+	}
+
+	public bool isPlayableDamagable() {
+		return false;
 	}
 }

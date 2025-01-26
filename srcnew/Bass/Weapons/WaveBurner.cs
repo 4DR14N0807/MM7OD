@@ -4,6 +4,7 @@ using System.Xml;
 namespace MMXOnline;
 
 public class WaveBurner : Weapon {
+	public static WaveBurner netWeapon = new();
 
 	public WaveBurner() : base() {
 		index = (int)BassWeaponIds.WaveBurner;

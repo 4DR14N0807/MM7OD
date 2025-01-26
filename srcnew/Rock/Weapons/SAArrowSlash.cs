@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class ArrowSlash : Weapon {
-
+	public static ArrowSlash netWeapon = new();
 
 	public ArrowSlash() : base() {
 		index = (int)RockWeaponIds.SAArrowSlash;

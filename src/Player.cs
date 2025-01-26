@@ -94,6 +94,20 @@ public partial class Player {
 		return overrideLoadoutWeight.Value;
 	}
 
+	public static Player stagePlayer = createStagePlayer();
+	public static Player createStagePlayer() {
+		return new Player(
+			"Stage", 255, -1,
+			new PlayerCharData() { charNum = -1 },
+			false, true, GameMode.neutralAlliance,
+			new Input(false),
+			new ServerPlayer(
+				"Stage", 255, false,
+				-1, GameMode.neutralAlliance, "NULL", null, 0
+			)
+		);
+	}
+
 	public Point? lastDeathPos;
 	public bool lastDeathWasVileMK2;
 	public bool lastDeathWasVileMK5;
@@ -748,10 +762,6 @@ public partial class Player {
 
 	public void applyLoadoutChange() {
 		loadout = LoadoutData.createFromOptions(id);
-		if (Global.level.is1v1() && isSigma) {
-			if (maverick1v1 != null) loadout.sigmaLoadout.commandMode = 3;
-			else loadout.sigmaLoadout.commandMode = 2;
-		}
 		syncLoadout();
 	}
 
@@ -1003,25 +1013,23 @@ public partial class Player {
 			applyLoadoutChange();
 			syncLoadout();
 		}
-		if (charNum == (int)CharIds.X) {
+		if (charNum == (int)CharIds.Rock) {
 			return [
-				(byte)loadout.xLoadout.weapon1,
-				(byte)loadout.xLoadout.weapon2,
-				(byte)loadout.xLoadout.weapon3,
-				(byte)loadout.xLoadout.melee
+				(byte)loadout.rockLoadout.weapon1,
+				(byte)loadout.rockLoadout.weapon2,
+				(byte)loadout.rockLoadout.weapon3,
 			];
 		}
-		if (charNum == (int)CharIds.Axl) {
+		if (charNum == (int)CharIds.Blues) {
 			return [
-				(byte)loadout.axlLoadout.weapon2,
-				(byte)loadout.axlLoadout.weapon3,
+				(byte)loadout.bluesLoadout.specialWeapon,
 			];
 		}
-		if (charNum == (int)CharIds.Sigma) {
+		if (charNum == (int)CharIds.Bass) {
 			return [
-				(byte)loadout.sigmaLoadout.sigmaForm,
-				(byte)loadout.sigmaLoadout.maverick1,
-				(byte)loadout.sigmaLoadout.maverick2
+				(byte)loadout.bassLoadout.weapon1,
+				(byte)loadout.bassLoadout.weapon2,
+				(byte)loadout.bassLoadout.weapon3
 			];
 		}
 		return [];
@@ -1048,46 +1056,39 @@ public partial class Player {
 		if (isMainPlayer) {
 			previousLoadout = loadout;
 			applyLoadoutChange();
-			hyperChargeSlot = Global.level.is1v1() ? 0 : Options.main.hyperChargeSlot;
-			currentMaverickCommand = (
-				Options.main.maverickStartFollow ? MaverickAIBehavior.Follow : MaverickAIBehavior.Defend
-			);
 		} else if (isAI && Global.level.isTraining()) {
 			previousLoadout = loadout;
 			applyLoadoutChange();
-			hyperChargeSlot = Global.level.is1v1() ? 0 : Options.main.hyperChargeSlot;
-			currentMaverickCommand = (
-				Options.main.maverickStartFollow ? MaverickAIBehavior.Follow : MaverickAIBehavior.Defend
-			);
 		}
 		if (pendingEvilEnergyStacks > 0 && charNum == (int)CharIds.Bass) {
 			evilEnergyStacks = pendingEvilEnergyStacks;
 			pendingEvilEnergyStacks = 0;
 			evilEnergyTime = evilEnergyMaxTime;
 		}
-		if (charNum == (int)CharIds.Bass) {
-			maxHealth -= evilEnergyStacks * hpPerStack;
-		}
-		health = maxHealth;
 
 		if (charNum == (int)CharIds.Rock) {
+			loadout.rockLoadout.weapon1 = extraData[0];
+			loadout.rockLoadout.weapon2 = extraData[1];
+			loadout.rockLoadout.weapon3 = extraData[2];
+
 			character = new Rock(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
 		}
 		else if (charNum == (int)CharIds.Blues) {
+			loadout.bluesLoadout.specialWeapon = extraData[0];
+
 			character = new Blues(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
 		} else if (charNum == (int)CharIds.Bass) {
+			loadout.bassLoadout.weapon1 = extraData[0];
+			loadout.bassLoadout.weapon2 = extraData[1];
+			loadout.bassLoadout.weapon3 = extraData[2];
+
 			character = new Bass(
-				this, pos.x, pos.y, xDir,
-				false, charNetId, ownedByLocalPlayer
-			);
-		} else if  (charNum == (int)CharIds.KaiserSigma) {
-			character = new KaiserSigma(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
@@ -1097,7 +1098,7 @@ public partial class Player {
 		// Do this once char has spawned and is not null.
 		configureWeapons();
 		lastCharacter = character;
-	
+
 		if (isAI) {
 			character.addAI();
 		}

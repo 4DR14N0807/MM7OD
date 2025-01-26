@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SARocketPunch : Weapon {
+	public static SARocketPunch netWeapon = new();
 
 	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
 

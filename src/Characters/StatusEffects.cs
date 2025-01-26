@@ -185,7 +185,6 @@ public class GenericStun : CharState {
 			canPlayStaticSound = false;
 		}
 		reduceStunFrames(ref character.paralyzedTime);
-		character.stunInvulnTime = 2;
 
 		if (paralyzeAnim == null && character.paralyzedTime > 0) {
 			paralyzeAnim = new Anim(
@@ -225,9 +224,6 @@ public class GenericStun : CharState {
 		}
 		if (flinchTime > flinchFrames) {
 			return;
-		}
-		if (character.paralyzedTime >= 3) {
-			character.paralyzedTime = 2;
 		}
 		bool isCombo = (flinchTime != 0);
 		hurtSpeed = 1.6f * xDir;
@@ -277,10 +273,7 @@ public class GenericStun : CharState {
 	}
 
 	public void reduceStunFrames(ref float arg) {
-		arg -= player.mashValue() * 60f;
-		if (arg <= 0) {
-			arg = 0;
-		}
+		arg -= Global.speedMul;
 	}
 
 	public float getTimerFalloff() {

@@ -1046,6 +1046,9 @@ public partial class Level {
 	}
 
 	public Player? getPlayerById(int id) {
+		if (id == 255) {
+			return Player.stagePlayer;
+		}
 		return players.Find(p => p.id == id);
 	}
 

@@ -112,10 +112,10 @@ public partial class Actor {
 					hasNonAttackColider = true;
 				}
 				Rect rect = allCollider.shape.getRect();
-				rect.x1 = MathF.Round(rect.x1 + 1);
-				rect.y1 = MathF.Round(rect.y1 + 1);
-				rect.x2 = MathF.Round(rect.x2 - 1);
-				rect.y2 = MathF.Round(rect.y2 - 1);
+				rect.x1 = MathF.Round(rect.x1) + 1;
+				rect.y1 = MathF.Round(rect.y1) + 1;
+				rect.x2 = MathF.Round(rect.x2) - 1;
+				rect.y2 = MathF.Round(rect.y2) - 1;
 				DrawWrappers.DrawRect(
 					rect.x1, rect.y1, rect.x2, rect.y2,
 					true, hitboxColor, 1, zIndex + 1, true,
@@ -140,14 +140,13 @@ public partial class Actor {
 				return;
 			}
 			Rect rect = terrainCollider.shape.getRect();
-			rect.x1 = MathF.Round(rect.x1 + 1);
-			rect.y1 = MathF.Round(rect.y1 + 1);
-			rect.x2 = MathF.Round(rect.x2 - 1);
-			rect.y2 = MathF.Round(rect.y2 - 1);
-			DrawWrappers.DrawPolygon(
-				rect.getPoints(),
-				new Color(0, 255, 0, 150),
-				fill: false, zIndex + 1, true
+			rect.x1 = MathF.Round(rect.x1) + 1;
+			rect.y1 = MathF.Round(rect.y1) + 1;
+			rect.x2 = MathF.Round(rect.x2) - 1;
+			rect.y2 = MathF.Round(rect.y2) - 1;
+			DrawWrappers.DrawRect(
+				rect.x1, rect.y1, rect.x2, rect.y2, false,
+				new Color(0, 255, 0, 150), 1, zIndex + 1, true
 			);
 		}
 		//DrawWrappers.DrawCircle(collider.shape, Color.Blue, true, zIndex + 1, false, true);

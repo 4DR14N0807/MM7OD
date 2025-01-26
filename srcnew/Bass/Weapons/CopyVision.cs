@@ -6,6 +6,7 @@ using SFML.Graphics.Glsl;
 namespace MMXOnline;
 
 public class CopyVision : Weapon {
+	public static CopyVision netWeapon = new();
 
 	public CopyVision() : base() {
 		index = (int)BassWeaponIds.CopyVision;

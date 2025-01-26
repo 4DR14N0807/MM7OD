@@ -169,11 +169,7 @@ public class KaiserSigmaIdleState : KaiserSigmaBaseState {
 			character.changeState(new KaiserSigmaWalkState(), true);
 			return;
 		} else if (player.input.isPressed(Control.Dash, player)) {
-			if (UpgradeMenu.subtankDelay > 0) {
-				Global.level.gameMode.setHUDErrorMessage(player, "Cannot become Virus in battle");
-			} else {
-				character.changeState(new KaiserSigmaVirusState(), true);
-			}
+			character.changeState(new KaiserSigmaVirusState(), true);
 			return;
 		} else if (player.input.isPressed(Control.Taunt, player)) {
 			character.changeState(new KaiserSigmaTauntState(), true);
@@ -247,11 +243,7 @@ public class KaiserSigmaJumpState : KaiserSigmaBaseState {
 				return;
 			}
 		} else if (player.input.isPressed(Control.Dash, player)) {
-			if (UpgradeMenu.subtankDelay > 0) {
-				Global.level.gameMode.setHUDErrorMessage(player, "Cannot become Virus in battle");
-			} else {
-				character.changeState(new KaiserSigmaVirusState(), true);
-			}
+			character.changeState(new KaiserSigmaVirusState(), true);
 			return;
 		}
 

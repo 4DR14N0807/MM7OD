@@ -3,6 +3,7 @@ using System;
 namespace MMXOnline;
 
 public class NeedleCannon : Weapon {
+	public static NeedleCannon netWeapon = new();
 
 	public NeedleCannon() : base() {
 		// Tecnical data.

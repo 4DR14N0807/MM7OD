@@ -109,7 +109,7 @@ public partial class Character : Actor, IDamagable {
 	public float limboRACheckCooldown;
 	public RideArmor? rideArmor;
 	public RideChaser? rideChaser;
-	public Player lastGravityWellDamager;
+	public Player lastGravityWellDamager = Player.stagePlayer;
 
 	// Some things previously in other char files used by multiple characters.
 	public RideArmor? linkedRideArmor;
@@ -739,46 +739,13 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void onCollision(CollideData other) {
-		if (charState is SaberParryStartState punchParry &&
-			other.gameObject is Projectile proj &&
-			punchParry.canParry(proj) &&
-			proj.owner.alliance != player.alliance &&
-			proj.damager?.damage > 0 &&
-			!Damager.isDot(proj.projId)
-		) {
-			punchParry.counterAttack(proj.owner, proj, proj.damager.damage);
-			return;
-		}
 		base.onCollision(other);
 		if (other.myCollider?.flag == (int)HitboxFlag.Hitbox || other.myCollider?.flag == (int)HitboxFlag.None) return;
 
 		var killZone = other.gameObject as KillZone;
-		if (killZone != null) {
-			if (charState is WolfSigmaRevive wsr) {
-				stopMoving();
-				useGravity = false;
-				wsr.groundStart = true;
-				return;
-			}
-			if (!killZone.killInvuln && player.isKaiserSigma()) return;
-			if (!killZone.killInvuln && this is MegamanX { stingActiveTime: >0 } ) return;
-			if (!killZone.killInvuln && this is Axl { stealthActive: true} ) return;
-			if (rideArmor != null && rideArmor.rideArmorState is RADropIn) return;
+		if (killZone != null && !isInvulnerable(true)) {
 			killZone.applyDamage(this);
 		}
-
-		var character = other.gameObject as Character;
-		if ((charState is Dash || charState is AirDash) &&
-			character != null && character.isCrystalized &&
-			character.player.alliance != player.alliance
-		) {
-			Damager.applyDamage(
-				player, 3, 60, Global.defFlinch, character, false,
-				(int)WeaponIds.CrystalHunter, 20, this,
-				(int)ProjIds.CrystalHunterDash
-			);
-		}
-
 		// Move zone movement.
 		if (other.gameObject is MoveZone moveZone) {
 			if (moveZone.moveVel.x != 0) {
@@ -786,14 +753,6 @@ public partial class Character : Actor, IDamagable {
 			}
 			if (moveZone.moveVel.y != 0) {
 				yPushVel = moveZone.moveVel.y;
-			}
-		}
-
-		if (ownedByLocalPlayer && other.gameObject is Flag flag && flag.alliance != player.alliance) {
-			if (!Global.level.players.Any(p => p != player && p.character?.flag == flag)) {
-				if (charState is SpeedBurnerCharState || charState is SigmaWallDashState || charState is FSplasherState) {
-					changeState(new Fall(), true);
-				}
 			}
 		}
 	}
@@ -1027,9 +986,9 @@ public partial class Character : Actor, IDamagable {
 			burnStunStacks--;
 			if (burnStunStacks < 0) burnStunStacks = 0;
 		}
-		Helpers.decrementTime(ref freezeInvulnTime);
-		Helpers.decrementTime(ref stunInvulnTime);
-		Helpers.decrementTime(ref crystalizeInvulnTime);
+		Helpers.decrementFrames(ref freezeInvulnTime);
+		Helpers.decrementFrames(ref stunInvulnTime);
+		Helpers.decrementFrames(ref crystalizeInvulnTime);
 		Helpers.decrementTime(ref grabInvulnTime);
 		Helpers.decrementTime(ref darkHoldInvulnTime);
 		Helpers.decrementTime(ref dwrapInvulnTime);
@@ -1556,7 +1515,7 @@ public partial class Character : Actor, IDamagable {
 		useGravity = false;
 	}
 
-	public void paralize(float timeToParalize = 120) {
+	public void paralize(float timeToParalize = 60, float cooldown = 90) {
 		if (!ownedByLocalPlayer ||
 			isInvulnerable() ||
 			isVaccinated() ||
@@ -1571,6 +1530,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		paralyzedMaxTime = timeToParalize;
 		paralyzedTime = timeToParalize;
+		stunInvulnTime = cooldown;
 		if (charState is not GenericStun) {
 			changeState(new GenericStun(), true);
 		}
@@ -1689,20 +1649,11 @@ public partial class Character : Actor, IDamagable {
 		if (isWarpIn()) return true;
 		if (invulnTime > 0) return true;
 		if (!ignoreRideArmorHide) { 
-			if (ownedByLocalPlayer && charState is InRideArmor { isHiding: true }) {
-				return true;
-			}
-			if (sprite.name.EndsWith("ra_hide")) {
-				return true;
-			}
 			if (charState.specialId == SpecialStateIds.AxlRoll || charState.specialId == SpecialStateIds.XTeleport) {
 				return true;
 			}
 		}
-		if (sprite.name == "sigma2_viral_exit") {
-			return true;
-		}
-		if (ownedByLocalPlayer && charState is WarpOut or WolfSigmaRevive or ViralSigmaRevive or KaiserSigmaRevive) {
+		if (ownedByLocalPlayer && charState is WarpOut) {
 			return true;
 		}
 		return false;
@@ -2651,19 +2602,12 @@ public partial class Character : Actor, IDamagable {
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = health;
-		Axl? axl = this as Axl;
-		MegamanX? mmx = this as MegamanX;
 		Blues? blues = this as Blues;
 
 		// For Dark Hold break.
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
 		}
-		//this made Axl immortal to pits, suicide button, etc
-		/*
-		if (attacker == player && axl?.isWhiteAxl() == true) {
-			damage = 0;
-		} */
 		if (Global.level.isRace() &&
 			damage != (decimal)Damager.envKillDamage &&
 			damage != (decimal)Damager.switchKillDamage &&
@@ -2671,21 +2615,7 @@ public partial class Character : Actor, IDamagable {
 		) {
 			damage = 0;
 		}
-
 		bool isArmorPiercing = Damager.isArmorPiercing(projId);
-
-		if (projId == (int)ProjIds.CrystalHunterDash &&
-			charState is GenericStun && crystalizedTime > 0 &&
-			damage > 0
-		) {
-			crystalizedTime = 0; // Dash to destroy crystal
-		}
-
-		var inRideArmor = charState as InRideArmor;
-		if (inRideArmor != null && inRideArmor.crystalizeTime > 0) {
-			if (weaponIndex == 20 && damage > 0) inRideArmor.crystalizeTime = 0;   //Dash to destroy crystal
-			inRideArmor.checkCrystalizeTime();
-		}
 
 		// For fractional damage shenanigans.
 		if (damage % 1 != 0) {
@@ -2695,14 +2625,10 @@ public partial class Character : Actor, IDamagable {
 			if (damageSavings >= decDamage) {
 				damageSavings -= decDamage;
 			}
-			// If damage is over one we add it to damagedebt.
-			else /*if (damage >= 1)*/ {
+			// Add the remaining to the debt.
+			else {
 				damageDebt += decDamage;
 			}
-			// If is under 1 we just apply it as is.
-			//else {
-			//	damage += decDamage;
-			//}
 		}
 		// First we apply debt then savings.
 		// This is done before defense calculation to allow to defend from debt.
@@ -2713,40 +2639,6 @@ public partial class Character : Actor, IDamagable {
 		while (damageSavings >= 1 && damage >= 1) {
 			damageSavings -= 1;
 			damage -= 1;
-		}
-		// Damage increase/reduction section
-		if (!isArmorPiercing) {
-			if (charState is SwordBlock) {
-				damageSavings += (originalDamage * 0.5m);
-			}
-			if (charState is SigmaAutoBlock) {
-				damageSavings += (originalDamage * 0.25m);
-			}
-			if (charState is SigmaBlock) {
-				damageSavings += (originalDamage * 0.5m);
-			}
-			if (acidTime > 0) {
-				decimal extraDamage = 0.25m + (0.25m * ((decimal)acidTime / 8.0m));
-				damageDebt += (originalDamage * extraDamage);
-			}
-			if (mmx != null) {
-				if (mmx.barrierActiveTime > 0) {
-					if (mmx.hyperChestArmor == ArmorId.Max) {
-						damageSavings += (originalDamage * 0.5m);
-					} else {
-						damageSavings += (originalDamage * 0.25m);
-					}
-				}
-				if (player.isX && player.hasBodyArmor(1)) {
-					damageSavings += originalDamage / 8m;
-				}
-				if (player.isX && player.hasBodyArmor(2)) {
-					damageSavings += originalDamage / 8m;
-				}
-			}
-			if (this is Vile vile && vile.hasFrozenCastle) {
-				damageSavings += originalDamage * Vile.frozenCastlePercent;
-			}
 		}
 		// This is to defend from overkill damage.
 		// Or at least attempt to.
@@ -2768,7 +2660,6 @@ public partial class Character : Actor, IDamagable {
 				}
 			} 
 		}
-
 		// If somehow the damage is negative.
 		// Heals are not really applied here.
 		if (damage < 0) { damage = 0; }
@@ -2777,7 +2668,7 @@ public partial class Character : Actor, IDamagable {
 		if (health < 0) {
 			health = 0;
 		}
-
+		// DPS display.
 		if (player.showTrainingDps && health > 0 && originalDamage > 0) {
 			if (player.trainingDpsStartTime == 0) {
 				player.trainingDpsStartTime = Global.time;
@@ -2785,97 +2676,23 @@ public partial class Character : Actor, IDamagable {
 			}
 			player.trainingDpsTotalDamage += (float)damage;
 		}
-
-		if (damage > 0 && mmx != null) {
-			mmx.noDamageTime = 0;
-			mmx.rechargeHealthTime = 0;
-		}
-
-		if (damage > 0 && attacker != null) {
-			if (projId != (int)ProjIds.Burn && projId != (int)ProjIds.AcidBurstPoison) {
-				player.delayETank();
-				player.stopETankHeal();
-				//player.delayWTank();
-			}
+		// Disable E-Tanks only on external damage sources.
+		if (damage > 0  && !Damager.isDot(projId) &&
+			attacker != null && attacker != player && attacker != Player.stagePlayer
+		) {
+			player.delayETank();
+			player.stopETankHeal();
 		}
 		if (originalHP > 0 && (originalDamage > 0 || damage > 0) &&
 			this is not Blues { customDamageDisplayOn: true }
 		) {
 			addDamageTextHelper(attacker, (float)damage, (float)maxHealth, true);
 		}
-		if (health > 0 && (originalDamage > 0 || damage > 0) && ownedByLocalPlayer) {
-			decimal modifier = (32 / maxHealth);
-			decimal gigaDamage = damage;
-			if (originalDamage > damage) {
-				gigaDamage = originalDamage;
-			}
-			float gigaAmmoToAdd = (float)(gigaDamage * modifier);
-	
-			if (this is Zero zero) {
-				float currentAmmo = zero.gigaAttack.ammo;
-				zero.gigaAttack.addAmmo(gigaAmmoToAdd, player);
-				if (player.isMainPlayer) {
-					Weapon.gigaAttackSoundLogic(
-						this, currentAmmo, zero.gigaAttack.ammo,
-						zero.gigaAttack.getAmmoUsage(0), zero.gigaAttack.maxAmmo
-					);
-				}
-			}
-			if (this is PunchyZero punchyZero) {
-				float currentAmmo = punchyZero.gigaAttack.ammo;
-				punchyZero.gigaAttack.addAmmo(gigaAmmoToAdd, player);
-				if (player.isMainPlayer) {
-					Weapon.gigaAttackSoundLogic(
-						this, currentAmmo, punchyZero.gigaAttack.ammo,
-						punchyZero.gigaAttack.getAmmoUsage(0), punchyZero.gigaAttack.maxAmmo
-					);
-				}
-			}
-			if (this is MegamanX) {
-				var gigaCrush = player.weapons.FirstOrDefault(w => w is GigaCrush);
-				if (gigaCrush != null) {
-					float currentAmmo = gigaCrush.ammo;
-					gigaCrush.addAmmo(gigaAmmoToAdd, player);
-					if (player.isMainPlayer) {
-						Weapon.gigaAttackSoundLogic(
-							this, currentAmmo, gigaCrush.ammo,
-							gigaCrush.getAmmoUsage(0), gigaCrush.maxAmmo
-						);
-					}
-				}
-				var hyperBuster = player.weapons.FirstOrDefault(w => w is HyperCharge);
-				if (hyperBuster != null) {
-					float currentAmmo = hyperBuster.ammo;
-					hyperBuster.addAmmo(gigaAmmoToAdd, player);
-					if (player.isMainPlayer) {
-						Weapon.gigaAttackSoundLogic(
-							this, currentAmmo, hyperBuster.ammo,
-							hyperBuster.getAmmoUsage(0), hyperBuster.maxAmmo,
-							"hyperchargeRecharge", "hyperchargeFull"
-						);
-					}
-				}
-				var novaStrike = player.weapons.FirstOrDefault(w => w is HyperNovaStrike);
-				if (novaStrike != null) {
-					float currentAmmo = novaStrike.ammo;
-					novaStrike.addAmmo(gigaAmmoToAdd, player);
-					if (player.isMainPlayer) {
-						Weapon.gigaAttackSoundLogic(
-							this, currentAmmo, novaStrike.ammo,
-							novaStrike.getAmmoUsage(0), novaStrike.maxAmmo
-						);
-					}
-				}
-			}
-			if (this is NeoSigma) {
-				player.sigmaAmmo = Helpers.clampMax(player.sigmaAmmo + gigaAmmoToAdd, player.sigmaMaxAmmo);
-			}
-		}
-
+		// Assist and kill logs.
 		if ((damage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
 			damageHistory.Add(new DamageEvent(attacker, weaponIndex.Value, projId, false, Global.time));
 		}
-
+		// Kill logic.
 		if (health <= 0) {
 			if (player.showTrainingDps && player.trainingDpsStartTime > 0) {
 				float timeToKill = Global.time - player.trainingDpsStartTime;
@@ -2886,10 +2703,6 @@ public partial class Character : Actor, IDamagable {
 				player.trainingDpsStartTime = 0;
 			}
 			killPlayer(attacker, null, weaponIndex, projId);
-		} else {
-			if (mmx != null && player.hasBodyArmor(3) && damage > 0) {
-				mmx.activateMaxBarrier(charState is Hurt or GenericStun);
-			}
 		}
 	}
 

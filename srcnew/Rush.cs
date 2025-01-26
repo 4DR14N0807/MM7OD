@@ -214,5 +214,9 @@ public class Rush : Actor, IDamagable {
 	public override void onDestroy() {
 		if (character is Rock rock && rock.rush != null) rock.rush = null!; 
 	}
+
+	public bool isPlayableDamagable() {
+		return true;
+	}
 }
 

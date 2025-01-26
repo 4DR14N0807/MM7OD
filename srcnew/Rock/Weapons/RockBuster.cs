@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class RockBuster : Weapon {
+	public static RockBuster netWeapon = new();
 
 	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
 

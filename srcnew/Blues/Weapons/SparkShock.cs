@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class SparkShock : Weapon {
-
+	public static SparkShock netWeapon = new();
 
 	public SparkShock() : base() {
 		displayName = "SPARK SHOCK";
@@ -13,7 +13,7 @@ public class SparkShock : Weapon {
 		defaultAmmoUse = 3;
 
 		index = (int)BluesWeaponIds.SparkShock;
-		fireRate = 60;
+		fireRate = 45;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

@@ -108,10 +108,6 @@ public class GameMode {
 	public enum HUDHealthPosition {
 		Left,
 		Right,
-		TopLeft,
-		TopRight,
-		BotLeft,
-		BotRight
 	}
 
 	public Point safeZonePoint {
@@ -629,89 +625,19 @@ public class GameMode {
 			}
 			// Currency
 			if (!Global.level.is1v1()) {
-				Global.sprites["pickup_bolt_large"].drawToHUD(0, Global.screenW - 60, 31);
+				Point basePos = new(Global.screenW - 58, 27);
+				if (level.levelData.isTraining()) {
+					basePos = new Point(10, 106);
+				}
 				Fonts.drawText(
 					FontType.WhiteSmall,
-					"x", Global.screenW - 44, 27, Alignment.Right
+					"x" + drawPlayer.currency.ToString(), basePos.x + 9, basePos.y, Alignment.Left
 				);
-				Fonts.drawText(
-					FontType.WhiteSmall,
-					drawPlayer.currency.ToString(), Global.screenW - 43, 27, Alignment.Left
-				);
-			}
-			if (drawPlayer.character is RagingChargeX mmx && mmx.shotCount > 0) {
-				int x = 10, y = 156;
-				int count = mmx.shotCount;
-				if (count >= 1) Global.sprites["hud_killfeed_weapon"].drawToHUD(180, x, y);
-				if (count >= 2) Global.sprites["hud_killfeed_weapon"].drawToHUD(180, x + 13, y);
-				if (count >= 3) Global.sprites["hud_killfeed_weapon"].drawToHUD(180, x, y + 11);
-				if (count >= 4) Global.sprites["hud_killfeed_weapon"].drawToHUD(180, x + 13, y + 11);
-			}
-			if (drawPlayer.character is Zero zero) {
-				int yStart = 159;
-				if (zero.isViral) {
-					Global.sprites["hud_killfeed_weapon"].drawToHUD(170, 7, 155);
-					Fonts.drawText(
-						FontType.Grey,
-						"x" + zero.freeBusterShots, 16, 152, Alignment.Left
-					);
-					yStart += 12;
-				}
-				int xStart = 11;
-				if (zero.gigaAttack.shootCooldown > 0) {
-					drawZeroGigaCooldown(zero.gigaAttack, y: yStart);
-					xStart += 15;
-				}
-				if (zero.hadangekiCooldown > 0 && zero.isGenmuZero || zero.genmureiCooldown > 0) {
-					float cooldown = 1 - Helpers.progress(zero.genmureiCooldown, 120);
-					if (zero.hadangekiCooldown > zero.genmureiCooldown) {
-						cooldown = 1 - Helpers.progress(zero.hadangekiCooldown, 60);
-					}
-					drawGigaWeaponCooldown(102, cooldown, xStart, yStart);
-					xStart += 15;
-				}
-				if (zero.hadangekiCooldown > 0 || zero.genmureiCooldown > 60) {
-					float cooldown = 1 - Helpers.progress(zero.hadangekiCooldown, 60);
-					if (zero.genmureiCooldown - 1 > zero.hadangekiCooldown) {
-						cooldown = 1 - Helpers.progress(zero.genmureiCooldown - 60, 1);
-					}
-					drawGigaWeaponCooldown(zero.isGenmuZero ? 48 : 102, cooldown, xStart, yStart);
-					xStart += 15;
-				}
-			}
-			if (drawPlayer.character is PunchyZero punchyZero) {
-				int xStart = 11;
-				int yStart = 159;
-				if (punchyZero.isViral) {
-					Global.sprites["hud_killfeed_weapon"].drawToHUD(170, 7, 155);
-					/*Fonts.drawText(
-						FontType.Grey,
-						"x" + punchyZero.freeBusterShots, 16, 152, Alignment.Left
-					);*/
-					yStart += 12;
-				}
-				if (punchyZero.gigaAttack.shootCooldown > 0) {
-					drawZeroGigaCooldown(punchyZero.gigaAttack, xStart, yStart);
-					xStart += 15;
-				}
-				if (punchyZero.hadangekiCooldown > 0) {
-					float cooldown = 1 - Helpers.progress(punchyZero.hadangekiCooldown, 60);
-					drawGigaWeaponCooldown(102, cooldown, xStart, yStart);
-					xStart += 15;
-				}
-				if (punchyZero.parryCooldown > 0) {
-					float cooldown = 1 - Helpers.progress(punchyZero.parryCooldown, 30);
-					drawGigaWeaponCooldown(120, cooldown, xStart, yStart);
-					xStart += 15;
-				}
+				Global.sprites["pickup_bolt_small"].drawToHUD(0, basePos.x + 4, basePos.y + 4);
 			}
 			if (drawPlayer.character is Rock rock && rock.boughtSuperAdaptorOnce) {
 				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown / 90);
-				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown / 90, 27);
-			}
-			if (drawPlayer.character is Axl axl2 && axl2.dodgeRollCooldown > 0) {
-				float cooldown = 1 - Helpers.progress(axl2.dodgeRollCooldown, Axl.maxDodgeRollCooldown);
-				drawGigaWeaponCooldown(50, cooldown, y: 170);
+				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown / 90, 35);
 			}
 			if (drawPlayer.weapons == null) {
 				return;
@@ -1143,43 +1069,6 @@ public class GameMode {
 		);
 	}
 
-	public void draw1v1PlayerTopHUD(Player? player, HUDHealthPosition position) {
-		if (player == null) return;
-
-		Color outlineColor = isTeamMode ? Helpers.getAllianceColor(player) : Helpers.DarkBlue;
-
-		bool isLeft = position == HUDHealthPosition.Left || position == HUDHealthPosition.TopLeft || position == HUDHealthPosition.BotLeft;
-		bool isTop = position != HUDHealthPosition.BotLeft && position != HUDHealthPosition.BotRight;
-
-		float lifeX = (isLeft ? 10 : Global.screenW - 10);
-		float lifeY = (isTop ? 10 : Global.screenH - 10);
-
-		float nameX = (isLeft ? 20 : Global.screenW - 20);
-		float nameY = (isTop ? 5 : Global.screenH - 15);
-
-		float deathX = (isLeft ? 11 : Global.screenW - 9);
-		float deathY = (isTop ? 18 : Global.screenH - 26);
-
-		Global.sprites["hud_life"].drawToHUD(player.getHudLifeSpriteIndex(), lifeX, lifeY);
-		Fonts.drawText(FontType.BlueMenu, player.name, nameX, nameY, (isLeft ? Alignment.Left : Alignment.Right));
-		Fonts.drawText(FontType.BlueMenu, player.getDeathScore().ToString(), deathX, deathY, Alignment.Center);
-	}
-
-	public void draw1v1TopHUD() {
-		draw1v1PlayerTopHUD(hudTopLeftPlayer, HUDHealthPosition.TopLeft);
-		draw1v1PlayerTopHUD(hudTopRightPlayer, HUDHealthPosition.TopRight);
-		draw1v1PlayerTopHUD(hudLeftPlayer, HUDHealthPosition.Left);
-		draw1v1PlayerTopHUD(hudRightPlayer, HUDHealthPosition.Right);
-		draw1v1PlayerTopHUD(hudBotLeftPlayer, HUDHealthPosition.BotLeft);
-		draw1v1PlayerTopHUD(hudBotRightPlayer, HUDHealthPosition.BotRight);
-
-		if (remainingTime != null) {
-			var timespan = new TimeSpan(0, 0, MathInt.Ceiling(remainingTime.Value));
-			string timeStr = timespan.ToString(@"mm\:ss");
-			Fonts.drawText(FontType.OrangeMenu, timeStr, Global.halfScreenW, 5, Alignment.Center);
-		}
-	}
-
 	public static List<Player> getOrderedPlayerList() {
 		List<Player> playerList = Global.level.players.Where(p => !p.isSpectator).ToList();
 		playerList.Sort((a, b) => {
@@ -1259,17 +1148,13 @@ public class GameMode {
 		if (!is1v1OrTraining) {
 			renderHealthAndWeapon(level.mainPlayer, HUDHealthPosition.Left);
 		} else {
-			if (!hudPositionsAssigned) {
-				assignPlayerHUDPositions();
-				hudPositionsAssigned = true;
+			renderHealthAndWeapon(level.mainPlayer, HUDHealthPosition.Left);
+			Player? rightPlayer = Global.level.players.FirstOrDefault(
+				(Player player) => player.character != null && player != level.mainPlayer
+			);
+			if (rightPlayer != null) {
+				renderHealthAndWeapon(rightPlayer, HUDHealthPosition.Right);
 			}
-
-			renderHealthAndWeapon(hudTopLeftPlayer, HUDHealthPosition.TopLeft);
-			renderHealthAndWeapon(hudTopRightPlayer, HUDHealthPosition.TopRight);
-			renderHealthAndWeapon(hudLeftPlayer, HUDHealthPosition.Left);
-			renderHealthAndWeapon(hudRightPlayer, HUDHealthPosition.Right);
-			renderHealthAndWeapon(hudBotLeftPlayer, HUDHealthPosition.BotLeft);
-			renderHealthAndWeapon(hudBotRightPlayer, HUDHealthPosition.BotRight);
 		}
 	}
 
@@ -1277,29 +1162,17 @@ public class GameMode {
 		if (player == null) return;
 		if (level.is1v1() && player.deaths >= playingTo) return;
 
-		//Health
-		renderHealth(player, position, false);
-		//bool mechBarExists = renderHealth(player, position, true);
-
-		//Weapon
-		renderWeapon(player, position);
+		player.lastCharacter?.renderHUD(new Point(), position);
 	}
 
-	public Point getHUDHealthPosition(HUDHealthPosition position, bool isHealth) {
+	public static Point getHUDHealthPosition(HUDHealthPosition position, bool isHealth) {
 		float x = 0;
-		if (position is HUDHealthPosition.Left or HUDHealthPosition.TopLeft or HUDHealthPosition.BotLeft) {
+		if (position is HUDHealthPosition.Left) {
 			x = isHealth ? 16 : 32;
 		} else {
-			x = isHealth ? Global.screenW - 10 : Global.screenW - 25;
+			x = isHealth ? Global.screenW - 16 : Global.screenW - 32;
 		}
-		float y = 63;
-		if (position == HUDHealthPosition.TopLeft || position == HUDHealthPosition.TopRight) {
-			y -= 27;
-		} else if (position == HUDHealthPosition.BotLeft || position == HUDHealthPosition.BotRight) {
-			y += 61;
-		}
-
-		return new Point(x, y);
+		return new Point(x, 88);
 	}
 
 	public bool renderHealth(Player player, HUDHealthPosition position, bool isMech) {
@@ -1329,9 +1202,9 @@ public class GameMode {
 		float baseX = hudHealthPosition.x;
 		float baseY = hudHealthPosition.y;
 
-		//if (player.isBlues) {
+		if (player.isBlues) {
 			baseY += 17;
-		//}
+		}
 
 		float twoLayerHealth = 0;
 		if (isMech && player.character?.rideArmor != null && player.character.rideArmor.raNum != 5) {
@@ -1409,19 +1282,18 @@ public class GameMode {
 	}
 
 	const int grayAmmoIndex = 30;
-	public void renderAmmo(
+	public static void renderAmmo(
 		float baseX, float baseY, int baseIndex,
 		int barIndex, float ammo, float grayAmmo = 0, float maxAmmo = 32,
-		bool allowSmall = true, string barSprite = "hud_weapon_full"
+		bool allowSmall = true, string barSprite = "hud_weapon_full",
+		int eeStacks = 0
 	) {
-		baseY += 25;
-		int stacks = mainPlayer.pendingEvilEnergyStacks;
 		if (baseIndex >= 0) {
 			Global.sprites["hud_weapon_base"].drawToHUD(baseIndex, baseX, baseY);
 		} else if (baseIndex == -2) {
 			Global.sprites["hud_core_base"].drawToHUD(0, baseX, baseY);
 		} else if (baseIndex == -3) {
-			Global.sprites["hud_energy_base"].drawToHUD(stacks, baseX, baseY);
+			Global.sprites["hud_energy_base"].drawToHUD(eeStacks, baseX, baseY);
 		}
 		baseY -= 16;
 
@@ -1439,7 +1311,7 @@ public class GameMode {
 			baseY -= 2;
 		}
 		if (baseIndex == -3) {
-			Global.sprites["hud_energy_top"].drawToHUD(stacks, baseX, baseY);
+			Global.sprites["hud_energy_top"].drawToHUD(eeStacks, baseX, baseY);
 		} else {
 			Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
 		}
@@ -1466,91 +1338,14 @@ public class GameMode {
 		Weapon? weapon = player.lastHudWeapon;
 		if (player.character != null) {
 			weapon = player.weapon;
-			if (player.character is Zero zero) {
-				weapon = zero.gigaAttack;
-			}
-			if (player.character is PunchyZero punchyZero) {
-				weapon = punchyZero.gigaAttack;
-			}
 			player.lastHudWeapon = weapon;
 		}
-
-		if (player.character is Blues protoman) {
-			baseY += 17;
-			int offset = -16;
-			if (position is HUDHealthPosition.Right or HUDHealthPosition.TopRight or HUDHealthPosition.TopRight) {
-				offset = 16;
-			}
-			renderAmmo(
-				baseX + offset, baseY - 5 - player.maxHealth * 2, -1, 1,
-				MathInt.Ceiling(protoman.shieldHP), maxAmmo: protoman.shieldMaxHP
-			);
-			int coreAmmoColor = 0;
-			if ((protoman.overheating || protoman.overdrive) && Global.frameCount % 6 >= 3) {
-				coreAmmoColor = 2;
-			}
-			renderAmmo(
-				baseX, baseY, -2, coreAmmoColor, MathF.Ceiling(protoman.coreAmmo),
-				maxAmmo: protoman.coreMaxAmmo, barSprite: "hud_weapon_full_blues"
-			);
-			if (protoman.overdrive) {
-				int yPos = MathInt.Ceiling(9 + baseY);
-				int color = 1;
-				if (Global.frameCount % 6 >= 3) {
-					color = 3;
-				}
-				float alpha = 1;
-				if (Global.frameCount % 4 >= 2) {
-					alpha = 0.25f;
-				}
-				for (var i = 0; i < protoman.overdriveAmmo; i++) {
-					Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, alpha);
-					yPos -= 2;
-				}
-			}
-			if (!protoman.overheating && protoman.ownedByLocalPlayer) {
-				int baseAmmo = MathInt.Floor(protoman.coreAmmo);
-				int baseColor = 2;
-				int filledColor = 0;
-				if (protoman.overdrive) {
-					baseAmmo = MathInt.Floor(protoman.overdriveAmmo);
-					baseColor = 3;
-					filledColor = 1;
-				}
-				int yPos = MathInt.Ceiling(9 + baseY - MathF.Ceiling(baseAmmo) * 2);
-
-				int ammoAmmount = protoman.getChargeShotCorePendingAmmo();
-				int actualUse = protoman.getChargeShotAmmoUse(protoman.getChargeLevel());
-				if (ammoAmmount + baseAmmo > protoman.coreMaxAmmo) {
-					ammoAmmount = MathInt.Floor(protoman.coreMaxAmmo - baseAmmo);
-				}
-				for (var i = 0; i < ammoAmmount; i++) {
-					int color = baseColor;
-					if (i < actualUse) {
-						color = filledColor;
-					}
-					Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos);
-					yPos -= 2;
-				}
-			}
-
-			if (protoman.redStrikeCooldown > 0) {
-				Global.sprites["hud_blues_weapon_icon"].drawToHUD(3, 18, 114);
-				drawWeaponSlotCooldown(18, 114, protoman.redStrikeCooldown / (4 * 60));
-			}
-			return;
-		} else if (player.character is Bass bass && bass.isSuperBass) {
+		if (player.character is Bass bass && bass.isSuperBass) {
 			int energy = bass.evilEnergy[0];
 			int energy2 = bass.evilEnergy[1];
 			int maxEnergy = Bass.MaxEvilEnergy;
 			int stacks = player.pendingEvilEnergyStacks;
 			bool charging = bass.charState is EnergyCharge or EnergyIncrease;
-			//int offset = -16;
-
-			baseY += 17;
-			if (position is HUDHealthPosition.Right or HUDHealthPosition.TopRight or HUDHealthPosition.TopRight) {
-				//offset = 16;
-			}
 
 			// Level 1 Evil Energy Bar.
 			int color = energy >= maxEnergy ? 3 : 1;
@@ -1591,7 +1386,7 @@ public class GameMode {
 		}
 
 		if (shouldDrawWeaponAmmo(player, weapon)) {
-			baseY += 42;
+			baseY += 25;
 			string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
 			string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 			Global.sprites[baseBarName].drawToHUD(weapon.weaponBarBaseIndex, baseX, baseY);
@@ -1933,26 +1728,11 @@ public class GameMode {
 		var startX = getWeaponSlotStartX(player, ref iconW, ref iconH, ref width);
 		var startY = Global.screenH - 12;
 
-		int gigaWeaponX = 16;
-
-		if (player.isX && Options.main.gigaCrushSpecial) {
-			Weapon? gigaCrush = player.weapons.FirstOrDefault((Weapon w) => w is GigaCrush);
-			if (gigaCrush != null) {
-				drawWeaponSlot(gigaCrush, gigaWeaponX, 159);
-				gigaWeaponX += 18;
-			}
-		}
-		if (player.isX && Options.main.novaStrikeSpecial) {
-			Weapon? novaStrike = player.weapons.FirstOrDefault((Weapon w) => w is HyperNovaStrike);
-			if (novaStrike != null) {
-				drawWeaponSlot(novaStrike, gigaWeaponX, 159);
-				gigaWeaponX += 18;
-			}
-		}
+		int gigaWeaponX = 18;
 		if (player.isRock && Options.main.rushSpecial) {
 			Weapon? rushWeapon = player.weapons.FirstOrDefault((Weapon w) => w is RushWeapon);
 			if (rushWeapon != null) {
-				drawWeaponSlot(rushWeapon, gigaWeaponX, 114);
+				drawWeaponSlot(rushWeapon, gigaWeaponX, 97);
 				gigaWeaponX += 18;
 			}
 		}
@@ -2087,16 +1867,7 @@ public class GameMode {
 		}
 	}
 
-	public void drawZeroGigaCooldown(Weapon weapon, int x = 11, int y = 159) {
-		// This runs once per character.
-		if (weapon == null || weapon.shootCooldown <= 0) {
-			return;
-		}
-		float cooldown = Helpers.progress(weapon.shootCooldown, weapon.fireRate);
-		drawGigaWeaponCooldown(weapon.weaponSlotIndex, 1 - cooldown, x, y);
-	}
-
-	public void drawGigaWeaponCooldown(int slotIndex, float cooldown, int x = 11, int y = 159) {
+	public void drawGigaWeaponCooldown(int slotIndex, float cooldown, int x = 18, int y = 97) {
 		Global.sprites["hud_weapon_icon"].drawToHUD(slotIndex, x, y);
 		drawWeaponSlotCooldown(x, y, cooldown);
 	}

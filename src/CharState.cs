@@ -474,6 +474,9 @@ public class WarpIdle : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.useGravity = false;
+		if (character is Blues) {
+			character.sprite.doesLoop = false;
+		}
 	}
 
 	public override void onExit(CharState newState) {

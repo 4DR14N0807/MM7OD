@@ -98,13 +98,8 @@ public class AddBotMenu : IMainMenu {
 
 		string botCharStr = botCharNum switch {
 			-1 => "(Random)",
-			0 => "Mega Man X",
-			1 => "Zero",
-			2 => "Vile",
-			3 => "Axl",
-			4 => "Sigma",
-			5 => "Mega Man",
-			6 => "Proto Man",
+			5 => "Megaman",
+			6 => "Protoman",
 			7 => "Bass",
 			_ => "Error"
 		};

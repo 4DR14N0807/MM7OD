@@ -697,7 +697,7 @@ public class Input {
 		return yDir;
 	}
 
-#if OS_WINDOWS
+#if WINDOWS
 	[DllImport(
 		"user32.dll", CharSet = CharSet.Auto,
 		ExactSpelling = true,
@@ -714,7 +714,7 @@ public class Input {
 	public char? getKeyCharPressed() {
 		foreach (var kvp in keyToCharMapping) {
 			if (keyPressed.ContainsKey(kvp.Key) && keyPressed[kvp.Key]) {
-#if OS_WINDOWS
+#if WINDOWS
 				if (((ushort)GetKeyState((int)LockKeys.CapsLock) & 0xffff) != 0) {
 					if (capsLockMapping.ContainsKey(kvp.Key)) return capsLockMapping[kvp.Key];
 				}

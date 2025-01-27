@@ -15,8 +15,8 @@ public partial class Character : Actor, IDamagable {
 		"Vile",
 		"Axl",
 		"Sigma",
-		"Mega Man",
-		"Proto Man",
+		"Megaman",
+		"Protoman",
 		"Bass",
 	};
 
@@ -3370,6 +3370,68 @@ public partial class Character : Actor, IDamagable {
 	public virtual void aiAttack(Actor? target) { }
 
 	public virtual void aiDodge(Actor? target) { }
+
+	public virtual void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
+		renderLifebar(offset, position);
+		renderAmmo(offset, position);
+	}
+
+	public virtual (string, int) getBaseHpSprite() {
+		return ("hud_health_base", 0);
+	}
+
+	public virtual void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
+		float damageSavings = 0;
+		if (health > 0 && health < maxHealth) {
+			damageSavings = MathInt.Floor(damageSavings);
+		}
+
+		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
+		float baseX = hudHealthPosition.x + offset.x;
+		float baseY = hudHealthPosition.y + offset.y;
+
+		(string healthBaseSprite, int baseSpriteIndex) = getBaseHpSprite();
+		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
+		baseY -= 16;
+
+		for (var i = 0; i < MathF.Ceiling(player.getMaxHealth()); i++) {
+			float trueHP = player.getMaxHealth() - (player.evilEnergyStacks * player.hpPerStack); 
+			// Draw HP
+			if (i < Math.Ceiling(health)) {
+				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
+			}
+			else if (i < MathInt.Ceiling(health) + damageSavings) {
+				Global.sprites["hud_health_full"].drawToHUD(4, baseX, baseY);
+			}
+			else {
+				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
+			}
+			baseY -= 2;
+		}
+		Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
+	}
+
+	public virtual void renderAmmo(
+		Point offset, GameMode.HUDHealthPosition position,
+		Weapon? weaponOverride = null
+	) {
+		if (weaponOverride == null && currentWeapon == null) {
+			return;
+		}
+		Weapon renderWeapon = (weaponOverride ?? currentWeapon)!;
+		if (!renderWeapon.drawAmmo) {
+			return;
+		}
+
+		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, false);
+		float baseX = hudHealthPosition.x + offset.x;
+		float baseY = hudHealthPosition.y + offset.y;
+
+		GameMode.renderAmmo(
+			baseX, baseY, renderWeapon.weaponBarBaseIndex, renderWeapon.weaponBarIndex,
+			renderWeapon.ammo, 0, renderWeapon.maxAmmo, false
+		);
+	}
 
 	public int getRandomWeaponIndex() {
 		if (player.weapons.Count == 0) return 0;

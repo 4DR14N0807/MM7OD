@@ -13,11 +13,6 @@ public class TeamElimination : GameMode {
 		}
 	}
 	public override void drawTopHUD() {
-		if (level.is1v1()) {
-			draw1v1TopHUD();
-			return;
-		}
-
 		var fontColor = level.mainPlayer.alliance == GameMode.blueAlliance ? FontType.BlueMenu : FontType.RedMenu;
 		var redPlayersStillAlive = level.players.Where(p => !p.isSpectator && p.deaths < playingTo && p.alliance == redAlliance).ToList();
 		var bluePlayersStillAlive = level.players.Where(p => !p.isSpectator && p.deaths < playingTo && p.alliance == blueAlliance).ToList();

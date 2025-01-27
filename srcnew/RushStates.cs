@@ -218,51 +218,46 @@ public class RushJetState : RushState {
 		rush.isPlatform = true;
 		rush.globalCollider = rush.getJetCollider();
 		rush.useGravity = false;
+		rush.grounded = false;
 		rock = rush.character as Rock ?? throw new NullReferenceException();
 		Global.level.modifyObjectGridGroups(rush, isActor: true, isTerrain: true);
 	}
 
 	public override void onExit(RushState newState) {
 		base.onExit(newState);
+		rush.canBeGrounded = true;
 		rush.isPlatform = false;
 		rush.stopMoving();
 	}
 
 	public override void update() {
 		base.update();
- 
-		if (!once) return;
-		
+
 		if (rock.isUsingRushJet()) {
 			xDir = player.input.getXDir(player);
 			input.y = player.input.getYDir(player);
 			if (xDir != 0) input.x = xDir;
 
-			if (input.x == rush.xDir * -1) jetSpeedX = 60;
-			else jetSpeedX = 120;
-
-			if (input.y == -1) {
-				if (Global.level.checkTerrainCollisionOnce(rock, 0, input.y * 16) == null) {
-					jetSpeedY = input.y * 60;
-					
-				}
-				else jetSpeedY = 0;
-			} 
-			else jetSpeedY = input.y * 60;
+			if (input.x == rush.xDir) {
+				jetSpeedX = 120;
+			} else {
+				jetSpeedX = 60;
+			}
+			jetSpeedY = input.y * 60;
+			once = true;
 		} else {
-
 			maxDecAmmoCooldown = 45;
 			jetSpeedX = once ? 60 : 0;
 			jetSpeedY = 0;
 		}
 
 		//rush.vel = new Point(jetSpeedX * rush.xDir, jetSpeedY);
-		rush.move(new Point(jetSpeedX * rush.xDir, 0));
-		//rush.move(new Point(0, jetSpeedY));
-		rush.vel = new Point(0, jetSpeedY);
-		rock.move(new Point(0, MathF.Max(0, jetSpeedY)));
+		rush.vel.x = jetSpeedX * rush.xDir;
+		rush.vel.y = jetSpeedY;
 
-		if (once) decAmmoCooldown--;
+		if (once) {
+			decAmmoCooldown--;
+		}
 		if (decAmmoCooldown <= 0) {
 			rock.rushWeapon.addAmmo(-1, player);
 			decAmmoCooldown = maxDecAmmoCooldown;

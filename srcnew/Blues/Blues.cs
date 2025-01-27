@@ -25,7 +25,7 @@ public class Blues : Character {
 
 	// Break Man stuff.
 	public bool overdrive;
-	public float overdriveAmmo = 28;
+	public float overdriveAmmo = 20;
 	public float overdriveAmmoDecreaseCooldown;
 	public float overdriveAmmoMaxCooldown = 15;
 	public float redStrikeCooldown = 0;
@@ -320,7 +320,9 @@ public class Blues : Character {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
 		}
 		// Core ammo regen.
-		if (!isCharging() || chargeTime > charge3Time + (overdrive ? 20 : 10)) {
+		if (!overdrive && !isCharging() ||
+			overdrive && chargeTime <= charge1Time/2f || 
+			chargeTime > charge3Time + (overdrive ? 20 : 10)) {
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
 		}
@@ -372,7 +374,7 @@ public class Blues : Character {
 		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive && !inCustomShootAnim) {
 			if (isBreakMan) {
 				overdrive = true;
-				overdriveAmmo = coreMaxAmmo;
+				overdriveAmmo = 20;
 			} else {
 				overheating = true;
 			}
@@ -386,10 +388,9 @@ public class Blues : Character {
 			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
-			if (overdriveAmmoDecreaseCooldown > 0) {
-				overdriveAmmoDecreaseCooldown -= Global.speedMul / 2f;
-				if (overdriveAmmoDecreaseCooldown <= 0) { overdriveAmmoDecreaseCooldown = 0; }
-			};
+			if (overdriveAmmoDecreaseCooldown < overdriveAmmoMaxCooldown) {
+				overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
+			}
 		}
 		if (coreAmmoDecreaseCooldown <= 0 && !overdrive && charState is not BluesRevive) {
 			coreAmmo--;
@@ -403,19 +404,24 @@ public class Blues : Character {
 			}
 		}
 
+		bool overdriveLimit = false;
 		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive) {
 			overdriveAmmo--;
 			if (overdriveAmmo <= 0) {
-				overdrive = false;
-				overheating = true;
-				setHurt(-xDir, 12, false);
-				playSound("danger_wrap_explosion", sendRpc: true);
-				stopCharge();
+				overdriveAmmo = 0;
 			}
 			overdriveAmmoDecreaseCooldown = 10;
 		}
+		if (overdriveLimit || overdriveAmmo >= coreMaxAmmo) {
+			overdrive = false;
+			overheating = true;
+			setHurt(-xDir, 12, false);
+			playSound("danger_wrap_explosion", sendRpc: true);
+			stopCharge();
+			overdriveAmmoDecreaseCooldown = 10;
+		}
 
-		// L-Tank check
+		// L-Tank check.
 		if (isUsingLTank && lTankCoreHealAmount <= 0 &&
 			lTankHealShieldAmount <= 0 && eTankHealAmount <= 0
 		) {
@@ -426,21 +432,14 @@ public class Blues : Character {
 		if (lTankCoreHealAmount > 0 && lTankCoreHealTime <= 0) {
 			lTankCoreHealAmount--;
 			lTankCoreHealTime = 3;
-			playSound("heal");
-			if (overdrive) {
-				overdriveAmmo++;
-				if (overdriveAmmo >= coreMaxAmmo) {
-					overdriveAmmo = coreMaxAmmo;
-					lTankCoreHealAmount = 0;
-					lTankCoreHealTime = 0;
-				}	
-			} else {
+			if (!overdrive) {
 				coreAmmo--;
 				if (coreAmmo <= 0) {
 					coreAmmo = 0;
 					lTankCoreHealAmount = 0;
 					lTankCoreHealTime = 0;
 				}
+				playSound("heal");
 			}
 		}
 
@@ -1191,6 +1190,80 @@ public class Blues : Character {
 			"blues_dash" or "blues_dash_shield" => (34, 30),
 			_ => (24, 30)
 		};
+	}
+
+	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
+		base.renderHUD(offset, position);
+	}
+
+	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
+		offset = offset.addxy(0, 17);
+		base.renderLifebar(offset, position);
+
+		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
+		float baseX = hudHealthPosition.x + offset.x;
+		float baseY = hudHealthPosition.y + offset.y;
+
+		GameMode.renderAmmo(
+			baseX, baseY - 5 - player.maxHealth * 2, -1, 1,
+			MathInt.Ceiling(shieldHP), maxAmmo: shieldMaxHP
+		);
+
+	}
+
+	public override void renderAmmo(Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null) {
+		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, false);
+		float baseX = hudHealthPosition.x + offset.x;
+		float baseY = hudHealthPosition.y + offset.y + 17;
+
+		int coreAmmoColor = 0;
+		if ((overheating || overdrive) && Global.frameCount % 6 >= 3) {
+			coreAmmoColor = 2;
+		}
+		GameMode.renderAmmo(
+			baseX, baseY, -2, coreAmmoColor, MathF.Ceiling(coreAmmo),
+			maxAmmo: coreMaxAmmo, barSprite: "hud_weapon_full_blues"
+		);
+		if (overdrive) {
+			int yPos = MathInt.Ceiling(baseY - 16);
+			int color = 1;
+			if (Global.frameCount % 6 >= 3) {
+				color = 3;
+			}
+			float alpha = 1;
+			if (Global.frameCount % 4 >= 2) {
+				alpha = 0.25f;
+			}
+			for (var i = 0; i < overdriveAmmo; i++) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, alpha);
+				yPos -= 2;
+			}
+		}
+		if (!overheating && ownedByLocalPlayer) {
+			int baseAmmo = MathInt.Floor(coreAmmo);
+			int baseColor = 2;
+			int filledColor = 0;
+			if (overdrive) {
+				baseAmmo = MathInt.Floor(overdriveAmmo);
+				baseColor = 3;
+				filledColor = 1;
+			}
+			int yPos = MathInt.Ceiling(baseY - 16 - MathF.Ceiling(baseAmmo) * 2);
+
+			int ammoAmmount = getChargeShotCorePendingAmmo();
+			int actualUse = getChargeShotAmmoUse(getChargeLevel());
+			if (ammoAmmount + baseAmmo > coreMaxAmmo) {
+				ammoAmmount = MathInt.Floor(coreMaxAmmo - baseAmmo);
+			}
+			for (var i = 0; i < ammoAmmount; i++) {
+				int color = baseColor;
+				if (i < actualUse) {
+					color = filledColor;
+				}
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos);
+				yPos -= 2;
+			}
+		}
 	}
 
 	public override List<byte> getCustomActorNetData() {

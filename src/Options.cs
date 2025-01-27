@@ -105,7 +105,7 @@ public class Options {
 	public bool useRandomRockLoadout;
 	public RockLoadout rockLoadout = new RockLoadout();
 	public int gridModeRock;
-	public bool rushSpecial;
+	public bool rushSpecial = true;
 
 	// ProtoMan
 	public bool useRandomBluesLoadout;

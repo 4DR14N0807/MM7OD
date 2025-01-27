@@ -841,8 +841,8 @@ public partial class Actor : GameObject {
 		float yMod = reversedGravity ? -1 : 1;
 		if (physicsCollider != null && !isStatic && (canBeGrounded || useGravity)) {
 			float yDist = 1;
-			if (grounded && vel.y * yMod >= 0 && lastPos.y >= pos.y) {
-				yDist = 5;
+			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y) {
+				yDist = 4;
 			}
 			yDist *= yMod;
 			CollideData? collideData = Global.level.checkTerrainCollisionOnce(this, 0, yDist, checkPlatforms: true);
@@ -892,7 +892,7 @@ public partial class Actor : GameObject {
 				}
 
 				//If already grounded, snap to ground further
-				CollideData collideDataCloseCheck = Global.level.checkTerrainCollisionOnce(this, 0, 0.05f * yMod);
+				CollideData? collideDataCloseCheck = Global.level.checkTerrainCollisionOnce(this, 0, 0.05f * yMod);
 				if (collideDataCloseCheck == null) {
 					var yVel = new Point(0, yDist);
 					var mtv = Global.level.getMtvDir(

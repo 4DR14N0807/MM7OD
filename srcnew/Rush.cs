@@ -125,11 +125,16 @@ public class Rush : Actor, IDamagable {
 
 	public override void update() {
 		base.update();
-
 		if (rushState is RushWarpOut) spriteToCollider["warp_beam"] = null;
-
 		if (character == null || character.charState is Die || character.flag != null) {
 			changeState(new RushWarpOut());
+		}
+
+		//Rush Jet detection
+		if (rushState is RushJetState && rock.canRideRushJet() ) {
+			isJetAndRide = true;
+		} else {
+			isJetAndRide = false;
 		}
 	}
 

@@ -17,6 +17,7 @@ public class RockBuster : Weapon {
 		//shootSounds = new List<string>() {"buster", "buster2", "buster3", ""};
 		fireRate = 9;
 		description = new string[] { "Rock's default weapon.", "Can be charged to deal more damage." };
+		drawAmmo = false;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

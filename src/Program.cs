@@ -20,12 +20,12 @@ using static SFML.Window.Keyboard;
 namespace MMXOnline;
 
 class Program {
-	#if OS_WINDOWS
+	#if WINDOWS
 	[STAThread]
 	#endif
 	static void Main(string[] args) {
 		if (args.Length > 0 && args[0] == "-relay") {
-		#if OS_WINDOWS
+		#if WINDOWS
 			AllocConsole();
 		#endif
 			RelayServer.ServerMain(args);
@@ -52,7 +52,7 @@ class Program {
 		Environment.Exit(0);
 	}
 
-#if OS_WINDOWS
+#if WINDOWS
 	[DllImport("kernel32.dll", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	static extern bool AllocConsole();
@@ -100,7 +100,7 @@ class Program {
 			string baseDocumentsPath = Helpers.getBaseDocumentsPath();
 			string mmxodDocumentsPath = Helpers.getMMXODDocumentsPath();
 
-			#if OS_WINDOWS
+			#if WINDOWS
 			if (string.IsNullOrEmpty(mmxodDocumentsPath) &&
 				!string.IsNullOrEmpty(baseDocumentsPath) &&
 				!Options.main.autoCreateDocFolderPromptShown
@@ -1324,7 +1324,7 @@ class Program {
 	public static string 
 	getCpuName() {
 		string cpuName = "Unknown";
-		#if OS_WINDOWS
+		#if WINDOWS
 			// For Windows OS.
 			cpuName = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
 				@"HARDWARE\DESCRIPTION\System\CentralProcessor\0\"

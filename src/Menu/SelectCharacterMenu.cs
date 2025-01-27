@@ -6,8 +6,8 @@ namespace MMXOnline;
 
 [ProtoContract]
 public class PlayerCharData {
-	[ProtoMember(1)] public int charNum = 5;
-	[ProtoMember(2)] public int armorSet = 1;
+	[ProtoMember(1)] public int charNum = (int)CharIds.Rock;
+	[ProtoMember(2)] public int armorSet = 0;
 	[ProtoMember(3)] public int alliance = -1;
 	[ProtoMember(4)] public bool isRandom;
 
@@ -16,6 +16,7 @@ public class PlayerCharData {
 	public int uiSelectedCharIndex;
 
 	public PlayerCharData() {
+		isRandom = true;
 	}
 
 	public PlayerCharData(int charNum) {
@@ -57,15 +58,15 @@ public class CharSelection {
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
 	public static CharSelection[] selections => [
-		new CharSelection("MEGA MAN", 5, 0, 0, "rock_idle", 0),
-		new CharSelection("PROTO MAN", 6, 0, 0, "blues_idle", 0 ),
-		new CharSelection("BASS", 7, 0, 0, "bass_idle", 0),
+		new CharSelection("Megaman", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("Protoman", 6, 0, 0, "blues_idle", 0 ),
+		new CharSelection("Bass", 7, 0, 0, "bass_idle", 0),
 	];
 
 	public static CharSelection[] selections1v1 => [
-		new CharSelection("MEGA MAN", 5, 0, 0, "rock_idle", 0),
-		new CharSelection("PROTO MAN", 6, 0, 0, "blues_idle", 0 ),
-		new CharSelection("BASS", 7, 0, 0, "bass_idle", 0),
+		new CharSelection("Megaman", 5, 0, 0, "rock_idle", 0),
+		new CharSelection("Protoman", 6, 0, 0, "blues_idle", 0 ),
+		new CharSelection("Bass", 7, 0, 0, "bass_idle", 0),
 	];
 
 	public CharSelection(

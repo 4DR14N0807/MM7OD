@@ -841,8 +841,8 @@ public partial class Actor : GameObject {
 		float yMod = reversedGravity ? -1 : 1;
 		if (physicsCollider != null && !isStatic && (canBeGrounded || useGravity)) {
 			float yDist = 1;
-			if (grounded && vel.y * yMod >= 0 && lastPos.y >= pos.y) {
-				yDist = 5;
+			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y) {
+				yDist = 4;
 			}
 			yDist *= yMod;
 			CollideData? collideData = Global.level.checkTerrainCollisionOnce(this, 0, yDist, checkPlatforms: true);

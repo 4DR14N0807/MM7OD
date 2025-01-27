@@ -56,14 +56,10 @@ public class ConfigureCPUMenu : IMainMenu {
 		}
 
 		charSelections = is1v1 ? CharSelection.selections1v1 : CharSelection.selections;
-		charSelections = [.. charSelections, new CharSelection("Random", 5, 1, 0, "", 0)];
+		charSelections = [.. charSelections, new CharSelection("Random", 5, 0, 0, "", 0)];
 
 		for (int i = 0; i < savedMatchSettings.extraCpuCharData.cpuDatas.Count; i++) {
 			var cpuData = savedMatchSettings.extraCpuCharData.cpuDatas[i];
-			cpuData.uiSelectedCharIndex = Helpers.clamp(
-				cpuData.uiSelectedCharIndex, 0, 2
-			);
-
 			bool forceEnable = (isOffline && i == 0);
 			int iCopy = i;
 
@@ -72,7 +68,7 @@ public class ConfigureCPUMenu : IMainMenu {
 				new MenuOption(60, currentY += lineH,
 					() => {
 						Helpers.menuLeftRightInc(
-							ref cpuData.uiSelectedCharIndex, 0, 2
+							ref cpuData.uiSelectedCharIndex, 0, charSelections.Length - 1
 						);
 						cpuData.charNum = charSelections[cpuData.uiSelectedCharIndex].mappedCharNum;
 						cpuData.armorSet = charSelections[cpuData.uiSelectedCharIndex].mappedCharArmor;

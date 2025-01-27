@@ -48,10 +48,6 @@ public class Elimination : GameMode {
 	}
 
 	public override void drawTopHUD() {
-		if (level.is1v1()) {
-			draw1v1TopHUD();
-			return;
-		}
 		var playersStillAlive = level.players.Where(p => !p.isSpectator && p.deaths < playingTo).ToList();
 		int lives = playingTo - level.mainPlayer.deaths;
 		var topText = "Lives: " + lives.ToString();

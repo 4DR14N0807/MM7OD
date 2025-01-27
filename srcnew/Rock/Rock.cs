@@ -281,12 +281,15 @@ public class Rock : Character {
 	}
 
 	public bool isUsingRushJet() {
-		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true);
-		Rush? rj = null!;
-		if (collideData != null) rj = collideData.gameObject as Rush;
-		bool rjJet = rj != null && rj.rushState is RushJetState;
-
-		return rjJet && rj == rush;
+		if (!grounded) {
+			return false;
+		}
+		CollideData? collideData = Global.level.checkTerrainCollisionOnce(this, 0, 2, checkPlatforms: true);
+		return (
+			collideData?.gameObject is Rush rj &&
+			rj.rushState is RushJetState &&
+			pos.y <= rj.pos.y - 4
+		);
 	}
 
 	public override bool canMove() {

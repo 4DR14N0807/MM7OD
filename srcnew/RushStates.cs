@@ -242,7 +242,10 @@ public class RushJetState : RushState {
 			else jetSpeedX = 120;
 
 			if (input.y == -1) {
-				if (Global.level.checkTerrainCollisionOnce(rock, 0, input.y * 16) == null) jetSpeedY = input.y * 60;
+				if (Global.level.checkTerrainCollisionOnce(rock, 0, input.y * 16) == null) {
+					jetSpeedY = input.y * 60;
+					
+				}
 				else jetSpeedY = 0;
 			} 
 			else jetSpeedY = input.y * 60;
@@ -255,12 +258,13 @@ public class RushJetState : RushState {
 
 		//rush.vel = new Point(jetSpeedX * rush.xDir, jetSpeedY);
 		rush.move(new Point(jetSpeedX * rush.xDir, 0));
-		rush.move(new Point(0, jetSpeedY));
-		rock?.move(new Point(0, MathF.Max(0, jetSpeedY)));
+		//rush.move(new Point(0, jetSpeedY));
+		rush.vel = new Point(0, jetSpeedY);
+		rock.move(new Point(0, MathF.Max(0, jetSpeedY)));
 
 		if (once) decAmmoCooldown--;
 		if (decAmmoCooldown <= 0) {
-			rock?.rushWeapon.addAmmo(-1, player);
+			rock.rushWeapon.addAmmo(-1, player);
 			decAmmoCooldown = maxDecAmmoCooldown;
 		}
 

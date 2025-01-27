@@ -98,7 +98,6 @@ public class WildCoilProj : Projectile {
 
 
 	public override void onHitWall(CollideData other) {
-		if (!ownedByLocalPlayer) return;
 
 		var normal = other.hitData.normal ?? new Point(0, -1);
 

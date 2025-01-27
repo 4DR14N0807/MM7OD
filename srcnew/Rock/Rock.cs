@@ -281,7 +281,7 @@ public class Rock : Character {
 	}
 
 	public bool isUsingRushJet() {
-		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true);
+		var collideData = Global.level.checkTerrainCollisionOnce(this, 0, 4, checkPlatforms: true);
 		Rush? rj = null!;
 		if (collideData != null) rj = collideData.gameObject as Rush;
 		bool rjJet = rj != null && rj.rushState is RushJetState;
@@ -453,7 +453,7 @@ public class Rock : Character {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
 		}
 
-		if (isGHit && vel.y > 0 && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
+		if (isGHit && isLanding() && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
 			rjs.once = true;
 			rush.changeSprite("rush_jet", true);
 			rush.playSound("rush_jet", true);

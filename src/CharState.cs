@@ -259,6 +259,7 @@ public class CharState {
 			}
 		} else if (landSprite != "" && character.grounded && !wasGrounded && sprite == airSprite) {
 			character.playSound("land", sendRpc: true);
+			character.landingCode(false);
 			sprite = landSprite;
 			int oldFrameIndex = character.sprite.frameIndex;
 			float oldFrameTime = character.sprite.frameTime;

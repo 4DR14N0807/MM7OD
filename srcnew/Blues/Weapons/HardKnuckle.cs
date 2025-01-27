@@ -178,4 +178,9 @@ public class HardKnuckleShoot : CharState {
 			character.slideVel = -character.xDir * 2f * 60f;
 		}
 	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		blues.inCustomShootAnim = false;
+	}
 }

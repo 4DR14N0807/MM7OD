@@ -68,7 +68,6 @@ public class WaveBurnerProj : Projectile {
 
 		character = player.character ?? throw new NullReferenceException();
 		xDir = character.getShootXDir();
-		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, player, netId, byteAngle);

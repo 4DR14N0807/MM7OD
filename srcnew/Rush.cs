@@ -131,15 +131,6 @@ public class Rush : Actor, IDamagable {
 		if (character == null || character.charState is Die || character.flag != null) {
 			changeState(new RushWarpOut());
 		}
-
-		//Rush Jet detection
-		if (
-			rushState is RushJetState && rock.canRideRushJet() 
-		) {
-			isJetAndRide = true;
-		} else {
-			isJetAndRide = false;
-		}
 	}
 
 	public override void postUpdate() {

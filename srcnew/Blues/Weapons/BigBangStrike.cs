@@ -396,7 +396,7 @@ public class BigBangStrikeStart : CharState {
 	public override void onEnter(CharState oldState) {
 		blues = character as Blues ?? throw new NullReferenceException();
 		character.stopMovingWeak();
-		blues.isShieldActive = false;
+		//blues.isShieldActive = false;
 		bgEffect = new BigBangStrikeBackwall(character.pos, character);
 	}
 

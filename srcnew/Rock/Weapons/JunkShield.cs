@@ -249,6 +249,8 @@ public class JunkShieldProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
+		
 		rock.junkShieldProjs.Remove(this);
 	}
 

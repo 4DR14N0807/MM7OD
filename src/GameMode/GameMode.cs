@@ -938,13 +938,14 @@ public class GameMode {
 	}
 
 	public bool shouldDrawRadar() {
-		if (Global.level.isRace()) {
+		/* if (Global.level.isRace()) {
 			return true;
 		}
 		if (level.is1v1() || level.mainPlayer?.isSpectator != false) {
 			return false;
 		}
-		return true;
+		return true; */
+		return false;
 	}
 
 	void drawRadar() {

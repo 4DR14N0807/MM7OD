@@ -26,13 +26,13 @@ public class Bass : Character {
 	public bool isSuperBass;
 	public const int TrebleBoostCost = 75;
 	public int phase;
-	public int[] evilEnergy = new int[2] {0,0};
+	public int[] evilEnergy = new int[2] { 0, 0 };
 	public int evilEnergy2;
 	public const int MaxEvilEnergy = 28;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
 	bool refillFly;
-	
+
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
 
@@ -46,7 +46,6 @@ public class Bass : Character {
 		charId = CharIds.Bass;
 		weapons = getLoadout();
 		charge1Time = 50;
-		
 		maxHealth -= (decimal)player.evilEnergyStacks * (decimal)player.hpPerStack;
 	}
 
@@ -63,7 +62,7 @@ public class Bass : Character {
 	}
 
 	public bool canGoSuperBass() {
-		return(
+		return (
 			charState is not Die && charState.normalCtrl &&
 			!isSuperBass && player.currency >= TrebleBoostCost &&
 			player.evilEnergyStacks <= 0 && player.pendingEvilEnergyStacks <= 0
@@ -88,10 +87,10 @@ public class Bass : Character {
 
 		//Hypermode Music.
 		if (!Global.level.isHyper1v1()) {
-			if (isSuperBass) { 
+			if (isSuperBass) {
 				if (musicSource == null) {
 					addMusicSource("basstheme", getCenterPos(), true);
-				} 
+				}
 			} else {
 				destroyMusicSource();
 			}
@@ -106,14 +105,15 @@ public class Bass : Character {
 		Helpers.decrementFrames(ref weaponCooldown);
 		Helpers.decrementFrames(ref tBladeDashCooldown);
 		Helpers.decrementFrames(ref showNumberTime);
-		if (refillFly) Helpers.decrementFrames(ref flyTime);
-
-		if (flyTime > MaxFlyTime) flyTime = MaxFlyTime;
-
+		if (refillFly) {
+			Helpers.decrementFrames(ref flyTime);
+		}
+		if (flyTime > MaxFlyTime) {
+			flyTime = MaxFlyTime;
+		}
 		for (int i = 0; i < evilEnergy.Length; i++) {
 			if (evilEnergy[i] > MaxEvilEnergy) evilEnergy[i] = MaxEvilEnergy;
 		}
-
 		player.changeWeaponControls();
 
 		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
@@ -126,13 +126,14 @@ public class Bass : Character {
 			}
 		}
 
-		if (isSuperBass) chargeLogic(shoot);
-
+		if (isSuperBass) {
+			chargeLogic(shoot);
+		}
 		//quickAdaptorUpgrade(); 
 	}
 
 	public override void render(float x, float y) {
-		base.render(x,y);
+		base.render(x, y);
 
 		if (player.isMainPlayer && (charState is BassFly || flyTime > 0)) {
 			float healthPct = Helpers.clamp01((MaxFlyTime - flyTime) / MaxFlyTime);
@@ -209,7 +210,6 @@ public class Bass : Character {
 				new Weapon(), projPos, ProjIds.SonicCrusher, player, damager.damage, damager.flinch, 0.75f * 60,
 				addToLevel: addToLevel
 			),
-			
 			_ => null
 		};
 	}
@@ -237,8 +237,7 @@ public class Bass : Character {
 		if (player.input.isPressed(Control.Dash, player) && canUseTBladeDash()) {
 			changeState(new TenguBladeDash(), true);
 			return true;
-		} 
-
+		}
 		if (isSuperBass) {
 			if (player.input.isPressed(Control.Jump, player) && !grounded && dashedInAir <= 0) {
 				dashedInAir++;
@@ -246,17 +245,15 @@ public class Bass : Character {
 				changeState(new BassFly(), true);
 				return true;
 			}
-			
 			if (
-				player.input.isHeld(Control.Special2, player) && 
-				charState is not EnergyCharge && 
+				player.input.isHeld(Control.Special2, player) &&
+				charState is not EnergyCharge &&
 				(evilEnergy[(int)Helpers.clampMax(phase - 1, 1)] < MaxEvilEnergy)
 			) {
 				changeState(new EnergyCharge(), true);
 				return true;
 			}
 		}
-
 		return base.normalCtrl();
 	}
 
@@ -283,13 +280,11 @@ public class Bass : Character {
 			} else {
 				float? vel = null;
 				if (charState is BassFly bfly) vel = bfly.getFlightMove().x;
-				
 				changeState(new SonicCrusher(vel), true);
 				refillFly = false;
 				return true;
 			}
 		}
-
 		return base.attackCtrl();
 	}
 
@@ -298,9 +293,15 @@ public class Bass : Character {
 
 		turnToInput(player.input, player);
 		if (currentWeapon?.hasCustomAnim == false) {
-			if (charState is LadderClimb lc) changeState(new BassShootLadder(lc.ladder), true);
-			else if (charState is BassShootLadder bsl) changeState(new BassShootLadder(bsl.ladder), true);
-			else changeState(new BassShoot(), true);
+			if (charState is LadderClimb lc) {
+				changeState(new BassShootLadder(lc.ladder), true);
+			}
+			else if (charState is BassShootLadder bsl) {
+				changeState(new BassShootLadder(bsl.ladder), true);
+			}
+			else {
+				changeState(new BassShoot(), true);
+			}
 		} /* else {
 			changeSprite(getSprite(charState.shootSprite), true);
 		} */
@@ -329,11 +330,11 @@ public class Bass : Character {
 		return getShootYDir(allowDown, allowDiagonal) * xDir * 32 + baseAngle;
 	}
 
-	//Loadout Stuff
+	// Loadout Stuff
 	public List<Weapon> getLoadout() {
 		if (Global.level.isTraining() && !Global.level.server.useLoadout) {
 			return getAllWeapons();
-		}  else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomBassLoadout) {
+		} else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomBassLoadout) {
 			return getRandomLoadout();
 		} else if (Global.level.is1v1()) {
 			return getAllWeapons();
@@ -376,8 +377,8 @@ public class Bass : Character {
 			weaponIndexes[1] = Helpers.randomRange(0, 8);
 			weaponIndexes[2] = Helpers.randomRange(0, 8);
 
-			if (weaponIndexes[0] != weaponIndexes[1] 
-				&& weaponIndexes[0] != weaponIndexes[2] 
+			if (weaponIndexes[0] != weaponIndexes[1]
+				&& weaponIndexes[0] != weaponIndexes[2]
 				&& weaponIndexes[1] != weaponIndexes[2]) hasRepeatedWeapons = false;
 		}
 
@@ -387,14 +388,14 @@ public class Bass : Character {
 
 		return indices.Select(index => {
 			return getAllWeapons().Find(w => w.index == index).clone();
-		}).ToList();;
+		}).ToList(); ;
 	}
 
 	public void drawCardNumber(int number) {
 		Point center = getCenterPos();
 
 		Global.sprites["magic_card_numbers"].draw(
-			number, center.x, center.y - 16, 
+			number, center.x, center.y - 16,
 			1, 1, null, 1, 1, 1, zIndex + 10
 		);
 	}
@@ -404,7 +405,6 @@ public class Bass : Character {
 		return prefix + spriteName;
 	}
 
-	
 	public override (float, float) getGlobalColliderSize() {
 		return (24, 30);
 	}
@@ -490,7 +490,7 @@ public class Bass : Character {
 		List<ShaderWrapper> shaders = new();
 		ShaderWrapper? palette = null;
 
-		int index = currentWeapon?.index ?? 0;
+		int index = (currentWeapon?.index ?? 0) + 1;
 		palette = player.bassPaletteShader;
 
 		palette?.SetUniform("palette", index);
@@ -517,7 +517,7 @@ public class Bass : Character {
 		byte ammo = (byte)MathF.Ceiling(currentWeapon?.ammo ?? 0);
 		customData.Add((byte)weaponIndex);
 		customData.Add(ammo);
-	
+
 		bool[] flags = [
 			isSuperBass,
 		];

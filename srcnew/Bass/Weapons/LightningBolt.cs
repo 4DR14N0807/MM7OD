@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MMXOnline;
 
@@ -25,10 +26,13 @@ public class LightningBolt : Weapon {
 
 		character.changeState(new LightningBoltState(), true);
 	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
+	}
 }
 
 public class LightningBoltSpawn : Anim {
-
 	int pieces;
 	float spriteHeight;
 	Sprite spr;
@@ -60,32 +64,47 @@ public class LightningBoltSpawn : Anim {
 
 
 public class LightningBoltState : CharState {
-
 	int phase = 0;
 	Anim? aim;
 	const float spawnYPos = -128;
 	Point lightningPos;
 	public LightningBoltState() : base("lbolt") {
-		superArmor = true;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		Point startAimPos = new Point(character.pos.x, Global.level.camY + 64);
+		Point startAimPos = new Point(character.pos.x + 10 * character.xDir, character.pos.y - 25);
 
 		character.useGravity = false;
-		character.stopMoving();
+		if (character.vel.y < 0) {
+			character.yPushVel = character.vel.y;
+		}
+		else if (character.grounded) {
+			character.grounded = false;
+			character.yPushVel = -3.5f * 60;
+		}
+		else if (character.vel.y < 2 * 60) {
+			character.yPushVel = character.vel.y;
+		}
+		else {
+			character.yPushVel = 2 * 60;
+		}
+		character.stopMovingWeak();
 		character.frameSpeed = 0;
 		new Anim(character.pos, "lightning_bolt_anim", character.xDir,
 			character.player.getNextActorNetId(), true); 
 
-		aim = new Anim(startAimPos, "lightning_bolt_anim", character.xDir,
-			character.player.getNextActorNetId(), true);
+		aim = new Anim(
+			startAimPos, "lightning_bolt_anim", character.xDir,
+			character.player.getNextActorNetId(), true
+		);
 		aim.frameSpeed = 0;
 		aim.alpha /= 2;
 
-		new LightningBoltSpawn(character.getCenterPos(), character.xDir,
-		character.player.getNextActorNetId(), true, true);
+		new LightningBoltSpawn(
+			character.getCenterPos(), character.xDir,
+			character.player.getNextActorNetId(), true, true
+		);
 	}
 
 	public override void update() {
@@ -94,10 +113,13 @@ public class LightningBoltState : CharState {
 		if (phase == 0) {
 			float moveX = character.player.input.getXDir(character.player) * 180;
 			aim?.move(new Point(moveX, 0));
+			if (aim != null) {
+				aim.pos.y = character.pos.y - 25;
+			}
 
-			if (stateFrames >= 45) {
+			if (stateFrames >= 45 || stateFrames >= 6 && player.input.isPressed(Control.Shoot, player)) {
 				character.frameSpeed = 1;
-				
+
 				float xPos = aim?.pos.x ?? character.pos.x;
 				lightningPos = new Point(xPos, character.pos.y + spawnYPos);
 				aim?.destroySelf();
@@ -108,27 +130,33 @@ public class LightningBoltState : CharState {
 
 		if (character.isAnimOver() && player.ownedByLocalPlayer) {
 			if (phase == 1) {
-				new LightningBoltProj(lightningPos, character.xDir, character.player,
-					character.player.getNextActorNetId(), true);
+				new LightningBoltProj(
+					lightningPos, character.xDir, character.player,
+					character.player.getNextActorNetId(), true
+				);
 				character.playSound("lightningbolt", true);
-				
+				Weapon? bolt = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
+				if (bolt != null) {
+					bolt.addAmmo(-1, player);
+				}
 				phase = 2;
 			}
 
-			if (stateFrames >= 120) character.changeToIdleOrFall();
+			if (stateFrames >= 120) {
+				character.changeToIdleOrFall();
+			}
 		}
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-
+		character.stopMovingWeak();
 		character.useGravity = true;
 	}
 }
 
 
 public class LightningBoltProj : Projectile {
-
 	float spawnPosY;
 	float bodySpriteHeight;
 	string bodySprite = "lightning_bolt_body";

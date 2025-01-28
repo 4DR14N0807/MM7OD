@@ -580,8 +580,7 @@ public class Blues : Character {
 				}
 			}
 		}
-		if (slide && canSlide()) 
-		{
+		if (slide && canSlide())  {
 			changeState(new BluesSlide(), true);
 			return true;
 		}
@@ -899,9 +898,10 @@ public class Blues : Character {
 
 	public bool shieldDashInput() {
 		if (Options.main.switchDashInput) {
-			return 
+			return (
 				player.input.isPressed(Control.Jump, player) &&
-				player.input.isHeld(Control.Down, player);
+				player.input.isHeld(Control.Down, player)
+			);
 		}
 		return player.input.isPressed(Control.Dash, player);
 	}
@@ -910,9 +910,10 @@ public class Blues : Character {
 		if (Options.main.switchDashInput) {
 			return player.input.isPressed(Control.Dash, player);
 		}
-		return
+		return (
 			player.input.isPressed(Control.Jump, player) &&
-			player.input.isHeld(Control.Down, player);
+			player.input.isHeld(Control.Down, player)
+		);
 	}
 
 	public bool isShieldFront() {

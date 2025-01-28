@@ -673,11 +673,6 @@ public class Blues : Character {
 				addCoreAmmo(0.75f);
 			}
 			playSound("buster", sendRpc: true);
-			if (overdrive) {
-				resetCoreCooldown(45);
-			} else {
-				resetCoreCooldown(12);
-			}
 			lemonCooldown = 8;
 			unchargedLemonCooldown[lemonNum] = 50;
 			if (oldShootAnimTime <= 0.25f) {

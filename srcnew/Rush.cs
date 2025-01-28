@@ -172,13 +172,13 @@ public class Rush : Actor, IDamagable {
 
 		if (chr == null || chr.charState is Die) return;
 
-		if (chr == netOwner?.character && chr.charState is Fall && chr != null ) {
+		if (chr == netOwner?.character && chr.vel.y > 0 && chr != null ) {
 			
 			//Rush Coil detection
 			if (!usedCoil && rushState is RushIdle && type == 0) {
 				changeState(new RushCoil());
 				chr.vel.y = -chr.getJumpPower() * 1.5f;
-				chr.changeState(new Jump(), true);
+				chr.changeState(new Jump() { canStopJump = false }, true);
 				chr.rushWeapon.addAmmo(-4, chr.player);
 				usedCoil = true;
 			}

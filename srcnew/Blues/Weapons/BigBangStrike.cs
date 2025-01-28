@@ -227,7 +227,7 @@ public class StrikeAttackPushProj : Projectile {
 	public override void update() {
 		base.update();
 		if (isAnimOver()) {
-			destroySelf();
+			destroySelf(doRpcEvenIfNotOwned: true);
 		}
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
@@ -257,7 +257,7 @@ public class RedStrikeProj : Projectile {
 		ProtoBuster.netWeapon, pos, xDir, 0, 3, player, "big_bang_strike_proj",
 		Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		projId = (int)BluesProjIds.BigBangStrike;
+		projId = (int)BluesProjIds.RedStrike;
 		maxTime = 0.6f;
 		shouldShieldBlock = false;
 		reflectable = false;
@@ -266,10 +266,12 @@ public class RedStrikeProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
 		}
+
+		projId = (int)BluesProjIds.BigBangStrike;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
-		return new BigBangStrikeProj(
+		return new RedStrikeProj(
 			args.pos, args.xDir, args.player, args.netId
 		);
 	}
@@ -326,7 +328,7 @@ public class RedStrikeExplosionProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
-		return new BigBangStrikeExplosionProj(
+		return new RedStrikeExplosionProj(
 			args.pos, args.xDir, args.player, args.netId
 		);
 	}

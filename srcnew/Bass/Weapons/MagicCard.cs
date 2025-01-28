@@ -134,8 +134,8 @@ public class MagicCardProj : Projectile {
 			move(speed);
 			byteAngle = speed.byteAngle;
 
-			if (pos.distanceTo(returnPos) < 16) {
-				foreach (Weapon w in shooter.player.weapons) {
+			if (pos.distanceTo(returnPos) < 24) {
+				foreach (Weapon w in shooter.weapons) {
 					if (w == wep) {
 						w.addAmmo(getAmmo(), shooter.player);
 						continue;

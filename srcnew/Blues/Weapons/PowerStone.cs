@@ -54,6 +54,7 @@ public class PowerStoneProj : Projectile {
 		character = player.character ?? throw new NullReferenceException();
 		stoneAngle = type * 85;
 		zIndex = ZIndex.Character - 10;
+		destroyOnHit = false;
 		canBeLocal = false;
 
 		changePos(new Point(

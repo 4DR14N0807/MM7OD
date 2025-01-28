@@ -38,25 +38,28 @@ public class SpreadDrill : Weapon {
 		character.playSound("spreaddrill", true);
 	}
 }
+
+
 public class SpreadDrillProj : Projectile {
-	//int state = 0;
 	float timeTouseGravity;
-	Anim? anim;
-	Anim? anim2;
-	Bass? bass;
+	Bass bass = null!;
+	Point addPos;
+	Player player;
 	public SpreadDrillProj(
 		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
 	) : base(
-		SpreadDrill.netWeapon, pos, xDir, 100, 2, player, "spread_drill_proj", 0, 1f, netProjId, player.ownedByLocalPlayer
+		SpreadDrill.netWeapon, pos, xDir, 100, 2, 
+		player, "spread_drill_proj", 0, 1f, 
+		netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 2f;
 		projId = (int)BassProjIds.SpreadDrill;
 		destroyOnHit = false;
-		bass = player.character as Bass;
+		bass = player.character as Bass ?? throw new NullReferenceException();
+		this.player = player;
 		if (bass != null) bass.sDrill = this;
+		addPos = new Point(-22 * xDir, 7);
 
-		anim = new Anim(getFirstPOI(0) ?? new Point(0,0), "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
-		anim2 = new Anim(getFirstPOI(1) ?? new Point(0,0), "spread_drill_effect", xDir, player.getNextActorNetId(), false, true);
 		canBeLocal = false;
 
 		if (rpc) {
@@ -73,56 +76,68 @@ public class SpreadDrillProj : Projectile {
 		base.update();
 		if (bass == null) return;
 
-		timeTouseGravity += Global.spf;
-		if (timeTouseGravity >= 1f) { useGravity = true; }
+		timeTouseGravity += Global.speedMul;
+		if (timeTouseGravity >= 60) { useGravity = true; }
 
 		if (ownedByLocalPlayer) {
-			if (owner.input.isPressed(Control.Shoot, owner)) {
-				new SpreadDrillMediumProj(pos.addxy(0, 25), xDir, owner, owner.getNextActorNetId(), rpc: true);
-				new SpreadDrillMediumProj(pos.addxy(0, -25), xDir, owner, owner.getNextActorNetId(), rpc: true);
+			if (player.input.isPressed(Control.Shoot, player)) {
+				new SpreadDrillMediumProj(pos.addxy(0, 25), xDir, player, player.getNextActorNetId(), rpc: true);
+				new SpreadDrillMediumProj(pos.addxy(0, -25), xDir, player, player.getNextActorNetId(), rpc: true);
 				destroySelf();
+				return;
 			}
 		}
 
 		if (useGravity && gravityModifier > 0.75f) {
 			gravityModifier -= 0.01f;
 		}
+	}
 
-		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
-		if (anim2 != null) anim2.changePos(getFirstPOI(1) ?? new Point(0, 0));
+	public override void render(float x, float y) {
+		base.render(x,y);
+		string exhaust = "spread_drill_effect";
+		int fi = Global.frameCount % 2;
+
+		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
+		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y - addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
+		
 		if (!ownedByLocalPlayer) return;
 
-		if (bass != null) bass.sDrill = null;
-		if (anim != null) anim.destroySelf();
-		if (anim2 != null) anim2.destroySelf();
-		new Anim(pos, "spread_drill_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
-		new Anim(pos, "spread_drill_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
+		bass.sDrill = null;
+		new Anim(pos, "spread_drill_pieces", xDir, null, false) 
+		{ ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
+
+		new Anim(pos, "spread_drill_pieces", xDir, null, false) 
+		{ ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
 	}
 }
 public class SpreadDrillMediumProj : Projectile {
 	float sparksCooldown;
-	Anim? anim;
 	int hits;
+	Point addPos;
 
 	public SpreadDrillMediumProj(
 		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
 	) : base(
-		SpreadDrill.netWeapon, pos, xDir, 200, 1, player, "spread_drill_medium_proj", 0, 0.50f, netProjId, player.ownedByLocalPlayer
+		SpreadDrill.netWeapon, pos, xDir, 200, 
+		1, player, "spread_drill_medium_proj", 0, 0.50f, 
+		netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 1f;
 		projId = (int)BassProjIds.SpreadDrillMid;
 		destroyOnHit = false;
 
-		anim = new Anim(getFirstPOI() ?? new Point(0,0), "spread_drill_medium_effect", xDir, player.getNextActorNetId(), false, true);
+		addPos = new Point(-14 * xDir, 1);
 		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
+
 		projId = (int)BassProjIds.SpreadDrill;
 	}
 
@@ -139,11 +154,12 @@ public class SpreadDrillMediumProj : Projectile {
 				new SpreadDrillSmallProj(pos.addxy(0, 15), xDir, owner, owner.getNextActorNetId(), rpc: true);
 				new SpreadDrillSmallProj(pos.addxy(0, -15), xDir, owner, owner.getNextActorNetId(), rpc: true);
 				destroySelf();
+				return;
 			}
 		}
+
 		Helpers.decrementTime(ref sparksCooldown);
 
-		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
 		if (hits >= 3) destroySelf();
 		
 		if (Math.Abs(vel.x) < speed) vel.x += Global.speedMul * xDir * 8;
@@ -167,30 +183,43 @@ public class SpreadDrillMediumProj : Projectile {
 		} 
 	}
 
+	public override void render(float x, float y) {
+		base.render(x,y);
+		string exhaust = "spread_drill_effect";
+		int fi = Global.frameCount % 2;
+
+		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
+	}
+
 	public override void onDestroy() {
 		base.onDestroy();
 
 		if (!ownedByLocalPlayer) return;
-		if (anim != null) anim.destroySelf();
 
-		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
-		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
+		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) 
+		{ ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
+
+		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) 
+		{ ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
 	}
 }
 public class SpreadDrillSmallProj : Projectile {
 	float sparksCooldown;
-	Anim? anim;
 	int hits;
+	Point addPos;
 	public SpreadDrillSmallProj(
-		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
+		Point pos, int xDir, Player player, 
+		ushort netProjId, bool rpc = false
 	) : base(
-		SpreadDrill.netWeapon, pos, xDir, 400, 1, player, "spread_drill_small_proj", 0, 0.25f, netProjId, player.ownedByLocalPlayer
+		SpreadDrill.netWeapon, pos, xDir, 400, 1,
+		player, "spread_drill_small_proj", 0, 0.25f, 
+		netProjId, player.ownedByLocalPlayer
 	) {
 		maxTime = 1.5f;
 		projId = (int)BassProjIds.SpreadDrillSmall;
 		destroyOnHit = false;
 
-		anim = new Anim(pos.addxy(-5, 5), "spread_drill_small_effect", xDir, player.getNextActorNetId(), false, true);
+		addPos = new Point(-8 * xDir, 0);
 		canBeLocal = false;
 
 		if (rpc) {
@@ -209,7 +238,6 @@ public class SpreadDrillSmallProj : Projectile {
 		base.update();
 		Helpers.decrementTime(ref sparksCooldown);
 
-		if (anim != null) anim.changePos(getFirstPOI(0) ?? new Point(0, 0));
 		if (hits >= 3) destroySelf();
 
 		if (Math.Abs(vel.x) < speed) vel.x += Global.speedMul * xDir * 16;
@@ -233,13 +261,23 @@ public class SpreadDrillSmallProj : Projectile {
 		} 
 	}
 
+	public override void render(float x, float y) {
+		base.render(x,y);
+		string exhaust = "spread_drill_effect";
+		int fi = Global.frameCount % 2;
+
+		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
+	}
+
 	public override void onDestroy() {
 		base.onDestroy();
 
 		if (!ownedByLocalPlayer) return;
-		if (anim != null) anim.destroySelf();
 
-		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
-		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) { ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
+		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) 
+		{ ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
+
+		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) 
+		{ ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
 	}
 }

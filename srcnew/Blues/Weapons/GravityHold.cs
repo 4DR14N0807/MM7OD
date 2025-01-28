@@ -259,4 +259,9 @@ public class BluesGravityHold : CharState {
 			blues.changeSpriteFromName(airSprite, true);
 		}
 	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		blues.inCustomShootAnim = false;
+	}
 }

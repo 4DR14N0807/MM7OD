@@ -15,6 +15,7 @@ public class TenguBlade : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 60;
+		hasCustomAnim = true;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -142,7 +143,6 @@ public class TenguBladeMelee : GenericMeleeProj {
 		TenguBlade.netWeapon, pos, ProjIds.TenguBladeDash,
 		player, 2, 0, 0.375f * 60, addToLevel: addToLevel
 	) {
-		projId = (int)BassProjIds.TenguBladeProj;
 	}
 
 	public override void onHitDamagable(IDamagable damagable) {

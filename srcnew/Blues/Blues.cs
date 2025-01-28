@@ -53,6 +53,7 @@ public class Blues : Character {
 	public bool starCrashActive;
 	public StarCrashProj? starCrash;
 	public HardKnuckleProj? hardKnuckleProj;
+	public bool inCustomShootAnim;
 
 	// Gravity Hold stuff
 	public int gHoldOwnerYDir = 1;
@@ -370,10 +371,10 @@ public class Blues : Character {
 			}
 		}
 
-		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive) {
+		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive && !inCustomShootAnim) {
 			if (isBreakMan) {
 				overdrive = true;
-				overdriveAmmo = 20;
+				overdriveAmmo = coreMaxAmmo;
 			} else {
 				overheating = true;
 			}
@@ -557,7 +558,7 @@ public class Blues : Character {
 				idleState.sprite = idleState.transitionSprite;
 				changeSprite(idleState.sprite, true);
 			}
-			else if (!isShieldActive || shieldHP <= 0) {
+			else if (!isShieldActive || (shieldHP <= 0 && charState is not BigBangStrikeStart)) {
 				isShieldActive = false;
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
@@ -623,6 +624,8 @@ public class Blues : Character {
 	}
 
 	public void shoot(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
+
 		int lemonNum = -1;
 		int type = overdrive ? 1 : 0;
 
@@ -714,17 +717,23 @@ public class Blues : Character {
 	}
 
 	public void shootSpecial(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
+
 		int extraArg = 0;
 		if (specialWeapon == null) {
 			return;
 		}
-		if (!charState.attackCtrl && !charState.invincible) {
+		// Cancel non-invincible states.
+		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide) {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
 		if (!specialWeapon.hasCustomAnim) {
 			setShootAnim();
-		} else extraArg = 1;
+		} else {
+			inCustomShootAnim = true;
+			extraArg = 1;
+		}
 		
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
@@ -908,6 +917,7 @@ public class Blues : Character {
 			canShieldBeActive = (
 				charState.attackCtrl ||
 				charState.normalCtrl ||
+				charState is BigBangStrikeStart ||
 				charState is Hurt { stateFrames: < 2 } ||
 				charState is GenericStun { stateFrames: < 2 }
 			);
@@ -918,7 +928,7 @@ public class Blues : Character {
 		return (
 			isShieldActive &&
 			canShieldBeActive &&
-			shieldHP > 0 
+			(shieldHP > 0 || charState is BigBangStrikeStart)
 		);
 	}
 
@@ -953,7 +963,10 @@ public class Blues : Character {
 		int damageReduction = 1;
 		bool shieldActive = isShieldFront();
 		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
-		bool shieldHitBack = (!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
+		bool shieldHitBack = (
+			!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
+			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
+		);
 
 		if (projId == (int)BassProjIds.RemoteMineExplosion) {
 			if (shieldActive) {
@@ -1028,7 +1041,7 @@ public class Blues : Character {
 				shieldHP = 0;
 				shieldDamaged = false;
 			}
-			if (shieldHP <= 0) {
+			if (shieldHP <= 0 && charState is not BigBangStrikeStart) {
 				shieldHP = 0;
 				shieldDamageDebt = 0;
 				isShieldActive = false;

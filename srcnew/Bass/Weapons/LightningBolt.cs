@@ -15,6 +15,7 @@ public class LightningBolt : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 120;
+		hasCustomAnim = true;
 	}
 
 	public override void shoot(Character character, params int[] args) {

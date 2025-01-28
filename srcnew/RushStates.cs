@@ -239,7 +239,7 @@ public class RushJetState : RushState {
 			if (xDir != 0) input.x = xDir;
 
 			if (input.x == rush.xDir) {
-				jetSpeedX = 90;
+				jetSpeedX = 120;
 			} else {
 				jetSpeedX = 60;
 			}
@@ -259,7 +259,7 @@ public class RushJetState : RushState {
 			decAmmoCooldown--;
 		}
 		if (decAmmoCooldown <= 0) {
-			rock?.rushWeapon.addAmmo(-1, player);
+			rock.rushWeapon.addAmmo(-1, player);
 			decAmmoCooldown = maxDecAmmoCooldown;
 		}
 

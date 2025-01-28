@@ -62,7 +62,6 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 	int input;
 	public float health = 1;
 	public float heightMultiplier = 1f;
-	private bool spawnedBomb = false;
 	Anim? bomb;
 
 	public DangerWrapBubbleProj(
@@ -95,11 +94,8 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 				heightMultiplier = 0.65f;
 			}
 
-			if (spawnedBomb == false && ownedByLocalPlayer) {
-				Point bombPos = pos;
-
-				bomb = new Anim(bombPos, "danger_wrap_bomb", xDir, null, false);
-				spawnedBomb = true;
+			if (ownedByLocalPlayer) {
+				bomb = new Anim(pos, "danger_wrap_bomb", xDir, player.getNextActorNetId(), true, true);
 			}
 		}
 
@@ -148,10 +144,13 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 	}
 
 	public override void onDestroy() {
+		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
+
 		if (type == 1) bomb?.destroySelf();
 	}
 
-	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
+	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		if (damage > 0) {
 			destroySelf();
 		}
@@ -249,7 +248,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			new DangerWrapExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
 		}
 	}
-	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
+	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		health -= damage;
 		if (health <= 0) {
 			destroySelf();
@@ -419,9 +418,13 @@ public class DWrapBigBubble : Actor, IDamagable {
 		netOwner = victim;
 		this.character = victim.character ?? throw new NullReferenceException();
 		useGravity = false;
+		canBeLocal = false;
 
-		bomb = new Anim(getCenterPos(), "danger_wrap_bomb", 
-			xDir, player.getNextActorNetId(), false, true);
+		if (ownedByLocalPlayer)  {
+			bomb = new Anim(getCenterPos(), "danger_wrap_bomb", 
+				xDir, player.getNextActorNetId(), false, true);
+
+		}
 
 		netActorCreateId = NetActorCreateId.DWrapBigBubble;
 		if (rpc) {
@@ -429,7 +432,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 		}
 	}
 
-	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
+	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		health -= damage;
 		if (health <= 0) {
 			destroySelf();
@@ -453,6 +456,8 @@ public class DWrapBigBubble : Actor, IDamagable {
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
+
 		bubbleFrames++;
 
 		changePos(character.getCenterPos());
@@ -481,12 +486,15 @@ public class DWrapBigBubble : Actor, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
+
+		if (!player.ownedByLocalPlayer) return;
+
 		character.bigBubble = null!;
 		if (bomb != null) bomb.destroySelf();
 		//character.removeBubble(true);
 		character.dwrapEnd();
 		character.dwrapInvulnTime = 3;
-		if (player.ownedByLocalPlayer) new Anim(pos, "danger_wrap_big_bubble_fade", xDir, player.getNextActorNetId(), true);
+		new Anim(pos, "danger_wrap_big_bubble_fade", xDir, player.getNextActorNetId(), true);
 	}
 
 	public bool isPlayableDamagable() {

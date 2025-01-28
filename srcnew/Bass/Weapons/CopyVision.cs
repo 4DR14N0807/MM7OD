@@ -41,7 +41,7 @@ public class CopyVision : Weapon {
 		if (character.xDir < 0) shootAngle = 128;
 
 		if (bass?.cVclone == null) {
-			new CopyVisionClone(shootPos, player, character.xDir, character.player.getNextActorNetId(), true);
+			new CopyVisionClone(shootPos, player, character.xDir, character.player.getNextActorNetId(), true, true);
 			if (bass != null) bass.weaponCooldown = 120;
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
@@ -96,19 +96,20 @@ public class CopyVisionClone : Actor {
 
 	// Define the rateOfFire of the clone.
 	float rateOfFire = 9;
-	Bass? bass;
+	Bass bass = null!;
+	Player player;
 
 	public CopyVisionClone(
 		Point pos, Player player, int xDir, ushort netId, bool ownedByLocalPlayer, bool rpc = false
 	) : base("copy_vision_start", pos, netId, ownedByLocalPlayer, false
 	) {
-		bass = player.character as Bass;
-		if (ownedByLocalPlayer && bass != null) {
-			bass.cVclone = this;
-		}
+		bass = player.character as Bass ?? throw new NullReferenceException();
+		bass.cVclone = this;
+		
 		useGravity = false;
 		this.xDir = xDir;
-		netOwner = player;
+		this.player = player;
+
 		netActorCreateId = NetActorCreateId.CopyVisionClone;
 		if (rpc) {
 			createActorRpc(player.id);
@@ -120,20 +121,19 @@ public class CopyVisionClone : Actor {
 	public override void update() {
 		base.update();
 		if (!ownedByLocalPlayer) return;
-		cloneTime++;
-		/*if (ownedByLocalPlayer && netOwner.weapon is CopyVision) {
-			if (netOwner.input.isPressed(Control.Shoot, netOwner)) { destroySelf(); }
-		}*/
+		cloneTime += Global.speedMul;
+		
 		if (isAnimOver()) {
 			state = 1;
 		}
+		
 		if (state == 1) {
 			changeSprite("copy_vision_clone", false);
 			cloneShootTime += Global.speedMul;
 			if (cloneShootTime > rateOfFire) {
 				Point? shootPos = getFirstPOI();
-				if (shootPos != null && netOwner != null) {
-					new CopyVisionLemon(shootPos.Value, xDir, netOwner, netOwner.getNextActorNetId(), rpc: true);
+				if (shootPos != null && player != null) {
+					new CopyVisionLemon(shootPos.Value, xDir, player, player.getNextActorNetId(), rpc: true);
 					cloneShootTime = 0;
 					lemons++;
 				}
@@ -149,12 +149,12 @@ public class CopyVisionClone : Actor {
 		if (!ownedByLocalPlayer) return;
 		
 		new Anim(
-				pos.clone(), "copy_vision_exit", xDir,
-				netOwner?.getNextActorNetId(), true, sendRpc: true
+				pos, "copy_vision_exit", xDir,
+				player.getNextActorNetId(), true, sendRpc: true
 			);
-		if (ownedByLocalPlayer && bass != null) {
-			bass.cVclone = null!;
-		}
+		
+		bass.cVclone = null!;
+
 	}
 
 }

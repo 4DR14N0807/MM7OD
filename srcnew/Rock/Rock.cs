@@ -184,6 +184,7 @@ public class Rock : Character {
 	}
 
 	public void shoot(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
 		if (currentWeapon?.canShoot(chargeLevel, player) == false) return;
 		if (!canShoot()) return;
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
@@ -456,7 +457,7 @@ public class Rock : Character {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
 		}
 
-		if (isGHit && vel.y > 0 && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
+		if (isGHit && isLanding() && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
 			rjs.once = true;
 			rush.changeSprite("rush_jet", true);
 			rush.playSound("rush_jet", true);
@@ -523,7 +524,7 @@ public class Rock : Character {
 			(int)MeleeIds.LegBreaker => new GenericMeleeProj(
 				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f * 60,
 				addToLevel: addToLevel
-			),
+			) { projId = (int)RockProjIds.LegBreaker },
 
 			_ => null
 

@@ -284,6 +284,7 @@ public class Damager {
 			(int)RockProjIds.DangerWrapBubbleExplosion => true,
 			(int)RockProjIds.ScorchWheelBurn => true,
 			(int)RockProjIds.DangerWrapMine => true,
+			(int)RockProjIds.LegBreaker => true,
 			(int)BluesProjIds.GravityHold => true,
 			(int)BluesProjIds.ProtoStrike => true,
 			(int)BluesProjIds.BigBangStrike => true,

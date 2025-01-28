@@ -1264,7 +1264,7 @@ public partial class Character : Actor, IDamagable {
 				}
 				vel.y = -getJumpPower();
 				playSound("jump", sendRpc: true);
-				new Anim(pos, "double_jump_anim", xDir, netId, true, true);
+				new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
 			}
 		}
 		if (charState.normalCtrl) {
@@ -1346,6 +1346,7 @@ public partial class Character : Actor, IDamagable {
 					lastJumpPressedTime = 0;
 					dashedInAir++;
 					//bass double jump
+					// Adrian: como es que una anim puede desyncear tan durooooo.
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
 					vel.y = -getJumpPower();
 					changeState(new Jump(), true);
@@ -1657,6 +1658,12 @@ public partial class Character : Actor, IDamagable {
 			return true;
 		}
 		return false;
+	}
+
+	public bool isLanding() {
+		return
+			sprite.name.Contains("land") ||
+			(sprite.name.Contains(charState.landSprite) && charState.landSprite != "");
 	}
 
 	public bool isWarpIn() {
@@ -3415,9 +3422,12 @@ public partial class Character : Actor, IDamagable {
 		float baseX = hudHealthPosition.x + offset.x;
 		float baseY = hudHealthPosition.y + offset.y;
 
+		string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
+		string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
+
 		GameMode.renderAmmo(
 			baseX, baseY, renderWeapon.weaponBarBaseIndex, renderWeapon.weaponBarIndex,
-			renderWeapon.ammo, 0, renderWeapon.maxAmmo, false
+			renderWeapon.ammo, 0, renderWeapon.maxAmmo, false, fullBarName, baseBarName
 		);
 	}
 

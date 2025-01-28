@@ -640,8 +640,11 @@ public class GameMode {
 				Global.sprites["pickup_bolt_small"].drawToHUD(0, basePos.x + 4, basePos.y + 4);
 			}
 			if (drawPlayer.character is Rock rock && rock.boughtSuperAdaptorOnce) {
-				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown / 90);
-				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown / 90, 35);
+				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown / 90, y: 125);
+				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown / 90, 35, 125);
+			}
+			if (drawPlayer.character is Blues blues && blues.redStrikeCooldown > 0) {
+				drawGigaWeaponCooldown(3, blues.redStrikeCooldown / 240, y: 125);
 			}
 			if (drawPlayer.weapons == null) {
 				return;
@@ -868,13 +871,14 @@ public class GameMode {
 	}
 
 	public bool shouldDrawRadar() {
-		if (Global.level.isRace()) {
+		/* if (Global.level.isRace()) {
 			return true;
 		}
 		if (level.is1v1() || level.mainPlayer?.isSpectator != false) {
 			return false;
 		}
-		return true;
+		return true; */
+		return false;
 	}
 
 	void drawRadar() {
@@ -1274,11 +1278,11 @@ public class GameMode {
 	public static void renderAmmo(
 		float baseX, float baseY, int baseIndex,
 		int barIndex, float ammo, float grayAmmo = 0, float maxAmmo = 32,
-		bool allowSmall = true, string barSprite = "hud_weapon_full",
+		bool allowSmall = true, string barSprite = "hud_weapon_full", string baseSprite = "hud_weapon_base",
 		int eeStacks = 0
 	) {
 		if (baseIndex >= 0) {
-			Global.sprites["hud_weapon_base"].drawToHUD(baseIndex, baseX, baseY);
+			Global.sprites[baseSprite].drawToHUD(baseIndex, baseX, baseY);
 		} else if (baseIndex == -2) {
 			Global.sprites["hud_core_base"].drawToHUD(0, baseX, baseY);
 		} else if (baseIndex == -3) {
@@ -1857,7 +1861,8 @@ public class GameMode {
 	}
 
 	public void drawGigaWeaponCooldown(int slotIndex, float cooldown, int x = 18, int y = 97) {
-		Global.sprites["hud_weapon_icon"].drawToHUD(slotIndex, x, y);
+		string iconName = mainPlayer.isRock ? "hud_weapon_icon" : "hud_blues_weapon_icon";
+		Global.sprites[iconName].drawToHUD(slotIndex, x, y);
 		drawWeaponSlotCooldown(x, y, cooldown);
 	}
 

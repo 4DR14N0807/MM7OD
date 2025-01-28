@@ -13,6 +13,7 @@ public class BassBuster : Weapon {
 		weaponSlotIndex = index;
 		fireRate = 6;
 		isStream = true;
+		drawAmmo = false;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -41,6 +42,8 @@ public class BassBuster : Weapon {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 
+		if (!player.ownedByLocalPlayer) return;
+
 		var proj = new BassBusterProj(shootPos, bass.getShootAngle(), player, player.getNextActorNetId(), true);
 		new Anim(shootPos, "bass_buster_anim", character.xDir, player.getNextActorNetId(), true, true);
 		lemonsOnField.Add(proj);
@@ -62,7 +65,7 @@ public class BassBusterProj : Projectile {
 		vel = Point.createFromByteAngle(byteAngle) * 240;
 		//destroyOnHitWall = true;
 		fadeSprite = "bass_buster_proj_fade";
-		canBeLocal = false;
+		fadeOnAutoDestroy = true;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, player, netId, byteAngle);

@@ -129,6 +129,7 @@ public class ProtoStrikeProj : Projectile {
 		maxTime = 3f;
 		destroyOnHit = false;
 		canBeLocal = false;
+		addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -143,11 +144,12 @@ public class ProtoStrikeProj : Projectile {
 
 	public override void update() {
 		base.update();
-		//if (ownedByLocalPlayer) {
+		if (ownedByLocalPlayer) {
 			if (player.character?.charState is not ProtoStrike) {
 				destroySelf();
+				return;
 			}
-		//}
+		}
 
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
@@ -176,7 +178,7 @@ public class ProtoStrikeProj : Projectile {
 		}
 	}
 
-	public override void render(float x, float y) {
+	/* public override void render(float x, float y) {
 		long lastZIndex = zIndex;
 		alpha = 0.5f;
 		addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
@@ -187,7 +189,7 @@ public class ProtoStrikeProj : Projectile {
 		base.render(x, y);
 		removeRenderEffect(RenderEffectType.ChargeOrange);
 		zIndex = lastZIndex;
-	}
+	} */
 }
 
 public class StrikeAttackPushProj : Projectile {
@@ -396,7 +398,7 @@ public class BigBangStrikeStart : CharState {
 	public override void onEnter(CharState oldState) {
 		blues = character as Blues ?? throw new NullReferenceException();
 		character.stopMovingWeak();
-		blues.isShieldActive = false;
+		//blues.isShieldActive = false;
 		bgEffect = new BigBangStrikeBackwall(character.pos, character);
 	}
 

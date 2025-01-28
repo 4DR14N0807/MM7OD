@@ -55,7 +55,7 @@ public class NeedleCannonProj : Projectile {
 	public NeedleCannonProj(
 		Point pos, float byteAngle, Player player, ushort? netId, bool rpc = false
 	) : base(
-		NeedleCannon.netWeapon, pos, 1, 0, 0.5f, player, "needle_cannon_proj",
+		NeedleCannon.netWeapon, pos, 1, 400, 0.5f, player, "needle_cannon_proj",
 		0, 0, netId, player.ownedByLocalPlayer
 	) {
 		byteAngle = MathF.Round(byteAngle);
@@ -63,7 +63,7 @@ public class NeedleCannonProj : Projectile {
 		fadeSprite = "needle_cannon_proj_fade";
 		projId = (int)BluesProjIds.NeedleCannon;
 		this.byteAngle = byteAngle;
-		vel = Point.createFromByteAngle(byteAngle) * 400;
+		vel = Point.createFromByteAngle(byteAngle) * speed;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, player, netId, byteAngle);

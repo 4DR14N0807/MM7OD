@@ -85,17 +85,6 @@ public class Bass : Character {
 
 	public override void update() {
 		base.update();
-		Helpers.decrementFrames(ref weaponCooldown);
-		Helpers.decrementFrames(ref tBladeDashCooldown);
-		Helpers.decrementFrames(ref showNumberTime);
-		if (refillFly) Helpers.decrementFrames(ref flyTime);
-
-		if (flyTime > MaxFlyTime) flyTime = MaxFlyTime;
-
-		if (showNumberTime > 0) drawCardNumber(lastCardNumber);
-		for (int i = 0; i < evilEnergy.Length; i++) {
-			if (evilEnergy[i] > MaxEvilEnergy) evilEnergy[i] = MaxEvilEnergy;
-		}
 
 		//Hypermode Music.
 		if (!Global.level.isHyper1v1()) {
@@ -106,6 +95,23 @@ public class Bass : Character {
 			} else {
 				destroyMusicSource();
 			}
+		}
+
+		if (showNumberTime > 0) drawCardNumber(lastCardNumber);
+
+		//Non-local players end here.
+		if (!ownedByLocalPlayer) return;
+
+
+		Helpers.decrementFrames(ref weaponCooldown);
+		Helpers.decrementFrames(ref tBladeDashCooldown);
+		Helpers.decrementFrames(ref showNumberTime);
+		if (refillFly) Helpers.decrementFrames(ref flyTime);
+
+		if (flyTime > MaxFlyTime) flyTime = MaxFlyTime;
+
+		for (int i = 0; i < evilEnergy.Length; i++) {
+			if (evilEnergy[i] > MaxEvilEnergy) evilEnergy[i] = MaxEvilEnergy;
 		}
 
 		player.changeWeaponControls();
@@ -288,14 +294,16 @@ public class Bass : Character {
 	}
 
 	public void shoot(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
+
 		turnToInput(player.input, player);
-		if (player.weapon is not TenguBlade && charState is not BassFly) {
+		if (currentWeapon?.hasCustomAnim == false) {
 			if (charState is LadderClimb lc) changeState(new BassShootLadder(lc.ladder), true);
 			else if (charState is BassShootLadder bsl) changeState(new BassShootLadder(bsl.ladder), true);
 			else changeState(new BassShoot(), true);
-		} else {
+		} /* else {
 			changeSprite(getSprite(charState.shootSprite), true);
-		}
+		} */
 		currentWeapon?.shoot(this, chargeLevel);
 		weaponCooldown = currentWeapon?.fireRate ?? 0;
 		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(0) ?? 0, player);

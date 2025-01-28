@@ -35,7 +35,7 @@ public class GyroAttackProj : Projectile {
 
 	public GyroAttackProj(Point pos, int xDir, Player player, ushort? netId, bool rpc = false) :
 	base(GyroAttack.netWeapon, pos, xDir, projSpeed, 2, player, "gyro_attack_proj", 0, 0, netId, player.ownedByLocalPlayer) {
-		maxTime = 35 * 60;
+		maxTime = 0.625f;
 		projId = (int)BluesProjIds.GyroAttack;
 		netOwner = player;
 		canBeLocal = false;

@@ -6,6 +6,7 @@ namespace MMXOnline;
 public class BluesShootAlt : CharState {
 	Weapon stateWeapon;
 	bool fired;
+	Blues blues = null!;
 
 	public BluesShootAlt(Weapon wep) : base("shoot2") {
 		normalCtrl = false;
@@ -16,7 +17,8 @@ public class BluesShootAlt : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		bool air = !character.grounded || character.vel.y < 0;
+		blues = character as Blues ?? throw new NullReferenceException();
+		bool air = !blues.grounded || blues.vel.y < 0;
 
 		defaultSprite = sprite;
 		landSprite =  "shoot2";
@@ -24,7 +26,7 @@ public class BluesShootAlt : CharState {
 			sprite = "shoot2_air";
 			defaultSprite = sprite;
 		}
-		character.changeSpriteFromName(sprite, true);
+		blues.changeSpriteFromName(sprite, true);
 	}
 
 	public override bool canEnter(Character character) {
@@ -35,12 +37,17 @@ public class BluesShootAlt : CharState {
 	public override void update() {
 		base.update();
 
-		if (!fired && character.frameIndex >= 2) {
-			stateWeapon.shoot(character, 0, 2);
+		if (!fired && blues.frameIndex >= 2) {
+			stateWeapon.shoot(blues, 0, 2);
 			fired = true;
 		}
 
-		if (character.isAnimOver()) character.changeToIdleOrFall();
+		if (blues.isAnimOver()) blues.changeToIdleOrFall();
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		blues.inCustomShootAnim = false;
 	}
 }
 
@@ -51,6 +58,8 @@ public class BluesShootAltLadder : CharState {
 	bool fired;
 	Ladder ladder;
 	float midX; 
+	Blues blues = null!;
+
 	public BluesShootAltLadder(Weapon wep, Ladder ladder) : base("ladder_shoot2") {
 		normalCtrl = false;
 		stateWeapon = wep;
@@ -59,21 +68,27 @@ public class BluesShootAltLadder : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.stopMoving();
-		character.useGravity = false;
+		blues = character as Blues ?? throw new NullReferenceException();
+		blues.stopMoving();
+		blues.useGravity = false;
 		midX = ladder.collider.shape.getRect().center().x;
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		blues.inCustomShootAnim = false;
 	}
 
 	public override void update() {
 		base.update();
 
-		if (!fired && character.frameIndex >= 1) {
-			stateWeapon.shoot(character, 0, 2);
+		if (!fired && blues.frameIndex >= 1) {
+			stateWeapon.shoot(blues, 0, 2);
 			fired = true;
 		}
 
-		if (character.isAnimOver()) {
-			character.changeState(new LadderClimb(ladder, midX), true);
+		if (blues.isAnimOver()) {
+			blues.changeState(new LadderClimb(ladder, midX), true);
 		}
 	}
 }
@@ -191,7 +206,7 @@ public class BluesSlide : CharState {
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		character.stopMovingWeak();
+		//character.stopMovingWeak();
 	}
 }
 
@@ -298,7 +313,7 @@ public class ProtoStrike : CharState {
 		if (!fired && character.frameIndex >= 3) {
 			Point shootPos = character.getShootPos();
 			new ProtoStrikeProj(
-				shootPos, character.xDir, player, player.getNextActorNetId(), true
+				shootPos, character.xDir, player, player.getNextActorNetId(), rpc: true
 			);
 			blues.playSound("danger_wrap_explosion", true, true);
 			fired = true;

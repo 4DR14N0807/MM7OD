@@ -83,6 +83,7 @@ public class NoiseCrushProj : Projectile {
 		this.isMain = isMain;
 		//improve fade sprite
 		fadeSprite = "noise_crush_fade";
+		fadeOnAutoDestroy = true;
 		canBeLocal = false;
 
 		if (type == 1) changeSprite("noise_crush_middle", true);

@@ -10,7 +10,7 @@ public class StarCrash : Weapon {
 	public StarCrash() : base() {
 		displayName = "STAR CRASH";
 		descriptionV2 = "Creates a star-shaped energy barrier\nthat reduces gravity.";
-		ammoUseText = getAmmoUsage(0).ToString();
+		ammoUseText = "4";
 
 		index = (int)BluesWeaponIds.StarCrash;
 		fireRate = 60;
@@ -21,7 +21,7 @@ public class StarCrash : Weapon {
 		if (activeProj?.destroyed == false) {
 			return 4;
 		}
-		return 2;
+		return 0;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -167,6 +167,7 @@ public class StarCrashProj2 : Projectile {
 		projId = (int)BluesProjIds.StarCrash2;
 		maxTime = 1;
 		starAngle = ang;
+		canBeLocal = false;
 		
 		for (int i = 0; i < 3; i++) {
 			Sprite star = new Sprite("star_crash");
@@ -185,8 +186,6 @@ public class StarCrashProj2 : Projectile {
 
 	public override void update() {
 		base.update();
-
-		if (!ownedByLocalPlayer) return;
 
 		if (frameCount > 4) {
 			frameCount = 0;

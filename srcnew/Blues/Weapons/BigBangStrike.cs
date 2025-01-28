@@ -129,7 +129,6 @@ public class ProtoStrikeProj : Projectile {
 		maxTime = 3f;
 		destroyOnHit = false;
 		canBeLocal = false;
-		addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -178,7 +177,7 @@ public class ProtoStrikeProj : Projectile {
 		}
 	}
 
-	/* public override void render(float x, float y) {
+	public override void render(float x, float y) {
 		long lastZIndex = zIndex;
 		alpha = 0.5f;
 		addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
@@ -189,7 +188,7 @@ public class ProtoStrikeProj : Projectile {
 		base.render(x, y);
 		removeRenderEffect(RenderEffectType.ChargeOrange);
 		zIndex = lastZIndex;
-	} */
+	}
 }
 
 public class StrikeAttackPushProj : Projectile {

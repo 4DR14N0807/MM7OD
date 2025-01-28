@@ -212,7 +212,8 @@ public class Blues : Character {
 	}
 
 	public bool canUseShield() {
-		if (!charState.normalCtrl || charState is Slide ||
+		if (shootAnimTime > 0 && !sprite.name.EndsWith("_shield") ||
+			!charState.normalCtrl || charState is Slide ||
 			charState is BigBangStrikeState ||
 			charState is BigBangStrikeStart
 		) {
@@ -378,7 +379,7 @@ public class Blues : Character {
 		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive && !inCustomShootAnim) {
 			if (isBreakMan) {
 				overdrive = true;
-				overdriveAmmo = coreMaxAmmo;
+				overdriveAmmo = 20;
 			} else {
 				overheating = true;
 			}
@@ -638,7 +639,7 @@ public class Blues : Character {
 		int lemonNum = -1;
 		int type = overdrive ? 1 : 0;
 
-		if (chargeLevel < 2) {
+		if (chargeLevel == 0) {
 			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 				if (unchargedLemonCooldown[i] <= 0) {
 					lemonNum = i;
@@ -654,7 +655,6 @@ public class Blues : Character {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
-		float oldShootAnimTime = shootAnimTime;
 		setShootAnim();
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
@@ -672,12 +672,13 @@ public class Blues : Character {
 				addCoreAmmo(0.75f);
 			}
 			playSound("buster", sendRpc: true);
-			//resetCoreCooldown(45);
-			lemonCooldown = 12;
-			unchargedLemonCooldown[lemonNum] = 50;
-			if (oldShootAnimTime <= 0.25f) {
-				shootAnimTime = 0.25f;
+			if (overdrive) {
+				resetCoreCooldown(45);
+			} else {
+				resetCoreCooldown(12);
 			}
+			lemonCooldown = 8;
+			unchargedLemonCooldown[lemonNum] = 50;
 		} else if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
 				type, shootPos, xDir, player, player.getNextActorNetId(), true

@@ -212,7 +212,10 @@ public class Blues : Character {
 	}
 
 	public bool canUseShield() {
-		if (!charState.normalCtrl || charState is Slide) {
+		if (!charState.normalCtrl || charState is Slide ||
+			charState is BigBangStrikeState ||
+			charState is BigBangStrikeStart
+		) {
 			return false;
 		}
 		return true;
@@ -251,9 +254,10 @@ public class Blues : Character {
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
-		if (isShieldActive && spriteName == getSprite("idle") && getChargeLevel() >= 2) {
-			spriteName = getSprite("idle_chargeshield");
-		} else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
+		if (isShieldActive && spriteName == getSprite("idle_shield") && getChargeLevel() >= 2) {
+			spriteName = getSprite("idle_charge_shield");
+		}
+		else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
 		}
 		List<Trail>? trails = sprite.lastFiveTrailDraws;
@@ -477,8 +481,10 @@ public class Blues : Character {
 
 		// Charge animations.
 		int requiredCharge = (isBreakMan ? 1 : 2);
-		if (isShieldActive && getChargeLevel() >= requiredCharge && sprite.name == getSprite("idle_shield")) {
-			changeSpriteFromName("idle_chargeshield", true);
+		if (getChargeLevel() >= requiredCharge) {
+			if (sprite.name == getSprite("idle_shield")) {
+				changeSpriteFromName("idle_charge_shield", true);
+			}
 		}
 
 		// Overheat stuff.
@@ -560,11 +566,11 @@ public class Blues : Character {
 			}
 			else if (!isShieldActive || (shieldHP <= 0 && charState is not BigBangStrikeStart)) {
 				isShieldActive = false;
-				if (sprite.name.EndsWith("_shield")) {
-					changeSprite(sprite.name[..^7], false);
-				}
-				if (sprite.name == getSprite("idle_chargeshield")) {
+				if (sprite.name == getSprite("idle_charge_shield")) {
 					changeSpriteFromName("idle", true);
+				}
+				else if (sprite.name.EndsWith("_shield")) {
+					changeSprite(sprite.name[..^7], false);
 				}
 			} else {
 				isShieldActive = true;
@@ -602,7 +608,10 @@ public class Blues : Character {
 				changeState(new RedStrike(), true);
 				return true;
 			} else if (canUseBigBangStrike()) {
+				bool bufferedShield = isShieldActive;
+				isShieldActive = false;
 				changeState(new BigBangStrikeStart(), true);
+				isShieldActive = bufferedShield;
 				return true;
 			}
 		}
@@ -1047,9 +1056,6 @@ public class Blues : Character {
 				isShieldActive = false;
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
-				}
-				if (sprite.name == getSprite("idle_chargeshield")) {
-					changeSpriteFromName("idle", true);
 				}
 			}
 		}

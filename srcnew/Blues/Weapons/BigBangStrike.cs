@@ -368,7 +368,7 @@ public class BigBangStrikeStart : CharState {
 	Blues blues = null!;
 	BigBangStrikeBackwall bgEffect = null!;
 
-	public BigBangStrikeStart() : base("idle_chargeshield") {
+	public BigBangStrikeStart() : base("idle_charge") {
 		superArmor = true;
 	}
 

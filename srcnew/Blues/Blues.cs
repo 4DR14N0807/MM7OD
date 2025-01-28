@@ -655,6 +655,7 @@ public class Blues : Character {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
+		float oldShootAnimTime = shootAnimTime;
 		setShootAnim();
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
@@ -679,6 +680,9 @@ public class Blues : Character {
 			}
 			lemonCooldown = 8;
 			unchargedLemonCooldown[lemonNum] = 50;
+			if (oldShootAnimTime <= 0.25f) {
+				shootAnimTime = 0.25f;
+			}
 		} else if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
 				type, shootPos, xDir, player, player.getNextActorNetId(), true

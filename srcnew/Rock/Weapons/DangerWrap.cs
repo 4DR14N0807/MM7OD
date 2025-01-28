@@ -62,7 +62,6 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 	int input;
 	public float health = 1;
 	public float heightMultiplier = 1f;
-	private bool spawnedBomb = false;
 	Anim? bomb;
 
 	public DangerWrapBubbleProj(
@@ -95,11 +94,8 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 				heightMultiplier = 0.65f;
 			}
 
-			if (spawnedBomb == false && ownedByLocalPlayer) {
-				Point bombPos = pos;
-
-				bomb = new Anim(bombPos, "danger_wrap_bomb", xDir, null, true);
-				spawnedBomb = true;
+			if (ownedByLocalPlayer) {
+				bomb = new Anim(pos, "danger_wrap_bomb", xDir, player.getNextActorNetId(), true, true);
 			}
 		}
 

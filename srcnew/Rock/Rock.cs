@@ -184,6 +184,7 @@ public class Rock : Character {
 	}
 
 	public void shoot(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
 		if (currentWeapon?.canShoot(chargeLevel, player) == false) return;
 		if (!canShoot()) return;
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
@@ -523,7 +524,7 @@ public class Rock : Character {
 			(int)MeleeIds.LegBreaker => new GenericMeleeProj(
 				new LegBreaker(player), projPos, ProjIds.LegBreaker, player, 2, Global.halfFlinch, 0.5f * 60,
 				addToLevel: addToLevel
-			),
+			) { projId = (int)RockProjIds.LegBreaker },
 
 			_ => null
 

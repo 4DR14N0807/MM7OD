@@ -243,11 +243,11 @@ public class BluesSpreadShoot : CharState {
 				blues.playSound("buster", sendRpc: true);
 			}
 			if (type == 1){
-				blues.addCoreAmmo(0.5f);
+				blues.addCoreAmmo(1);
 				blues.playSound("buster2", sendRpc: true);
 			}
 			if (type == 2){
-				blues.addCoreAmmo(0.5f);
+				blues.addCoreAmmo(1);
 				blues.playSound("buster3", sendRpc: true);
 			}
 			shotAngle -= 16;
@@ -313,7 +313,7 @@ public class ProtoStrike : CharState {
 		if (!fired && character.frameIndex >= 3) {
 			Point shootPos = character.getShootPos();
 			new ProtoStrikeProj(
-				shootPos, character.xDir, player, player.getNextActorNetId(), true
+				shootPos, character.xDir, player, player.getNextActorNetId(), rpc: true
 			);
 			blues.playSound("danger_wrap_explosion", true, true);
 			fired = true;

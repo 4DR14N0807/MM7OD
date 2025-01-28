@@ -3427,9 +3427,12 @@ public partial class Character : Actor, IDamagable {
 		float baseX = hudHealthPosition.x + offset.x;
 		float baseY = hudHealthPosition.y + offset.y;
 
+		string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
+		string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
+
 		GameMode.renderAmmo(
 			baseX, baseY, renderWeapon.weaponBarBaseIndex, renderWeapon.weaponBarIndex,
-			renderWeapon.ammo, 0, renderWeapon.maxAmmo, false
+			renderWeapon.ammo, 0, renderWeapon.maxAmmo, false, fullBarName, baseBarName
 		);
 	}
 

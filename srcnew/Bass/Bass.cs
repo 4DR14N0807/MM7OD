@@ -294,6 +294,8 @@ public class Bass : Character {
 	}
 
 	public void shoot(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
+
 		turnToInput(player.input, player);
 		if (currentWeapon?.hasCustomAnim == false) {
 			if (charState is LadderClimb lc) changeState(new BassShootLadder(lc.ladder), true);

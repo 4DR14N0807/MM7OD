@@ -386,6 +386,7 @@ public enum RockProjIds  {
 	SAArrowSlash,
 	RSBomb,
 	RSBombExplosion,
+	LegBreaker,
 }
 
 public enum ProjIds {

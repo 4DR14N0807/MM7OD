@@ -13,6 +13,7 @@ public class BassBuster : Weapon {
 		weaponSlotIndex = index;
 		fireRate = 6;
 		isStream = true;
+		drawAmmo = false;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

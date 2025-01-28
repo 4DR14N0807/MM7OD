@@ -374,7 +374,7 @@ public class Blues : Character {
 		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive && !inCustomShootAnim) {
 			if (isBreakMan) {
 				overdrive = true;
-				overdriveAmmo = 20;
+				overdriveAmmo = coreMaxAmmo;
 			} else {
 				overheating = true;
 			}
@@ -412,7 +412,7 @@ public class Blues : Character {
 			}
 			overdriveAmmoDecreaseCooldown = 10;
 		}
-		if (overdriveLimit || overdriveAmmo >= coreMaxAmmo) {
+		if ((overdriveLimit || overdriveAmmo <= 0) && overdrive) {
 			overdrive = false;
 			overheating = true;
 			setHurt(-xDir, 12, false);
@@ -622,6 +622,8 @@ public class Blues : Character {
 	}
 
 	public void shoot(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
+
 		int lemonNum = -1;
 		int type = overdrive ? 1 : 0;
 
@@ -713,6 +715,8 @@ public class Blues : Character {
 	}
 
 	public void shootSpecial(int chargeLevel) {
+		if (!ownedByLocalPlayer) return;
+
 		int extraArg = 0;
 		if (specialWeapon == null) {
 			return;

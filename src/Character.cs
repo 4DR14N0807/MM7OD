@@ -1582,7 +1582,7 @@ public partial class Character : Actor, IDamagable {
 					_ when (chargeType == 1) => RenderEffectType.ChargeGreen,
 					_ => RenderEffectType.ChargeOrange
 				};
-				addRenderEffect(renderGfx, 2, 6);
+				addRenderEffect(renderGfx, 3, 5);
 			}
 			chargeEffect.update(getChargeLevel(), chargeType);
 		}
@@ -2836,11 +2836,10 @@ public partial class Character : Actor, IDamagable {
 		//player.weapons?[weaponSlot].addAmmoHeal(amount);
 		foreach (var weapon in player.weapons) {
 			if (weapon is not RockBuster &&
-				weapon is not BassBuster) {
-					
-					weapon?.addAmmoPercentHeal(amount);
-				}
-			
+				weapon is not BassBuster
+			) {
+				weapon?.addAmmoPercentHeal(amount);
+			}
 		}
 	}
 
@@ -2870,10 +2869,6 @@ public partial class Character : Actor, IDamagable {
 	public void setHurt(int dir, int flinchFrames, bool spiked) {
 		if (!ownedByLocalPlayer) {
 			return;
-		}
-		// Tough Guy.
-		if (player.isSigma || isToughGuyHyperMode()) {
-			flinchFrames = 6;
 		}
 		if (charState is GenericStun genericStunState) {
 			genericStunState.activateFlinch(flinchFrames, dir);

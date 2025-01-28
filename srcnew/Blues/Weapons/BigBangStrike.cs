@@ -179,11 +179,11 @@ public class ProtoStrikeProj : Projectile {
 	public override void render(float x, float y) {
 		long lastZIndex = zIndex;
 		alpha = 0.5f;
-		addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
+		addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		base.render(x, y);
 		alpha = 1;
 		zIndex = ZIndex.Character - 1000;
-		addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
+		addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		base.render(x, y);
 		removeRenderEffect(RenderEffectType.ChargeOrange);
 		zIndex = lastZIndex;
@@ -206,10 +206,10 @@ public class StrikeAttackPushProj : Projectile {
 		canBeLocal = false;
 
 		if (type == 1) {
-			addRenderEffect(RenderEffectType.ChargeOrange, 0, 6);
+			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		}
 		else if (type == 2) {
-			addRenderEffect(RenderEffectType.ChargePurple, 0, 6);
+			addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 		}
 
 		if (rpc) {
@@ -260,7 +260,7 @@ public class RedStrikeProj : Projectile {
 		maxTime = 0.6f;
 		shouldShieldBlock = false;
 		reflectable = false;
-		addRenderEffect(RenderEffectType.ChargePurple, 0, 6);
+		addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
@@ -321,7 +321,7 @@ public class RedStrikeExplosionProj : Projectile {
 		}
 
 		projId = (int)BluesProjIds.BigBangStrike;
-		addRenderEffect(RenderEffectType.ChargePurple, 0, 6);
+		addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {

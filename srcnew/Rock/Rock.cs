@@ -274,7 +274,7 @@ public class Rock : Character {
 	}
 
 	public void drawChargedNoiseCrush(float x, float y) {
-		addRenderEffect(RenderEffectType.NCrushCharge, 2, 6); 
+		addRenderEffect(RenderEffectType.NCrushCharge, 3, 5); 
 		noiseCrushEffect.character = this;
 		noiseCrushEffect.update(2, 2);
 		noiseCrushEffect.render(getCenterPos());
@@ -555,7 +555,7 @@ public class Rock : Character {
 				2 => RenderEffectType.ChargeGreen,
 				_ => RenderEffectType.None,
 			};
-			addRenderEffect(renderGfx, 2, 6);
+			addRenderEffect(renderGfx, 3, 5);
 			chargeEffect.character = this;
 			chargeEffect.update(level, 1);
 		}

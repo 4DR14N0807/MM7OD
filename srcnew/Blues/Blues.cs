@@ -379,7 +379,7 @@ public class Blues : Character {
 			}
 			starCrash?.destroySelf();
 			delinkStarCrash();
-			setHurt(-xDir, 12, false);
+			setHurt(-xDir, Global.halfFlinch, false);
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
@@ -408,13 +408,15 @@ public class Blues : Character {
 			overdriveAmmo--;
 			if (overdriveAmmo <= 0) {
 				overdriveAmmo = 0;
+				overdriveLimit = true;
 			}
 			overdriveAmmoDecreaseCooldown = 10;
 		}
-		if (overdriveLimit || overdriveAmmo >= coreMaxAmmo) {
+		if (overdrive && (overdriveLimit || overdriveAmmo >= coreMaxAmmo)) {
 			overdrive = false;
 			overheating = true;
-			setHurt(-xDir, 12, false);
+			setHurt(0, Global.defFlinch, false);
+			xPushVel = -xDir * 4 * 60;
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 			overdriveAmmoDecreaseCooldown = 10;

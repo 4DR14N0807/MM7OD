@@ -223,16 +223,16 @@ public class BluesSpreadShoot : CharState {
 				character.getShootPos(), (shotAngle + angleOffset) * shootDir, type,
 				player, player.getNextActorNetId(), rpc: true
 			);
-			//this way lemons and mid charge shot sounds wont conflict
+			// This way lemons and mid charge shot sounds wont conflict.
 			if (type == 0) {
 				blues.playSound("buster", sendRpc: true);
 			}
 			if (type == 1){
-				blues.addCoreAmmo(0.5f);
+				blues.addCoreAmmo(1f);
 				blues.playSound("buster2", sendRpc: true);
 			}
 			if (type == 2){
-				blues.addCoreAmmo(0.5f);
+				blues.addCoreAmmo(-0.5f);
 				blues.playSound("buster3", sendRpc: true);
 			}
 			shotAngle -= 16;

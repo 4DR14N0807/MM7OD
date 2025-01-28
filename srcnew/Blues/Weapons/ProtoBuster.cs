@@ -75,8 +75,8 @@ public class ProtoBusterAngledProj : Projectile {
 			damager.damage = 1;
 		} else if (type == 2) {
 			damager.flinch = Global.miniFlinch;
-			changeSprite("rock_buster2_proj", true);
-			fadeSprite = "rock_buster2_fade";
+			changeSprite("proto_chargeshot_yellow_proj", true);
+			fadeSprite = "proto_chargeshot_yellow_proj_fade";
 		}
 
 		if (rpc) {
@@ -176,9 +176,9 @@ public class ProtoBusterLv3Proj : Projectile {
 		ushort? netId, bool rpc = false
 	) : base(
 		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
-		"proto_chargeshot_red_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		"proto_chargeshot_purple_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		fadeSprite = "proto_chargeshot_red_proj_fade";
+		fadeSprite = "proto_chargeshot_purple_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.45f;
 		projId = (int)BluesProjIds.BusterLV4;

@@ -19,13 +19,13 @@ public class Damager {
 	public const float ohkoDamage = 500;
 	public const float headshotModifier = 2;
 
-	public static readonly Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
+	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
 		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
 		{ (int)BluesProjIds.LemonAngled, 60 * 2},
 	};
 
-	public static readonly Dictionary<int, int> multiHitLimit = new() {
-		{ (int)BluesProjIds.LemonAngled, 3 },
+	public static Dictionary<int, int> multiHitLimit = new() {
+		{ (int)BluesProjIds.LemonAngled, 2 },
 	};
 	
 
@@ -73,9 +73,11 @@ public class Damager {
 		if (multiHitLimit.ContainsKey(projId)) {
 			int hitLimit = multiHitLimit[projId];
 			for (int i = 0; i < hitLimit; i++) {
-				string tempKey = $"{projId}_h{i}_{owner.id}";
-
-				if (damagable.projectileCooldown.GetValueOrDefault(tempKey) == 0) {
+				string tempKey = key;
+				if (i != 0) {
+					tempKey = $"{projId}_h{i}_{owner.id}";
+				}
+				if (damagable.projectileCooldown.GetValueOrDefault(tempKey) <= 0) {
 					key = tempKey;
 					break;
 				}

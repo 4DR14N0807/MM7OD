@@ -301,8 +301,8 @@ public partial class Level {
 			}
 		}
 
-		scaledW = levelData.width * scaleW;
-		scaledH = levelData.height * scaleH;
+		scaledW = 36;
+		scaledH = 26;
 
 		Global.radarRenderTexture = new RenderTexture(
 			(uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH)

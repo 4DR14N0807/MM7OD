@@ -625,13 +625,17 @@ public class GameMode {
 			}
 			// Currency
 			if (!Global.level.is1v1()) {
-				Point basePos = new(Global.screenW - 58, 27);
+				Point basePos = new(Global.screenW - 88, 27);
 				if (level.levelData.isTraining()) {
 					basePos = new Point(10, 106);
 				}
 				Fonts.drawText(
 					FontType.WhiteSmall,
-					"x" + drawPlayer.currency.ToString(), basePos.x + 9, basePos.y, Alignment.Left
+					"x", basePos.x + 9, basePos.y, Alignment.Left
+				);
+				Fonts.drawText(
+					FontType.WhiteSmall,
+					" " + drawPlayer.currency.ToString(), basePos.x + 40, basePos.y, Alignment.Right
 				);
 				Global.sprites["pickup_bolt_small"].drawToHUD(0, basePos.x + 4, basePos.y + 4);
 			}
@@ -874,54 +878,53 @@ public class GameMode {
 	}
 
 	void drawRadar() {
-		List<Point> revealedSpots = new List<Point>();
-		float revealedRadius;
-
-		if (level.mainPlayer.isX) {
-			revealedSpots.Add(new Point(level.camX + Global.viewScreenW / 2, level.camY + Global.viewScreenH / 2));
-			revealedRadius = Global.viewScreenW * 1.5f;
-		} else if (level.mainPlayer.isSigma) {
-			foreach (var maverick in level.mainPlayer.mavericks) {
-				if (maverick == level.mainPlayer.currentMaverick && !level.mainPlayer.isAlivePuppeteer()) continue;
-				revealedSpots.Add(maverick.pos);
-			}
-			revealedRadius = Global.viewScreenW * 0.5f;
-		} else {
-			foreach (var bbAltProj in level.boundBlasterAltProjs) {
-				revealedSpots.Add(bbAltProj.pos);
-			}
-			revealedRadius = Global.viewScreenW;
+		if (Global.level.is1v1() || Global.level.isTraining() || Global.level.mainPlayer.isSpectator) {
+			return;
 		}
-
-		float borderThickness = 1;
-		float dotRadius = 0.75f;
-		if (Global.level.isRace()) {
-			revealedSpots.Add(new Point(level.camX, level.camY));
-			revealedRadius = float.MaxValue;
-			borderThickness = 1;
-			dotRadius = 0.75f;
-		}
-
 		Global.radarRenderTexture.Clear(new Color(33, 33, 74));
 		Global.radarRenderTextureB.Clear();
 		RenderStates states = new RenderStates(Global.radarRenderTexture.Texture);
 		RenderStates statesB = new RenderStates(Global.radarRenderTextureB.Texture);
 		RenderStates statesB2 = new RenderStates(Global.radarRenderTextureB.Texture);
-		states.BlendMode = new BlendMode(BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add) {
+		states.BlendMode = new BlendMode(
+			BlendMode.Factor.SrcAlpha,
+			BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add
+		) {
 			AlphaEquation = BlendMode.Equation.Max
 		};
-		statesB.BlendMode = new BlendMode(BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add) {
+		statesB.BlendMode = new BlendMode(
+			BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add
+		) {
 			AlphaEquation = BlendMode.Equation.Max
 		};
-		statesB2.BlendMode = new BlendMode(BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Min);
+		statesB2.BlendMode = new BlendMode(
+			BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Min
+		);
 
-		float scaleW = level.scaleW;
-		float scaleH = level.scaleH;
-		float scaledW = level.scaledW;
-		float scaledH = level.scaledH;
+		float mapScale = 16;
+		float offsetX = MathF.Round(Global.level.camCenterX / 16f) - 17;
+		float offsetY = MathF.Round(Global.level.camCenterY / 16f) - 12;
+		float camX = Global.level.camCenterX;
+		float camY = Global.level.camCenterY;
+		if (Global.level.mainPlayer.character != null) {
+			if (MathF.Abs(Global.level.camCenterX - Global.level.mainPlayer.character.pos.x) < 16) {
+				offsetX = MathF.Round(Global.level.mainPlayer.character.pos.x / 16f) - 17;
+				camX = Global.level.mainPlayer.character.pos.x;
+			}
+		}
 
-		float radarX = MathF.Floor(Global.screenW - 6 - scaledW);
-		float radarY = MathF.Floor(Global.screenH - 6 - scaledH);
+		List<Point> revealedSpots = new List<Point>();
+		float revealedRadius;
+		revealedSpots.Add(new Point(camX, camY));
+		revealedRadius = 16 * 30;
+
+		float scaledW = 34;
+		float scaledH = 24;
+		float scaledMapW = MathF.Round(Global.level.levelData.width / 16f);
+		float scaledMapH = MathF.Round(Global.level.levelData.height / 16f);
+
+		float radarX = MathF.Floor(Global.screenW - 10 - scaledW);
+		float radarY = MathF.Floor(10);
 
 		// The "fog of war" rect
 		RectangleShape rect = new RectangleShape(new Vector2f(scaledW + 20, scaledH + 20));
@@ -929,30 +932,11 @@ public class GameMode {
 		rect.FillColor = new Color(0, 0, 0, 128);
 		Global.radarRenderTextureB.Draw(rect, statesB2);
 
-		float camStartX = MathF.Floor((level.camX - Global.halfScreenW) * scaleW);
-		float camStartY = MathF.Floor((level.camY - Global.halfScreenH) * scaleH);
-		if (camStartX < 0) {
-			camStartX = 0;
-		}
-		if (camStartY < 0) {
-			camStartY = 0;
-		}
-		float camEndX = MathF.Floor(Global.viewScreenW * 2 * scaleW);
-		float camEndY = MathF.Floor(Global.viewScreenH * 2 * scaleH);
-		if (camEndX > scaledW) {
-			camStartX -= camEndY - scaledH;
-			camEndX = scaledW;
-		}
-		if (camEndY > scaledH) {
-			camStartY -= camEndY - scaledH;
-			camEndY = scaledH;
-		}
-
 		// The visible area circles
 		foreach (var spot in revealedSpots) {
-			float pxPos = spot.x * scaleW;
-			float pyPos = spot.y * scaleH;
-			float radius = revealedRadius * scaleW;
+			float pxPos = MathF.Round(spot.x / mapScale) - offsetX;
+			float pyPos = MathF.Round(spot.y / mapScale) - offsetY;
+			float radius = revealedRadius / mapScale;
 			CircleShape circle1 = new CircleShape(radius);
 			circle1.FillColor = new Color(0, 0, 0, 0);
 			circle1.Position = new Vector2f(pxPos - radius, pyPos - radius);
@@ -974,16 +958,37 @@ public class GameMode {
 				blockColor = new Color(255, 128, 128);
 			}
 			Shape shape = geometry.collider.shape;
-			float pxPos = shape.minX * scaleH;
-			float pyPos = shape.minY * scaleH + 1;
-			float mxPos = shape.maxX * scaleH - pxPos;
-			float myPos = shape.maxY * scaleH - pyPos + 1;
+			float pxPos = shape.minX / mapScale;
+			float pyPos = shape.minY / mapScale + 1;
+			float mxPos = shape.maxX / mapScale - pxPos;
+			float myPos = shape.maxY / mapScale - pyPos + 1;
+
 			if (mxPos <= 1) {
 				mxPos = 1;
 			}
-			if (myPos <= 1) {
-				myPos = 1;
+			if (mxPos <= 1) {
+				mxPos = 1;
 			}
+			if (pxPos <= 0) {
+				pxPos -= 20;
+				mxPos += 20;
+			}
+			if (pyPos <= 1) {
+				pyPos -= 20;
+				myPos += 20;
+			}
+			if (pxPos + mxPos >= scaledMapW) {
+				mxPos = 1000;
+			}
+			if (pyPos + myPos >= scaledMapH) {
+				myPos = 1000;
+			}
+			if (pyPos + myPos >= scaledMapH) {
+				myPos = 1000;
+			}
+			pxPos -= offsetX;
+			pyPos -= offsetY;
+
 			RectangleShape wRect = new RectangleShape();
 			wRect.FillColor = blockColor;
 			wRect.Position = new Vector2f(pxPos, pyPos);
@@ -1001,32 +1006,12 @@ public class GameMode {
 		sprite.Dispose();
 		sprite2.Dispose();
 
-		if (level.mainPlayer.isSigma) {
-			foreach (Maverick maverick in level.mainPlayer.mavericks) {
-				if (maverick == level.mainPlayer.currentMaverick && !level.mainPlayer.isAlivePuppeteer()) continue;
-				float xPos = maverick.pos.x * scaleW;
-				float yPos = maverick.pos.y * scaleH;
-				DrawWrappers.DrawRect(
-					radarX + xPos, radarY + yPos,
-					radarX + xPos, radarY + yPos,
-					true, new Color(255, 128, 0), 0, ZIndex.HUD, isWorldPos: false
-				);
-			}
-		}
-
-		if (level.isRace()) {
-			float xPos = level.goal.pos.x * scaleW;
-			float yPos = level.goal.pos.y * scaleH;
-			DrawWrappers.DrawCircle(radarX + xPos, radarY + yPos, dotRadius, true, Color.White, 0, ZIndex.HUD, isWorldPos: false);
-		}
-
 		foreach (var player in level.nonSpecPlayers()) {
 			if (player.character == null || player.character.destroyed) continue;
-			if (player.character.isStealthy(level.mainPlayer.alliance)) continue;
 			if (player.isMainPlayer && player.isDead) continue;
 
-			float xPos = player.character.pos.x * scaleW;
-			float yPos = player.character.pos.y * scaleH;
+			float xPos = player.character.pos.x / mapScale;
+			float yPos = player.character.pos.y / mapScale;
 
 			Color color;
 			if (player.isMainPlayer) {
@@ -1034,14 +1019,21 @@ public class GameMode {
 			} else if (player.alliance == level.mainPlayer.alliance) color = Color.Yellow;
 			else color = Color.Red;
 
-			if (xPos < 0 || xPos > scaledW || yPos < 0 || yPos > scaledH) continue;
-
 			foreach (var spot in revealedSpots) {
-				if (player.isMainPlayer || new Point(xPos, yPos).distanceTo(new Point(spot.x * scaleW, spot.y * scaleH)) < revealedRadius * scaleW) {
+				if (player.isMainPlayer || new Point(xPos, yPos).distanceTo(
+						new Point(spot.x / mapScale + offsetX, spot.y / mapScale + offsetY)
+					) < revealedRadius / mapScale
+				) {
+					float dxPos = radarX + MathF.Round(xPos) - offsetX;
+					float dyPos = radarY + MathF.Round(yPos) - 1 - offsetY;
+					if (dxPos < radarX || dxPos > radarX + scaledW + 1 ||
+						dyPos < radarY || dyPos > radarY + scaledH + 1
+					) {
+						continue;
+					}
 					DrawWrappers.DrawRectWH(
-						radarX + MathF.Round(xPos),
-						radarY + MathF.Round(yPos),
-						1, 1,
+						dxPos, dyPos,
+						1, 2,
 						true, color, 0,
 						ZIndex.HUD, isWorldPos: false
 					);
@@ -1049,7 +1041,6 @@ public class GameMode {
 				}
 			}
 		}
-
 		// Radar rectangle itself (with border)
 		DrawWrappers.DrawRectWH(
 			radarX, radarY,
@@ -1058,13 +1049,12 @@ public class GameMode {
 			ZIndex.HUD, isWorldPos: false,
 			outlineColor: Color.White
 		);
-
-		// Camera
 		DrawWrappers.DrawRectWH(
-			radarX + camStartX, radarY + camStartY,
-			camEndX, camEndY,
-			true, new Color(0, 0, 0, 0), 1,
-			ZIndex.HUD, isWorldPos: false, outlineColor: new Color(255, 255, 255, 128)
+			radarX-1, radarY-1,
+			scaledW+2, scaledH+2,
+			true, Color.Transparent, 1,
+			ZIndex.HUD, isWorldPos: false,
+			outlineColor: Color.Black
 		);
 	}
 

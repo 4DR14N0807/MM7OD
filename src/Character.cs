@@ -156,7 +156,7 @@ public partial class Character : Actor, IDamagable {
 
 	//Spark Shock root
 	public float rootTime;
-	public float rootCooldown;
+	public Dictionary<int, float> rootCooldown;
 	public Anim? rootAnim;
 
 	public float burnEffectTime;
@@ -489,10 +489,6 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) {
 			return false;
 		}
-		// TODO: Move this to axl.cs
-		/* if (isAimLocked()) {
-			return false;
-		} */
 		if (rootTime > 0) return false;
 		if (bigBubble != null) return false;
 		if (isSoftLocked()) {
@@ -757,6 +753,172 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
+	public void debuffUpdate() {
+		if (vaccineTime > 0) {
+			oilTime = 0;
+			burnTime = 0;
+			acidTime = 0;
+			virusTime = 0;
+			vaccineTime -= Global.spf;
+			if (vaccineTime <= 0) {
+				vaccineTime = 0;
+			}
+		}
+		if (virusTime > 0) {
+			virusTime -= Global.spf;
+			if (virusTime <= 0) {
+				virusTime = 0;
+			}
+		}
+		if (oilTime > 0) {
+			oilTime -= Global.spf;
+			if (isUnderwater() || charState.invincible || isStatusImmune()) {
+				oilTime = 0;
+			}
+			if (oilTime <= 0) {
+				oilTime = 0;
+			}
+		}
+		if (acidTime > 0) {
+			acidTime -= Global.spf;
+			acidHurtCooldown += Global.speedMul;
+			if (acidHurtCooldown >= 60) {
+				acidHurtCooldown -= 60;
+				if (acidHurtCooldown <= 0) {
+					acidHurtCooldown = 0;
+				}
+				acidDamager?.applyDamage(
+					this, player.weapon is TornadoFang,
+					new AcidBurst(), this, (int)ProjIds.AcidBurstPoison,
+					overrideDamage: 1f
+				);
+				new Anim(
+					getCenterPos().addxy(Helpers.randomRange(-6, 6), -20),
+					"torpedo_smoke", 1, null, true) {
+						vel = new Point(0, -50)
+					};
+			}
+			if (isUnderwater() || charState.invincible || isStatusImmune()) {
+				acidTime = 0;
+			}
+			if (acidTime <= 0) {
+				removeAcid();
+			}
+		}
+
+		if (burnStunStacks > 0 && charState is not Burning) {
+			burnEffectTime += Global.speedMul;
+			if (burnEffectTime >= 11) {
+				burnEffectTime = 0;
+
+				Point burnPos = getCenterPos();
+
+				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
+
+				if (burnStunStacks >= 2) {
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
+				}
+				if (burnStunStacks >= 3) {
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
+					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -60)};
+				}
+				if (burnStunStacks >= 4) {
+					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
+					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -120)};
+				}
+			}	
+		}
+		if (rootTime > 0) {
+			rootTime--;
+			if (rootAnim == null) rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+			if (rootTime <= 0) {
+				rootTime = 0;
+				useGravity = true;
+				if (rootAnim != null) {
+					rootAnim.destroySelf();
+					rootAnim = null;
+				} 
+			}
+		}
+		if (burnTime > 0) {
+			burnTime -= Global.spf;
+			burnHurtCooldown += Global.speedMul;
+			burnEffectTime += Global.speedMul;
+			if (burnEffectTime >= 6) {
+				burnEffectTime = 0;
+				Point burnPos = pos.addxy(0, -10);
+				bool hiding = false;
+				if (charState is InRideArmor inRideArmor) {
+					if (inRideArmor.isHiding) {
+						burnPos = pos.addxy(0, 0);
+						hiding = true;
+					}
+				}
+				var f1 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
+				if (hiding) f1.setzIndex(zIndex - 100);
+
+				if (burnTime > 2) {
+					var f2 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
+					if (hiding) f2.setzIndex(zIndex - 100);
+				}
+				if (burnTime > 4) {
+					var f3 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
+					if (hiding) f3.setzIndex(zIndex - 100);
+				}
+				if (burnTime > 6) {
+					var f4 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
+					if (hiding) f4.setzIndex(zIndex - 100);
+				}
+			}
+			if (burnHurtCooldown >= 60) {
+				burnHurtCooldown -= 60;
+				if (burnHurtCooldown <= 0) {
+					burnHurtCooldown = 0;
+				}
+				burnDamager?.applyDamage(this, false, burnWeapon, this, (int)ProjIds.Burn, overrideDamage: 1f);
+			}
+			if (isUnderwater() || charState.invincible || isStatusImmune()) {
+				burnTime = 0;
+			}
+			if (burnTime <= 0) {
+				removeBurn();
+			}
+		}
+		if (flattenedTime > 0 && !(charState is Die)) {
+			flattenedTime -= Global.spf;
+			if (flattenedTime < 0) flattenedTime = 0;
+		}
+		Helpers.decrementTime(ref slowdownTime);
+		
+		igFreezeRecoveryCooldown += Global.spf;
+		if (igFreezeRecoveryCooldown > 0.2f) {
+			igFreezeRecoveryCooldown = 0;
+			igFreezeProgress--;
+			if (igFreezeProgress < 0) igFreezeProgress = 0;
+		}
+		if (burnStunStacks > 0) burningRecoveryCooldown++;
+		if (burningRecoveryCooldown >= 60 && burnStunStacks > 0) {
+			burningRecoveryCooldown = 0;
+			burnStunStacks--;
+			if (burnStunStacks < 0) burnStunStacks = 0;
+		}
+		Helpers.decrementFrames(ref freezeInvulnTime);
+		Helpers.decrementFrames(ref stunInvulnTime);
+		Helpers.decrementFrames(ref crystalizeInvulnTime);
+		Helpers.decrementTime(ref grabInvulnTime);
+		Helpers.decrementTime(ref darkHoldInvulnTime);
+		Helpers.decrementTime(ref dwrapInvulnTime);
+		Helpers.decrementFrames(ref burnInvulnTime);
+
+		int[] rootKeys = rootCooldown.Keys.ToArray();
+		foreach(int key in rootKeys) {
+			rootCooldown[key] -= speedMul;
+			if (rootCooldown[key] <= 0) {
+				rootCooldown.Remove(key);
+			}
+		}
+	}
+
 	public override void update() {
 		if (charState is not InRideChaser) {
 			camOffsetX = MathInt.Round(Helpers.lerp(camOffsetX, 0, 10));
@@ -825,147 +987,6 @@ public partial class Character : Actor, IDamagable {
 			Helpers.decrementTime(ref invulnTime);
 		}
 
-		if (vaccineTime > 0) {
-			oilTime = 0;
-			burnTime = 0;
-			acidTime = 0;
-			virusTime = 0;
-			vaccineTime -= Global.spf;
-			if (vaccineTime <= 0) {
-				vaccineTime = 0;
-			}
-		}
-
-		if (virusTime > 0) {
-			virusTime -= Global.spf;
-			if (virusTime <= 0) {
-				virusTime = 0;
-			}
-		}
-
-		if (oilTime > 0) {
-			oilTime -= Global.spf;
-			if (isUnderwater() || charState.invincible || isStatusImmune()) {
-				oilTime = 0;
-			}
-			if (oilTime <= 0) {
-				oilTime = 0;
-			}
-		}
-
-		if (acidTime > 0) {
-			acidTime -= Global.spf;
-			acidHurtCooldown += Global.speedMul;
-			if (acidHurtCooldown >= 60) {
-				acidHurtCooldown -= 60;
-				if (acidHurtCooldown <= 0) {
-					acidHurtCooldown = 0;
-				}
-				acidDamager?.applyDamage(
-					this, player.weapon is TornadoFang,
-					new AcidBurst(), this, (int)ProjIds.AcidBurstPoison,
-					overrideDamage: 1f
-				);
-				new Anim(
-					getCenterPos().addxy(Helpers.randomRange(-6, 6), -20),
-					"torpedo_smoke", 1, null, true) {
-						vel = new Point(0, -50)
-					};
-			}
-			if (isUnderwater() || charState.invincible || isStatusImmune()) {
-				acidTime = 0;
-			}
-			if (acidTime <= 0) {
-				removeAcid();
-			}
-		}
-
-		if (burnStunStacks > 0 && charState is not Burning) {
-			burnEffectTime += Global.speedMul;
-			if (burnEffectTime >= 11) {
-				burnEffectTime = 0;
-
-				Point burnPos = getCenterPos();
-
-				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
-
-				if (burnStunStacks >= 2) {
-					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
-				}
-				if (burnStunStacks >= 3) {
-					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
-					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -60)};
-				}
-				if (burnStunStacks >= 4) {
-					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
-					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -120)};
-				}
-			}	
-		}
-		if (rootTime > 0) {
-			rootTime--;
-			if (rootAnim == null) rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
-			if (rootTime <= 0) {
-				rootTime = 0;
-				useGravity = true;
-				if (rootAnim != null) {
-					rootAnim.destroySelf();
-					rootAnim = null;
-				} 
-			}
-			rootCooldown = 120;
-		}
-		if (burnTime > 0) {
-			burnTime -= Global.spf;
-			burnHurtCooldown += Global.speedMul;
-			burnEffectTime += Global.speedMul;
-			if (burnEffectTime >= 6) {
-				burnEffectTime = 0;
-				Point burnPos = pos.addxy(0, -10);
-				bool hiding = false;
-				if (charState is InRideArmor inRideArmor) {
-					if (inRideArmor.isHiding) {
-						burnPos = pos.addxy(0, 0);
-						hiding = true;
-					}
-				}
-				var f1 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
-				if (hiding) f1.setzIndex(zIndex - 100);
-
-				if (burnTime > 2) {
-					var f2 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
-					if (hiding) f2.setzIndex(zIndex - 100);
-				}
-				if (burnTime > 4) {
-					var f3 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
-					if (hiding) f3.setzIndex(zIndex - 100);
-				}
-				if (burnTime > 6) {
-					var f4 = new Anim(burnPos.addRand(5, 10), "burn_flame", 1, null, true, host: this);
-					if (hiding) f4.setzIndex(zIndex - 100);
-				}
-			}
-			if (burnHurtCooldown >= 60) {
-				burnHurtCooldown -= 60;
-				if (burnHurtCooldown <= 0) {
-					burnHurtCooldown = 0;
-				}
-				burnDamager?.applyDamage(this, false, burnWeapon, this, (int)ProjIds.Burn, overrideDamage: 1f);
-			}
-			if (isUnderwater() || charState.invincible || isStatusImmune()) {
-				burnTime = 0;
-			}
-			if (burnTime <= 0) {
-				removeBurn();
-			}
-		}
-
-		if (flattenedTime > 0 && !(charState is Die)) {
-			flattenedTime -= Global.spf;
-			if (flattenedTime < 0) flattenedTime = 0;
-		}
-		Helpers.decrementTime(ref slowdownTime);
-
 		if (!ownedByLocalPlayer) {
 			if (isCharging()) {
 				chargeGfx();
@@ -973,60 +994,14 @@ public partial class Character : Actor, IDamagable {
 				stopCharge();
 			}
 		}
-
-		igFreezeRecoveryCooldown += Global.spf;
-		if (igFreezeRecoveryCooldown > 0.2f) {
-			igFreezeRecoveryCooldown = 0;
-			igFreezeProgress--;
-			if (igFreezeProgress < 0) igFreezeProgress = 0;
-		}
-		if (burnStunStacks > 0) burningRecoveryCooldown++;
-		if (burningRecoveryCooldown >= 60 && burnStunStacks > 0) {
-			burningRecoveryCooldown = 0;
-			burnStunStacks--;
-			if (burnStunStacks < 0) burnStunStacks = 0;
-		}
-		Helpers.decrementFrames(ref freezeInvulnTime);
-		Helpers.decrementFrames(ref stunInvulnTime);
-		Helpers.decrementFrames(ref crystalizeInvulnTime);
-		Helpers.decrementTime(ref grabInvulnTime);
-		Helpers.decrementTime(ref darkHoldInvulnTime);
-		Helpers.decrementTime(ref dwrapInvulnTime);
-		Helpers.decrementFrames(ref burnInvulnTime);
-		Helpers.decrementFrames(ref rootCooldown);
-
-
 		if (flag != null && flag.ownedByLocalPlayer) {
 			flag.changePos(getCenterPos());
-		}
-
-		if (linkedRideArmor != null && !Global.level.hasGameObject(linkedRideArmor)) {
-			linkedRideArmor = null;
-		}
-
-		if (transformAnim != null) {
-			transformSmokeTime += Global.spf;
-			if (transformSmokeTime > 0) {
-				int width = 15;
-				int height = 25;
-				transformSmokeTime = 0;
-				new Anim(getCenterPos().addxy(Helpers.randomRange(-width, width), Helpers.randomRange(-height, height)), "torpedo_smoke", xDir, null, true);
-				new Anim(getCenterPos().addxy(Helpers.randomRange(-width, width), Helpers.randomRange(-height, height)), "torpedo_smoke", xDir, null, true);
-				new Anim(getCenterPos().addxy(Helpers.randomRange(-width, width), Helpers.randomRange(-height, height)), "torpedo_smoke", xDir, null, true);
-				new Anim(getCenterPos().addxy(Helpers.randomRange(-width, width), Helpers.randomRange(-height, height)), "torpedo_smoke", xDir, null, true);
-			}
-
-			transformAnim.changePos(pos);
-			if (transformAnim.destroyed) {
-				transformAnim = null;
-			}
 		}
 		// Cutoff point for things that run but aren't owned by the player
 		if (!ownedByLocalPlayer) {
 			base.update();
 			return;
 		}
-		updateParasite();
 		updateBubble();
 
 		if (pos.y > Global.level.killY && !isWarpIn() && charState is not WarpOut) {
@@ -1509,10 +1484,15 @@ public partial class Character : Actor, IDamagable {
 		changeState(new Burning(-xDir, attacker), true);
 	}
 
-	public void root() {
-		if (rootCooldown > 0) return;
-		rootTime = 60f;
-		stopMoving();
+	public void root(float time, int playerid) {
+		if (rootCooldown.GetValueOrDefault(playerid) > 0) {
+			return;
+		}
+		rootCooldown[playerid] = time + 60;
+		if (rootTime < time) {
+			rootTime = time;
+		}
+		stopMovingWeak();
 		useGravity = false;
 	}
 

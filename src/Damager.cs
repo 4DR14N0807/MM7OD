@@ -199,7 +199,7 @@ public class Damager {
 			// Status effects.
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
-					character.paralize(60, 90);
+					character.root(45, owner.id);
 					break;
 				}
 			}

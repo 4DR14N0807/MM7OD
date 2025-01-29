@@ -17,6 +17,7 @@ public partial class Global {
 	public static RenderTexture srtBuffer2 = null!;
 	public static RenderTexture radarRenderTexture = null!;
 	public static RenderTexture radarRenderTextureB = null!;
+	public static RenderTexture radarRenderTextureC = null!;
 
 	// Normal (small) camera
 	public static RenderTexture screenRenderTextureS = null!;

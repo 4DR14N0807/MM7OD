@@ -356,7 +356,10 @@ public class Sprite {
 			if (alpha >= 1 && (
 				renderEffects.Contains(RenderEffectType.BlueShadow) ||
 				renderEffects.Contains(RenderEffectType.RedShadow) ||
-				renderEffects.Contains(RenderEffectType.GreenShadow)
+				renderEffects.Contains(RenderEffectType.GreenShadow) ||
+				renderEffects.Contains(RenderEffectType.PurpleShadow) ||
+				renderEffects.Contains(RenderEffectType.OrangeShadow) ||
+				renderEffects.Contains(RenderEffectType.YellowShadow)
 			)) {
 				ShaderWrapper? outlineShader = null;
 				if (renderEffects.Contains(RenderEffectType.BlueShadow)) {
@@ -365,6 +368,12 @@ public class Sprite {
 					outlineShader = Helpers.cloneShaderSafe("outline_red");
 				} else if (renderEffects.Contains(RenderEffectType.GreenShadow)) {
 					outlineShader = Helpers.cloneShaderSafe("outline_green");
+				} else if (renderEffects.Contains(RenderEffectType.OrangeShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_orange");
+				} else if (renderEffects.Contains(RenderEffectType.PurpleShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_purple");
+				} else if (renderEffects.Contains(RenderEffectType.YellowShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_yellow");
 				}
 				if (outlineShader != null) {
 					outlineShader.SetUniform(
@@ -897,7 +906,10 @@ public class AnimData {
 			if (alpha >= 1 && (
 				renderEffects.Contains(RenderEffectType.BlueShadow) ||
 				renderEffects.Contains(RenderEffectType.RedShadow) ||
-				renderEffects.Contains(RenderEffectType.GreenShadow)
+				renderEffects.Contains(RenderEffectType.GreenShadow) ||
+				renderEffects.Contains(RenderEffectType.PurpleShadow) ||
+				renderEffects.Contains(RenderEffectType.OrangeShadow) ||
+				renderEffects.Contains(RenderEffectType.YellowShadow)
 			)) {
 				ShaderWrapper? outlineShader = null;
 				if (renderEffects.Contains(RenderEffectType.BlueShadow)) {
@@ -906,6 +918,12 @@ public class AnimData {
 					outlineShader = Helpers.cloneShaderSafe("outline_red");
 				} else if (renderEffects.Contains(RenderEffectType.GreenShadow)) {
 					outlineShader = Helpers.cloneShaderSafe("outline_green");
+				} else if (renderEffects.Contains(RenderEffectType.OrangeShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_orange");
+				} else if (renderEffects.Contains(RenderEffectType.PurpleShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_purple");
+				} else if (renderEffects.Contains(RenderEffectType.YellowShadow)) {
+					outlineShader = Helpers.cloneShaderSafe("outline_yellow");
 				}
 				if (outlineShader != null) {
 					outlineShader.SetUniform(

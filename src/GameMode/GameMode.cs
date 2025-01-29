@@ -707,7 +707,7 @@ public class GameMode {
 		if (Global.level.is1v1() || Global.level.isTraining() || Global.level.mainPlayer.isSpectator) {
 			return;
 		}
-		Global.radarRenderTexture.Clear(new Color(33, 33, 74));
+		Global.radarRenderTexture.Clear(new Color(0, 0, 0, 0));
 		Global.radarRenderTextureB.Clear();
 		RenderStates states = new RenderStates(Global.radarRenderTexture.Texture);
 		RenderStates statesB = new RenderStates(Global.radarRenderTextureB.Texture);
@@ -740,7 +740,6 @@ public class GameMode {
 		}
 
 		List<(float x, float y, float r)> revealedSpots = new();
-		float revealedRadius;
 		revealedSpots.Add((camX, camY, 16 * 10));
 
 		if (isTeamMode) {
@@ -754,7 +753,7 @@ public class GameMode {
 				revealedSpots.Add((
 					player.character.pos.x,
 					player.character.pos.y,
-					16 * 7)
+					16 * 6)
 				);
 			}
 		}
@@ -786,19 +785,24 @@ public class GameMode {
 
 		var sprite = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
 		Global.radarRenderTextureB.Display();
-		Global.radarRenderTexture.Display();
-		Global.radarRenderTexture.Draw(sprite);
+		Global.radarRenderTextureC.Clear(new Color(33, 33, 74));
+		Global.radarRenderTextureC.Display();
+		Global.radarRenderTextureC.Draw(sprite);
+		var spriteBackground = new SFML.Graphics.Sprite(Global.radarRenderTextureC.Texture);
 
 		foreach (GameObject gameObject in Global.level.gameObjects) {
 			if (gameObject is not Geometry geometry) {
 				continue;
 			}
 			Color blockColor = new Color(128, 128, 255);
-			if (gameObject is not Wall and not KillZone) {
+			if (gameObject is not Wall and not KillZone and not Ladder) {
 				continue;
 			}
 			if (gameObject is KillZone) {
-				blockColor = new Color(255, 128, 128);
+				blockColor = new Color(255, 64, 64);
+			}
+			if (gameObject is Ladder) {
+				blockColor = new Color(255, 200, 0);
 			}
 			Shape shape = geometry.collider.shape;
 			float pxPos = shape.minX / mapScale;
@@ -840,12 +844,29 @@ public class GameMode {
 		}
 		Global.radarRenderTexture.Display();
 		var sprite2 = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
-		sprite2.Position = new Vector2f(radarX, radarY);
+
+		Global.radarRenderTextureB.Clear(new Color(0, 0, 0, 0));
+		RenderStates statesL = new RenderStates(Global.radarRenderTextureB.Texture);
+		ShaderWrapper outlineShader = Helpers.cloneShaderSafe("map_outline");
+		outlineShader.SetUniform("textureSize", new SFML.Graphics.Glsl.Vec2(42, 26));
+		statesL.Shader = outlineShader.getShader();
+		Global.radarRenderTextureB.Draw(sprite2, statesL);
+		Global.radarRenderTextureB.Display();
+		var spriteFG = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
+
+		Global.radarRenderTexture.Clear();
+		Global.radarRenderTexture.Draw(spriteBackground);
+		Global.radarRenderTexture.Draw(spriteFG);
+		var spriteFinal = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
+		spriteFinal.Position = new Vector2f(radarX, radarY);
 
 		Global.window.SetView(DrawWrappers.hudView);
-		Global.window.Draw(sprite2);
+		Global.window.Draw(spriteFinal);
 		sprite.Dispose();
 		sprite2.Dispose();
+		spriteFG.Dispose();
+		spriteBackground.Dispose();
+		spriteFinal.Dispose();
 
 		foreach (var player in level.nonSpecPlayers()) {
 			if (player.character == null || player.character.destroyed) continue;
@@ -853,22 +874,39 @@ public class GameMode {
 
 			float xPos = player.character.pos.x / mapScale;
 			float yPos = player.character.pos.y / mapScale;
+			float xPosF = player.character.pos.x;
+			float yPosF = player.character.pos.y;
 
 			Color color;
-			if (player.isMainPlayer) {
-				color = Color.Green;
-			} else if (player.alliance == level.mainPlayer.alliance) color = Color.Yellow;
-			else color = Color.Red;
+			if (!isTeamMode) {
+				if (player.isMainPlayer) {
+					color = Color.Green;
+				} else if (player.alliance == level.mainPlayer.alliance) {
+					color = Color.Yellow;
+				}
+				else {
+					color = Color.Red;
+				}
+			} else {
+				color = (player.alliance) switch  {
+					0 => new Color(0, 255, 255), // Blue
+					1 => new Color(255, 64, 64), // Red
+					2 => new Color(128, 255, 128), // Green
+					3 => new Color(160, 128, 255), // Purple 
+					4 => new Color(255, 255, 128), // Yellow
+					5 => new Color(255, 128, 128), // Orange.
+					_ => Color.White,
+				};
+			}
 
 			foreach (var spot in revealedSpots) {
-				if (player.isMainPlayer || new Point(xPos, yPos).distanceTo(
-						new Point(spot.x / mapScale + offsetX, spot.y / mapScale + offsetY)
-					) < spot.r / mapScale
+				if (player.isMainPlayer || player.alliance == Global.level.mainPlayer.alliance ||
+					new Point(xPosF, yPosF).distanceTo(new Point(spot.x, spot.y)) < spot.r
 				) {
 					float dxPos = radarX + MathF.Round(xPos) - offsetX;
 					float dyPos = radarY + MathF.Round(yPos) - 1 - offsetY;
-					if (dxPos < radarX || dxPos > radarX + scaledW + 1 ||
-						dyPos < radarY || dyPos > radarY + scaledH + 1
+					if (dxPos < radarX || dxPos > radarX + scaledW ||
+						dyPos < radarY || dyPos > radarY + scaledH
 					) {
 						continue;
 					}

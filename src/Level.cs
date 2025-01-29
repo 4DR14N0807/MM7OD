@@ -310,6 +310,9 @@ public partial class Level {
 		Global.radarRenderTextureB = new RenderTexture(
 			(uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH)
 		);
+		Global.radarRenderTextureC = new RenderTexture(
+			(uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH)
+		);
 		Global.input.lastUpdateTime = 0;
 
 		foreach (var serverPlayer in server.players) {

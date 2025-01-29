@@ -56,7 +56,7 @@ public class ConfigureCPUMenu : IMainMenu {
 		}
 
 		charSelections = is1v1 ? CharSelection.selections1v1 : CharSelection.selections;
-		charSelections = [.. charSelections, new CharSelection("Random", 5, 0, 0, "", 0)];
+		charSelections = [new CharSelection("Random", -1, 0, 0, "", 0), .. charSelections];
 
 		for (int i = 0; i < savedMatchSettings.extraCpuCharData.cpuDatas.Count; i++) {
 			var cpuData = savedMatchSettings.extraCpuCharData.cpuDatas[i];

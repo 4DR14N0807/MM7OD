@@ -220,7 +220,7 @@ public class Server {
 		if (isBot) {
 			serverPlayer = serverPlayer.clone();
 			serverPlayer.isHost = false;
-			serverPlayer.charNum = overrideCharNum ?? Helpers.randomRange(0, 3);
+			serverPlayer.charNum = overrideCharNum ?? Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Bass);
 			serverPlayer.preferredAlliance = overrideAlliance;
 		}
 
@@ -847,7 +847,7 @@ public class Server {
 				int charNum = bytes[0];
 				int team = bytes[1];
 
-				if (charNum == 255) charNum = Helpers.randomRange(0, 3);
+				if (charNum == 255) charNum = Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Bass);
 				int? preferredAlliance = null;
 
 				if (team >= 0 && team <= teamNum) {

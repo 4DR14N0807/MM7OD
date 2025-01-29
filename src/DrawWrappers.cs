@@ -166,11 +166,10 @@ public class DrawLayer : Transformable, Drawable {
 				// Create a clear texture first.
 				back.Clear(new Color(0, 0, 0, 0));
 				back.Display();
-				renderStates.Shader = oneOff.shaders[0].getShader();
 				back.Draw(sprite, renderStates);
 				sprite.Dispose();
 				// Iterate shaders.
-				for (int num = 1; num < oneOff.shaders.Count; num++) {
+				for (int num = 0; num < oneOff.shaders.Count; num++) {
 					// Clear image.
 					renderStates = new RenderStates(states);
 					front.Clear(new Color(0, 0, 0, 0));

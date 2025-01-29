@@ -6,25 +6,29 @@ namespace MMXOnline;
 
 public class BigBangStrikeProj : Projectile {
 	public BigBangStrikeProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+		Point pos, int xDir, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 3, player, "big_bang_strike_proj",
-		Global.superFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "big_bang_strike_proj", netId, altPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
+		damager.damage = 3;
+		damager.flinch = Global.superFlinch;
+		damager.hitCooldown = 30;
+
 		maxTime = 0.925f;
 		shouldShieldBlock = false;
 		reflectable = false;
 		canBeLocal = false;
 
-		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new BigBangStrikeProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.pos, args.xDir, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -49,7 +53,7 @@ public class BigBangStrikeProj : Projectile {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
 			var proj = new BigBangStrikeExplosionProj(
-				pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true
+				pos, xDir, owningActor!, damager.owner.getNextActorNetId(), true
 			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
@@ -61,17 +65,22 @@ public class BigBangStrikeExplosionProj : Projectile {
 	float absorbRadius = 120;
 
 	public BigBangStrikeExplosionProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+		Point pos, int xDir, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 2, player, "big_bang_strike_explosion",
-		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "big_bang_strike_explosion", netId, altPlayer
 	) {
+		// Damage.
 		projId = (int)BluesProjIds.BigBangStrikeExplosion;
+		damager.damage = 2;
+		damager.flinch = Global.miniFlinch;
+		damager.hitCooldown = 30;
+		// Etc
 		maxTime = 3f;
 		destroyOnHit = false;
 
-		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 
 		projId = (int)BluesProjIds.BigBangStrike;
@@ -79,7 +88,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new BigBangStrikeExplosionProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.pos, args.xDir, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -107,44 +116,49 @@ public class BigBangStrikeExplosionProj : Projectile {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
 			var proj = new StrikeAttackPushProj(
-				pos, 0, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true
+				pos, 0, xDir, owningActor!, ownerPlayer.getNextActorNetId(), sendRpc: true
 			);
 		}
 	}
 }
 
 public class ProtoStrikeProj : Projectile {
-	Player player;
+	Character? ownerChar;
 	float radius = 38;
 	float absorbRadius = 80;
 
 	public ProtoStrikeProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+		Point pos, int xDir, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 2, player, "big_bang_strike_explosion",
-		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "big_bang_strike_explosion", netId, altPlayer
 	) {
-		this.player = player;
+		// Damage.
 		projId = (int)BluesProjIds.ProtoStrike;
+		damager.damage = 2;
+		damager.flinch = Global.miniFlinch;
+		damager.hitCooldown = 30;
+		// Etc.
 		maxTime = 3f;
 		destroyOnHit = false;
 		canBeLocal = false;
+		ownerChar = owner as Character;
 
-		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoStrikeProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.pos, args.xDir, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 
 	public override void update() {
 		base.update();
 		if (ownedByLocalPlayer) {
-			if (player.character?.charState is not ProtoStrike) {
+			if (ownerChar?.charState is not ProtoStrike) {
 				destroySelf();
 				return;
 			}
@@ -171,7 +185,7 @@ public class ProtoStrikeProj : Projectile {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
 			var proj = new StrikeAttackPushProj(
-				pos, 1, xDir, player, player.getNextActorNetId(), rpc: true
+				pos, 1, xDir, owningActor!, ownerPlayer.getNextActorNetId(), sendRpc: true
 			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
@@ -192,16 +206,20 @@ public class ProtoStrikeProj : Projectile {
 }
 
 public class StrikeAttackPushProj : Projectile {
-	Player player;
 	float radius = 40;
 
 	public StrikeAttackPushProj(
-		Point pos, int type, int xDir, Player player, ushort? netId, bool rpc = false
+		Point pos, int type, int xDir, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 1, player, "big_bang_strike_fade",
-		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "big_bang_strike_fade", netId, altPlayer
 	) {
-		this.player = player;
+		// Damage.
+		projId = (int)BluesProjIds.BigBangStrike;
+		damager.damage = 1;
+		damager.flinch = Global.miniFlinch;
+		damager.hitCooldown = 30;
+		// Etc.
 		projId = (int)BluesProjIds.ProtoStrikePush;
 		destroyOnHit = false;
 		canBeLocal = false;
@@ -213,14 +231,14 @@ public class StrikeAttackPushProj : Projectile {
 			addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 		}
 
-		if (rpc) {
-			rpcCreate(pos, player, netId, xDir, (byte)type);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new StrikeAttackPushProj(
-			args.pos, args.extraData[0], args.xDir, args.player, args.netId
+			args.pos, args.extraData[0], args.xDir, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -252,25 +270,30 @@ public class StrikeAttackPushProj : Projectile {
 
 public class RedStrikeProj : Projectile {
 	public RedStrikeProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+		Point pos, int xDir, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 3, player, "big_bang_strike_proj",
-		Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "big_bang_strike_proj", netId, altPlayer
 	) {
+		// Damage.
 		projId = (int)BluesProjIds.RedStrike;
+		damager.damage = 3;
+		damager.flinch = Global.defFlinch;
+		damager.hitCooldown = 30;
+		// Etc.
 		maxTime = 0.6f;
 		shouldShieldBlock = false;
 		reflectable = false;
 		addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 
-		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new RedStrikeProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.pos, args.xDir, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -354,7 +377,7 @@ public class RedStrikeExplosionProj : Projectile {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
 			var proj = new StrikeAttackPushProj(
-				pos, 2, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true
+				pos, 2, xDir, owningActor!, ownerPlayer.getNextActorNetId(), sendRpc: true
 			);
 		}
 	}
@@ -427,7 +450,7 @@ public class BigBangStrikeState : CharState {
 			int shootDir = character.getShootXDir();
 			new BigBangStrikeProj(
 				character.getShootPos().addxy(shootDir * 10, 0), shootDir,
-				player, player.getNextActorNetId(), true
+				character, player.getNextActorNetId(), true
 			);
 			fired = true;
 			character.playSound("buster3", sendRpc: true);

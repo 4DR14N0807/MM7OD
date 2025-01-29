@@ -842,6 +842,10 @@ public partial class Character : Actor, IDamagable {
 					rootAnim = null;
 				} 
 			}
+		} else {
+			if (rootAnim?.destroyed == false) {
+				rootAnim.destroySelf();
+			}
 		}
 		if (burnTime > 0) {
 			burnTime -= Global.spf;
@@ -3399,7 +3403,10 @@ public partial class Character : Actor, IDamagable {
 		// For things not always enabled.
 		// We also edit this later.
 		int boolMaskPos = customData.Count();
+		int boolMaskBPos = boolMaskPos + 1;
 		bool[] boolMask = new bool[8];
+		bool[] boolMaskB = new bool[8];
+		customData.Add(0);
 		customData.Add(0);
 
 		// Add each status effect and enabled their respective flag.
@@ -3441,9 +3448,14 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)burnStunStacks);
 			boolMask[7] = true;
 		}
+		if (burnStunStacks > 0) {
+			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
+			boolMaskB[0] = true;
+		}
 
 		// Add the final value of the bool mask.
 		customData[boolMaskPos] = Helpers.boolArrayToByte(boolMask);
+		customData[boolMaskBPos] = Helpers.boolArrayToByte(boolMaskB);
 
 		// Add the total arguments size.
 		customData[0] = (byte)customData.Count;
@@ -3470,7 +3482,8 @@ public partial class Character : Actor, IDamagable {
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[6]);
-		int pos = 7;
+		bool[] boolMaskB = Helpers.byteToBoolArray(data[7]);
+		int pos = 8;
 		// Update and increase pos as we go.
 		if (boolMask[0]) {
 			Actor? vehicleActor = Global.level.getActorByNetId(BitConverter.ToUInt16(data[pos..(pos+2)]));
@@ -3515,7 +3528,10 @@ public partial class Character : Actor, IDamagable {
 			burnStunStacks = data[pos];
 			pos++;
 		}
-		
+		if (boolMaskB[0]) {
+			rootTime = data[pos] * 2;
+			pos++;
+		}
 	}
 }
 

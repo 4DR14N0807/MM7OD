@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -318,7 +318,7 @@ public class ProtoStrike : CharState {
 		if (!fired && character.frameIndex >= 3) {
 			Point shootPos = character.getShootPos();
 			new ProtoStrikeProj(
-				shootPos, character.xDir, player, player.getNextActorNetId(), rpc: true
+				shootPos, character.xDir, character, player.getNextActorNetId(), sendRpc: true
 			);
 			blues.playSound("danger_wrap_explosion", true, true);
 			fired = true;
@@ -361,7 +361,7 @@ public class RedStrike : CharState {
 		if (!fired && character.frameIndex >= 3) {
 			Point shootPos = character.getShootPos();
 			new RedStrikeProj(
-				shootPos, character.xDir, player, player.getNextActorNetId(), true
+				shootPos, character.xDir, character, player.getNextActorNetId(), true
 			);
 			blues.playSound("buster3", true, true);
 			fired = true;

@@ -109,16 +109,6 @@ public class Flag : Actor {
 		updraftY = null;
 	}
 
-	// Only humans can take flags from bots
-	public bool canTakeFlag(Character taker, Character holder) {
-		/*
-		if (taker == null || holder == null) return false;
-		if (taker == holder) return false;
-		return !taker.player.isBot && holder.player.isBot;
-		*/
-		return false;
-	}
-
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		if (!ownedByLocalPlayer) return;
@@ -126,7 +116,7 @@ public class Flag : Actor {
 		if (pickupCooldown > 0) return;
 
 		var chr = other.gameObject as Character;
-		if (this.chr != null && !canTakeFlag(chr, this.chr)) return;
+		if (this.chr != null) return;
 		if (chr != null && chr.player.alliance != alliance && chr.canPickupFlag()) {
 			pickupFlag(chr);
 		}
@@ -142,7 +132,6 @@ public class Flag : Actor {
 		Global.level.gameMode.addKillFeedEntry(
 			new KillFeedEntry(chr.player.name + " took flag", chr.player.alliance, chr.player), true
 		);
-
 		if (chr.ai != null && chr.ai.aiState is FindPlayer) {
 			(chr.ai.aiState as FindPlayer).setDestNodePos();
 		}
@@ -277,8 +266,9 @@ public class Flag : Actor {
 					player.character.flag = null;
 				}
 			}
+			chara = null;
 		}
-		isPickedUpNet = chara != null;
+		isPickedUpNet = (chara != null);
 	}
 }
 

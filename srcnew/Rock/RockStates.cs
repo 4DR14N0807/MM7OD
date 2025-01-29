@@ -38,9 +38,12 @@ public class Slide : CharState {
 		float inputXDir = player.input.getInputDir(player).x;
 		bool cancel = player.input.isPressed(getOppositeDir(initialSlideDir), player);
 
-		if (Global.level.checkTerrainCollisionOnce(character, 0, -24) != null && rock != null) rock.isSlideColliding = true;
-		else if (rock != null) rock.isSlideColliding = false;
-		
+		if (Global.level.checkTerrainCollisionOnce(character, 0, -16) != null && rock != null) {
+			rock.isSlideColliding = true;
+		}
+		else if (rock != null) {
+			rock.isSlideColliding = false;
+		}
 		if ((slideTime > 30 || stop) && rock != null && !rock.isSlideColliding) {
 			if (!stop) {
 				slideTime = 0;

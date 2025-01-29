@@ -17,7 +17,8 @@ public class KingOfTheHill : GameMode {
 	}
 
 	public override void drawTopHUD() {
-		int hudcpY = 0;
+		int hudcpY = 10;
+		int hudcpX = (int)Global.screenW - 111;
 
 		ControlPoint hill = level?.hill;
 		if (hill == null) return;
@@ -29,7 +30,7 @@ public class KingOfTheHill : GameMode {
 		int allianceFactor = (hill.alliance == redAlliance ? 0 : 2);
 		int hudCpFrameIndex = (hill.num - 1) + allianceFactor;
 		if (hill.alliance == neutralAlliance) hudCpFrameIndex = 4;
-		Global.sprites["hud_cp"].drawToHUD(hudCpFrameIndex, 5, 5 + hudcpY);
+		Global.sprites["hud_cp"].drawToHUD(hudCpFrameIndex, hudcpX, hudcpY);
 		float perc = hill.captureTime / hill.maxCaptureTime;
 
 		if (hill.alliance == neutralAlliance) {
@@ -44,12 +45,12 @@ public class KingOfTheHill : GameMode {
 			else {
 				hudCpBarIndex = hill.blueCaptureTime > 0 ? 1 : 0;
 			}
-			Global.sprites["hud_cp_bar"].drawToHUD(hudCpBarIndex, 5 + 17 + (i * 2), 6 + hudcpY);
+			Global.sprites["hud_cp_bar"].drawToHUD(hudCpBarIndex, hudcpX + 17 + (i * 2), 1 + hudcpY);
 		}
 		if (hillText != "") {
-			Fonts.drawText(textColor, hillText, 38, 9 + hudcpY, Alignment.Center);
+			Fonts.drawText(textColor, hillText, 33 + hudcpX, 2 + hudcpY, Alignment.Center);
 		}
-		drawTimeIfSet(22);
+		drawTimeIfSet(37);
 	}
 
 	public override void checkIfWinLogic() {

@@ -182,16 +182,16 @@ public class ControlPoint : Actor {
 
 	public (string text, FontType color) getHillText() {
 		string text = "";
-		FontType textColor = FontType.Grey;
+		FontType textColor = FontType.WhiteSmall;
 		if (Global.isHost) {
 			if (attacked()) {
 				hillAttackerCountSync = (byte)getAttackerCount();
 				text = string.Format("{0}x", getAttackerCount());
-				textColor = FontType.Pink;
+				textColor = FontType.GreenSmall;
 			} else if (contested()) {
 				hillAttackerCountSync = 255;
 				text = "Block";
-				textColor = FontType.DarkPurple;
+				textColor = FontType.PurpleSmall;
 			} else {
 				hillAttackerCountSync = 0;
 			}

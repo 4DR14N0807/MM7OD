@@ -44,15 +44,15 @@ public class FFADeathMatch : GameMode {
 		List<Player> playerList = GameMode.getOrderedPlayerList();
 		int place = playerList.IndexOf(level.mainPlayer) + 1;
 		placeStr = Helpers.getNthString(place);
-		string topText = "Lead:0";
+		string topText = "Leader: 0";
 		if (playerList.Count > 0) {
-			topText = "Leader:" + playerList[0].kills.ToString();
+			topText = "Leader:" + playerList[0].kills.ToString().PadLeft(2 ,' ');
 		}
-		string botText = "Kills:" + level.mainPlayer.kills.ToString();
-		Fonts.drawText(FontType.WhiteSmall, botText, Global.screenW - 48, 7, Alignment.Right);
-		Fonts.drawText(FontType.WhiteSmall, topText, Global.screenW - 48, 17, Alignment.Right);
+		string botText = "Kills:" + level.mainPlayer.kills.ToString().PadLeft(2 ,' ');
+		Fonts.drawText(FontType.WhiteSmall, botText, Global.screenW - 56, 7, Alignment.Right);
+		Fonts.drawText(FontType.WhiteSmall, topText, Global.screenW - 56, 17, Alignment.Right);
 
-		drawTimeIfSet(24);
+		drawTimeIfSet(37);
 	}
 
 	public override void drawScoreboard() {

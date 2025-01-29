@@ -169,16 +169,6 @@ public class BluesSlide : CharState {
 
 	public override void update() {
 		base.update();
-		if (
-			player.input.getXDir(player) == -initialSlideDir ||
-			stateFrames >= 30 || (
-				stateFrames >= 8 && character.deltaPos.x == 0 &&
-				Global.level.checkTerrainCollisionOnce(character, character.xDir, 0) != null
-			)
-		) {
-			character.changeToIdleOrFall();
-			return;
-		}
 		Point move = new(blues.getSlideSpeed() * initialSlideDir, 0);
 		character.move(move);
 
@@ -193,6 +183,21 @@ public class BluesSlide : CharState {
 			dust.vel.y = (-particles - 1) * 20;
 		} else {
 			slideTime += Global.speedMul;
+		}
+
+		CollideData? cellingCheck = Global.level.checkTerrainCollisionOnce(character, 0, -16);
+		if (cellingCheck != null) {
+			return;
+		}
+		if (
+			player.input.getXDir(player) == -initialSlideDir ||
+			stateFrames >= 30 || (
+				stateFrames >= 8 && character.deltaPos.x == 0 &&
+				Global.level.checkTerrainCollisionOnce(character, character.xDir, 0) != null
+			)
+		) {
+			character.changeToIdleOrFall();
+			return;
 		}
 	}
 

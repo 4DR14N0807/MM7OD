@@ -301,7 +301,7 @@ public partial class Level {
 			}
 		}
 
-		scaledW = 36;
+		scaledW = 42;
 		scaledH = 26;
 
 		Global.radarRenderTexture = new RenderTexture(
@@ -799,7 +799,7 @@ public partial class Level {
 				} else {
 					alliance = Server.getMatchInitAutobalanceTeam(players, teamNum);
 				}
-				int[] charList = {0, 1, 2, 4, 5, 6};
+				int[] charList = { (int)CharIds.Rock, (int)CharIds.Blues, (int)CharIds.Bass };
 				if (equalCharDistribution) {
 					if (!Global.level.gameMode.isTeamMode) {
 						charNum = charList[equalCharDistributer % charList.Length];
@@ -821,7 +821,9 @@ public partial class Level {
 
 				// Overrides from 1v1 select character menu
 				if (i < cpuDatas.Count) {
-					if (!cpuDatas[i].isRandom) charNum = cpuDatas[i].charNum;
+					if (!cpuDatas[i].isRandom) {
+						charNum = cpuDatas[i].charNum;
+					}
 					if (gameMode.isTeamMode && cpuDatas[i].alliance >= 0) {
 						alliance = cpuDatas[i].alliance;
 					}
@@ -832,11 +834,6 @@ public partial class Level {
 					charNum = Global.quickStartBotCharNum;
 					Global.quickStartBotCharNum++;
 					Global.quickStartBotCharNum = Global.quickStartBotCharNum % 5;
-				}
-
-				// CHANGECHARTOZERO, SWITCHCHARTOZERO
-				if (Global.quickStartSameChar != null) {
-					//charNum = 5;
 				}
 
 				var cpu = new Player(
@@ -2467,11 +2464,11 @@ public partial class Level {
 			return availableSpawns[player.getSpawnIndex(availableSpawns.Length)];
 		}
 
-		SpawnPoint[] unoccupied = availableSpawns.Where((spawnPoint) => {
+		/*SpawnPoint[] unoccupied = availableSpawns.Where((spawnPoint) => {
 			return !spawnPoint.occupied();
-		}).ToArray();
+		}).ToArray();*/
 
-		return unoccupied.GetRandomItem();
+		return availableSpawns.GetRandomItem();
 	}
 
 	public SpawnPoint getFirstSpawnPoint(Player player) {

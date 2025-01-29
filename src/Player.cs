@@ -411,10 +411,8 @@ public partial class Player {
 		name = serverPlayer.name;
 		ping = serverPlayer.ping;
 
-		if (!ownedByLocalPlayer) {
-			kills = serverPlayer.kills;
-			deaths = serverPlayer.deaths;
-		}
+		kills = serverPlayer.kills;
+		deaths = serverPlayer.deaths;
 
 		if (ownedByLocalPlayer && serverPlayer.autobalanceAlliance != null &&
 			newAlliance != serverPlayer.autobalanceAlliance.Value
@@ -931,7 +929,7 @@ public partial class Player {
 			if (shouldRespawn()) {
 				ushort charNetId = getNextATransNetId();
 
-				if (Global.level.gameMode is TeamDeathMatch && Global.level.teamNum > 2 && warpedInOnce) {
+				if (Global.level.gameMode is TeamDeathMatch or TeamElimination && warpedInOnce) {
 					List<Player> spawnPoints = Global.level.players.FindAll(
 						p => p.teamAlliance == teamAlliance && p.health > 0 && p.character != null
 					);
@@ -945,14 +943,14 @@ public partial class Player {
 							warpInPos, randomChar.xDir, charNetId, true
 						);
 					} else {
-						SpawnPoint spawnPoint = firstSpawn ?? Global.level.getSpawnPoint(this, !warpedInOnce);
+						SpawnPoint spawnPoint = firstSpawn ?? Global.level.getSpawnPoint(this, false);
 						firstSpawn = null;
 						int spawnPointIndex = Global.level.spawnPoints.IndexOf(spawnPoint);
 						spawnCharAtSpawnIndex(spawnPointIndex, charNetId, true);
 					}
 				}
 				else {
-					var spawnPoint = Global.level.getSpawnPoint(this, !warpedInOnce);
+					var spawnPoint = Global.level.getSpawnPoint(this, false);
 					if (spawnPoint == null) return;
 					int spawnPointIndex = Global.level.spawnPoints.IndexOf(spawnPoint);
 					spawnCharAtSpawnIndex(spawnPointIndex, charNetId, true);
@@ -1684,17 +1682,20 @@ public partial class Player {
 		if (Global.level.isTraining() || Global.level.isRace()) {
 			return 2;
 		}
+		if (Global.level.gameMode is FFADeathMatch) {
+			return 5;
+		}
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.respawnTime;
 		} else {
 			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
-				return 5;
+				return 8;
 			}
 			if (Global.level?.gameMode is KingOfTheHill) {
-				return 5;
+				return 10;
 			}
 		}
-		return 5;
+		return 8;
 	}
 
 	public bool canReviveVile() {

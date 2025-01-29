@@ -47,12 +47,12 @@ public class GameMode {
 		"Orange"
 	};
 	public FontType[] teamFonts = {
-		FontType.BlueMenu,
-		FontType.RedMenu,
-		FontType.Green,
-		FontType.Purple,
-		FontType.Yellow,
-		FontType.Orange
+		FontType.BlueSmall,
+		FontType.RedSmall,
+		FontType.GreenSmall,
+		FontType.PurpleSmall,
+		FontType.YellowSmall,
+		FontType.OrangeSmall
 	};
 
 	public VoteKick? currentVoteKick;
@@ -539,73 +539,6 @@ public class GameMode {
 
 	public virtual void render() {
 		if (level.mainPlayer == null) return;
-
-		if (level.mainPlayer.character is Axl axl) {
-			if (axl.isZooming() && !axl.isZoomOutPhase1Done) {
-				Point charPos = axl.getCenterPos();
-
-				float xOff = axl.axlScopeCursorWorldPos.x - level.camCenterX;
-				float yOff = axl.axlScopeCursorWorldPos.y - level.camCenterY;
-
-				Point bulletPos = axl.getAxlBulletPos();
-				Point scopePos = axl.getAxlScopePos();
-				Point hitPos = axl.getCorrectedCursorPos();
-				//Point hitPos = bulletPos.add(axl.getAxlBulletDir().times(Global.level.adjustedZoomRange));
-				var hitData = axl.getFirstHitPos(level.mainPlayer.adjustedZoomRange, ignoreDamagables: true);
-				Point hitPos2 = hitData.hitPos;
-				if (hitPos2.distanceTo(charPos) < hitPos.distanceTo(charPos)) hitPos = hitPos2;
-				if (!axl.isZoomingOut && !axl.isZoomingIn) {
-					Color laserColor = new Color(255, 0, 0, 160);
-					DrawWrappers.DrawLine(scopePos.x, scopePos.y, hitPos.x, hitPos.y, laserColor, 2, ZIndex.HUD);
-					DrawWrappers.DrawCircle(hitPos.x, hitPos.y, 2f, true, laserColor, 1, ZIndex.HUD);
-					if (axl.ownedByLocalPlayer && Global.level.isSendMessageFrame()) {
-						RPC.syncAxlScopePos.sendRpc(level.mainPlayer.id, true, scopePos, hitPos);
-					}
-				}
-
-				Point cursorPos = new Point(Global.halfScreenW + (xOff / Global.viewSize), Global.halfScreenH + (yOff / Global.viewSize));
-				string scopeSprite = "scope";
-				if (axl.hasScopedTarget()) scopeSprite = "scope2";
-				Global.sprites[scopeSprite].drawToHUD(0, cursorPos.x, cursorPos.y);
-				float w = 298;
-				float h = 224;
-				float hw = 149;
-				float hh = 112;
-				DrawWrappers.DrawRect(cursorPos.x - w, cursorPos.y - h, cursorPos.x + w, cursorPos.y - hh, true, Color.Black, 1, ZIndex.HUD, false, outlineColor: Color.Black);
-				DrawWrappers.DrawRect(cursorPos.x - w, cursorPos.y + hh, cursorPos.x + w, cursorPos.y + h, true, Color.Black, 1, ZIndex.HUD, false, outlineColor: Color.Black);
-				DrawWrappers.DrawRect(cursorPos.x - w, cursorPos.y - hh, cursorPos.x - hw, cursorPos.y + hh, true, Color.Black, 1, ZIndex.HUD, false, outlineColor: Color.Black);
-				DrawWrappers.DrawRect(cursorPos.x + hw, cursorPos.y - hh, cursorPos.x + w, cursorPos.y + hh, true, Color.Black, 1, ZIndex.HUD, false, outlineColor: Color.Black);
-
-				DrawWrappers.DrawCircle(charPos.x, charPos.y, level.mainPlayer.zoomRange, false, Color.Red, 1f, ZIndex.HUD, outlineColor: Color.Red, pointCount: 250);
-
-				if (!axl.isZoomingIn && !axl.isZoomingOut) {
-					int zoomChargePercent = MathInt.Round(axl.zoomCharge * 100);
-					Fonts.drawText(
-						FontType.Orange, zoomChargePercent.ToString() + "%",
-						cursorPos.x + 5, cursorPos.y + 5, Alignment.Left,
-						true, depth: ZIndex.HUD
-					);
-				}
-
-				Helpers.decrementTime(ref flashCooldown);
-				if (axl.renderEffects.ContainsKey(RenderEffectType.Hit) && flashTime == 0 && flashCooldown == 0) {
-					flashTime = 0.075f;
-				}
-				if (flashTime > 0) {
-					float th = 2;
-					DrawWrappers.DrawRect(th, th, Global.screenW - th, Global.screenH - th, false, Color.Red, th, ZIndex.HUD, false, outlineColor: Color.Red);
-					flashTime -= Global.spf;
-					if (flashTime < 0) {
-						flashTime = 0;
-						flashCooldown = 0.15f;
-					}
-				}
-			} else {
-				if (axl.isAnyZoom() && Global.level.isSendMessageFrame()) {
-					RPC.syncAxlScopePos.sendRpc(level.mainPlayer.id, false, new Point(), new Point());
-				}
-			}
-		}
 		if (DevConsole.showConsole) {
 			return;
 		}
@@ -616,7 +549,6 @@ public class GameMode {
 		} else {
 			drawPlayer = level.specPlayer;
 		}
-
 		if (drawPlayer != null) {
 			if (Global.level.mainPlayer == drawPlayer) {
 				renderHealthAndWeapons();
@@ -625,7 +557,7 @@ public class GameMode {
 			}
 			// Currency
 			if (!Global.level.is1v1()) {
-				Point basePos = new(Global.screenW - 88, 27);
+				Point basePos = new(Global.screenW - 96, 27);
 				if (level.levelData.isTraining()) {
 					basePos = new Point(10, 106);
 				}
@@ -651,13 +583,8 @@ public class GameMode {
 			}
 			if (drawPlayer.weapons!.Count > 1) {
 				drawWeaponSwitchHUD(drawPlayer);
-			} else if (drawPlayer.weapons.Count == 1 && drawPlayer.weapons[0] is MechMenuWeapon mmw) {
-				drawWeaponSwitchHUD(drawPlayer);
-			} else if (drawPlayer.character is Vile vileR && vileR.rideMenuWeapon.isMenuOpened) {
-				drawRideArmorIcons();
 			}
 		}
-
 		if (!Global.level.is1v1()) {
 			drawKillFeed();
 		}
@@ -666,24 +593,9 @@ public class GameMode {
 		} else {
 			drawTopHUD();
 		}
-
 		if (isOver) {
 			drawWinScreen();
 		} else {
-			/*int startY = Options.main.showFPS ? 201 : 208;
-			if (!Menu.inMenu && !Global.hideMouse && Options.main.showInGameMenuHUD) {
-				if (!shouldDrawRadar()) {
-					Helpers.drawTextStd(
-						TCat.HUD, Helpers.controlText("[ESC]: Menu"),
-						Global.screenW - 5, startY, Alignment.Right
-					);
-					Helpers.drawTextStd(
-						TCat.HUD, Helpers.controlText("[TAB]: Score"),
-						Global.screenW - 5, startY + 7, Alignment.Right
-					);
-				}
-			}*/
-
 			drawRespawnHUD();
 		}
 
@@ -692,7 +604,6 @@ public class GameMode {
 			drawingScoreboard = true;
 			drawScoreboard();
 		}
-
 		if (level.isAfkWarn()) {
 			Fonts.drawText(
 				FontType.RedishOrange, "Warning: Time before AFK Kick: " + Global.level.afkWarnTimeAmount(),
@@ -703,38 +614,12 @@ public class GameMode {
 				FontType.WhiteSmall, Helpers.controlText("Veneco Detectado."),
 				Global.halfScreenW, 50, Alignment.Center
 			);
-		} else if (mainPlayer?.character is ViralSigma viralSigma && viralSigma.possessTarget != null) {
-			Fonts.drawText(
-				FontType.BlueMenu, Helpers.controlText(
-				$"Hold [JUMP] to possess {viralSigma.possessTarget.player.name}"),
-				Global.halfScreenW, 50, Alignment.Center
-			);
 		} else if (hudErrorMsgTime > 0) {
 			Fonts.drawText(
 				FontType.BlueMenu, hudErrorMsg,
 				Global.halfScreenW, 50, Alignment.Center
 			);
-		} else if (mainPlayer?.isKaiserViralSigma() == true) {
-			string msg = "";
-			if (KaiserSigma.canKaiserSpawn(mainPlayer.character, out _)) msg += "[JUMP]: Relocate";
-			if (msg != "") {
-				Fonts.drawText(
-					FontType.BlueMenu, Helpers.controlText(msg),
-					Global.halfScreenW, 50, Alignment.Center
-				);
-			} else if (mainPlayer?.character?.charState is ViralSigmaPossess vsp && vsp.target != null) {
-				Fonts.drawText(
-					FontType.BlueMenu, $"Controlling possessed player {vsp.target.player.name}",
-					Global.halfScreenW, 50, Alignment.Center
-				);
-			} else if (mainPlayer?.isPossessed() == true && mainPlayer.possesser != null) {
-				Fonts.drawText(
-					FontType.BlueMenu, $"{mainPlayer.possesser.name} is possessing you!",
-					Global.halfScreenW - 2, 50, Alignment.Center
-				);
-			}
 		}
-
 		if (currentVoteKick != null) {
 			currentVoteKick.render();
 		} else if (level.mainPlayer.isSpectator && !Menu.inMenu) {
@@ -749,70 +634,14 @@ public class GameMode {
 					FontType.BlueMenu, "Now spectating: " + level.specPlayer.name + deadMsg,
 					Global.halfScreenW, 180, Alignment.Center
 				);
-				/*Fonts.drawText(
-					FontType.BlueMenu, "Left/Right: Change Spectated Player",
-					Global.halfScreenW, 190, Alignment.Center
-				);*/
 			}
 		} else if (level.mainPlayer.aiTakeover) {
 			Fonts.drawText(
 				FontType.OrangeMenu, "AI Takeover active. Press F12 to stop.",
 				Global.halfScreenW, 180, Alignment.Center
 			);
-		} else if (
-			level.mainPlayer.isDisguisedAxl &&
-			level.mainPlayer.character?.disguiseCoverBlown != true
-		) {
-			Fonts.drawText(
-				FontType.RedishOrange, "Disguised as " + level.mainPlayer.disguise?.targetName,
-				Global.halfScreenW, 8, Alignment.Center
-			);
-		} else if (
-			level.mainPlayer.isPuppeteer() && level.mainPlayer.currentMaverick != null &&
-			level.mainPlayer.weapon is MaverickWeapon mw
-		) {
-			if (level.mainPlayer.currentMaverick.isPuppeteerTooFar()) {
-				Fonts.drawText(
-					FontType.RedishOrange, mw.displayName + " too far to control",
-					Global.halfScreenW, 186, Alignment.Center);
-			} else {
-				/*Fonts.drawText(
-					FontType.Grey, "Controlling " + mw.displayName, Global.halfScreenW, 186,
-					Alignment.Center
-				);*/
-			}
 		}
-		/*
-		else if (level.mainPlayer.character?.isVileMK5Linked() == true)
-		{
-			string rideArmorName = level.mainPlayer.
-				character.vileStartRideArmor?
-				.getRaTypeFriendlyName() ?? "Ride Armor";
-			Helpers.drawTextStd
-				TCat.HUD, "Controlling " + rideArmorName,
-				Global.halfScreenW, 190, Alignment.Center, fontSize: 24
-			);
-		}
-		*/
-
 		drawDiagnostics();
-
-		if (Global.level.mainPlayer.isAxl && Global.level.mainPlayer.character != null) {
-			//Global.sprites["axl_cursor"].drawImmediate(0, Global.level.mainPlayer.character.axlCursorPos.x, Global.level.mainPlayer.character.axlCursorPos.y);
-		}
-
-		if (level.mainPlayer.isX && level.mainPlayer.hasHelmetArmor(2)) {
-			Player? mostRecentlyScanned = null;
-			foreach (var player in level.players) {
-				if (player.tagged && player.character != null) {
-					mostRecentlyScanned = player;
-					break;
-				}
-			}
-			if (mostRecentlyScanned != null) {
-				drawObjectiveNavpoint(mostRecentlyScanned.name, mostRecentlyScanned.character.getCenterPos());
-			}
-		}
 
 		if (level.isNon1v1Elimination() && virusStarted > 0) {
 			drawObjectiveNavpoint("Safe Zone", safeZonePoint);
@@ -871,14 +700,7 @@ public class GameMode {
 	}
 
 	public bool shouldDrawRadar() {
-		/* if (Global.level.isRace()) {
-			return true;
-		}
-		if (level.is1v1() || level.mainPlayer?.isSpectator != false) {
-			return false;
-		}
-		return true; */
-		return false;
+		return true;
 	}
 
 	void drawRadar() {
@@ -906,23 +728,38 @@ public class GameMode {
 		);
 
 		float mapScale = 16;
-		float offsetX = MathF.Round(Global.level.camCenterX / 16f) - 17;
+		float offsetX = MathF.Round(Global.level.camCenterX / 16f) - 21;
 		float offsetY = MathF.Round(Global.level.camCenterY / 16f) - 12;
 		float camX = Global.level.camCenterX;
 		float camY = Global.level.camCenterY;
 		if (Global.level.mainPlayer.character != null) {
 			if (MathF.Abs(Global.level.camCenterX - Global.level.mainPlayer.character.pos.x) < 16) {
-				offsetX = MathF.Round(Global.level.mainPlayer.character.pos.x / 16f) - 17;
+				offsetX = MathF.Round(Global.level.mainPlayer.character.pos.x / 16f) - 21;
 				camX = Global.level.mainPlayer.character.pos.x;
 			}
 		}
 
-		List<Point> revealedSpots = new List<Point>();
+		List<(float x, float y, float r)> revealedSpots = new();
 		float revealedRadius;
-		revealedSpots.Add(new Point(camX, camY));
-		revealedRadius = 16 * 30;
+		revealedSpots.Add((camX, camY, 16 * 10));
 
-		float scaledW = 34;
+		if (isTeamMode) {
+			Player[] allyPlayersAlive = level.players.Where(
+				p => !p.isSpectator && p.deaths < playingTo && p.alliance == Global.level.mainPlayer.alliance
+			).ToArray();
+			foreach (Player player in allyPlayersAlive) {
+				if (player.character == null) {
+					continue;
+				}
+				revealedSpots.Add((
+					player.character.pos.x,
+					player.character.pos.y,
+					16 * 7)
+				);
+			}
+		}
+
+		float scaledW = 42;
 		float scaledH = 24;
 		float scaledMapW = MathF.Round(Global.level.levelData.width / 16f);
 		float scaledMapH = MathF.Round(Global.level.levelData.height / 16f);
@@ -940,7 +777,7 @@ public class GameMode {
 		foreach (var spot in revealedSpots) {
 			float pxPos = MathF.Round(spot.x / mapScale) - offsetX;
 			float pyPos = MathF.Round(spot.y / mapScale) - offsetY;
-			float radius = revealedRadius / mapScale;
+			float radius = spot.r / mapScale;
 			CircleShape circle1 = new CircleShape(radius);
 			circle1.FillColor = new Color(0, 0, 0, 0);
 			circle1.Position = new Vector2f(pxPos - radius, pyPos - radius);
@@ -949,6 +786,8 @@ public class GameMode {
 
 		var sprite = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
 		Global.radarRenderTextureB.Display();
+		Global.radarRenderTexture.Display();
+		Global.radarRenderTexture.Draw(sprite);
 
 		foreach (GameObject gameObject in Global.level.gameObjects) {
 			if (gameObject is not Geometry geometry) {
@@ -1000,8 +839,6 @@ public class GameMode {
 			Global.radarRenderTexture.Draw(wRect);
 		}
 		Global.radarRenderTexture.Display();
-		Global.radarRenderTexture.Draw(sprite);
-		Global.radarRenderTexture.Display();
 		var sprite2 = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
 		sprite2.Position = new Vector2f(radarX, radarY);
 
@@ -1026,7 +863,7 @@ public class GameMode {
 			foreach (var spot in revealedSpots) {
 				if (player.isMainPlayer || new Point(xPos, yPos).distanceTo(
 						new Point(spot.x / mapScale + offsetX, spot.y / mapScale + offsetY)
-					) < revealedRadius / mapScale
+					) < spot.r / mapScale
 				) {
 					float dxPos = radarX + MathF.Round(xPos) - offsetX;
 					float dyPos = radarY + MathF.Round(yPos) - 1 - offsetY;
@@ -2664,7 +2501,7 @@ public class GameMode {
 		} else {
 			return;
 		}
-		Fonts.drawText(fontColor, timeStr, Global.screenW - 4, yPos, Alignment.Right);
+		Fonts.drawText(fontColor, timeStr, Global.screenW - 8, yPos, Alignment.Right);
 	}
 
 	public bool isOvertime() {
@@ -2681,8 +2518,8 @@ public class GameMode {
 
 	public void drawVirusTime(int yPos) {
 		var timespan = new TimeSpan(0, 0, MathInt.Ceiling(remainingTime ?? 0));
-		string timeStr = "Nightmare Virus: " + timespan.ToString(@"m\:ss");
-		Fonts.drawText(FontType.Purple, timeStr, 5, yPos, Alignment.Left);
+		string timeStr = "Roboenza: " + timespan.ToString(@"m\:ss");
+		Fonts.drawText(FontType.PurpleSmall, timeStr, Global.screenW - 8, yPos, Alignment.Right);
 	}
 
 	public void drawWinScreen() {
@@ -2986,8 +2823,11 @@ public class GameMode {
 		}
 		int maxTeams = Global.level.teamNum;
 
-		string teamText = $"{teamNames[teamSide]}: {teamPoints[teamSide]}";
-		Fonts.drawText(teamFonts[teamSide], teamText, 5, 2);
+		string teamText = $"{teamNames[teamSide]}: {teamPoints[teamSide].ToString().PadLeft(2 ,' ')}";
+		Fonts.drawText(
+			teamFonts[teamSide], teamText,
+			Global.screenW - 56, 17, Alignment.Right
+		);
 
 		int leaderTeam = 0;
 		int leaderScore = -1;
@@ -3002,11 +2842,17 @@ public class GameMode {
 			}
 		}
 		if (!moreThanOneLeader) {
-			Fonts.drawText(teamFonts[leaderTeam], $"Leader: {leaderScore}", 5, 17);
+			Fonts.drawText(
+				teamFonts[leaderTeam], $"Leader: {leaderScore.ToString().PadLeft(2 ,' ')}",
+				Global.screenW - 56, 7, Alignment.Right
+			);
 		} else {
-			Fonts.drawText(FontType.WhiteMenu, $"Leader: {leaderScore}", 5, 17);
+			Fonts.drawText(
+				FontType.WhiteSmall, $"Leader:{leaderScore.ToString().PadLeft(2 ,' ')}",
+				Global.screenW - 56, 7, Alignment.Right
+			);
 		}
-		drawTimeIfSet(32);
+		drawTimeIfSet(37);
 	}
 
 	public void drawAllTeamsHUD() {

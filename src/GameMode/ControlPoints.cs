@@ -23,41 +23,40 @@ public class ControlPoints : GameMode {
 	public override void drawTopHUD() {
 		//var redText = "CP " + bluePoints.ToString() + "%";
 
-		int hudcpY = 0;
+		int hudcpY = 4;
+		int hudcpX = (int)Global.screenW - 111;
 		foreach (var controlPoint in level.controlPoints) {
 			var redText = "";
 
-			FontType textColor = FontType.RedishOrange;
+			FontType textColor = FontType.RedSmall;
 			if (controlPoint.captureTime == controlPoint.maxCaptureTime) {
 				redText = "Lock";
-				textColor = FontType.Blue;
+				textColor = FontType.BlueSmall;
 			} else if (controlPoint.attacked()) {
 				redText += string.Format("{0}x", controlPoint.getAttackerCount());
 			} else if (controlPoint.contested()) {
 				redText = "Block";
-				textColor = FontType.Red;
+				textColor = FontType.RedSmall;
 			} else if (controlPoint.locked) {
 				redText = "Lock";
 				if (controlPoint.captureTime > 0) {
-					textColor = FontType.Green;
+					textColor = FontType.GreenSmall;
 				} else {
-					textColor = FontType.Grey;
+					textColor = FontType.WhiteSmall;
 				}
 			}
-
 			int allianceFactor = (controlPoint.alliance == GameMode.redAlliance ? 0 : 2);
-			controlPointSprite.drawToHUD((controlPoint.num - 1) + allianceFactor, 5, 5 + hudcpY);
+			controlPointSprite.drawToHUD((controlPoint.num - 1) + allianceFactor, hudcpX, hudcpY);
 			float perc = controlPoint.captureTime / controlPoint.maxCaptureTime;
 			int barsFull = MathInt.Round(perc * 16f);
 			for (int i = 0; i < barsFull; i++) {
-				controlPointBarSprite.drawToHUD(1, 5 + 17 + (i * 2), 5 + 3 + hudcpY);
+				controlPointBarSprite.drawToHUD(1, hudcpX + 17 + (i * 2), 3 + hudcpY);
 			}
-
-			Fonts.drawText(textColor, redText, 38, 9 + hudcpY, Alignment.Center);
-			hudcpY += 16;
+			Fonts.drawText(textColor, redText, 33 + hudcpX, 2 + hudcpY, Alignment.Center);
+			hudcpY += 14;
 		}
 
-		drawTimeIfSet(4 + hudcpY);
+		drawTimeIfSet(37);
 	}
 
 	public override void checkIfWinLogic() {

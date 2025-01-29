@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SFML.Graphics;
@@ -386,9 +386,12 @@ public class Bass : Character {
 		indices.Add((byte)weaponIndexes[1]);
 		indices.Add((byte)weaponIndexes[2]);
 
-		return indices.Select(index => {
-			return getAllWeapons().Find(w => w.index == index).clone();
-		}).ToList(); ;
+		List<Weapon> nullableWeapons = indices.Select(index => {
+			return getAllWeapons().Find(w => w.index == index)!.clone();
+		}).ToList();
+		nullableWeapons.RemoveAll(item => item == null);
+
+		return nullableWeapons;
 	}
 
 	public void drawCardNumber(int number) {

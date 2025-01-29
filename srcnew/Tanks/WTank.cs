@@ -1,8 +1,7 @@
-namespace MMXOnline;
+﻿namespace MMXOnline;
 
 
 public class WTank {
-
 	public const int maxAmmo = 28;
 	public float ammo = 28;
 	public bool inUse;

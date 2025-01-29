@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SFML.Graphics;
@@ -185,7 +185,7 @@ public class Rush : Actor, IDamagable {
 		}
 	}
 
-	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
+	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		health -= damage;
 		if (health <= 0) {
 			changeState(new RushHurt(xDir));

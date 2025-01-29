@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -73,7 +73,9 @@ public class RushWarpIn : RushState {
 		rush.frameSpeed = 1;
 		rush.vel.y = 300;
 
-		if (rush.netOwner != null) rockPos = rush.netOwner.character.pos;
+		if (rush.netOwner?.character != null) {
+			rockPos = rush.netOwner.character.pos;
+		}
 		Point? checkGround = Global.level.getGroundPosNoKillzone(character.pos);
 		//rush.pos = checkGround.GetValueOrDefault();
 		//warpAnim = new Anim(new Point(rush.pos.x, rush.pos.y - 200), "rush_warp_beam", 1, null, false);

@@ -1,7 +1,6 @@
-namespace MMXOnline;
+﻿namespace MMXOnline;
 
 public class LTank {
-
 	public const int maxAmmo = 28;
 	public float ammo = 28;
 	public bool inUse;
@@ -9,8 +8,11 @@ public class LTank {
 	public LTank() {
 
 	}
+
 	public void use(Player player, Character character) {
-		Blues? blues = character as Blues;
+		if (character is not Blues blues) {
+			return;
+		}
 		blues.isUsingLTank = true;
 
 		blues?.addETankHealth(player.maxHealth);

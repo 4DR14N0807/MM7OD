@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace MMXOnline;
@@ -156,6 +156,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BluesProjIds.ProtoStrike, ProtoStrikeProj.rpcInvoke },
 		{ (int)BluesProjIds.ProtoStrikePush, StrikeAttackPushProj.rpcInvoke },
 		{ (int)BluesProjIds.RedStrike, RedStrikeProj.rpcInvoke },
+		{ (int)BluesProjIds.RedStrikeExplosion, RedStrikeExplosionProj.rpcInvoke },
 		{ (int)BluesProjIds.BigBangStrike, BigBangStrikeProj.rpcInvoke },
 		{ (int)BluesProjIds.BigBangStrikeExplosion, BigBangStrikeExplosionProj.rpcInvoke },
 

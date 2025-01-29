@@ -354,6 +354,7 @@ public enum BluesProjIds  {
 	BigBangStrike,
 	BigBangStrikeExplosion,
 	RedStrike,
+	RedStrikeExplosion,
 	GravityHold,
 	GravityHoldCrash,
 }

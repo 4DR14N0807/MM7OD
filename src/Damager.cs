@@ -289,6 +289,8 @@ public class Damager {
 			(int)BluesProjIds.ProtoStrike => true,
 			(int)BluesProjIds.BigBangStrike => true,
 			(int)BluesProjIds.BigBangStrikeExplosion => true,
+			(int)BluesProjIds.RedStrike => true,
+			(int)BluesProjIds.RedStrikeExplosion => true,
 			(int)ProjIds.TenguBladeDash => true,
 			(int)BassProjIds.TenguBladeDash => true,
 			//(int)BassProjIds.TenguBladeProj => true,

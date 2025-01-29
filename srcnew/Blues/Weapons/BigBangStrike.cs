@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SFML.Graphics;
 
@@ -38,12 +38,12 @@ public class BigBangStrikeProj : Projectile {
 		}
 	}
 
-	/* public override void onHitDamagable(IDamagable damagable) {
+	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (ownedByLocalPlayer) {
 			destroySelf();
 		}
-	} */
+	}
 
 	public override void onDestroy() {
 		base.onDestroy();
@@ -266,8 +266,6 @@ public class RedStrikeProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
 		}
-
-		projId = (int)BluesProjIds.BigBangStrike;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
@@ -286,12 +284,12 @@ public class RedStrikeProj : Projectile {
 		}
 	}
 
-	/* public override void onHitDamagable(IDamagable damagable) {
+	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (ownedByLocalPlayer) {
 			destroySelf();
 		}
-	} */
+	}
 
 	public override void onDestroy() {
 		base.onDestroy();
@@ -314,7 +312,7 @@ public class RedStrikeExplosionProj : Projectile {
 		ProtoBuster.netWeapon, pos, xDir, 0, 1, player, "big_bang_strike_explosion",
 		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
 	) {
-		projId = (int)BluesProjIds.BigBangStrikeExplosion;
+		projId = (int)BluesProjIds.RedStrikeExplosion;
 		maxTime = 1f;
 		destroyOnHit = false;
 		fadeOnAutoDestroy = true;
@@ -322,9 +320,8 @@ public class RedStrikeExplosionProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, player, netId, xDir);
 		}
-
-		projId = (int)BluesProjIds.BigBangStrike;
 		addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
+		projId = (int)BluesProjIds.RedStrike;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {

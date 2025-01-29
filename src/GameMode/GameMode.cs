@@ -285,7 +285,7 @@ public class GameMode {
 		for (var i = this.killFeed.Count - 1; i >= 0; i--) {
 			var killFeed = this.killFeed[i];
 			killFeed.time += 1;
-			if (killFeed.time > 60 * 800) {
+			if (killFeed.time > 60 * 3) {
 				this.killFeed.Remove(killFeed);
 			}
 		}

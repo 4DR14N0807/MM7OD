@@ -23,9 +23,7 @@ public class ChatMenu : IMainMenu {
 		if (Global.serverClient != null) {
 			chatEnabled = true;
 		}
-		if (Global.debug) {
-			chatEnabled = true;
-		}
+		chatEnabled = true;
 	}
 
 	public bool isChatEnabled() {

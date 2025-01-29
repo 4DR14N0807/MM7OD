@@ -1207,6 +1207,10 @@ public class Blues : Character {
 
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		base.renderHUD(offset, position);
+		
+		if (redStrikeCooldown > 0) {
+			Global.level.gameMode.drawGigaWeaponCooldown(3, redStrikeCooldown / 240, y: 115);
+		}
 	}
 
 	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {

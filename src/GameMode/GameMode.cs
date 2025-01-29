@@ -575,15 +575,15 @@ public class GameMode {
 				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown / 90, y: 125);
 				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown / 90, 35, 125);
 			}
-			if (drawPlayer.character is Blues blues && blues.redStrikeCooldown > 0) {
-				drawGigaWeaponCooldown(3, blues.redStrikeCooldown / 240, y: 125);
-			}
 			if (drawPlayer.weapons == null) {
 				return;
 			}
 			if (drawPlayer.weapons!.Count > 1) {
 				drawWeaponSwitchHUD(drawPlayer);
 			}
+		}
+		if (shouldDrawRadar() && !Menu.inMenu) {
+			drawRadar();
 		}
 		if (!Global.level.is1v1()) {
 			drawKillFeed();
@@ -645,10 +645,6 @@ public class GameMode {
 
 		if (level.isNon1v1Elimination() && virusStarted > 0) {
 			drawObjectiveNavpoint("Safe Zone", safeZonePoint);
-		}
-
-		if (shouldDrawRadar() && !Menu.inMenu) {
-			drawRadar();
 		}
 
 		if (level.mainPlayer.isX && level.mainPlayer.character?.charState is XReviveStart xrs) {

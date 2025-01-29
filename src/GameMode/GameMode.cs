@@ -1368,7 +1368,9 @@ public class GameMode {
 				var killerMessage = "";
 				killerMessage = killFeed.killer.name;
 
-				if (killFeed.assister != null && killFeed.assister != killFeed.victim) {
+				if (killFeed.assister != null && killFeed.assister != killFeed.victim && (
+					!isTeamMode || killFeed.assister.alliance != killFeed.killer.alliance
+				)) {
 					assistMsg = killFeed.assister.name;
 				}
 				killersMsg = killerMessage;

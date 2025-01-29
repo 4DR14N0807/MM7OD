@@ -107,7 +107,7 @@ public class VoltCatfish : Maverick {
 			return null;
 		}
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		if (player.catfishChargeShader == null || !sprite.name.EndsWith("_charge")) return new List<ShaderWrapper>();
 
@@ -118,7 +118,7 @@ public class VoltCatfish : Maverick {
 		}
 		return new List<ShaderWrapper>() { player.catfishChargeShader };
 	}
-
+	*/
 	public MaverickState getShootState(bool isAI) {
 		var mshoot = new MShoot((Point pos, int xDir) => {
 			//playSound("voltcCrash", sendRpc: true);

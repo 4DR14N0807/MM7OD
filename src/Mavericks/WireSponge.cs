@@ -67,7 +67,7 @@ public class WireSponge : Maverick {
 			}
 		}
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		if (sprite.name.EndsWith("angry_start") && player.spongeChargeShader != null) {
 			player.spongeChargeShader.SetUniform("chargeTexture", Global.textures["wspongeChargeRed"]);
@@ -77,7 +77,7 @@ public class WireSponge : Maverick {
 		}
 		return base.getShaders();
 	}
-
+	*/
 	public new CollideData getHitWall(float x, float y) {
 		var rect = collider.shape.getRect();
 		rect.y1 += 20f;

@@ -997,7 +997,7 @@ public class RideArmor : Actor, IDamagable {
 
 		base.destroySelf(spriteName, fadeSound, rpc, doRpcEvenIfNotOwned);
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		var shaders = base.getShaders() ?? new List<ShaderWrapper>();
 		if (colorShader != null) {
@@ -1012,7 +1012,7 @@ public class RideArmor : Actor, IDamagable {
 		}
 		return shaders;
 	}
-
+	*/
 	public bool isPlayableDamagable() {
 		return true;
 	}

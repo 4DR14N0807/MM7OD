@@ -285,7 +285,7 @@ public class GameMode {
 		for (var i = this.killFeed.Count - 1; i >= 0; i--) {
 			var killFeed = this.killFeed[i];
 			killFeed.time += 1;
-			if (killFeed.time > 60 * 8) {
+			if (killFeed.time > 60 * 800) {
 				this.killFeed.Remove(killFeed);
 			}
 		}
@@ -1292,14 +1292,14 @@ public class GameMode {
 	public void addKillFeedEntry(KillFeedEntry killFeed, bool sendRpc = false) {
 		killFeedHistory.Add(killFeed.rawString());
 		this.killFeed.Insert(0, killFeed);
-		if (this.killFeed.Count > 4) this.killFeed.Pop();
+		if (this.killFeed.Count > 10) this.killFeed.Pop();
 		if (sendRpc) {
 			killFeed.sendRpc();
 		}
 	}
 
 	public float killFeedOffset() {
-		return 44;
+		return 57;
 	}
 
 	public FontType getKillFeedTeamFonts(int team) {
@@ -1315,7 +1315,7 @@ public class GameMode {
 	}
 
 	public void drawKillFeed() {
-		float fromRight = Global.screenW - 4;
+		float fromRight = Global.screenW - 8;
 		int yDist = 12;
 		float fromTop = killFeedOffset();
 
@@ -1333,7 +1333,11 @@ public class GameMode {
 
 			if (killFeed.victim != null && killFeed.killer != null) {
 				if (!isTeamMode) {
-					if (killFeed.killer == Global.level.mainPlayer) {
+					if (killFeed.killer == Global.level.mainPlayer && killFeed.victim == killFeed.killer) {
+						victimColor = FontType.WhiteSmall;
+						killerColor = FontType.BlueSmall;
+						assisterColor = FontType.PurpleSmall;
+					} else if (killFeed.killer == Global.level.mainPlayer) {
 						victimColor = FontType.RedSmall;
 						killerColor = FontType.BlueSmall;
 						assisterColor = FontType.PurpleSmall;
@@ -1364,7 +1368,7 @@ public class GameMode {
 			string msg = "";
 			string killersMsg = "";
 			string assistMsg = "";
-			if (killFeed.killer != null) {
+			if (killFeed.killer != null && killFeed.killer != killFeed.victim) {
 				var killerMessage = "";
 				killerMessage = killFeed.killer.name;
 
@@ -1391,6 +1395,9 @@ public class GameMode {
 				killFeed.assister == level.mainPlayer
 			) {
 				int msgLen = Fonts.measureText(FontType.WhiteSmall, msg);
+				if (killFeed.killer == null || killFeed.killer == killFeed.victim) {
+					msgLen -= 2;
+				}
 				int msgHeight = 10;
 				DrawWrappers.DrawRect(
 					fromRight - msgLen - 3,
@@ -1402,7 +1409,7 @@ public class GameMode {
 				);
 			}
 
-			if (killFeed.killer != null) {
+			if (killFeed.killer != null && killFeed.killer != killFeed.victim) {
 				int nameLen = Fonts.measureText(FontType.WhiteSmall, victimName + " ");
 				Fonts.drawText(
 					victimColor, victimName, fromRight, fromTop + (i * yDist), Alignment.Right
@@ -1430,7 +1437,7 @@ public class GameMode {
 				);
 			} else {
 				Fonts.drawText(
-					FontType.YellowSmall, msg, fromRight, fromTop + (i * yDist) - 5, Alignment.Right
+					victimColor, msg, fromRight, fromTop + (i * yDist), Alignment.Right
 				);
 			}
 		}

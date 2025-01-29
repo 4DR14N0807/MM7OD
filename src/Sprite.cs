@@ -149,21 +149,8 @@ public class Sprite {
 		Texture bitmap = overrideTexture ?? animData.bitmap;
 
 		// Character-specific draw section
-		int[]? armors = null;
-		bool drawAxlArms = true;
-		bool hyperBusterReady = false;
-		bool isUPX = false;
-		bool isUltX = false;
 		Character? character = actor as Character;
 		if (character != null) {
-			if (character is MegamanX mmx) {
-				armors = new int[] {
-					(int)mmx.legArmor,
-					(int)mmx.chestArmor,
-					(int)mmx.helmetArmor,
-					(int)mmx.armArmor
-				};
-			}
 			if (character.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
@@ -173,8 +160,6 @@ public class Sprite {
 			else if (animData.textureName == "blues_default" && character is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
 			}
-			isUPX = character is RagingChargeX;
-			isUltX = character is MegamanX { hasUltimateArmor: true };
 		}
 
 		Frame currentFrame = getCurrentFrame(frameIndex);
@@ -254,17 +239,6 @@ public class Sprite {
 		float extraW = 0;
 		float flippedExtraW = 0;
 		float extraXOff = 0;
-
-		if (isUltX) {
-			bitmap = Global.textures["XUltimate"];
-			extraYOff = 3;
-			extraY = 3;
-			armors = null;
-		}
-
-		if (isUPX) {
-			bitmap = Global.textures["XUP"];
-		}
 
 		/* if (!isUltX && armors != null && animData.isXSprite) {
 			bool isShootSprite = needsX3BusterCorrection();
@@ -445,23 +419,6 @@ public class Sprite {
 				cy - (frameOffsetY - extraYOff) * yDirArg,
 				xDirArg, yDirArg,
 				angle, alpha, shaders, true
-			);
-		}
-		if (isUPX) {
-			var upShaders = new List<ShaderWrapper>(shaders);
-			if (Global.isOnFrameCycle(5)) {
-				if (Global.shaderWrappers.ContainsKey("hit")) {
-					upShaders.Add(Global.shaderWrappers["hit"]);
-				}
-			}
-			DrawWrappers.DrawTexture(
-				Global.textures["XUPGlow"],
-				currentFrame.rect.x1, currentFrame.rect.y1,
-				currentFrame.rect.w(), currentFrame.rect.h(),
-				x, y, zIndex,
-				cx - frameOffsetX * xDirArg,
-				cy - frameOffsetY * yDirArg,
-				xDirArg, yDirArg, angle, alpha, upShaders, true
 			);
 		}
 	}

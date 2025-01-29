@@ -437,7 +437,7 @@ public class Mechaniloid : Actor, IDamagable {
 	public bool isPlayableDamagable() {
 		return true;
 	}
-
+	/*
 	public override List<ShaderWrapper>? getShaders() {
 		if (timeStopTime > timeStopThreshold) {
 			if (!Global.level.darkHoldProjs.Any(
@@ -448,6 +448,7 @@ public class Mechaniloid : Actor, IDamagable {
 		}
 		return null;
 	}
+	*/
 }
 
 public class TankMechaniloidProj : Projectile {

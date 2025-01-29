@@ -620,7 +620,7 @@ public class DarkHoldProj : Projectile {
 		setIndestructableProperties();
 		Global.level.darkHoldProjs.Add(this);
 		if (Options.main.enablePostProcessing) {
-			screenShader = player.darkHoldScreenShader;
+			//screenShader = player.darkHoldScreenShader;
 			updateShader();
 		}
 		if (rpc) {

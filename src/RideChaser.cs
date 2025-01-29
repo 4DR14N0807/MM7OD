@@ -635,7 +635,7 @@ public class RideChaser : Actor, IDamagable {
 			RPC.creditPlayerKillVehicle.sendRpc(killer, assister, this, weaponIndex);
 		}
 	}
-
+	/*
 	public override List<ShaderWrapper>? getShaders() {
 		if (timeStopTime > timeStopThreshold) {
 			if (!Global.level.darkHoldProjs.Any(
@@ -646,7 +646,7 @@ public class RideChaser : Actor, IDamagable {
 		}
 		return null;
 	}
-
+	*/
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = new();
 

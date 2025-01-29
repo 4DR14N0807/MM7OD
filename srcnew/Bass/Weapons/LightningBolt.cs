@@ -152,6 +152,7 @@ public class LightningBoltState : CharState {
 		base.onExit(newState);
 		character.stopMovingWeak();
 		character.useGravity = true;
+		aim?.destroySelf();
 	}
 }
 

@@ -32,7 +32,7 @@ public class WheelGator : Maverick {
 		weakMaverickWeaponId = WeaponIds.WireSponge;
 
 		//eatenShader = Helpers.cloneShaderSafe("wheelgEaten");
-		player.gatorArmorShader?.SetUniform("paletteTexture", Global.textures["paletteWheelGator"]);
+		//player.gatorArmorShader?.SetUniform("paletteTexture", Global.textures["paletteWheelGator"]);
 
 		netActorCreateId = NetActorCreateId.WheelGator;
 		netOwner = player;
@@ -83,7 +83,7 @@ public class WheelGator : Maverick {
 	public override float getRunSpeed() {
 		return 85;
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		if (player.gatorArmorShader == null || Global.isOnFrameCycle(4)) return new List<ShaderWrapper>();
 
@@ -92,7 +92,7 @@ public class WheelGator : Maverick {
 		}
 		return new List<ShaderWrapper>();
 	}
-
+	*/
 	// Melee IDs for attacks.
 	public enum MeleeIds {
 		None = -1,

@@ -447,28 +447,28 @@ public partial class Player {
 	//public ShaderWrapper frozenCastleShader = Helpers.cloneShaderSafe("frozenCastle");
 	//public ShaderWrapper possessedShader = Helpers.cloneShaderSafe("possessed");
 	//public ShaderWrapper vaccineShader = Helpers.cloneShaderSafe("vaccine");
-	public static ShaderWrapper darkHoldShader = Helpers.cloneShaderSafe("darkhold");
+	//public static ShaderWrapper darkHoldShader = Helpers.cloneShaderSafe("darkhold");
 	public ShaderWrapper speedTrailShader = Helpers.cloneShaderSafe("speedTrail");
 
 	// Maverick shaders.
 	// Duplicated mavericks are not a thing so this should not be a problem.
-	public ShaderWrapper catfishChargeShader = Helpers.cloneGenericPaletteShader("paletteVoltCatfishCharge");
-	public ShaderWrapper gatorArmorShader = Helpers.cloneShaderSafe("wheelgEaten");
-	public ShaderWrapper spongeChargeShader = Helpers.cloneShaderSafe("wspongeCharge");
+	//public ShaderWrapper catfishChargeShader = Helpers.cloneGenericPaletteShader("paletteVoltCatfishCharge");
+	//public ShaderWrapper gatorArmorShader = Helpers.cloneShaderSafe("wheelgEaten");
+	//public ShaderWrapper spongeChargeShader = Helpers.cloneShaderSafe("wspongeCharge");
 
 	// Projectile shaders.
 	public ShaderWrapper timeSlowShader = Helpers.cloneShaderSafe("timeslow");
-	public ShaderWrapper darkHoldScreenShader = Helpers.cloneShaderSafe("darkHoldScreen");
+	//public ShaderWrapper darkHoldScreenShader = Helpers.cloneShaderSafe("darkHoldScreen");
 
 	// New shaders.
 	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
 	public ShaderWrapper evilEnergyShader = Helpers.cloneShaderSafe("evil_energy");
-	public ShaderWrapper rockPaletteShader = Helpers.cloneShaderSafe("rockPalette");
-	public ShaderWrapper rockCharge1 = Helpers.cloneShaderSafe("rock_charge_texture");
-	public ShaderWrapper rockCharge2 = Helpers.cloneShaderSafe("rock_charge2_texture");
-	public ShaderWrapper breakManShader = Helpers.cloneShaderSafe("blues_hyperpalette");
-	public ShaderWrapper bluesScarfShader = Helpers.cloneShaderSafe("blues_palette");
-	public ShaderWrapper bassPaletteShader = Helpers.cloneShaderSafe("bassPalette");
+	public ShaderWrapper rockPaletteShader = Helpers.cloneGenericPaletteShader("rock_palette_texture");
+	//public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
+	//public ShaderWrapper rockCharge2 = Helpers.cloneGenericPaletteShader("rock_charge2_texture");
+	public ShaderWrapper breakManShader = Helpers.cloneGenericPaletteShader("blues_hyperpalette");
+	public ShaderWrapper bluesScarfShader = Helpers.cloneGenericPaletteShader("blues_palette_texture");
+	public ShaderWrapper bassPaletteShader = Helpers.cloneGenericPaletteShader("bass_palette_texture");
 
 	// Character specific data populated on RPC request
 	public ushort? charNetId;

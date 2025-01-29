@@ -726,6 +726,7 @@ public partial class Character : Actor, IDamagable {
 	public override void preUpdate() {
 		base.preUpdate();
 		updateProjectileCooldown();
+		debuffUpdate();
 		insideCharacter = false;
 		changedStateInFrame = false;
 		pushedByTornadoInFrame = false;
@@ -826,11 +827,13 @@ public partial class Character : Actor, IDamagable {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
 					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -120)};
 				}
-			}	
+			}
 		}
 		if (rootTime > 0) {
-			rootTime--;
-			if (rootAnim == null) rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+			Helpers.decrementFrames(ref rootTime);
+			if (rootAnim == null || rootAnim.destroyed) {
+				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+			}
 			if (rootTime <= 0) {
 				rootTime = 0;
 				useGravity = true;

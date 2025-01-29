@@ -391,6 +391,11 @@ public class Damager {
 		Point damagePos = damager.pos;
 
 		if (damager is Projectile proj) {
+			if (proj.canBeLocal && damager.vel.x != 0) {
+				if (checkDelta(actor, damager.vel.x)) {
+					return true;
+				}
+			}
 			if (proj.isMelee || proj.isOwnerLinked) {
 				if (proj.owningActor != null) {
 					damagePos = proj.owningActor.pos;

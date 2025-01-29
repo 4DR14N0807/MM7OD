@@ -216,8 +216,8 @@ public partial class Level {
 	public float scaledH;
 	public int teamNum;
 
-	public List<PendingRPC> pendingPreUpdateRpcs;
-	public List<PendingRPC> pendingUpdateRpcs;
+	public List<PendingRPC> pendingPreUpdateRpcs = new();
+	public List<PendingRPC> pendingUpdateRpcs = new();
 
 	public Level(LevelData levelData, PlayerCharData playerData, ExtraCpuCharData extraCpuCharData, bool joinedLate) {
 		this.levelData = levelData;

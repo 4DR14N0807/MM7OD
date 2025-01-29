@@ -216,6 +216,9 @@ public partial class Level {
 	public float scaledH;
 	public int teamNum;
 
+	public List<PendingRPC> pendingPreUpdateRpcs;
+	public List<PendingRPC> pendingUpdateRpcs;
+
 	public Level(LevelData levelData, PlayerCharData playerData, ExtraCpuCharData extraCpuCharData, bool joinedLate) {
 		this.levelData = levelData;
 		zoomScale = 3;
@@ -1260,6 +1263,10 @@ public partial class Level {
 			playerY = camPlayer.character.getCamCenterPos().y;
 		}
 
+		// Call net update before the frame starts.
+		netUpdate();
+
+		// Pre Update stuff.
 		List<GameObject> gos = gameObjects.ToList();
 		foreach (GameObject go in gos) {
 			if (go.iDestroyed) {
@@ -1273,6 +1280,12 @@ public partial class Level {
 			go.statePreUpdate();
 			Global.speedMul = 1;
 		}
+
+		// Preupdate RPCs.
+		foreach (PendingRPC pendingRpc in pendingUpdateRpcs) {
+			pendingRpc.invoke();
+		}
+		pendingPreUpdateRpcs.Clear();
 
 		foreach (Actor ms in mapSprites) {
 			ms.sprite?.update();
@@ -1316,6 +1329,12 @@ public partial class Level {
 			}
 			Global.speedMul = 1;
 		}
+
+		// Normal update RPCs.
+		foreach (PendingRPC pendingRpc in pendingUpdateRpcs) {
+			pendingRpc.invoke();
+		}
+		pendingUpdateRpcs.Clear();
 
 		// Collision shenanigans.
 		collidedGObjs.Clear();
@@ -1571,11 +1590,16 @@ public partial class Level {
 
 		gameMode.update();
 
+
+		//this.getTotalCountInGrid();
+		updateMusicSources();
+	}
+
+	public void netUpdate() {
 		if (Global.serverClient != null) {
 			if (isSendMessageFrame()) {
 				Global.serverClient.flush();
 			}
-
 			Global.serverClient.getMessages(out var messages, true);
 
 			foreach (var message in messages) {
@@ -1653,9 +1677,6 @@ public partial class Level {
 				}
 			}
 		}
-
-		//this.getTotalCountInGrid();
-		updateMusicSources();
 	}
 
 	private void updateMusicSources() {

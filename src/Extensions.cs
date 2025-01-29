@@ -71,17 +71,19 @@ public static class Extensions {
 		return s.Substring(0, maxLength) + "...";
 	}
 
+	/*
 	public static TValue GetValueOrDefault<TKey, TValue>(
 		this IDictionary<TKey, TValue> dictionary,
 		TKey key) {
 		TValue value;
 		return dictionary.TryGetValue(key, out value) ? value : default;
 	}
+	*/
 
 	public static TValue GetValueOrCreate<TKey, TValue>(
 		this IDictionary<TKey, TValue> dictionary,
-		TKey key,
-		TValue defaultValue) {
+		TKey key, TValue defaultValue
+	) {
 		if (dictionary.ContainsKey(key)) {
 			return dictionary[key];
 		}

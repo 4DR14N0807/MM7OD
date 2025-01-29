@@ -742,7 +742,7 @@ public class Maverick : Actor, IDamagable {
 		Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(killer, assister, player, weaponIndex, maverickKillFeedIndex: maverickKillFeedIndex));
 
 		if (ownedByLocalPlayer) {
-			RPC.creditPlayerKillMaverick.sendRpc(killer, assister, this, weaponIndex);
+			//RPC.creditPlayerKillMaverick.sendRpc(killer, assister, this, weaponIndex);
 		}
 	}
 

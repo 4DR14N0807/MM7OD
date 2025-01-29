@@ -31,7 +31,7 @@ public class AssassinBullet : AxlWeapon {
 
 		if (player.ownedByLocalPlayer) {
 			AssassinBulletTrailAnim trail = new AssassinBulletTrailAnim(bulletPos, bullet);
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }

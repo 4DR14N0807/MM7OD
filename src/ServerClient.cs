@@ -425,13 +425,21 @@ public class ServerClient {
 					if (!rpcTemplate.isString) {
 						ushort argCount = BitConverter.ToUInt16(im.ReadBytes(2), 0);
 						var bytes = im.ReadBytes(argCount);
-						if (invokeRpcs) {
-							rpcTemplate.invoke(bytes);
+						if (invokeRpcs && Global.level != null) {
+							if (rpcTemplate.isPreUpdate) {
+								Global.level.pendingPreUpdateRpcs.Add(new PendingRPC(rpcTemplate, bytes));
+							} else {
+								Global.level.pendingUpdateRpcs.Add(new PendingRPC(rpcTemplate, bytes));
+							}
 						}
 					} else {
 						var message = im.ReadString();
-						if (invokeRpcs) {
-							rpcTemplate.invoke(message);
+						if (invokeRpcs && Global.level != null) {
+							if (rpcTemplate.isPreUpdate) {
+								Global.level.pendingPreUpdateRpcs.Add(new PendingRPC(rpcTemplate, message));
+							} else {
+								Global.level.pendingUpdateRpcs.Add(new PendingRPC(rpcTemplate, message));
+							}
 						}
 						stringMessages.Add(message);
 					}

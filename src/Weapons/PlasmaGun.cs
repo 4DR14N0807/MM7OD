@@ -206,7 +206,7 @@ public class PlasmaGunAltProj : Projectile {
 		}
 
 		if (Global.level.isSendMessageFrame() && player != null) {
-			RPC.syncAxlBulletPos.sendRpc(player.id, bulletPos);
+			//RPC.syncAxlBulletPos.sendRpc(player.id, bulletPos);
 		}
 	}
 

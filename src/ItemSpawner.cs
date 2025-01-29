@@ -83,9 +83,6 @@ public class ItemSpawner {
 
 	public void spawnRc() {
 		return;
-		time = 0;
-		var rc = new RideChaser(Global.level.mainPlayer, pos.clone(), id, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
-		rc.xDir = xDir;
 	}
 
 	public void update() {

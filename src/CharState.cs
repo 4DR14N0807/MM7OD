@@ -804,9 +804,9 @@ public class Fall : CharState {
 			character.stopMoving();
 			character.useGravity = false;
 			if (limboVehicle is RideArmor ra) {
-				RPC.checkRAEnter.sendRpc(player.id, ra.netId, ra.neutralId, ra.raNum);
+				//RPC.checkRAEnter.sendRpc(player.id, ra.netId, ra.neutralId, ra.raNum);
 			} else if (limboVehicle is RideChaser rc) {
-				RPC.checkRCEnter.sendRpc(player.id, rc.netId, rc.neutralId);
+				//RPC.checkRCEnter.sendRpc(player.id, rc.netId, rc.neutralId);
 			}
 		}
 	}
@@ -1419,21 +1419,6 @@ public class Die : CharState {
 		if (character is Blues blues) {
 			blues.delinkStarCrash();
 		}
-		//new Anim(character.pos.addxy(0, -12), "die_sparks", 1, null, true);
-		player.lastDeathWasXHyper = character is RagingChargeX;
-		
-		if (character.ownedByLocalPlayer && character.player.isDisguisedAxl) {
-			character.player.revertToAxlDeath();
-			character.changeSpriteFromName("die", true);
-		}
-		if (character is Vile vile) {
-			player.lastDeathWasVileMK2 = vile.isVileMK2 == true;
-			player.lastDeathWasVileMK5 = vile.isVileMK5 == true;
-		} else {
-			player.lastDeathWasVileMK2 = false;
-			player.lastDeathWasVileMK5 = false;
-		}
-		player.lastDeathWasSigmaHyper = character is WolfSigma or ViralSigma or KaiserSigma;
 		player.lastDeathPos = character.getCenterPos();
 	}
 

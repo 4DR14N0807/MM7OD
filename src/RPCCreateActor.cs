@@ -57,6 +57,7 @@ public enum NetActorCreateId {
 public class RPCCreateActor : RPC {
 	public RPCCreateActor() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
 	}
 
 	public override void invoke(params byte[] arguments) {

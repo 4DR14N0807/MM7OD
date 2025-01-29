@@ -93,6 +93,7 @@ public partial class Actor {
 public class RPCUpdateActor : RPC {
 	public RPCUpdateActor() {
 		netDeliveryMethod = NetDeliveryMethod.Unreliable;
+		isPreUpdate = true;
 	}
 
 	public override void invoke(params byte[] arguments) {

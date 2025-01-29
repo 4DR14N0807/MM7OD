@@ -50,7 +50,7 @@ public class AxlBullet : AxlWeapon {
 			bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir.Value, netId);
 		}
 		if (player.ownedByLocalPlayer && bullet != null) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }
@@ -96,7 +96,7 @@ public class DoubleBullet : AxlWeapon {
 		}
 
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }
@@ -139,7 +139,7 @@ public class MettaurCrash : AxlWeapon {
 			bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		}
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }
@@ -178,7 +178,7 @@ public class BeastKiller : AxlWeapon {
 			bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		}
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }
@@ -214,7 +214,7 @@ public class MachineBullets : AxlWeapon {
 			bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		}
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }
@@ -257,7 +257,7 @@ public class RevolverBarrel : AxlWeapon {
 			bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		}
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }
@@ -301,7 +301,7 @@ public class AncientGun : AxlWeapon {
 			bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		}
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }

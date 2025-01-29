@@ -472,56 +472,6 @@ public class Projectile : Actor {
 		}
 
 		if (ownedByLocalPlayer) {
-			if (shouldVortexSuck && otherProj is GenericMeleeProj otherGmp && otherProj.projId == (int)ProjIds.WheelGEat && damager.owner.alliance != otherProj.damager.owner.alliance && otherGmp.owningActor is WheelGator wheelGator) {
-				destroySelfNoEffect();
-				if (wheelGator.ownedByLocalPlayer) {
-					wheelGator.feedWheelGator(damager.damage);
-					return;
-				} else {
-					RPC.feedWheelGator.sendRpc(wheelGator, damager.damage);
-				}
-				return;
-			}
-
-			if (shouldVortexSuck && otherProj is GenericMeleeProj otherGmp2 && otherProj.projId == (int)ProjIds.DrDopplerAbsorb && damager.owner.alliance != otherProj.damager.owner.alliance && otherGmp2.owningActor is DrDoppler drDoppler) {
-				destroySelfNoEffect();
-				if (drDoppler.ownedByLocalPlayer) {
-					drDoppler.healDrDoppler(damager.owner, damager.damage);
-					return;
-				} else {
-					RPC.healDoppler.sendRpc(drDoppler, damager.damage, damager.owner);
-				}
-				return;
-			}
-
-			if (this is ShotgunIceProj) {
-				var shotgunIceProj = this as ShotgunIceProj;
-				if (shotgunIceProj == other.gameObject) return;
-			}
-
-			var otherRs = other.gameObject as RollingShieldProj;
-			var otherRsc = other.gameObject as RollingShieldProjCharged;
-			if (otherProj != null && (otherRs != null || otherRsc != null) &&
-				damager.owner.alliance != otherProj.damager.owner.alliance
-			) {
-				if (this is ElectricSparkProj || this is ElectricSparkProjCharged || this is PlasmaGunProj || projId == (int)ProjIds.SparkMSpark) {
-					otherRs?.destroySelf(doRpcEvenIfNotOwned: true);
-					otherRsc?.destroySelf(doRpcEvenIfNotOwned: true);
-				} else {
-					if (otherRsc != null) {
-						float decAmount = damager.damage * 2;
-						otherRsc.decAmmo(decAmount);
-						var bytes = BitConverter.GetBytes(decAmount);
-						Global.serverClient?.rpc(RPC.decShieldAmmo, (byte)otherProj.damager.owner.id, bytes[0], bytes[1], bytes[2], bytes[3]);
-					}
-
-					if (shouldShieldBlock) {
-						destroySelf(fadeSprite, fadeSound);
-						return;
-					}
-				}
-			}
-
 			if (otherProj != null && otherProj.isReflectShield &&
 				reflectable && damager.owner.alliance != otherProj.damager.owner.alliance
 			) {
@@ -540,56 +490,6 @@ public class Projectile : Actor {
 					//playSound("sigmaSaberBlock", forcePlay: false, sendRpc: true);
 					return;
 				}
-			}
-
-			if (otherProj != null && otherProj.isShield && damager.owner.alliance != otherProj.damager.owner.alliance) {
-				if ((this is ParasiticBombProj || this is ParasiticBombProjCharged) &&
-					(otherProj.projId == (int)ProjIds.FrostShield || otherProj.projId == (int)ProjIds.FrostShieldAir || otherProj.projId == (int)ProjIds.FrostShieldGround)) {
-					// Parasitic bomb should go straight through frost shield projectiles
-				} else {
-					bool isDestroyable = otherProj is IDamagable;
-					if (shouldShieldBlock && !isDestroyable) {
-						destroySelf(fadeSprite, fadeSound);
-						playSound("m10ding", sendRpc: true);
-						return;
-					}
-				}
-			}
-
-			var otherBsc = other.gameObject as BubbleSplashProjCharged;
-			if (otherBsc != null && otherProj != null && damager.owner.alliance != otherProj.damager.owner.alliance) {
-				otherBsc.destroySelf(doRpcEvenIfNotOwned: true);
-				if (shouldShieldBlock && !(this is SpinWheelProj) && !(this is SpinWheelProjCharged) && !(this is SpinWheelProjCharged)) {
-					destroySelf(fadeSprite, fadeSound);
-					return;
-				}
-			}
-
-			if (otherProj != null && otherProj is FrostShieldProj && projId == (int)ProjIds.TBreaker) {
-				otherProj.destroySelf(doRpcEvenIfNotOwned: true);
-			}
-
-			var otherPenguinSled = other.gameObject as ShotgunIceProjSled;
-			if ((this is FireWaveProj || this is FireWaveProjCharged) && otherPenguinSled != null && damager.owner.alliance != otherPenguinSled.damager.owner.alliance) {
-				otherPenguinSled.destroySelf(doRpcEvenIfNotOwned: true);
-			}
-
-			var otherFireWaveCharged = other.gameObject as FireWaveProjCharged;
-			if ((this is TornadoProj || this is TornadoProjCharged) && otherFireWaveCharged != null && damager.owner.alliance != otherFireWaveCharged.damager.owner.alliance) {
-				otherFireWaveCharged.putOutFire();
-			}
-			var otherFireWaveChargedStart = other.gameObject as FireWaveProjChargedStart;
-			if ((this is TornadoProj || this is TornadoProjCharged) && otherFireWaveChargedStart != null && damager.owner.alliance != otherFireWaveChargedStart.damager.owner.alliance) {
-				otherFireWaveChargedStart.putOutFire();
-			}
-			var otherFlameMBigFire = other.gameObject as FlameMBigFireProj;
-			if ((this is TornadoProj || this is TornadoProjCharged) && otherFlameMBigFire != null && damager.owner.alliance != otherFlameMBigFire.damager.owner.alliance) {
-				otherFlameMBigFire.destroySelf(doRpcEvenIfNotOwned: true);
-			}
-
-			var otherSpeedBurner = other.gameObject as SpeedBurnerProj;
-			if ((this is BubbleSplashProj || this is BubbleSplashProjCharged) && otherSpeedBurner != null && damager.owner.alliance != otherSpeedBurner.damager.owner.alliance) {
-				otherSpeedBurner.destroySelf(doRpcEvenIfNotOwned: true);
 			}
 		}
 

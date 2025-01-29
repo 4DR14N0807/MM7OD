@@ -581,15 +581,6 @@ public class Axl : Character {
 					}
 				}
 			}
-		} else {
-			if (shootHeld) {
-				increaseCharge();
-			} else {
-				if (isCharging()) {
-					shootAssassinShot();
-				}
-				stopCharge();
-			}
 		}
 		chargeGfx();
 		bool weCanShoot = (undisguiseTime == 0 && assassinTime == 0);

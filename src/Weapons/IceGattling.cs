@@ -33,7 +33,7 @@ public class IceGattling : AxlWeapon {
 		Projectile? bullet = null;
 		if (chargeLevel == 0) {
 			bullet = new IceGattlingProj(weapon, bulletPos, xDir, player, bulletDir, netId);
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		} else if (chargeLevel == 3) {
 			axl.gaeaShield = new GaeaShieldProj(weapon, bulletPos, xDir, player, netId, rpc: true);
 			RPC.playSound.sendRpc(shootSounds[3], player.character?.netId);

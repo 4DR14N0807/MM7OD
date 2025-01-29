@@ -77,7 +77,7 @@ public class RayGun : AxlWeapon {
 		}
 
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }
@@ -299,7 +299,7 @@ public class RayGunAltProj : Projectile {
 		changePos(destPos);
 
 		if (Global.level.isSendMessageFrame() && player != null) {
-			RPC.syncAxlBulletPos.sendRpc(player.id, bulletPos);
+			//RPC.syncAxlBulletPos.sendRpc(player.id, bulletPos);
 		}
 	}
 

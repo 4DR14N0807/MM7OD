@@ -632,7 +632,7 @@ public class RideChaser : Actor, IDamagable {
 		}
 
 		if (ownedByLocalPlayer) {
-			RPC.creditPlayerKillVehicle.sendRpc(killer, assister, this, weaponIndex);
+			//RPC.creditPlayerKillVehicle.sendRpc(killer, assister, this, weaponIndex);
 		}
 	}
 	/*

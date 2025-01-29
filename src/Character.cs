@@ -156,7 +156,7 @@ public partial class Character : Actor, IDamagable {
 
 	//Spark Shock root
 	public float rootTime;
-	public Dictionary<int, float> rootCooldown;
+	public Dictionary<int, float> rootCooldown = new();
 	public Anim? rootAnim;
 
 	public float burnEffectTime;
@@ -3220,7 +3220,7 @@ public partial class Character : Actor, IDamagable {
 				undisguiseTime = 0.33f;
 				DNACore lastDNA = player.lastDNACore;
 				int lastDNAIndex = player.lastDNACoreIndex;
-				player.revertToAxl();
+				//player.revertToAxl();
 				undisguiseTime = 0.33f;
 				// To keep DNA.
 				if (altShootPressed && player.currency >= 1) {
@@ -3237,54 +3237,6 @@ public partial class Character : Actor, IDamagable {
 				}
 				return;
 			}
-		}
-
-		if (player.weapon is AssassinBullet) {
-			if (player.input.isPressed(Control.Special1, player) && !isCharging()) {
-				if (player.currency >= 2) {
-					player.currency -= 2;
-					shootAssassinShot(isAltFire: true);
-					return;
-				} else {
-					Global.level.gameMode.setHUDErrorMessage(
-						player, $"Quick assassinate requires 2 {Global.nameCoins}"
-					);
-				}
-			}
-		}
-
-		if (player.weapon is AssassinBullet && (this is Vile or BaseSigma)) {
-			if (player.input.isHeld(Control.Shoot, player)) {
-				increaseCharge();
-			} else {
-				if (isCharging()) {
-					shootAssassinShot();
-				}
-				stopCharge();
-			}
-			chargeGfx();
-		}
-
-		/*
-		if (player.weapon is AssassinBullet && chargeTime > 7)
-		{
-			shootAssassinShot();
-			stopCharge();
-		}
-		*/
-	}
-
-	public void shootAssassinShot(bool isAltFire = false) {
-		if (getChargeLevel() >= 3 || isAltFire) {
-			player.revertToAxl();
-			assassinTime = 0.5f;
-			assassinTime = 0.5f;
-			player.character.useGravity = false;
-			player.character.vel = new Point();
-			player.character.isQuickAssassinate = isAltFire;
-			player.character.changeState(new Assassinate(grounded), true);
-		} else {
-			stopCharge();
 		}
 	}
 

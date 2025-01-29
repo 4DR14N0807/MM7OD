@@ -326,7 +326,7 @@ public class BoundBlasterAltProj : Projectile {
 			this.stuckActor = stuckActor;
 			isActorStuck = (stuckActor != null);
 			if (isActorStuck) {
-				RPC.boundBlasterStick.sendRpc(netId, stuckActor?.netId, pos);
+				//RPC.boundBlasterStick.sendRpc(netId, stuckActor?.netId, pos);
 			}
 			maxTime = Math.Max(20f, maxTime);
 		}

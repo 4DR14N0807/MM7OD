@@ -9,6 +9,7 @@ namespace MMXOnline;
 public class RPCCustom : RPC {
 	public RPCCustom() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
 	}
 
 	// Use custom invoke here.
@@ -34,9 +35,6 @@ public class RPCCustom : RPC {
 				break;
 			case (byte)RpcCustomType.UpdateMaxTime:
 				RPC.updateMaxTime.invoke(finalArguments);
-				break;
-			case (byte)RpcCustomType.ReviveSigma:
-				RPC.reviveSigma.invoke(finalArguments);
 				break;
 		}
 	}
@@ -104,6 +102,7 @@ public class RpcChangeOwnership : RPC {
 public class RpcReflect : RPC {
 	public RpcReflect() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
 	}
 
 	public override void invoke(byte[] arguments) {
@@ -133,6 +132,7 @@ public class RpcReflect : RPC {
 public class RpcDeflect : RPC {
 	public RpcDeflect() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
 	}
 
 	public override void invoke(byte[] arguments) {
@@ -195,37 +195,3 @@ public class RpcUpdateMaxTime : RPC {
 	}
 }
 
-public class RpcReviveSigma : RPC {
-	public RpcReviveSigma() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-	}
-
-	public override void invoke(byte[] arguments) {
-		Player player = Global.level.getPlayerById(arguments[0]);
-		ushort netId = BitConverter.ToUInt16(arguments[2..4]);
-		float posX = BitConverter.ToSingle(arguments[4..8]);
-		float posY = BitConverter.ToSingle(arguments[8..12]);
-	
-		player.reviveSigmaNonOwner(arguments[1], new Point(posX, posY), netId);
-	}
-
-	public void sendRpc( 
-		int form, Point spawnPoint, int playerId, ushort netId) {
-		if (Global.serverClient == null) {
-			return;
-		}
-		byte[] netIdBytes = BitConverter.GetBytes(netId);
-		byte[] posXBytes = BitConverter.GetBytes(spawnPoint.x);
-		byte[] posYBytes = BitConverter.GetBytes(spawnPoint.y);
-
-		byte[] sendValues = new byte[] {
-			(byte)playerId,
-			(byte)form,
-			netIdBytes[0],
-			netIdBytes[1],
-			posXBytes[0], posXBytes[1], posXBytes[2], posXBytes[3],
-			posYBytes[0], posYBytes[1], posYBytes[2], posYBytes[3],
-		};
-		RPC.custom.sendRpc((byte)RpcCustomType.ReviveSigma, sendValues);
-	}
-}

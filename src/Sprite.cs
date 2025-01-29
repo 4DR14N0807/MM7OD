@@ -238,7 +238,6 @@ public class Sprite {
 		float extraYOff = 0;
 		float extraW = 0;
 		float flippedExtraW = 0;
-		float extraXOff = 0;
 
 		/* if (!isUltX && armors != null && animData.isXSprite) {
 			bool isShootSprite = needsX3BusterCorrection();

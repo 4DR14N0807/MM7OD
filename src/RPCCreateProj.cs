@@ -6,6 +6,7 @@ namespace MMXOnline;
 public partial class RPCCreateProj : RPC {
 	public RPCCreateProj() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
 	}
 
 	public override void invoke(params byte[] arguments) {

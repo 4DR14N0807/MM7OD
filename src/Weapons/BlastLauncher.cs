@@ -52,7 +52,7 @@ public class BlastLauncher : AxlWeapon {
 		}
 
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, grenade.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, grenade.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 }

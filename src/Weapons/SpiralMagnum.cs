@@ -64,7 +64,7 @@ public class SpiralMagnum : AxlWeapon {
 			axl.zoomCharge = 0;
 		}
 
-		RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, origPos.Value, xDir, angle);
+		//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, origPos.Value, xDir, angle);
 	}
 }
 
@@ -302,7 +302,7 @@ public class SpiralMagnumProj : Projectile {
 				float decAmount = damager.damage * 2;
 				rockmanX.chargedRollingShieldProj.decAmmo(decAmount);
 				var bytes = BitConverter.GetBytes(decAmount);
-				Global.serverClient?.rpc(RPC.decShieldAmmo, (byte)hitChar.player.id, bytes[0], bytes[1], bytes[2], bytes[3]);
+				//Global.serverClient?.rpc(RPC.decShieldAmmo, (byte)hitChar.player.id, bytes[0], bytes[1], bytes[2], bytes[3]);
 			} else {
 				float overrideDamage = weakness ? (damager.damage * Damager.headshotModifier) : damager.damage;
 				if (weapon is AssassinBullet && weakness) {

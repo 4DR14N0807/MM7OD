@@ -1282,7 +1282,7 @@ public partial class Level {
 		}
 
 		// Preupdate RPCs.
-		foreach (PendingRPC pendingRpc in pendingUpdateRpcs) {
+		foreach (PendingRPC pendingRpc in pendingPreUpdateRpcs) {
 			pendingRpc.invoke();
 		}
 		pendingPreUpdateRpcs.Clear();

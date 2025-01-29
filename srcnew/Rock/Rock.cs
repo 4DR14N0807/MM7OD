@@ -662,6 +662,7 @@ public class Rock : Character {
 		byte ammo = (byte)MathF.Ceiling(currentWeapon?.ammo ?? 0);
 		customData.Add((byte)weaponIndex);
 		customData.Add(ammo);
+		customData.Add((byte)getChargeLevel());
 
 		customData.Add(Helpers.boolArrayToByte([
 			hasChargedNoiseCrush,
@@ -683,8 +684,12 @@ public class Rock : Character {
 			weaponSlot = weapons.IndexOf(targetWeapon);
 			targetWeapon.ammo = data[1];
 		}
+		int netChargeLevel = data[2];
+		if (netChargeLevel == 0) {
+			stopCharge();
+		}
 
-		bool[] boolData = Helpers.byteToBoolArray(data[2]);
+		bool[] boolData = Helpers.byteToBoolArray(data[3]);
 		hasChargedNoiseCrush = boolData[0];
 		hasSuperAdaptor = boolData[1];
 		armless = boolData[2];

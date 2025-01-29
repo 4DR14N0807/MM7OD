@@ -13,6 +13,7 @@ public class RPC {
 	public bool toHostOnly;
 	public bool isServerMessage;
 	public bool isPreUpdate;
+	public bool levelless;
 	public int index;
 
 	// Need templates? Use these:
@@ -177,6 +178,7 @@ public class RPCSendString : RPC {
 	public RPCSendString() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
+		levelless = true;
 	}
 }
 
@@ -184,6 +186,7 @@ public class RPCStartLevel : RPC {
 	public RPCStartLevel() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
+		levelless = true;
 	}
 
 	public override void invoke(string message) {
@@ -898,6 +901,7 @@ public class RPCReflectProj : RPC {
 public class RPCJoinLateRequest : RPC {
 	public RPCJoinLateRequest() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
 		toHostOnly = true;
 	}
 
@@ -969,6 +973,7 @@ public class RPCJoinLateRequest : RPC {
 public class RPCJoinLateResponse : RPC {
 	public RPCJoinLateResponse() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		levelless = true;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1004,12 +1009,14 @@ public class RPCUpdateStarted : RPC {
 	public RPCUpdateStarted() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isServerMessage = true;
+		levelless = true;
 	}
 }
 
 public class RPCHostPromotion : RPC {
 	public RPCHostPromotion() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		levelless = true;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1029,6 +1036,7 @@ public class RPCMatchOver : RPC {
 	public RPCMatchOver() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
+		levelless = true;
 	}
 
 	public override void invoke(string message) {
@@ -1052,6 +1060,7 @@ public class RPCSyncTeamScores : RPC {
 public class RPCSyncGameTime : RPC {
 	public RPCSyncGameTime() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
 	}
 
 	public override void invoke(params byte[] arguments) {

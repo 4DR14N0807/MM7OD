@@ -426,18 +426,26 @@ public class ServerClient {
 						ushort argCount = BitConverter.ToUInt16(im.ReadBytes(2), 0);
 						var bytes = im.ReadBytes(argCount);
 						if (invokeRpcs && Global.level != null) {
-							if (rpcTemplate.isPreUpdate) {
+							if (rpcTemplate.isServerMessage || rpcTemplate.levelless) {
+								rpcTemplate.invoke(bytes);
+							}
+							else if (rpcTemplate.isPreUpdate) {
 								Global.level.pendingPreUpdateRpcs.Add(new PendingRPC(rpcTemplate, bytes));
-							} else {
+							}
+							else {
 								Global.level.pendingUpdateRpcs.Add(new PendingRPC(rpcTemplate, bytes));
 							}
 						}
 					} else {
 						var message = im.ReadString();
 						if (invokeRpcs && Global.level != null) {
-							if (rpcTemplate.isPreUpdate) {
+							if (rpcTemplate.isServerMessage || rpcTemplate.levelless) {
+								rpcTemplate.invoke(message);
+							}
+							else if (rpcTemplate.isPreUpdate) {
 								Global.level.pendingPreUpdateRpcs.Add(new PendingRPC(rpcTemplate, message));
-							} else {
+							}
+							else {
 								Global.level.pendingUpdateRpcs.Add(new PendingRPC(rpcTemplate, message));
 							}
 						}

@@ -255,6 +255,10 @@ public class Blues : Character {
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
+		if (!ownedByLocalPlayer) {
+			base.changeSprite(spriteName, resetFrame);
+			return;
+		}
 		if (isShieldActive && spriteName == getSprite("idle_shield") && getChargeLevel() >= 2) {
 			spriteName = getSprite("idle_charge_shield");
 		}
@@ -508,7 +512,7 @@ public class Blues : Character {
 				if (overheating) {
 					tempAnim.addRenderEffect(RenderEffectType.ChargeOrange, 3, 120, 5);
 				} else {
-					RenderEffectType smokeEffect = drawableChargeLevel() switch {
+					RenderEffectType smokeEffect = getChargeLevel() switch {
 						1 => RenderEffectType.ChargeBlue,
 						2 => RenderEffectType.ChargePurple,
 						3 => RenderEffectType.ChargeGreen,
@@ -526,11 +530,11 @@ public class Blues : Character {
 		}
 	}
 
-	public int drawableChargeLevel() {
+	public override int getChargeLevel() {
 		if (!ownedByLocalPlayer) {
 			return netChargeLevel;
 		}
-		return getChargeLevel();
+		return base.getChargeLevel();
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
@@ -1312,6 +1316,9 @@ public class Blues : Character {
 		coreAmmo = data[0];
 		shieldHP = data[1];
 		netChargeLevel = data[2];
+		if (netChargeLevel == 0) {
+			stopCharge();
+		}
 
 		bool[] flags = Helpers.byteToBoolArray(data[3]);
 		isShieldActive = flags[0];

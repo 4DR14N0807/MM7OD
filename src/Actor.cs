@@ -97,6 +97,8 @@ public partial class Actor : GameObject {
 	public float? _byteAngle;
 	public bool customAngleRendering;
 	public bool useGravity;
+	public bool? gravityOverride;
+	public bool movedUp;
 	public bool gravityWellable { get { return this is Character || this is RideArmor || this is Maverick || this is RideChaser; } }
 	public float gravityWellTime;
 	public bool canBeGrounded = true;
@@ -726,7 +728,7 @@ public partial class Actor : GameObject {
 		float terminalVelDown = Physics.MaxFallSpeed;
 		if (underwater) terminalVelDown = Physics.MaxUnderwaterFallSpeed;
 
-		if (useGravity && !grounded) {
+		if (gravityOverride ?? useGravity && !grounded) {
 			if (underwater) {
 				grav *= 0.5f;
 			}
@@ -839,9 +841,9 @@ public partial class Actor : GameObject {
 		}
 
 		float yMod = reversedGravity ? -1 : 1;
-		if (physicsCollider != null && !isStatic && (canBeGrounded || useGravity)) {
+		if (physicsCollider != null && !isStatic && (canBeGrounded || (gravityOverride ?? useGravity))) {
 			float yDist = 1;
-			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y) {
+			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y && !movedUp) {
 				yDist = 4;
 			}
 			yDist *= yMod;
@@ -908,6 +910,7 @@ public partial class Actor : GameObject {
 				groundedIce = false;
 			}
 		}
+		movedUp = false;
 	}
 
 	public float getTopY() {

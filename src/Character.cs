@@ -181,6 +181,7 @@ public partial class Character : Actor, IDamagable {
 	public float frozenMaxTime;
 	public float crystalizedTime;
 	public float crystalizedMaxTime;
+	public int disarrayStacks;
 	
 	// Buffs.
 	public float vaccineTime;
@@ -773,7 +774,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (oilTime > 0) {
 			oilTime -= Global.spf;
-			if (isUnderwater() || charState.invincible || isStatusImmune()) {
+			if (ownedByLocalPlayer && (isUnderwater() || charState.invincible || isStatusImmune())) {
 				oilTime = 0;
 			}
 			if (oilTime <= 0) {
@@ -788,16 +789,13 @@ public partial class Character : Actor, IDamagable {
 				if (acidHurtCooldown <= 0) {
 					acidHurtCooldown = 0;
 				}
-				acidDamager?.applyDamage(
-					this, player.weapon is TornadoFang,
-					new AcidBurst(), this, (int)ProjIds.AcidBurstPoison,
-					overrideDamage: 1f
-				);
-				new Anim(
-					getCenterPos().addxy(Helpers.randomRange(-6, 6), -20),
-					"torpedo_smoke", 1, null, true) {
+				if (ownedByLocalPlayer) {
+					new Anim(
+						getCenterPos().addxy(Helpers.randomRange(-6, 6), -20),
+						"torpedo_smoke", 1, null, true) {
 						vel = new Point(0, -50)
 					};
+				}
 			}
 			if (isUnderwater() || charState.invincible || isStatusImmune()) {
 				acidTime = 0;
@@ -805,17 +803,16 @@ public partial class Character : Actor, IDamagable {
 			if (acidTime <= 0) {
 				removeAcid();
 			}
+		} else {
+			acidHurtCooldown = 0;
 		}
-
-		if (burnStunStacks > 0 && charState is not Burning) {
+		if (burnStunStacks > 0) {
 			burnEffectTime += Global.speedMul;
 			if (burnEffectTime >= 11) {
 				burnEffectTime = 0;
-
 				Point burnPos = getCenterPos();
 
 				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
-
 				if (burnStunStacks >= 2) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
 				}
@@ -836,7 +833,9 @@ public partial class Character : Actor, IDamagable {
 			}
 			if (rootTime <= 0) {
 				rootTime = 0;
-				useGravity = true;
+				if (ownedByLocalPlayer && charState.useGravity) {
+					useGravity = true;
+				}
 				if (rootAnim != null) {
 					rootAnim.destroySelf();
 					rootAnim = null;
@@ -922,6 +921,7 @@ public partial class Character : Actor, IDamagable {
 			rootCooldown[key] -= speedMul;
 			if (rootCooldown[key] <= 0) {
 				rootCooldown.Remove(key);
+				disarrayStacks--;
 			}
 		}
 	}
@@ -1492,15 +1492,24 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void root(float time, int playerid) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (rootCooldown.GetValueOrDefault(playerid) > 0) {
 			return;
 		}
+		// Disarray mechanic.
+		int disarrayStacks = rootCooldown.Count;
+		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks * 20, 80)) / 100f;
+		time = MathF.Floor(time * disarrayReduction);
+		// Apply debuff.
 		rootCooldown[playerid] = time + 60;
 		if (rootTime < time) {
 			rootTime = time;
 		}
 		stopMovingWeak();
 		useGravity = false;
+		charState.canStopJump = false;
 	}
 
 	public void paralize(float timeToParalize = 60, float cooldown = 90) {

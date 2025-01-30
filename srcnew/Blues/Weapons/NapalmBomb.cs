@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SFML.Graphics;
 
@@ -31,7 +31,7 @@ public class NapalmBomb : Weapon {
 		}
 
 		new NapalmBombProj(shootPos, shootAngle, player, player.getNextActorNetId(), true) {
-			owningActor = character
+			ownerActor = character
 		};
 		character.playSound("buster");
 	}

@@ -78,7 +78,7 @@ public class SuiretsusenProj : Projectile {
 		shouldShieldBlock = false;
 		isMelee = true;
 		if (ownerPlayer?.character != null) {
-			owningActor = ownerPlayer.character;
+			ownerActor = ownerPlayer.character;
 		}
 
 		if (sendRpc) {

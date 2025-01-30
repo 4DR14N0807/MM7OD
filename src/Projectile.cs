@@ -46,7 +46,7 @@ public class Projectile : Actor {
 	public bool isMelee;
 	public int meleeId = -1;
 	public bool isOwnerLinked;
-	public Actor? owningActor;
+	public Actor? ownerActor;
 
 	const float leeway = 500;
 
@@ -122,8 +122,8 @@ public class Projectile : Actor {
 		weapon = Weapon.baseNetWeapon;
 		useGravity = false;
 		ownerPlayer = player ?? owner?.netOwner ?? Global.level.getPlayerById(netId!.Value);
+		ownerActor = owner;
 		damager = new Damager(ownerPlayer, 0, 0, 0);
-		owningActor = owner;
 		this.xDir = xDir;
 		if ((Global.level.gameMode.isTeamMode && Global.level.mainPlayer != ownerPlayer) &&
 			this is not NapalmPartProj or FlameBurnerProj

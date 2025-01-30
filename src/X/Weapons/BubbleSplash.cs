@@ -200,7 +200,7 @@ public class BubbleSplashProjCharged : Projectile {
 
 		isOwnerLinked = true;
 		if (player.character != null) {
-			owningActor = player.character;
+			ownerActor = player.character;
 		} 
 
 		if (rpc) {

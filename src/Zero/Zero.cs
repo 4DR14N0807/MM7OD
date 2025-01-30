@@ -665,7 +665,7 @@ public class Zero : Character {
 		}
 		// Assing data variables.
 		proj.meleeId = meleeId;
-		proj.owningActor = this;
+		proj.ownerActor = this;
 
 		// Damage based on tripleSlash time.
 		if (meleeId == (int)MeleeIds.HuhSlash) {
@@ -901,7 +901,7 @@ public class Zero : Character {
 					) {
 						globalCollider = globalCollider.clone(),
 						meleeId = (int)MeleeIds.AwakenedAura,
-						owningActor = this
+						ownerActor = this
 					};
 					return proj;
 				}

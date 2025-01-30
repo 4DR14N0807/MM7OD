@@ -197,7 +197,7 @@ public class RayGunAltProj : Projectile {
 
 		isMelee = true;
 		if (player?.character != null) {
-			owningActor = player.character;
+			ownerActor = player.character;
 		}
 	}
 

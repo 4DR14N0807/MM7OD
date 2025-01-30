@@ -51,9 +51,9 @@ public class BigBangStrikeProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (ownedByLocalPlayer) {
+		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new BigBangStrikeExplosionProj(
-				pos, xDir, owningActor!, damager.owner.getNextActorNetId(), true
+				pos, xDir, ownerActor, damager.owner.getNextActorNetId(), true
 			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
@@ -114,9 +114,9 @@ public class BigBangStrikeExplosionProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (ownedByLocalPlayer) {
+		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new StrikeAttackPushProj(
-				pos, 0, xDir, owningActor!, ownerPlayer.getNextActorNetId(), sendRpc: true
+				pos, 0, xDir, ownerActor, ownerPlayer.getNextActorNetId(), sendRpc: true
 			);
 		}
 	}
@@ -183,9 +183,9 @@ public class ProtoStrikeProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (ownedByLocalPlayer) {
+		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new StrikeAttackPushProj(
-				pos, 1, xDir, owningActor!, ownerPlayer.getNextActorNetId(), sendRpc: true
+				pos, 1, xDir, ownerActor, ownerPlayer.getNextActorNetId(), sendRpc: true
 			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
@@ -316,9 +316,9 @@ public class RedStrikeProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (ownedByLocalPlayer) {
+		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new RedStrikeExplosionProj(
-				pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), true
+				pos, xDir, ownerActor, damager.owner.getNextActorNetId(true), true
 			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
@@ -330,18 +330,23 @@ public class RedStrikeExplosionProj : Projectile {
 	float absorbRadius = 120;
 
 	public RedStrikeExplosionProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+		Point pos, int xDir, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 0, 1, player, "big_bang_strike_explosion",
-		Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "big_bang_strike_explosion", netId, altPlayer
 	) {
+		// Damage.
 		projId = (int)BluesProjIds.RedStrikeExplosion;
+		damager.damage = 1;
+		damager.flinch = Global.miniFlinch;
+		damager.hitCooldown = 30;
+		// Etc.
 		maxTime = 1f;
 		destroyOnHit = false;
 		fadeOnAutoDestroy = true;
 
-		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 		addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 		projId = (int)BluesProjIds.RedStrike;
@@ -349,7 +354,7 @@ public class RedStrikeExplosionProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new RedStrikeExplosionProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.pos, args.xDir, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -375,9 +380,9 @@ public class RedStrikeExplosionProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (ownedByLocalPlayer) {
+		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new StrikeAttackPushProj(
-				pos, 2, xDir, owningActor!, ownerPlayer.getNextActorNetId(), sendRpc: true
+				pos, 2, xDir, ownerActor, ownerPlayer.getNextActorNetId(), sendRpc: true
 			);
 		}
 	}

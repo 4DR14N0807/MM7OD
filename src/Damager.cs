@@ -61,7 +61,7 @@ public class Damager {
 			return false;
 		}
 		if (damagingActor is GenericMeleeProj tgmp &&
-			tgmp.owningActor is Character { isDarkHoldState: true }
+			tgmp.ownerActor is Character { isDarkHoldState: true }
 		) {
 			return false;
 		}
@@ -105,8 +105,8 @@ public class Damager {
 				gmp.meleeId != -1
 			) {
 				linkedMeleeId = (byte)gmp.meleeId;
-				if (gmp.owningActor?.netId != null) {
-					actorNetIdBytes = BitConverter.GetBytes(gmp.owningActor?.netId ?? 0);
+				if (gmp.ownerActor?.netId != null) {
+					actorNetIdBytes = BitConverter.GetBytes(gmp.ownerActor?.netId ?? 0);
 				} else {
 					actorNetIdBytes = BitConverter.GetBytes(gmp.owner?.character?.netId ?? 0);
 				}
@@ -399,8 +399,8 @@ public class Damager {
 				}
 			}
 			if (proj.isMelee || proj.isOwnerLinked) {
-				if (proj.owningActor != null) {
-					damagePos = proj.owningActor.pos;
+				if (proj.ownerActor != null) {
+					damagePos = proj.ownerActor.pos;
 				} else if (projOwner?.character != null) {
 					damagePos = projOwner.character.pos;
 				}

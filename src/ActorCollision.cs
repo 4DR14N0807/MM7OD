@@ -243,7 +243,7 @@ public partial class Actor {
 		Projectile? proj = getMeleeProjById(meleeId, centerPoint);
 		if (proj != null) {
 			proj.meleeId = meleeId;
-			proj.owningActor = this;
+			proj.ownerActor = this;
 			updateProjFromHitbox(proj);
 		}
 		return proj;

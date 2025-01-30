@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -485,7 +485,7 @@ public class Rock : Character {
 		
 		if (proj != null) {
 			proj.meleeId = meleeId;
-			proj.owningActor = this;
+			proj.ownerActor = this;
 			updateProjFromHitbox(proj);
 			return proj;
 		}

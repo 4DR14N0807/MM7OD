@@ -437,7 +437,7 @@ public class RekkohaProj : Projectile {
 
 		isOwnerLinked = true;
 		if (player.character != null) {
-			owningActor = player.character;
+			ownerActor = player.character;
 		}
 	}
 

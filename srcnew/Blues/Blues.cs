@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -300,7 +300,7 @@ public class Blues : Character {
 		}
 		// Assing data variables.
 		proj.meleeId = meleeId;
-		proj.owningActor = this;
+		proj.ownerActor = this;
 
 		return proj;
 	}

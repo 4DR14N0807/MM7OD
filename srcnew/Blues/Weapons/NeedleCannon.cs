@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace MMXOnline;
 
@@ -40,7 +40,7 @@ public class NeedleCannon : Weapon {
 		}
 
 		new NeedleCannonProj(shootPos, shootAngle, player, player.getNextActorNetId(), true) {
-			owningActor = character
+			ownerActor = character
 		};
 		character.playSound("buster");
 		character.xPushVel = 60 * -xDir;

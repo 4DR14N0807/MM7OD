@@ -188,8 +188,8 @@ public class SaberParryStartState : CharState {
 		bool stunnableParry = false;
 
 		if (damagingActor is Projectile proj) {
-			if (proj.owningActor != null) {
-				counterAttackTarget = proj.owningActor;
+			if (proj.ownerActor != null) {
+				counterAttackTarget = proj.ownerActor;
 			}
 			stunnableParry = proj.canBeParried();
 		}

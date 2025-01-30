@@ -358,7 +358,7 @@ public class RPCApplyDamage : RPC {
 						addToLevel: false
 					) {
 						meleeId = linkedMeleeId,
-						owningActor = mainActor
+						ownerActor = mainActor
 					};
 				}
 			}

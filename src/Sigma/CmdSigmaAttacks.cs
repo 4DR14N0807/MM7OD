@@ -1,4 +1,4 @@
-namespace MMXOnline;
+﻿namespace MMXOnline;
 
 public class SigmaSlashWeapon : Weapon {
 	public static SigmaSlashWeapon netWeapon = new();
@@ -75,7 +75,7 @@ public class SigmaSlashProj : Projectile {
 		projId = (int)ProjIds.SigmaSlash;
 		isMelee = true;
 		if (player.character != null) {
-			owningActor = player.character;
+			ownerActor = player.character;
 		}
 
 		if (rpc) {

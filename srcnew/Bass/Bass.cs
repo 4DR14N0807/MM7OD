@@ -182,7 +182,7 @@ public class Bass : Character {
 		}
 		// Assing data variables.
 		proj.meleeId = meleeId;
-		proj.owningActor = this;
+		proj.ownerActor = this;
 
 		return proj;
 	}

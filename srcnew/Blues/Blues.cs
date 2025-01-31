@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static MMXOnline.GameMode;
 
 namespace MMXOnline;
 
@@ -598,7 +599,7 @@ public class Blues : Character {
 
 	public override bool attackCtrl() {
 		bool shootPressed = player.input.isPressed(Control.Shoot, player);
-		bool specialPressed = player.input.isPressed(Control.Special1, player);
+		bool specialPressed = player.input.isPressed(Control.Special1, player) || player.isAI;
 		if (!overheating && !overdrive && specialWeapon is NeedleCannon) {
 			specialPressed = player.input.isHeld(Control.Special1, player);
 		}
@@ -1211,10 +1212,6 @@ public class Blues : Character {
 
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		base.renderHUD(offset, position);
-		
-		if (redStrikeCooldown > 0) {
-			Global.level.gameMode.drawGigaWeaponCooldown(3, redStrikeCooldown / 240, y: 115);
-		}
 	}
 
 	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
@@ -1284,6 +1281,22 @@ public class Blues : Character {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos);
 				yPos -= 2;
 			}
+		}
+	}
+
+	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		offset.y += 17;
+		base.renderBuffs(offset, position);
+		int drawDir = 1;
+		if (position == GameMode.HUDHealthPosition.Right) {
+			drawDir = -1;
+		}
+		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+
+		if (redStrikeCooldown > 0) {
+			drawBuff(drawPos, redStrikeCooldown / 240, "hud_blues_weapon_icon", 3);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
 		}
 	}
 

@@ -14,12 +14,12 @@ public class CTF : GameMode {
 
 	public override void render() {
 		base.render();
-		drawObjectiveNavpoint("Capture", level.mainPlayer.alliance == redAlliance ? level.blueFlag.pos : level.redFlag.pos);
-		if (level.mainPlayer.character?.flag != null) {
-			drawObjectiveNavpoint("Return", level.mainPlayer.alliance == redAlliance ? level.redFlag.pedestal.pos : level.blueFlag.pedestal.pos);
-		} else {
-			drawObjectiveNavpoint("Defend", level.mainPlayer.alliance == redAlliance ? level.redFlag.pos : level.blueFlag.pos);
-		}
+		drawObjectiveNavpoint("RFlag", level.redFlag.pos);
+		drawObjectiveNavpoint("BFlag", level.blueFlag.pos);
+
+		if (level.mainPlayer.character?.flag != null && level.blueFlag.chr != null) {
+			drawObjectiveNavpoint("Ped", level.redFlag.pos);
+		};
 	}
 
 	public override void drawTopHUD() {

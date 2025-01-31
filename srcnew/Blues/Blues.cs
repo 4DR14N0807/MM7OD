@@ -599,7 +599,7 @@ public class Blues : Character {
 
 	public override bool attackCtrl() {
 		bool shootPressed = player.input.isPressed(Control.Shoot, player);
-		bool specialPressed = player.input.isPressed(Control.Special1, player) || player.isAI;
+		bool specialPressed = player.input.isPressed(Control.Special1, player);
 		if (!overheating && !overdrive && specialWeapon is NeedleCannon) {
 			specialPressed = player.input.isHeld(Control.Special1, player);
 		}

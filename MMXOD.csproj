@@ -14,7 +14,7 @@
 		<SelfContained>false</SelfContained>
 		<OutputPath>./bin/</OutputPath>
 		<!--OutDir>./bin/anycpu/</OutDir-->
-		<RunWorkingDirectory>./bin/win-x64/</RunWorkingDirectory>
+		<RunWorkingDirectory>./bin/runenv/</RunWorkingDirectory>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<DebugType>embedded</DebugType>
 		<Deterministic>true</Deterministic>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Converters;
@@ -52,6 +52,7 @@ public class IceWallStart : Anim {
 }
 	
 public class IceWallProj : Projectile {
+	float lastDeltaX = 0;
 	float maxSpeed = 300;
 	int bounces;
 	bool startedMoving;
@@ -70,8 +71,8 @@ public class IceWallProj : Projectile {
 		canBeLocal = false;
 		base.xDir = xDir;
 		this.player = player;
-		collider.isTrigger = false;
 		isSolidWall = true;
+		isPlatform = true;
 		maxTime = 2f;
 		destroyOnHit = false;
 		splashable = true;
@@ -90,6 +91,9 @@ public class IceWallProj : Projectile {
 	
 	public override void update() {
 		base.update();
+		if (deltaPos.x != 0) {
+			lastDeltaX = deltaPos.x;
+		}
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -114,6 +118,10 @@ public class IceWallProj : Projectile {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
+		// Hit enemy.
+		if (other.gameObject is Character character) {
+			character.move(new Point(lastDeltaX, 0));
+		}
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -143,11 +151,10 @@ public class IceWallProj : Projectile {
 					if (chara != enemy) {
 						chrs.Add(chara);
 						maxSpeed -= 100;
-					} 
+					}
 				}
-			} else if (other.isGroundHit() && vel.y > 120 && 
+			} else if (other.isGroundHit() && vel.y >= 0 &&
 				chara.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
-
 				chara.applyDamage(3, player, chara, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);
 			}
 		}

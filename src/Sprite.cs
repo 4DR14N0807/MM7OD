@@ -326,7 +326,8 @@ public class Sprite {
 			}
 		} */
 		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
-			if (alpha >= 1 && (
+			if (!Options.main.fastShaders &&
+				alpha >= 1 && (
 				renderEffects.Contains(RenderEffectType.BlueShadow) ||
 				renderEffects.Contains(RenderEffectType.RedShadow) ||
 				renderEffects.Contains(RenderEffectType.GreenShadow) ||
@@ -859,7 +860,8 @@ public class AnimData {
 		Texture bitmap = this.bitmap;
 
 		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
-			if (alpha >= 1 && (
+			if (!Options.main.fastShaders &&
+				alpha >= 1 && (
 				renderEffects.Contains(RenderEffectType.BlueShadow) ||
 				renderEffects.Contains(RenderEffectType.RedShadow) ||
 				renderEffects.Contains(RenderEffectType.GreenShadow) ||

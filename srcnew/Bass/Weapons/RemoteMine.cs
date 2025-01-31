@@ -218,7 +218,7 @@ public class RemoteMineExplosionProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (bass != null) {
-			bass.rMineExplosion = null!;
+			bass.rMineExplosion = null;
 		}
 	}
 }

@@ -42,7 +42,7 @@ public class SpreadDrill : Weapon {
 
 public class SpreadDrillProj : Projectile {
 	float timeTouseGravity;
-	Bass bass = null!;
+	Bass? bass;
 	Point addPos;
 	Player player;
 	public SpreadDrillProj(
@@ -55,9 +55,13 @@ public class SpreadDrillProj : Projectile {
 		maxTime = 2f;
 		projId = (int)BassProjIds.SpreadDrill;
 		destroyOnHit = false;
-		bass = player.character as Bass ?? throw new NullReferenceException();
 		this.player = player;
-		if (bass != null) bass.sDrill = this;
+		if (ownedByLocalPlayer) {
+			bass = player.character as Bass;
+			if (bass != null) {
+				bass.sDrill = this;
+			}
+		}
 		addPos = new Point(-22 * xDir, 7);
 
 		canBeLocal = false;
@@ -74,10 +78,12 @@ public class SpreadDrillProj : Projectile {
 	}
 	public override void update() {
 		base.update();
-		if (bass == null) return;
-
 		timeTouseGravity += Global.speedMul;
 		if (timeTouseGravity >= 60) { useGravity = true; }
+		if (useGravity && gravityModifier > 0.75f) {
+			gravityModifier -= 0.01f;
+		}
+		if (bass == null) return;
 
 		if (ownedByLocalPlayer) {
 			if (player.input.isPressed(Control.Shoot, player)) {
@@ -88,9 +94,6 @@ public class SpreadDrillProj : Projectile {
 			}
 		}
 
-		if (useGravity && gravityModifier > 0.75f) {
-			gravityModifier -= 0.01f;
-		}
 	}
 
 	public override void render(float x, float y) {
@@ -104,14 +107,17 @@ public class SpreadDrillProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-
-		bass.sDrill = null;
-		new Anim(pos, "spread_drill_pieces", xDir, null, false) 
-		{ ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
-
-		new Anim(pos, "spread_drill_pieces", xDir, null, false) 
-		{ ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
+		new Anim(pos, "spread_drill_pieces", xDir, null, false) {
+			ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0
+		};
+		new Anim(
+			pos, "spread_drill_pieces", xDir, null, false
+		) {
+			ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0
+		};
+		if (bass != null) {
+			bass.sDrill = null;
+		}
 	}
 }
 public class SpreadDrillMediumProj : Projectile {
@@ -160,18 +166,19 @@ public class SpreadDrillMediumProj : Projectile {
 		Helpers.decrementTime(ref sparksCooldown);
 
 		if (hits >= 3) destroySelf();
-		
+
 		if (Math.Abs(vel.x) < speed) vel.x += Global.speedMul * xDir * 8;
 		else if (Math.Abs(vel.x) > speed) vel.x = speed * xDir;
 	}
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
-		vel.x = 0;
 		if (ownedByLocalPlayer) {
 			forceNetUpdateNextFrame = true;
+		} else {
+			return;
 		}
-
+		vel.x = 0;
 		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
@@ -192,14 +199,12 @@ public class SpreadDrillMediumProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-
-		if (!ownedByLocalPlayer) return;
-
-		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) 
-		{ ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
-
-		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) 
-		{ ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
+		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) {
+			ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0
+		};
+		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) {
+			ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0
+		};
 	}
 }
 public class SpreadDrillSmallProj : Projectile {
@@ -245,11 +250,12 @@ public class SpreadDrillSmallProj : Projectile {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
-		vel.x = 0;
 		if (ownedByLocalPlayer) {
 			forceNetUpdateNextFrame = true;
-		}
-
+		} else {
+			return;
+		};
+		vel.x = 0;
 		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
@@ -270,13 +276,11 @@ public class SpreadDrillSmallProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-
-		if (!ownedByLocalPlayer) return;
-
-		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) 
-		{ ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0 };
-
-		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) 
-		{ ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0 };
+		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) {
+			ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0
+		};
+		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) {
+			ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0
+		};
 	}
 }

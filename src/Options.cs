@@ -23,7 +23,6 @@ public class Options {
 	public bool disableDoubleDash;
 	public int preferredCharacter;
 	public bool showMashProgress;
-	public bool useOptimizedAssets = false;
 	public bool killOnLoadoutChange = true;
 	public bool killOnCharChange = true;
 	public float networkTimeoutSeconds = 3;
@@ -37,18 +36,18 @@ public class Options {
 	// Video settings
 	public bool fullScreen = false;
 	public bool integerFullscreen = true;
-	public int? graphicsPreset = null;  // 0 = low, 1 = medium, 2 = high, 3 = custom
 	public uint windowScale = 2;
-	public bool disableShaders;
+	public bool fastShaders;
 	public bool vsync;
-	public bool areShadersDisabled() {
+	/*public bool areShadersDisabled() {
 		if (Global.disableShaderOverride) return true;
 		return disableShaders;
-	}
+	}*/
 	public int textQuality = 0;
 	public int fontType = 0; // 0 = bitmap only, 1 = bitmap + vector, 2 = vector only
+	public int? detectedGraphicsPreset = null;
 	public bool enablePostProcessing = true;
-	public int particleQuality = 0;
+	public int particleQuality = 2;
 	public bool enableMapSprites = true;
 	public bool enableSmallBars;
 	public bool smallBarsEx;

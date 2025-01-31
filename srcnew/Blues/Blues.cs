@@ -1170,7 +1170,9 @@ public class Blues : Character {
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = base.getShaders();
 
-		if (player.bluesScarfShader != null && !overheating && !overdrive) {
+		if (player.bluesScarfShader != null && !overdrive && !overheating
+			&& (!isBreakMan || !Options.main.fastShaders)
+		) {
 			ShaderWrapper palette = player.bluesScarfShader;
 			palette.SetUniform("palette", specialWeaponIndex + 1);
 			palette.SetUniform("paletteTexture", Global.textures["blues_palette_texture"]);

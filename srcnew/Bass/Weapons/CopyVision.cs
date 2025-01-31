@@ -38,8 +38,9 @@ public class CopyVision : Weapon {
 
 		if (!player.ownedByLocalPlayer) return;
 
-		if (character.xDir < 0) shootAngle = 128;
-
+		if (character.xDir < 0) {
+			shootAngle = 128;
+		}
 		if (bass?.cVclone == null) {
 			new CopyVisionClone(shootPos, player, character.xDir, character.player.getNextActorNetId(), true, true);
 			if (bass != null) bass.weaponCooldown = 120;
@@ -50,9 +51,6 @@ public class CopyVision : Weapon {
 			bass.weaponCooldown = 9;
 			bass.playSound("bassbuster", true);
 		}
-
-		
-
 	}
 	/*public override bool canShoot(int chargeLevel, Player player) {
 		if (!base.canShoot(chargeLevel, player)) {
@@ -96,7 +94,7 @@ public class CopyVisionClone : Actor {
 
 	// Define the rateOfFire of the clone.
 	float rateOfFire = 9;
-	Bass bass = null!;
+	Bass? bass;
 	Player player;
 
 	public CopyVisionClone(
@@ -104,8 +102,10 @@ public class CopyVisionClone : Actor {
 	) : base("copy_vision_start", pos, netId, ownedByLocalPlayer, false
 	) {
 		if (!ownedByLocalPlayer) {
-			bass = player.character as Bass ?? throw new NullReferenceException();
-			bass.cVclone = this;
+			bass = player.character as Bass;
+			if (bass != null) {
+				bass.cVclone = this;
+			}
 		}
 		useGravity = false;
 		this.xDir = xDir;
@@ -119,13 +119,17 @@ public class CopyVisionClone : Actor {
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer) return;
 		cloneTime += Global.speedMul;
 
+		if (!ownedByLocalPlayer) {
+			if (cloneTime >= 60 * 4) {
+				destroySelf();
+			}
+			return;
+		}
 		if (isAnimOver()) {
 			state = 1;
 		}
-		
 		if (state == 1) {
 			changeSprite("copy_vision_clone", false);
 			cloneShootTime += Global.speedMul;
@@ -146,14 +150,14 @@ public class CopyVisionClone : Actor {
 		base.onDestroy();
 
 		if (!ownedByLocalPlayer) return;
-		
 		new Anim(
 				pos, "copy_vision_exit", xDir,
 				player.getNextActorNetId(), true, sendRpc: true
 			);
 		
-		bass.cVclone = null!;
-
+		if (bass != null) {
+			bass.cVclone = null;
+		}
 	}
 
 }

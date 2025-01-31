@@ -3364,8 +3364,9 @@ public partial class Character : Actor, IDamagable {
 
 		// Disarray.
 		if (disarrayStacks.Count >= 2) {
+			float[] activeList = disarrayStacks.Values.ToArray();
 			drawBuff(
-				drawPos, disarrayStacks.Max().Value / disarrayMaxLength,
+				drawPos, activeList.Max() / disarrayMaxLength,
 				"hud_buffs", 0
 			);
 			if (disarrayStacks.Count >= 3) {

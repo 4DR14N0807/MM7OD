@@ -17,7 +17,7 @@ public class CTF : GameMode {
 		drawObjectiveNavpoint("RFlag", level.redFlag.pos);
 		drawObjectiveNavpoint("BFlag", level.blueFlag.pos);
 
-		if (level.mainPlayer.character?.flag != null && level.blueFlag.chr != null) {
+		if (level.blueFlag.chr != null) {
 			drawObjectiveNavpoint("Ped", level.redFlag.pos);
 		};
 	}

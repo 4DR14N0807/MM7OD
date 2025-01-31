@@ -30,7 +30,7 @@ public class TenguBlade : Weapon {
 
 
 public class TenguBladeStart : Anim {
-	Character character = null!;
+	Character? character;
 	Point distance;
 
 	public TenguBladeStart(
@@ -46,15 +46,15 @@ public class TenguBladeStart : Anim {
 
 	public override void update() {
 		base.update();
-
-		changePos(character.getCenterPos().subtract(distance));
+		if (character != null) {
+			changePos(character.getCenterPos().subtract(distance));
+		}
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 
-		if (!ownedByLocalPlayer) return;
-
+		if (!ownedByLocalPlayer || character == null) return;
 		new TenguBladeProj(pos, xDir, character.player, character.player.getNextActorNetId(), true);
 		playSound("tengublade", true);
 	}
@@ -151,18 +151,13 @@ public class TenguBladeMelee : GenericMeleeProj {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
-				
 				if (damagable is Character chr && chr != null) chr.xPushVel = xDir * 180;	
 			}
 		}
-
-		
 	}
 }
 
-
 public class TenguBladeDash : CharState {
-
 	int startXDir;
 	int inputXDir;
 	Anim? dashSpark;

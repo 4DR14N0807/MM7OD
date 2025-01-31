@@ -849,9 +849,11 @@ public class GameMode {
 
 		Global.radarRenderTextureB.Clear(new Color(0, 0, 0, 0));
 		RenderStates statesL = new RenderStates(Global.radarRenderTextureB.Texture);
-		ShaderWrapper outlineShader = Helpers.cloneShaderSafe("map_outline");
-		outlineShader.SetUniform("textureSize", new SFML.Graphics.Glsl.Vec2(42, 26));
-		statesL.Shader = outlineShader.getShader();
+		ShaderWrapper? outlineShader = Helpers.cloneShaderSafe("map_outline");
+		if (outlineShader != null) {
+			outlineShader.SetUniform("textureSize", new SFML.Graphics.Glsl.Vec2(42, 26));
+			statesL.Shader = outlineShader.getShader();
+		}
 		Global.radarRenderTextureB.Draw(sprite2, statesL);
 		Global.radarRenderTextureB.Display();
 		var spriteFG = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);

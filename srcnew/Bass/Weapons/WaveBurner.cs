@@ -50,8 +50,7 @@ public class WaveBurner : Weapon {
 
 
 public class WaveBurnerProj : Projectile {
-
-	Character character = null!;
+	Character? character;
 
 	public WaveBurnerProj(
 		Point pos, float byteAngle, Player player,
@@ -65,9 +64,12 @@ public class WaveBurnerProj : Projectile {
 		maxTime = 0.2f;
 		destroyOnHit = false;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
-
-		character = player.character ?? throw new NullReferenceException();
-		xDir = character.getShootXDir();
+		if (ownedByLocalPlayer) {
+			character = player.character;
+			if (character != null) {
+				xDir = character.getShootXDir();
+			}
+		}
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, player, netId, byteAngle);
@@ -88,15 +90,15 @@ public class WaveBurnerProj : Projectile {
 	public void checkUnderwater() {
 		if (isUnderwater()) {
 			new BubbleAnim(pos, "bubbles") { vel = new Point(0, -60) };
-			Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f));
+			Global.level.delayedActions.Add(
+				new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f)
+			);
 			destroySelf();
 		}
 	}
 }
 
-
 public class WaveBurnerUnderwaterProj : Projectile {
-
 	int rand;
 	Anim? bubble1;
 	Anim? bubble2;
@@ -112,7 +114,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 		maxTime = 0.33f;
 		destroyOnHit = false;
 		rand = Helpers.randomRange(1, 4);
-		
+
 		if (rand % 2 == 0) {
 			bubble1 = new Anim(pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)), 
 				"wave_burner_underwater_bubble", xDir, player.getNextActorNetId(), false, true)

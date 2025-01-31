@@ -77,7 +77,9 @@ public class IceWallProj : Projectile {
 		splashable = true;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
 
-		if (rpc) rpcCreate(pos, player, netId, xDir);
+		if (rpc) {
+			rpcCreate(pos, player, netId, xDir);
+		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -88,6 +90,9 @@ public class IceWallProj : Projectile {
 	
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
 			vel.x += xDir * Global.speedMul * 7.5f;
@@ -109,6 +114,9 @@ public class IceWallProj : Projectile {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		Character? ownChar = damager.owner?.character;
 		// Wall hit.
 		if (other.gameObject is Wall) {

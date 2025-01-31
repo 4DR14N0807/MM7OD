@@ -104,7 +104,6 @@ public class SpreadDrillProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		
 		if (!ownedByLocalPlayer) return;
 
 		bass.sDrill = null;

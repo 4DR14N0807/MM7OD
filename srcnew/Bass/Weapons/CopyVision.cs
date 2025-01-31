@@ -103,9 +103,10 @@ public class CopyVisionClone : Actor {
 		Point pos, Player player, int xDir, ushort netId, bool ownedByLocalPlayer, bool rpc = false
 	) : base("copy_vision_start", pos, netId, ownedByLocalPlayer, false
 	) {
-		bass = player.character as Bass ?? throw new NullReferenceException();
-		bass.cVclone = this;
-		
+		if (!ownedByLocalPlayer) {
+			bass = player.character as Bass ?? throw new NullReferenceException();
+			bass.cVclone = this;
+		}
 		useGravity = false;
 		this.xDir = xDir;
 		this.player = player;
@@ -116,13 +117,11 @@ public class CopyVisionClone : Actor {
 		}
 	}
 
-
-
 	public override void update() {
 		base.update();
 		if (!ownedByLocalPlayer) return;
 		cloneTime += Global.speedMul;
-		
+
 		if (isAnimOver()) {
 			state = 1;
 		}

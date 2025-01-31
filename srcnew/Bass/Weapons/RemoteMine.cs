@@ -50,8 +50,9 @@ public class RemoteMineProj : Projectile {
 		projId = (int)BassProjIds.RemoteMine;
 		maxTime = 1.25f;
 		bass = player.character as Bass;
-		if (bass != null) bass.rMine = this;
-		anim = new Anim(getCenterPos(), "remote_mine_anim", xDir, player.getNextActorNetId(), false, true);
+		if (bass != null && bass.ownedByLocalPlayer) {
+			bass.rMine = this;
+		}
 		canBeLocal = false;
 
 		if (rpc) {
@@ -65,12 +66,28 @@ public class RemoteMineProj : Projectile {
 		);
 	}
 
+	public override void onStart() {
+		base.onStart();
+		if (bass != null && ownedByLocalPlayer && bass.ownedByLocalPlayer) {
+			anim = new Anim(
+				getCenterPos(), "remote_mine_anim", xDir,
+				bass.player.getNextActorNetId(), false, true
+			);
+		}
+	}
+
 	public override void update() {
 		base.update();
-		if (time >= maxTime){
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (time >= maxTime && !destroyed && bass != null && bass.ownedByLocalPlayer){
 			//ruben: cant put this as fade anim or on destroy because it will conflict with the explosion anim
-			new Anim(getCenterPos(), "remote_mine_fade_anim", xDir, 
-			damager.owner.getNextActorNetId(), true, true);}
+			new Anim(
+				getCenterPos(), "remote_mine_fade_anim", xDir, 
+				bass.player.getNextActorNetId(), true, true
+			);
+		}
 		if (host != null) changePos(host.getCenterPos());
 		if (anim != null) anim.changePos(getCenterPos());
 
@@ -85,12 +102,15 @@ public class RemoteMineProj : Projectile {
 	}
 
 	public override void onCollision(CollideData other) {
+		base.onCollision(other);
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		var chr = other.gameObject as Character;
 		var wall = other.gameObject as Wall;
 
 		if (!landed && ((chr != null && chr != bass) || wall != null)) {
 			stopMoving();
-
 			if (chr != null) host = chr; 
 			changeSprite("remote_mine_land", true);
 			playSound("remotemineStick", true);
@@ -101,6 +121,9 @@ public class RemoteMineProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (!exploded) {
 			explode();
 		}
@@ -119,7 +142,6 @@ public class RemoteMineProj : Projectile {
 
 
 public class RemoteMineExplosionProj : Projectile {
-
 	int expTime;
 	Anim? part;
 	int animLap;
@@ -137,9 +159,10 @@ public class RemoteMineExplosionProj : Projectile {
 		maxTime = 0.75f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
-		bass = player.character as Bass ?? throw new NullReferenceException();
-		bass.rMineExplosion = this;
-
+		if (ownedByLocalPlayer) {
+			bass = player.character as Bass ?? throw new NullReferenceException();
+			bass.rMineExplosion = this;
+		}
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);
 		}
@@ -194,7 +217,8 @@ public class RemoteMineExplosionProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-
-		bass.rMineExplosion = null!;
-	}	
+		if (bass != null) {
+			bass.rMineExplosion = null!;
+		}
+	}
 }

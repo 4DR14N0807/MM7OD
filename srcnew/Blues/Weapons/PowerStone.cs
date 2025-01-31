@@ -38,7 +38,8 @@ public class PowerStone : Weapon {
 }
 
 public class PowerStoneProj : Projectile {
-	Character character = null!;
+	Character? character;
+	Point origin;
 	int stoneAngle = 120;
 	float radius = 10;
 
@@ -51,15 +52,18 @@ public class PowerStoneProj : Projectile {
 		projId = (int)BluesProjIds.PowerStone;
 		maxTime = 1;
 
-		character = player.character ?? throw new NullReferenceException();
+		character = player.character;
 		stoneAngle = type * 85;
 		zIndex = ZIndex.Character - 10;
 		destroyOnHit = false;
 		canBeLocal = false;
-
+		origin = pos;
+		if (character != null) {
+			origin = character.getCenterPos();
+		}
 		changePos(new Point(
-			character.getCenterPos().x + Helpers.cosb(stoneAngle) * radius,
-			character.getCenterPos().y + Helpers.sinb(stoneAngle) * radius
+			origin.x + Helpers.cosb(stoneAngle) * radius,
+			origin.y + Helpers.sinb(stoneAngle) * radius
 		));
 
 		if (rpc) {
@@ -75,10 +79,12 @@ public class PowerStoneProj : Projectile {
 
 	public override void update() {
 		base.update();
-
+		if (character != null) {
+			origin = character.getCenterPos();
+		}
 		changePos(new Point(
-			character.getCenterPos().x + Helpers.cosb(stoneAngle) * radius,
-			character.getCenterPos().y + Helpers.sinb(stoneAngle) * radius
+			origin.x + Helpers.cosb(stoneAngle) * radius,
+			origin.y + Helpers.sinb(stoneAngle) * radius
 		));
 
 		stoneAngle += 6;

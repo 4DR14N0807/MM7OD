@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,6 +6,34 @@ using System.Linq;
 using System.Text;
 
 namespace MMXOnline;
+
+public class NullableMap<K, V> where V : class where K : notnull {
+	private Dictionary<K, V> _internalMap;
+
+	public NullableMap() {
+		_internalMap = new Dictionary<K, V>();
+	}
+	public NullableMap(Dictionary<K, V> internalMap) {
+		_internalMap = internalMap;
+	}
+
+	public V this[K key] {
+		get {
+			if (_internalMap.ContainsKey(key)) {
+				return _internalMap[key];
+			} else {
+				return null;
+			}
+		}
+		set {
+			_internalMap[key] = value;
+		}
+	}
+
+	public static implicit operator Dictionary<K, V>(NullableMap<K, V> nm) => nm._internalMap;
+	public static implicit operator NullableMap<K, V>(Dictionary<K, V> nm) => new NullableMap<K, V>(nm);
+
+}
 
 public class IniParser {
 	enum Token {
@@ -17,7 +45,7 @@ public class IniParser {
 		LineBreak,
 	}
 
-	public static dynamic Parse(string fileLocation) {
+	public static NullableMap<string, dynamic> Parse(string fileLocation) {
 		string fileText = File.ReadAllText(fileLocation, Encoding.UTF8);
 		(Token token, string value)[] data = TokenizeIni(fileText);
 
@@ -25,16 +53,16 @@ public class IniParser {
 		return parsedIni;
 	}
 
-	public static dynamic ParseText(string fileText) {
+	public static NullableMap<string, dynamic> ParseText(string fileText) {
 		(Token token, string value)[] data = TokenizeIni(fileText);
 
 		var parsedIni = ParseTokens(data);
 		return parsedIni;
 	}
 
-	static dynamic ParseTokens((Token token, string value)[] data) {
-		dynamic parsedIni = new Dictionary<string, dynamic>();
-		List<Dictionary<string, dynamic>> levels = new() { parsedIni };
+	static NullableMap<string, dynamic> ParseTokens((Token token, string value)[] data) {
+		var parsedIni = new NullableMap<string, dynamic>();
+		List<NullableMap<string, dynamic>> levels = new() { parsedIni };
 
 		for (int i = 0; i < data.Length; i++) {
 			var currentLevel = levels.Last();
@@ -44,7 +72,7 @@ public class IniParser {
 					if (levels.Count > 1) {
 						levels.RemoveAt(levels.Count - 1);
 					}
-					Dictionary<string, dynamic> newLevel = new();
+					NullableMap<string, dynamic> newLevel = new();
 					levels.Last()[data[i].value] = newLevel;
 					levels.Add(newLevel);
 				} else {

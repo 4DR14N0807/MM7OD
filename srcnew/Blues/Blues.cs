@@ -978,9 +978,9 @@ public class Blues : Character {
 		bool bodyPierced = false;
 		int damageReduction = 1;
 		bool shieldActive = isShieldFront();
-		bool shieldHitFront = (shieldActive && !Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
+		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
 		bool shieldHitBack = (
-			!shieldActive && !Damager.hitFromFront(this, actor, attacker, projId ?? -1)
+			!shieldActive && !Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
 		);
 

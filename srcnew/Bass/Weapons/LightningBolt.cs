@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -73,18 +73,18 @@ public class LightningBoltState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		Point startAimPos = new Point(character.pos.x + 10 * character.xDir, character.pos.y - 25);
+		Point startAimPos = new Point(character.pos.x + 5 * character.xDir, character.pos.y - 25);
 
 		character.useGravity = false;
 		if (character.vel.y < 0) {
-			character.yPushVel = character.vel.y;
+			character.yPushVel = character.vel.y / 2f;
 		}
 		else if (character.grounded) {
 			character.grounded = false;
-			character.yPushVel = -3.5f * 60;
+			character.yPushVel = -2f * 60;
 		}
-		else if (character.vel.y < 2 * 60) {
-			character.yPushVel = character.vel.y;
+		else if (character.vel.y / 2f < 2 * 60) {
+			character.yPushVel = character.vel.y / 2f;
 		}
 		else {
 			character.yPushVel = 2 * 60;

@@ -400,7 +400,6 @@ public class Burning : CharState {
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
-		character.burnInvulnTime = 120;
 		character.burnStunStacks = 0;
 		character.useGravity = true;
 		player.delayETank();
@@ -410,6 +409,7 @@ public class Burning : CharState {
 
 	public override void update() {
 		base.update();
+		character.burnInvulnTime = 10;
 		if (!character.ownedByLocalPlayer) return;
 
 		if (burnMoveSpeed != 0) {

@@ -65,6 +65,7 @@ public class Blues : Character {
 
 	// Netcode stuff.
 	public int netChargeLevel;
+	public decimal lastDamageNum;
 
 	// Creation code.
 	public Blues(
@@ -1086,6 +1087,7 @@ public class Blues : Character {
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
 			customDamageDisplayOn = false;
 			addRenderEffect(RenderEffectType.Hit, 3, 5);
+			damage = lastDamageNum;
 			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("hit", sendRpc: true);
 			}
@@ -1093,8 +1095,11 @@ public class Blues : Character {
 			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("ding", sendRpc: true);
 			}
+			if (shieldHitBack && !bodyPierced) {
+				backShieldDamaged = true;
+			}
 		}
-		if (bodyDamaged) {
+		if (bodyDamaged || shieldHitBack) {
 			int fontColor = (int)FontType.RedSmall;
 			if (bodyPierced) {
 				fontColor = (int)FontType.YellowSmall;
@@ -1106,7 +1111,7 @@ public class Blues : Character {
 			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
-		if (shieldDamaged) {
+		if (shieldDamaged || shieldHitFront) {
 			int fontColor = (int)FontType.BlueSmall;
 			if (shieldPierced) {
 				fontColor = (int)FontType.PurpleSmall;

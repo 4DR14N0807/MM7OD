@@ -450,6 +450,7 @@ public class WarpIn : CharState {
 		if (warpAnim != null) {
 			warpAnim.destroySelf();
 		}
+		player.warpedInOnce = true;
 	}
 }
 
@@ -1445,7 +1446,7 @@ public class Die : CharState {
 		if (!character.ownedByLocalPlayer) {
 			return;
 		}
-		if (hidden && !respawnTimerOn && frames >= 60) {
+		if (!respawnTimerOn && frames >= 60) {
 			player.startDeathTimer();
 			if (player.getRespawnTime() <= 3 && !character.destroyed) {
 				player.destroyCharacter(true);

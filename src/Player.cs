@@ -1373,13 +1373,13 @@ public partial class Player {
 			return Global.level.server.customMatchSettings.respawnTime;
 		} else {
 			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
-				return 8;
+				return 7;
 			}
 			if (Global.level?.gameMode is KingOfTheHill) {
-				return 10;
+				return 9;
 			}
 		}
-		return 8;
+		return 7;
 	}
 
 	public bool canReviveVile() {

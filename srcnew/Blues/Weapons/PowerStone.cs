@@ -9,7 +9,7 @@ public class PowerStone : Weapon {
 	public PowerStone() : base() {
 		displayName = "POWER STONE";
 		descriptionV2 = "Summons three stones that spiral around.\nCan be used behind the shield.";
-		defaultAmmoUse = 6;
+		defaultAmmoUse = 5;
 
 		index = (int)BluesWeaponIds.PowerStone;
 		fireRate = 55;

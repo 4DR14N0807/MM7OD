@@ -415,7 +415,7 @@ public partial class Character : Actor, IDamagable {
 	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
 		if (isBurnState) return;
-		//if (isCCImmune()) return;
+		if (isStunImmune()) return;
 		if (isInvulnerable()) return;
 
 		burningRecoveryCooldown = 0;
@@ -2638,7 +2638,6 @@ public partial class Character : Actor, IDamagable {
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = health;
-		Blues? blues = this as Blues;
 
 		// For Dark Hold break.
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
@@ -2719,10 +2718,12 @@ public partial class Character : Actor, IDamagable {
 			player.delayETank();
 			player.stopETankHeal();
 		}
-		if (originalHP > 0 && (originalDamage > 0 || damage > 0) &&
-			this is not Blues { customDamageDisplayOn: true }
-		) {
-			addDamageTextHelper(attacker, (float)damage, (float)maxHealth, true);
+		if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {
+			if (this is Blues blues && blues.customDamageDisplayOn) {
+				blues.lastDamageNum = damage;
+			} else {
+				addDamageTextHelper(attacker, (float)damage, (float)maxHealth, true);
+			}
 		}
 		// Assist and kill logs.
 		if ((damage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
@@ -3450,9 +3451,12 @@ public partial class Character : Actor, IDamagable {
 		string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
 		string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 
+		float ammo = MathF.Ceiling(renderWeapon.ammo / renderWeapon.ammoDisplayScale);
+		float maxAmmo = MathF.Ceiling(renderWeapon.maxAmmo / renderWeapon.ammoDisplayScale);
+
 		GameMode.renderAmmo(
 			baseX, baseY, renderWeapon.weaponBarBaseIndex, renderWeapon.weaponBarIndex,
-			renderWeapon.ammo, 0, renderWeapon.maxAmmo, false, fullBarName, baseBarName
+			ammo, 0, maxAmmo, false, fullBarName, baseBarName
 		);
 	}
 

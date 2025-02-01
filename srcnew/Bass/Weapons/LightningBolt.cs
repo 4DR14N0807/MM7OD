@@ -132,7 +132,7 @@ public class LightningBoltState : CharState {
 
 		if (phase == 1) {
 			new LightningBoltProj(
-				lightningPos, character.xDir, character.player,
+				character, lightningPos, character.xDir, 
 				character.player.getNextActorNetId(), true
 			);
 			character.playSound("lightningbolt", true);

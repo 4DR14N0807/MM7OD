@@ -133,7 +133,7 @@ public class CopyVisionClone : Actor {
 
 	// Define the rateOfFire of the clone.
 	float rateOfFire = 9;
-	Bass? bass;
+	Bass bass = null!;
 	Player player;
 
 	public CopyVisionClone(
@@ -142,8 +142,8 @@ public class CopyVisionClone : Actor {
 	) : base("copy_vision_start", pos, netId, ownedByLocalPlayer, false
 	) {
 		player = altPlayer ?? throw new NullReferenceException();
-		if (!ownedByLocalPlayer) {
-			bass = player.character as Bass;
+		if (ownedByLocalPlayer) {
+			bass = owner as Bass ?? throw new NullReferenceException();
 		}
 		useGravity = false;
 		this.xDir = xDir;

@@ -29,8 +29,7 @@ public class WildCoil : Weapon {
 		}
 	}
 
-	public override void getProjs(Character character, params int[] args) {
-		Rock rock = character as Rock ?? throw new NullReferenceException();
+	public override void getProjs(Rock rock, params int[] args) {
 		Point shootPos = rock.getFirstPOI() ?? rock.getCenterPos();
 		Point shootPos1 = rock.getFirstPOI(1) ?? rock.getCenterPos();
 		int xDir = rock.getShootXDir();
@@ -40,11 +39,11 @@ public class WildCoil : Weapon {
 		if (chargeLv >= 2) {
 			new WildCoilChargedProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
 			new WildCoilChargedProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
-			character.playSound("buster3", sendRpc: true);
+			rock.playSound("buster3", sendRpc: true);
 		} else {
 			new WildCoilProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
 			new WildCoilProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
-			character.playSound("buster2", sendRpc: true);
+			rock.playSound("buster2", sendRpc: true);
 		}
 	}
 

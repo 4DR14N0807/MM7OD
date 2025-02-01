@@ -29,8 +29,8 @@ public class ScorchWheel : Weapon {
 		}
 	}
 
-	public override void getProjs(Character character, params int[] args) {
-		Rock rock = character as Rock ?? throw new NullReferenceException();
+	public override void getProjs(Rock rock, params int[] args) {
+
 		Player player = rock.player;
 
 		if (rock.isUnderwater()) {

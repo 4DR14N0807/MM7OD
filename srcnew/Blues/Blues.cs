@@ -980,7 +980,7 @@ public class Blues : Character {
 		bool shieldActive = isShieldFront();
 		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
 		bool shieldHitBack = (
-			!shieldActive && !Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
+			!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
 		);
 

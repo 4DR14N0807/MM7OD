@@ -87,9 +87,14 @@ public class Damager {
 			damagable.projectileCooldown[key] = 0;
 		}
 		if (damagable.projectileCooldown[key] != 0) {
-			return false;
+			if (projId == (int)BassProjIds.BassLemon) {
+				damage = 0;
+			} else {
+				return false;
+			}
+		} else {
+			damagable.projectileCooldown[key] = hitCooldown;
 		}
-		damagable.projectileCooldown[key] = hitCooldown;
 
 		// Run the RPC on all clients first, before it can modify the parameters, so clients can act accordingly
 		if (sendRpc && victim.netId != null && Global.serverClient?.isLagging() == false) {
@@ -152,7 +157,7 @@ public class Damager {
 		}
 
 		if (damagable is CrackedWall cw) {
-			float? overrideDamage = CrackedWall.canDamageCrackedWall(projId, cw);
+			float? overrideDamage = CrackedWall.canDamageCrackedWall(damage, cw);
 			if (overrideDamage != null && overrideDamage == 0 && damage > 0) {
 				cw.playSound("ding");
 				return true;
@@ -225,7 +230,7 @@ public class Damager {
 			}
 
 			// On Damage effects.
-			if (damage > 0) {
+			if (damage > 0 || projId == (int)BassProjIds.BassLemon) {
 				//Hurt Direction
 				int hurtDir = -character.xDir;
 				if (damagingActor != null && hitFromBehind(character, damagingActor, owner, projId)) {
@@ -256,7 +261,7 @@ public class Damager {
 			}
 		}
 
-		if (damage > 0) {
+		if (damage > 0 || projId == (int)BassProjIds.BassLemon) {
 			if (damagingActor == null ||
 				victim is not Blues blues || !(
 					blues.isShieldFront() && hitFromFront(blues, damagingActor, owner, projId) ||

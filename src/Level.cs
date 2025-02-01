@@ -661,7 +661,11 @@ public partial class Level {
 								pos.x + (j * xDir * (repeatXPadding + spriteWidth)),
 								pos.y + (i * yDir * (repeatYPadding + spriteHeight))
 							);
-							var crackedWall = new CrackedWall(mapSpritePos, spriteName, gibSpriteName, xDir, yDir, destructableFlag, health, destroyInstanceName, true);
+							CrackedWall crackedWall = new CrackedWall(
+								mapSpritePos, spriteName, gibSpriteName,
+								xDir, yDir, destructableFlag, health, destroyInstanceName, true
+							);
+							crackedWall.isGlass = instance.properties.isGlass ?? false;
 							crackedWall.setzIndex(zIndex);
 						}
 					}
@@ -1370,12 +1374,12 @@ public partial class Level {
 					continue;
 				}
 				// Skip destroyed stuff.
-				if (currentGrid[i].iDestroyed) {
+				if (currentGrid[i].iDestroyed || currentGrid[i].iDisabled) {
 					continue;
 				}
 				for (int j = i; j < currentGrid.Count; j++) {
 					// Exit if we get destroyed.
-					if (currentGrid[i].iDestroyed) {
+					if (currentGrid[i].iDestroyed || currentGrid[i].iDisabled) {
 						break;
 					}
 					// Skip terrain coliding with eachother.
@@ -1391,7 +1395,7 @@ public partial class Level {
 					// Add to hash as we check.
 					collidedGObjs.Add(hash);
 					// Skip destroyed stuff.
-					if (currentGrid[j].iDestroyed) {
+					if (currentGrid[j].iDestroyed || currentGrid[j].iDisabled) {
 						continue;
 					}
 					// Do preliminary collision checks and skip if we do not instersect.
@@ -1419,14 +1423,14 @@ public partial class Level {
 					}
 				}
 				// Continue if we get destroyed.
-				if (currentTerrainGrid == null || currentGrid[i].iDestroyed) {
+				if (currentTerrainGrid == null || currentGrid[i].iDestroyed || currentGrid[i].iDisabled) {
 					continue;
 				}
 				foreach (GameObject wallObj in currentTerrainGrid) {
 					// Get order independent hash.
 					int hash = currentGrid[i].GetHashCode() ^ wallObj.GetHashCode();
 
-					if (currentGrid[i] is not Actor actor || wallObj is not Geometry geometry) {
+					if (currentGrid[i] is not Actor actor || wallObj.iDestroyed || wallObj.iDisabled) {
 						continue;
 					}
 					// Skip checked objects.
@@ -1440,7 +1444,7 @@ public partial class Level {
 						continue;
 					}
 					(CollideData? iData, CollideData? jData) = getTriggerTerrain(
-						actor, geometry
+						actor, wallObj
 					);
 					if (iData != null) {
 						Global.speedMul = currentGrid[i].speedMul;

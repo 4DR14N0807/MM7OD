@@ -25,7 +25,7 @@ public class ScorchWheel : Weapon {
 		if (rock.charState is LadderClimb lc) {
 			rock.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel, rock.isUnderwater()), true);
 		} else {
-			rock.changeState(new ShootAlt(this, chargeLevel, rock.isUnderwater()), true);
+			rock.changeState(new ShootAltRock(this, chargeLevel, rock.isUnderwater()), true);
 		}
 	}
 
@@ -412,7 +412,6 @@ public class Burning : CharState {
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
-		character.burnInvulnTime = 120;
 		character.burnStunStacks = 0;
 		character.useGravity = true;
 		player.delayETank();
@@ -422,6 +421,7 @@ public class Burning : CharState {
 
 	public override void update() {
 		base.update();
+		character.burnInvulnTime = 10;
 		if (!character.ownedByLocalPlayer) return;
 
 		if (burnMoveSpeed != 0) {

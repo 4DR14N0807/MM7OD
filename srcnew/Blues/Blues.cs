@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static MMXOnline.GameMode;
 
 namespace MMXOnline;
 
@@ -64,6 +65,7 @@ public class Blues : Character {
 
 	// Netcode stuff.
 	public int netChargeLevel;
+	public decimal lastDamageNum;
 
 	// Creation code.
 	public Blues(
@@ -954,6 +956,7 @@ public class Blues : Character {
 			return;
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
+		decimal originalDamage = damage;
 		// Disable shield on any non DOT damage.
 		if (damage > 0 && !Damager.isDot(projId)) {
 			healShieldHPCooldown = 180;
@@ -976,9 +979,9 @@ public class Blues : Character {
 		bool bodyPierced = false;
 		int damageReduction = 1;
 		bool shieldActive = isShieldFront();
-		bool shieldHitFront = (shieldActive && !Damager.hitFromBehind(this, actor, attacker, projId ?? -1));
+		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
 		bool shieldHitBack = (
-			!shieldActive && !Damager.hitFromFront(this, actor, attacker, projId ?? -1)
+			!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
 		);
 
@@ -1072,19 +1075,21 @@ public class Blues : Character {
 				shieldDamageSavings += damage * 0.5m;
 				if (shieldDamageSavings >= 1) {
 					damage = 0;
+					shieldDamageSavings--;
 					if (shieldDamageSavings <= 0) { shieldDamageSavings = 0; }
 				}
 			} else {
 				damage--;
 			}
 		}
-		if (damage > 0) {
+		if (damage > 0) { 
 			stopLTankHeal(stopShield: false);
 			bodyDamaged = true;
 			customDamageDisplayOn = true;
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
 			customDamageDisplayOn = false;
 			addRenderEffect(RenderEffectType.Hit, 3, 5);
+			damage = lastDamageNum;
 			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("hit", sendRpc: true);
 			}
@@ -1092,8 +1097,14 @@ public class Blues : Character {
 			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("ding", sendRpc: true);
 			}
+			if (shieldHitBack && !bodyPierced) {
+				backShieldDamaged = true;
+			}
+			if ((originalDamage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
+				damageHistory.Add(new DamageEvent(attacker, weaponIndex.Value, projId, false, Global.time));
+			}
 		}
-		if (bodyDamaged) {
+		if (bodyDamaged || shieldHitBack) {
 			int fontColor = (int)FontType.RedSmall;
 			if (bodyPierced) {
 				fontColor = (int)FontType.YellowSmall;
@@ -1105,7 +1116,7 @@ public class Blues : Character {
 			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
-		if (shieldDamaged) {
+		if (shieldDamaged || shieldHitFront) {
 			int fontColor = (int)FontType.BlueSmall;
 			if (shieldPierced) {
 				fontColor = (int)FontType.PurpleSmall;
@@ -1164,7 +1175,9 @@ public class Blues : Character {
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = base.getShaders();
 
-		if (player.bluesScarfShader != null && !overheating && !overdrive) {
+		if (player.bluesScarfShader != null && !overdrive && !overheating
+			&& (!isBreakMan || !Options.main.fastShaders)
+		) {
 			ShaderWrapper palette = player.bluesScarfShader;
 			palette.SetUniform("palette", specialWeaponIndex + 1);
 			palette.SetUniform("paletteTexture", Global.textures["blues_palette_texture"]);
@@ -1211,10 +1224,6 @@ public class Blues : Character {
 
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		base.renderHUD(offset, position);
-		
-		if (redStrikeCooldown > 0) {
-			Global.level.gameMode.drawGigaWeaponCooldown(3, redStrikeCooldown / 240, y: 115);
-		}
 	}
 
 	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
@@ -1284,6 +1293,22 @@ public class Blues : Character {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos);
 				yPos -= 2;
 			}
+		}
+	}
+
+	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		offset.y += 17;
+		base.renderBuffs(offset, position);
+		int drawDir = 1;
+		if (position == GameMode.HUDHealthPosition.Right) {
+			drawDir = -1;
+		}
+		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+
+		if (redStrikeCooldown > 0) {
+			drawBuff(drawPos, redStrikeCooldown / 240, "hud_blues_weapon_icon", 3);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
 		}
 	}
 

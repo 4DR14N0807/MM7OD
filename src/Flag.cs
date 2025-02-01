@@ -32,9 +32,13 @@ public class Flag : Actor {
 	}
 
 	public override void onStart() {
-		var hit = Global.level.raycast(pos.addxy(0, -10), pos.addxy(0, 60), new List<Type>() { typeof(Wall), typeof(Ladder) });
-		pos = (Point)hit.hitData.hitPoint;
-		pedestal = new FlagPedestal(alliance, (Point)hit.hitData.hitPoint, null, ownedByLocalPlayer);
+		CollideData hit = Global.level.raycast(
+			pos.addxy(0, -10), pos.addxy(0, 60), new List<Type>() { typeof(Wall), typeof(Ladder) }
+		);
+		if (hit.hitData?.hitPoint != null) {
+			changePos(hit.hitData.hitPoint.Value);
+		}
+		pedestal = new FlagPedestal(alliance, pos, null, ownedByLocalPlayer);
 		pedestalPos = pedestal.pos;
 	}
 
@@ -48,13 +52,19 @@ public class Flag : Actor {
 			if (killFeedThrottleTime > 1) killFeedThrottleTime = 0;
 		}
 
-		if (chr != null && !Global.level.gameObjects.Contains(chr)) {
-			dropFlag();
+		if (alliance == 1) {
+			alliance = 1;
 		}
-		else if (chr != null && chr.isWarpOut()) {
-			dropFlag();
-		}
-		else if (chr?.canKeepFlag() != true) {
+
+		if (chr != null) {
+			if (!Global.level.gameObjects.Contains(chr) ||
+				chr.isWarpOut() ||
+				chr.charState.invincible ||
+				chr.destroyed
+			) {
+				dropFlag();
+			}
+		} else if (chr?.canKeepFlag() != true) {
 			dropFlag();
 		}
 
@@ -156,9 +166,11 @@ public class Flag : Actor {
 			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(team + "flag returned", alliance), true);
 		}
 		useGravity = true;
-		if (chr != null) chr.flag = null;
+		if (chr != null) {
+			chr.flag = null;
+		}
 		chr = null;
-		pos = pedestalPos.clone();
+		changePos(pedestalPos);
 	}
 
 	public UpdraftParticle getRandomParticle(float time) {

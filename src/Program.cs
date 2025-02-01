@@ -173,12 +173,12 @@ class Program {
 		Global.input = new Input(false);
 		setupControllers(window);
 
-		if (Options.main.areShadersDisabled() == false) {
+		//if (Options.main.areShadersDisabled() == false) {
 			loadText.Add("Added Poderzinhos.");		//Shaders OK.
 			loadShaders();
-		} else {
-			loadText.Add("No poderzinho?");		//Shaders disabled, skipping.
-		}
+		//} else {
+		//	loadText.Add("No poderzinho?");		//Shaders disabled, skipping.
+		//}
 
 		// Loading with GUI.
 		string urlText = "Using local conection.";
@@ -1113,7 +1113,7 @@ class Program {
 			return result;
 		}
 
-		if (Options.main.graphicsPreset == null) {
+		if (Options.main.detectedGraphicsPreset == null) {
 			OptionsMenu.inferPresetQuality(maxTextureSize);
 		}
 
@@ -1187,6 +1187,7 @@ class Program {
 		// Debug stuff.
 		bool isFrameStep = false;
 		bool continueNextFrameStep = false;
+		bool f12Released = true;
 		bool f5Released = true;
 		bool f6Released = true;
 		// WARNING DISABLE THIS FOR NON-DEBUG BUILDS
@@ -1225,6 +1226,20 @@ class Program {
 					} else {
 						f6Released = true;
 					}
+				}
+				// Reload levels. Dangerous. Keep disabled on release builds.
+				if (Global.level == null) {
+					if (Keyboard.IsKeyPressed(Key.F2) && Keyboard.IsKeyPressed(Key.F1)) {
+						if (f12Released) {
+							Global.destroyChecksum();
+							Global.levelDatas.Clear();
+							loadLevels();
+						}
+					} else {
+						f12Released = true;
+					}
+				} else {
+					f12Released = false;
 				}
 			}
 			if (!(deltaTime >= 1)) {

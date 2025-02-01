@@ -157,6 +157,7 @@ public partial class Character : Actor, IDamagable {
 	//Spark Shock root
 	public float rootTime;
 	public Dictionary<int, float> rootCooldown = new();
+	public float rootCurMaxCooldown = 0;
 	public Anim? rootAnim;
 
 	public float burnEffectTime;
@@ -181,7 +182,6 @@ public partial class Character : Actor, IDamagable {
 	public float frozenMaxTime;
 	public float crystalizedTime;
 	public float crystalizedMaxTime;
-	public int disarrayStacks;
 	
 	// Buffs.
 	public float vaccineTime;
@@ -192,6 +192,10 @@ public partial class Character : Actor, IDamagable {
 
 	// Etc.
 	public int camOffsetX;
+	public int secondBarOffset;
+	public List<Buff> buffList = new();
+	public Dictionary<int, float> disarrayStacks = new();
+	public float disarrayMaxLength = 0;
 
 	// Main character class starts here.
 	public Character(
@@ -411,7 +415,7 @@ public partial class Character : Actor, IDamagable {
 	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
 		if (isBurnState) return;
-		//if (isCCImmune()) return;
+		if (isStunImmune()) return;
 		if (isInvulnerable()) return;
 
 		burningRecoveryCooldown = 0;
@@ -921,7 +925,27 @@ public partial class Character : Actor, IDamagable {
 			rootCooldown[key] -= speedMul;
 			if (rootCooldown[key] <= 0) {
 				rootCooldown.Remove(key);
-				disarrayStacks--;
+			}
+		}
+		if (rootCooldown.Count == 0) {
+			rootCurMaxCooldown = 0;
+		}
+
+		int[] disarrayKeys = disarrayStacks.Keys.ToArray();
+		foreach (int key in disarrayKeys) {
+			disarrayStacks[key] -= speedMul;
+			if (disarrayStacks[key] <= 0) {
+				disarrayStacks.Remove(key);
+			}
+		}
+		if (disarrayStacks.Count == 0) {
+			disarrayMaxLength = 0;
+		}
+
+		for (int i = buffList.Count - 1; i >= 0; i--) {
+			buffList[i].time -= speedMul;
+			if (buffList[i].time <= 0) {
+				buffList.RemoveAt(i);
 			}
 		}
 	}
@@ -1498,18 +1522,27 @@ public partial class Character : Actor, IDamagable {
 		if (rootCooldown.GetValueOrDefault(playerid) > 0) {
 			return;
 		}
+		// Cooldown.
+		float cooldown = time + 60;
 		// Disarray mechanic.
-		int disarrayStacks = rootCooldown.Count;
-		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks * 20, 80)) / 100f;
+		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
 		time = MathF.Floor(time * disarrayReduction);
+		disarrayStacks[playerid] = cooldown;
+		if (cooldown >= disarrayMaxLength) {
+			disarrayMaxLength = cooldown;
+		}
 		// Apply debuff.
 		rootCooldown[playerid] = time + 60;
+		
 		if (rootTime < time) {
 			rootTime = time;
 		}
 		stopMovingWeak();
 		useGravity = false;
 		charState.canStopJump = false;
+
+		// Hud stuff.
+		buffList.Add(new Buff("hud_debuffs", 1, false, time, time));
 	}
 
 	public void paralize(float timeToParalize = 60, float cooldown = 90) {
@@ -2605,7 +2638,6 @@ public partial class Character : Actor, IDamagable {
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = health;
-		Blues? blues = this as Blues;
 
 		// For Dark Hold break.
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
@@ -2686,13 +2718,15 @@ public partial class Character : Actor, IDamagable {
 			player.delayETank();
 			player.stopETankHeal();
 		}
-		if (originalHP > 0 && (originalDamage > 0 || damage > 0) &&
-			this is not Blues { customDamageDisplayOn: true }
-		) {
-			addDamageTextHelper(attacker, (float)damage, (float)maxHealth, true);
+		if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {
+			if (this is Blues blues && blues.customDamageDisplayOn) {
+				blues.lastDamageNum = damage;
+			} else {
+				addDamageTextHelper(attacker, (float)damage, (float)maxHealth, true);
+			}
 		}
 		// Assist and kill logs.
-		if ((damage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
+		if ((originalDamage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
 			damageHistory.Add(new DamageEvent(attacker, weaponIndex.Value, projId, false, Global.time));
 		}
 		// Kill logic.
@@ -3040,13 +3074,13 @@ public partial class Character : Actor, IDamagable {
 
 	// DANGER WRAP SECTION
 
-	public Anim bubbleAnim;
+	public Anim? bubbleAnim;
 
 	public bool hasBubble { get { return dWrappedTime > 0; } }
 	public float dWrappedTime;
 	public float dWrapMashTime = DWrapped.DWrapMaxTime;
 	public Damager? dWrapDamager;
-	public DWrapBigBubble bigBubble;
+	public DWrapBigBubble? bigBubble;
 
 	public void addBubble(Player attacker) {
 		if (!ownedByLocalPlayer || dwrapInvulnTime > 0) return;
@@ -3103,21 +3137,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override Dictionary<int, Func<Projectile>> getGlobalProjs() {
-		var retProjs = new Dictionary<int, Func<Projectile>>();
-
-		// TODO: Move this to viral Sigma class.
-		if (sprite.name.Contains("viral_tackle") && sprite.time > 0.15f) {
-			retProjs[(int)ProjIds.Sigma2ViralTackle] = () => {
-				var damageCollider = getAllColliders().FirstOrDefault(c => c.isAttack());
-				Point centerPoint = damageCollider.shape.getRect().center();
-				Projectile proj = new GenericMeleeProj(
-					new ViralSigmaTackleWeapon(player), centerPoint, ProjIds.Sigma2ViralTackle, player
-				);
-				proj.globalCollider = damageCollider.clone();
-				return proj;
-			};
-		}
-		return retProjs;
+		return new Dictionary<int, Func<Projectile>>();
 	}
 
 	public void releaseGrab(Actor grabber, bool sendRpc = false) {
@@ -3315,8 +3335,53 @@ public partial class Character : Actor, IDamagable {
 	public virtual void aiDodge(Actor? target) { }
 
 	public virtual void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
+		secondBarOffset = 0;
 		renderLifebar(offset, position);
 		renderAmmo(offset, position);
+		renderBuffs(offset, position);
+	}
+
+	public virtual void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		int drawDir = 1;
+		if (position == GameMode.HUDHealthPosition.Right) {
+			drawDir = -1;
+		}
+		Point drawPos = GameMode.getHUDBuffPosition(position) + offset; 
+
+		// Disarray.
+		if (disarrayStacks.Count >= 2) {
+			float[] activeList = disarrayStacks.Values.ToArray();
+			drawBuff(
+				drawPos, activeList.Max() / disarrayMaxLength,
+				"hud_buffs", 0
+			);
+			if (disarrayStacks.Count >= 3) {
+				Fonts.drawText(
+					FontType.GreenSmall, (disarrayStacks.Count - 1).ToString(),
+					drawPos.x + 1, drawPos.y - 9
+				);
+			}
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
+
+		foreach (Buff buff in buffList) {
+			drawBuff(
+				drawPos, buff.time / buff.maxTime,
+				buff.iconName, buff.iconIndex
+			);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
+	}
+
+	public void drawBuff(Point pos, float cooldown, string sprite, int index) {
+		Global.sprites[sprite].drawToHUD(index, pos.x, pos.y);
+		GameMode.drawWeaponSlotCooldown(pos.x, pos.y, cooldown);
+	}
+	public void drawBuffAlt(Point pos, float cooldown, string sprite, int index) {
+		Global.sprites[sprite].drawToHUD(index, pos.x, pos.y);
+		GameMode.drawWeaponSlotAmmo(pos.x, pos.y, cooldown);
 	}
 
 	public virtual (string, int) getBaseHpSprite() {
@@ -3373,9 +3438,12 @@ public partial class Character : Actor, IDamagable {
 		string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
 		string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 
+		float ammo = MathF.Ceiling(renderWeapon.ammo / renderWeapon.ammoDisplayScale);
+		float maxAmmo = MathF.Ceiling(renderWeapon.maxAmmo / renderWeapon.ammoDisplayScale);
+
 		GameMode.renderAmmo(
 			baseX, baseY, renderWeapon.weaponBarBaseIndex, renderWeapon.weaponBarIndex,
-			renderWeapon.ammo, 0, renderWeapon.maxAmmo, false, fullBarName, baseBarName
+			ammo, 0, maxAmmo, false, fullBarName, baseBarName
 		);
 	}
 
@@ -3557,5 +3625,21 @@ public struct DamageEvent {
 		this.projId = projId;
 		this.envKillOnly = envKillOnly;
 		this.time = time;
+	}
+}
+
+public class Buff {
+	public bool isBuff;
+	public float maxTime;
+	public float time;
+	public string iconName;
+	public int iconIndex;
+
+	public Buff(string iconName, int iconIndex, bool isBuff, float time, float maxTime) {
+		this.iconName = (iconName ?? "");
+		this.iconIndex = iconIndex;
+		this.time = time;
+		this.maxTime = maxTime;
+		this.isBuff = isBuff;
 	}
 }

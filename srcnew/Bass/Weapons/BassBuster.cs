@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -67,7 +67,7 @@ public class BassBusterProj : Projectile {
 		fadeSprite = "bass_buster_proj_fade";
 		fadeOnAutoDestroy = true;
 
-		damager.damage = 0.25f;
+		damager.damage = 0.5f;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle);

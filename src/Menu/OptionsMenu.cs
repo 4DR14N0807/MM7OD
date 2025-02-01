@@ -55,10 +55,9 @@ public class OptionsMenu : IMainMenu {
 		oldIntegerFullscreen = Options.main.integerFullscreen;
 		oldFullscreen = Options.main.fullScreen;
 		oldWindowScale = Options.main.windowScale;
-		oldDisableShaders = Options.main.disableShaders;
+		oldDisableShaders = Options.main.fastShaders;
 		oldMaxFPS = Options.main.maxFPS;
 		oldEnablePostprocessing = Options.main.enablePostProcessing;
-		oldUseOptimizedAssets = Options.main.useOptimizedAssets;
 		oldParticleQuality = Options.main.particleQuality;
 		oldVsync = Options.main.vsync;
 
@@ -192,25 +191,6 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Set to Yes to enable vsync.\nMakes movement/scrolling smoother, but adds input lag."
 				),
-				// Use optimized sprites
-				new MenuOption(
-					30, startY,
-					() => {
-						if (inGame) return;
-						Helpers.menuLeftRightBool(ref Options.main.useOptimizedAssets);
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText, "USE OPTIMIZED ASSETS:",
-							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.useOptimizedAssets),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Set to Yes to use optimized assets.\nThis can result in better performance."
-				),
 				// Full screen integer
 				new MenuOption(
 					30, startY,
@@ -230,95 +210,37 @@ public class OptionsMenu : IMainMenu {
 					"Rounds down fullscreen pixels to the nearest integer.\n" +
 					"Reduces distortion when going fullscreen."
 				),
-				// Small Bars
-				new MenuOption(
-					30, startY,
-					() => {
-						if (Global.input.isPressedMenu(Control.MenuLeft)) {
-							Options.main.enableSmallBars = false;
-						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
-							Options.main.enableSmallBars = true;
-						}
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText, "ENABLE SMALL BARS:",
-							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.enableSmallBars),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Makes some of the energy bars smaller."
-				),
-				// Preset
-				new MenuOption(
-					30, startY,
-					() => {
-						if (inGame) return;
-						if (Global.input.isPressedMenu(Control.MenuLeft)) {
-							if (Options.main.graphicsPreset > 0) {
-								Options.main.graphicsPreset--;
-								setPresetQuality(Options.main.graphicsPreset.Value);
-							}
-						}
-						else if (Global.input.isPressedMenu(Control.MenuRight)) {
-							if (Options.main.graphicsPreset < 3) {
-								Options.main.graphicsPreset++;
-								setPresetQuality(Options.main.graphicsPreset.Value);
-							}
-						}
-					},
-					(Point pos, int index) => {
-						FontType color = optionFontText;
-						if (!inGame) {
-							color = FontType.Grey;
-						}
-						Fonts.drawText(
-							optionFontText, "PRESET QUALITY:",
-							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							optionFontText, qualityToString(Options.main.graphicsPreset.Value),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Choose a pre-configured set of graphics settings."
-				),
 				// Shaders
 				new MenuOption(40, startY,
 					() => {
 						if (inGame) return;
-						if (Options.main.graphicsPreset < 3) return;
 						if (Global.input.isPressedMenu(Control.MenuLeft)) {
-							Options.main.disableShaders = true;
+							Options.main.fastShaders = true;
 						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
-							Options.main.disableShaders = false;
+							Options.main.fastShaders = false;
 						}
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "-ENABLE SHADERS:",
+							inGame ? FontType.Black : FontType.Grey, "FAST SHADERS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(!Options.main.disableShaders),
+							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(!Options.main.fastShaders),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
-					"Enables special effects like weapon palettes.\nNot all PCs support this."
+					"Disables special effects like team mode outlines.\nNot all PCs support this."
 				),
 				// Post processing
 				new MenuOption(40, startY,
 					() => {
 						if (inGame) return;
-						if (Options.main.graphicsPreset < 3) return;
 						Helpers.menuLeftRightBool(ref Options.main.enablePostProcessing);
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "-ENABLE POST-PROCESSING: ",
+							inGame ? FontType.Black : FontType.Grey, "ENABLE POST-PROCESSING: ",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -352,12 +274,11 @@ public class OptionsMenu : IMainMenu {
 				new MenuOption(40, startY,
 					() => {
 						if (inGame) return;
-						if (Options.main.graphicsPreset < 3) return;
 						Helpers.menuLeftRightInc(ref Options.main.particleQuality, 0, 2);
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "-PARTICLE QUALITY:",
+							inGame ? FontType.Black : FontType.Grey, "PARTICLE QUALITY:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -371,12 +292,11 @@ public class OptionsMenu : IMainMenu {
 				new MenuOption(40, startY,
 					() => {
 						if (inGame) return;
-						if (Options.main.graphicsPreset < 3) return;
 						Helpers.menuLeftRightBool(ref Options.main.enableMapSprites);
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "-ENABLE MAP SPRITES:",
+							inGame ? FontType.Black : FontType.Grey, "ENABLE MAP SPRITES:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -1472,13 +1392,11 @@ public class OptionsMenu : IMainMenu {
 	}
 
 	public static void setPresetQuality(int graphicsPreset) {
+		Options.main.detectedGraphicsPreset = graphicsPreset;
 		if (graphicsPreset >= 3) return;
-		Options.main.graphicsPreset = graphicsPreset;
-		Options.main.fontType = 0; //(graphicsPreset == 0 ? 0 : 1);
 		Options.main.particleQuality = graphicsPreset;
 		Options.main.enablePostProcessing = (graphicsPreset > 0);
-		Options.main.disableShaders = (graphicsPreset == 0);
-		Options.main.useOptimizedAssets = (graphicsPreset <= 1);
+		Options.main.fastShaders = (graphicsPreset == 0);
 		Options.main.enableMapSprites = (graphicsPreset > 0);
 		Options.main.saveToFile();
 	}
@@ -1530,19 +1448,6 @@ public class OptionsMenu : IMainMenu {
 		return inGame ? Helpers.Gray : Color.White;
 	}
 
-	public FontType getVideoSettingColor() {
-		if (!inGame) {
-			if (Options.main.graphicsPreset < 3) {
-				return FontType.Grey;
-			}
-			return FontType.DarkBlue; ;
-		}
-		if (Options.main.graphicsPreset < 3) {
-			return FontType.Grey;
-		}
-		return FontType.Blue;
-	}
-
 	public void update() {
 		if (!isGraphics && charNum == null) {
 			frames++;
@@ -1572,17 +1477,11 @@ public class OptionsMenu : IMainMenu {
 			selectedArrowPosY--;
 			if (selectedArrowPosY < 0) {
 				selectedArrowPosY = menuOptions.Count - 1;
-				if (isGraphics && Options.main.graphicsPreset < 3) {
-					selectedArrowPosY = presetYPos;
-				}
 			}
 			Global.playSound("menu");
 		} else if (Global.input.isPressedMenu(Control.MenuDown)) {
 			selectedArrowPosY++;
 			if (selectedArrowPosY > menuOptions.Count - 1) {
-				selectedArrowPosY = 0;
-			}
-			if (isGraphics && Options.main.graphicsPreset < 3 && selectedArrowPosY > presetYPos) {
 				selectedArrowPosY = 0;
 			}
 			Global.playSound("menu");
@@ -1614,13 +1513,7 @@ public class OptionsMenu : IMainMenu {
 			}
 
 			if (oldFullscreen != Options.main.fullScreen ||
-				//oldWindowScale != Options.main.windowScale ||
 				oldMaxFPS != Options.main.maxFPS ||
-				oldDisableShaders != Options.main.disableShaders ||
-				oldEnablePostprocessing != Options.main.enablePostProcessing ||
-				oldUseOptimizedAssets != Options.main.useOptimizedAssets ||
-				oldParticleQuality != Options.main.particleQuality ||
-				//oldIntegerFullscreen != Options.main.integerFullscreen ||
 				oldVsync != Options.main.vsync
 			) {
 				Menu.change(new ErrorMenu(new string[] {

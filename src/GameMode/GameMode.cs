@@ -105,6 +105,8 @@ public class GameMode {
 	bool hudPositionsAssigned;
 	int currentLineH;
 
+	List<(Point pos, string name)> navPoints = new();
+
 	public enum HUDHealthPosition {
 		Left,
 		Right,
@@ -560,6 +562,9 @@ public class GameMode {
 				Point basePos = new(Global.screenW - 96, 27);
 				if (level.levelData.isTraining()) {
 					basePos = new Point(10, 106);
+					if (Global.level.mainPlayer.lastCharacter is Blues) {
+						basePos.y += 18;
+					}
 				}
 				Fonts.drawText(
 					FontType.WhiteSmall,
@@ -585,6 +590,7 @@ public class GameMode {
 		if (shouldDrawRadar() && !Menu.inMenu) {
 			drawRadar();
 		}
+		navPoints.Clear();
 		if (!Global.level.is1v1()) {
 			drawKillFeed();
 		}
@@ -843,9 +849,11 @@ public class GameMode {
 
 		Global.radarRenderTextureB.Clear(new Color(0, 0, 0, 0));
 		RenderStates statesL = new RenderStates(Global.radarRenderTextureB.Texture);
-		ShaderWrapper outlineShader = Helpers.cloneShaderSafe("map_outline");
-		outlineShader.SetUniform("textureSize", new SFML.Graphics.Glsl.Vec2(42, 26));
-		statesL.Shader = outlineShader.getShader();
+		ShaderWrapper? outlineShader = Helpers.cloneShaderSafe("map_outline");
+		if (outlineShader != null) {
+			outlineShader.SetUniform("textureSize", new SFML.Graphics.Glsl.Vec2(42, 26));
+			statesL.Shader = outlineShader.getShader();
+		}
 		Global.radarRenderTextureB.Draw(sprite2, statesL);
 		Global.radarRenderTextureB.Display();
 		var spriteFG = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
@@ -864,6 +872,42 @@ public class GameMode {
 		spriteBackground.Dispose();
 		spriteFinal.Dispose();
 
+		
+		// Nav points.
+		foreach (var navPoint in navPoints) {
+			Color color = new Color(255, 255, 255);
+			Color outColor = new Color(255, 255, 255, 128);
+			float xPos = MathF.Round(navPoint.pos.x / mapScale) - offsetX;
+			float yPos = MathF.Round(navPoint.pos.y / mapScale) - offsetY - 1 ;
+
+			if (navPoint.name == "RFlag") {
+				color = new Color(255, 64, 64);
+				outColor = new Color(255, 64, 64, 128);
+			}
+			if (navPoint.name == "BFlag") {
+				color = new Color(64, 64, 255);
+				outColor = new Color(64, 64, 255, 128);
+			}
+			Line line = new Line(new Point(scaledW / 2f, scaledH / 2f), new Point(xPos, yPos));
+			Rect camRect = new Rect(0, 0, scaledW - 1, scaledH);
+			List<CollideData> intersectionPoints = camRect.getShape().getLineIntersectCollisions(line);
+			if (intersectionPoints.Count > 0 && intersectionPoints[0].hitData?.hitPoint != null) {
+				Point intersectPoint = intersectionPoints[0].hitData.hitPoint.GetValueOrDefault();
+				xPos = intersectPoint.x;
+				yPos = intersectPoint.y;
+			}
+
+			float dxPos = radarX + MathF.Round(xPos);
+			float dyPos = radarY + MathF.Round(yPos);
+			DrawWrappers.DrawRectWH(
+				dxPos, dyPos,
+				1, 2,
+				true, color, 1,
+				ZIndex.HUD, false, outColor
+			);
+		}
+
+		// Players.
 		foreach (var player in level.nonSpecPlayers()) {
 			if (player.character == null || player.character.destroyed) continue;
 			if (player.isMainPlayer && player.isDead) continue;
@@ -916,6 +960,7 @@ public class GameMode {
 				}
 			}
 		}
+
 		// Radar rectangle itself (with border)
 		DrawWrappers.DrawRectWH(
 			radarX, radarY,
@@ -1034,9 +1079,17 @@ public class GameMode {
 		if (position is HUDHealthPosition.Left) {
 			x = isHealth ? 16 : 32;
 		} else {
-			x = isHealth ? Global.screenW - 16 : Global.screenW - 32;
+			x = isHealth ? Global.screenW - 17 : Global.screenW - 33;
 		}
 		return new Point(x, 88);
+	}
+
+	public static Point getHUDBuffPosition(HUDHealthPosition position) {
+		int offset = 2;
+		if (position == GameMode.HUDHealthPosition.Right) {
+			offset = -1;
+		}
+		return getHUDHealthPosition(position, true).addxy(offset, 9);
 	}
 
 	public bool renderHealth(Player player, HUDHealthPosition position, bool isMech) {
@@ -1928,7 +1981,7 @@ public class GameMode {
 		DrawWrappers.DrawRectWH(x - 7, y - 7, 14, 14, false, new Color(0, 224, 0), 1, ZIndex.HUD, false);
 	}
 
-	private void drawWeaponSlotAmmo(float x, float y, float val) {
+	public static void drawWeaponSlotAmmo(float x, float y, float val) {
 		DrawWrappers.DrawRectWH(x - 8, y - 8, 16, 16 - MathF.Floor(16 * val), true, new Color(0, 0, 0, 128), 1, ZIndex.HUD, false);
 	}
 
@@ -2907,12 +2960,17 @@ public class GameMode {
 
 	public void drawObjectiveNavpoint(string label, Point objPos) {
 		if (level.mainPlayer.character == null) return;
+		navPoints.Add((objPos, label));
+
+		/*
 		if (!string.IsNullOrEmpty(label)) label += ":";
 
 		Point playerPos = level.mainPlayer.character.pos;
 
 		var line = new Line(playerPos, objPos);
-		var camRect = new Rect(level.camX, level.camY, level.camX + Global.viewScreenW, level.camY + Global.viewScreenH);
+		var camRect = new Rect(
+			level.camX, level.camY, level.camX + Global.viewScreenW, level.camY + Global.viewScreenH
+		);
 
 		var intersectionPoints = camRect.getShape().getLineIntersectCollisions(line);
 		if (intersectionPoints.Count > 0 && intersectionPoints[0].hitData?.hitPoint != null) {
@@ -2961,6 +3019,7 @@ public class GameMode {
 				posX, posY, isLeft ? Alignment.Left : Alignment.Right
 			);
 		}
+		*/
 	}
 
 	public void syncTeamScores() {

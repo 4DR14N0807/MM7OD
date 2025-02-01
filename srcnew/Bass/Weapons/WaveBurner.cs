@@ -50,8 +50,7 @@ public class WaveBurner : Weapon {
 
 
 public class WaveBurnerProj : Projectile {
-
-	Character character = null!;
+	Character? character;
 
 	public WaveBurnerProj(
 		Actor owner, Point pos, float byteAngle, ushort? netProjId, 
@@ -67,8 +66,12 @@ public class WaveBurnerProj : Projectile {
 		damager.damage = 1;
 		damager.hitCooldown = 12;
 
-		character = ownerPlayer.character ?? throw new NullReferenceException();
-		xDir = character.getShootXDir();
+		if (ownedByLocalPlayer) {
+			character = ownerPlayer.character;
+			if (character != null) {
+				xDir = character.getShootXDir();
+			}
+		}
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle);
@@ -90,15 +93,15 @@ public class WaveBurnerProj : Projectile {
 		if (!ownedByLocalPlayer) return;
 		if (isUnderwater()) {
 			new BubbleAnim(pos, "bubbles") { vel = new Point(0, -60) };
-			Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f));
+			Global.level.delayedActions.Add(
+				new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f)
+			);
 			destroySelf();
 		}
 	}
 }
 
-
 public class WaveBurnerUnderwaterProj : Projectile {
-
 	int rand;
 	Anim? bubble1;
 	Anim? bubble2;
@@ -116,14 +119,14 @@ public class WaveBurnerUnderwaterProj : Projectile {
 		vel.x = 240 * xDir;
 		damager.hitCooldown = 0.4f;
 
-		if (ownerPlayer.ownedByLocalPlayer) {
+		if (ownedByLocalPlayer) {
 			if (rand % 2 == 0) {
 				bubble1 = new Anim(pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)), 
 					"wave_burner_underwater_bubble", xDir, ownerPlayer.getNextActorNetId(), false, true)
 					{ vel = new Point(speed * xDir, 0)};
 			
-				bubble1.frameSpeed = 0;
-			}
+					bubble1.frameSpeed = 0;
+				}
 			if (rand > 2) {
 				bubble2 = new Anim(pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)), 
 					"wave_burner_underwater_bubble", xDir, ownerPlayer.getNextActorNetId(), false, true)
@@ -133,6 +136,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 				bubble2.frameIndex = 1;
 			}
 		}
+
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);

@@ -35,15 +35,15 @@ public class JunkShield : Weapon {
 		if (rock.charState is LadderClimb lc) {
 				rock.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
 		} else {
-			rock.changeState(new ShootAlt(this, chargeLevel), true);
+			rock.changeState(new ShootAltRock(this, chargeLevel), true);
 		}
 	}
 
-	public override void getProjs(Character character, params int[] args) {
+	public override void getProjs(Rock rock, params int[] args) {
 		for (int i = 0; i < 3; i++) {
 			new JunkShieldMagnet(
-				character.getCenterPos(), character.xDir, character,
-				character.player.getNextActorNetId(), i * 85	
+				rock.getCenterPos(), rock.xDir, rock,
+				rock.player.getNextActorNetId(), i * 85	
 			);
 		}
 	}
@@ -59,11 +59,11 @@ public class JunkShieldMagnet : Anim {
 	bool once;
 
 	public JunkShieldMagnet(
-		Point pos, int xDir, Character character, ushort? netId, float ang
+		Point pos, int xDir, Rock character, ushort? netId, float ang
 	) : base(
 		pos, "junk_shield_magnet", xDir, netId, false, true
 	) {
-		rock = character as Rock ?? throw new NullReferenceException();
+		rock = character;
 		rock.junkShieldProjs.Add(this);
 		this.ang = ang;
 		startAng = ang;

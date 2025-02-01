@@ -163,6 +163,7 @@ public partial class RPCCreateProj : RPC {
 		//Bass stuff.
 		{ (int)BassProjIds.BassLemon, BassBusterProj.rpcInvoke },
 		{ (int)BassProjIds.CopyVisionLemon, CopyVisionLemon.rpcInvoke },
+		{ (int)BassProjIds.CopyVisionLemonAlt, CopyVisionLemonAlt.rpcInvoke },
 		{ (int)BassProjIds.IceWall, IceWallProj.rpcInvoke },
 		{ (int)BassProjIds.MagicCard, MagicCardProj.rpcInvoke },
 		{ (int)BassProjIds.MagicCardSSpawn, MagicCardSpecialSpawn.rpcInvoke },

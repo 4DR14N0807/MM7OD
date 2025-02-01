@@ -108,7 +108,7 @@ public partial class Level {
 		foreach (Cell cell in cells) {
 			if (cell.gameobjects == null) continue;
 			foreach (GameObject go in cell.gameobjects) {
-				if (!retGameobjects.Contains(go)) {
+				if (!retGameobjects.Contains(go) && !go.iDestroyed && !go.iDisabled) {
 					retGameobjects.Add(go);
 				}
 			}
@@ -863,7 +863,7 @@ public partial class Level {
 		foreach (Cell cell in cells) {
 			if (cell.gameobjects == null) continue;
 			foreach (GameObject go in cell.gameobjects) {
-				if (!gameobjectsChecked.Contains(go)) {
+				if (!gameobjectsChecked.Contains(go) && !go.iDestroyed && !go.iDisabled) {
 					gameobjectsChecked.Add(go);
 					retGameobjects.Add(go);
 				}
@@ -977,14 +977,14 @@ public partial class Level {
 		return (triggers1, triggers2);;
 	}
 
-	public (CollideData?, CollideData?) getTriggerTerrain(Actor actor, Geometry geometry) {
+	public (CollideData?, CollideData?) getTriggerTerrain(Actor actor, GameObject geometry) {
 		CollideData? triggerActor = null;
 		CollideData? triggerTerrain = null;
 		Collider? actorCollider = actor.getTerrainCollider() ?? actor.physicsCollider ?? actor.collider;
 		if (actorCollider == null) {
 			return (triggerActor, triggerTerrain);
 		}
-		Collider geometryCollider = geometry.collider;
+		Collider? geometryCollider = geometry.collider;
 		if (geometryCollider == null) {
 			return (triggerActor, triggerTerrain);
 		}

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +15,7 @@ public class LightningBolt : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 120;
+		fireRate = 30;
 		hasCustomAnim = true;
 	}
 
@@ -68,23 +68,25 @@ public class LightningBoltState : CharState {
 	Anim? aim;
 	const float spawnYPos = -128;
 	Point lightningPos;
+	float endLagFrames = 0;
+
 	public LightningBoltState() : base("lbolt") {
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		Point startAimPos = new Point(character.pos.x + 10 * character.xDir, character.pos.y - 25);
+		Point startAimPos = new Point(character.pos.x + 5 * character.xDir, character.pos.y - 25);
 
 		character.useGravity = false;
 		if (character.vel.y < 0) {
-			character.yPushVel = character.vel.y;
+			character.yPushVel = character.vel.y / 2f;
 		}
 		else if (character.grounded) {
 			character.grounded = false;
-			character.yPushVel = -3.5f * 60;
+			character.yPushVel = -2f * 60;
 		}
-		else if (character.vel.y < 2 * 60) {
-			character.yPushVel = character.vel.y;
+		else if (character.vel.y / 2f < 2 * 60) {
+			character.yPushVel = character.vel.y / 2f;
 		}
 		else {
 			character.yPushVel = 2 * 60;
@@ -128,24 +130,27 @@ public class LightningBoltState : CharState {
 			}
 		}
 
-		if (character.isAnimOver() && player.ownedByLocalPlayer) {
-			if (phase == 1) {
-				new LightningBoltProj(
-					character, lightningPos, character.xDir,
-					character.player.getNextActorNetId(), true
-				);
-				character.playSound("lightningbolt", true);
-				Weapon? bolt = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
-				if (bolt != null) {
-					bolt.addAmmo(-1, player);
-				}
-				phase = 2;
+		if (phase == 1) {
+			new LightningBoltProj(
+				lightningPos, character.xDir, character.player,
+				character.player.getNextActorNetId(), true
+			);
+			character.playSound("lightningbolt", true);
+			Weapon? bolt = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
+			if (bolt != null) {
+				bolt.addAmmo(-1, player);
 			}
-
-			if (stateFrames >= 120) {
-				character.changeToIdleOrFall();
-			}
+			phase = 2;
 		}
+
+		if (phase == 2) {
+			endLagFrames += character.speedMul;
+		}
+
+		if (endLagFrames >= 45) {
+			character.changeToIdleOrFall();
+		}
+		
 	}
 
 	public override void onExit(CharState newState) {

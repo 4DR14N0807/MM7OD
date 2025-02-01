@@ -123,7 +123,7 @@ public class DrawLayer : Transformable, Drawable {
 				}
 			}
 			// One shader.
-			/*else if (oneOff.shaders.Count == 1 && oneOff.color == Color.White || oneOff.size == null) {
+			else if (Options.main.fastShaders || oneOff.size == null) {
 				RenderStates renderStates = new RenderStates(states);
 				renderStates.Shader = oneOff.shaders[0].getShader();
 				target.Draw(oneOff.drawable, renderStates);
@@ -131,7 +131,7 @@ public class DrawLayer : Transformable, Drawable {
 					sprite.Dispose();
 				}
 			}
-			*/// Multi-shader.
+			/// Multi-shader.
 			else {
 				var sprite = oneOff.drawable as SFML.Graphics.Sprite;
 				if (sprite == null) {

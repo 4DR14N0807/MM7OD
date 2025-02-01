@@ -4,6 +4,7 @@ namespace MMXOnline;
 
 public interface GameObject {
 	bool iDestroyed { get; }
+	bool iDisabled { get; }
 	string name { get; set; }
 	float speedMul { get; set; }
 	bool useTerrainGrid { get; set; }

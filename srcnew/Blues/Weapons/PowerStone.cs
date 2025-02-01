@@ -9,7 +9,7 @@ public class PowerStone : Weapon {
 	public PowerStone() : base() {
 		displayName = "POWER STONE";
 		descriptionV2 = "Summons three stones that spiral around.\nCan be used behind the shield.";
-		defaultAmmoUse = 6;
+		defaultAmmoUse = 5;
 
 		index = (int)BluesWeaponIds.PowerStone;
 		fireRate = 55;
@@ -39,7 +39,8 @@ public class PowerStone : Weapon {
 }
 
 public class PowerStoneProj : Projectile {
-	Actor ownChr = null!;
+	Character? character;
+	Point origin;
 	int stoneAngle = 120;
 	float radius = 10;
 
@@ -52,7 +53,7 @@ public class PowerStoneProj : Projectile {
 		projId = (int)BluesProjIds.PowerStone;
 		maxTime = 1;
 
-		ownChr = owner;
+		character = ownerPlayer.character;
 		stoneAngle = type * 85;
 		zIndex = ZIndex.Character - 10;
 		destroyOnHit = false;
@@ -60,8 +61,15 @@ public class PowerStoneProj : Projectile {
 
 		damager.damage = 2;
 		damager.hitCooldown = 60;
-
-		changePos(ownChr.getCenterPos().add(Point.createFromByteAngle(stoneAngle).times(radius)));
+		
+		origin = pos;
+		if (character != null) {
+			origin = character.getCenterPos();
+		}
+		changePos(new Point(
+			origin.x + Helpers.cosb(stoneAngle) * radius,
+			origin.y + Helpers.sinb(stoneAngle) * radius
+		));
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
@@ -76,8 +84,13 @@ public class PowerStoneProj : Projectile {
 
 	public override void update() {
 		base.update();
-
-		changePos(ownChr.getCenterPos().add(Point.createFromByteAngle(stoneAngle).times(radius)));
+		if (character != null) {
+			origin = character.getCenterPos();
+		}
+		changePos(new Point(
+			origin.x + Helpers.cosb(stoneAngle) * radius,
+			origin.y + Helpers.sinb(stoneAngle) * radius
+		));
 
 		stoneAngle += 6;
 		radius += 1.25f;

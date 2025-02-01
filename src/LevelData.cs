@@ -105,6 +105,7 @@ public class LevelData {
 	public bool supportsVehicles;
 	public bool raceOnly;
 	public int customSize = -1;
+	public string customMusicName = "";
 
 	public LevelData() {
 	}
@@ -112,7 +113,7 @@ public class LevelData {
 	public LevelData(string levelJsonStr, string levelIniStr, bool isCustomMap) {
 		levelJson = JsonConvert.DeserializeObject<dynamic>(levelJsonStr);
 		if (levelIniStr != "") {
-			dynamic levelIni = IniParser.ParseText(levelIniStr);
+			var levelIni = IniParser.ParseText(levelIniStr);
 			if (levelIni["MapData"]["size"] is String customSizeStr) {
 				customSize = customSizeStr.ToLowerInvariant() switch {
 					"training" => 0,
@@ -123,6 +124,9 @@ public class LevelData {
 					"xl" or "collosal" => 5,
 					_=> -1 
 				};
+			}
+			if (levelIni["MapData"]["music"] is String customMusicStr) {
+				customMusicName = customMusicStr;
 			}
 		}
 		name = levelJson.name;
@@ -612,6 +616,9 @@ public class LevelData {
 	};
 
 	public string getMusicKey(List<Player> players) {
+		if (customMusicName != "") {
+			return customMusicName;
+		}
 		if (name == "japetribute_1v1") {
 			return "japetribute_1v1";
 		}

@@ -71,7 +71,6 @@ public class GravityHoldProj : Projectile {
 		if (owner.character != null) {
 			changePos(owner.character.getCenterPos());
 		}
-
 		if (r < maxR) {
 			r += 4;
 		} else {

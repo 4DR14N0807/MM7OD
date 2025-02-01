@@ -111,7 +111,6 @@ public class ChamoBuster : Projectile {
 
 
 public class SuperBassRP : Projectile {
-
 	Bass bass = null!;
 	Player player;
 	float maxReverseTime;

@@ -46,7 +46,7 @@ public class StarCrash : Weapon {
 }
 
 public class StarCrashProj : Projectile {
-	Blues blues = null!;
+	Blues? blues;
 	Player player;
 	float starAngle;
 	int radius = 30;
@@ -119,8 +119,9 @@ public class StarCrashProj : Projectile {
 
 	public void shoot() {
 		if (!ownedByLocalPlayer) return;
-
-		blues.delinkStarCrash();
+		if (blues != null) {
+			blues.delinkStarCrash();
+		}
 		new StarCrashProj2(
 			pos, xDir, damager.owner, 
 			damager.owner.getNextActorNetId(), 

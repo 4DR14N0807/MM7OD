@@ -61,7 +61,7 @@ public class MagicCard : Weapon {
 
 public class MagicCardProj : Projectile {
 	bool reversed;
-	Character shooter = null!;
+	Character? shooter;
 	float maxReverseTime;
 	const float projSpeed = 480;
 	public Pickup? pickup;
@@ -70,6 +70,7 @@ public class MagicCardProj : Projectile {
 	int hits;
 	float startAngle;
 	Actor ownChr = null!;
+	private Point returnPos;
 
 	public MagicCardProj(
 		Actor owner, Weapon weapon, Point pos, int xDir, float byteAngle,
@@ -85,7 +86,13 @@ public class MagicCardProj : Projectile {
 		startAngle = byteAngle;
 		this.effect = effect;
 		wep = weapon;
-		shooter = ownerPlayer.character ?? throw new NullReferenceException();
+		returnPos = pos;
+		if (ownedByLocalPlayer) {
+			shooter = ownerPlayer.character;
+			if (shooter != null) {
+				returnPos = shooter.getCenterPos();
+			}
+		}
 		destroyOnHit = effect != 3;
 
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
@@ -123,7 +130,9 @@ public class MagicCardProj : Projectile {
 			frameSpeed = -2;
 			if (frameIndex == 0) frameIndex = sprite.totalFrameNum - 1;
 
-			Point returnPos = shooter.getCenterPos();
+			if (shooter != null) {
+				returnPos = shooter.getCenterPos();
+			}
 			if (shooter.sprite.name.Contains("shoot")) {
 				Point poi = shooter.pos;
 				var pois = shooter.sprite.getCurrentFrame()?.POIs;

@@ -152,7 +152,7 @@ public class Damager {
 		}
 
 		if (damagable is CrackedWall cw) {
-			float? overrideDamage = CrackedWall.canDamageCrackedWall(projId, cw);
+			float? overrideDamage = CrackedWall.canDamageCrackedWall(damage, cw);
 			if (overrideDamage != null && overrideDamage == 0 && damage > 0) {
 				cw.playSound("ding");
 				return true;

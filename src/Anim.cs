@@ -251,7 +251,8 @@ public class Anim : Actor {
 	) {
 		AnimData sprite = Global.sprites[spriteName];
 		float startAngle = 0;
-		for (int i = 0; i < sprite.frames.Length; i++) {
+		for (int i = 0; i < 8 || i < sprite.frames.Length; i++) {
+			int frame = i % sprite.frames.Length;
 			float angle = Helpers.randomRange(0, 360);
 			if (gibPattern == GibPattern.Radial || gibPattern == GibPattern.SemiCircle) {
 				angle = startAngle;
@@ -272,7 +273,7 @@ public class Anim : Actor {
 			anim.ttl = 0.75f;
 			anim.vel = new Point(compX * randVel, compY * randVel * 1.25f);
 			anim.frameSpeed = 0;
-			anim.frameIndex = i;
+			anim.frameIndex = frame;
 
 			if (gibPattern == GibPattern.Radial) {
 				startAngle -= 360 / sprite.frames.Length;

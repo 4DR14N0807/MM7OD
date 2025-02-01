@@ -7,6 +7,8 @@ namespace MMXOnline;
 //Umbrella class for walls, nav meshes, ladders, etc.
 public class Geometry : GameObject {
 	public bool iDestroyed => false;
+	public bool disabled;
+	public bool iDisabled => disabled;
 	public string name { get; set; }
 	public Collider collider { get; set; }
 	public float speedMul { get; set; } = 1;

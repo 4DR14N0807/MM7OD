@@ -11,6 +11,8 @@ public partial class Actor : GameObject {
 	public bool useTerrainGrid { get; set; } = false;
 	public bool useActorGrid { get; set; } = true;
 	public bool iDestroyed => destroyed;
+	public bool disabled;
+	public bool iDisabled => disabled;
 
 	public int frameIndex {
 		get => sprite.frameIndex;
@@ -1180,8 +1182,8 @@ public partial class Actor : GameObject {
 
 		//console.log(this.pos.x + "," + this.pos.y);
 
-		float drawX = MathF.Round(pos.x);
-		float drawY = MathF.Round(pos.y);
+		float drawX = MathF.Round(pos.x) + MathF.Round(x);
+		float drawY = MathF.Round(pos.y) + MathF.Round(y);
 
 		if (customAngleRendering) {
 			renderFromAngle(x, y);

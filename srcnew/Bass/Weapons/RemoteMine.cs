@@ -145,7 +145,7 @@ public class RemoteMineExplosionProj : Projectile {
 	int expTime;
 	Anim? part;
 	int animLap;
-	Bass bass = null!;
+	Bass? bass;
 
 	public RemoteMineExplosionProj(
 		Point pos, int xDir, Player player, 
@@ -160,8 +160,10 @@ public class RemoteMineExplosionProj : Projectile {
 		destroyOnHit = false;
 		shouldShieldBlock = false;
 		if (ownedByLocalPlayer) {
-			bass = player.character as Bass ?? throw new NullReferenceException();
-			bass.rMineExplosion = this;
+			bass = player.character as Bass;
+			if (bass != null) {
+				bass.rMineExplosion = this;
+			}
 		}
 		if (rpc) {
 			rpcCreate(pos, player, netProjId, xDir);

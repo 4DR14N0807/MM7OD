@@ -40,8 +40,10 @@ public class TenguBladeStart : Anim {
 		pos, "tengu_blade_spawn", xDir, netId, true, 
 		sendRpc, ownedByLocalPlayer, player.character
 	) {
-		character = player.character ?? throw new NullReferenceException();
-		distance = pos.directionTo(character.getCenterPos());
+		character = player.character;
+		if (character != null) {
+			distance = pos.directionTo(character.getCenterPos());
+		}
 	}
 
 	public override void update() {

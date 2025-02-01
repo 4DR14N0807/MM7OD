@@ -338,6 +338,9 @@ public class Weapon {
 		//Used to spawn projectiles of certain weapons with a different shoot sprite/state
 		//(Like Junk Shield or Wild Coil).
 	}
+	public virtual void getProjs(Rock rock, params int[] args) {
+		getProjs(rock, args);
+	}
 	public virtual void shoot(Actor actor, params int[] args) {
 	}
 	public virtual void shootLight(Character character, params int[] args) {

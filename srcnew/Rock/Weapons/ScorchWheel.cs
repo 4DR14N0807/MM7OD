@@ -25,7 +25,7 @@ public class ScorchWheel : Weapon {
 		if (character.charState is LadderClimb lc) {
 			character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel, character.isUnderwater()), true);
 		} else {
-			character.changeState(new ShootAlt(this, chargeLevel, character.isUnderwater()), true);
+			character.changeState(new ShootAltRock(this, chargeLevel, character.isUnderwater()), true);
 		}
 	}
 

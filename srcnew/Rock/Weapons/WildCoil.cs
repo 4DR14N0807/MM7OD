@@ -25,7 +25,7 @@ public class WildCoil : Weapon {
 		if (character.charState is LadderClimb lc) {
 			character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
 		} else {
-			character.changeState(new ShootAlt(this, chargeLevel), true);
+			character.changeState(new ShootAltRock(this, chargeLevel), true);
 		}
 	}
 

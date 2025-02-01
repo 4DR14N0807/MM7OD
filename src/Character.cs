@@ -3074,13 +3074,13 @@ public partial class Character : Actor, IDamagable {
 
 	// DANGER WRAP SECTION
 
-	public Anim bubbleAnim;
+	public Anim? bubbleAnim;
 
 	public bool hasBubble { get { return dWrappedTime > 0; } }
 	public float dWrappedTime;
 	public float dWrapMashTime = DWrapped.DWrapMaxTime;
 	public Damager? dWrapDamager;
-	public DWrapBigBubble bigBubble;
+	public DWrapBigBubble? bigBubble;
 
 	public void addBubble(Player attacker) {
 		if (!ownedByLocalPlayer || dwrapInvulnTime > 0) return;
@@ -3137,21 +3137,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override Dictionary<int, Func<Projectile>> getGlobalProjs() {
-		var retProjs = new Dictionary<int, Func<Projectile>>();
-
-		// TODO: Move this to viral Sigma class.
-		if (sprite.name.Contains("viral_tackle") && sprite.time > 0.15f) {
-			retProjs[(int)ProjIds.Sigma2ViralTackle] = () => {
-				var damageCollider = getAllColliders().FirstOrDefault(c => c.isAttack());
-				Point centerPoint = damageCollider.shape.getRect().center();
-				Projectile proj = new GenericMeleeProj(
-					new ViralSigmaTackleWeapon(player), centerPoint, ProjIds.Sigma2ViralTackle, player
-				);
-				proj.globalCollider = damageCollider.clone();
-				return proj;
-			};
-		}
-		return retProjs;
+		return new Dictionary<int, Func<Projectile>>();
 	}
 
 	public void releaseGrab(Actor grabber, bool sendRpc = false) {

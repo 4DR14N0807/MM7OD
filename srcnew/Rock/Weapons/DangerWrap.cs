@@ -401,8 +401,7 @@ public class DWrapped : CharState {
 
 
 public class DWrapBigBubble : Actor, IDamagable {
-	public Character character = null!;
-	public Player player => character.player;
+	public Character? character;
 	public float health = 4;
 	public float bubbleFrames;
 	public Anim? bomb;
@@ -416,13 +415,15 @@ public class DWrapBigBubble : Actor, IDamagable {
 		"danger_wrap_big_bubble", pos, netId, ownedByLocalPlayer, false
 	) {
 		netOwner = victim;
-		this.character = victim.character ?? throw new NullReferenceException();
+		character = victim.character;
 		useGravity = false;
 		canBeLocal = false;
 
-		if (ownedByLocalPlayer)  {
-			bomb = new Anim(getCenterPos(), "danger_wrap_bomb", 
-				xDir, player.getNextActorNetId(), false, true);
+		if (ownedByLocalPlayer && netOwner != null)  {
+			bomb = new Anim(
+				getCenterPos(), "danger_wrap_bomb", 
+				xDir, netOwner.getNextActorNetId(), false, true
+			);
 
 		}
 
@@ -440,7 +441,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return player.alliance == damagerAlliance;
+		return netOwner?.alliance == damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -459,42 +460,44 @@ public class DWrapBigBubble : Actor, IDamagable {
 		if (!ownedByLocalPlayer) return;
 
 		bubbleFrames++;
-
-		changePos(character.getCenterPos());
-
-		if (character.isDWrapped) {
-			character.grounded = true;
-			if (bubbleFrames is <= 60 or >= 150) {
-				if (character.vel.y > -60) character.vel.y -= 5;
-				if (Math.Abs(character.vel.x) < 30 && bubbleFrames <= 60) character.vel.x += 3 * character.xDir;
-			} else {
-				if (character.vel.y < 30) character.vel.y += 2;
-				if (Math.Abs(character.vel.x) > 0) character.vel.x -= 1 * character.xDir;
+		if (character != null) {
+			changePos(character.getCenterPos());
+			if (character.isDWrapped) {
+				character.grounded = true;
+				if (bubbleFrames is <= 60 or >= 150) {
+					if (character.vel.y > -60) character.vel.y -= 5;
+					if (Math.Abs(character.vel.x) < 30 && bubbleFrames <= 60) character.vel.x += 3 * character.xDir;
+				} else {
+					if (character.vel.y < 30) character.vel.y += 2;
+					if (Math.Abs(character.vel.x) > 0) character.vel.x -= 1 * character.xDir;
+				}
 			}
 		}
-
 		if (bomb != null) {
 			bomb.changePos(getCenterPos());
 			if(bubbleFrames >= 120) bomb.changeSprite("danger_wrap_bomb_active", false);
 		}
-
-		if (bubbleFrames >= 180 && character.dWrapDamager != null) {
-			character.dWrapDamager.applyDamage(character, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion);
+		if (bubbleFrames >= 180 && (character == null || character.dWrapDamager != null)) {
+			if (character?.ownedByLocalPlayer == true) {
+				character.dWrapDamager?.applyDamage(
+					character, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion
+				);
+			}
 			destroySelf();
 		}
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
-
-		if (!player.ownedByLocalPlayer) return;
-
-		character.bigBubble = null!;
+		if (netOwner?.ownedByLocalPlayer != true) return;
+		if (character != null) {
+			character.bigBubble = null;
+			//character.removeBubble(true);
+			character.dwrapEnd();
+			character.dwrapInvulnTime = 3;
+		}
 		if (bomb != null) bomb.destroySelf();
-		//character.removeBubble(true);
-		character.dwrapEnd();
-		character.dwrapInvulnTime = 3;
-		new Anim(pos, "danger_wrap_big_bubble_fade", xDir, player.getNextActorNetId(), true);
+		new Anim(pos, "danger_wrap_big_bubble_fade", xDir, netOwner.getNextActorNetId(), true);
 	}
 
 	public bool isPlayableDamagable() {

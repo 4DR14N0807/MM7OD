@@ -114,14 +114,17 @@ public class SlideEnd : CharState {
 	}
 }
 
-public class ShootAlt : CharState {
-
+public class ShootAltRock : CharState {
+	Rock rock = null!;
 	Weapon stateWeapon;
 	bool fired;
 	int chargeLv;
 	bool isUnderwaterSW;
-	public ShootAlt(Weapon stateWeapon, int chargeLv, bool underwater = false) : 
-	base(underwater ? "shoot_swell" : "shoot2") {
+	public ShootAltRock(
+		Weapon stateWeapon, int chargeLv, bool underwater = false
+	) : base(
+		underwater ? "shoot_swell" : "shoot2"
+	) {
 		normalCtrl = false;
 		airMove = true;
 		canStopJump = true;
@@ -131,7 +134,7 @@ public class ShootAlt : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		
+		rock = character as Rock ?? throw new NullReferenceException();
 		if (character.isUnderwater() && stateWeapon is ScorchWheel) {
 			character.changeSpriteFromName("shoot_swell", true);
 		}
@@ -160,18 +163,18 @@ public class ShootAlt : CharState {
 
 		if (stateWeapon is JunkShield) {
 			if (!fired && character.frameIndex == 2) {
-				stateWeapon.getProjs(character, new int[] {});
+				stateWeapon.getProjs(rock, new int[] {});
 				fired = true;
 			}
 		} else if (stateWeapon is ScorchWheel) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 				fired = true;
-				stateWeapon.getProjs(character, new int[] {});
+				stateWeapon.getProjs(rock, new int[] {});
 			}
 		} else if (stateWeapon is WildCoil) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 				fired = true;	
-				stateWeapon.getProjs(character , new int[] {chargeLv});
+				stateWeapon.getProjs(rock , new int[] {chargeLv});
 			}
 		} else {
 			if (!fired && character.frameIndex >= 6) {

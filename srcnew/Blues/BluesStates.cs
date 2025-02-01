@@ -240,8 +240,8 @@ public class BluesSpreadShoot : CharState {
 				angleOffset = 128;
 			}
 			new ProtoBusterAngledProj(
-				character.getShootPos(), (shotAngle + angleOffset) * shootDir, type,
-				player, player.getNextActorNetId(), rpc: true
+				blues, blues.getShootPos(), (shotAngle + angleOffset) * shootDir, 
+				type, player.getNextActorNetId(), rpc: true
 			);
 			// This way lemons and mid charge shot sounds wont conflict.
 			if (type == 0) {
@@ -487,8 +487,8 @@ public class BluesRevive : CharState {
 		}
 		if (blues.frameIndex >= 1 && !once) {
 			new GravityHoldProj(
-				character.getCenterPos(), character.xDir,
-				player, player.getNextActorNetId(), true
+				blues, blues.getCenterPos(), blues.xDir,
+				player.getNextActorNetId(), true
 			);
 			once = true;
 		}

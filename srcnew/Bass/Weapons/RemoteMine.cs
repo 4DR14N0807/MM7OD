@@ -26,8 +26,9 @@ public class RemoteMine : Weapon {
 	public override void shoot(Character character, params int[] args) {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
+		Bass bass = character as Bass ?? throw new NullReferenceException();
 
-		new RemoteMineProj(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
+		new RemoteMineProj(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), true);
 	}
 }
 
@@ -37,31 +38,33 @@ public class RemoteMineProj : Projectile {
 	bool landed;
 	Character? host;
 	Anim? anim;
-	Bass? bass;
+	Bass bass = null!;
 
 	public RemoteMineProj(
-		Point pos, int xDir, Player player, 
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base (
-			RemoteMine.netWeapon, pos, xDir, 240, 0,
-			player, "remote_mine_proj", 0, 0.5f, 
-			netProjId, player.ownedByLocalPlayer
+			pos, xDir, owner, "remote_mine_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMine;
 		maxTime = 1.25f;
-		bass = player.character as Bass;
+		bass = owner as Bass ?? throw new NullReferenceException();
 		if (bass != null) bass.rMine = this;
-		anim = new Anim(getCenterPos(), "remote_mine_anim", xDir, player.getNextActorNetId(), false, true);
+		anim = new Anim(getCenterPos(), "remote_mine_anim", xDir, ownerPlayer.getNextActorNetId(), false, true);
+
+		vel.x = 240 * xDir;
+		damager.hitCooldown = 30;
+
 		canBeLocal = false;
 
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RemoteMineProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -111,7 +114,7 @@ public class RemoteMineProj : Projectile {
 	void explode() {
 		destroySelf();
 		if (ownedByLocalPlayer) {
-			new RemoteMineExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+			new RemoteMineExplosionProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
 			playSound("remotemineExplode", true);
 		}
 	}
@@ -126,28 +129,30 @@ public class RemoteMineExplosionProj : Projectile {
 	Bass bass = null!;
 
 	public RemoteMineExplosionProj(
-		Point pos, int xDir, Player player, 
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base (
-		RemoteMine.netWeapon, pos, xDir, 0, 2,
-		player, "remote_mine_explosion", Global.halfFlinch, 1,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "remote_mine_explosion", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMineExplosion;
 		maxTime = 0.75f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
-		bass = player.character as Bass ?? throw new NullReferenceException();
+		bass = owner as Bass ?? throw new NullReferenceException();
 		bass.rMineExplosion = this;
 
+		damager.damage = 2;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 60;
+
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RemoteMineExplosionProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -163,6 +168,7 @@ public class RemoteMineExplosionProj : Projectile {
 			animLap++;
 			if (animLap > 4) animLap = 1;
 			for (int i = 0; i < 5; i++) {
+				if (!ownedByLocalPlayer) return;
 				part = new Anim(pos, "remote_mine_explosion_part", xDir,
 					damager.owner.getNextActorNetId(), true, true);
 				

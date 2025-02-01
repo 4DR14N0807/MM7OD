@@ -334,6 +334,7 @@ public class Weapon {
 		//args[1] is mostly used for weapons with custom shoot anims so the code
 		//knows if the character is entering the state or spawning the projectiles.
 	}
+	public virtual void shootRock(Rock rock, params int[] args) {}
 	public virtual void getProjs(Character character, params int[] args) {
 		//Used to spawn projectiles of certain weapons with a different shoot sprite/state
 		//(Like Junk Shield or Wild Coil).

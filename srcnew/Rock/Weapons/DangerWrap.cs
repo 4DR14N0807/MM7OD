@@ -38,21 +38,21 @@ public class DangerWrap : Weapon {
 
 	}
 
-	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
-		Player player = character.player;
+	public override void shootRock(Rock rock, params int[] args) {
+		base.shootRock(rock, args);
+		Point shootPos = rock.getShootPos();
+		int xDir = rock.getShootXDir();
+		Player player = rock.player;
 		int input = player.input.getYDir(player);
 		if (player.input.getXDir(player) != 0) input = 2;
 
 		if (input == 1) {
 			dangerMines.Add(
-				new DangerWrapMineProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true));
+				new DangerWrapMineProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player));
 		} else {
-			new DangerWrapBubbleProj(shootPos, xDir, player, 0, player.getNextActorNetId(), input, true);
+			new DangerWrapBubbleProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), input, true, player);
 		}
-		character.playSound("buster2", sendRpc: true);
+		rock.playSound("buster2", sendRpc: true);
 	}
 }
 
@@ -63,14 +63,13 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 	public float health = 1;
 	public float heightMultiplier = 1f;
 	Anim? bomb;
+	Actor ownChr = null!;
 
 	public DangerWrapBubbleProj(
-		Point pos, int xDir, Player player, int type, 
-		ushort netProjId, int input = 0, bool rpc = false
+		Actor owner, Point pos, int xDir, int type, 
+		ushort? netProjId, int input = 0, bool rpc = false, Player? altPlayer = null
 	) : base(
-		DangerWrap.netWeapon, pos, xDir, 0, 0,
-		player, "danger_wrap_start", 0, 0.5f, netProjId,
-		player.ownedByLocalPlayer
+		pos, xDir, owner, "danger_wrap_start", netProjId, altPlayer
 	) {
 
 		projId = (int)RockProjIds.DangerWrap;
@@ -80,6 +79,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 		canBeLocal = false;
 		this.type = type;
 		this.input = input;
+		damager.hitCooldown = 0.5f;
 
 		if (type == 1) {
 			vel.x = 60 * xDir;
@@ -94,22 +94,22 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 				heightMultiplier = 0.65f;
 			}
 
-			if (ownedByLocalPlayer) {
-				bomb = new Anim(pos, "danger_wrap_bomb", xDir, player.getNextActorNetId(), true, true);
+			if (ownedByLocalPlayer && altPlayer != null) {
+				bomb = new Anim(pos, "danger_wrap_bomb", xDir, altPlayer.getNextActorNetId(), true, true);
 			}
 		}
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapBubbleProj(
-			arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -121,8 +121,8 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 			time = 0;
 			if (ownedByLocalPlayer) {
 				new DangerWrapBubbleProj(
-					pos, xDir, damager.owner, 1,
-					damager.owner.getNextActorNetId(true), input, rpc: true
+					ownChr, pos, xDir, 1, damager.owner.getNextActorNetId(true), 
+					input, rpc: true, damager.owner
 				);
 
 			}
@@ -182,33 +182,34 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	bool landed;
 	bool didExplode;
 	float health = 1;
+	Actor ownChr;
 
 	public DangerWrapMineProj(
-		Point pos, int xDir,
-		Player player, int type, ushort netProjId,
-		bool rpc = false
+		Actor owner, Point pos, int xDir, int type, 
+		ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		DangerWrap.netWeapon, pos, xDir, 0, 2,
-		player, "danger_wrap_fall", 0, 1,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "danger_wrap_fall", netProjId, altPlayer
 	) {
 
 		projId = (int)RockProjIds.DangerWrapMine;
 		maxTime = 0.5f;
 		useGravity = true;
 		fadeSprite = "generic_explosion";
+		damager.damage = 2;
+		damager.hitCooldown = 1;
+		ownChr = owner;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapMineProj(
-			arg.pos, arg.xDir, arg.player,
-			arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -222,8 +223,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			useGravity = false;
 			changeSprite("danger_wrap_land", false);
 			landed = true;
-			damager.damage = 3;
-			damager.flinch = Global.halfFlinch;
+			updateDamager(3, Global.halfFlinch);
 
 			if (time >= 2) changeSprite("danger_wrap_land_active", false);
 
@@ -241,11 +241,12 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			for (int i = 0; i < 6; i++) {
 				float x = Helpers.cosd(i * 60) * 180;
 				float y = Helpers.sind(i * 60) * 180;
-				new Anim(pos, "generic_explosion", 1, null, true) { vel = new Point(x, y) };
+				new Anim(pos, "generic_explosion", 1, damager.owner.getNextActorNetId(), true, true) 
+				{ vel = new Point(x, y) };
 			}
 
 			playSound("danger_wrap_explosion");
-			new DangerWrapExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+			new DangerWrapExplosionProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), true);
 		}
 	}
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
@@ -282,27 +283,27 @@ public class DangerWrapExplosionProj : Projectile {
 	private double maxRadius = 80;
 
 	public DangerWrapExplosionProj(
-		Point pos, int xDir,
-		Player player, ushort netProjId,
-		bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		DangerWrap.netWeapon, pos, xDir, 0, 4,
-		player, "empty", Global.defFlinch, 0.5f,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "empty", netProjId, altPlayer
 	) {
 
 		projId = (int)RockProjIds.DangerWrapExplosion;
 		//maxTime = 0.2f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
+		damager.damage = 4;
+		damager.flinch = Global.defFlinch;
+		damager.hitCooldown = 30;
 
-		if (rpc) rpcCreate(pos, player, netProjId, xDir);
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		projId = (int)RockProjIds.DangerWrapMine;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapExplosionProj(
-		arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 

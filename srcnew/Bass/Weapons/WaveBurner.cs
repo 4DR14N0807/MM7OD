@@ -25,16 +25,16 @@ public class WaveBurner : Weapon {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
-		Bass? bass = character as Bass ?? throw new NullReferenceException();
+		Bass bass = character as Bass ?? throw new NullReferenceException();
 
 		if (character.isUnderwater()) {
 			new WaveBurnerUnderwaterProj(
-				shootPos, character.getShootXDir(),
-				player, player.getNextActorNetId(), true
+				bass, shootPos, character.getShootXDir(),
+				player.getNextActorNetId(), true
 			);
 		} else {
 			float shootAngle = bass.getShootAngle(true, true) + bass.wBurnerAngle;
-			new WaveBurnerProj(shootPos, shootAngle, player, player.getNextActorNetId(), true);
+			new WaveBurnerProj(bass, shootPos, shootAngle, player.getNextActorNetId(), true, player);
 			bass.wBurnerAngle += 8 * bass.wBurnerAngleMod;
 			if (Math.Abs(bass.wBurnerAngle) > 32) {
 				bass.wBurnerAngleMod *= -1;
@@ -54,29 +54,30 @@ public class WaveBurnerProj : Projectile {
 	Character character = null!;
 
 	public WaveBurnerProj(
-		Point pos, float byteAngle, Player player,
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, float byteAngle, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		WaveBurner.netWeapon, pos, 1, 0, 1,
-		player, "wave_burner_proj", 0, 0.2f, 
-		netProjId, player.ownedByLocalPlayer 
+		pos, 1, owner, "wave_burner_proj", netProjId, altPlayer 
 	) {
 		projId = (int)BassProjIds.WaveBurner;
 		maxTime = 0.2f;
 		destroyOnHit = false;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
 
-		character = player.character ?? throw new NullReferenceException();
+		damager.damage = 1;
+		damager.hitCooldown = 12;
+
+		character = ownerPlayer.character ?? throw new NullReferenceException();
 		xDir = character.getShootXDir();
 
 		if (rpc) {
-			rpcCreateByteAngle(pos, player, netId, byteAngle);
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WaveBurnerProj(
-			arg.pos, arg.byteAngle, arg.player, arg.netId
+			arg.owner, arg.pos, arg.byteAngle, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -86,6 +87,7 @@ public class WaveBurnerProj : Projectile {
 	}
 
 	public void checkUnderwater() {
+		if (!ownedByLocalPlayer) return;
 		if (isUnderwater()) {
 			new BubbleAnim(pos, "bubbles") { vel = new Point(0, -60) };
 			Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f));
@@ -101,42 +103,45 @@ public class WaveBurnerUnderwaterProj : Projectile {
 	Anim? bubble1;
 	Anim? bubble2;
 	public WaveBurnerUnderwaterProj(
-		Point pos, int xDir, Player player,
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		WaveBurner.netWeapon, pos, xDir, 240, 0,
-		player, "wave_burner_underwater_proj", 0, 0.4f, 
-		netProjId, player.ownedByLocalPlayer 
+		pos, xDir, owner, "wave_burner_underwater_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.WaveBurnerUnderwater;
 		maxTime = 0.33f;
 		destroyOnHit = false;
 		rand = Helpers.randomRange(1, 4);
-		
-		if (rand % 2 == 0) {
-			bubble1 = new Anim(pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)), 
-				"wave_burner_underwater_bubble", xDir, player.getNextActorNetId(), false, true)
-				{ vel = new Point(speed * xDir, 0)};
+
+		vel.x = 240 * xDir;
+		damager.hitCooldown = 0.4f;
+
+		if (ownerPlayer.ownedByLocalPlayer) {
+			if (rand % 2 == 0) {
+				bubble1 = new Anim(pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)), 
+					"wave_burner_underwater_bubble", xDir, ownerPlayer.getNextActorNetId(), false, true)
+					{ vel = new Point(speed * xDir, 0)};
 			
-			bubble1.frameSpeed = 0;
-		}
-		if (rand > 2) {
-			bubble2 = new Anim(pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)), 
-				"wave_burner_underwater_bubble", xDir, player.getNextActorNetId(), false, true)
-				{ vel = new Point(speed * xDir, 0)};
+				bubble1.frameSpeed = 0;
+			}
+			if (rand > 2) {
+				bubble2 = new Anim(pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)), 
+					"wave_burner_underwater_bubble", xDir, ownerPlayer.getNextActorNetId(), false, true)
+					{ vel = new Point(speed * xDir, 0)};
 			
-			bubble2.frameSpeed = 0;
-			bubble2.frameIndex = 1;
+				bubble2.frameSpeed = 0;
+				bubble2.frameIndex = 1;
+			}
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WaveBurnerUnderwaterProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 

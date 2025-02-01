@@ -666,11 +666,11 @@ public class Blues : Character {
 		if (chargeLevel <= 0) {
 			if (type == 0) {
 				new ProtoBusterProj(
-					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
 				);
 			} else {
 				new ProtoBusterOverdriveProj(
-					shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
 				);
 				playSound("buster2", sendRpc: true);
 				addCoreAmmo(0.75f);
@@ -683,7 +683,7 @@ public class Blues : Character {
 			}
 		} else if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
-				type, shootPos, xDir, player, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(1));
 			if (type == 0) {
@@ -694,7 +694,7 @@ public class Blues : Character {
 			lemonCooldown = 12;
 		} else if (chargeLevel == 2) {
 			new ProtoBusterLv3Proj(
-				type, shootPos, xDir, player, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(2));
 			playSound("buster3", sendRpc: true);
@@ -706,17 +706,17 @@ public class Blues : Character {
 			} else {
 				if (type == 1) {
 					var proj = new ProtoBusterLv4Proj(
-						type, shootPos.addxy(-12 * xDir, 0), xDir, player, player.getNextActorNetId(), true
+						this, type, shootPos.addxy(-12 * xDir, 0), xDir, player.getNextActorNetId(), true
 					);
 					proj.frameIndex = 2;
 					proj.maxTime += 4 / 60f;
 				}
 				new ProtoBusterLv4Proj(
-					type, shootPos, xDir, player, player.getNextActorNetId(), true
+					this, type, shootPos, xDir, player.getNextActorNetId(), true
 				);
 				if (type == 1) {
 					var proj = new ProtoBusterLv4Proj(
-						type, shootPos.addxy(12 * xDir, 0), xDir, player, player.getNextActorNetId(), true
+						this, type, shootPos.addxy(12 * xDir, 0), xDir, player.getNextActorNetId(), true
 					);
 					proj.frameIndex = 1;
 					proj.maxTime -= 4 / 60f;

@@ -44,7 +44,7 @@ public class BassBuster : Weapon {
 
 		if (!player.ownedByLocalPlayer) return;
 
-		var proj = new BassBusterProj(shootPos, bass.getShootAngle(), player, player.getNextActorNetId(), true);
+		var proj = new BassBusterProj(bass, shootPos, bass.getShootAngle(), player.getNextActorNetId(), true);
 		new Anim(shootPos, "bass_buster_anim", character.xDir, player.getNextActorNetId(), true, true);
 		lemonsOnField.Add(proj);
 		character.playSound("bassbuster", true);
@@ -53,10 +53,10 @@ public class BassBuster : Weapon {
 
 public class BassBusterProj : Projectile {
 	public BassBusterProj(
-		Point pos, float byteAngle, Player player, ushort? netId, bool rpc = false
+		Actor owner, Point pos, float byteAngle, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		BassBuster.netWeapon, pos, 1, 0, 0.25f, player, "bass_buster_proj",
-		0, 0, netId, player.ownedByLocalPlayer
+		pos, 1, owner, "bass_buster_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.BassLemon;
 		byteAngle = MathF.Round(byteAngle);
@@ -67,14 +67,16 @@ public class BassBusterProj : Projectile {
 		fadeSprite = "bass_buster_proj_fade";
 		fadeOnAutoDestroy = true;
 
+		damager.damage = 0.25f;
+
 		if (rpc) {
-			rpcCreateByteAngle(pos, player, netId, byteAngle);
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new BassBusterProj(
-			arg.pos, arg.byteAngle, arg.player, arg.netId
+			arg.owner, arg.pos, arg.byteAngle, arg.netId, altPlayer: arg.player
 		);
 	}
 

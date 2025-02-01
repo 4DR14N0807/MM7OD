@@ -131,7 +131,7 @@ public class LightningBoltState : CharState {
 		if (character.isAnimOver() && player.ownedByLocalPlayer) {
 			if (phase == 1) {
 				new LightningBoltProj(
-					lightningPos, character.xDir, character.player,
+					character, lightningPos, character.xDir,
 					character.player.getNextActorNetId(), true
 				);
 				character.playSound("lightningbolt", true);
@@ -164,28 +164,30 @@ public class LightningBoltProj : Projectile {
 	int timeInFrames;
 
 	public LightningBoltProj(
-		Point pos, int xDir, Player player,
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		LightningBolt.netWeapon, pos, xDir, 0, 4,
-		player, "lightning_bolt_proj", Global.halfFlinch, 1,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "lightning_bolt_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.LightningBolt;
 		maxTime = 0.5f;
 		setIndestructableProperties();
 		bodySpriteHeight = new Sprite(bodySprite).animData.frames[0].rect.h();
 
+		damager.damage = 4;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 60;
+
 		spawnPosY = pos.y;
 		base.vel.y = 600;
 		frameSpeed = 0;
 
-		if (rpc) rpcCreate(pos, player, netProjId, xDir);
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new LightningBoltProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 

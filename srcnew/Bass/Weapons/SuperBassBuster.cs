@@ -21,15 +21,16 @@ public class SBassBuster : Weapon {
 		int xDir = character.getShootXDir();
 		Player player = character.player;
 		int chargeLevel = args[0];
+		Bass bass = character as Bass ?? throw new NullReferenceException();
 
 		if (chargeLevel >= 2) {
-			//new SuperBassRP(shootPos, xDir, player, player.getNextActorNetId(), true);
+			//new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			//character.playSound("super_adaptor_punch", sendRpc: true);
-			new ChamoBuster(shootPos, xDir, player, player.getNextActorNetId(), true);
+			new ChamoBuster(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster3", sendRpc: true);
 		} 
 		else if (chargeLevel == 1) {
-			new SBassShot(shootPos, xDir, player, player.getNextActorNetId(), true);
+			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster2", sendRpc: true);
 		}
 		else {
@@ -37,12 +38,12 @@ public class SBassBuster : Weapon {
 			if (xDir < 0) ang = -ang + 128;
 			float speed = 360;
 
-			new SBassLemon(shootPos, xDir, player, player.getNextActorNetId(), true)
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
 				{ vel = Point.createFromByteAngle(-ang).times(speed) };
 
-			new SBassLemon(shootPos, xDir, player, player.getNextActorNetId(), true);
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true);
 
-			new SBassLemon(shootPos, xDir, player, player.getNextActorNetId(), true)
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
 				{ vel = Point.createFromByteAngle(ang).times(speed) };
 
 			character.playSound("buster");
@@ -53,45 +54,58 @@ public class SBassBuster : Weapon {
 
 public class SBassLemon : Projectile {
 	public SBassLemon(
-		Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		SBassBuster.netWeapon, pos, xDir, 360, 1,
-		player, "bass_buster_proj", 0, 0.15f,
-		netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "bass_buster_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassLemon;
 		maxTime = 0.3f;
+
+		vel.x = 360 * xDir;
+		damager.damage = 1;
+		damager.hitCooldown = 9;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
 	}
 }
 
 public class SBassShot : Projectile {
 
 	public SBassShot(
-		Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		SBassBuster.netWeapon, pos, xDir, 300, 2,
-		player, "bass_buster_proj2", 0, 0,
-		netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "bass_buster_proj2", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassShot;
 		maxTime = 0.5f;
+
+		vel.x = 300 * xDir;
+		damager.damage = 2;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
 	}
 }
 
 
 public class ChamoBuster : Projectile {
 	public ChamoBuster(
-		Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		SBassBuster.netWeapon, pos, xDir, 340, 3,
-		player, "bass_chamobuster", Global.halfFlinch, 0,
-		netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "bass_chamobuster", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.ChamoBuster;
 		maxTime = 0.5f;
+
+		vel.x = 340 * xDir;
+		damager.damage = 3;
+		damager.flinch = Global.halfFlinch;
 	}
 }
 
@@ -103,20 +117,26 @@ public class SuperBassRP : Projectile {
 	float maxReverseTime;
 	bool reversed;
 	Actor? target;
+	float projSpeed = 240;
 
 	public SuperBassRP(
-		Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		SBassBuster.netWeapon, pos, xDir, 240, 3,
-		player, "sb_rocket_punch", Global.halfFlinch, 0.5f,
-		netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "sb_rocket_punch", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassRocketPunch;
-		bass = player.character as Bass ?? throw new NullReferenceException();
+		bass = owner as Bass ?? throw new NullReferenceException();
 		if (bass != null) bass.sbRocketPunch = this;
 		maxReverseTime = 0.5f;
-		this.player = player;
+		this.player = ownerPlayer;
+
+
+		vel.x = projSpeed * xDir;
+		damager.damage = 3;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 30;
+
 		destroyOnHit = false;
 		canBeLocal = false;
 	}
@@ -143,7 +163,7 @@ public class SuperBassRP : Projectile {
 			if (pos.x > target.pos.x) xDir = -1;
 			else xDir = 1;
 			Point targetPos = target.getCenterPos();
-			move(pos.directionToNorm(targetPos).times(speed));
+			move(pos.directionToNorm(targetPos).times(projSpeed));
 			if (pos.distanceTo(targetPos) < 5) {
 				reversed = true;
 			}
@@ -166,7 +186,7 @@ public class SuperBassRP : Projectile {
 				returnPos = bass.pos.addxy(poi.x * bass.xDir, poi.y);
 			}
 
-			move(pos.directionToNorm(returnPos).times(speed));
+			move(pos.directionToNorm(returnPos).times(projSpeed));
 			if (pos.distanceTo(returnPos) < 10) {
 				destroySelf();
 				Global.playSound("super_adaptor_punch_recover");

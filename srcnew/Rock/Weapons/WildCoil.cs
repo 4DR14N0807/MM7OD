@@ -18,30 +18,32 @@ public class WildCoil : Weapon {
 		description = new string[] { "Throws coils in both sides that", "can be charged to reach more height.", "Use Up/Down to change bounce patterns." };
 	}
 
-	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
+	public override void shootRock(Rock rock, params int[] args) {
+		base.shootRock(rock, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb lc) {
-			character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
+		if (rock.charState is LadderClimb lc) {
+			rock.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
 		} else {
-			character.changeState(new ShootAlt(this, chargeLevel), true);
+			rock.changeState(new ShootAlt(this, chargeLevel), true);
 		}
 	}
 
 	public override void getProjs(Character character, params int[] args) {
-		Point shootPos = character.getFirstPOI() ?? character.getCenterPos();
-		Point shootPos1 = character.getFirstPOI(1) ?? character.getCenterPos();
-		Player player = character.player;
+		Rock rock = character as Rock ?? throw new NullReferenceException();
+		Point shootPos = rock.getFirstPOI() ?? rock.getCenterPos();
+		Point shootPos1 = rock.getFirstPOI(1) ?? rock.getCenterPos();
+		int xDir = rock.getShootXDir();
+		Player player = rock.player;
 		int chargeLv = args[0];
 
 		if (chargeLv >= 2) {
-			new WildCoilChargedProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-			new WildCoilChargedProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
+			new WildCoilChargedProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
+			new WildCoilChargedProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
 			character.playSound("buster3", sendRpc: true);
 		} else {
-			new WildCoilProj(shootPos, character.getShootXDir(), player, 0, player.getNextActorNetId(), rpc: true);
-			new WildCoilProj(shootPos1, character.getShootXDir(), player, 1, player.getNextActorNetId(), rpc: true);
+			new WildCoilProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
+			new WildCoilProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
 			character.playSound("buster2", sendRpc: true);
 		}
 	}
@@ -56,13 +58,12 @@ public class WildCoilProj : Projectile {
 
 	public int bounceSpeed = 240;
 	float soundCooldown;
+	float projSpeed = 120;
 	public WildCoilProj(
-		Point pos, int xDir, Player player, 
-		int type, ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, int type, 
+		ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		WildCoil.netWeapon, pos, xDir, 120, 2,
-		player, "wild_coil_start", 0, 0.5f,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "wild_coil_start", netProjId, altPlayer
 	) {
 
 		projId = (int)RockProjIds.WildCoil;
@@ -72,20 +73,24 @@ public class WildCoilProj : Projectile {
 		fadeSprite = "generic_explosion";
 		canBeLocal = false;
 
+		damager.damage = 2;
+		damager.hitCooldown = 6;
+
 		vel.y = -200;
-		if (type == 0) vel.x = speed * xDir;
-		else vel.x = -speed * xDir;
+		if (type == 0) vel.x = projSpeed * xDir;
+		else vel.x = -projSpeed * xDir;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WildCoilProj(
-			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -134,14 +139,14 @@ public class WildCoilChargedProj : Projectile {
 	int bounceBuff;
 	bool bouncedOnce;
 	int frame;
+	float projSpeed = 120;
+	Player? player = null;
 
 	public WildCoilChargedProj(
-		Point pos, int xDir, Player player, 
-		int type, ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, int type, 
+		ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		WildCoil.netWeapon, pos, xDir, 120, 2,
-		player, "wild_coil_charge_start", 0, 0.5f,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner,"wild_coil_charge_start", netProjId, altPlayer
 	) {
 
 		projId = (int)RockProjIds.WildCoilCharged;
@@ -150,27 +155,32 @@ public class WildCoilChargedProj : Projectile {
 		fadeOnAutoDestroy = true;
 		fadeSprite = "generic_explosion";
 		canBeLocal = false;
+		damager.damage = 2;
 
-		if (player.input.isHeld(Control.Up, player)) bounceSpeed = 480;
-		else if (player.input.isHeld(Control.Down, player)) {
-			bounceReq = 6;
-			bounceSpeed = 60;
-		} else bouncePower = 1f;
+		player = altPlayer;
+		if (player != null) {
+			if (player.input.isHeld(Control.Up, player)) bounceSpeed = 480;
+			else if (player.input.isHeld(Control.Down, player)) {
+				bounceReq = 6;
+				bounceSpeed = 60;
+			} else bouncePower = 1f;
+		}	
 
 		vel.y = -200;
-		if (type == 0) vel.x = speed * xDir;
-		else vel.x = -speed * xDir;
+		if (type == 0) vel.x = projSpeed * xDir;
+		else vel.x = -projSpeed * xDir;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WildCoilChargedProj(
-			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 

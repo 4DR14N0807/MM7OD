@@ -21,11 +21,12 @@ public class IceWall : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
+		Bass bass = character as Bass ?? throw new NullReferenceException();
 		Point shootPos = character.getShootPos().addxy(0, 2);
 		Player player = character.player;
 
-		new IceWallProj(shootPos, character.getShootXDir(), player, player.getNextActorNetId(), true);
-		character.playSound("icewall", true);
+		new IceWallProj(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), true);
+		bass.playSound("icewall", true);
 	}
 }
 
@@ -46,7 +47,7 @@ public class IceWallStart : Anim {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (ownedByLocalPlayer) {
-			new IceWallProj(pos, xDir, player, player.getNextActorNetId(), true);
+			//new IceWallProj(pos, xDir, player, player.getNextActorNetId(), true);
 		}
 	}
 }
@@ -60,29 +61,30 @@ public class IceWallProj : Projectile {
 	Collider? terrainCollider;
 
 	public IceWallProj(
-		Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		IceWall.netWeapon, pos, xDir, 0, 0, player, "ice_wall_proj", 0, 0, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "ice_wall_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.IceWall;
 		useGravity = true;
 		canBeLocal = false;
 		base.xDir = xDir;
-		this.player = player;
+		this.player = ownerPlayer;
 		collider.isTrigger = false;
 		isSolidWall = true;
 		maxTime = 2f;
 		destroyOnHit = false;
 		splashable = true;
+		damager.hitCooldown = 60;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
 
-		if (rpc) rpcCreate(pos, player, netId, xDir);
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new IceWallProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 	

@@ -21,10 +21,12 @@ public class GyroAttack : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
+		Blues blues = character as Blues ?? throw new NullReferenceException();
+		Point shootPos = blues.getShootPos();
+		int xDir = blues.getShootXDir();
+		Player player = blues.player;
 
-		new GyroAttackProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
+		new GyroAttackProj(blues, shootPos, xDir, player.getNextActorNetId(), true, player);
 	}
 }
 
@@ -33,21 +35,29 @@ public class GyroAttackProj : Projectile {
 	bool changedDir;
 	const float projSpeed = 180;
 
-	public GyroAttackProj(Point pos, int xDir, Player player, ushort? netId, bool rpc = false) :
-	base(GyroAttack.netWeapon, pos, xDir, projSpeed, 2, player, "gyro_attack_proj", 0, 0, netId, player.ownedByLocalPlayer) {
+	public GyroAttackProj(
+		Actor owner, Point pos, int xDir,ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
+	) :
+	base(
+		pos, xDir, owner, "gyro_attack_proj", netId, altPlayer
+	) {
 		maxTime = 0.625f;
 		projId = (int)BluesProjIds.GyroAttack;
-		netOwner = player;
+		netOwner = altPlayer;
 		canBeLocal = false;
 
+		vel.x = projSpeed * xDir;
+		damager.damage = 2;
+
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new GyroAttackProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 

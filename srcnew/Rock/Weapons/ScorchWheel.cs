@@ -18,31 +18,32 @@ public class ScorchWheel : Weapon {
 		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };
 	}
 
-	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
+	public override void shootRock(Rock rock, params int[] args) {
+		base.shootRock(rock, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb lc) {
-			character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel, character.isUnderwater()), true);
+		if (rock.charState is LadderClimb lc) {
+			rock.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel, rock.isUnderwater()), true);
 		} else {
-			character.changeState(new ShootAlt(this, chargeLevel, character.isUnderwater()), true);
+			rock.changeState(new ShootAlt(this, chargeLevel, rock.isUnderwater()), true);
 		}
 	}
 
 	public override void getProjs(Character character, params int[] args) {
-		Player player = character.player;
+		Rock rock = character as Rock ?? throw new NullReferenceException();
+		Player player = rock.player;
 
-		if (character.isUnderwater()) {
+		if (rock.isUnderwater()) {
 			new UnderwaterScorchWheelProj
 			(
-				character.getCenterPos(), character.getShootXDir(), 
-				player, player.getNextActorNetId(true), rpc: true
+				rock, rock.getCenterPos(), rock.getShootXDir(), 
+				player.getNextActorNetId(true), rpc: true, player
 			);
 		} else {
 			new ScorchWheelSpawn
 			(
-				character.getCenterPos(), character.getShootXDir(), player, 
-				player.getNextActorNetId(true), rpc: true
+				rock, rock.getCenterPos(), rock.getShootXDir(),
+				player.getNextActorNetId(true), rpc: true, player
 			);
 		}
 	}
@@ -51,29 +52,32 @@ public class ScorchWheel : Weapon {
 
 public class ScorchWheelSpawn : Projectile {
 
-	public Rock? rock;
+	public Rock rock = null!;
 	bool hasHeld;
+	Actor ownChr = null!;
+	Player player;
+
 	public ScorchWheelSpawn(
-		Point pos, int xDir, Player player, 	
-		ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		ScorchWheel.netWeapon, pos, xDir, 0, 0,
-		player, "scorch_wheel_spawn", 0, 0,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "scorch_wheel_spawn", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.ScorchWheelSpawn;
-		rock = (player.character as Rock);
-		if (rock != null) rock.sWellSpawn = this;
+		this.player = altPlayer ?? throw new NullReferenceException();
+		rock = (player.character as Rock ?? throw new NullReferenceException());
+		rock.sWellSpawn = this;
 		useGravity = false;
 		maxTime = 1;
 		destroyOnHit = false;
+		ownChr = owner;
 
-		if (rpc) rpcCreate(pos, player, netProjId, xDir);
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ScorchWheelSpawn(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -91,14 +95,14 @@ public class ScorchWheelSpawn : Projectile {
 		}
 
 		if (isAnimOver() && hasHeld == true) {
-			new ScorchWheelProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
+			new ScorchWheelProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), rpc: true, player);
 			destroySelf();
 			playSound("scorch_wheel", true, true);
 		} else if (isAnimOver()
 				&& hasHeld == false
 		) {
 			destroySelf();
-			new ScorchWheelMoveProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), rpc: true);
+			new ScorchWheelMoveProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), rpc: true, player);
 			playSound("scorch_wheel", true, true);
 			if (rock != null) rock.weaponCooldown = 60;
 		}
@@ -126,28 +130,31 @@ public class ScorchWheelSpawn : Projectile {
 public class ScorchWheelProj : Projectile {
 
 	float projAngle;
-	Rock? rock;
+	Rock rock = null!;
 	Player player;
 	Point centerPos;
 	public List<Sprite> fireballs = new List<Sprite>();
 	int radius = 15;
 	float holdTime;
 	bool hasHeld;
+	Actor ownChr = null!;
 
 	public ScorchWheelProj(
-		Point pos, int xDir, Player player, 
-		ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		ScorchWheel.netWeapon, pos, xDir, 0, 1, 
-		player, "scorch_wheel_proj", 0, 0.5f, 
-		netProjId, player.ownedByLocalPlayer) {
+		pos, xDir, owner, "scorch_wheel_proj", netProjId, altPlayer) {
 
 		projId = (int)RockProjIds.ScorchWheel;
 		destroyOnHit = false;
-		this.player = player;
-		rock = player.character as Rock;
-		if (rock != null) rock.sWell = this;
+		this.player = ownerPlayer ?? throw new NullReferenceException();
+		rock = ownerPlayer.character as Rock ?? throw new NullReferenceException();
+		rock.sWell = this;
 		canBeLocal = false;
+
+		damager.damage = 1;
+		damager.hitCooldown = 30;
+		ownChr = owner;
 
 		for (int i = 0; i < 4; i++) {
 			Sprite fireball = new Sprite("scorch_wheel_fireball");
@@ -159,7 +166,7 @@ public class ScorchWheelProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ScorchWheelProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -190,7 +197,7 @@ public class ScorchWheelProj : Projectile {
 
 			if (!hasHeld || holdTime >= 2) {
 				destroySelf();
-				new ScorchWheelMoveProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(true), rpc: true);
+				new ScorchWheelMoveProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), rpc: true, player);
 				playSound("scorch_wheel", true, true);
 				rock.weaponCooldown = 60;
 				return;
@@ -223,28 +230,32 @@ public class ScorchWheelProj : Projectile {
 
 
 public class ScorchWheelMoveProj : Projectile {
-	public Rock? rock;
+	public Rock rock = null!;
 	public ScorchWheelMoveProj(
-		Point pos, int xDir, Player player, 
-		ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		ScorchWheel.netWeapon, pos, xDir, 240, 1,
-		player, "scorch_wheel_grounded_proj", 0, 1,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "scorch_wheel_grounded_proj", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.ScorchWheelMove;
 		useGravity = true;
 		maxTime = 1.25f;
 		canBeLocal = false;
 
+		vel.x = 240 * xDir;
+		damager.damage = 1;
+		damager.hitCooldown = 1;
+
+		rock = owner as Rock ?? throw new NullReferenceException();
+
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ScorchWheelMoveProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -289,32 +300,33 @@ public class UnderwaterScorchWheelProj : Projectile {
 	int counter = 0;
 	int bubblesSmallAmount;
 	int counterSmall = 0;
-	Rock? rock;
+	Rock rock = null!;
 
 	public UnderwaterScorchWheelProj(
-		Point pos, int xDir, Player player, 
-		ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		ScorchWheel.netWeapon, pos, xDir, 0, 2,
-		player, "empty", 0, 1,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "empty", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.ScorchWheelUnderwater;
 		maxTime = 1.5f;
 		destroyOnHit = false;
-		rock = player.character as Rock;
+		rock = owner as Rock ?? throw new NullReferenceException();
 		if (rock != null) rock.sWellU = this;
 		if (rock != null) rock.underwaterScorchWheel = this;
+
+		damager.damage = 2;
+		damager.hitCooldown = 60;
 
 		bubblesAmount = Helpers.randomRange(2, 8);
 		bubblesSmallAmount = Helpers.randomRange(2, 8);
 
-		if (rpc) rpcCreate(pos, player, netProjId, xDir);
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new UnderwaterScorchWheelProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 

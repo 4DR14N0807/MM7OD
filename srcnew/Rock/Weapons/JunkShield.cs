@@ -28,14 +28,14 @@ public class JunkShield : Weapon {
 		return rock?.junkShieldProjs.Count <= 0 && base.canShoot(chargeLevel, player);
 	}
 
-	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
+	public override void shootRock(Rock rock, params int[] args) {
+		base.shoot(rock, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb lc) {
-				character.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
+		if (rock.charState is LadderClimb lc) {
+				rock.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel), true);
 		} else {
-			character.changeState(new ShootAlt(this, chargeLevel), true);
+			rock.changeState(new ShootAlt(this, chargeLevel), true);
 		}
 	}
 
@@ -145,7 +145,7 @@ public class JunkShieldPiece : Anim {
 		for (int i = 0; i < 3; i++) {
 			//Main pices
 			float ang = 85 * i;
-			var parent = new JunkShieldProj(pos, xDir, player, ang, player.getNextActorNetId(), true)
+			var parent = new JunkShieldProj(rock, pos, xDir, ang, player.getNextActorNetId(), true, player)
 			{ frameIndex = 5, isParent = true };
 
 			for (int j = 0; j < 2; j++) {
@@ -155,7 +155,7 @@ public class JunkShieldPiece : Anim {
 				int frame = small ? Helpers.randomRange(0, 1) : Helpers.randomRange(2, 4);
 				if (MathF.Ceiling(angs) % 85 == 0 || angs == 0) angs -= 12;
 
-				var son = new JunkShieldProj(pos, xDir, player, angs, player.getNextActorNetId(), true)
+				var son = new JunkShieldProj(rock, pos, xDir, angs, player.getNextActorNetId(), true, player)
 				{ frameIndex = frame, smallestSon = small };
 
 				son.parent = parent;
@@ -173,28 +173,29 @@ public class JunkShieldProj : Projectile {
 	public List<JunkShieldProj?> sons = new();
 	public bool smallestSon;
 	bool threw;
-	Player player;
+	Player? player;
 	Rock rock = null!;
 	float ang;
 	float radius = 30;
 	bool sound;
 
 	public JunkShieldProj(
-		Point pos, int xDir, Player player, 
-		float ang, ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, float ang, 
+		ushort? netProjId, bool rpc = false, Player? altPlayer = null 
 	) : base(
-		JunkShield.netWeapon, pos, xDir, 0, 1, 
-		player, "junk_shield_pieces", 0, 0.25f, 
-		netProjId, player.ownedByLocalPlayer) 
-	{
+		pos, xDir, owner, "junk_shield_pieces", netProjId, altPlayer
+	) {
 		projId = (int)RockProjIds.JunkShield;
-		rock = player.character as Rock ?? throw new NullReferenceException();
+		rock = owner as Rock ?? throw new NullReferenceException();
 		rock.junkShieldProjs.Add(this);
 		
+		damager.damage = 1;
+		damager.hitCooldown = 15;
+
 		destroyOnHit = false;
 		frameSpeed = 0;
 		
-		this.player = player;
+		player = altPlayer;
 		this.ang = ang;
 		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
 		canBeLocal = false;
@@ -202,13 +203,14 @@ public class JunkShieldProj : Projectile {
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)ang };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new JunkShieldProj(
-			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -227,6 +229,8 @@ public class JunkShieldProj : Projectile {
 			destroySelfNoEffect();
 			return;
 		}
+
+		if (player == null) return;
 
 		if (time >= (Global.speedMul * 15) / 60 && player.input.isPressed(Control.Shoot, player)) {
 			shootProjs();

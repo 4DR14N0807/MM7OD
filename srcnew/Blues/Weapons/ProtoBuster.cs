@@ -12,24 +12,26 @@ public class ProtoBuster : Weapon {
 
 public class ProtoBusterProj : Projectile {
 	public ProtoBusterProj(
-		Point pos, int xDir, Player player,
-		ushort? netId, Point? vel = null, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		Point? vel = null, bool rpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 250, 1, player,
-		"proto_buster_proj", 0, 0, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "proto_buster_proj", netId, altPlayer
 	) {
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.Lemon;
 		fadeSprite = "proto_buster_proj_fade";
 
+		base.vel.x = 250 * xDir;
+		damager.damage = 1;
+
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 	public override void update() {
@@ -50,10 +52,10 @@ public class ProtoBusterProj : Projectile {
 
 public class ProtoBusterAngledProj : Projectile {
 	public ProtoBusterAngledProj(
-		Point pos, float byteAngle, int type, Player player, ushort? netId, bool rpc = false
+		Actor owner, Point pos, float byteAngle, int type, 
+		ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, 1, 0, 2, player,
-		"proto_midcharge_proj", 0, 1, netId, player.ownedByLocalPlayer
+		pos, 1, owner, "proto_midcharge_proj", netId, altPlayer
 	) {
 		byteAngle = byteAngle % 256;
 		fadeSprite = "proto_midcharge_proj_fade";
@@ -61,6 +63,9 @@ public class ProtoBusterAngledProj : Projectile {
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
+
+		damager.damage = 2;
+		damager.hitCooldown = 1;
 
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;
@@ -80,13 +85,14 @@ public class ProtoBusterAngledProj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreateByteAngle(pos, player, netId, byteAngle, (byte)type);
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, (byte)type);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterAngledProj(
-			args.pos, args.byteAngle, args.extraData[0], args.player, args.netId
+			args.owner, args.pos, args.byteAngle, args.extraData[0], 
+			args.netId, altPlayer: args.player
 		);
 	}
 
@@ -100,25 +106,28 @@ public class ProtoBusterAngledProj : Projectile {
 
 public class ProtoBusterOverdriveProj : Projectile {
 	public ProtoBusterOverdriveProj(
-		Point pos, int xDir, Player player,
-		ushort? netId, Point? vel = null, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		Point? vel = null, bool rpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 250, 1, player,
-		"proto_midcharge_proj", Global.miniFlinch, 0, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "proto_midcharge_proj", netId, altPlayer
 	) {
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.LemonOverdrive;
 		fadeSprite = "proto_midcharge_proj_fade";
 		fadeOnAutoDestroy = true;
 
+		base.vel.x = 250 * xDir;
+		damager.damage = 1;
+		damager.flinch = Global.miniFlinch;
+
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 	public override void update() {
@@ -139,16 +148,21 @@ public class ProtoBusterOverdriveProj : Projectile {
 
 public class ProtoBusterLv2Proj : Projectile {
 	public ProtoBusterLv2Proj(
-		int type, Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, int type, Point pos, int xDir, 
+		ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 325, 2, player,
-		"rock_buster1_proj", Global.miniFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "rock_buster1_proj", netId, altPlayer
 	) {
 		fadeSprite = "rock_buster1_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.4125f;
 		projId = (int)BluesProjIds.BusterLV2;
+
+		vel.x = 325 * xDir;
+		damager.damage = 2;
+		damager.flinch = Global.miniFlinch;
+		damager.hitCooldown = 0.5f;
+
 		if (type == 1) {
 			damager.flinch = Global.halfFlinch;
 			changeSprite("rock_buster2_proj", true);
@@ -158,13 +172,13 @@ public class ProtoBusterLv2Proj : Projectile {
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterLv2Proj(
-			args.extraData[0], args.pos, args.xDir, args.player, args.netId
+			args.owner, args.extraData[0], args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 }
@@ -172,16 +186,21 @@ public class ProtoBusterLv2Proj : Projectile {
 
 public class ProtoBusterLv3Proj : Projectile {
 	public ProtoBusterLv3Proj(
-		int type, Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, int type, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 325, 3, player,
-		"proto_chargeshot_purple_proj", Global.halfFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "proto_chargeshot_purple_proj", netId, altPlayer
 	) {
 		fadeSprite = "proto_chargeshot_purple_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.45f;
 		projId = (int)BluesProjIds.BusterLV4;
+
+		vel.x = 325 * xDir;
+		damager.damage = 3;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 0.5f;
+
 		if (type == 1) {
 			damager.flinch = Global.defFlinch;
 		}
@@ -189,30 +208,35 @@ public class ProtoBusterLv3Proj : Projectile {
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, extraArgs);
 		}
 	}
 
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterLv3Proj(
-			args.extraData[0], args.pos, args.xDir, args.player, args.netId
+			args.owner, args.extraData[0], args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 }
 
 public class ProtoBusterLv4Proj : Projectile {
 	public ProtoBusterLv4Proj(
-		int type, Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false
+		Actor owner, int type, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		ProtoBuster.netWeapon, pos, xDir, 325, 4, player,
-		"proto_chargeshot_proj", Global.defFlinch, 0.5f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "proto_chargeshot_proj", netId, altPlayer
 	) {
 		fadeSprite = "proto_chargeshot_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.5f;
 		projId = (int)BluesProjIds.BusterLV4;
+
+		vel.x = 325 * xDir;
+		damager.damage = 4;
+		damager.flinch = Global.defFlinch;
+		damager.hitCooldown = 0.5f;
+
 		if (type == 1) {
 			damager.flinch = Global.superFlinch;
 		}
@@ -220,13 +244,13 @@ public class ProtoBusterLv4Proj : Projectile {
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterLv4Proj(
-			args.extraData[0], args.pos, args.xDir, args.player, args.netId
+			args.owner, args.extraData[0], args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 }

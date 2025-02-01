@@ -55,7 +55,7 @@ public class TenguBladeStart : Anim {
 
 		if (!ownedByLocalPlayer) return;
 
-		new TenguBladeProj(pos, xDir, character.player, character.player.getNextActorNetId(), true);
+		new TenguBladeProj(character, pos, xDir, character.player.getNextActorNetId(), true);
 		playSound("tengublade", true);
 	}
 }
@@ -91,25 +91,27 @@ public class TenguBladeProj : Projectile {
 	bool bouncedOnce;
 	const float maxSpeed = 240;
 	public TenguBladeProj(
-		Point pos, int xDir, Player player,
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId,
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		TenguBlade.netWeapon, pos, xDir, 120, 2,
-		player, "tengu_blade_proj", 0, 0.75f,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "tengu_blade_proj", netProjId, altPlayer
 	) {
 		fadeSprite = "tengu_blade_proj_fade";
 		maxTime = 2;
 		projId = (int)BassProjIds.TenguBladeProj;
 
+		vel.x = 120 * xDir;
+		damager.damage = 2;
+		damager.hitCooldown = 0.75f;
+
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new TenguBladeProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 

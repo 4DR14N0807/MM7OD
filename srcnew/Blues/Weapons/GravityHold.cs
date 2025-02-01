@@ -40,13 +40,11 @@ public class GravityHoldProj : Projectile {
 	bool changeColor;
 
 	public GravityHoldProj(
-		Point pos, int xDir, Player player,
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base
 	(
-		GravityHold.netWeapon, pos, xDir, 0, 0,
-		player, "empty", 0, 1, netProjId,
-		player.ownedByLocalPlayer
+		pos, xDir, owner, "empty", netProjId, altPlayer
 	) {
 		projId = (int)BluesProjIds.GravityHold;
 		//maxTime = 0.1f;
@@ -55,14 +53,16 @@ public class GravityHoldProj : Projectile {
 		midR = maxR / 2;
 		netcodeOverride = NetcodeModel.FavorDefender;
 
+		damager.hitCooldown = 1;
+
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new GravityHoldProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -241,8 +241,8 @@ public class BluesGravityHold : CharState {
 
 		if (!fired && character.frameIndex >= 2) {
 			new GravityHoldProj(
-				character.getCenterPos(), character.xDir,
-				player, player.getNextActorNetId(), true
+				blues, blues.getCenterPos(), blues.xDir,
+				player.getNextActorNetId(), true
 			);
 			fired = true;
 		}

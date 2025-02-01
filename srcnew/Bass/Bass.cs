@@ -267,7 +267,7 @@ public class Bass : Character {
 		}
 
 		if (shootPressed) {
-			if (weaponCooldown <= 0 && currentWeapon?.canShoot(0, player) == true) {
+			if (weaponCooldown <= 0 && currentWeapon?.canShoot(0, this) == true) {
 				shoot(getChargeLevel());
 				return true;
 			}

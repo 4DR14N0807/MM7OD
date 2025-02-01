@@ -7,6 +7,7 @@ namespace MMXOnline;
 
 public class CopyVision : Weapon {
 	public static CopyVision netWeapon = new();
+	public CopyVisionClone? clone;
 
 	public CopyVision() : base() {
 		index = (int)BassWeaponIds.CopyVision;
@@ -17,8 +18,8 @@ public class CopyVision : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 10;
 		ammo = maxAmmo;
-		switchCooldown = 0.75f; //gambiarrita
-		//fireRateFrames = 60;
+		//switchCooldown = 0.75f; //gambiarrita
+		fireRate = 9;
 
 		descriptionV2 = (
 			"Creates a clone that attack automatically." + "\n" +
@@ -33,7 +34,9 @@ public class CopyVision : Weapon {
 	public override void shoot(Character character, params int[] args) {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
-		Bass? bass = character as Bass;
+		if (character is not Bass bass) {
+			return;
+		}
 		float shootAngle = 0;
 
 		if (!player.ownedByLocalPlayer) return;
@@ -41,33 +44,43 @@ public class CopyVision : Weapon {
 		if (character.xDir < 0) {
 			shootAngle = 128;
 		}
-		if (bass?.cVclone == null) {
-			new CopyVisionClone(shootPos, player, character.xDir, character.player.getNextActorNetId(), true, true);
-			if (bass != null) bass.weaponCooldown = 120;
+		if (ammo > 0 && !isStream && bass.cVclone?.destroyed != false) {
+			clone = new CopyVisionClone(
+				shootPos, player, character.xDir, character.player.getNextActorNetId(), true, true
+			);
+			bass.cVclone = clone;
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
 		} else {
-			new BassBusterProj(shootPos, shootAngle, player, player.getNextActorNetId(), true);
-			bass.weaponCooldown = 9;
+			if (ammo > 0) {
+				new CopyVisionLemon(shootPos, bass.xDir, player, player.getNextActorNetId(), true);
+			} else {
+				new CopyVisionLemonAlt(shootPos, bass.xDir, player, player.getNextActorNetId(), true);
+			}
 			bass.playSound("bassbuster", true);
 		}
 	}
-	/*public override bool canShoot(int chargeLevel, Player player) {
-		if (!base.canShoot(chargeLevel, player)) {
-			return false;
+
+	public override void update() {
+		base.update();
+		if (ammo <= 0 || clone?.destroyed == false) {
+			isStream = true;
+		} else {
+			isStream = false;
 		}
-		if (player.character is Bass { cVclone: not null }) {
-			return false;
-		}
+	}
+
+	public override bool canShoot(int chargeLevel, Character character) {
 		return true;
-	}*/
+	}
 }
+
 public class CopyVisionLemon : Projectile {
 	public CopyVisionLemon(
 		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
 	) : base(
 		CopyVision.netWeapon, pos, xDir, 240, 1, player, "copy_vision_lemon",
-		0, 0.075f, netProjId, player.ownedByLocalPlayer
+		0, 9f / 60f, netProjId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BassProjIds.CopyVisionLemon;
 		maxTime = 0.525f;
@@ -86,6 +99,31 @@ public class CopyVisionLemon : Projectile {
 	}
 }
 
+public class CopyVisionLemonAlt : Projectile {
+	public CopyVisionLemonAlt(
+		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
+	) : base(
+		CopyVision.netWeapon, pos, xDir, 240, 0.5f, player, "copy_vision_lemon",
+		0, 9f / 60f, netProjId, player.ownedByLocalPlayer
+	) {
+		projId = (int)BassProjIds.CopyVisionLemonAlt;
+		maxTime = 0.525f;
+		fadeSprite = "copy_vision_lemon_fade";
+
+		if (rpc) {
+			rpcCreate(pos, player, netProjId, xDir);
+		}
+		projId = (int)BassProjIds.BassLemon;
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new CopyVisionLemon(
+			arg.pos, arg.xDir, arg.player, arg.netId
+		);
+	}
+}
+
+
 public class CopyVisionClone : Actor {
 	int state = 0;
 	float cloneShootTime;
@@ -103,9 +141,6 @@ public class CopyVisionClone : Actor {
 	) {
 		if (!ownedByLocalPlayer) {
 			bass = player.character as Bass;
-			if (bass != null) {
-				bass.cVclone = this;
-			}
 		}
 		useGravity = false;
 		this.xDir = xDir;
@@ -151,11 +186,10 @@ public class CopyVisionClone : Actor {
 
 		if (!ownedByLocalPlayer) return;
 		new Anim(
-				pos, "copy_vision_exit", xDir,
-				player.getNextActorNetId(), true, sendRpc: true
-			);
-		
-		if (bass != null) {
+			pos, "copy_vision_exit", xDir,
+			player.getNextActorNetId(), true, sendRpc: true
+		);
+		if (bass != null && bass.cVclone == this) {
 			bass.cVclone = null;
 		}
 	}

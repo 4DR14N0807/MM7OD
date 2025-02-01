@@ -400,7 +400,7 @@ public class Weapon {
 	}
 
 	public virtual bool canShoot(int chargeLevel, Character character) {
-		return ammo > 0;
+		return canShoot(chargeLevel, character.player);
 	}
 
 	public virtual bool canShoot(int chargeLevel, Actor actor) {

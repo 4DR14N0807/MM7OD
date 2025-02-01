@@ -2726,7 +2726,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		// Assist and kill logs.
-		if ((damage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
+		if ((originalDamage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
 			damageHistory.Add(new DamageEvent(attacker, weaponIndex.Value, projId, false, Global.time));
 		}
 		// Kill logic.

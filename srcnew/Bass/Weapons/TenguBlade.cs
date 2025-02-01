@@ -101,7 +101,7 @@ public class TenguBladeProj : Projectile {
 		netProjId, player.ownedByLocalPlayer
 	) {
 		fadeSprite = "tengu_blade_proj_fade";
-		maxTime = 2;
+		maxTime = 80f / 60f;
 		projId = (int)BassProjIds.TenguBladeProj;
 
 		if (rpc) {

@@ -956,6 +956,7 @@ public class Blues : Character {
 			return;
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
+		decimal originalDamage = damage;
 		// Disable shield on any non DOT damage.
 		if (damage > 0 && !Damager.isDot(projId)) {
 			healShieldHPCooldown = 180;
@@ -1074,13 +1075,14 @@ public class Blues : Character {
 				shieldDamageSavings += damage * 0.5m;
 				if (shieldDamageSavings >= 1) {
 					damage = 0;
+					shieldDamageSavings--;
 					if (shieldDamageSavings <= 0) { shieldDamageSavings = 0; }
 				}
 			} else {
 				damage--;
 			}
 		}
-		if (damage > 0) {
+		if (damage > 0) { 
 			stopLTankHeal(stopShield: false);
 			bodyDamaged = true;
 			customDamageDisplayOn = true;
@@ -1097,6 +1099,9 @@ public class Blues : Character {
 			}
 			if (shieldHitBack && !bodyPierced) {
 				backShieldDamaged = true;
+			}
+			if ((originalDamage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
+				damageHistory.Add(new DamageEvent(attacker, weaponIndex.Value, projId, false, Global.time));
 			}
 		}
 		if (bodyDamaged || shieldHitBack) {

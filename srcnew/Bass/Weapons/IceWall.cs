@@ -11,12 +11,12 @@ public class IceWall : Weapon {
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;
 		displayName = "ICE WALL";
-		maxAmmo = 10;
+		maxAmmo = 14;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 120;
+		fireRate = 30;
 	}
 
 	public override void shoot(Character character, params int[] args) {

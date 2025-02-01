@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -55,8 +55,8 @@ public class BassBusterProj : Projectile {
 	public BassBusterProj(
 		Point pos, float byteAngle, Player player, ushort? netId, bool rpc = false
 	) : base(
-		BassBuster.netWeapon, pos, 1, 0, 0.25f, player, "bass_buster_proj",
-		0, 0, netId, player.ownedByLocalPlayer
+		BassBuster.netWeapon, pos, 1, 0, 0.5f, player, "bass_buster_proj",
+		0, 7f / 60f, netId, player.ownedByLocalPlayer
 	) {
 		projId = (int)BassProjIds.BassLemon;
 		byteAngle = MathF.Round(byteAngle);

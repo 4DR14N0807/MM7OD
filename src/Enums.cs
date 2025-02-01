@@ -313,6 +313,7 @@ public enum BassProjIds {
 	BassLemon = 700,
 	IceWall,
 	CopyVisionLemon,
+	CopyVisionLemonAlt,
 	SpreadDrill,
 	SpreadDrillMid,
 	SpreadDrillSmall,

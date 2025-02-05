@@ -53,7 +53,7 @@ public class CharSelection {
 	public int mappedCharMaverick;
 	public string sprite;
 	public int frameIndex;
-	public Point offset = new Point(0, 45);
+	public Point offset = new Point(0, 48);
 
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
@@ -255,7 +255,7 @@ public class SelectCharacterMenu : IMainMenu {
 		Global.sprites[sprite].drawToHUD(
 			frameIndex,
 			charPosX1 + xOff,
-			charPosY1 + yOff + 23
+			charPosY1 + yOff + 25
 		);
 
 		// Draw text

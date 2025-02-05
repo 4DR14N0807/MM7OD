@@ -66,7 +66,7 @@ public class MagicCardProj : Projectile {
 	const float projSpeed = 480;
 	public Pickup? pickup;
 	Weapon wep;
-	int effect;
+	public int effect;
 	int hits;
 	float startAngle;
 	Actor ownChr = null!;
@@ -104,6 +104,8 @@ public class MagicCardProj : Projectile {
 		if (rpc) {
 			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, (byte)(xDir + 1));
 		}
+
+		if (effect == 1) projId = (int)BassProjIds.MagicCard1;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -211,7 +213,6 @@ public class MagicCardProj : Projectile {
 				if (damagable is not Character chr) return;
 				else {
 
-					if (effect == 1) chr.xDir *= -1;
 					hits++;
 					if (hits >= 4) destroySelf();
 				}

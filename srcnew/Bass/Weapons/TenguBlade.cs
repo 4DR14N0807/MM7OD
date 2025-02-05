@@ -92,6 +92,7 @@ public class TenguBladeState : CharState {
 public class TenguBladeProj : Projectile {
 	bool bouncedOnce;
 	const float maxSpeed = 240;
+	int hits;
 	public TenguBladeProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
 		bool rpc = false, Player? altPlayer = null
@@ -105,6 +106,8 @@ public class TenguBladeProj : Projectile {
 		vel.x = 120 * xDir;
 		damager.damage = 2;
 		damager.hitCooldown = 0.75f;
+
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
@@ -130,6 +133,8 @@ public class TenguBladeProj : Projectile {
 
 	public override void onHitWall(CollideData other) {
 		base.onHitWall(other);
+		if (!ownedByLocalPlayer) return;
+
 		if (other.isCeilingHit()) destroySelf();
 
 		bouncedOnce = true;
@@ -137,6 +142,10 @@ public class TenguBladeProj : Projectile {
 		xDir *= -1;
 		vel.x *= -1;
 		vel.y *= -1;
+		
+		time = 0;
+		hits++;
+		if (hits >= 4) destroySelf();
 	}
 }
 
@@ -149,7 +158,7 @@ public class TenguBladeMelee : GenericMeleeProj {
 	) {
 	}
 
-	public override void onHitDamagable(IDamagable damagable) {
+	/* public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
@@ -158,7 +167,7 @@ public class TenguBladeMelee : GenericMeleeProj {
 				if (damagable is Character chr && chr != null) chr.xPushVel = xDir * 180;	
 			}
 		}
-	}
+	} */
 }
 
 public class TenguBladeDash : CharState {

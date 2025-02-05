@@ -65,7 +65,7 @@ public class ProtoBusterAngledProj : Projectile {
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
 		damager.damage = 2;
-		damager.hitCooldown = 1;
+		damager.hitCooldown = 60;
 
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;

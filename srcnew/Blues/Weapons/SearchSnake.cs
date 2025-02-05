@@ -49,6 +49,7 @@ public class SearchSnakeProj : Projectile {
 		vel.x = 120 * xDir;
 		damager.damage = 2;
 		damager.hitCooldown = 0.5f;
+		xScale = 1;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
@@ -96,14 +97,14 @@ public class SearchSnakeProj : Projectile {
 	}
 
 	public override void render(float x, float y) {
-		base.render(x, y);
-		if (startAngleDrawing) {
-			byteAngle = deltaPos.byteAngle;
+		if (startAngleDrawing && currentWallDest != null) {
+			byteAngle = currentWallDest.byteAngle;
 			if (xDir < 0) byteAngle = -byteAngle + 128;
 
-			if (deltaPos.y < 0 && xDir < 0) byteAngle += 128;
-			if (xDir < 0) byteAngle += 128;
+			if (currentWallDest.y < 0 && currentWallDest.x == 0 && xDir < 0) byteAngle = -192;
+			//else if (xDir < 0) byteAngle += 128;
 		}
+		base.render(x, y);
 	}
 
 	

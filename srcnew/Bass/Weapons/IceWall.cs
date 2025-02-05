@@ -7,6 +7,7 @@ namespace MMXOnline;
 
 public class IceWall : Weapon {
 	public static IceWall netWeapon = new();
+	public IceWallProj wall = null!;
 
 	public IceWall() : base() {
 		index = (int)BassWeaponIds.IceWall;
@@ -19,13 +20,17 @@ public class IceWall : Weapon {
 		fireRate = 30;
 	}
 
+	public override bool canShoot(int chargeLevel, Character character) {
+		return base.canShoot(chargeLevel, character) && (wall == null || wall?.destroyed == true);
+	}
+
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Bass bass = character as Bass ?? throw new NullReferenceException();
 		Point shootPos = character.getShootPos().addxy(0, 2);
 		Player player = character.player;
 
-		new IceWallProj(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), true);
+		wall = new IceWallProj(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), true);
 		bass.playSound("icewall", true);
 	}
 }
@@ -100,7 +105,7 @@ public class IceWallProj : Projectile {
 		}
 
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
-			vel.x += xDir * Global.speedMul * 7.5f;
+			vel.x += xDir * Global.speedMul * 5;
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
 

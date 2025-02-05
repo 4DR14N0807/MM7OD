@@ -154,7 +154,7 @@ public class SpreadDrillMediumProj : Projectile {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 
-		projId = (int)BassProjIds.SpreadDrill;
+		//projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -235,7 +235,7 @@ public class SpreadDrillSmallProj : Projectile {
 
 		vel.x = projSpeed * xDir;
 		damager.damage = 1;
-		damager.hitCooldown = 0.25f;
+		damager.hitCooldown = 15f;
 
 		addPos = new Point(-8 * xDir, 0);
 		canBeLocal = false;
@@ -243,7 +243,7 @@ public class SpreadDrillSmallProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
-		projId = (int)BassProjIds.SpreadDrill;
+		//projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

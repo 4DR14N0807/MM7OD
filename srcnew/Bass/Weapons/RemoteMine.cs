@@ -38,6 +38,7 @@ public class RemoteMineProj : Projectile {
 	bool landed;
 	Character? host;
 	Anim? anim;
+	string animName = "remote_mine_anim";
 	Bass bass = null!;
 
 	public RemoteMineProj(
@@ -49,6 +50,7 @@ public class RemoteMineProj : Projectile {
 		projId = (int)BassProjIds.RemoteMine;
 		maxTime = 1.25f;
 		bass = ownerPlayer.character as Bass ?? throw new NullReferenceException();
+		destroyOnHit = false;
 
 		vel.x = 240 * xDir;
 		damager.hitCooldown = 30;
@@ -73,9 +75,10 @@ public class RemoteMineProj : Projectile {
 		base.onStart();
 		if (bass != null && ownedByLocalPlayer && bass.ownedByLocalPlayer) {
 			anim = new Anim(
-				getCenterPos(), "remote_mine_anim", xDir,
+				getCenterPos(), animName, xDir,
 				bass.player.getNextActorNetId(), false, true
 			);
+			anim.visible = false;
 		}
 	}
 
@@ -98,10 +101,23 @@ public class RemoteMineProj : Projectile {
 		if (moveY != 0 && !landed) move(new Point(0, 90 * moveY ));
 
 		if (ownedByLocalPlayer && bass?.rMine != null &&
-			landed && owner.input.isPressed(Control.Shoot, owner)
+			landed && owner.input.isPressed(Control.Shoot, owner) &&
+			bass.currentWeapon is RemoteMine
 		) {
 			destroySelf();
 		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x,y);
+		if (anim == null) return;
+
+		Point center = getCenterPos();
+
+		Global.sprites[animName].draw(
+			anim.frameIndex, center.x, center.y, xDir, yDir,
+			null, alpha, 1, 1, zIndex
+		);
 	}
 
 	public override void onCollision(CollideData other) {
@@ -112,7 +128,7 @@ public class RemoteMineProj : Projectile {
 		var chr = other.gameObject as Character;
 		var wall = other.gameObject as Wall;
 
-		if (!landed && ((chr != null && chr != bass) || wall != null)) {
+		if (!landed && ((chr != null && chr != bass && chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)) || wall != null)) {
 			stopMoving();
 			if (chr != null) host = chr; 
 			changeSprite("remote_mine_land", true);

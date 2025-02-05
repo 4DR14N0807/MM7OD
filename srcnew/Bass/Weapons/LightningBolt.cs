@@ -69,6 +69,7 @@ public class LightningBoltState : CharState {
 	const float spawnYPos = -128;
 	Point lightningPos;
 	float endLagFrames = 0;
+	float overrideDamage;
 
 	public LightningBoltState() : base("lbolt") {
 	}
@@ -125,6 +126,7 @@ public class LightningBoltState : CharState {
 				float xPos = aim?.pos.x ?? character.pos.x;
 				lightningPos = new Point(xPos, character.pos.y + spawnYPos);
 				aim?.destroySelf();
+				overrideDamage = MathF.Ceiling((stateFrames / 15)) + 1;
 
 				phase = 1;
 			}
@@ -133,7 +135,7 @@ public class LightningBoltState : CharState {
 		if (phase == 1) {
 			new LightningBoltProj(
 				character, lightningPos, character.xDir, 
-				character.player.getNextActorNetId(), true
+				character.player.getNextActorNetId(), overrideDamage, true
 			);
 			character.playSound("lightningbolt", true);
 			Weapon? bolt = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
@@ -170,7 +172,7 @@ public class LightningBoltProj : Projectile {
 
 	public LightningBoltProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
-		bool rpc = false, Player? altPlayer = null
+		float? overrideDamage = 0, bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "lightning_bolt_proj", netProjId, altPlayer
 	) {
@@ -179,7 +181,7 @@ public class LightningBoltProj : Projectile {
 		setIndestructableProperties();
 		bodySpriteHeight = new Sprite(bodySprite).animData.frames[0].rect.h();
 
-		damager.damage = 4;
+		damager.damage = overrideDamage ?? 2;
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 60;
 

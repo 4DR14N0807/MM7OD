@@ -459,8 +459,7 @@ public class Rock : Character {
 
 		if (isGHit && isLanding() && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
 			rjs.once = true;
-			rush.changeSprite("rush_jet", true);
-			rush.playSound("rush_jet", true);
+			
 		}
 	}
 

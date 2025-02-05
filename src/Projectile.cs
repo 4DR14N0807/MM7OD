@@ -75,6 +75,7 @@ public class Projectile : Actor {
 	List<Point> dests = new();
 	int? destIndex;
 	float initWallCooldown;
+	public Point currentWallDest;
 	
 
 	public Projectile(
@@ -883,6 +884,7 @@ public class Projectile : Actor {
 		var nextNode = currentNode.next;
 		Point destPoint = nextNode.point;
 		Point dirToDest = pos.directionToNorm(destPoint);
+		currentWallDest = dirToDest;
 		move(dirToDest.times(wallCrawlSpeed));
 		if (wallCrawlUpdateAngle) {
 			angle = dirToDest.angle;
@@ -923,6 +925,7 @@ public class Projectile : Actor {
 
 		Point destPoint = dests[destIndex.Value];
 		Point dirToDest = pos.directionToNorm(destPoint);
+		currentWallDest = dirToDest;
 		move(dirToDest.times(wallCrawlSpeed));
 
 		if (pos.distanceTo(destPoint) < 5) {

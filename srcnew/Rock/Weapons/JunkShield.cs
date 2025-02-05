@@ -292,7 +292,7 @@ public class JunkShieldProj : Projectile {
 
 	public void shoot(float a) {
 		updateDamager(2);
-		damager.hitCooldown = 1;
+		damager.hitCooldown = 60;
 		vel = Point.createFromByteAngle(a).times(180);
 		time = 0;
 		maxTime = 0.75f;

@@ -201,12 +201,24 @@ public class Damager {
 			if (isStompWeapon) {
 				character.flattenedTime = 0.5f;
 			}
+			var proj = damagingActor as Projectile;
 			// Status effects.
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
 					character.root(45, owner.id);
 					break;
 				}
+				case (int)ProjIds.TenguBladeDash: {
+					character.xPushVel += 180 * damagingActor?.xDir ?? 180 * -character.xDir;
+					break;
+				}
+				case (int)BassProjIds.MagicCard1:
+					character.xDir *= -1;
+					break;
+				case (int)BassProjIds.SpreadDrillMid:
+				character.vel = Point.lerp(character.vel, Point.zero, Global.speedMul);
+				character.slowdownTime = MathF.Max(character.slowdownTime, 15);
+				break;
 			}
 			float flinchCooldown = 0;
 			if (projectileFlinchCooldowns.ContainsKey(projId)) {

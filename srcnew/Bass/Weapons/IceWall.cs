@@ -16,7 +16,7 @@ public class IceWall : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 30;
+		fireRate = 60;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -51,14 +51,15 @@ public class IceWallStart : Anim {
 	}
 }
 	
-public class IceWallProj : Projectile {
+public class IceWallProj : Projectile, IDamagable {
 	float lastDeltaX = 0;
-	float maxSpeed = 300;
+	float maxSpeed = 250;
 	int bounces;
 	bool startedMoving;
 	List<Character> chrs = new();
 	Player player;
 	Collider? terrainCollider;
+	float health = 4;
 
 	public IceWallProj(
 		Point pos, int xDir, Player player,
@@ -99,7 +100,7 @@ public class IceWallProj : Projectile {
 		}
 
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
-			vel.x += xDir * Global.speedMul * 7.5f;
+			vel.x += xDir * Global.speedMul * 6;
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
 
@@ -120,7 +121,15 @@ public class IceWallProj : Projectile {
 		base.onCollision(other);
 		// Hit enemy.
 		if (other.gameObject is Character character) {
-			character.move(new Point(lastDeltaX, 0));
+			if (character.player.alliance != damager.owner.alliance || character.player == damager.owner) {
+				if (MathF.Sign(character.pos.x - pos.x) == MathF.Sign(lastDeltaX)) {
+					character.move(new Point(lastDeltaX * 0.9f, 0), useDeltaTime: false);
+				} else {
+					character.move(new Point(
+						2 * MathF.Sign(character.pos.x - pos.x), 0
+					), useDeltaTime: false);
+				}
+			}
 		}
 		if (!ownedByLocalPlayer) {
 			return;
@@ -144,19 +153,14 @@ public class IceWallProj : Projectile {
 				xDir = ownChar.xDir;
 			}
 		}
-		// Hit enemy.
-		else if (other.gameObject is Character chara && chara.player.alliance != damager?.owner?.alliance) {
-			if (other.isSideWallHit()) {
-				foreach (var enemy in chrs) {
-					if (chara != enemy) {
-						chrs.Add(chara);
-						maxSpeed -= 100;
-					}
-				}
-			} else if (other.isGroundHit() && vel.y >= 0 &&
-				chara.canBeDamaged(player.alliance, player.id, (int)BassProjIds.IceWall)) {
-				chara.applyDamage(3, player, chara, (int)BassWeaponIds.IceWall, (int)BassProjIds.IceWall);
-			}
-		}
 	}
+
+	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
+		health -= damage;
+	}
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) => health > 0;
+	public bool isInvincible(Player attacker, int? projId) => false;
+	public bool canBeHealed(int healerAlliance) => false;
+	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true) { }
+	public bool isPlayableDamagable() => false;
 }

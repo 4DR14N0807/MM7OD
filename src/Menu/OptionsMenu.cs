@@ -162,11 +162,11 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "MAX FPS:",
+							inGame ? FontType.Blue : FontType.Grey, "MAX FPS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							optionFontValue, Options.main.maxFPS.ToString(),
+							inGame ? FontType.Blue : FontType.Grey, Options.main.maxFPS.ToString(),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -181,11 +181,11 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "ENABLE VSYNC:",
+							inGame ? FontType.Blue : FontType.Grey, "ENABLE VSYNC:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.vsync),
+							inGame ? FontType.Blue : FontType.Grey, Helpers.boolYesNo(Options.main.vsync),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -213,42 +213,44 @@ public class OptionsMenu : IMainMenu {
 				// Shaders
 				new MenuOption(40, startY,
 					() => {
-						if (inGame) return;
 						if (Global.input.isPressedMenu(Control.MenuLeft)) {
-							Options.main.fastShaders = true;
-						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 							Options.main.fastShaders = false;
+						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+							Options.main.fastShaders = true;
 						}
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "FAST SHADERS:",
+							optionFontValue, "FAST SHADERS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(!Options.main.fastShaders),
+							optionFontValue, Helpers.boolYesNo(Options.main.fastShaders),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
 					"Disables special effects like team mode outlines.\nNot all PCs support this."
 				),
-				// Post processing
+				// Map Sprites
 				new MenuOption(40, startY,
 					() => {
-						if (inGame) return;
-						Helpers.menuLeftRightBool(ref Options.main.enablePostProcessing);
+						if (Global.input.isPressedMenu(Control.MenuLeft)) {
+							Options.main.enableLowEndMap = false;
+						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+							Options.main.enableLowEndMap = true;
+						}
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "ENABLE POST-PROCESSING: ",
+							optionFontValue, "LOW-END MAP:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(Options.main.enablePostProcessing),
+							optionFontValue, Helpers.boolYesNo(Options.main.enableLowEndMap),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
-					"Enables special screen distortion effects.\nNot all PCs support this."
+					"Enables a simpler map for faster performance."
 				),
 				// fontType
 				/*new MenuOption(40, startY,
@@ -273,16 +275,15 @@ public class OptionsMenu : IMainMenu {
 				// particleQuality
 				new MenuOption(40, startY,
 					() => {
-						if (inGame) return;
 						Helpers.menuLeftRightInc(ref Options.main.particleQuality, 0, 2);
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "PARTICLE QUALITY:",
+							optionFontValue, "PARTICLE QUALITY:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, qualityToString(Options.main.particleQuality),
+							optionFontValue, qualityToString(Options.main.particleQuality),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -1393,11 +1394,10 @@ public class OptionsMenu : IMainMenu {
 
 	public static void setPresetQuality(int graphicsPreset) {
 		Options.main.detectedGraphicsPreset = graphicsPreset;
-		if (graphicsPreset >= 3) return;
 		Options.main.particleQuality = graphicsPreset;
-		Options.main.enablePostProcessing = (graphicsPreset > 0);
-		Options.main.fastShaders = (graphicsPreset == 0);
-		Options.main.enableMapSprites = (graphicsPreset > 0);
+		Options.main.fastShaders = graphicsPreset == 0;
+		Options.main.enableMapSprites = graphicsPreset != 0;
+		Options.main.enableLowEndMap = graphicsPreset == 0;
 		Options.main.saveToFile();
 	}
 
@@ -1533,9 +1533,6 @@ public class OptionsMenu : IMainMenu {
 	public string helpText = "";
 	public void render() {
 		float cursorPos = 24;
-		if (isGraphics && selectedArrowPosY > presetYPos && selectedArrowPosY < presetYPos + 6) {
-			cursorPos = 24;
-		}
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["settingsmenu"], 0, 0);
 			Global.sprites["cursor"].drawToHUD(0, cursorPos, 39 + (selectedArrowPosY * 10));

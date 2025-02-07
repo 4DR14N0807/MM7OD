@@ -709,26 +709,6 @@ public class GameMode {
 		if (Global.level.is1v1() || Global.level.isTraining() || Global.level.mainPlayer.isSpectator) {
 			return;
 		}
-		Global.radarRenderTexture.Clear(new Color(0, 0, 0, 0));
-		Global.radarRenderTextureB.Clear();
-		RenderStates states = new RenderStates(Global.radarRenderTexture.Texture);
-		RenderStates statesB = new RenderStates(Global.radarRenderTextureB.Texture);
-		RenderStates statesB2 = new RenderStates(Global.radarRenderTextureB.Texture);
-		states.BlendMode = new BlendMode(
-			BlendMode.Factor.SrcAlpha,
-			BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add
-		) {
-			AlphaEquation = BlendMode.Equation.Max
-		};
-		statesB.BlendMode = new BlendMode(
-			BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add
-		) {
-			AlphaEquation = BlendMode.Equation.Max
-		};
-		statesB2.BlendMode = new BlendMode(
-			BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Min
-		);
-
 		float mapScale = 16;
 		float offsetX = MathF.Round(Global.level.camCenterX / 16f) - 21;
 		float offsetY = MathF.Round(Global.level.camCenterY / 16f) - 12;
@@ -740,7 +720,6 @@ public class GameMode {
 				camX = Global.level.mainPlayer.character.pos.x;
 			}
 		}
-
 		List<(float x, float y, float r)> revealedSpots = new();
 		revealedSpots.Add((camX, camY, 16 * 10));
 
@@ -768,111 +747,139 @@ public class GameMode {
 		float radarX = MathF.Floor(Global.screenW - 10 - scaledW);
 		float radarY = MathF.Floor(10);
 
-		// The "fog of war" rect
-		RectangleShape rect = new RectangleShape(new Vector2f(scaledW + 20, scaledH + 20));
-		rect.Position = new Vector2f(0, 0);
-		rect.FillColor = new Color(0, 0, 0, 128);
-		Global.radarRenderTextureB.Draw(rect, statesB2);
+		if (!Options.main.enableLowEndMap) {
+			Global.radarRenderTexture.Clear(new Color(0, 0, 0, 0));
+			Global.radarRenderTextureB.Clear();
+			RenderStates states = new RenderStates(Global.radarRenderTexture.Texture);
+			RenderStates statesB = new RenderStates(Global.radarRenderTextureB.Texture);
+			RenderStates statesB2 = new RenderStates(Global.radarRenderTextureB.Texture);
+			states.BlendMode = new BlendMode(
+				BlendMode.Factor.SrcAlpha,
+				BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add
+			) {
+				AlphaEquation = BlendMode.Equation.Max
+			};
+			statesB.BlendMode = new BlendMode(
+				BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Add
+			) {
+				AlphaEquation = BlendMode.Equation.Max
+			};
+			statesB2.BlendMode = new BlendMode(
+				BlendMode.Factor.SrcAlpha, BlendMode.Factor.OneMinusSrcAlpha, BlendMode.Equation.Min
+			);
 
-		// The visible area circles
-		foreach (var spot in revealedSpots) {
-			float pxPos = MathF.Round(spot.x / mapScale) - offsetX;
-			float pyPos = MathF.Round(spot.y / mapScale) - offsetY;
-			float radius = spot.r / mapScale;
-			CircleShape circle1 = new CircleShape(radius);
-			circle1.FillColor = new Color(0, 0, 0, 0);
-			circle1.Position = new Vector2f(pxPos - radius, pyPos - radius);
-			Global.radarRenderTextureB.Draw(circle1, statesB2);
+			// The "fog of war" rect
+			RectangleShape rect = new RectangleShape(new Vector2f(scaledW + 20, scaledH + 20));
+			rect.Position = new Vector2f(0, 0);
+			rect.FillColor = new Color(0, 0, 0, 128);
+			Global.radarRenderTextureB.Draw(rect, statesB2);
+
+			// The visible area circles
+			foreach (var spot in revealedSpots) {
+				float pxPos = MathF.Round(spot.x / mapScale) - offsetX;
+				float pyPos = MathF.Round(spot.y / mapScale) - offsetY;
+				float radius = spot.r / mapScale;
+				CircleShape circle1 = new CircleShape(radius);
+				circle1.FillColor = new Color(0, 0, 0, 0);
+				circle1.Position = new Vector2f(pxPos - radius, pyPos - radius);
+				Global.radarRenderTextureB.Draw(circle1, statesB2);
+			}
+
+			var sprite = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
+			Global.radarRenderTextureB.Display();
+			Global.radarRenderTextureC.Clear(new Color(33, 33, 74));
+			Global.radarRenderTextureC.Display();
+			Global.radarRenderTextureC.Draw(sprite);
+			var spriteBackground = new SFML.Graphics.Sprite(Global.radarRenderTextureC.Texture);
+
+			foreach (GameObject gameObject in Global.level.gameObjects) {
+				if (gameObject is not Geometry geometry) {
+					continue;
+				}
+				Color blockColor = new Color(128, 128, 255);
+				if (gameObject is not Wall and not KillZone and not Ladder) {
+					continue;
+				}
+				if (gameObject is KillZone) {
+					blockColor = new Color(255, 64, 64);
+				}
+				if (gameObject is Ladder) {
+					blockColor = new Color(255, 200, 0);
+				}
+				Shape shape = geometry.collider.shape;
+				float pxPos = shape.minX / mapScale;
+				float pyPos = shape.minY / mapScale + 1;
+				float mxPos = shape.maxX / mapScale - pxPos;
+				float myPos = shape.maxY / mapScale - pyPos + 1;
+
+				if (mxPos <= 1) {
+					mxPos = 1;
+				}
+				if (mxPos <= 1) {
+					mxPos = 1;
+				}
+				if (pxPos <= 0) {
+					pxPos -= 20;
+					mxPos += 20;
+				}
+				if (pyPos <= 1) {
+					pyPos -= 20;
+					myPos += 20;
+				}
+				if (pxPos + mxPos >= scaledMapW) {
+					mxPos = 1000;
+				}
+				if (pyPos + myPos >= scaledMapH) {
+					myPos = 1000;
+				}
+				if (pyPos + myPos >= scaledMapH) {
+					myPos = 1000;
+				}
+				pxPos -= offsetX;
+				pyPos -= offsetY;
+
+				RectangleShape wRect = new RectangleShape();
+				wRect.FillColor = blockColor;
+				wRect.Position = new Vector2f(pxPos, pyPos);
+				wRect.Size = new Vector2f(mxPos, myPos);
+				Global.radarRenderTexture.Draw(wRect);
+			}
+			Global.radarRenderTexture.Display();
+			var sprite2 = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
+
+			Global.radarRenderTextureB.Clear(new Color(0, 0, 0, 0));
+			RenderStates statesL = new RenderStates(Global.radarRenderTextureB.Texture);
+			ShaderWrapper? outlineShader = Helpers.cloneShaderSafe("map_outline");
+			if (outlineShader != null) {
+				outlineShader.SetUniform("textureSize", new SFML.Graphics.Glsl.Vec2(42, 26));
+				statesL.Shader = outlineShader.getShader();
+			}
+			Global.radarRenderTextureB.Draw(sprite2, statesL);
+			Global.radarRenderTextureB.Display();
+			var spriteFG = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
+
+			Global.radarRenderTexture.Clear();
+			Global.radarRenderTexture.Draw(spriteBackground);
+			Global.radarRenderTexture.Draw(spriteFG);
+			var spriteFinal = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
+			spriteFinal.Position = new Vector2f(radarX, radarY);
+
+			Global.window.SetView(DrawWrappers.hudView);
+			Global.window.Draw(spriteFinal);
+			sprite.Dispose();
+			sprite2.Dispose();
+			spriteFG.Dispose();
+			spriteBackground.Dispose();
+			spriteFinal.Dispose();
+		} else {
+			DrawWrappers.DrawRectWH(
+				radarX, radarY,
+				scaledW, scaledH,
+				true, new Color(33, 33, 74), 0,
+				ZIndex.HUD, isWorldPos: false
+			);
 		}
 
-		var sprite = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
-		Global.radarRenderTextureB.Display();
-		Global.radarRenderTextureC.Clear(new Color(33, 33, 74));
-		Global.radarRenderTextureC.Display();
-		Global.radarRenderTextureC.Draw(sprite);
-		var spriteBackground = new SFML.Graphics.Sprite(Global.radarRenderTextureC.Texture);
-
-		foreach (GameObject gameObject in Global.level.gameObjects) {
-			if (gameObject is not Geometry geometry) {
-				continue;
-			}
-			Color blockColor = new Color(128, 128, 255);
-			if (gameObject is not Wall and not KillZone and not Ladder) {
-				continue;
-			}
-			if (gameObject is KillZone) {
-				blockColor = new Color(255, 64, 64);
-			}
-			if (gameObject is Ladder) {
-				blockColor = new Color(255, 200, 0);
-			}
-			Shape shape = geometry.collider.shape;
-			float pxPos = shape.minX / mapScale;
-			float pyPos = shape.minY / mapScale + 1;
-			float mxPos = shape.maxX / mapScale - pxPos;
-			float myPos = shape.maxY / mapScale - pyPos + 1;
-
-			if (mxPos <= 1) {
-				mxPos = 1;
-			}
-			if (mxPos <= 1) {
-				mxPos = 1;
-			}
-			if (pxPos <= 0) {
-				pxPos -= 20;
-				mxPos += 20;
-			}
-			if (pyPos <= 1) {
-				pyPos -= 20;
-				myPos += 20;
-			}
-			if (pxPos + mxPos >= scaledMapW) {
-				mxPos = 1000;
-			}
-			if (pyPos + myPos >= scaledMapH) {
-				myPos = 1000;
-			}
-			if (pyPos + myPos >= scaledMapH) {
-				myPos = 1000;
-			}
-			pxPos -= offsetX;
-			pyPos -= offsetY;
-
-			RectangleShape wRect = new RectangleShape();
-			wRect.FillColor = blockColor;
-			wRect.Position = new Vector2f(pxPos, pyPos);
-			wRect.Size = new Vector2f(mxPos, myPos);
-			Global.radarRenderTexture.Draw(wRect);
-		}
-		Global.radarRenderTexture.Display();
-		var sprite2 = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
-
-		Global.radarRenderTextureB.Clear(new Color(0, 0, 0, 0));
-		RenderStates statesL = new RenderStates(Global.radarRenderTextureB.Texture);
-		ShaderWrapper? outlineShader = Helpers.cloneShaderSafe("map_outline");
-		if (outlineShader != null) {
-			outlineShader.SetUniform("textureSize", new SFML.Graphics.Glsl.Vec2(42, 26));
-			statesL.Shader = outlineShader.getShader();
-		}
-		Global.radarRenderTextureB.Draw(sprite2, statesL);
-		Global.radarRenderTextureB.Display();
-		var spriteFG = new SFML.Graphics.Sprite(Global.radarRenderTextureB.Texture);
-
-		Global.radarRenderTexture.Clear();
-		Global.radarRenderTexture.Draw(spriteBackground);
-		Global.radarRenderTexture.Draw(spriteFG);
-		var spriteFinal = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
-		spriteFinal.Position = new Vector2f(radarX, radarY);
-
-		Global.window.SetView(DrawWrappers.hudView);
-		Global.window.Draw(spriteFinal);
-		sprite.Dispose();
-		sprite2.Dispose();
-		spriteFG.Dispose();
-		spriteBackground.Dispose();
-		spriteFinal.Dispose();
-
-		
 		// Nav points.
 		foreach (var navPoint in navPoints) {
 			Color color = new Color(255, 255, 255);

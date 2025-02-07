@@ -298,10 +298,6 @@ public partial class Level {
 			}
 		}
 
-		if (!actorCollider.isTrigger && gameObject is Actor { isSolidWall: true }) {
-			return false;
-		}
-
 		if (actorCollider.disabled || gameObjectCollider.disabled) return false;
 		if (actorCollider.isTrigger || gameObjectCollider.isTrigger) return true;
 
@@ -491,7 +487,7 @@ public partial class Level {
 			if (go == actor) continue;
 			if (go.collider == null) continue;
 			var isTrigger = shouldTrigger(actor, go, actor.collider, go.collider, new Point(incX, incY));
-			if (go is Actor goActor && goActor.isPlatform && checkPlatforms) {
+			if (go is Actor goActor && !goActor.isSolidWall && goActor.isPlatform && checkPlatforms) {
 				isTrigger = false;
 			}
 			if (isTrigger) continue;

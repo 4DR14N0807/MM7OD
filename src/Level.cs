@@ -635,7 +635,7 @@ public partial class Level {
 				var spriteHeight = Global.sprites[spriteName].frames[0].rect.h();
 
 				if (!enabledInLargeCam && server.fixedCamera) {
-					// Do not add the map sprite
+				// Do not add the map sprite
 				} else if (rawParallaxIndex != null) {
 					if (Options.main.enableMapSprites) {
 						int parallaxIndex = rawParallaxIndex.Value - 1;

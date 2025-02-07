@@ -952,7 +952,7 @@ public class Blues : Character {
 		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
@@ -1002,11 +1002,11 @@ public class Blues : Character {
 					damageDebt += oldDamage - damage;
 				}
 			}
-			while (shieldHitFront && shieldDamageDebt >= 1) {
+			while (shieldHitFront && shieldDamageDebt >= 1 && originalDamage > 0) {
 				shieldDamageDebt -= 1;
 				damage += 1;
 			}
-			while (shieldHitBack && damageDebt >= 1) {
+			while (shieldHitBack && damageDebt >= 1 && originalDamage > 0) {
 				damageDebt -= 1;
 				damage += 1;
 			}
@@ -1103,6 +1103,9 @@ public class Blues : Character {
 			if ((originalDamage > 0 || Damager.alwaysAssist(projId)) && attacker != null && weaponIndex != null) {
 				damageHistory.Add(new DamageEvent(attacker, weaponIndex.Value, projId, false, Global.time));
 			}
+		}
+		if (originalDamage == 0 && damage == 0) {
+			return;
 		}
 		if (bodyDamaged || shieldHitBack) {
 			int fontColor = (int)FontType.RedSmall;

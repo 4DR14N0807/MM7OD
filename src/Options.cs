@@ -49,6 +49,7 @@ public class Options {
 	public bool enablePostProcessing = true;
 	public int particleQuality = 2;
 	public bool enableMapSprites = true;
+	public bool enableLowEndMap;
 	public bool enableSmallBars;
 	public bool smallBarsEx;
 

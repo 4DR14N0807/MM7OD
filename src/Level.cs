@@ -251,7 +251,14 @@ public partial class Level {
 	public int equalCharDistributerBlue;
 
 	public void startLevel(Server server, bool joinedLate) {
-		startLevelAction(server, joinedLate);
+		// Load stuff on the main thread to prevent RenderTexture errors.
+		Program.loadAction = () => {
+			startLevelAction(server, joinedLate);
+		};
+		// Wait for load to end.
+		while (Program.loadAction != null) {
+			Thread.Sleep(10);
+		}
 	}
 
 	public void startLevelAction(Server server, bool joinedLate) {
@@ -1799,10 +1806,6 @@ public partial class Level {
 		srt.Clear(Global.level?.levelData?.bgColor ?? new Color(0, 0, 0, 0));
 		srt.Display();
 
-		if (levelData.name == "powerplant2") {
-			drawPowerplant2();
-		}
-
 		if (isNon1v1Elimination() && gameMode.virusStarted > 0) {
 			drawSigmaVirus();
 		}
@@ -1822,7 +1825,9 @@ public partial class Level {
 		Dictionary<long, DrawLayer> drawObjCopy = new(DrawWrappers.walDrawObjects);
 		DrawWrappers.walDrawObjects.Clear();
 
-		renderResult(this, srt, drawObjCopy);
+		Program.renderAction = () => {
+			renderResult(this, srt, drawObjCopy);
+		};
 	}
 
 	public static void renderResult(

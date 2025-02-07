@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,12 +60,12 @@ class Program {
 #endif
 
 	static void GameMain(string[] args, int mode) {
-		if (Debugger.IsAttached) {
+		if (false && Debugger.IsAttached) {
 			Run(args, mode);
 		} else {
 			try {
 				Run(args, mode);
-			} catch (Exception e) {
+			} catch (Exception exception) {
 				/*
 				string crashDump = e.Message + "\n\n" +
 					e.StackTrace + "\n\nInner exception: " +
@@ -73,15 +74,15 @@ class Program {
 				Helpers.showMessageBox(crashDump.Truncate(1000), "Fatal Error!");
 				throw;
 				*/
-				Logger.LogFatalException(e);
-				Logger.logException(e, false, "Fatal exception", true);
-				Thread.Sleep(1000);
+				Logger.LogFatalException(exception);
+				//Logger.logException(exception, false, "Fatal exception", true);
+				//Thread.Sleep(1000);
 				throw;
 			}
 		}
 	}
 
-	static void Run(string[] args, int mode) {
+	static RenderWindow Initialize(string[] args, int mode) {
 #if MAC
 		Global.assetPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "/";
 		Global.writePath = Global.assetPath;
@@ -133,7 +134,7 @@ class Program {
 		*/
 
 		if (!checkSystemRequirements()) {
-			return;
+			throw new Exception("System Requeriments not met.");
 		}
 
 		Global.initMainWindow(Options.main);
@@ -276,9 +277,7 @@ class Program {
 				Menu.change(new ErrorMenu(error, new MainMenu()));
 			}
 		}
-		while (window.IsOpen) {
-			mainLoop(window);
-		}
+		return window;
 	}
 
 	static long getPacketsReceived() {
@@ -411,7 +410,7 @@ class Program {
 		if (Global.levelStarted()) {
 			Global.level.render();
 		} else {
-			Menu.render();
+			renderAction = () => { Menu.render(); };
 		}
 		// TODO: Make this work for errors.
 		//if (Global.debug) {
@@ -1162,6 +1161,41 @@ class Program {
 	// Main loop stuff.
 	public static decimal deltaTimeSavings = 0;
 	public static decimal lastUpdateTime = 0;
+	public static Exception? logicThreadException;
+	public static Action? renderAction;
+	public static Action? loadAction;
+
+	static void Run(string[] args, int mode) {
+		RenderWindow window = Initialize(args, mode);
+		Task? mainLoopTask = new Task(() => {
+			while (window.IsOpen) {
+				mainLoop(window);
+			}
+		});
+		mainLoopTask.ContinueWith(Program.mainLoopExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
+		mainLoopTask.Start();
+
+		while (window.IsOpen) {
+			if (logicThreadException != null) {
+				if (logicThreadException.InnerException != null) {
+					ExceptionDispatchInfo.Capture(logicThreadException.InnerException).Throw();
+				} else {
+					throw logicThreadException;
+				}
+			}
+			if (renderAction != null) {
+				window.Clear(Color.Black);
+				renderAction();
+				window.DispatchEvents();
+				window.Display();
+				renderAction = null;
+			}
+			if (loadAction != null) {
+				loadAction();
+				loadAction = null;
+			}
+		}
+	}
 
 	public static void setLastUpdateTimeAsNow() {
 		deltaTimeSavings = 0;
@@ -1190,12 +1224,7 @@ class Program {
 		bool f12Released = true;
 		bool f5Released = true;
 		bool f6Released = true;
-		// WARNING DISABLE THIS FOR NON-DEBUG BUILDS
 		bool frameStepEnabled = true;
-		var clearColor = Color.Black;
-		//if (Global.level?.levelData?.bgColor != null) {
-		//	clearColor = Global.level.levelData.bgColor;
-		//}
 
 		// Main loop itself.
 		while (window.IsOpen) {
@@ -1227,7 +1256,7 @@ class Program {
 						f6Released = true;
 					}
 				}
-				// Reload levels. Dangerous. Keep disabled on release builds.
+				// Reload levels. And mess checksum.
 				if (Global.level == null) {
 					if (Keyboard.IsKeyPressed(Key.F2) && Keyboard.IsKeyPressed(Key.F1)) {
 						if (f12Released) {
@@ -1256,6 +1285,7 @@ class Program {
 			// For debug framestep.
 			if (isFrameStep && !continueNextFrameStep) {
 				lastUpdateTime = timeNow;
+				deltaTimeSavings = 0;
 				continue;
 			}
 			// Disable frameskip in the menu.
@@ -1263,9 +1293,6 @@ class Program {
 				useFrameSkip = false;
 			} else {
 				useFrameSkip = false;
-			}
-			if (Global.isMouseLocked) {
-				Mouse.SetPosition(new Vector2i((int)Global.halfScreenW, (int)Global.halfScreenH), Global.window);
 			}
 			if (!useFrameSkip || isFrameStep) {
 				update();
@@ -1299,40 +1326,10 @@ class Program {
 			Global.isSkippingFrames = false;
 			Global.input.clearInput();
 			lastUpdateTime = timeNow;
-			videoUpdatesThisSecond++;
-			window.Clear(clearColor);
-			render();
-			window.Display();
-			/*
-			long prevPackets = 0;
-			if (Global.showDiagnostics) {
-				diagnosticsClock.Restart();
-				prevPackets = getBytesPerFrame();
+			if (renderAction == null) {
+				videoUpdatesThisSecond++;
+				render();
 			}
-			if (Global.showDiagnostics) {
-				Global.lastFrameProcessTime = diagnosticsClock.ElapsedTime.AsMilliseconds();
-				Global.lastFrameProcessTimes.Add(Global.lastFrameProcessTime);
-				if (Global.lastFrameProcessTimes.Count > 120) Global.lastFrameProcessTimes.RemoveAt(0);
-
-				long packetIncrease = getBytesPerFrame() - prevPackets;
-				Global.lastFramePacketIncreases.Add(packetIncrease);
-				if (Global.lastFramePacketIncreases.Count > 120) {
-					Global.lastFramePacketIncreases.RemoveAt(0);
-				}
-				if (!packetDiagStopwatch.IsRunning) {
-					packetDiagStopwatch.Start();
-				}
-				if (packetDiagStopwatch.ElapsedMilliseconds > 1000) {
-					long packetTotalDelta = getPacketsReceived() - Global.packetTotal1SecondAgo;
-					Global.packetTotal1SecondAgo = getPacketsReceived();
-					packetDiagStopwatch.Restart();
-					Global.last10SecondsPacketsReceived.Add(packetTotalDelta);
-					if (Global.last10SecondsPacketsReceived.Count > 10) {
-						Global.last10SecondsPacketsReceived.RemoveAt(0);
-					}
-				}
-			}
-			*/
 		}
 	}
 
@@ -1376,6 +1373,11 @@ class Program {
 		}
     }
 
+	public static void mainLoopExceptionHandler(Task task) {
+        if (task.Exception != null) {
+			logicThreadException = task.Exception;
+		}
+    }
 
 	public static void loadLoop(List<String> loadText, RenderWindow window, Task loadTread) {
 		// Variables for stuff.

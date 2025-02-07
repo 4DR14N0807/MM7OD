@@ -309,17 +309,6 @@ public class GameMode {
 				}
 			}
 		}
-
-		if ((Global.level.mainPlayer.isAxl || Global.level.mainPlayer.isDisguisedAxl) && Options.main.useMouseAim && overTime < secondsBeforeLeave && !Menu.inMenu && !Global.level.mainPlayer.isSpectator) {
-			Global.window.SetMouseCursorVisible(false);
-			Global.window.SetMouseCursorGrabbed(true);
-			Global.isMouseLocked = true;
-		} else {
-			Global.window.SetMouseCursorVisible(true);
-			Global.window.SetMouseCursorGrabbed(false);
-			Global.isMouseLocked = false;
-		}
-
 		if (!isOver) {
 			if (setupTime == 0 && Global.isHost) {
 				// Just in case packets were dropped, keep syncing "0" time

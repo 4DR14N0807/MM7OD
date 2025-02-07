@@ -1971,9 +1971,6 @@ public partial class Level {
 			int vfps = MathInt.Round(Global.currentFPS);
 			int fps = MathInt.Round(Global.logicFPS);
 			float yPos = 200;
-			if (Global.level.gameMode.shouldDrawRadar()) {
-				yPos = 219;
-			}
 			Fonts.drawText(
 				FontType.WhiteSmall, "VFPS:" + vfps.ToString(), Global.screenW - 5, yPos - 10,
 				Alignment.Right

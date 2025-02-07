@@ -72,13 +72,13 @@ public class JunkShieldMagnet : Anim {
 	public override void update() {
 		base.update();
 
-		if (radius < 30) radius += 0.5f;
+		if (radius < 30) radius += 1;
 		ang += 5;
 
 		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
 
 		timer += Global.speedMul;
-		if (timer >= 30 && !once && startAng == 0) {
+		if (timer >= 15 && !once && startAng == 0) {
 			once = true;
 			for (int i = 0; i < 8; i++) {
 				new JunkShieldPiece(
@@ -86,7 +86,7 @@ public class JunkShieldMagnet : Anim {
 					rock.player.getNextActorNetId(), i * 32, this
 				);
 			};
-		} else if (timer >= 60) destroySelf();
+		} else if (timer >= 30) destroySelf();
 	}
 
 	public override void onDestroy() {
@@ -125,7 +125,7 @@ public class JunkShieldPiece : Anim {
 			return;
 		}
 
-		if (radius > 30) radius -= 2;
+		if (radius > 30) radius -= 4;
 		ang += 5;
 		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
 	}

@@ -23,6 +23,7 @@ public class Blues : Character {
 	public float coreAmmoDecreaseCooldown;
 	public bool overheating;
 	public float overheatEffectTime;
+	public bool starCrashOverheat;
 
 	// Break Man stuff.
 	public bool overdrive;
@@ -151,9 +152,9 @@ public class Blues : Character {
 		if (overheating) {
 			jumpSpeed *= 0.75f;
 		}
-		else if (isShieldActive) {
+		/* else if (isShieldActive) {
 			jumpSpeed *= 0.85f;
-		}
+		} */
 		else if (overdrive) {
 			jumpSpeed *= 0.9f;
 		}
@@ -394,6 +395,7 @@ public class Blues : Character {
 			setHurt(-xDir, Global.halfFlinch, false);
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
+			starCrashOverheat = false;
 		}
 		if (isCharging() && chargeTime <= charge3Time + (overdrive ? 20 : 10)) {
 			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
@@ -403,7 +405,7 @@ public class Blues : Character {
 				overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
 			}
 		}
-		if (coreAmmoDecreaseCooldown <= 0 && !overdrive && charState is not BluesRevive) {
+		if (coreAmmoDecreaseCooldown <= 0 && !overdrive && charState is not BluesRevive && !starCrashOverheat) {
 			coreAmmo--;
 			if (coreAmmo <= 0) {
 				overheating = false;
@@ -552,7 +554,7 @@ public class Blues : Character {
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
-		if (!player.isAI && shieldHP > 0 && grounded && vel.y >= 0 && shootAnimTime <= 0 && canUseShield()) {
+		if (!player.isAI && shieldHP > 0 && /* grounded && vel.y >= 0 &&  */shootAnimTime <= 0 && canUseShield()) {
 			if (Options.main.protoShieldHold) {
 				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
 			} else {
@@ -702,7 +704,7 @@ public class Blues : Character {
 			playSound("buster3", sendRpc: true);
 			lemonCooldown = 12;
 		} else {
-			if (player.input.isHeld(Control.Up, player) && grounded && vel.y >= 0) {
+			if (player.input.isHeld(Control.Up, player)) {
 				addCoreAmmo(overdrive ? 6 : 4);
 				changeState(new ProtoStrike(), true);
 			} else {
@@ -755,6 +757,7 @@ public class Blues : Character {
 		specialWeapon.shootCooldown = specialWeapon.fireRate;
 		specialWeapon.shoot(this, chargeLevel, extraArg);
 		addCoreAmmo(specialWeapon.getAmmoUsage(chargeLevel));
+		if (specialWeapon is StarCrash && coreAmmo >= coreMaxAmmo) starCrashOverheat = true;
 	}
 
 	public void setShootAnim() {

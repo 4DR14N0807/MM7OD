@@ -135,7 +135,7 @@ public class CharState {
 			player.delayLTank();
 		} 
 		wasGrounded = character.grounded;
-		if (this is not Jump and not WallKick && (!oldState.canStopJump || oldState.stoppedJump)) {
+		if (this is not Jump and not WallKick and not TenguBladeState && (!oldState.canStopJump || oldState.stoppedJump)) {
 			stoppedJump = true;
 		}
 		if (character is Blues) {

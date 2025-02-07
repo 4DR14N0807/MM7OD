@@ -49,13 +49,13 @@ public class RemoteMineProj : Projectile {
 	) {
 		projId = (int)BassProjIds.RemoteMine;
 		maxTime = 1.25f;
-		bass = ownerPlayer.character as Bass ?? throw new NullReferenceException();
 		destroyOnHit = false;
 
 		vel.x = 240 * xDir;
 		damager.hitCooldown = 30;
 
-		if (bass != null && bass.ownedByLocalPlayer) {
+		if (ownedByLocalPlayer && owner.ownedByLocalPlayer) {
+			bass = ownerPlayer.character as Bass ?? throw new NullReferenceException();
 			bass.rMine = this;
 		}
 		canBeLocal = false;

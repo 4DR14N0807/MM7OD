@@ -91,7 +91,7 @@ public class SpreadDrillProj : Projectile {
 		if (bass == null) return;
 
 		if (ownedByLocalPlayer) {
-			if (player.input.isPressed(Control.Shoot, player)) {
+			if (player.input.isPressed(Control.Shoot, player) && bass.currentWeapon is SpreadDrill) {
 				new SpreadDrillMediumProj(ownChr, pos.addxy(0, 25), xDir, player.getNextActorNetId(), rpc: true);
 				new SpreadDrillMediumProj(ownChr, pos.addxy(0, -25), xDir, player.getNextActorNetId(), rpc: true);
 				destroySelf();
@@ -166,7 +166,7 @@ public class SpreadDrillMediumProj : Projectile {
 	public override void update() {
 		base.update();
 		if (ownedByLocalPlayer) {
-			if (owner.input.isPressed(Control.Shoot, owner)) {
+			if (owner.input.isPressed(Control.Shoot, owner) && (ownChr as Character)?.currentWeapon is SpreadDrill) {
 				new SpreadDrillSmallProj(ownChr, pos.addxy(0, 15), xDir, owner.getNextActorNetId(), rpc: true);
 				new SpreadDrillSmallProj(ownChr, pos.addxy(0, -15), xDir, owner.getNextActorNetId(), rpc: true);
 				destroySelfNoEffect(true, true);

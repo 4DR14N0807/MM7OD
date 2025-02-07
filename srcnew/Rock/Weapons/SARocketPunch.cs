@@ -102,7 +102,7 @@ public class SARocketPunchProj : Projectile {
 		vel.x = projSpeed * xDir;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
-		damager.hitCooldown = 0.5f;
+		damager.hitCooldown = 30;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);

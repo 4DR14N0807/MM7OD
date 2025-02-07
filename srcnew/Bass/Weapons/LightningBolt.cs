@@ -6,6 +6,7 @@ namespace MMXOnline;
 
 public class LightningBolt : Weapon {
 	public static LightningBolt netWeapon = new();
+	public static float cooldown = 45;
 
 	public LightningBolt() : base() {
 		index = (int)BassWeaponIds.LightningBolt;
@@ -15,7 +16,7 @@ public class LightningBolt : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 30;
+		fireRate = cooldown;
 		hasCustomAnim = true;
 	}
 
@@ -66,10 +67,16 @@ public class LightningBoltSpawn : Anim {
 public class LightningBoltState : CharState {
 	int phase = 0;
 	Anim? aim;
+	Anim? anim;
+	Point animOffset;
 	const float spawnYPos = -128;
 	Point lightningPos;
 	float endLagFrames = 0;
 	float overrideDamage;
+	Bass bass = null!;
+	float minTime = 6;
+	float maxTime = 60;
+	float chargeTime = 30;
 
 	public LightningBoltState() : base("lbolt") {
 	}
@@ -77,6 +84,8 @@ public class LightningBoltState : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		Point startAimPos = new Point(character.pos.x + 5 * character.xDir, character.pos.y - 25);
+		animOffset = new Point(7 * character.xDir, -23);
+		bass = character as Bass ?? throw new NullReferenceException();
 
 		character.useGravity = false;
 		if (character.vel.y < 0) {
@@ -94,7 +103,7 @@ public class LightningBoltState : CharState {
 		}
 		character.stopMovingWeak();
 		character.frameSpeed = 0;
-		new Anim(character.pos, "lightning_bolt_anim", character.xDir,
+		anim = new Anim(character.pos.add(animOffset), "lightning_bolt_anim", character.xDir,
 			character.player.getNextActorNetId(), true); 
 
 		aim = new Anim(
@@ -104,14 +113,13 @@ public class LightningBoltState : CharState {
 		aim.frameSpeed = 0;
 		aim.alpha /= 2;
 
-		new LightningBoltSpawn(
-			character.getCenterPos(), character.xDir,
-			character.player.getNextActorNetId(), true, true
-		);
+		charge();
 	}
 
 	public override void update() {
 		base.update();
+
+		anim?.changePos(character.pos.add(animOffset));
 
 		if (phase == 0) {
 			float moveX = character.player.input.getXDir(character.player) * 180;
@@ -120,13 +128,15 @@ public class LightningBoltState : CharState {
 				aim.pos.y = character.pos.y - 25;
 			}
 
-			if (stateFrames >= 45 || stateFrames >= 6 && player.input.isPressed(Control.Shoot, player)) {
+			if (stateFrames % chargeTime == 0 && stateFrames >= minTime && stateFrames != maxTime) charge();
+
+			if (stateFrames >= maxTime || stateFrames >= minTime && player.input.isPressed(Control.Shoot, player)) {
 				character.frameSpeed = 1;
 
 				float xPos = aim?.pos.x ?? character.pos.x;
 				lightningPos = new Point(xPos, character.pos.y + spawnYPos);
 				aim?.destroySelf();
-				overrideDamage = MathF.Ceiling((stateFrames / 15)) + 1;
+				overrideDamage = MathF.Floor((stateFrames / chargeTime)) + 2;
 
 				phase = 1;
 			}
@@ -141,6 +151,7 @@ public class LightningBoltState : CharState {
 			Weapon? bolt = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
 			if (bolt != null) {
 				bolt.addAmmo(-1, player);
+				once = true;
 			}
 			phase = 2;
 		}
@@ -160,6 +171,20 @@ public class LightningBoltState : CharState {
 		character.stopMovingWeak();
 		character.useGravity = true;
 		aim?.destroySelf();
+		bass.weaponCooldown = LightningBolt.cooldown;
+
+	}
+
+	void charge() {
+		new LightningBoltSpawn(
+			character.getCenterPos(), character.xDir,
+			character.player.getNextActorNetId(), true, true
+		);
+
+		anim = new Anim(character.pos.add(animOffset), "lightning_bolt_anim", character.xDir,
+			character.player.getNextActorNetId(), true);
+
+		character.playSound("lightningbolt", true);
 	}
 }
 

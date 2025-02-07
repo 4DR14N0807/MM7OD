@@ -164,6 +164,10 @@ public class ProtoStrikeProj : Projectile {
 			}
 		}
 
+		if (ownerChar != null) {
+			changePos(ownerChar.getShootPos());
+		}
+
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&

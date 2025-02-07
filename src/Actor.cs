@@ -1770,9 +1770,12 @@ public partial class Actor : GameObject {
 	public void moveWithMovingPlatform() {
 		if (!Global.level.hasMovingPlatforms) isStatic = true;
 		var collideDatas = Global.level.getTerrainTriggerList(
-			this, new Point(0, 1), typeof(Wall), typeof(MovingPlatform)
+			this, new Point(0, 1), typeof(Wall), typeof(MovingPlatform), typeof(Actor)
 		);
 		foreach (var collideData in collideDatas) {
+			if (collideData.gameObject is Actor { isSolidWall: false }) {
+				continue;
+			}
 			var hitWall = collideData?.gameObject as Wall;
 			if (hitWall != null && hitWall.isMoving) {
 				move(hitWall.deltaMove, useDeltaTime: false);

@@ -781,7 +781,31 @@ public class GameMode {
 			Global.radarRenderTextureC.Draw(sprite);
 			var spriteBackground = new SFML.Graphics.Sprite(Global.radarRenderTextureC.Texture);
 
-			foreach (GameObject gameObject in Global.level.gameObjects) {
+			HashSet<GameObject> terrainClose = new();
+			int gridXStart = MathInt.Floor((camX - 700) / Global.level.cellWidth);
+			int gridXEnd = MathInt.Ceiling((camX + 700) / Global.level.cellWidth);
+			int gridYStart = MathInt.Floor((camY - 400) / Global.level.cellWidth);
+			int gridYEnd = MathInt.Ceiling((camY + 400) / Global.level.cellWidth);
+
+			gridXStart = Helpers.clamp(gridXStart, 0, Global.level.terrainGrid.GetLength(0) - 1);
+			gridXEnd = Helpers.clamp(gridXEnd, 0, Global.level.terrainGrid.GetLength(0) - 1);
+			gridYStart = Helpers.clamp(gridYStart, 0, Global.level.terrainGrid.GetLength(1) - 1);
+			gridYEnd = Helpers.clamp(gridYEnd, 0, Global.level.terrainGrid.GetLength(1) - 1);
+
+			for (int i = gridXStart; i <= gridXEnd; i++) {
+				for (int j = gridYStart; j <= gridYEnd; j++) {
+					lock (Global.level.terrainGrid[i, j]) {
+						foreach (GameObject terrain in Global.level.terrainGrid[i, j]) {
+							terrainClose.Add(terrain);
+						}
+					}
+				}
+			}
+
+			foreach (GameObject gameObject in terrainClose) {
+				if (gameObject.iDisabled || gameObject.iDestroyed) {
+					continue;
+				}
 				if (gameObject is not Geometry geometry) {
 					continue;
 				}

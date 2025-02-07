@@ -19,16 +19,16 @@ public class SlashClawWeapon : Weapon {
 		description = new string[] { "Fast melee attack, able to pierce shields.", "No tiene flinch." };
 	}
 
-	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
+	public override void shootRock(Rock rock, params int[] args) {
+		base.shootRock(rock, args);
 		int chargeLevel = args[0];
 
-		if (character.charState is LadderClimb lc) {
-			character.changeState(new SlashClawLadder(lc.ladder), true);
+		if (rock.charState is LadderClimb lc) {
+			rock.changeState(new SlashClawLadder(lc.ladder), true);
 		} else {
-			character.changeState(new SlashClawState(), true);
+			rock.changeState(new SlashClawState(), true);
 		}
-		character.playSound("slash_claw", sendRpc: true);
+		rock.playSound("slash_claw", sendRpc: true);
 	}
 }
 

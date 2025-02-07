@@ -34,7 +34,7 @@ public class StarCrash : Weapon {
 			activeProj = null;
 		} else {
 			activeProj = new StarCrashProj(
-				character.getCenterPos(), character.xDir, character.player,
+				blues, blues.getCenterPos(), blues.xDir,
 				character.player.getNextActorNetId(), true
 			);
 			blues.starCrash = activeProj;
@@ -56,15 +56,14 @@ public class StarCrashProj : Projectile {
 	bool threw;
 
 	public StarCrashProj(
-		Point pos, int xDir,
-		Player player, ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		StarCrash.netWeapon, pos, xDir, 0, 0, player, "empty",
-		0, 0, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "empty", netId, altPlayer
 	) {
 		projId = (int)BluesProjIds.StarCrash;
-		blues = player.character as Blues;
-		this.player = player;
+		blues = owner as Blues ?? throw new NullReferenceException();
+		this.player = ownerPlayer;
 		setIndestructableProperties();
 		canBeLocal = false;
 
@@ -74,13 +73,13 @@ public class StarCrashProj : Projectile {
 		}
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new StarCrashProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 

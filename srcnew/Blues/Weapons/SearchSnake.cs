@@ -21,39 +21,45 @@ public class SearchSnake : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
-		new SearchSnakeProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
+		Blues blues = character as Blues ?? throw new NullReferenceException();
+		Point shootPos = blues.getShootPos();
+		int xDir = blues.getShootXDir();
+		new SearchSnakeProj(blues, shootPos, xDir, blues.player.getNextActorNetId(), true);
 		character.playSound("buster", sendRpc: true);
 	}
 }
 public class SearchSnakeProj : Projectile {
 	bool groundedOnce;
 	bool startAngleDrawing;
-	float prevAngle;
+	float projSpeed = 120;
 
 	public SearchSnakeProj(
-		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		SearchSnake.netWeapon, pos, xDir, 120, 2, player, "search_snake_proj_air",
-		0, 0.5f, netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "search_snake_proj_air", netProjId, altPlayer
 	) {
 		projId = (int)BluesProjIds.SearchSnake;
-		wallCrawlSpeed = speed * 0.75f;
+		wallCrawlSpeed = projSpeed * 0.75f;
 		destroyOnHit = true;
 		fadeSprite = "generic_explosion";
 		fadeOnAutoDestroy = true;
 		useGravity = true;
 		maxTime = 2;
+
+		vel.x = 120 * xDir;
+		damager.damage = 2;
+		damager.hitCooldown = 0.5f;
+		xScale = 1;
+
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 		canBeLocal = false;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new SearchSnakeProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -91,14 +97,14 @@ public class SearchSnakeProj : Projectile {
 	}
 
 	public override void render(float x, float y) {
-		base.render(x, y);
-		if (startAngleDrawing) {
-			byteAngle = deltaPos.byteAngle;
+		if (startAngleDrawing && currentWallDest != null) {
+			byteAngle = currentWallDest.byteAngle;
 			if (xDir < 0) byteAngle = -byteAngle + 128;
 
-			if (deltaPos.y < 0 && xDir < 0) byteAngle += 128;
-			if (xDir < 0) byteAngle += 128;
+			if (currentWallDest.y < 0 && currentWallDest.x == 0 && xDir < 0) byteAngle = -192;
+			//else if (xDir < 0) byteAngle += 128;
 		}
+		base.render(x, y);
 	}
 
 	

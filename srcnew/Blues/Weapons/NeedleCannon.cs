@@ -26,11 +26,12 @@ public class NeedleCannon : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
-		Player player = character.player;
+		Blues blues = character as Blues ?? throw new NullReferenceException();
+		Point shootPos = blues.getShootPos();
+		int xDir = blues.getShootXDir();
+		Player player = blues.player;
 		float shootAngle = 0;
-		if (character.grounded) {
+		if (blues.grounded) {
 			shootAngle = Helpers.randomRange(-30, 20);
 		} else {
 			shootAngle = Helpers.randomRange(-25, 25);
@@ -39,11 +40,11 @@ public class NeedleCannon : Weapon {
 			shootAngle = -shootAngle + 128;
 		}
 
-		new NeedleCannonProj(shootPos, shootAngle, player, player.getNextActorNetId(), true) {
-			ownerActor = character
+		new NeedleCannonProj(blues, shootPos, shootAngle, player.getNextActorNetId(), true) {
+			ownerActor = blues
 		};
-		character.playSound("buster");
-		character.xPushVel = 60 * -xDir;
+		blues.playSound("buster");
+		blues.xPushVel = 60 * -xDir;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -53,26 +54,26 @@ public class NeedleCannon : Weapon {
 
 public class NeedleCannonProj : Projectile {
 	public NeedleCannonProj(
-		Point pos, float byteAngle, Player player, ushort? netId, bool rpc = false
+		Actor owner, Point pos, float byteAngle, ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		NeedleCannon.netWeapon, pos, 1, 400, 0.5f, player, "needle_cannon_proj",
-		0, 0, netId, player.ownedByLocalPlayer
+		pos, 1, owner, "needle_cannon_proj", netId, altPlayer
 	) {
 		byteAngle = MathF.Round(byteAngle);
 		maxTime = 0.25f;
 		fadeSprite = "needle_cannon_proj_fade";
 		projId = (int)BluesProjIds.NeedleCannon;
 		this.byteAngle = byteAngle;
-		vel = Point.createFromByteAngle(byteAngle) * speed;
+		vel = Point.createFromByteAngle(byteAngle) * 400;
+		damager.damage = 0.5f;
 
 		if (rpc) {
-			rpcCreateByteAngle(pos, player, netId, byteAngle);
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new NeedleCannonProj(
-			args.pos, args.byteAngle, args.player, args.netId
+			args.owner, args.pos, args.byteAngle, args.netId, altPlayer: args.player
 		);
 	}
 }

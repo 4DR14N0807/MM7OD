@@ -69,6 +69,7 @@ public class LightningBoltState : CharState {
 	const float spawnYPos = -128;
 	Point lightningPos;
 	float endLagFrames = 0;
+	float overrideDamage;
 
 	public LightningBoltState() : base("lbolt") {
 	}
@@ -125,6 +126,7 @@ public class LightningBoltState : CharState {
 				float xPos = aim?.pos.x ?? character.pos.x;
 				lightningPos = new Point(xPos, character.pos.y + spawnYPos);
 				aim?.destroySelf();
+				overrideDamage = MathF.Ceiling((stateFrames / 15)) + 1;
 
 				phase = 1;
 			}
@@ -132,8 +134,8 @@ public class LightningBoltState : CharState {
 
 		if (phase == 1) {
 			new LightningBoltProj(
-				lightningPos, character.xDir, character.player,
-				character.player.getNextActorNetId(), true
+				character, lightningPos, character.xDir, 
+				character.player.getNextActorNetId(), overrideDamage, true
 			);
 			character.playSound("lightningbolt", true);
 			Weapon? bolt = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
@@ -169,28 +171,30 @@ public class LightningBoltProj : Projectile {
 	int timeInFrames;
 
 	public LightningBoltProj(
-		Point pos, int xDir, Player player,
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		float? overrideDamage = 0, bool rpc = false, Player? altPlayer = null
 	) : base(
-		LightningBolt.netWeapon, pos, xDir, 0, 4,
-		player, "lightning_bolt_proj", Global.halfFlinch, 1,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "lightning_bolt_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.LightningBolt;
 		maxTime = 0.5f;
 		setIndestructableProperties();
 		bodySpriteHeight = new Sprite(bodySprite).animData.frames[0].rect.h();
 
+		damager.damage = overrideDamage ?? 2;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 60;
+
 		spawnPosY = pos.y;
 		base.vel.y = 600;
 		frameSpeed = 0;
 
-		if (rpc) rpcCreate(pos, player, netProjId, xDir);
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new LightningBoltProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 

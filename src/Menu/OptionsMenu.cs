@@ -33,6 +33,7 @@ public class OptionsMenu : IMainMenu {
 	private int oldParticleQuality;
 	public bool oldIntegerFullscreen;
 	public bool oldVsync;
+	public bool oldDrawMiniMap;
 
 	public FontType optionFontText = FontType.Grey;
 	public FontType optionFontValue = FontType.Grey;
@@ -60,6 +61,7 @@ public class OptionsMenu : IMainMenu {
 		oldEnablePostprocessing = Options.main.enablePostProcessing;
 		oldParticleQuality = Options.main.particleQuality;
 		oldVsync = Options.main.vsync;
+		oldDrawMiniMap = Options.main.drawMiniMap;
 
 		playerName = Options.main.playerName;
 		this.charNum = charNum;
@@ -209,6 +211,24 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Rounds down fullscreen pixels to the nearest integer.\n" +
 					"Reduces distortion when going fullscreen."
+				),
+				//Minimap
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.drawMiniMap);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText, "DRAW MINIMAP:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.drawMiniMap),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Set to Yes to draw a minimap in game."
 				),
 				// Shaders
 				new MenuOption(40, startY,

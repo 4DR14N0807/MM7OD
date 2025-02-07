@@ -898,7 +898,7 @@ public partial class Character : Actor, IDamagable {
 			flattenedTime -= Global.spf;
 			if (flattenedTime < 0) flattenedTime = 0;
 		}
-		Helpers.decrementTime(ref slowdownTime);
+		Helpers.decrementFrames(ref slowdownTime);
 		
 		igFreezeRecoveryCooldown += Global.spf;
 		if (igFreezeRecoveryCooldown > 0.2f) {

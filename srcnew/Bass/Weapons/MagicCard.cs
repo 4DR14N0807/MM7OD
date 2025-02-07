@@ -45,12 +45,12 @@ public class MagicCard : Weapon {
 		}
 
 		if (effect >= 4) {
-			new MagicCardSpecialSpawn(shootPos, character.getShootXDir(), 
-				player, shootAngle, player.getNextActorNetId(), true);
+			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
+				shootAngle, player.getNextActorNetId(), true);
 		} else {
 			var card = new MagicCardProj(
-				this, shootPos, character.getShootXDir(), shootAngle, 
-				player, player.getNextActorNetId(), effect, true
+				bass, this, shootPos, character.getShootXDir(), shootAngle, 
+				player.getNextActorNetId(), effect, true
 			);
 			cardsOnField.Add(card);
 			character.playSound("magiccard", true);
@@ -66,18 +66,17 @@ public class MagicCardProj : Projectile {
 	const float projSpeed = 480;
 	public Pickup? pickup;
 	Weapon wep;
-	int effect;
+	public int effect;
 	int hits;
 	float startAngle;
+	Actor ownChr = null!;
 	private Point returnPos;
 
 	public MagicCardProj(
-		Weapon weapon, Point pos, int xDir, float byteAngle, Player player, 
-		ushort? netProjId, int effect = 0, bool rpc = false
+		Actor owner, Weapon weapon, Point pos, int xDir, float byteAngle,
+		ushort? netProjId, int effect = 0, bool rpc = false, Player? altPlayer = null
 	) : base (
-		MagicCard.netWeapon, pos, xDir, 0, 1,
-		player, "magic_card_proj", 0, 0.3f, 
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "magic_card_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.MagicCard;
 		maxTime = 3f;
@@ -89,7 +88,7 @@ public class MagicCardProj : Projectile {
 		wep = weapon;
 		returnPos = pos;
 		if (ownedByLocalPlayer) {
-			shooter = player.character;
+			shooter = ownerPlayer.character;
 			if (shooter != null) {
 				returnPos = shooter.getCenterPos();
 			}
@@ -97,17 +96,22 @@ public class MagicCardProj : Projectile {
 		destroyOnHit = effect != 3;
 
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
+		damager.damage = 1;
+		damager.hitCooldown = 18;
+		ownChr = owner;
 		
 		canBeLocal = false;
 		if (rpc) {
-			rpcCreateByteAngle(pos, player, netId, byteAngle, (byte)(xDir + 1));
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, (byte)(xDir + 1));
 		}
+
+		if (effect == 1) projId = (int)BassProjIds.MagicCard1;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MagicCardProj(
-			MagicCard.netWeapon, arg.pos, arg.extraData[0] - 1, 
-			arg.byteAngle, arg.player, arg.netId
+			arg.owner, MagicCard.netWeapon, arg.pos, arg.extraData[0] - 1, 
+			arg.byteAngle, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -192,8 +196,8 @@ public class MagicCardProj : Projectile {
 			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
 				destroySelf();
 
-				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, 1, true);
-				new MagicCardSpecialProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), startAngle, -1, true);
+				new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, 1, true);
+				new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
 				playSound("magiccard", true);
 			}
 		}
@@ -209,7 +213,6 @@ public class MagicCardProj : Projectile {
 				if (damagable is not Character chr) return;
 				else {
 
-					if (effect == 1) chr.xDir *= -1;
 					hits++;
 					if (hits >= 4) destroySelf();
 				}
@@ -236,30 +239,30 @@ public class MagicCardSpecialSpawn : Projectile {
 	float cooldown;
 	int count = 1;
 	float startAngle;
+	Actor ownChr = null!;
 
 	public MagicCardSpecialSpawn(
-		Point pos, int xDir, Player player, float startAngle,
-		ushort? netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, float startAngle,
+		ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		MagicCard.netWeapon, pos, xDir, 0, 0,
-		player, "generic_explosion", 0, 0, netProjId,
-		player.ownedByLocalPlayer
+		pos, xDir, owner, "generic_explosion", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.MagicCardSSpawn;
 		setIndestructableProperties();
 		maxTime = 2;
 		this.startAngle = startAngle;
+		ownChr = owner;
 		
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)startAngle };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MagicCardSpecialSpawn(
-			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -280,7 +283,7 @@ public class MagicCardSpecialSpawn : Projectile {
 				t = MathF.Ceiling(t / 2);
 			}
 
-			new MagicCardSpecialProj(pos, xDir, damager.owner, 
+			new MagicCardSpecialProj(ownChr, pos, xDir,  
 				damager.owner.getNextActorNetId(), startAngle, (int)t, true);
 			playSound("magiccard", true);
 			
@@ -299,12 +302,10 @@ public class MagicCardSpecialProj : Projectile {
 	Actor? closestEnemy;
 
 	public MagicCardSpecialProj(
-		Point pos, int xDir, Player player, ushort? netProjId, 
-		float startAngle, int type, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		float startAngle, int type, bool rpc = false, Player? altPlayer = null
 	) : base(
-		MagicCard.netWeapon, pos, xDir, 425, 1,
-		player, "magic_card_proj", 0, 0, 
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "magic_card_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.MagicCardS;
 		maxTime = 3;
@@ -312,18 +313,19 @@ public class MagicCardSpecialProj : Projectile {
 		base.byteAngle = (type * 10) + startAngle;
 		if (xDir < 0 && startAngle != 128) byteAngle = -byteAngle + 128;
 		vel = Point.createFromByteAngle(byteAngle.Value).times(speed);
+		damager.damage = 1;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)startAngle, (byte)type };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MagicCardSpecialProj(
-			arg.pos, arg.xDir, arg.player, arg.netId,
-			arg.extraData[0], arg.extraData[1] 
+			arg.owner, arg.pos, arg.xDir, arg.netId,
+			arg.extraData[0], arg.extraData[1], altPlayer: arg.player
 		);
 	}
 

@@ -325,6 +325,7 @@ public enum BassProjIds {
 	TenguBladeProj,
 	TenguBladeDash,
 	MagicCard,
+	MagicCard1,
 	MagicCardSSpawn,
 	MagicCardS,
 	SuperBassLemon,

@@ -702,7 +702,7 @@ public class GameMode {
 	}
 
 	public bool shouldDrawRadar() {
-		return true;
+		return Options.main.drawMiniMap;
 	}
 
 	void drawRadar() {

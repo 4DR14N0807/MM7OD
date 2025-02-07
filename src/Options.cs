@@ -39,6 +39,7 @@ public class Options {
 	public uint windowScale = 2;
 	public bool fastShaders;
 	public bool vsync;
+	public bool drawMiniMap = true;
 	/*public bool areShadersDisabled() {
 		if (Global.disableShaderOverride) return true;
 		return disableShaders;

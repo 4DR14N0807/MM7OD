@@ -25,14 +25,15 @@ public class PowerStone : Weapon {
 		Point shootPos = character.getShootPos();
 		int xDir = character.getShootXDir();
 		(character as Blues)?.resetCoreCooldown(fireRate + 10);
+		Blues blues = character as Blues ?? throw new NullReferenceException();
 
 		if (args[1] == 1) {
 			if (character.charState is not LadderClimb lc) character.changeState(new BluesShootAlt(this), true);
 			else character.changeState(new BluesShootAltLadder(this, lc.ladder), true);
 		} else if (args[1] == 2) {
-			new PowerStoneProj(shootPos, xDir, character.player, 0, character.player.getNextActorNetId(), true);
-			new PowerStoneProj(shootPos, xDir, character.player, 1, character.player.getNextActorNetId(), true);
-			new PowerStoneProj(shootPos, xDir, character.player, 2, character.player.getNextActorNetId(), true);
+			new PowerStoneProj(blues, shootPos, xDir, 0, character.player.getNextActorNetId(), true);
+			new PowerStoneProj(blues, shootPos, xDir, 1, character.player.getNextActorNetId(), true);
+			new PowerStoneProj(blues, shootPos, xDir, 2, character.player.getNextActorNetId(), true);
 		}
 	}
 }
@@ -44,19 +45,23 @@ public class PowerStoneProj : Projectile {
 	float radius = 10;
 
 	public PowerStoneProj(
-		Point pos, int xDir, Player player, int type, ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, int type, 
+		ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		PowerStone.netWeapon, pos, xDir, 0, 2, player, "power_stone_proj",
-		0, 1f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "power_stone_proj", netId, altPlayer
 	) {
 		projId = (int)BluesProjIds.PowerStone;
 		maxTime = 1;
 
-		character = player.character;
+		character = ownerPlayer.character;
 		stoneAngle = type * 85;
 		zIndex = ZIndex.Character - 10;
 		destroyOnHit = false;
 		canBeLocal = false;
+
+		damager.damage = 2;
+		damager.hitCooldown = 60;
+		
 		origin = pos;
 		if (character != null) {
 			origin = character.getCenterPos();
@@ -67,13 +72,13 @@ public class PowerStoneProj : Projectile {
 		));
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir, (byte)type);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new PowerStoneProj(
-			args.pos, args.xDir, args.player, args.extraData[0], args.netId
+			args.owner, args.pos, args.xDir, args.extraData[0], args.netId, altPlayer: args.player
 		);
 	}
 
@@ -89,6 +94,18 @@ public class PowerStoneProj : Projectile {
 
 		stoneAngle += 6;
 		radius += 1.25f;
+	}
+
+	public override void onHitDamagable(IDamagable damagable) {
+		base.onHitDamagable(damagable);
+
+		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
+				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
+			) {
+				destroySelfNoEffect(disableRpc: true, true);
+			}
+		}
 	}
 
 	public override void onDestroy() {

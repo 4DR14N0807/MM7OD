@@ -85,7 +85,7 @@ public class RPCCreateActor : RPC {
 		} else if (createId == (int)NetActorCreateId.Rush) {
 			new Rush(pos, player, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.CopyVisionClone) {
-			new CopyVisionClone(pos, player, xDir, netProjByte, false);
+			new CopyVisionClone(actor, pos, xDir, netProjByte, false, altPlayer: player);
 		} else if (createId == (int)NetActorCreateId.ChillPenguin) {
 			new ChillPenguin(player, pos, pos, xDir, netProjByte, false);
 		} else if (createId == (int)NetActorCreateId.SparkMandrill) {

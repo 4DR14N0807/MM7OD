@@ -198,7 +198,7 @@ public class Rock : Character {
 		int chargedNS = hasChargedNoiseCrush ? 1 : 0;
 		
 		weaponCooldown = currentWeapon?.fireRate ?? 0;
-		currentWeapon?.shoot(this, chargeLevel, chargedNS);
+		currentWeapon?.shootRock(this, chargeLevel, chargedNS);
 		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(chargeLevel) ?? 0, player);
 		if (oldShootAnimTime <= 0.25f && currentWeapon?.hasCustomAnim == false) {
 			shootAnimTime = 0.25f;
@@ -459,8 +459,7 @@ public class Rock : Character {
 
 		if (isGHit && isLanding() && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
 			rjs.once = true;
-			rush.changeSprite("rush_jet", true);
-			rush.playSound("rush_jet", true);
+			
 		}
 	}
 

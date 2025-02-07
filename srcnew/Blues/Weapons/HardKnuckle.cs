@@ -38,13 +38,12 @@ public class HardKnuckleProj : Projectile {
 	Dictionary<string, float> bounceCooldowns = new();
 
 	public HardKnuckleProj(
-		Point pos, int xDir, Player player, ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		HardKnuckle.netWeapon, pos, xDir, 0.25f * 60, 2, player, "hard_knuckle_proj",
-		Global.halfFlinch, 1f, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "hard_knuckle_proj", netId, altPlayer
 	) {
 		projId = (int)BluesProjIds.HardKnuckle;
-		if (player.character is Blues blu && blu.isBreakMan) {
+		if (owner is Blues blu && blu.isBreakMan) {
 			changeSprite("hard_knuckle_proj_bman", true);
 		}
 		fadeSprite = "generic_explosion";
@@ -52,16 +51,21 @@ public class HardKnuckleProj : Projectile {
 		destroyOnHit = false;
 		spawnPointX = pos.x;
 		canBeLocal = false;
-		netOwner = player;
+		netOwner = altPlayer;
+
+		vel.x = 0.25f * 60 * xDir;
+		damager.damage = 2;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 60;
 
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new HardKnuckleProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -156,8 +160,8 @@ public class HardKnuckleShoot : CharState {
 		}
 		if (!fired && character.frameIndex == 1) {
 			blues.hardKnuckleProj = new HardKnuckleProj(
-				character.getShootPos().addxy(character.xDir * 8, 0), character.xDir,
-				player, player.getNextActorNetId(), true
+				blues, blues.getShootPos().addxy(blues.xDir * 8, 0), blues.xDir,
+				player.getNextActorNetId(), true, player
 			);
 			fired = true;
 		}

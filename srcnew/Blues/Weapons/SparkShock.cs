@@ -22,33 +22,36 @@ public class SparkShock : Weapon {
 
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
-		new SparkShockProj(shootPos, xDir, character.player, character.player.getNextActorNetId(), true);
-		character.playSound("sparkShock", sendRpc: true);
+		Blues blues = character as Blues ?? throw new NullReferenceException();
+		Point shootPos = blues.getShootPos();
+		int xDir = blues.getShootXDir();
+		new SparkShockProj(blues, shootPos, xDir, blues.player.getNextActorNetId(), true);
+		blues.playSound("sparkShock", sendRpc: true);
 	}
 }
 
 public class SparkShockProj : Projectile {
 	public SparkShockProj(
-		Point pos, int xDir,
-		Player player, ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId,
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		SparkShock.netWeapon, pos, xDir, 3 * 60, 1, player, "spark_shock_proj",
-		0, 0, netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "spark_shock_proj", netId, altPlayer
 	) {
 		//todo: improve sparkshock sprites
 		maxTime = 0.75f;
 		projId = (int)BluesProjIds.SparkShock;
 
+		vel.x = 180 * xDir;
+		damager.damage = 1;
+
 		if (rpc) {
-			rpcCreate(pos, player, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new SparkShockProj(
-			args.pos, args.xDir, args.player, args.netId
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
 	}
 }

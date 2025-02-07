@@ -236,6 +236,10 @@ public class RushJetState : RushState {
 		base.update();
 
 		if (rock.isUsingRushJet()) {
+			if (!once) {
+				rush.changeSprite("rush_jet", true);
+				rush.playSound("rush_jet", true);
+			}
 			xDir = player.input.getXDir(player);
 			input.y = player.input.getYDir(player);
 			if (xDir != 0) input.x = xDir;
@@ -420,7 +424,7 @@ public class RushSearchState : RushState {
 			Global.playSound("rush_search_end");
 			text = "Try Again.";
 			font = FontType.Grey;
-			pickup = new Trash(pickupPos, rush.player.getNextActorNetId(), 
+			pickup = new Trash(pickupPos.addxy(0, -4), rush.player.getNextActorNetId(), 
 			sendRpc: true); 
 		} 
 		else 

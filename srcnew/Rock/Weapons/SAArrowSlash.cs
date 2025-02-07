@@ -18,25 +18,24 @@ public class ArrowSlashProj : Projectile {
 	float timeMoving;
 
 	public ArrowSlashProj(
-		Point pos, int xDir,
-		Player player, ushort netProjId,
-		bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId,
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		ArrowSlash.netWeapon, pos, xDir, 0, 1,
-		player, "slash_claw_proj", 0, 0.5f,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "slash_claw_proj", netProjId, altPlayer
 	) {
 		maxTime = 1f;
 		projId = (int)RockProjIds.SAArrowSlash;
 
+		damager.damage = 1;
+
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ArrowSlashProj(
-			arg.pos, arg.xDir, arg.player, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -66,23 +65,26 @@ public class ArrowSlashProj : Projectile {
 public class SAArrowSlashState : CharState {
 
 	bool fired;
+	Rock rock = null!;
 
 	public SAArrowSlashState() : base("sa_arrowslash", "", "", "") {
 		airMove = true;
 	}
 
-	public override bool canEnter(Character character) {
-		return base.canEnter(character);
+	
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		rock = character as Rock ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
 		base.update();
 
 		if (!fired) {
-			new ArrowSlashProj(character.getCenterPos(), character.xDir, player, player.getNextActorNetId(), true);
+			new ArrowSlashProj(rock, rock.getCenterPos(), rock.xDir, player.getNextActorNetId(), true);
 			fired = true;
 		}
 
-		if (character.isAnimOver()) character.changeToIdleOrFall();
+		if (rock.isAnimOver()) rock.changeToIdleOrFall();
 	}
 }

@@ -28,35 +28,32 @@ public class NoiseCrush : Weapon {
 		return 0;
 	}
 
-	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
-		Player player = character.player;
+	public override void shootRock(Rock rock, params int[] args) {
+		base.shootRock(rock, args);
+		Point shootPos = rock.getShootPos();
+		int xDir = rock.getShootXDir();
+		Player player = rock.player;
 		int chargeLevel = args[0];
 		bool charged = args[1] == 1;
 
-		if (player.character is Rock rock) {
-
-				if (charged) {
-					character.playSound("noise_crush_charged");
-					new NoiseCrushChargedProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(6 * -xDir, 0), xDir, player, 0, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(12 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(18 * -xDir, 0), xDir, player, 2, player.getNextActorNetId(), true);
-					new NoiseCrushChargedProj(shootPos.addxy(24 * -xDir, 0), xDir, player, 3, player.getNextActorNetId(), true);
-					rock.hasChargedNoiseCrush = false;
-					rock.noiseCrushAnimTime = 0;
-				} else {
-					new NoiseCrushProj(shootPos, xDir, player, 0, player.getNextActorNetId(), true, true);
-					new NoiseCrushProj(shootPos.addxy(4 * -xDir, 0), xDir, player, 0, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(shootPos.addxy(8 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(shootPos.addxy(12 * -xDir, 0), xDir, player, 1, player.getNextActorNetId(true), rpc: true);
-					new NoiseCrushProj(shootPos.addxy(16 * -xDir, 0), xDir, player, 2, player.getNextActorNetId(true), rpc: true);
-					character.playSound("noise_crush", sendRpc: true);
-					addAmmo(-1, player);
-				}
-			}
+		if (charged) {
+			rock.playSound("noise_crush_charged");
+			new NoiseCrushChargedProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true);
+			new NoiseCrushChargedProj(rock, shootPos.addxy(6 * -xDir, 0), xDir, 0, player.getNextActorNetId(), true);
+			new NoiseCrushChargedProj(rock, shootPos.addxy(12 * -xDir, 0), xDir, 1, player.getNextActorNetId(), true);
+			new NoiseCrushChargedProj(rock, shootPos.addxy(18 * -xDir, 0), xDir, 2, player.getNextActorNetId(), true);
+			new NoiseCrushChargedProj(rock, shootPos.addxy(24 * -xDir, 0), xDir, 3, player.getNextActorNetId(), true);
+			rock.hasChargedNoiseCrush = false;
+			rock.noiseCrushAnimTime = 0;
+		} else {
+			new NoiseCrushProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, true);
+			new NoiseCrushProj(rock, shootPos.addxy(4 * -xDir, 0), xDir, 0, player.getNextActorNetId(true), rpc: true);
+			new NoiseCrushProj(rock, shootPos.addxy(8 * -xDir, 0), xDir, 1, player.getNextActorNetId(true), rpc: true);
+			new NoiseCrushProj(rock, shootPos.addxy(12 * -xDir, 0), xDir, 1, player.getNextActorNetId(true), rpc: true);
+			new NoiseCrushProj(rock, shootPos.addxy(16 * -xDir, 0), xDir, 2, player.getNextActorNetId(true), rpc: true);
+			rock.playSound("noise_crush", sendRpc: true);
+			addAmmo(-1, player);
+		}
 	}
 }
 
@@ -68,13 +65,10 @@ public class NoiseCrushProj : Projectile {
 	public bool isMain;
 
 	public NoiseCrushProj(
-		Point pos, int xDir, Player player, 
-		int type, ushort netProjId,
-		bool isMain = false, bool rpc = false
+		Actor owner, Point pos, int xDir, int type, ushort? netProjId,
+		bool isMain = false, bool rpc = false, Player? altPlayer = null
 	) : base(
-		NoiseCrush.netWeapon, pos, xDir, 240, 1,
-		player, "noise_crush_top", 0, 0.2f,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "noise_crush_top", netProjId, altPlayer
 	) {
 
 		projId = (int)RockProjIds.NoiseCrush;
@@ -86,6 +80,10 @@ public class NoiseCrushProj : Projectile {
 		fadeOnAutoDestroy = true;
 		canBeLocal = false;
 
+		vel.x = 240 * xDir;
+		damager.damage = 1;
+		damager.hitCooldown = 12;
+
 		if (type == 1) changeSprite("noise_crush_middle", true);
 		else if (type == 2) {
 			changeSprite("noise_crush_bottom", true);
@@ -93,13 +91,14 @@ public class NoiseCrushProj : Projectile {
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new NoiseCrushProj(
-			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -125,18 +124,20 @@ public class NoiseCrushChargedProj : Projectile {
 	public int type;
 
 	public NoiseCrushChargedProj(
-		Point pos, int xDir, Player player,
-		int type, ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, int type, 
+		ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		NoiseCrush.netWeapon, pos, xDir, 240, 3,
-		player, "noise_crush_charged_top", 0, 0.33f,
-		netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "noise_crush_charged_top", netProjId, altPlayer
 	) {
 
 		projId = (int)RockProjIds.NoiseCrushCharged;
 		maxTime = 1f;
 		this.type = type;
 		fadeSprite = "noise_crush_fade";
+
+		vel.x = 240 * xDir;
+		damager.damage = 3;
+		damager.hitCooldown = 20;
 
 		if (type == 1) changeSprite("noise_crush_charged_middle", true);
 		else if (type == 2) changeSprite("noise_crush_charged_middle2", true);
@@ -147,13 +148,14 @@ public class NoiseCrushChargedProj : Projectile {
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
-			rpcCreate(pos, player, netProjId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new NoiseCrushChargedProj(
-			arg.pos, arg.xDir, arg.player, arg.extraData[0], arg.netId
+			arg.owner, arg.pos, arg.xDir, 
+			arg.extraData[0], arg.netId, altPlayer: arg.player
 		);
 	}
 }

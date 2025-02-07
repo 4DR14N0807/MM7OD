@@ -55,7 +55,7 @@ public class Rock : Character {
 		spriteToCollider["sa_activate_end_air"] = null;
 
 		charge1Time = 40;
-		charge2Time = 80;
+		charge2Time = 105;
 
 		rushWeapon = new RushWeapon();
 		weapons.Add(rushWeapon);

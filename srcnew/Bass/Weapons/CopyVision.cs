@@ -53,7 +53,7 @@ public class CopyVision : Weapon {
 			if (ammo > 0) {
 				new CopyVisionLemon(bass, shootPos, bass.xDir, player.getNextActorNetId(), true);
 			} else {
-				new CopyVisionLemonAlt(shootPos, bass.xDir, player, player.getNextActorNetId(), true);
+				new CopyVisionLemonAlt(bass, shootPos, bass.xDir, player.getNextActorNetId(), true);
 			}
 			bass.playSound("bassbuster", true);
 		}
@@ -102,23 +102,27 @@ public class CopyVisionLemon : Projectile {
 
 public class CopyVisionLemonAlt : Projectile {
 	public CopyVisionLemonAlt(
-		Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		CopyVision.netWeapon, pos, xDir, 240, 0.5f, player, "copy_vision_lemon",
-		0, 9f / 60f, netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "copy_vision_lemon", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.CopyVisionLemonAlt;
 		maxTime = 0.525f;
 		fadeSprite = "copy_vision_lemon_fade";
 
+		vel.x = 240 * xDir;
+		damager.damage = 0.5f;
+		damager.hitCooldown = 9;
+
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 		projId = (int)BassProjIds.BassLemon;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new CopyVisionLemon(
+		return new CopyVisionLemonAlt(
 			arg.owner, arg.pos, arg.xDir, arg.netId
 		);
 	}

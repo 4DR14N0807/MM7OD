@@ -185,7 +185,7 @@ public class ShootAltRock : CharState {
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();
 		} else {
-			if ((character.grounded) && player.input.isPressed(Control.Jump, player)) {
+			if ((character.grounded) && player.input.isPressed(Control.Jump, player) && character.canJump()) {
 				character.vel.y = -character.getJumpPower();
 				sprite = isUnderwaterSW ? "shoot_swell_air" : "shoot2_air";
 				character.changeSpriteFromName(sprite, false);

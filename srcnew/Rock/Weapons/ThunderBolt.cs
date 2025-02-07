@@ -119,7 +119,7 @@ public class ThunderBoltSplitProj : Projectile {
 		destroyOnHit = false;
 		damager.damage = 2;
 		damager.flinch = Global.miniFlinch;
-		damager.hitCooldown = 0.5f;
+		damager.hitCooldown = 30;
 		ownChr = owner;
 
 		if (type >= 1) {

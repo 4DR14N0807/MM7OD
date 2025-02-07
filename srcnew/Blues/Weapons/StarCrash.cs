@@ -113,6 +113,7 @@ public class StarCrashProj : Projectile {
 		if (blues == null || blues.destroyed || blues.starCrash != this ||
 			!blues.starCrashActive || blues.overheating || time >= 8
 		) {
+			blues?.delinkStarCrash();
 			destroySelf();
 		}
 	}
@@ -144,6 +145,12 @@ public class StarCrashProj : Projectile {
 			);
 		}
 		
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
+		if (blues != null) blues.inCustomShootAnim = false;
 	}
 }
 

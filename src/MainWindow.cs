@@ -81,11 +81,18 @@ public partial class Global {
 		} else {
 			uint desktopWidth = VideoMode.DesktopMode.Width;
 			uint desktopHeight = VideoMode.DesktopMode.Height;
-			window = new RenderWindow(new VideoMode(screenW, screenH), "MM7 Online: Deathmatch", Styles.None);
+			window = new RenderWindow(new VideoMode(desktopWidth, desktopHeight), "MM7 Online: Deathmatch", Styles.None);
 			window.SetVerticalSyncEnabled(options.vsync);
 			window.Position = new Vector2i(0, 0);
 			window.Size = new Vector2u(desktopWidth, desktopHeight);
 			viewPort = getFullScreenViewPort();
+			#if WINDOWS
+				IntPtr handle = window.SystemHandle;
+				const int GWL_STYLE = -16;
+				const UInt32 WS_POPUP = 0x80000000;
+				UInt32 currentStyle = Program.GetWindowLong(handle, GWL_STYLE);
+				Program.SetWindowLong(handle, GWL_STYLE, currentStyle & ~(WS_POPUP));
+			#endif
 		}
 
 		if (!File.Exists(Global.assetPath + "assets/menu/icon.png")) {

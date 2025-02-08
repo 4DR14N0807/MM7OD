@@ -53,7 +53,13 @@ class Program {
 #if WINDOWS
 	[DllImport("kernel32.dll", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	static extern bool AllocConsole();
+	public static extern bool AllocConsole();
+
+	[DllImport("user32.dll", SetLastError = true)]
+	public static extern UInt32 GetWindowLong(IntPtr hwnd, int index);
+
+	[DllImport("user32.dll")]
+	public static extern int SetWindowLong(IntPtr hwnd, int index, UInt32 newStyle);
 #endif
 
 	static void GameMain(string[] args, int mode) {

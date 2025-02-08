@@ -251,13 +251,20 @@ public partial class Level {
 	public int equalCharDistributerBlue;
 
 	public void startLevel(Server server, bool joinedLate) {
-		// Load stuff on the main thread to prevent RenderTexture errors.
-		Program.loadAction = () => {
+		// Multi thread mode shenanigans.
+		if (Program.isMultiThread) {
+			// Load stuff on the main thread to prevent RenderTexture errors.
+			Program.loadAction = () => {
+				startLevelAction(server, joinedLate);
+			};
+			// Wait for load to end.
+			while (Program.loadAction != null) {
+				Thread.Sleep(10);
+			}
+		}
+		// Single thread mode... just load.
+		else {
 			startLevelAction(server, joinedLate);
-		};
-		// Wait for load to end.
-		while (Program.loadAction != null) {
-			Thread.Sleep(10);
 		}
 	}
 
@@ -1825,9 +1832,13 @@ public partial class Level {
 		Dictionary<long, DrawLayer> drawObjCopy = new(DrawWrappers.walDrawObjects);
 		DrawWrappers.walDrawObjects.Clear();
 
-		Program.renderAction = () => {
+		if (Program.isMultiThread) {
+			Program.renderAction = () => {
+				renderResult(this, srt, drawObjCopy);
+			};
+		} else {
 			renderResult(this, srt, drawObjCopy);
-		};
+		}
 	}
 
 	public static void renderResult(

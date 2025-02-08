@@ -57,25 +57,15 @@ class Program {
 #endif
 
 	static void GameMain(string[] args, int mode) {
-		if (false && Debugger.IsAttached) {
-			Run(args, mode);
-		} else {
-			try {
-				Run(args, mode);
-			} catch (Exception exception) {
-				/*
-				string crashDump = e.Message + "\n\n" +
-					e.StackTrace + "\n\nInner exception: " +
-					e.InnerException?.Message + "\n\n" +
-					e.InnerException?.StackTrace;
-				Helpers.showMessageBox(crashDump.Truncate(1000), "Fatal Error!");
-				throw;
-				*/
-				Logger.LogFatalException(exception);
-				//Logger.logException(exception, false, "Fatal exception", true);
-				//Thread.Sleep(1000);
-				throw;
+		try {
+			if (Options.main.multithreadMode) {
+				RunMT(args, mode);
+			} else {
+				RunST(args, mode);
 			}
+		} catch (Exception exception) {
+			Logger.LogFatalException(exception);
+			throw;
 		}
 	}
 
@@ -407,7 +397,11 @@ class Program {
 		if (Global.levelStarted()) {
 			Global.level.render();
 		} else {
-			renderAction = () => { Menu.render(); };
+			if (isMultiThread) {
+				renderAction = Menu.render;
+			} else {
+				Menu.render();
+			}
 		}
 		// TODO: Make this work for errors.
 		//if (Global.debug) {
@@ -1156,6 +1150,7 @@ class Program {
 	}
 
 	// Main loop stuff.
+	public static bool isMultiThread;
 	public static decimal deltaTimeSavings = 0;
 	public static decimal lastUpdateTime = 0;
 	public static Exception? logicThreadException;
@@ -1163,7 +1158,22 @@ class Program {
 	public static bool triggerDispatch;
 	public static Action? loadAction;
 
-	static void Run(string[] args, int mode) {
+	static void RunST(string[] args, int mode) {
+		isMultiThread = false;
+		RenderWindow window = Initialize(args, mode);
+		Task? mainLoopTask = new Task(() => {
+			while (window.IsOpen) {
+				mainLoop(window);
+			}
+		});
+
+		while (window.IsOpen) {
+			mainLoop(window);
+		}
+	}
+
+	static void RunMT(string[] args, int mode) {
+		isMultiThread = true;
 		RenderWindow window = Initialize(args, mode);
 		Task? mainLoopTask = new Task(() => {
 			while (window.IsOpen) {
@@ -1236,7 +1246,11 @@ class Program {
 			deltaTime = deltaTimeSavings + ((timeNow - lastUpdateTime) / fpsLimit);
 			deltaTimeAlt = ((timeNow - lastAltUpdateTime) / fpsLimitAlt);
 			if (deltaTime >= 1 || deltaTimeAlt >= 1) {
-				triggerDispatch = true;
+				if (isMultiThread) {
+					triggerDispatch = true;
+				} else {
+					window.DispatchEvents();
+				}
 				lastAltUpdateTime = timeNow;
 				// Framestep works always, but offline only.
 				if (frameStepEnabled && Global.serverClient == null) {
@@ -1327,9 +1341,15 @@ class Program {
 			Global.isSkippingFrames = false;
 			Global.input.clearInput();
 			lastUpdateTime = timeNow;
-			if (renderAction == null) {
-				videoUpdatesThisSecond++;
+			if (isMultiThread) {
+				if (renderAction == null) {
+					videoUpdatesThisSecond++;
+					render();
+				}
+			} else {
+				window.Clear(Color.Black);
 				render();
+				window.Display();
 			}
 		}
 	}

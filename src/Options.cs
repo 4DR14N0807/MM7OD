@@ -38,6 +38,7 @@ public class Options {
 	public bool integerFullscreen = true;
 	public uint windowScale = 2;
 	public bool fastShaders;
+	public bool multithreadMode;
 	public bool vsync;
 	public bool drawMiniMap = true;
 	/*public bool areShadersDisabled() {

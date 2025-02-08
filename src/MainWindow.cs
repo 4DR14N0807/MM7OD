@@ -79,10 +79,12 @@ public partial class Global {
 			window.SetVerticalSyncEnabled(options.vsync);
 			if (Global.hideMouse) window.SetMouseCursorVisible(false);
 		} else {
-			var desktopWidth = VideoMode.DesktopMode.Width;
-			var desktopHeight = VideoMode.DesktopMode.Height;
-			window = new RenderWindow(new VideoMode(desktopWidth, desktopHeight), "MM7 Online: Deathmatch", Styles.Fullscreen);
-			window.SetMouseCursorVisible(false);
+			uint desktopWidth = VideoMode.DesktopMode.Width;
+			uint desktopHeight = VideoMode.DesktopMode.Height;
+			window = new RenderWindow(new VideoMode(screenW, screenH), "MM7 Online: Deathmatch", Styles.None);
+			window.SetVerticalSyncEnabled(options.vsync);
+			window.Position = new Vector2i(0, 0);
+			window.Size = new Vector2u(desktopWidth, desktopHeight);
 			viewPort = getFullScreenViewPort();
 		}
 

@@ -33,6 +33,7 @@ public class OptionsMenu : IMainMenu {
 	private int oldParticleQuality;
 	public bool oldIntegerFullscreen;
 	public bool oldVsync;
+	public bool oldMTR;
 	public bool oldDrawMiniMap;
 
 	public FontType optionFontText = FontType.Grey;
@@ -62,6 +63,7 @@ public class OptionsMenu : IMainMenu {
 		oldParticleQuality = Options.main.particleQuality;
 		oldVsync = Options.main.vsync;
 		oldDrawMiniMap = Options.main.drawMiniMap;
+		oldMTR = Options.main.multithreadMode;
 
 		playerName = Options.main.playerName;
 		this.charNum = charNum;
@@ -272,26 +274,6 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Enables a simpler map for faster performance."
 				),
-				// fontType
-				/*new MenuOption(40, startY,
-					() => {
-						if (inGame) return;
-						if (Options.main.graphicsPreset < 3) return;
-						Helpers.menuLeftRightInc(ref Options.main.fontType, 0, 2);
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							getVideoSettingColor(), "Font type:",
-							pos.x + videoOffset, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							getVideoSettingColor(), fontTypeToString(Options.main.fontType),
-							pos.x + videoOffset + 166, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Set the font type. Bitmap uses PNG, Vector uses TFF.\n" +
-					"Hybrid will use Bitmap in menus and Vector in-game."
-				),*/
 				// particleQuality
 				new MenuOption(40, startY,
 					() => {
@@ -326,6 +308,28 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"Enable or disable map sprites.\nDisabling map sprites results in faster performance."
+				),
+				// Multi-threading rendering
+				new MenuOption(40, startY,
+					() => {
+						if (inGame) return;
+						if (Global.input.isPressedMenu(Control.MenuLeft)) {
+							Options.main.multithreadMode = false;
+						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+							Options.main.multithreadMode = true;
+						}
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							inGame ? FontType.Black : FontType.Grey, "MULTI-THREADING RENDERING:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							inGame ? FontType.Black : FontType.Grey, Helpers.boolYesNo(Options.main.multithreadMode),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Enables asynchronous rendering.\nRequires a CPU with +4 cores."
 				),
 			};
 		} else if (isGameplay) {
@@ -1534,7 +1538,8 @@ public class OptionsMenu : IMainMenu {
 
 			if (oldFullscreen != Options.main.fullScreen ||
 				oldMaxFPS != Options.main.maxFPS ||
-				oldVsync != Options.main.vsync
+				oldVsync != Options.main.vsync ||
+				oldMTR != Options.main.multithreadMode
 			) {
 				Menu.change(new ErrorMenu(new string[] {
 					"Note: options were changed that",

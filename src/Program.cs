@@ -1202,7 +1202,6 @@ class Program {
 				window.DispatchEvents();
 			}
 			if (renderAction != null) {
-				window.Clear(Color.Black);
 				renderAction();
 				window.Display();
 				renderAction = null;

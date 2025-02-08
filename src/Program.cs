@@ -1163,6 +1163,7 @@ class Program {
 	public static decimal lastUpdateTime = 0;
 	public static Exception? logicThreadException;
 	public static Action? renderAction;
+	public static bool triggerDispatch;
 	public static Action? loadAction;
 
 	static void Run(string[] args, int mode) {
@@ -1183,10 +1184,13 @@ class Program {
 					throw logicThreadException;
 				}
 			}
+			if (triggerDispatch) {
+				triggerDispatch = false;
+				window.DispatchEvents();
+			}
 			if (renderAction != null) {
 				window.Clear(Color.Black);
 				renderAction();
-				window.DispatchEvents();
 				window.Display();
 				renderAction = null;
 			}
@@ -1235,7 +1239,7 @@ class Program {
 			deltaTime = deltaTimeSavings + ((timeNow - lastUpdateTime) / fpsLimit);
 			deltaTimeAlt = ((timeNow - lastAltUpdateTime) / fpsLimitAlt);
 			if (deltaTime >= 1 || deltaTimeAlt >= 1) {
-				window.DispatchEvents();
+				triggerDispatch = true;
 				lastAltUpdateTime = timeNow;
 				// Framestep works always, but offline only.
 				if (frameStepEnabled && Global.serverClient == null) {

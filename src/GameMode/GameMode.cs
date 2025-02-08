@@ -565,10 +565,6 @@ public class GameMode {
 				);
 				Global.sprites["pickup_bolt_small"].drawToHUD(0, basePos.x + 4, basePos.y + 4);
 			}
-			if (drawPlayer.character is Rock rock && rock.boughtSuperAdaptorOnce) {
-				drawGigaWeaponCooldown((int)RockWeaponSlotIds.ArrowSlash, rock.arrowSlashCooldown / 90, y: 125);
-				drawGigaWeaponCooldown((int)RockWeaponSlotIds.LegBreaker, rock.legBreakerCooldown / 90, 35, 125);
-			}
 			if (drawPlayer.weapons == null) {
 				return;
 			}
@@ -1640,33 +1636,6 @@ public class GameMode {
 	}
 
 	public void drawWeaponSwitchHUD(Player player) {
-		if (player.isZero && !player.isDisguisedAxl) return;
-
-		if (player.isSelectingRA()) {
-			drawRideArmorIcons();
-		}
-
-		if (player.character is Vile vilePilot &&
-			vilePilot.rideArmor != null &&
-			vilePilot.rideArmor == vilePilot.linkedRideArmor
-			&& vilePilot.rideArmor.raNum == 2
-		) {
-			int x = 10, y = 155;
-			int napalmNum = player.loadout.vileLoadout.napalm;
-			if (napalmNum < 0) napalmNum = 0;
-			if (napalmNum > 2) napalmNum = 0;
-			Global.sprites["hud_hawk_bombs"].drawToHUD(
-				napalmNum, x, y, alpha: vilePilot.napalmWeapon.shootCooldown == 0 ? 1 : 0.5f
-			);
-			Fonts.drawText(
-				FontType.Grey, "x" + vilePilot.rideArmor.hawkBombCount.ToString(), x + 10, y - 4
-			);
-		}
-
-		if (player.character?.rideArmor != null || player.character?.rideChaser != null) {
-			return;
-		}
-
 		var iconW = 8;
 		var iconH = 8;
 		var width = 15;
@@ -1682,30 +1651,6 @@ public class GameMode {
 				gigaWeaponX += 18;
 			}
 		}
-		if (player.character is MegamanX mmx && mmx.hasFgMoveEquipped() && mmx.canAffordFgMove()) {
-			int x = gigaWeaponX, y = 159;
-			Global.sprites["hud_weapon_icon"].drawToHUD(mmx.hasHadoukenEquipped() ? 112 : 113, x, y);
-			float cooldown = Helpers.progress(player.fgMoveAmmo, 1920f);
-			drawWeaponSlotCooldown(x, y, cooldown);
-		}
-
-		if (player.isAxl && player.weapons[0].type > 0) {
-			int x = 10, y = 156;
-			int index = 0;
-			if (player.weapons[0].type == (int)AxlBulletWeaponType.MetteurCrash) index = 0;
-			if (player.weapons[0].type == (int)AxlBulletWeaponType.BeastKiller) index = 1;
-			if (player.weapons[0].type == (int)AxlBulletWeaponType.MachineBullets) index = 2;
-			if (player.weapons[0].type == (int)AxlBulletWeaponType.DoubleBullets) index = 3;
-			if (player.weapons[0].type == (int)AxlBulletWeaponType.RevolverBarrel) index = 4;
-			if (player.weapons[0].type == (int)AxlBulletWeaponType.AncientGun) index = 5;
-			Global.sprites["hud_axl_ammo"].drawToHUD(index, x, y);
-			int currentAmmo = MathInt.Ceiling(player.weapons[0].ammo);
-			int totalAmmo = MathInt.Ceiling(player.axlBulletTypeAmmo[player.weapons[0].type]);
-			Fonts.drawText(
-				FontType.Grey, totalAmmo.ToString(), x + 10, y - 4
-			);
-		}
-
 		if (player.isGridModeEnabled()) {
 			if (player.gridModeHeld == true) {
 				var gridPoints = player.gridModePoints();
@@ -1718,26 +1663,8 @@ public class GameMode {
 					drawWeaponSlot(weapon, x, y);
 				}
 			}
-
-			/*
-			// Draw giga crush/hyper buster
-			if (player.weapons.Count == 10)
-			{
-				int x = 10, y = 146;
-				Weapon weapon = player.weapons[9];
-
-				drawWeaponSlot(weapon, x, y);
-
-				//Global.sprites["hud_weapon_icon"].drawToHUD(weapon.weaponSlotIndex, x, y);
-				//DrawWrappers.DrawRectWH(
-					//x - 8, y - 8, 16, 16 - MathF.Floor(16 * (weapon.ammo / weapon.maxAmmo)),
-					//true, new Color(0, 0, 0, 128), 1, ZIndex.HUD, false
-				//);
-			}
-			*/
 			return;
 		}
-
 		for (var i = 0; i < player.weapons.Count; i++) {
 			var weapon = player.weapons[i];
 			var x = startX + (i * width);

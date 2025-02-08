@@ -1553,7 +1553,7 @@ public partial class Player {
 		character = null;
 	}
 
-	public bool destroyCharacter(ushort netId) {
+	public bool destroyCharacter(ushort netId, bool createEffect = false) {
 		if (character?.netId != netId) {
 			return false;
 		}

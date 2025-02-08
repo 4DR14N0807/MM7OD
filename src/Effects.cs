@@ -355,8 +355,11 @@ public class DieEffect : Effect {
 	public float repeatCount = 0;
 	public int charNum;
 
-	public DieEffect(Point centerPos, int charNum) : base(centerPos) {
+	public DieEffect(Point centerPos, int charNum, bool sendRpc = false) : base(centerPos) {
 		this.charNum = charNum;
+		if (sendRpc) {
+			RPC.createEffect.sendRpc(EffectIds.DieEffect, centerPos, (byte)charNum);
+		}
 	}
 
 	public override void update() {

@@ -30,6 +30,7 @@ public class RPC {
 	public static RPCCreateAnim createAnim = new();
 	public static RPCCreateProj createProj = new();
 	public static RPCCreateActor createActor = new();
+	public static RPCCreateEffect createEffect = new();
 	public static RPCSwitchCharacter switchCharacter = new();
 	public static RPCReflectProj reflectProj = new();
 	public static RPCJoinLateRequest joinLateRequest = new();
@@ -121,6 +122,7 @@ public class RPC {
 		createAnim,
 		createProj,
 		createActor,
+		createEffect,
 		clearOwnership,
 		sendChatMessage,
 		playSound,
@@ -1913,6 +1915,49 @@ public class RPCResetFlag : RPC {
 
 	public void sendRpc() {
 		Global.serverClient?.rpc(RPC.resetFlags);
+	}
+}
+
+public enum EffectIds {
+	None,
+	DieEffect,
+}
+
+public class RPCCreateEffect : RPC {
+	public RPCCreateEffect() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
+	}
+
+	public override void invoke(params byte[] arguments) {
+		EffectIds id = (EffectIds)arguments[0];
+		float xPos = BitConverter.ToSingle(arguments[1..5], 0);
+		float yPos = BitConverter.ToSingle(arguments[5..9], 0);
+		Point pos = new Point(xPos, yPos);
+		byte[] extraArgs = [];
+		if (arguments.Length > 9) {
+			extraArgs = arguments[9..];
+		}
+
+		switch (id) {
+			case EffectIds.DieEffect: {
+				new DieEffect(pos, extraArgs[0]);
+				break;
+			}
+		}
+	}
+
+	public void sendRpc(EffectIds id, Point pos, params byte[] extraArgs) {
+		if (Global.serverClient == null) {
+			return;
+		}
+		List<byte> args = new();
+		args.Add((byte)id);
+		args.AddRange(BitConverter.GetBytes(pos.x));
+		args.AddRange(BitConverter.GetBytes(pos.y));
+		args.AddRange(extraArgs);
+
+		Global.serverClient.rpc(createEffect, args.ToArray());
 	}
 }
 

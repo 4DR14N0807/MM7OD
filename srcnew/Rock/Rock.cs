@@ -6,7 +6,6 @@ using System.Linq;
 namespace MMXOnline;
 
 public class Rock : Character {
-
 	public float lemonTime;
 	public int lemons;
 	public float weaponCooldown;
@@ -360,8 +359,10 @@ public class Rock : Character {
 		if (isInvulnerableAttack() ||
 			hasSuperAdaptor ||
 			(type == 2 && player.currency < RushSearchCost) ||
-			flag != null) return false;
-		
+			flag != null
+		) {
+			return false;
+		}
 		return true;
 	}
 
@@ -649,8 +650,33 @@ public class Rock : Character {
 		if (newState.shootSprite != null && sprite.name != getSprite(newState.shootSprite) && shootAnimTime > 0) {
 			changeSpriteFromName(newState.shootSprite, false);
 		}
-		
 	}
+
+
+	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		base.renderBuffs(offset, position);
+		int drawDir = 1;
+		if (position == GameMode.HUDHealthPosition.Right) {
+			drawDir = -1;
+		}
+		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+
+		if (boughtSuperAdaptorOnce) {
+			drawBuff(
+				drawPos, arrowSlashCooldown / 90,
+				"hud_blues_weapon_icon", (int)RockWeaponSlotIds.ArrowSlash
+			);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+			drawBuff(
+				drawPos, legBreakerCooldown / 90,
+				"hud_blues_weapon_icon", (int)RockWeaponSlotIds.LegBreaker
+			);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
+	}
+
 
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.

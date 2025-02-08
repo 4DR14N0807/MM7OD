@@ -1441,7 +1441,7 @@ public class Die : CharState {
 			hidden = true;
 			character.visible = false;
 			new DieEffect(character.getCenterPos(), player.charNum);
-			character.playSound("die");
+			character.playSound("die", sendRpc: true);
 		}
 		if (!character.ownedByLocalPlayer) {
 			return;

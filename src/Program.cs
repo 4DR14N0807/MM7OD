@@ -21,9 +21,6 @@ using static SFML.Window.Keyboard;
 namespace MMXOnline;
 
 class Program {
-	#if WINDOWS
-	[STAThread]
-	#endif
 	static void Main(string[] args) {
 		if (args.Length > 0 && args[0] == "-relay") {
 		#if WINDOWS

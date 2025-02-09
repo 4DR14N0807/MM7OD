@@ -189,13 +189,13 @@ public class ScorchWheelProj : Projectile {
 				pos = rock.getCenterPos();
 			}
 
-			if (rock == null || rock.charState is Die || (rock.player.weapon is not ScorchWheel)) {
+			if (rock == null || rock.charState is Die) {
 				destroySelf();
 				return;
 			}
 
 
-			if (!hasHeld || holdTime >= 2) {
+			if (!hasHeld || holdTime >= 2 || rock.currentWeapon is not ScorchWheel) {
 				destroySelf();
 				new ScorchWheelMoveProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), rpc: true, player);
 				playSound("scorch_wheel", true, true);

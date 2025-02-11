@@ -920,7 +920,7 @@ public class Blues : Character {
 			return player.input.isPressed(Control.Dash, player);
 		}
 		return (
-			player.input.isPressed(Control.Jump, player) &&
+			player.input.isPressed(Control.Dash, player) &&
 			player.input.isHeld(Control.Down, player)
 		);
 	}

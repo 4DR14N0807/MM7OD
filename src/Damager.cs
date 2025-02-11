@@ -208,6 +208,10 @@ public class Damager {
 					character.root(45, owner.id);
 					break;
 				}
+				case (int)BassProjIds.IceWall: {
+					character.freeze(Global.halfFlinch, 140, owner.id);
+					break;
+				}
 				case (int)ProjIds.TenguBladeDash: {
 					character.xPushVel += 180 * damagingActor?.xDir ?? 180 * -character.xDir;
 					break;

@@ -838,7 +838,7 @@ public partial class Level {
 						}
 					}
 				} else {
-					charNum = Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Blues);
+					charNum = Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Bass);
 				}
 
 				PlayerCharData playerData = null;

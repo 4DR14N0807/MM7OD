@@ -845,40 +845,14 @@ public class Dash : CharState {
 		}
 
 		character.isDashing = true;
-		character.globalCollider = character.getDashingCollider();
-		//dash spark anim
-		dashSpark = new Anim(
-			character.getDashSparkEffectPos(initialDashDir),
-			"dash_sparks", initialDashDir, player.getNextActorNetId(),
-			true, sendRpc: true
-		);
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		/*if (!dashSpark.destroyed) {
-			dashSpark.destroySelf();
-		}*/
-	}
-
-	public static void dashBackwardsCode(Character character, int initialDashDir) {
-		if (character is Axl) {
-			if (character.xDir != initialDashDir) {
-				if (!character.sprite.name.EndsWith("backwards")) {
-					character.changeSpriteFromName("dash_backwards", false);
-				}
-			} else {
-				if (character.sprite.name.EndsWith("backwards")) {
-					character.changeSpriteFromName("dash", false);
-				}
-			}
-		}
 	}
 
 	public override void update() {
-		dashBackwardsCode(character, initialDashDir);
 		base.update();
-		
 		isColliding = Global.level.checkTerrainCollisionOnce(character, 0, -10) != null;
 
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop && !isColliding) {
@@ -949,8 +923,6 @@ public class AirDash : CharState {
 	}
 
 	public override void update() {
-		Dash.dashBackwardsCode(character, initialDashDir);
-
 		base.update();
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
 			dashTime = 50;

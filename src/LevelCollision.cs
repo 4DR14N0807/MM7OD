@@ -297,17 +297,16 @@ public partial class Level {
 				}
 			}
 		}
-
 		if (actorCollider.disabled || gameObjectCollider.disabled) return false;
+
+		if (gameObject is Actor wallActor && wallActor.isSolidWall && !gameObjectCollider.isTrigger) {
+			if (wallActor.selectiveSolididyFunc != null) {
+				return !wallActor.selectiveSolididyFunc(actor);
+			}
+			return false;
+		}
+
 		if (actorCollider.isTrigger || gameObjectCollider.isTrigger) return true;
-
-		if (actor is ShotgunIceProjSled sled && gameObject is Character chr && sled.damager.owner == chr.player) {
-			return false;
-		}
-
-		if (actor is Character chr2 && gameObject is ShotgunIceProjSled sled2 && sled2.damager.owner == chr2.player) {
-			return false;
-		}
 
 		if (actorCollider.wallOnly && gameObject is not Wall) return true;
 
@@ -836,9 +835,12 @@ public partial class Level {
 			if (go == actor) continue;
 			if (go.collider == null) continue;
 			bool isTrigger = shouldTrigger(actor, go, terrainCollider, go.collider, new Point(incX, incY));
-			if (go is Actor goActor && goActor.isPlatform && checkPlatforms) {
-				isTrigger = false;
+			if (go is Actor goActor) {
+				if (!goActor.isSolidWall && goActor.isPlatform && checkPlatforms) {
+					isTrigger = false;
+				}
 			}
+			
 			if (isTrigger) continue;
 			HitData? hitData = actorShape.intersectsShape(go.collider.shape, vel);
 			if (hitData != null) {

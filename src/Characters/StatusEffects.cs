@@ -110,7 +110,6 @@ public class GenericStun : CharState {
 	public override void update() {
 		Helpers.decrementFrames(ref flinchTime);
 
-		crystalizeLogic();
 		paralizeAnimLogic();
 		freezeLogic();
 
@@ -127,7 +126,7 @@ public class GenericStun : CharState {
 			}
 		}
 
-		if (character.frozenTime == 0 && character.crystalizedTime == 0 && character.paralyzedTime == 0) {
+		if (character.freezeTime == 0 && character.crystalizedTime == 0 && character.paralyzedTime == 0) {
 			if (flinchTime > 0) {
 				character.changeState(
 					new Hurt(hurtDir, MathInt.Ceiling(flinchTime), false, flinchYPos
@@ -138,41 +137,21 @@ public class GenericStun : CharState {
 			character.changeToIdleOrFall();
 		}
 	}
-	
+
 	public void freezeLogic() {
-		if (character.frozenTime == 0) {
+		if (character.freezeTime == 0) {
 			return;
 		}
 		if (canPlayFrozenSound) {
 			character.playSound("igFreeze", true);
 			canPlayFrozenSound = false;
 		}
-		reduceStunFrames(ref character.frozenTime);
-		character.freezeInvulnTime = 2;
+		Helpers.decrementFrames(ref character.freezeTime);
 
-		if (character.frozenTime == 0) {
+		if (character.freezeTime == 0) {
 			character.breakFreeze(player, sendRpc: true);
 			canPlayFrozenSound = true;
 			changeAnim = true;
-		}
-	}
-
-	public void crystalizeLogic() {
-		if (character.crystalizedTime == 0 && !character.isCrystalized) {
-			return;
-		}
-		reduceStunFrames(ref character.crystalizedTime);
-		character.crystalizeInvulnTime = 2;
-
-		if (!character.isCrystalized && character.crystalizedTime > 0) {
-			changeAnim = true;
-			character.crystalizeStart();
-			Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StartCrystalize);
-		}
-		else if (character.isCrystalized && character.crystalizedTime == 0) {
-			changeAnim = true;
-			character.crystalizeEnd();
-			Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StopCrystalize);
 		}
 	}
 
@@ -184,16 +163,8 @@ public class GenericStun : CharState {
 			character.playSound("voltcStatic");
 			canPlayStaticSound = false;
 		}
-		reduceStunFrames(ref character.paralyzedTime);
+		Helpers.decrementFrames(ref character.paralyzedTime);
 
-		if (paralyzeAnim == null && character.paralyzedTime > 0) {
-			paralyzeAnim = new Anim(
-				character.getCenterPos(), "vile_stun_static",
-				1, character.player.getNextActorNetId(), false,
-				host: character, sendRpc: true
-			);
-			paralyzeAnim.setzIndex(character.zIndex + 100);
-		}
 		if (character.paralyzedTime == 0) {
 			changeAnim = true;
 			canPlayStaticSound = true;
@@ -205,11 +176,8 @@ public class GenericStun : CharState {
 	}
 
 	public string getStunAnim() {
-		if (character.frozenTime > 0) {
+		if (character.freezeTime > 0) {
 			return "frozen";
-		}
-		if (character.isCrystalized) {
-			return "idle";
 		}
 		if (character.paralyzedTime > 0 && character.grounded) {
 			return "lose";
@@ -261,24 +229,10 @@ public class GenericStun : CharState {
 			paralyzeAnim.destroySelf();
 			paralyzeAnim = null;
 		}
-		if (character.crystalizedTime != 0 || character.isCrystalized) {
-			character.crystalizeEnd();
-			Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StopCrystalize);
-		}
 		character.paralyzedTime = 0;
-		character.frozenTime = 0;
-		character.crystalizedTime = 0;
+		character.freezeTime = 0;
 
 		base.onExit(newState);
-	}
-
-	public void reduceStunFrames(ref float arg) {
-		arg -= Global.speedMul;
-	}
-
-	public float getTimerFalloff() {
-		float healthPercent = 1 * (player.health / player.maxHealth);
-		return (Global.speedMul * (2 + healthPercent));
 	}
 }
 

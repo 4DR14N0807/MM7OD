@@ -31,17 +31,18 @@ public class BluesLoadout {
 	}
 
 	public void validate() {
-		if (specialWeapon is < 0 or > 9) {
+		if (specialWeapon is < 0 or > 7) {
 			specialWeapon = 4;
 		}
 	}
 
 	public static BluesLoadout createRandom() {
 		// Star Crash not here for AI reasons.
-		int[] weapons = { 0, 1, 2, 3, 4, 5, 6 };
-		return new BluesLoadout() {
-			specialWeapon = weapons[Helpers.randomRange(0, weapons.Length - 1)]
-		};
+		int[] weapons = { 0, 1, 2, 3, 4, 5, 6 ,7 };
+		BluesLoadout loadout = new();
+		loadout.specialWeapon = weapons[Helpers.randomRange(0, weapons.Length - 1)];
+		loadout.validate();
+		return loadout;
 	}
 }
 

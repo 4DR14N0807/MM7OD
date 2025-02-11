@@ -2148,7 +2148,6 @@ public class InRideArmor : CharState {
 			frozenTime -= (Global.spf + (healthPercent * player.input.mashCount * 0.25f));
 			if (frozenTime <= 0) {
 				frozenTime = 0;
-				character.freezeInvulnTime = 2;
 				character.breakFreeze(player, sendRpc: true);
 				if (freezeAnim != null) {
 					freezeAnim.destroySelf();

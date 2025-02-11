@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 public class CopyVision : Weapon {
 	public static CopyVision netWeapon = new();
-	public CopyVisionClone? clone;
+	public CopyVisionClone? bassClone;
 
 	public CopyVision() : base() {
 		index = (int)BassWeaponIds.CopyVision;
@@ -34,19 +34,14 @@ public class CopyVision : Weapon {
 	public override void shoot(Character character, params int[] args) {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
-		Bass bass = character as Bass ?? throw new NullReferenceException();
-		float shootAngle = 0;
-
 		if (!player.ownedByLocalPlayer) return;
-
-		if (character.xDir < 0) {
-			shootAngle = 128;
-		}
+		Bass bass = character as Bass ?? throw new NullReferenceException();
+	
 		if (ammo > 0 && !isStream && bass.cVclone?.destroyed != false) {
-			clone = new CopyVisionClone(
+			bassClone = new CopyVisionClone(
 				bass, shootPos, character.xDir, character.player.getNextActorNetId(), true, true, player
 			);
-			bass.cVclone = clone;
+			bass.cVclone = bassClone;
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
 		} else {
@@ -61,7 +56,7 @@ public class CopyVision : Weapon {
 
 	public override void update() {
 		base.update();
-		if (ammo <= 0 || clone?.destroyed == false) {
+		if (ammo <= 0 || bassClone?.destroyed == false) {
 			isStream = true;
 		} else {
 			isStream = false;

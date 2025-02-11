@@ -94,7 +94,6 @@ public partial class Character : Actor, IDamagable {
 	public const float maxLastAttackerTime = 5;
 
 	public float igFreezeProgress;
-	public float freezeInvulnTime;
 	public float stunInvulnTime;
 	public float crystalizeInvulnTime;
 	public float dwrapInvulnTime;
@@ -157,12 +156,14 @@ public partial class Character : Actor, IDamagable {
 	//Spark Shock root
 	public float rootTime;
 	public Dictionary<int, float> rootCooldown = new();
-	public float rootCurMaxCooldown = 0;
 	public Anim? rootAnim;
 
 	public float burnEffectTime;
 	public float burnHurtCooldown;
-	
+
+	// Freeze.
+	public float freezeTime;
+	public Dictionary<int, float> freezeCooldown = new();
 	// Burn Stun
 	public float burnStunStacks;
 
@@ -178,8 +179,6 @@ public partial class Character : Actor, IDamagable {
 	// Disables status.
 	public float paralyzedTime;
 	public float paralyzedMaxTime;
-	public float frozenTime;
-	public float frozenMaxTime;
 	public float crystalizedTime;
 	public float crystalizedMaxTime;
 	
@@ -394,9 +393,7 @@ public partial class Character : Actor, IDamagable {
 
 	float igFreezeRecoveryCooldown = 0;
 	public void addIgFreezeProgress(float amount, int freezeTime = 120) {
-		if (freezeInvulnTime > 0) return;
-		if (frozenTime > 0) return;
-		if (isStatusImmune()) return;
+		if (isSlowImmune()) return;
 		if (isInvulnerable()) return;
 		if (isVaccinated()) return;
 		if (charState.invincible) return;
@@ -405,10 +402,6 @@ public partial class Character : Actor, IDamagable {
 		igFreezeRecoveryCooldown = 0;
 		if (igFreezeProgress >= 4) {
 			igFreezeProgress = 4;
-		}
-		if (igFreezeProgress >= 4 && canFreeze()) {
-			igFreezeProgress = 0;
-			freeze(freezeTime);
 		}
 	}
 	
@@ -912,7 +905,6 @@ public partial class Character : Actor, IDamagable {
 			burnStunStacks--;
 			if (burnStunStacks < 0) burnStunStacks = 0;
 		}
-		Helpers.decrementFrames(ref freezeInvulnTime);
 		Helpers.decrementFrames(ref stunInvulnTime);
 		Helpers.decrementFrames(ref crystalizeInvulnTime);
 		Helpers.decrementTime(ref grabInvulnTime);
@@ -927,8 +919,13 @@ public partial class Character : Actor, IDamagable {
 				rootCooldown.Remove(key);
 			}
 		}
-		if (rootCooldown.Count == 0) {
-			rootCurMaxCooldown = 0;
+
+		int[] freezeKeys = freezeCooldown.Keys.ToArray();
+		foreach(int key in freezeKeys) {
+			freezeCooldown[key] -= speedMul;
+			if (freezeCooldown[key] <= 0) {
+				freezeCooldown.Remove(key);
+			}
 		}
 
 		int[] disarrayKeys = disarrayStacks.Keys.ToArray();
@@ -1484,29 +1481,36 @@ public partial class Character : Actor, IDamagable {
 		return sprite.EndsWith("jump") || sprite.EndsWith("up_dash") || sprite.EndsWith("wall_kick");
 	}
 
-	public void freeze(int timeToFreeze = 120) {
+	public void freeze(float time, float cooldown, int playerid) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		frozenMaxTime = timeToFreeze;
-		frozenTime = timeToFreeze;
+		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
+			return;
+		}
+		// Cooldown.
+		// Disarray mechanic.
+		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
+		time = MathF.Floor(time * disarrayReduction);
+		disarrayStacks[playerid] = cooldown;
+		if (cooldown >= disarrayMaxLength) {
+			disarrayMaxLength = cooldown;
+		}
+		// Apply debuff.
+		freezeCooldown[playerid] = cooldown;
+
+		if (freezeTime >= time) {
+			return;
+		}
+		freezeTime = time;
+
+		// Hud stuff.
+		buffList.Add(new Buff("hud_debuffs", 0, false, time, time));
+
+		freezeTime = time;
 		if (charState is not GenericStun) {
 			changeState(new GenericStun(), true);
 		}
-	}
-
-	public bool canFreeze() {
-		return (
-			charState is not Die &&
-			!isStunImmune() &&
-			!charState.stunResistant &&
-			!charState.invincible &&
-			invulnTime == 0 &&
-			freezeInvulnTime <= 0 &&
-			!isInvulnerable() &&
-			!isVaccinated() &&
-			!isStatusImmune()
-		);
 	}
 
 	public void burnStun(Player attacker) {
@@ -1967,8 +1971,8 @@ public partial class Character : Actor, IDamagable {
 				if (crystalizedTime > 0) {
 					inRideArmor.crystalize(crystalizedTime / 60f);
 				}
-				if (frozenTime > 0) {
-					inRideArmor.freeze(frozenTime / 60f);
+				if (freezeTime > 0) {
+					inRideArmor.freeze(freezeTime / 60f);
 				}
 				if (paralyzedTime > 0) {
 					inRideArmor.stun(paralyzedTime / 60f);
@@ -2374,40 +2378,7 @@ public partial class Character : Actor, IDamagable {
 		float totalMashTime = 1;
 		float healthBarInnerWidth = 30;
 
-		if (charState is GenericStun gst) {
-			bool hasDrawn = false;
-			List<int> iconsToDraw = new();
-			if (crystalizedTime > 0) {
-				drawStatusBar(crystalizedTime, gst.getTimerFalloff(), crystalizedMaxTime, new Color(247, 206, 247));
-				deductLabelY(5);
-				iconsToDraw.Add(1);
-				hasDrawn = true;
-			}
-			if (frozenTime > 0) {
-				drawStatusBar(frozenTime, gst.getTimerFalloff(), frozenMaxTime, new Color(123, 206, 255));
-				deductLabelY(5);
-				iconsToDraw.Add(0);
-				hasDrawn = true;
-			}
-			if (paralyzedTime > 0) {
-				drawStatusBar(paralyzedTime, gst.getTimerFalloff(), paralyzedMaxTime, new Color(255, 231, 123));
-				deductLabelY(5);
-				iconsToDraw.Add(2);
-				hasDrawn = true;
-			}
-			if (hasDrawn) {
-				for(int i = 0; i < iconsToDraw.Count; i++) {
-					/*Global.sprites["hud_status_icon"].draw(
-						iconsToDraw[i],
-						pos.x - (iconsToDraw.Count - 1) * 6 + i * 12,
-						pos.y - 7 + currentLabelY,
-						1, 1, null, 1, 1, 1, ZIndex.HUD
-					);*/
-				}
-				deductLabelY(15);
-				return true;
-			}
-		} else if (charState is VileMK2Grabbed grabbed) {
+		if (charState is VileMK2Grabbed grabbed) {
 			totalMashTime = VileMK2Grabbed.maxGrabTime;
 			statusProgress = grabbed.grabTime / totalMashTime;
 		} else if (parasiteTime > 0) {

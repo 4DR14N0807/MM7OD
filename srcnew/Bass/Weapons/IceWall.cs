@@ -17,7 +17,7 @@ public class IceWall : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 60;
+		fireRate = 30;
 	}
 
 	public override bool canShoot(int chargeLevel, Character character) {
@@ -65,7 +65,7 @@ public class IceWallProj : Projectile, IDamagable {
 	List<Character> chrs = new();
 	Player player;
 	Collider? terrainCollider;
-	float health = 4;
+	float health = 6;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId, 
@@ -74,18 +74,22 @@ public class IceWallProj : Projectile, IDamagable {
 		pos, xDir, owner, "ice_wall_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.IceWall;
+		damager.damage = 2;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 140;
+
+		fadeSprite = "ice_wall_fade";
+		fadeOnAutoDestroy = true;
 		useGravity = true;
 		canBeLocal = false;
 		base.xDir = xDir;
 		this.player = ownerPlayer;
-		//collider.isTrigger = false;
 		isSolidWall = true;
-		isPlatform = true;
 		maxTime = 2f;
 		destroyOnHit = false;
 		splashable = true;
-		damager.hitCooldown = 60;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
+		selectiveSolididyFunc = selectiveSolidity;
 
 		if (rpc) rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 	}
@@ -106,7 +110,7 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
-			vel.x += xDir * 5 / 60f;
+			vel.x += xDir * 0.1f * 60f;
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
 
@@ -123,24 +127,23 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 	}
 
+	public bool selectiveSolidity(GameObject other) {
+		if (other is not Character chara) {
+			return false;
+		}
+		// Fully solid for enemies.
+		if (chara.player == damager.owner || chara.player.alliance != damager.owner.alliance) {
+			return true;
+		}
+		// Platform-like behaviour for allies.
+		if (chara.pos.y <= getTopY() + 16) {
+			return true;
+		}
+		return false;
+	}
+
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		// Hit enemy.
-		if (other.gameObject is Character character) {
-			if (character.player.alliance != damager.owner.alliance || character.player == damager.owner) {
-				if (MathF.Sign(character.pos.x - pos.x) == MathF.Sign(lastDeltaX)) {
-					character.move(new Point(lastDeltaX * 0.9f, 0), useDeltaTime: false);
-				} else {
-					character.move(new Point(
-						2 * MathF.Sign(character.pos.x - pos.x), 0
-					), useDeltaTime: false);
-				}
-			}
-		}
-		if (!ownedByLocalPlayer) {
-			return;
-		}
-		Character? ownChar = damager.owner?.character;
 		// Wall hit.
 		if (other.gameObject is Wall) {
 			if (other.isSideWallHit()) {
@@ -152,19 +155,35 @@ public class IceWallProj : Projectile, IDamagable {
 			}
 			return;
 		}
+		// Hit enemy.
+		if (other.gameObject is not Actor actor || !actor.ownedByLocalPlayer || actor is not Character) {
+			return;
+		}
+		Character? ownChar = damager.owner?.character;
 		// Movement start.
 		if (other.gameObject == ownChar && !startedMoving) {
-			if (ownChar.pos.y > getTopY() + 10 && ownChar.charState is Run or Dash) {
+			if (ownChar.pos.y >= getTopY() + 10 && ownChar.charState is Dash or Run or TenguBladeDash) {
 				startedMoving = true;
-				xDir = ownChar.xDir;
+				xDir = MathF.Sign(pos.x - ownChar.pos.x) >= 0 ? 1 : -1;
+				vel.x = xDir * 30;
 			}
 		}
 	}
 
+	public override void onDestroy() {
+		base.onDestroy();
+		playSound("freezebreak2");
+	}
+
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		health -= damage;
+		if (health <= 0) {
+			destroySelf();
+		}
 	}
-	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) => health > 0;
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
+		return health > 0 && damagerAlliance != damager.owner.alliance;
+	}
 	public bool isInvincible(Player attacker, int? projId) => false;
 	public bool canBeHealed(int healerAlliance) => false;
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true) { }

@@ -58,14 +58,10 @@ public class IceWallStart : Anim {
 }
 	
 public class IceWallProj : Projectile, IDamagable {
-	float lastDeltaX = 0;
-	float maxSpeed = 250;
-	int bounces;
-	bool startedMoving;
-	List<Character> chrs = new();
-	Player player;
-	Collider? terrainCollider;
-	float health = 2;
+	public bool startedMoving;
+	public bool isFalling;
+	public float health = 2;
+	float maxSpeed = 4.25f * 60;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId, 
@@ -84,7 +80,6 @@ public class IceWallProj : Projectile, IDamagable {
 		useGravity = true;
 		canBeLocal = false;
 		base.xDir = xDir;
-		this.player = ownerPlayer;
 		isSolidWall = true;
 		maxTime = 2f;
 		destroyOnHit = false;
@@ -103,28 +98,21 @@ public class IceWallProj : Projectile, IDamagable {
 	
 	public override void update() {
 		base.update();
-		if (deltaPos.x != 0) {
-			lastDeltaX = deltaPos.x;
-		}
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
 			vel.x += xDir * 0.1f * 60f;
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
-
 		if (isUnderwater()) {
 			grounded = false;
 			gravityModifier = -1;
 			if (Math.Abs(vel.y) > Physics.MaxUnderwaterFallSpeed * 0.5f) {
 				vel.y = Physics.MaxUnderwaterFallSpeed * 0.5f * gravityModifier;
 			}
-		} else gravityModifier = 1;
-
-		if (bounces >= 3) {
-			destroySelf();
+		} else {
+			gravityModifier = 1;
 		}
 	}
 
@@ -186,4 +174,16 @@ public class IceWallProj : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) => false;
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true) { }
 	public bool isPlayableDamagable() => false;
+
+	public override List<byte> getCustomActorNetData() {
+		return [Helpers.boolArrayToByte([
+			startedMoving,
+			isFalling
+		])];
+	}
+	public override void updateCustomActorNetData(byte[] data) {
+		bool[] flags = Helpers.byteToBoolArray(data[0]);
+		startedMoving = flags[0];
+		isFalling = flags[1];
+	}
 }

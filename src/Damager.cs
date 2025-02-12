@@ -201,7 +201,6 @@ public class Damager {
 			if (isStompWeapon) {
 				character.flattenedTime = 0.5f;
 			}
-			var proj = damagingActor as Projectile;
 			// Status effects.
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
@@ -209,10 +208,13 @@ public class Damager {
 					break;
 				}
 				case (int)BassProjIds.IceWall: {
-					if (damagingActor != null && damagingActor.deltaPos.y > 0) {
-						character.freeze(Global.halfFlinch, 140, owner.id);
-					} else {
-						flinch = 0;
+					if (damagingActor is IceWallProj iceWall) {
+						if (iceWall.startedMoving || iceWall.isFalling) {
+							character.freeze(Global.halfFlinch, 140, owner.id);
+						} else {
+							damage = 0;
+							flinch = 0;
+						}
 					}
 					break;
 				}

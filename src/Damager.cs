@@ -209,7 +209,11 @@ public class Damager {
 					break;
 				}
 				case (int)BassProjIds.IceWall: {
-					character.freeze(Global.halfFlinch, 140, owner.id);
+					if (damagingActor != null && damagingActor.deltaPos.y > 0) {
+						character.freeze(Global.halfFlinch, 140, owner.id);
+					} else {
+						flinch = 0;
+					}
 					break;
 				}
 				case (int)ProjIds.TenguBladeDash: {

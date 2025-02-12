@@ -65,7 +65,7 @@ public class IceWallProj : Projectile, IDamagable {
 	List<Character> chrs = new();
 	Player player;
 	Collider? terrainCollider;
-	float health = 6;
+	float health = 2;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId, 
@@ -79,6 +79,7 @@ public class IceWallProj : Projectile, IDamagable {
 		damager.hitCooldown = 140;
 
 		fadeSprite = "ice_wall_fade";
+		fadeSound = "freezebreak2";
 		fadeOnAutoDestroy = true;
 		useGravity = true;
 		canBeLocal = false;
@@ -132,7 +133,9 @@ public class IceWallProj : Projectile, IDamagable {
 			return false;
 		}
 		// Fully solid for enemies.
-		if (chara.player == damager.owner || chara.player.alliance != damager.owner.alliance) {
+		if ((chara.player == damager.owner || chara.player.alliance != damager.owner.alliance) &&
+			chara.charState is not LadderClimb
+		) {
 			return true;
 		}
 		// Platform-like behaviour for allies.
@@ -170,11 +173,6 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 	}
 
-	public override void onDestroy() {
-		base.onDestroy();
-		playSound("freezebreak2");
-	}
-
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		health -= damage;
 		if (health <= 0) {
@@ -182,7 +180,7 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 	}
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return health > 0 && damagerAlliance != damager.owner.alliance;
+		return health > 0 && damagerAlliance != damager.owner.alliance && projId == (int)BassProjIds.IceWall;
 	}
 	public bool isInvincible(Player attacker, int? projId) => false;
 	public bool canBeHealed(int healerAlliance) => false;

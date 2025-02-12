@@ -214,6 +214,9 @@ public class Damager {
 						}
 						else if (iceWall.isFalling){
 							character.freeze(45, 140, owner.id);
+							if (damage > 0) {
+								damage += 1;
+							}
 						}
 						else {
 							damage = 0;

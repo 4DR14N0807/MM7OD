@@ -137,6 +137,7 @@ public class BluesShieldSwapLand : CharState {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = true;
+		new StrikeAttackPushProj(blues.pos, 3, blues.xDir, blues, player.getNextActorNetId(), true);
 		Anim anim = new Anim(
 			blues.pos, "generic_explosion", 1, player.getNextActorNetId(), true, zIndex: ZIndex.Actor - 10
 		);

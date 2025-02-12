@@ -591,7 +591,7 @@ public class Blues : Character {
 			if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
 			}
-			if (!grounded && lastShieldMode != isShieldActive && isShieldActive) {
+			if (!grounded && lastShieldMode != isShieldActive) {
 				if (vel.y < 4 * 60) {
 					vel.y = 4 * 60;
 				}

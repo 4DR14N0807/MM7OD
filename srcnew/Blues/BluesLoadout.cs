@@ -225,7 +225,8 @@ public class BluesWeaponMenu : IMainMenu {
 	}
 
 	private FontType getCoreFont(Weapon wep, float amount) {
-		if (wep is StarCrash or NeedleCannon) return FontType.Red;
+		if (wep is StarCrash) return FontType.Orange;
+		if (wep is NeedleCannon) return FontType.Red;
 
 		return amount switch {
 			3 => FontType.Yellow,

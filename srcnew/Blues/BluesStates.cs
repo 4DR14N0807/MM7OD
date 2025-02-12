@@ -15,45 +15,41 @@ public class BluesShootAlt : CharState {
 		stateWeapon = wep;
 	}
 
+	public override void update() {
+		base.update();
+		if (!fired && blues.frameIndex >= 2) {
+			stateWeapon.shoot(blues, 0, 2);
+			fired = true;
+		}
+		if (blues.isAnimOver()) {
+			blues.changeToIdleOrFall();
+		}
+	}
+
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
 		bool air = !blues.grounded || blues.vel.y < 0;
 
 		defaultSprite = sprite;
-		landSprite =  "shoot2";
+		landSprite = "shoot2";
 		if (air) {
 			sprite = "shoot2_air";
 			defaultSprite = sprite;
 		}
+		blues.shieldCustomState = blues.isShieldActive;
 		blues.changeSpriteFromName(sprite, true);
 	}
 
-	public override bool canEnter(Character character) {
-		if (character.isBurnState) return false;
-		return base.canEnter(character);
-	}
-
-	public override void update() {
-		base.update();
-
-		if (!fired && blues.frameIndex >= 2) {
-			stateWeapon.shoot(blues, 0, 2);
-			fired = true;
-		}
-
-		if (blues.isAnimOver()) blues.changeToIdleOrFall();
-	}
-
 	public override void onExit(CharState newState) {
-		base.onExit(newState);
 		blues.inCustomShootAnim = false;
+		blues.shieldCustomState = null;
+		base.onExit(newState);
 	}
 }
 
 
 public class BluesShootAltLadder : CharState {
-
 	Weapon stateWeapon;
 	bool fired;
 	Ladder ladder;

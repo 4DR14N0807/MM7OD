@@ -824,6 +824,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (rootTime > 0) {
+			stopMovingWeak();
 			Helpers.decrementFrames(ref rootTime);
 			if (rootAnim == null || rootAnim.destroyed) {
 				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
@@ -1519,15 +1520,13 @@ public partial class Character : Actor, IDamagable {
 		changeState(new Burning(-xDir, attacker), true);
 	}
 
-	public void root(float time, int playerid) {
+	public void root(float time, float cooldown, int playerid) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
 		if (rootCooldown.GetValueOrDefault(playerid) > 0) {
 			return;
 		}
-		// Cooldown.
-		float cooldown = time + 60;
 		// Disarray mechanic.
 		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
 		time = MathF.Floor(time * disarrayReduction);

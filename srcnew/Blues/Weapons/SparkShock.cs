@@ -43,6 +43,7 @@ public class SparkShockProj : Projectile {
 
 		vel.x = 180 * xDir;
 		damager.damage = 1;
+		damager.flinch = Global.miniFlinch;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);

@@ -22,6 +22,7 @@ public class Damager {
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
 		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
 		{ (int)BluesProjIds.LemonAngled, 60 * 2},
+		{ (int)BluesProjIds.SparkShock, 100},
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
@@ -204,7 +205,7 @@ public class Damager {
 			// Status effects.
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
-					character.root(45, owner.id);
+					character.root(45, 100, owner.id);
 					break;
 				}
 				case (int)BassProjIds.IceWall: {
@@ -215,7 +216,7 @@ public class Damager {
 						else if (iceWall.isFalling){
 							character.freeze(45, 140, owner.id);
 							if (damage > 0) {
-								damage += 1;
+								damage += 2;
 							}
 						}
 						else {

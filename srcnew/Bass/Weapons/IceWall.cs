@@ -61,7 +61,7 @@ public class IceWallProj : Projectile, IDamagable {
 	public bool startedMoving;
 	public bool isFalling;
 	public float health = 2;
-	float maxSpeed = 4.25f * 60;
+	float maxSpeed = 3f * 60;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId, 
@@ -70,7 +70,7 @@ public class IceWallProj : Projectile, IDamagable {
 		pos, xDir, owner, "ice_wall_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.IceWall;
-		damager.damage = 2;
+		damager.damage = 1;
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 140;
 
@@ -142,7 +142,6 @@ public class IceWallProj : Projectile, IDamagable {
 				vel.x *= -1;
 				pos.y += xDir;
 				playSound("ding");
-				bounces++;
 			}
 			return;
 		}

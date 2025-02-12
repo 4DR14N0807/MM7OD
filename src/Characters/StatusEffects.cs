@@ -60,7 +60,7 @@ public class Hurt : CharState {
 
 	public override void update() {
 		base.update();
-		if (hurtSpeed != 0) {
+		if (hurtSpeed != 0 && character.rootTime <= 0) {
 			hurtSpeed = Helpers.toZero(hurtSpeed, 1.6f / flinchTime * Global.speedMul, hurtDir);
 			character.move(new Point(hurtSpeed * 60f, 0));
 		}

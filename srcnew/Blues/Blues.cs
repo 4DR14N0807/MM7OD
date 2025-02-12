@@ -750,7 +750,7 @@ public class Blues : Character {
 			inCustomShootAnim = true;
 			extraArg = 1;
 		}
-		
+
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 

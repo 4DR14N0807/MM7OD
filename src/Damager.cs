@@ -209,9 +209,13 @@ public class Damager {
 				}
 				case (int)BassProjIds.IceWall: {
 					if (damagingActor is IceWallProj iceWall) {
-						if (iceWall.startedMoving || iceWall.isFalling) {
+						if (iceWall.startedMoving) {
 							character.freeze(Global.halfFlinch, 140, owner.id);
-						} else {
+						}
+						else if (iceWall.isFalling){
+							character.freeze(45, 140, owner.id);
+						}
+						else {
 							damage = 0;
 							flinch = 0;
 						}

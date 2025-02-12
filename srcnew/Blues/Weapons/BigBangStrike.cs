@@ -211,6 +211,8 @@ public class ProtoStrikeProj : Projectile {
 
 public class StrikeAttackPushProj : Projectile {
 	float radius = 40;
+	float pushPower = 200;
+	int flinchPower = Global.defFlinch;
 
 	public StrikeAttackPushProj(
 		Point pos, int type, int xDir, Actor owner, ushort? netId,
@@ -228,15 +230,21 @@ public class StrikeAttackPushProj : Projectile {
 		destroyOnHit = false;
 		canBeLocal = false;
 
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
+		}
+
 		if (type == 1) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		}
 		else if (type == 2) {
 			addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 		}
-
-		if (sendRpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
+		else if (type == 3) {
+			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
+			pushPower = 100;
+			flinchPower = Global.halfFlinch;
+			projId = (int)BluesProjIds.ProtoLandPush;
 		}
 	}
 
@@ -262,7 +270,7 @@ public class StrikeAttackPushProj : Projectile {
 
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.stopMovingWeak();
-					actor.xPushVel = xDir * 200;
+					actor.xPushVel = xDir * pushPower;
 					if (actor is Character chara) {
 						chara.setHurt(xDir, Global.defFlinch, false);
 					}

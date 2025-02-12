@@ -353,6 +353,7 @@ public enum BluesProjIds  {
 	NeedleCannon,
 	ProtoStrike,
 	ProtoStrikePush,
+	ProtoLandPush,
 	BigBangStrike,
 	BigBangStrikeExplosion,
 	RedStrike,

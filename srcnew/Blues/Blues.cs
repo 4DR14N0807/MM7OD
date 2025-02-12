@@ -154,20 +154,20 @@ public class Blues : Character {
 		float jumpSpeed = Physics.JumpSpeed;
 		if (overheating) {
 			if (isShieldActive) {
-				jumpSpeed *= 0.75f;
+				jumpSpeed = 5 * 60;
 			} else {
-				jumpSpeed *= 0.8f;
+				jumpSpeed = 5.25f * 60;
 			}
 		}
 		else if (overdrive) {
 			if (isShieldActive) {
-				jumpSpeed *= 0.8f;
+				jumpSpeed = 4.875f * 60;
 			} else {
-				jumpSpeed *= 0.85f;
+				jumpSpeed = 5.125f * 60;
 			}
 		}
 		else if (isShieldActive) {
-			jumpSpeed *= 0.85f;
+			jumpSpeed = 5.25f * 60;
 		}
 		return jumpSpeed * getJumpModifier();
 	}

@@ -192,6 +192,23 @@ public class ShieldDash : CharState {
 			) { vel = new Point(0, -40) };
 			dustTimer = 0;
 		}
+		if (stateTime >= 4 && player.input.isPressed(Control.Jump, player)) {
+			if (blues.grounded) {
+				blues.vel.y = -blues.getJumpPower();
+				blues.changeState(new Jump());
+				return;
+			}
+			if (blues.canAirJump()) {
+				blues.lastJumpPressedTime = 0;
+				blues.dashedInAir++;
+				new Anim(blues.pos, "double_jump_anim", blues.xDir, player.getNextActorNetId(), true, true);
+				blues.vel.y = -blues.getJumpPower();
+				blues.changeState(new Jump());
+				return;
+			}
+			blues.changeToIdleOrFall();
+			return;
+		}
 	}
 
 	public override void onEnter(CharState oldState) {

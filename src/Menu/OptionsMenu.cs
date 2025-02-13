@@ -788,7 +788,7 @@ public class OptionsMenu : IMainMenu {
 				new MenuOption(
 					30, startY,
 					() => {
-						Helpers.menuLeftRightBool(ref Options.main.switchDashInput);
+						Helpers.menuLeftRightBool(ref Options.main.altDashInput);
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
@@ -798,7 +798,7 @@ public class OptionsMenu : IMainMenu {
 						);
 
 						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.switchDashInput),
+							optionFontValue, Helpers.boolYesNo(Options.main.altDashInput),
 							pos.x + 200, pos.y
 						);
 					},

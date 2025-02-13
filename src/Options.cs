@@ -113,7 +113,7 @@ public class Options {
 	public bool useRandomBluesLoadout;
 	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;
-	public bool switchDashInput;
+	public bool altDashInput;
 
 	// Bass
 	public BassLoadout bassLoadout = BassLoadout.createDefault();

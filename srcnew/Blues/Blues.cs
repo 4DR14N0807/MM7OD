@@ -942,21 +942,17 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.switchDashInput) {
-			return (
-				player.input.isPressed(Control.Jump, player) &&
-				player.input.isHeld(Control.Down, player)
-			);
-		}
 		return player.input.isPressed(Control.Dash, player);
 	}
 
 	public bool slideInput() {
-		if (Options.main.switchDashInput) {
-			return player.input.isPressed(Control.Dash, player);
+		if (Options.main.altDashInput) {
+			return (player.input.isPressed(Control.Dash, player) &&
+				player.input.isHeld(Control.Down, player)
+			);
 		}
 		return (
-			player.input.isPressed(Control.Dash, player) &&
+			player.input.isPressed(Control.Jump, player) &&
 			player.input.isHeld(Control.Down, player)
 		);
 	}

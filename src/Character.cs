@@ -1134,7 +1134,7 @@ public partial class Character : Actor, IDamagable {
 		if (Global.level.checkTerrainCollisionOnce(this, 0, 1) != null) {
 			if (gHolded && gHoldModifier > 0) {
 				Damager.applyDamage(
-					gHoldOwner, 2, 1, Global.halfFlinch, this,
+					gHoldOwner, 2, 1, Global.defFlinch, this,
 					false, (int)BluesWeaponIds.GravityHold, 0, gHoldOwner?.character ?? this,
 					(int)BluesProjIds.GravityHoldCrash
 				);

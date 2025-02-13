@@ -27,6 +27,7 @@ public class GyroAttack : Weapon {
 		Player player = blues.player;
 
 		new GyroAttackProj(blues, shootPos, xDir, player.getNextActorNetId(), true, player);
+		blues.playSound("buster2");
 	}
 }
 

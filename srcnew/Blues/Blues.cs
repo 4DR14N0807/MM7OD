@@ -228,7 +228,7 @@ public class Blues : Character {
 			flag == null &&
 			grounded && vel.y >= 0 &&
 			charState is not BluesSlide and not ShieldDash &&
-			!overheating && !overdrive && rootTime <= 0
+			!overdrive && rootTime <= 0
 		);
 	}
 
@@ -591,7 +591,7 @@ public class Blues : Character {
 			if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
 			}
-			if (!grounded && lastShieldMode != isShieldActive) {
+			if (!grounded && lastShieldMode != isShieldActive && isShieldActive) {
 				if (vel.y < 4 * 60) {
 					vel.y = 4 * 60;
 				}

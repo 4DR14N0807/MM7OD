@@ -429,7 +429,8 @@ public class CrackedWall : Actor, IDamagable {
 			);
 			Anim.createGibEffect(
 				gibSprite, centerPos, Global.level.mainPlayer,
-				gibPattern: GibPattern.SemiCircle, randVelStart: 200, randVelEnd: 300
+				gibPattern: GibPattern.Random, randVelStart: 200, randVelEnd: 300,
+				pieceOverdive: 8
 			);
 		}
 	}

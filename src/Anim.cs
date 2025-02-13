@@ -247,11 +247,11 @@ public class Anim : Actor {
 		Player player, GibPattern gibPattern = GibPattern.Radial,
 		float randVelStart = 100, float randVelEnd = 200,
 		float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false,
-		long? zIndex= null
+		long? zIndex= null, int pieceOverdive = 0
 	) {
 		AnimData sprite = Global.sprites[spriteName];
 		float startAngle = 0;
-		for (int i = 0; i < 8 || i < sprite.frames.Length; i++) {
+		for (int i = 0; i < pieceOverdive || i < sprite.frames.Length; i++) {
 			int frame = i % sprite.frames.Length;
 			float angle = Helpers.randomRange(0, 360);
 			if (gibPattern == GibPattern.Radial || gibPattern == GibPattern.SemiCircle) {

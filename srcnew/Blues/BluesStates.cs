@@ -145,6 +145,7 @@ public class BluesShieldSwapLand : CharState {
 		if (blues.isShieldActive) {
 			blues.changeSpriteFromName("land", true);
 		}
+		blues.addCoreAmmo(1);
 	}
 
 	public override void onExit(CharState newState) {

@@ -242,7 +242,7 @@ public class StrikeAttackPushProj : Projectile {
 		}
 		else if (type == 3) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
-			pushPower = 100;
+			pushPower = 150;
 			flinchPower = Global.halfFlinch;
 			projId = (int)BluesProjIds.ProtoLandPush;
 		}

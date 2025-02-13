@@ -1587,7 +1587,10 @@ public partial class Actor : GameObject {
 		if (pos == null) pos = getCenterPos();
 		if (!player.ownedByLocalPlayer) sendRpc = false;
 
-		Anim.createGibEffect("freeze_cracker_sparkles", pos.Value, player, sendRpc: sendRpc);
+		Anim.createGibEffect(
+			"freeze_cracker_sparkles", pos.Value, player, sendRpc: sendRpc,
+			pieceOverdive: 6, gibPattern: GibPattern.Random
+		);
  
 		playSound("freezebreak2", sendRpc: sendRpc);
 	}

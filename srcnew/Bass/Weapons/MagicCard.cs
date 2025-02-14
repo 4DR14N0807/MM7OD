@@ -6,7 +6,8 @@ namespace MMXOnline;
 
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
-	public static  List<MagicCardProj> cardsOnField = new();
+	public List<MagicCardProj> cardsOnField = new();
+	public int cardCount = 0;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -29,6 +30,11 @@ public class MagicCard : Weapon {
 		
 		if (shootAngle is 0 or 128) {
 			int offset = 12;
+			for (int i = cardsOnField.Count - 1; i >= 0; i--) {
+				if (cardsOnField[i].destroyed) {
+					cardsOnField.RemoveAt(i);
+				}
+			}
 			int offset2 = Math.Min(cardsOnField.Count * offset, 2 * offset);
 
 			shootPos = shootPos.addxy(0, offset - offset2);
@@ -171,12 +177,6 @@ public class MagicCardProj : Projectile {
 				destroySelf();
 			}
 		}
-
-		/* if (!destroyed && pickup != null) {
-			pickup.collider.isTrigger = true;
-			pickup.useGravity = false;
-			pickup.changePos(pos);
-		} */
 	}
 
 	public override void onCollision(CollideData other) {
@@ -237,12 +237,11 @@ public class MagicCardProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (pickup != null) {
-			pickup.useGravity = true;
-			pickup.collider.isTrigger = false;
+		if (!ownedByLocalPlayer) return;
+		if (effect == 2 && !duplicated) {
+			new MagicCardSpecialProj(ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
+			playSound("magiccard", true);
 		}
-
-		MagicCard.cardsOnField.Remove(this);
 	}
 
 	float getAmmo() {

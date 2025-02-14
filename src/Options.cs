@@ -108,6 +108,7 @@ public class Options {
 	public RockLoadout rockLoadout = new RockLoadout();
 	public int gridModeRock;
 	public bool rushSpecial = true;
+	public bool downJumpSlide = true;
 
 	// ProtoMan
 	public bool useRandomBluesLoadout;

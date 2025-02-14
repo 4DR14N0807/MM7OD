@@ -1643,27 +1643,29 @@ public class GameMode {
 		var startX = getWeaponSlotStartX(player, ref iconW, ref iconH, ref width);
 		var startY = Global.screenH - 12;
 
-		int gigaWeaponX = 18;
-		if (player.isRock && Options.main.rushSpecial) {
-			Weapon? rushWeapon = player.weapons.FirstOrDefault((Weapon w) => w is RushWeapon);
-			if (rushWeapon != null) {
-				drawWeaponSlot(rushWeapon, gigaWeaponX, 97);
-				gigaWeaponX += 18;
-			}
-		}
 		if (player.isGridModeEnabled()) {
 			if (player.gridModeHeld == true) {
 				var gridPoints = player.gridModePoints();
-				for (var i = 0; i < player.weapons.Count && i < 9; i++) {
+				for (int i = 0; i < player.weapons.Count && i < 9; i++) {
 					Point pos = gridPoints[i];
-					var weapon = player.weapons[i];
-					var x = Global.halfScreenW + (pos.x * 20);
-					var y = Global.screenH - 30 + pos.y * 20;
+					Weapon weapon = player.weapons[i];
+					float x = Global.halfScreenW + (pos.x * 20);
+					float y = Global.screenH - 30 + pos.y * 20;
+					int slotSelected = -1;
+					if (player.character != null) {
+						x = player.character.pos.x - Global.level.camX;
+						y = player.character.pos.y - Global.level.camY;
+						slotSelected = player.character.weaponSlot;
+					}
+					x += pos.x * 20;
+					y += -30 + pos.y * 20;
 
 					drawWeaponSlot(weapon, x, y);
+					if (i == slotSelected) {
+						drawWeaponStateOverlay(x, y, 0);
+					}
 				}
 			}
-			return;
 		}
 		for (var i = 0; i < player.weapons.Count; i++) {
 			var weapon = player.weapons[i];
@@ -1717,10 +1719,6 @@ public class GameMode {
 				continue;
 			}
 			if (player.isX && Options.main.novaStrikeSpecial && weapon is HyperNovaStrike) {
-				offsetX -= width;
-				continue;
-			}
-			if (player.isRock && Options.main.rushSpecial && weapon is RushWeapon) {
 				offsetX -= width;
 				continue;
 			}

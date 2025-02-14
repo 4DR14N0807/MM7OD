@@ -128,7 +128,7 @@ public class BluesShieldSwapLand : CharState {
 
 	public override void update() {
 		base.update();
-		if (blues.isAnimOver() && stateFrames >= 6) {
+		if (blues.isAnimOver() && stateFrames >= 12) {
 			blues.changeToIdleOrFall();
 		}
 	}

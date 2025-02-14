@@ -592,10 +592,11 @@ public class Blues : Character {
 			if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
 			}
-			if (!grounded && lastShieldMode != isShieldActive && isShieldActive) {
+			if (!grounded && lastShieldMode != isShieldActive) {
 				if (vel.y < 4 * 60) {
 					vel.y = 4 * 60;
 				}
+				isShieldActive = true;
 				changeState(new BluesShieldSwapAir());
 				return true;
 			}
@@ -947,7 +948,7 @@ public class Blues : Character {
 	}
 
 	public bool slideInput() {
-		if (Options.main.altDashInput) {
+		if (Options.main.altSlideInput) {
 			return (player.input.isPressed(Control.Dash, player) &&
 				player.input.isHeld(Control.Down, player)
 			);

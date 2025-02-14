@@ -6,8 +6,7 @@ namespace MMXOnline;
 
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
-	public List<MagicCardProj> cardsOnField = new List<MagicCardProj>();
-	public int cardCount = 0;
+	public static  List<MagicCardProj> cardsOnField = new();
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -27,6 +26,13 @@ public class MagicCard : Weapon {
 		Point shootPos = character.getShootPos();
 		float shootAngle = bass.getShootAngle(true, false);
 		Player player = character.player;
+		
+		if (shootAngle is 0 or 128) {
+			int offset = 12;
+			int offset2 = Math.Min(cardsOnField.Count * offset, 2 * offset);
+
+			shootPos = shootPos.addxy(0, offset - offset2);
+		}
 
 		int effect = 0;
 		cardCount--;
@@ -130,7 +136,8 @@ public class MagicCardProj : Projectile {
 			destroySelf();
 			return;
 		}
-		if (!ownedByLocalPlayer) return;
+
+		if (!ownedByLocalPlayer || shooter == null) return;
 
 		if (hits >= 3 || time > maxReverseTime) reversed = true;
 
@@ -139,9 +146,9 @@ public class MagicCardProj : Projectile {
 			frameSpeed = -2;
 			if (frameIndex == 0) frameIndex = sprite.totalFrameNum - 1;
 
-			if (shooter != null) {
-				returnPos = shooter.getCenterPos();
-			}
+			
+			returnPos = shooter.getCenterPos();
+			
 			if (shooter.sprite.name.Contains("shoot")) {
 				Point poi = shooter.pos;
 				var pois = shooter.sprite.getCurrentFrame()?.POIs;
@@ -165,22 +172,24 @@ public class MagicCardProj : Projectile {
 			}
 		}
 
-		if (!destroyed && pickup != null) {
+		/* if (!destroyed && pickup != null) {
 			pickup.collider.isTrigger = true;
 			pickup.useGravity = false;
 			pickup.changePos(pos);
-		}
+		} */
 	}
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		if (!ownedByLocalPlayer) return;
 		if (destroyed) return;
+		if (shooter == null) return;
 
 		if (other.gameObject is Pickup && pickup == null) {
 			pickup = other.gameObject as Pickup;
 			if (pickup != null) {
 				playSound("magiccardCatch", true);
+				pickup.changePos(shooter.getCenterPos());
 				if (!pickup.ownedByLocalPlayer) {
 					pickup.takeOwnership();
 					RPC.clearOwnership.sendRpc(pickup.netId);
@@ -232,11 +241,8 @@ public class MagicCardProj : Projectile {
 			pickup.useGravity = true;
 			pickup.collider.isTrigger = false;
 		}
-		if (!ownedByLocalPlayer) { return; }
-		if (effect == 2 && !duplicated) {
-			new MagicCardSpecialProj(ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
-			playSound("magiccard", true);
-		}
+
+		MagicCard.cardsOnField.Remove(this);
 	}
 
 	float getAmmo() {

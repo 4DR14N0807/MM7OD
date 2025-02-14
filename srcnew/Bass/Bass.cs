@@ -471,9 +471,9 @@ public class Bass : Character {
 	public override int getMaxChargeLevel() {
 		return 2;
 	}
-	public override bool canChangeWeapons() {
+	/* public override bool canChangeWeapons() {
 		return base.canChangeWeapons() && charState is not LightningBoltState;
-	}
+	} */
 
 	public override bool canAirJump() {
 		return dashedInAir == 0 && rootTime <= 0 && charState is not BassShootLadder;

@@ -40,7 +40,7 @@ public class PowerStone : Weapon {
 }
 
 public class PowerStoneProj : Projectile {
-	Character? character;
+	Character character = null!;
 	Point origin;
 	int stoneAngle = 120;
 	float radius = 10;
@@ -54,17 +54,18 @@ public class PowerStoneProj : Projectile {
 		projId = (int)BluesProjIds.PowerStone;
 		maxTime = 1;
 
-		character = ownerPlayer.character;
 		stoneAngle = type * 85;
 		zIndex = ZIndex.Character - 10;
 		destroyOnHit = false;
+		fadeOnAutoDestroy = true;
 		canBeLocal = false;
 
 		damager.damage = 2;
 		damager.hitCooldown = 60;
 		
 		origin = pos;
-		if (character != null) {
+		if (ownedByLocalPlayer) {
+			character = owner as Character ?? throw new NullReferenceException();
 			origin = character.getCenterPos();
 		}
 		changePos(new Point(
@@ -85,6 +86,8 @@ public class PowerStoneProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
+
 		if (character != null) {
 			origin = character.getCenterPos();
 		}
@@ -99,12 +102,13 @@ public class PowerStoneProj : Projectile {
 
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
+		if (!ownedByLocalPlayer) return;
 
 		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
-				destroySelfNoEffect(disableRpc: true, true);
+				destroySelfNoEffect();
 			}
 		}
 	}

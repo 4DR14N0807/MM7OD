@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using static MMXOnline.GameMode;
+using SFML.Graphics;
 
 namespace MMXOnline;
 
@@ -1259,6 +1260,40 @@ public class Blues : Character {
 		};
 	}
 
+	public override void render(float x, float y) {
+		base.render(x,y);
+
+		float pAmmo = getChargeShotCorePendingAmmo();
+		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0) && Options.main.coreHeatDisplay >= 1) {
+			float corePct = Helpers.clamp01((coreMaxAmmo - coreAmmo) / coreMaxAmmo);
+			corePct = -corePct + 1;
+			
+			float pendAmmo = coreAmmo + pAmmo;
+			if (pendAmmo > coreMaxAmmo) {
+				pendAmmo = MathInt.Floor(coreMaxAmmo - coreAmmo);
+			}
+			float pendPct = Helpers.clamp01((coreMaxAmmo - pendAmmo) / coreMaxAmmo);
+			pendPct = -pendPct + 1;
+			
+			float sy = -27;
+			float sx = 20;
+			if (xDir == -1) sx = 90 - 20;
+			drawCoreHeat(corePct, pendPct, sx, sy);
+		}
+	}
+
+	public void drawCoreHeat(float corePct, float pendPct, float sx, float sy) {
+		float coreBarInnerWidth = 30;
+		Color color = Color.Red;
+		Color color2 = Color.Yellow;
+		float width = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * corePct), coreBarInnerWidth);
+		float width2 = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * pendPct), coreBarInnerWidth);
+
+		DrawWrappers.DrawRect(pos.x - 47 + sx, pos.y - 16 + sy, pos.x - 42 + sx, pos.y + 16 + sy, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
+		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width2 + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color2, 0, ZIndex.HUD - 1);
+		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
+	}
+
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		base.renderHUD(offset, position);
 	}
@@ -1287,6 +1322,9 @@ public class Blues : Character {
 		if ((overheating || overdrive) && Global.frameCount % 6 >= 3) {
 			coreAmmoColor = 2;
 		}
+
+		if (Options.main.coreHeatDisplay == 1) return;
+
 		GameMode.renderAmmo(
 			baseX, baseY, -2, coreAmmoColor, MathF.Ceiling(coreAmmo),
 			maxAmmo: coreMaxAmmo, barSprite: "hud_weapon_full_blues"

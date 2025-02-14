@@ -200,6 +200,7 @@ public class ShootAltLadder : CharState {
 	bool fired;
 	int chargeLv;
 	Ladder ladder;
+	Rock rock = null!;
 
 	//Adrián: This is used for weapons with different shoot anims (Wild Coil, Junk Shield, etc) while being in a ladder.
 	public ShootAltLadder(Ladder ladder, Weapon ladderWeapon, int chargeLv, bool underwater = false) : 
@@ -214,6 +215,7 @@ public class ShootAltLadder : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.useGravity = false;
+		rock = character as Rock ?? throw new NullReferenceException();
 	}
 	public override void update() {
 		base.update();
@@ -225,18 +227,18 @@ public class ShootAltLadder : CharState {
 
 		if (ladderWeapon is JunkShield) {
 			if (!fired && character.frameIndex == 1) {
-				ladderWeapon.getProjs(character, new int[] {});
+				ladderWeapon.getProjs(rock, new int[] {});
 				fired = true;
 			}
 		} else if (ladderWeapon is ScorchWheel) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 				fired = true;
-				ladderWeapon.getProjs(character, new int[] {});
+				ladderWeapon.getProjs(rock, new int[] {});
 			}
 		} else if (ladderWeapon is WildCoil) {
 			if (!fired && character.currentFrame.getBusterOffset() != null) {
 				fired = true;
-				ladderWeapon.getProjs(character , new int[] {chargeLv});
+				ladderWeapon.getProjs(rock , new int[] {chargeLv});
 			}
 		} else {
 			if (!fired && character.frameIndex >= 6) {

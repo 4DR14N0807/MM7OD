@@ -125,8 +125,11 @@ public class SuperBassRP : Projectile {
 		pos, xDir, owner, "sb_rocket_punch", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassRocketPunch;
-		bass = owner as Bass ?? throw new NullReferenceException();
-		if (bass != null) bass.sbRocketPunch = this;
+		if (ownedByLocalPlayer ) {
+			bass = owner as Bass ?? throw new NullReferenceException();
+			if (bass != null) bass.sbRocketPunch = this;
+		}
+		
 		maxReverseTime = 0.5f;
 		this.player = ownerPlayer;
 

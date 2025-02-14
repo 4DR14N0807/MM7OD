@@ -48,12 +48,13 @@ public class SearchSnakeProj : Projectile {
 
 		vel.x = 120 * xDir;
 		damager.damage = 2;
-		damager.hitCooldown = 0.5f;
+		damager.hitCooldown = 30;
 		xScale = 1;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle ?? 0);
 		}
+
 		canBeLocal = false;
 	}
 
@@ -65,6 +66,8 @@ public class SearchSnakeProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
+
 		if (!groundedOnce) {
 			if (grounded) {
 				vel.x = 0;
@@ -108,10 +111,16 @@ public class SearchSnakeProj : Projectile {
 	}
 
 	
-	public override List<byte> getCustomActorNetData() {
+	/* public override List<byte> getCustomActorNetData() {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 		
-		if (byteAngle != null) customData.Add((byte)byteAngle.Value);
+		if (byteAngle != null) {
+			byte flip = 0;
+			if (byteAngle < 0) flip = 1;
+			byteAngle = Math.Abs(byteAngle.Value);
+			customData.Add((byte)byteAngle.Value);
+			customData.Add(flip);
+		} 
 
 		return customData;
 	}
@@ -120,5 +129,8 @@ public class SearchSnakeProj : Projectile {
 		base.updateCustomActorNetData(data);
 
 		byteAngle = data[0];
-	}
+		if (data[1] == 1) {
+			byteAngle *= -1;
+		}
+	} */
 }

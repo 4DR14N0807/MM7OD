@@ -74,7 +74,7 @@ public class SARocketPunchProj : Projectile {
 	public bool reversed;
 	public bool returned;
 	Character shooter = null!;
-	Player player;
+	Player? player;
 	Rock rock = null!;
 	public float maxReverseTime;
 	public float minTime;
@@ -91,11 +91,16 @@ public class SARocketPunchProj : Projectile {
 
 		projId = (int)RockProjIds.SARocketPunch;
 		minTime = 0.2f;
-		rock = owner as Rock ?? throw new NullReferenceException();
-		rock.saRocketPunchProj = this;
+
+		if (ownedByLocalPlayer) {
+			rock = owner as Rock ?? throw new NullReferenceException();
+			rock.saRocketPunchProj = this;
+
+			this.player = ownerPlayer;
+			shooter = owner as Character ?? throw new NullReferenceException();
+		}
+		
 		maxReverseTime = 0.5f;
-		this.player = ownerPlayer;
-		shooter = owner as Character ?? throw new NullReferenceException();
 		destroyOnHit = false;
 		canBeLocal = false;
 
@@ -118,7 +123,7 @@ public class SARocketPunchProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer || player == null) return;
 
 		if (ownedByLocalPlayer && (shooter == null || shooter.destroyed)) {
 			destroySelf("generic_explosion");
@@ -183,7 +188,7 @@ public class SARocketPunchProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (rock != null) rock.saRocketPunchProj = null;
+		if (rock != null && ownedByLocalPlayer) rock.saRocketPunchProj = null;
 	}
 }
 
@@ -207,7 +212,7 @@ public class SARocketPunchState : CharState {
 	public override void update() {
 		base.update();
 
-		if (character.frameIndex == 0 && !fired) {
+		if (character.frameIndex == 0 && !fired && character.ownedByLocalPlayer) {
 			fired = true;
 
 			var poi = character.currentFrame.POIs;

@@ -114,6 +114,8 @@ public class Options {
 	public bool useRandomBluesLoadout;
 	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;
+	public bool switchDashInput;
+	public int coreHeatDisplay;
 	public bool altDashInput;
 
 	// Bass

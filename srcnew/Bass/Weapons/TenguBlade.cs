@@ -29,28 +29,52 @@ public class TenguBlade : Weapon {
 }
 
 
-public class TenguBladeStart : Anim {
+public class TenguBladeStart : Projectile {
 	Character? character;
 	Point distance;
 
 	public TenguBladeStart(
-		Point pos, int xDir, ushort? netId, Player player,
-		bool sendRpc = false, bool ownedByLocalPlayer = true
+		Actor owner, Point pos, int xDir, ushort? netId,
+		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, "tengu_blade_spawn", xDir, netId, true, 
-		sendRpc, ownedByLocalPlayer, player.character
+		pos, xDir, owner, "tengu_blade_spawn", netId, altPlayer
 	) {
-		character = player.character;
-		if (character != null) {
-			distance = pos.directionTo(character.getCenterPos());
+		projId = (int)BassProjIds.TenguBladeStart;
+		maxTime = 1;
+		damager.damage = 2;
+		damager.hitCooldown = 20;
+		setIndestructableProperties();
+		canBeLocal = false;
+
+		if (ownedByLocalPlayer) {
+			character = ownerPlayer.character;
+			if (character != null) {
+				distance = pos.directionTo(character.getCenterPos());
+			}
 		}
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+
+		projId = (int)BassProjIds.TenguBladeProj;
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new TenguBladeStart(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
 	}
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
+
 		if (character != null) {
 			changePos(character.getCenterPos().subtract(distance));
 		}
+
+		if (isAnimOver()) destroySelf(doRpcEvenIfNotOwned: true);
 	}
 
 	public override void onDestroy() {
@@ -81,7 +105,7 @@ public class TenguBladeState : CharState {
 			Point shootPos = character.getFirstPOI() ?? character.getShootPos();
 			Player player = character.player;
 
-			new TenguBladeStart(shootPos, character.xDir, player.getNextActorNetId(), player, true);
+			new TenguBladeStart(character, shootPos, character.xDir, player.getNextActorNetId(), true, player);
 			fired = true;
 		}
 
@@ -280,7 +304,7 @@ public class TenguBladeLadder : CharState {
 		if (!fired && character.currentFrame.getBusterOffset() != null) {
 			Point shootPos = character.getFirstPOI() ?? character.getShootPos();
 			Player player = character.player;
-			new TenguBladeStart(shootPos, character.getShootXDir(), player.getNextActorNetId(), player, true);
+			new TenguBladeStart(character, shootPos, character.getShootXDir(), player.getNextActorNetId(), true, player);
 			fired = true;
 		}
 

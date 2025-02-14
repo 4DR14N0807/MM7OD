@@ -150,7 +150,7 @@ public class FreezeCrackerPieceProj : Projectile {
 	) {
 
 		projId = (int)RockProjIds.FreezeCrackerPiece;
-		maxTime = 0.6f;
+		maxTime = 0.4f;
 		reflectable = true;
 		damager.damage = 2;
 		damager.hitCooldown = 15;

@@ -8,10 +8,11 @@ namespace MMXOnline;
 
 public class JunkShield : Weapon {
 	public static JunkShield netWeapon = new();
+	public static float cooldown = 60;
 
 	public JunkShield() : base() {
 		shootSounds = new string[] { "", "", "", "" };
-		fireRate = 75;
+		fireRate = cooldown;
 		index = (int)RockWeaponIds.JunkShield;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.JunkShield;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -63,19 +64,21 @@ public class JunkShieldMagnet : Anim {
 	) : base(
 		pos, "junk_shield_magnet", xDir, netId, false, true
 	) {
-		rock = character;
-		rock.junkShieldProjs.Add(this);
+		if (ownedByLocalPlayer) {
+			rock = character;
+			rock.junkShieldProjs.Add(this);
+		}
+		
 		this.ang = ang;
 		startAng = ang;
 	}
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer || rock == null) return;
 
 		if (radius < 30) radius += 1;
 		ang += 5;
-
-		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
 
 		timer += Global.speedMul;
 		if (timer >= 15 && !once && startAng == 0) {
@@ -89,8 +92,16 @@ public class JunkShieldMagnet : Anim {
 		} else if (timer >= 30) destroySelf();
 	}
 
+	public override void postUpdate() {
+		base.postUpdate();
+		if (rock == null) return;
+		
+		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
+	}
+
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
 		rock.junkShieldProjs.Remove(this);
 	}
 }
@@ -174,7 +185,7 @@ public class JunkShieldProj : Projectile {
 	public bool smallestSon;
 	bool threw;
 	Player? player;
-	Rock rock = null!;
+	Rock? rock;
 	float ang;
 	float radius = 30;
 	bool sound;
@@ -186,8 +197,14 @@ public class JunkShieldProj : Projectile {
 		pos, xDir, owner, "junk_shield_pieces", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.JunkShield;
-		rock = owner as Rock ?? throw new NullReferenceException();
-		rock.junkShieldProjs.Add(this);
+
+		if (ownedByLocalPlayer) {
+			rock = owner as Rock;
+			if (rock != null) {
+				rock.junkShieldProjs.Add(this);
+				changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+			}
+		}
 		
 		damager.damage = 1;
 		damager.hitCooldown = 15;
@@ -197,7 +214,7 @@ public class JunkShieldProj : Projectile {
 		
 		player = altPlayer;
 		this.ang = ang;
-		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+		
 		canBeLocal = false;
 
 		if (rpc) {
@@ -220,26 +237,29 @@ public class JunkShieldProj : Projectile {
 		if (parent != null && parent.destroyed && smallestSon) destroySelf();
 		if (threw) return;
 
+		//Non-Local players end here.
+		if (!ownedByLocalPlayer || rock == null) return;
+
 		ang += 5;
 		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
 
-		if (!ownedByLocalPlayer) return;
-
-		if (rock == null || rock.charState is Die || (rock.player.weapon is not JunkShield)) {
+		if (rock.charState is Die) {
 			destroySelfNoEffect();
 			return;
 		}
 
 		if (player == null) return;
 
-		if (time >= (Global.speedMul * 15) / 60 && player.input.isPressed(Control.Shoot, player)) {
+		if ((time >= (Global.speedMul * 15) / 60 && player.input.isPressed(Control.Shoot, player)) ||
+			rock.currentWeapon is not JunkShield
+		) {
 			shootProjs();
-			rock.weaponCooldown = 60;
+			rock.weaponCooldown = JunkShield.cooldown;
 		}
 	}
 
 
-	public override void onHitDamagable(IDamagable damagable) {
+	/* public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 
 		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
@@ -249,16 +269,18 @@ public class JunkShieldProj : Projectile {
 				destroySelf();
 			}
 		}
-	}
+	} */
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer || rock == null) return;
 		
 		rock.junkShieldProjs.Remove(this);
 	}
 
 	public void shootProjs() {
+		if (rock == null) return;
+
 		if (parent != null && parent.destroyed && !smallestSon) {
 			threw = true;
 			changePos(rock.getCenterPos());
@@ -291,12 +313,41 @@ public class JunkShieldProj : Projectile {
 	}
 
 	public void shoot(float a) {
-		updateDamager(2);
-		damager.hitCooldown = 60;
-		vel = Point.createFromByteAngle(a).times(180);
-		time = 0;
+		if (rock == null) return;
+
+		new JunkShieldProj2(
+			rock, rock.getCenterPos(), xDir, damager.owner.getNextActorNetId(), frameIndex, a, true
+		);
+
+		destroySelf();
+	}
+}
+
+
+public class JunkShieldProj2 : Projectile {
+	public JunkShieldProj2(
+		Actor owner, Point pos, int xDir, ushort? netId,
+		int fi, float ang, bool rpc = false, Player? altPlayer = null
+	) : base(
+		pos, xDir, owner, "junk_shield_pieces", netId, altPlayer
+	) {
+		projId = (int)RockProjIds.JunkShield2;
 		maxTime = 0.75f;
-		destroyOnHit = true;
-		rock.junkShieldProjs.Remove(this);
+
+		frameIndex = fi;
+		frameSpeed = 0;
+		damager.damage = 2;
+		damager.hitCooldown = 60;
+
+		vel = Point.createFromByteAngle(ang).times(180);
+
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)fi, (byte)ang });
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new JunkShieldProj2(
+			arg.owner, arg.pos, arg.xDir, arg.netId,
+			arg.extraData[0], arg.extraData[1], altPlayer: arg.player
+		);
 	}
 }

@@ -117,7 +117,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 		rand = Helpers.randomRange(1, 4);
 
 		vel.x = 240 * xDir;
-		damager.hitCooldown = 0.4f;
+		damager.hitCooldown = 24;
 
 		if (ownedByLocalPlayer) {
 			if (rand % 2 == 0) {
@@ -151,6 +151,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
 
 		if (bubble1 != null && bubble1.time >= 0.2f) {
 			int dirMod = Helpers.randomRange(-1, 1);
@@ -168,15 +169,5 @@ public class WaveBurnerUnderwaterProj : Projectile {
 
 		if (bubble1?.time >= maxTime) bubble1.destroySelf();
 		if (bubble2?.time >= maxTime) bubble2.destroySelf();
-	}
-
-
-	public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-		var chr = damagable as Character;
-
-		if (chr != null) {
-			chr.xPushVel = xDir * 180;
-		} 
 	}
 }

@@ -664,13 +664,13 @@ public class Rock : Character {
 		if (boughtSuperAdaptorOnce) {
 			drawBuff(
 				drawPos, arrowSlashCooldown / 90,
-				"hud_blues_weapon_icon", (int)RockWeaponSlotIds.ArrowSlash
+				"hud_weapon_icon", (int)RockWeaponSlotIds.ArrowSlash
 			);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 			drawBuff(
 				drawPos, legBreakerCooldown / 90,
-				"hud_blues_weapon_icon", (int)RockWeaponSlotIds.LegBreaker
+				"hud_weapon_icon", (int)RockWeaponSlotIds.LegBreaker
 			);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;

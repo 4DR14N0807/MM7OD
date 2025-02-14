@@ -59,7 +59,7 @@ public class IceWallStart : Anim {
 	
 public class IceWallProj : Projectile, IDamagable {
 	float lastDeltaX = 0;
-	float maxSpeed = 250;
+	float maxSpeed = 300;
 	int bounces;
 	bool startedMoving;
 	List<Character> chrs = new();
@@ -84,6 +84,7 @@ public class IceWallProj : Projectile, IDamagable {
 		maxTime = 2f;
 		destroyOnHit = false;
 		splashable = true;
+		fadeOnAutoDestroy = true;
 		damager.hitCooldown = 60;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
 
@@ -106,7 +107,7 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
-			vel.x += xDir * 5 / 60f;
+			vel.x += xDir * 5 *	Global.speedMul;
 			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
 		}
 

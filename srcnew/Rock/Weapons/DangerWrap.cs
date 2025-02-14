@@ -79,7 +79,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 		canBeLocal = false;
 		this.type = type;
 		this.input = input;
-		damager.hitCooldown = 0.5f;
+		damager.hitCooldown = 30;
 
 		if (type == 1) {
 			vel.x = 60 * xDir;
@@ -115,6 +115,7 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
 
 		if (type == 0 && isAnimOver()) {
 
@@ -196,7 +197,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		useGravity = true;
 		fadeSprite = "generic_explosion";
 		damager.damage = 2;
-		damager.hitCooldown = 1;
+		damager.hitCooldown = 60;
 		ownChr = owner;
 
 		if (rpc) {
@@ -224,6 +225,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			changeSprite("danger_wrap_land", false);
 			landed = true;
 			updateDamager(3, Global.halfFlinch);
+			projId = (int)RockProjIds.DangerWrapMineLanded;
 
 			if (time >= 2) changeSprite("danger_wrap_land_active", false);
 
@@ -236,6 +238,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
 
 		if (landed && didExplode && ownedByLocalPlayer) {
 			for (int i = 0; i < 6; i++) {
@@ -245,7 +248,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 				{ vel = new Point(x, y) };
 			}
 
-			playSound("danger_wrap_explosion");
+			playSound("danger_wrap_explosion", sendRpc: true);
 			new DangerWrapExplosionProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), true);
 		}
 	}
@@ -454,6 +457,11 @@ public class DWrapBigBubble : Actor, IDamagable {
 	}
 
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	}
+
+	public override void preUpdate() {
+		base.preUpdate();
+		updateProjectileCooldown();
 	}
 
 	public override void update() {

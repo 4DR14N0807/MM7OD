@@ -216,9 +216,12 @@ public class Damager {
 					character.xDir *= -1;
 					break;
 				case (int)BassProjIds.SpreadDrillMid:
-				character.vel = Point.lerp(character.vel, Point.zero, Global.speedMul);
-				character.slowdownTime = MathF.Max(character.slowdownTime, 15);
-				break;
+					character.vel = Point.lerp(character.vel, Point.zero, Global.speedMul);
+					character.slowdownTime = MathF.Max(character.slowdownTime, 15);
+					break;
+				case (int)BassProjIds.WaveBurnerUnderwater:
+					character.xPushVel += 180 * damagingActor?.xDir ?? 180 * -character.xDir;
+					break;
 			}
 			float flinchCooldown = 0;
 			if (projectileFlinchCooldowns.ContainsKey(projId)) {
@@ -283,6 +286,9 @@ public class Damager {
 				victim?.addRenderEffect(RenderEffectType.Hit, 3, 5);
 			}
 		}
+
+		if (damagingActor is JunkShieldProj jsp) jsp.destroySelf();
+		 
 		float finalDamage = damage;
 		if (weakness && damage > 0) {
 			damage += 1;
@@ -300,7 +306,7 @@ public class Damager {
 			(int)RockProjIds.DangerWrapExplosion => true,
 			(int)RockProjIds.DangerWrapBubbleExplosion => true,
 			(int)RockProjIds.ScorchWheelBurn => true,
-			(int)RockProjIds.DangerWrapMine => true,
+			(int)RockProjIds.DangerWrapMineLanded => true,
 			(int)RockProjIds.LegBreaker => true,
 			(int)BluesProjIds.GravityHold => true,
 			(int)BluesProjIds.GravityHoldCrash => true,

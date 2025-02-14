@@ -46,6 +46,8 @@ public class SpreadDrillProj : Projectile {
 	Point addPos;
 	Player player;
 	Actor ownChr = null!;
+	string exhaustSprite = "spread_drill_effect";
+	Anim? anim;
 	public SpreadDrillProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		bool rpc = false, Player? altPlayer = null
@@ -61,6 +63,9 @@ public class SpreadDrillProj : Projectile {
 			if (bass != null) {
 				bass.sDrill = this;
 			}
+
+			anim = new Anim(pos, exhaustSprite, xDir, null, false, false) 
+			{ visible = false };
 		}
 		addPos = new Point(-22 * xDir, 7);
 
@@ -103,11 +108,11 @@ public class SpreadDrillProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x,y);
-		string exhaust = "spread_drill_effect";
-		int fi = Global.frameCount % 2;
+		int? fi = anim?.frameIndex;
+		int fiv = fi ?? Global.frameCount % 2;
 
-		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
-		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y - addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
+		Global.sprites[exhaustSprite].draw(fiv, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
+		Global.sprites[exhaustSprite].draw(fiv, pos.x + addPos.x, pos.y - addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
 	}
 
 	public override void onDestroy() {
@@ -169,7 +174,7 @@ public class SpreadDrillMediumProj : Projectile {
 			if (owner.input.isPressed(Control.Shoot, owner) && (ownChr as Character)?.currentWeapon is SpreadDrill) {
 				new SpreadDrillSmallProj(ownChr, pos.addxy(0, 15), xDir, owner.getNextActorNetId(), rpc: true);
 				new SpreadDrillSmallProj(ownChr, pos.addxy(0, -15), xDir, owner.getNextActorNetId(), rpc: true);
-				destroySelfNoEffect(true, true);
+				destroySelf(doRpcEvenIfNotOwned: true);
 				return;
 			}
 		}

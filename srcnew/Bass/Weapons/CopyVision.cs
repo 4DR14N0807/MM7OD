@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 public class CopyVision : Weapon {
 	public static CopyVision netWeapon = new();
-	public CopyVisionClone? clone;
+	public CopyVisionClone? vClone;
 
 	public CopyVision() : base() {
 		index = (int)BassWeaponIds.CopyVision;
@@ -35,18 +35,14 @@ public class CopyVision : Weapon {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 		Bass bass = character as Bass ?? throw new NullReferenceException();
-		float shootAngle = 0;
-
+		
 		if (!player.ownedByLocalPlayer) return;
 
-		if (character.xDir < 0) {
-			shootAngle = 128;
-		}
 		if (ammo > 0 && !isStream && bass.cVclone?.destroyed != false) {
-			clone = new CopyVisionClone(
+			vClone = new CopyVisionClone(
 				bass, shootPos, character.xDir, character.player.getNextActorNetId(), true, true, player
 			);
-			bass.cVclone = clone;
+			bass.cVclone = vClone;
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
 		} else {
@@ -61,7 +57,7 @@ public class CopyVision : Weapon {
 
 	public override void update() {
 		base.update();
-		if (ammo <= 0 || clone?.destroyed == false) {
+		if (ammo <= 0 || vClone?.destroyed == false) {
 			isStream = true;
 		} else {
 			isStream = false;
@@ -138,17 +134,19 @@ public class CopyVisionClone : Actor {
 	// Define the rateOfFire of the clone.
 	float rateOfFire = 9;
 	Bass bass = null!;
-	Player player;
+	Player? player;
 
 	public CopyVisionClone(
 		Actor owner, Point pos, int xDir, ushort? netId, bool ownedByLocalPlayer, 
 		bool rpc = false, Player? altPlayer = null
 	) : base("copy_vision_start", pos, netId, ownedByLocalPlayer, false
 	) {
-		player = altPlayer ?? throw new NullReferenceException();
+		
 		if (ownedByLocalPlayer) {
 			bass = owner as Bass ?? throw new NullReferenceException();
+			player = altPlayer ?? throw new NullReferenceException();
 		}
+
 		useGravity = false;
 		this.xDir = xDir;
 
@@ -190,7 +188,7 @@ public class CopyVisionClone : Actor {
 	public override void onDestroy() {
 		base.onDestroy();
 
-		if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer || player == null) return;
 		new Anim(
 			pos, "copy_vision_exit", xDir,
 			player.getNextActorNetId(), true, sendRpc: true

@@ -55,7 +55,7 @@ public class ScorchWheelSpawn : Projectile {
 	public Rock rock = null!;
 	bool hasHeld;
 	Actor ownChr = null!;
-	Player player;
+	Player? player;
 
 	public ScorchWheelSpawn(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
@@ -64,12 +64,18 @@ public class ScorchWheelSpawn : Projectile {
 		pos, xDir, owner, "scorch_wheel_spawn", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.ScorchWheelSpawn;
-		this.player = altPlayer ?? throw new NullReferenceException();
-		rock = (player.character as Rock ?? throw new NullReferenceException());
-		rock.sWellSpawn = this;
+
+		if (ownedByLocalPlayer) {
+			this.player = altPlayer ?? throw new NullReferenceException();
+			rock = (player.character as Rock ?? throw new NullReferenceException());
+			rock.sWellSpawn = this;
+		}
+		
 		useGravity = false;
 		maxTime = 1;
+		damager.hitCooldown = 6;
 		destroyOnHit = false;
+		canBeLocal = false;
 		ownChr = owner;
 
 		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
@@ -116,13 +122,13 @@ public class ScorchWheelSpawn : Projectile {
 
 		if (rock != null) {
 			xDir = rock.getShootXDir();
-			pos = rock.getCenterPos();
+			changePos(rock.getCenterPos());
 		}
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (rock != null) rock.sWellSpawn = null;
+		if (rock != null && ownedByLocalPlayer) rock.sWellSpawn = null;
 	}
 }
 
@@ -130,8 +136,8 @@ public class ScorchWheelSpawn : Projectile {
 public class ScorchWheelProj : Projectile {
 
 	float projAngle;
-	Rock rock = null!;
-	Player player;
+	Rock? rock;
+	Player? player;
 	Point centerPos;
 	public List<Sprite> fireballs = new List<Sprite>();
 	int radius = 15;
@@ -147,9 +153,11 @@ public class ScorchWheelProj : Projectile {
 
 		projId = (int)RockProjIds.ScorchWheel;
 		destroyOnHit = false;
-		this.player = ownerPlayer ?? throw new NullReferenceException();
-		rock = ownerPlayer.character as Rock ?? throw new NullReferenceException();
-		rock.sWell = this;
+
+		this.player = ownerPlayer;
+		rock = ownerPlayer.character as Rock;
+		if (rock != null) rock.sWell = this;
+		
 		canBeLocal = false;
 
 		damager.damage = 1;
@@ -161,7 +169,7 @@ public class ScorchWheelProj : Projectile {
 			fireballs.Add(fireball);
 		}
 
-		if (rpc) rpcCreate(pos, player, netProjId, xDir);
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -173,10 +181,12 @@ public class ScorchWheelProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (rock == null) return;
+		
 		if (projAngle >= 256) projAngle = 0;
 		projAngle += 3;
 
-		if (ownedByLocalPlayer) {
+		if (ownedByLocalPlayer && player != null) {
 			if (player.input.isHeld(Control.Shoot, owner)) {
 				hasHeld = true;
 				holdTime += Global.spf;
@@ -186,20 +196,20 @@ public class ScorchWheelProj : Projectile {
 			}
 			if (rock != null) {
 				xDir = rock.getShootXDir();
-				pos = rock.getCenterPos();
+				changePos(rock.getCenterPos());
 			}
 
-			if (rock == null || rock.charState is Die) {
+			if (rock?.charState is Die) {
 				destroySelf();
 				return;
 			}
 
 
-			if (!hasHeld || holdTime >= 2 || rock.currentWeapon is not ScorchWheel) {
+			if (!hasHeld || holdTime >= 2 || rock?.currentWeapon is not ScorchWheel) {
 				destroySelf();
 				new ScorchWheelMoveProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), rpc: true, player);
 				playSound("scorch_wheel", true, true);
-				rock.weaponCooldown = 60;
+				if (rock != null) rock.weaponCooldown = 60;
 				return;
 			}
 		}
@@ -224,7 +234,7 @@ public class ScorchWheelProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (rock != null) rock.sWell = null;
+		if (rock != null && ownedByLocalPlayer) rock.sWell = null;
 	}
 }
 
@@ -246,7 +256,7 @@ public class ScorchWheelMoveProj : Projectile {
 		damager.damage = 1;
 		damager.hitCooldown = 1;
 
-		rock = owner as Rock ?? throw new NullReferenceException();
+		if (ownedByLocalPlayer) rock = owner as Rock ?? throw new NullReferenceException();
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
@@ -311,10 +321,13 @@ public class UnderwaterScorchWheelProj : Projectile {
 		projId = (int)RockProjIds.ScorchWheelUnderwater;
 		maxTime = 1.5f;
 		destroyOnHit = false;
-		rock = owner as Rock ?? throw new NullReferenceException();
-		if (rock != null) rock.sWellU = this;
-		if (rock != null) rock.underwaterScorchWheel = this;
 
+		if (ownedByLocalPlayer) {
+			rock = owner as Rock ?? throw new NullReferenceException();
+			if (rock != null) rock.sWellU = this;
+			if (rock != null) rock.underwaterScorchWheel = this;
+		}
+		
 		damager.damage = 2;
 		damager.hitCooldown = 60;
 
@@ -363,7 +376,7 @@ public class UnderwaterScorchWheelProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (rock != null) rock.sWellU = null!;
+		if (rock != null && ownedByLocalPlayer) rock.sWellU = null!;
 	}
 }
 

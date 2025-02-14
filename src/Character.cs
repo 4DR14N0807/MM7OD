@@ -18,6 +18,9 @@ public partial class Character : Actor, IDamagable {
 		"Megaman",
 		"Protoman",
 		"Bass",
+		"",
+		"",
+		""
 	};
 
 	// Health.
@@ -558,6 +561,7 @@ public partial class Character : Actor, IDamagable {
 		if (shootAnimTime > 0 || isSoftLocked()) {
 			return false;
 		}
+		if (isDWrapped || rootTime > 0) return false;
 		return true;
 	}
 

@@ -35,8 +35,8 @@ public class CustomMatchSettings {
 			startSubTanks = 0,
 			healthModifier = 16,
 			damageModifier = 1,
-			sameCharNum = -1,
-			redSameCharNum = -1,
+			sameCharNum = 4,
+			redSameCharNum = 4,
 			maxETanks = 2,
 			maxHeartTanks = 8,
 			heartTankHp = 1,
@@ -275,7 +275,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.sameCharNum, 5, 7);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.sameCharNum, 4, 7);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -291,7 +291,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redSameCharNum, 5, 7);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redSameCharNum, 4, 7);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -355,8 +355,11 @@ public class CustomMatchSettingsMenu : IMainMenu {
 	}
 
 	public string getSameCharString(int charNum) {
-		if (charNum == -1) return "No";
-		return Character.charDisplayNames[charNum];
+		if (charNum > 7) charNum = 7;
+		if (charNum == 5) return "Megaman";
+		if (charNum == 6) return "Protoman";
+		if (charNum == 7) return "Bass";
+		return "No";
 	}
 
 	public void update() {

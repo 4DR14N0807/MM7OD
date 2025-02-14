@@ -123,6 +123,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.ThunderBolt, ThunderBoltProj.rpcInvoke },
 		{ (int)RockProjIds.ThunderBoltSplit, ThunderBoltSplitProj.rpcInvoke },
 		{ (int)RockProjIds.JunkShield, JunkShieldProj.rpcInvoke},
+		{ (int)RockProjIds.JunkShield2, JunkShieldProj2.rpcInvoke},
 		{ (int)RockProjIds.ScorchWheelSpawn, ScorchWheelSpawn.rpcInvoke},
 		{ (int)RockProjIds.ScorchWheel, ScorchWheelProj.rpcInvoke},
 		{ (int)RockProjIds.ScorchWheelMove, ScorchWheelMoveProj.rpcInvoke },
@@ -175,6 +176,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.SpreadDrillSmall, SpreadDrillSmallProj.rpcInvoke },
 		{ (int)BassProjIds.WaveBurner, WaveBurnerProj.rpcInvoke },
 		{ (int)BassProjIds.WaveBurnerUnderwater, WaveBurnerUnderwaterProj.rpcInvoke },
+		{ (int)BassProjIds.TenguBladeStart, TenguBladeStart.rpcInvoke },
 		{ (int)BassProjIds.TenguBladeProj, TenguBladeProj.rpcInvoke },
 		{ (int)BassProjIds.LightningBolt, LightningBoltProj.rpcInvoke },
 

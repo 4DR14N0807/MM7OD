@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 
 public class Rush : Actor, IDamagable {
-	public Character character;
+	public Character character = null!;
 	public Rock rock = null!;
 	public Player player => character.player;
 	public RushState rushState;
@@ -26,8 +26,10 @@ public class Rush : Actor, IDamagable {
 		// Hopefully character is not null.
 		// Character begin null only matters for the local player tho.
 		netOwner = owner;
-		this.character = owner.character ?? throw new NullReferenceException();
-		rock = character as Rock ?? throw new NullReferenceException();
+		if (ownedByLocalPlayer) {
+			this.character = owner.character ?? throw new NullReferenceException();
+			rock = character as Rock ?? throw new NullReferenceException();
+		}
 		this.type = type;
 		//syncs rush xdir with rock xdir
 		this.xDir = character.xDir;
@@ -121,10 +123,15 @@ public class Rush : Actor, IDamagable {
 
 	public override void preUpdate() {
 		base.preUpdate();
+		if (!ownedByLocalPlayer) return;
+
+		updateProjectileCooldown();
 	}
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
+
 		if (rushState is RushWarpOut) spriteToCollider["warp_beam"] = null;
 		if (character == null || character.charState is Die || character.flag != null) {
 			changeState(new RushWarpOut());

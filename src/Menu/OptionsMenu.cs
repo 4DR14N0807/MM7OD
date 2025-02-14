@@ -698,7 +698,7 @@ public class OptionsMenu : IMainMenu {
 					"See the game website for a list of commands."
 				),
 			};
-		} else if (charNum == 5) {
+		} else if (charNum == (int)CharIds.Rock) {
 			menuOptions = new List<MenuOption>() {
 				// Random Loadout
 				new MenuOption(
@@ -762,7 +762,7 @@ public class OptionsMenu : IMainMenu {
 					"but you lose the ability to switch to it."
 				),
 			};
-		} else if (charNum == 6) {
+		} else if (charNum == (int)CharIds.Blues) {
 			menuOptions = new List<MenuOption>() {
 				// Shield Toggle/Hold
 				new MenuOption(
@@ -803,9 +803,27 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"If enabled, you will use shield dash with \n" + "slide input and viceversa."
+				),
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightInc(ref Options.main.coreHeatDisplay, 0, 2);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"CORE HEAT DISPLAY:",
+							pos.x, pos.y
+						);
+
+						Fonts.drawText(
+							optionFontValue, coreHeatStr(Options.main.coreHeatDisplay),
+							pos.x + 200, pos.y
+						);
+					}
 				)
 			};
-		} else if (charNum == 7) {
+		} else if (charNum == (int)CharIds.Bass) {
 			menuOptions = new List<MenuOption>() {
 				new MenuOption(
 					30, startY,
@@ -1461,6 +1479,14 @@ public class OptionsMenu : IMainMenu {
 		if (gridMode == 1) return "1v1 Only";
 		if (gridMode == 2) return "Always";
 		return "Error";
+	}
+
+	string coreHeatStr(int mode) {
+		return mode switch {
+			0 => "HUD",
+			1 => "Follow",
+			_ => "Both"
+		};
 	}
 
 	public bool isRegionDisabled() {

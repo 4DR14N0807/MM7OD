@@ -45,6 +45,7 @@ public class GyroAttackProj : Projectile {
 		maxTime = 0.625f;
 		projId = (int)BluesProjIds.GyroAttack;
 		netOwner = altPlayer;
+		fadeOnAutoDestroy = true;
 		canBeLocal = false;
 
 		vel.x = projSpeed * xDir;

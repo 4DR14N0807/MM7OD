@@ -9,7 +9,7 @@ public class NeedleCannon : Weapon {
 		// Tecnical data.
 		index = (int)BluesWeaponIds.NeedleCannon;
 		fireRate = 6;
-		defaultAmmoUse = 0.75f;
+		defaultAmmoUse = 0.7f;
 
 		// Display data.
 		displayName = "NEEDLE CANNON";

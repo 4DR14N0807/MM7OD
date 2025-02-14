@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class LightningBolt : Weapon {
 	public static LightningBolt netWeapon = new();
-	public static float cooldown = 45;
+	public static float cooldown = 20;
 
 	public LightningBolt() : base() {
 		index = (int)BassWeaponIds.LightningBolt;
@@ -62,7 +62,6 @@ public class LightningBoltSpawn : Anim {
 		}
 	}
 }
-
 
 public class LightningBoltState : CharState {
 	int phase = 0;

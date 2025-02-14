@@ -85,20 +85,25 @@ public class GravityHoldProj : Projectile {
 		}
 		if (changeColor) {
 			foreach (Actor actor in getCloseActors(160)) {
-				if (actor.ownedByLocalPlayer &&
-					actor is Character chara &&
+				if (actor.ownedByLocalPlayer && actor is Character chara &&
 					!chara.isPushImmune() &&
-					!chara.grounded &&
 					chara.getCenterPos().distanceTo(pos) <= maxR + 20 &&
 					chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) &&
 					chara.projectileCooldown.GetValueOrDefault(projId + "_" + owner.id) == 0
 				) {
 					chara.projectileCooldown[projId + "_" + owner.id] = 1 * 60;
-					chara.gHoldOwner = damager.owner;
-					chara.gHolded = true;
-					gHoldModifier = 1;
-					chara.charState.stoppedJump = true;
-					chara.vel.y = 800;
+					if (!chara.grounded) {
+						chara.gHoldOwner = damager.owner;
+						chara.gHolded = true;
+						gHoldModifier = 1;
+						chara.charState.stoppedJump = true;
+						chara.vel.y = 800;
+					} else {
+						int flinchDir = MathF.Sign(chara.pos.x - pos.x);
+						if (flinchDir == 0) { flinchDir = chara.xDir; }
+						chara.playSound("hurt", sendRpc: true);
+						chara.setHurt(flinchDir, Global.defFlinch, false);
+					}
 				}
 			}
 		}
@@ -222,7 +227,6 @@ public class GravityHoldEffect : Effect {
 	}
 }
 
-
 public class BluesGravityHold : CharState {
 	Blues blues = null!;
 	bool fired;
@@ -258,10 +262,12 @@ public class BluesGravityHold : CharState {
 		if (!blues.grounded || blues.vel.y < 0) {
 			blues.changeSpriteFromName(airSprite, true);
 		}
+		blues.shieldCustomState = blues.isShieldActive;
 	}
 
 	public override void onExit(CharState newState) {
-		base.onExit(newState);
+		blues.shieldCustomState = null;
 		blues.inCustomShootAnim = false;
+		base.onExit(newState);
 	}
 }

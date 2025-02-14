@@ -15,45 +15,41 @@ public class BluesShootAlt : CharState {
 		stateWeapon = wep;
 	}
 
+	public override void update() {
+		base.update();
+		if (!fired && blues.frameIndex >= 2) {
+			stateWeapon.shoot(blues, 0, 2);
+			fired = true;
+		}
+		if (blues.isAnimOver()) {
+			blues.changeToIdleOrFall();
+		}
+	}
+
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
 		bool air = !blues.grounded || blues.vel.y < 0;
 
 		defaultSprite = sprite;
-		landSprite =  "shoot2";
+		landSprite = "shoot2";
 		if (air) {
 			sprite = "shoot2_air";
 			defaultSprite = sprite;
 		}
+		blues.shieldCustomState = blues.isShieldActive;
 		blues.changeSpriteFromName(sprite, true);
 	}
 
-	public override bool canEnter(Character character) {
-		if (character.isBurnState) return false;
-		return base.canEnter(character);
-	}
-
-	public override void update() {
-		base.update();
-
-		if (!fired && blues.frameIndex >= 2) {
-			stateWeapon.shoot(blues, 0, 2);
-			fired = true;
-		}
-
-		if (blues.isAnimOver()) blues.changeToIdleOrFall();
-	}
-
 	public override void onExit(CharState newState) {
-		base.onExit(newState);
 		blues.inCustomShootAnim = false;
+		blues.shieldCustomState = null;
+		base.onExit(newState);
 	}
 }
 
 
 public class BluesShootAltLadder : CharState {
-
 	Weapon stateWeapon;
 	bool fired;
 	Ladder ladder;
@@ -93,6 +89,70 @@ public class BluesShootAltLadder : CharState {
 	}
 }
 
+public class BluesShieldSwapAir : CharState {
+	Blues blues = null!;
+
+	public BluesShieldSwapAir() : base("fall") {
+	}
+
+	public override void update() {
+		base.update();
+		float inputDir = player.input.getXDir(player);
+		if (inputDir != 0 && blues.canMove()) {
+			blues.move(new Point(inputDir * blues.getRunSpeed() * blues.getRunDebuffs(), 0));
+		}
+		if (blues.grounded) {
+			blues.shakeCamera();
+			blues.changeState(new BluesShieldSwapLand());
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+		blues.changeSpriteEX("blues_jump_shield", true);
+		blues.shieldCustomState = true;
+	}
+
+	public override void onExit(CharState newState) {
+		blues.shieldCustomState = null;
+		base.onExit(newState);
+	}
+}
+
+public class BluesShieldSwapLand : CharState {
+	Blues blues = null!;
+
+	public BluesShieldSwapLand() : base("idle_swap") {
+	}
+
+	public override void update() {
+		base.update();
+		if (blues.isAnimOver() && stateFrames >= 6) {
+			blues.changeToIdleOrFall();
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+		blues.shieldCustomState = true;
+		new StrikeAttackPushProj(blues.pos, 3, blues.xDir, blues, player.getNextActorNetId(), true);
+		Anim anim = new Anim(
+			blues.pos, "generic_explosion", 1, player.getNextActorNetId(), true, zIndex: ZIndex.Actor - 10
+		);
+		blues.playSound("crash");
+		if (blues.isShieldActive) {
+			blues.changeSpriteFromName("land", true);
+		}
+		blues.addCoreAmmo(1);
+	}
+
+	public override void onExit(CharState newState) {
+		blues.shieldCustomState = null;
+		base.onExit(newState);
+	}
+}
 
 public class ShieldDash : CharState {
 	bool soundPlayed;
@@ -132,6 +192,23 @@ public class ShieldDash : CharState {
 				sendRpc: true
 			) { vel = new Point(0, -40) };
 			dustTimer = 0;
+		}
+		if (stateTime >= 4 && player.input.isPressed(Control.Jump, player)) {
+			if (blues.grounded) {
+				blues.vel.y = -blues.getJumpPower();
+				blues.changeState(new Jump());
+				return;
+			}
+			if (blues.canAirJump()) {
+				blues.lastJumpPressedTime = 0;
+				blues.dashedInAir++;
+				new Anim(blues.pos, "double_jump_anim", blues.xDir, player.getNextActorNetId(), true, true);
+				blues.vel.y = -blues.getJumpPower();
+				blues.changeState(new Jump());
+				return;
+			}
+			blues.changeToIdleOrFall();
+			return;
 		}
 	}
 

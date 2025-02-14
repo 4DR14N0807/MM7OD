@@ -42,6 +42,7 @@ public class StarCrash : Weapon {
 			blues.gravityModifier = 0.625f;
 			shootCooldown = 0;
 		}
+		blues.inCustomShootAnim = false;
 	}
 }
 

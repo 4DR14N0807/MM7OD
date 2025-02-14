@@ -1766,6 +1766,18 @@ public class GameMode {
 				drawWeaponStateOverlay(x, y, 0);
 			}
 		}
+
+		if (weapon is MagicCard magicCard && magicCard.cardCount != 0) {
+			string text = magicCard.cardCount.ToString();
+			if (magicCard.cardCount >= 10) {
+				text = "?";
+			}
+			Fonts.drawText(
+				selected ? FontType.GreenSmall : FontType.WhiteSmall,
+				text, x + 8, y, Alignment.Right
+			);
+		}
+
 		if (weapon.ammo < weapon.maxAmmo && weapon.drawAmmo) {
 			drawWeaponSlotAmmo(x, y, weapon.ammo / weapon.maxAmmo);
 		}
@@ -1780,10 +1792,6 @@ public class GameMode {
 			} else if (mew.mechaniloidType == MechaniloidType.Fish && level.mainPlayer.fishMechaniloidCount() > 0) {
 				drawWeaponText(x, y, level.mainPlayer.fishMechaniloidCount().ToString());
 			}
-		}
-
-		if (weapon is MagicCard && level.mainPlayer.character is Bass bass && bass.cardsCount > 0) {
-			drawWeaponText(x, y - 18, bass.cardsCount.ToString());
 		}
 
 		if (weapon is BlastLauncher && level.mainPlayer.axlLoadout.blastLauncherAlt == 1 && level.mainPlayer.grenades.Count > 0) {
@@ -1920,7 +1928,7 @@ public class GameMode {
 
 	private void drawWeaponText(float x, float y, string text) {
 		Fonts.drawText(
-			FontType.Yellow, text, x + 1, y + 8, Alignment.Center
+			FontType.GreenSmall, text, x + 5, y + 9, Alignment.Center
 		);
 	}
 

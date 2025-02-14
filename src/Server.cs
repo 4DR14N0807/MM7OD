@@ -106,7 +106,7 @@ public class Server {
 	public const byte getServersQueryByte = 0;
 	public const byte getServerQueryByte = 1;
 
-	public const int maxPlayerCap = 25;
+	public const int maxPlayerCap = 100;
 
 	public Server(
 		decimal gameVersion, Region? region,

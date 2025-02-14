@@ -17,7 +17,7 @@ public class Bass : Character {
 	public float wBurnerAngle;
 	public int wBurnerAngleMod = 1;
 	public float tBladeDashCooldown;
-	public int cardsCount;
+	public int cardsCount = 4;
 	public float showNumberTime;
 	public int lastCardNumber;
 	public SuperBassRP? sbRocketPunch;
@@ -84,7 +84,7 @@ public class Bass : Character {
 
 	public override void update() {
 		base.update();
-
+	
 		//Hypermode Music.
 		if (!Global.level.isHyper1v1()) {
 			if (isSuperBass) {
@@ -339,7 +339,7 @@ public class Bass : Character {
 		} else if (Global.level.is1v1()) {
 			return getAllWeapons();
 		}
-		return getWeaponsFromLoadout(Options.main.bassLoadout);
+		return getWeaponsFromLoadout(player.loadout.bassLoadout);
 	}
 
 	public static List<Weapon> getAllWeapons() {
@@ -409,6 +409,9 @@ public class Bass : Character {
 	}
 
 	public override (float, float) getGlobalColliderSize() {
+		if (sprite.name == getSprite("dash")) {
+			return (24, 24);
+		}
 		return (24, 30);
 	}
 

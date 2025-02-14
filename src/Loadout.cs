@@ -427,6 +427,7 @@ public class LoadoutData {
 			sigmaLoadout = SigmaLoadout.createRandom(),
 			rockLoadout = RockLoadout.createRandom(),
 			bluesLoadout = BluesLoadout.createRandom(),
+			bassLoadout = BassLoadout.createRandom(),
 		};
 	}
 

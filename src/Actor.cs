@@ -83,6 +83,7 @@ public partial class Actor : GameObject {
 	public bool immuneToKnockback;
 	public bool isPlatform;
 	public bool isSolidWall;
+	public Func<GameObject, bool>? selectiveSolididyFunc;
 	public bool cachedUndewater;
 	public Point cachedUndewaterPos = new Point(float.MinValue, float.MinValue);
 
@@ -841,6 +842,7 @@ public partial class Actor : GameObject {
 				move(new Point(0, yPushVel), true, false, false);
 			}
 		}
+		freeFromCollision();
 
 		float yMod = reversedGravity ? -1 : 1;
 		if (physicsCollider != null && !isStatic && (canBeGrounded || (gravityOverride ?? useGravity))) {
@@ -1585,9 +1587,12 @@ public partial class Actor : GameObject {
 		if (pos == null) pos = getCenterPos();
 		if (!player.ownedByLocalPlayer) sendRpc = false;
 
-		Anim.createGibEffect("shotgun_ice_break", pos.Value, player, sendRpc: sendRpc);
-
-		//playSound("iceBreak", sendRpc: sendRpc);
+		Anim.createGibEffect(
+			"freeze_cracker_sparkles", pos.Value, player, sendRpc: sendRpc,
+			pieceOverdive: 6, gibPattern: GibPattern.Random
+		);
+ 
+		playSound("freezebreak2", sendRpc: sendRpc);
 	}
 
 	public void updateProjectileCooldown() {

@@ -148,10 +148,9 @@ public class SelectRockWeaponMenu : IMainMenu {
 				return;
 			}
 
-			bool shouldSave = false; 
+			bool shouldSave = false; 	
 
 			if (!areWeaponArrSame(selectedWeaponIndices, Options.main.rockLoadout.getRockWeaponIndices())) {
-					
 				Options.main.rockLoadout.weapon1 = selectedWeaponIndices[0];
 				Options.main.rockLoadout.weapon2 = selectedWeaponIndices[1];
 				Options.main.rockLoadout.weapon3 = selectedWeaponIndices[2];

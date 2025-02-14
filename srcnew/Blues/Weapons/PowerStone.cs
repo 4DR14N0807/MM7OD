@@ -9,7 +9,7 @@ public class PowerStone : Weapon {
 	public PowerStone() : base() {
 		displayName = "POWER STONE";
 		descriptionV2 = "Summons three stones that spiral around.\nCan be used behind the shield.";
-		defaultAmmoUse = 5;
+		defaultAmmoUse = 4;
 
 		index = (int)BluesWeaponIds.PowerStone;
 		fireRate = 55;
@@ -30,6 +30,7 @@ public class PowerStone : Weapon {
 		if (args[1] == 1) {
 			if (character.charState is not LadderClimb lc) character.changeState(new BluesShootAlt(this), true);
 			else character.changeState(new BluesShootAltLadder(this, lc.ladder), true);
+			blues.playSound("super_adaptor_punch");
 		} else if (args[1] == 2) {
 			new PowerStoneProj(blues, shootPos, xDir, 0, character.player.getNextActorNetId(), true);
 			new PowerStoneProj(blues, shootPos, xDir, 1, character.player.getNextActorNetId(), true);

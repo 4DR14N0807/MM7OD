@@ -46,7 +46,7 @@ public class Rock : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Rock;
-		weapons = RockLoadoutSetup.getLoadout(player);
+		weapons = RockLoadoutSetup.getLoadout(player.loadout.rockLoadout);
 
 		spriteToCollider["sa_activate_air"] = null;
 		spriteToCollider["sa_activate"] = null;

@@ -22,6 +22,7 @@ public class Damager {
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
 		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
 		{ (int)BluesProjIds.LemonAngled, 60 * 2},
+		{ (int)BluesProjIds.SparkShock, 100},
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
@@ -201,11 +202,28 @@ public class Damager {
 			if (isStompWeapon) {
 				character.flattenedTime = 0.5f;
 			}
-			var proj = damagingActor as Projectile;
 			// Status effects.
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
-					character.root(45, owner.id);
+					character.root(45, 100, owner.id);
+					break;
+				}
+				case (int)BassProjIds.IceWall: {
+					if (damagingActor is IceWallProj iceWall) {
+						if (iceWall.startedMoving) {
+							character.freeze(Global.halfFlinch, 140, owner.id);
+						}
+						else if (iceWall.isFalling){
+							character.freeze(45, 140, owner.id);
+							if (damage > 0) {
+								damage += 2;
+							}
+						}
+						else {
+							damage = 0;
+							flinch = 0;
+						}
+					}
 					break;
 				}
 				case (int)ProjIds.TenguBladeDash: {

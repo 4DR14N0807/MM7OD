@@ -115,6 +115,7 @@ public class Options {
 	public bool protoShieldHold;
 	public bool switchDashInput;
 	public int coreHeatDisplay;
+	public bool altDashInput;
 
 	// Bass
 	public BassLoadout bassLoadout = BassLoadout.createDefault();

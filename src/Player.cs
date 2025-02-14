@@ -1008,7 +1008,9 @@ public partial class Player {
 	
 	public byte[] getCharSpawnData(int charNum) {
 		if (ownedByLocalPlayer) {
-			applyLoadoutChange();
+			if (!isAI) {
+				applyLoadoutChange();
+			}
 			syncLoadout();
 		}
 		if (charNum == (int)CharIds.Rock) {

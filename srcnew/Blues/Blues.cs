@@ -149,17 +149,35 @@ public class Blues : Character {
 	}
 
 	public override float getJumpPower() {
+		if (flag != null) {
+			return base.getJumpPower();
+		}
 		float jumpSpeed = Physics.JumpSpeed;
 		if (overheating) {
-			jumpSpeed *= 0.75f;
+			if (isShieldActive) {
+				jumpSpeed = 5 * 60;
+			} else {
+				jumpSpeed = 5.25f * 60;
+			}
 		}
-		/* else if (isShieldActive) {
-			jumpSpeed *= 0.85f;
-		} */
 		else if (overdrive) {
-			jumpSpeed *= 0.9f;
+			if (isShieldActive) {
+				jumpSpeed = 4.875f * 60;
+			} else {
+				jumpSpeed = 5.125f * 60;
+			}
+		}
+		else if (isShieldActive) {
+			jumpSpeed = 5.25f * 60;
 		}
 		return jumpSpeed * getJumpModifier();
+	}
+
+	public override bool canAirJump() {
+		if (isBreakMan && overdrive) {
+			return (dashedInAir == 0);
+		}
+		return false;
 	}
 
 	public override bool canTurn() {
@@ -211,7 +229,7 @@ public class Blues : Character {
 			flag == null &&
 			grounded && vel.y >= 0 &&
 			charState is not BluesSlide and not ShieldDash &&
-			!overheating && !overdrive && rootTime <= 0
+			!overdrive && rootTime <= 0
 		);
 	}
 
@@ -268,6 +286,21 @@ public class Blues : Character {
 		}
 		else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
+		}
+		List<Trail>? trails = sprite.lastFiveTrailDraws;
+		base.changeSprite(spriteName, resetFrame);
+		if (trails != null) {
+			sprite.lastFiveTrailDraws = trails;
+		}
+		if (isBreakMan && sprite.animData.textureName == "blues_default") {
+			sprite.overrideTexture = Sprite.breakManBitmap;
+		}
+	}
+
+	public void changeSpriteEX(string spriteName, bool resetFrame) {
+		if (!ownedByLocalPlayer) {
+			base.changeSprite(spriteName, resetFrame);
+			return;
 		}
 		List<Trail>? trails = sprite.lastFiveTrailDraws;
 		base.changeSprite(spriteName, resetFrame);
@@ -555,13 +588,16 @@ public class Blues : Character {
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
-		if (!player.isAI && shieldHP > 0 && /* grounded && vel.y >= 0 &&  */shootAnimTime <= 0 && canUseShield()) {
-			if (Options.main.protoShieldHold) {
-				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
-			} else {
-				if (player.input.isWeaponLeftOrRightPressed(player)) {
-					isShieldActive = !isShieldActive;
+		if (!player.isAI && shieldHP > 0 && shootAnimTime <= 0 && canUseShield()) {
+			if (player.input.isWeaponLeftOrRightPressed(player)) {
+				isShieldActive = !isShieldActive;
+			}
+			if (!grounded && lastShieldMode != isShieldActive && isShieldActive) {
+				if (vel.y < 4 * 60) {
+					vel.y = 4 * 60;
 				}
+				changeState(new BluesShieldSwapAir());
+				return true;
 			}
 		}
 		// Change sprite is shield mode changed.
@@ -751,7 +787,7 @@ public class Blues : Character {
 			inCustomShootAnim = true;
 			extraArg = 1;
 		}
-		
+
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
@@ -907,21 +943,17 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.switchDashInput) {
-			return (
-				player.input.isPressed(Control.Jump, player) &&
-				player.input.isHeld(Control.Down, player)
-			);
-		}
 		return player.input.isPressed(Control.Dash, player);
 	}
 
 	public bool slideInput() {
-		if (Options.main.switchDashInput) {
-			return player.input.isPressed(Control.Dash, player);
+		if (Options.main.altDashInput) {
+			return (player.input.isPressed(Control.Dash, player) &&
+				player.input.isHeld(Control.Down, player)
+			);
 		}
 		return (
-			player.input.isPressed(Control.Dash, player) &&
+			player.input.isPressed(Control.Jump, player) &&
 			player.input.isHeld(Control.Down, player)
 		);
 	}
@@ -961,10 +993,6 @@ public class Blues : Character {
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
-		// Disable shield on any non DOT damage.
-		if (damage > 0 && !Damager.isDot(projId)) {
-			healShieldHPCooldown = 180;
-		}
 		// Do shield checks only if damage exists and a actor too.
 		if (damage < 0 || actor == null || attacker == null || player.health <= 0) {
 			if (charState is not Hurt { stateFrames: 0 } && player.health > 0) {
@@ -988,11 +1016,14 @@ public class Blues : Character {
 			!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
 		);
-
 		if (projId == (int)BassProjIds.RemoteMineExplosion) {
 			if (shieldActive) {
 				shieldHitFront = true;
 			}
+		}
+		// Disable shield on any non DOT damage.
+		if (shieldHitFront && damage > 0 && !Damager.isDot(projId)) {
+			healShieldHPCooldown = 180;
 		}
 		// Things that apply to both shield variants.
 		if (shieldHitBack || shieldHitFront) {

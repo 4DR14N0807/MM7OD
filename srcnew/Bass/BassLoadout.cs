@@ -30,14 +30,14 @@ public class BassLoadout {
 
 	public static BassLoadout createDefault() {
 		return new BassLoadout() {
-			weapon1 = 0, weapon2 = 1, weapon3 = 2
+			weapon1 = 1, weapon2 = 0, weapon3 = 2
 		};
 	}
 
 	public void validate() {
-		if (weapon1 < 0 || weapon1 > 9) weapon1 = 0;
-		if (weapon2 < 0 || weapon2 > 9) weapon2 = 0;
-		if (weapon3 < 0 || weapon3 > 9) weapon3 = 0;
+		if (weapon1 < 0 || weapon1 > 8) weapon1 = 0;
+		if (weapon2 < 0 || weapon2 > 8) weapon2 = 0;
+		if (weapon3 < 0 || weapon3 > 8) weapon3 = 0;
 
 		if ((weapon1 == weapon2 && weapon1 >= 0) ||
 			(weapon1 == weapon3 && weapon2 >= 0) ||
@@ -46,6 +46,26 @@ public class BassLoadout {
 			weapon2 = 1;
 			weapon3 = 2;
 		}
+	}
+
+	public static BassLoadout createRandom() {
+		List<int> weapons = [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ];
+
+		BassLoadout loadout = new();
+		int targetWeapon = Helpers.randomRange(0, weapons.Count - 1);
+		loadout.weapon1 = weapons[targetWeapon];
+		weapons.RemoveAt(targetWeapon);
+
+		targetWeapon = Helpers.randomRange(0, weapons.Count - 1);
+		loadout.weapon2 = weapons[targetWeapon];
+		weapons.RemoveAt(targetWeapon);
+
+		targetWeapon = Helpers.randomRange(0, weapons.Count - 1);
+		loadout.weapon3 = weapons[targetWeapon];
+		weapons.RemoveAt(targetWeapon);
+
+		loadout.validate();
+		return loadout;
 	}
 }
 

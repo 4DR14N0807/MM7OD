@@ -71,11 +71,9 @@ public class IceWallProj : Projectile, IDamagable {
 	) {
 		projId = (int)BassProjIds.IceWall;
 		damager.damage = 1;
-		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 140;
 
 		fadeSprite = "ice_wall_fade";
-		fadeSound = "freezebreak2";
 		fadeOnAutoDestroy = true;
 		useGravity = true;
 		canBeLocal = false;

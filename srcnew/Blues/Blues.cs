@@ -167,9 +167,9 @@ public class Blues : Character {
 				jumpSpeed = 5.125f * 60;
 			}
 		}
-		else if (isShieldActive) {
+		/* else if (isShieldActive) {
 			jumpSpeed = 5.25f * 60;
-		}
+		} */
 		return jumpSpeed * getJumpModifier();
 	}
 
@@ -591,13 +591,6 @@ public class Blues : Character {
 		if (!player.isAI && shieldHP > 0 && shootAnimTime <= 0 && canUseShield()) {
 			if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
-			}
-			if (!grounded && lastShieldMode != isShieldActive && isShieldActive) {
-				if (vel.y < 4 * 60) {
-					vel.y = 4 * 60;
-				}
-				changeState(new BluesShieldSwapAir());
-				return true;
 			}
 		}
 		// Change sprite is shield mode changed.

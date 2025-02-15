@@ -7,6 +7,7 @@ namespace MMXOnline;
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public static  List<MagicCardProj> cardsOnField = new();
+	public int cards;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -15,7 +16,6 @@ public class MagicCard : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 20;
-		isStream = true;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -35,10 +35,11 @@ public class MagicCard : Weapon {
 		}
 
 		int effect = 0;
-		cardCount--;
+		cards++;
 
-		if (cardCount < 0 || Helpers.randomRange(0, 8) == 4) {
-			cardCount += 4;
+		if (cards >= 7) {
+			cards = 0;
+			addAmmo(-3, player);
 			bass.playSound("upgrade");
 			effect = Helpers.randomRange(1,4);
 			// 0: No effect.
@@ -49,12 +50,8 @@ public class MagicCard : Weapon {
 
 			bass.showNumberTime = 60;
 			bass.lastCardNumber = effect;
+		
 		}
-
-		if (effect >= 3) {
-			addAmmo(2, player);
-		}
-
 		if (effect >= 4) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
 				shootAngle, player.getNextActorNetId(), true);
@@ -82,8 +79,6 @@ public class MagicCardProj : Projectile {
 	float startAngle;
 	Actor ownChr = null!;
 	private Point returnPos;
-	bool duplicated;
-	int originalDir;
 
 	public MagicCardProj(
 		Actor owner, Weapon weapon, Point pos, int xDir, float byteAngle,
@@ -94,7 +89,6 @@ public class MagicCardProj : Projectile {
 		projId = (int)BassProjIds.MagicCard;
 		maxTime = 3f;
 		maxReverseTime = 0.45f;
-		originalDir = xDir;
 
 		this.byteAngle = byteAngle;
 		startAngle = byteAngle;
@@ -161,7 +155,7 @@ public class MagicCardProj : Projectile {
 			move(speed);
 			byteAngle = speed.byteAngle;
 
-			if (pos.distanceTo(returnPos) < 24 || effect == 2) {
+			if (pos.distanceTo(returnPos) < 24) {
 				foreach (Weapon w in shooter.weapons) {
 					if (w == wep) {
 						w.addAmmo(getAmmo(), shooter.player);
@@ -206,13 +200,13 @@ public class MagicCardProj : Projectile {
 		}
 
 		if (effect == 2) {
-			if (!duplicated && other.gameObject is Projectile proj &&
-				proj.owner.alliance != damager.owner.alliance
-			) {
-				duplicated = true;
-				new MagicCardSpecialProj(
-					ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
-				);
+			var proj = other.gameObject as Projectile;
+			
+			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
+				destroySelf();
+
+				new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, 1, true);
+				new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
 				playSound("magiccard", true);
 			}
 		}
@@ -322,7 +316,7 @@ public class MagicCardSpecialProj : Projectile {
 		projId = (int)BassProjIds.MagicCardS;
 		maxTime = 3;
 		this.type = type;
-		base.byteAngle = startAngle;
+		base.byteAngle = (type * 10 ) + startAngle;
 		if (xDir < 0 && startAngle != 128) byteAngle = -byteAngle + 128;
 		vel = Point.createFromByteAngle(byteAngle.Value).times(speed);
 		damager.damage = 1;

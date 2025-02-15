@@ -2836,19 +2836,17 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual void addAmmo(float amount) {
-		player.weapon?.addAmmoHeal(amount);
+		currentWeapon?.addAmmoHeal(amount);
 	}
 
 	public virtual void addPercentAmmo(float amount) {
-		player.weapon?.addAmmoPercentHeal(amount);
+		currentWeapon?.addAmmoPercentHeal(amount);
 	}
 
 	public virtual void addWTankAddAmmo(float amount) {
 		//player.weapons?[weaponSlot].addAmmoHeal(amount);
-		foreach (var weapon in player.weapons) {
-			if (weapon is not RockBuster &&
-				weapon is not BassBuster
-			) {
+		foreach (var weapon in weapons) {
+			if (weapon.canHealAmmo) {
 				weapon?.addAmmoPercentHeal(amount);
 			}
 		}

@@ -9,7 +9,7 @@ public class NeedleCannon : Weapon {
 		// Tecnical data.
 		index = (int)BluesWeaponIds.NeedleCannon;
 		fireRate = 6;
-		defaultAmmoUse = 0.7f;
+		defaultAmmoUse = 0.65f;
 
 		// Display data.
 		displayName = "NEEDLE CANNON";
@@ -18,7 +18,7 @@ public class NeedleCannon : Weapon {
 		// Auto-calculation for ammo per second text.
 		decimal ammoUseDec = Decimal.Parse(defaultAmmoUse.ToString());
 		decimal chps = ammoUseDec * (60m / (decimal)fireRate);
-		string chpsString = Math.Ceiling(chps).ToString("#");
+		string chpsString = chps.ToString("#.#");
 
 		// Ammo use text.
 		ammoUseText = chpsString + " per second";
@@ -44,7 +44,7 @@ public class NeedleCannon : Weapon {
 			ownerActor = blues
 		};
 		blues.playSound("buster");
-		blues.xPushVel = 60 * -xDir;
+		blues.xPushVel = 90 * -xDir;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

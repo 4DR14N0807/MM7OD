@@ -245,6 +245,7 @@ public class StrikeAttackPushProj : Projectile {
 			pushPower = 150;
 			flinchPower = Global.halfFlinch;
 			projId = (int)BluesProjIds.ProtoLandPush;
+			zIndex = ZIndex.Backwall + 10000;
 		}
 	}
 

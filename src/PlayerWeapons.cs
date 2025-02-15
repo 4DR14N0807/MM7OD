@@ -84,12 +84,14 @@ public partial class Player {
 
 		if (isGridModeEnabled() && character.weapons.Count > 1) {
 			if (input.isWeaponLeftOrRightHeld(this)) {
+				gridModePos.x = 0;
+				gridModePos.y = 0;
 				gridModeHeld = true;
-				if (input.isPressedMenu(Control.Up)) gridModePos.y--;
-				else if (input.isPressedMenu(Control.Down)) gridModePos.y++;
+				if (input.isHeldMenu(Control.Up)) gridModePos.y--;
+				else if (input.isHeldMenu(Control.Down)) gridModePos.y++;
 
-				if (input.isPressedMenu(Control.Left)) gridModePos.x--;
-				else if (input.isPressedMenu(Control.Right)) gridModePos.x++;
+				if (input.isHeldMenu(Control.Left)) gridModePos.x--;
+				else if (input.isHeldMenu(Control.Right)) gridModePos.x++;
 
 				if (gridModePos.y < -1) gridModePos.y = -1;
 				if (gridModePos.y > 1) gridModePos.y = 1;
@@ -245,7 +247,6 @@ public partial class Player {
 
 	public void weaponLeft() {
 		int ws = weaponSlot - 1;
-label:
 		if (ws < 0) {
 			ws = weapons.Count - 1;
 			if (shouldBlockMechSlotScroll() && isVile && weapons.ElementAtOrDefault(ws) is MechMenuWeapon) {
@@ -253,26 +254,17 @@ label:
 				if (ws < 0) ws = 0;
 			}
 		}
-		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is HyperNovaStrike && Options.main.novaStrikeSpecial)) {
-			ws--;
-			goto label;
-		}
 		changeWeaponSlot(ws);
 	}
 
 	public void weaponRight() {
 		int ws = weaponSlot + 1;
-label:
 		int max = weapons.Count;
 		if (shouldBlockMechSlotScroll() && isVile && weapons.ElementAtOrDefault(max - 1) is MechMenuWeapon) {
 			max--;
 		}
 		if (ws >= max) {
 			ws = 0;
-		}
-		if ((weapons.ElementAtOrDefault(ws) is RushWeapon && Options.main.rushSpecial) || (weapons.ElementAtOrDefault(ws) is HyperNovaStrike && Options.main.novaStrikeSpecial)) {
-			ws++;
-			goto label;
 		}
 		changeWeaponSlot(ws);
 	}

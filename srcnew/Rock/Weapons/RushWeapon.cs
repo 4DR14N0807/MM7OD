@@ -11,7 +11,7 @@ public class RushWeapon : Weapon {
 		maxAmmo = 28;
 		ammo = maxAmmo;
 		weaponSlotIndex = (int)RockWeaponSlotIds.RushSearch;
-		displayName = "";
+		displayName = "Rush";
 		hasCustomAnim = true;
 	}
 	public override float getAmmoUsage(int chargeLevel) {

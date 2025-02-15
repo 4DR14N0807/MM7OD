@@ -600,7 +600,7 @@ public partial class Player {
 			}
 			return Global.level.server.customMatchSettings.sameCharNum;
 		}
-		return 4;
+		return -1;
 	}
 
 	public Player(
@@ -614,7 +614,7 @@ public partial class Player {
 		newAlliance = alliance;
 		this.isAI = isAI;
 
-		if (getSameCharNum() != 4) charNum = getSameCharNum();
+		if (getSameCharNum() != -1) charNum = getSameCharNum();
 		if (charNum >= 210) {
 			if (Global.level.is1v1()) {
 				maverick1v1 = charNum - 210;

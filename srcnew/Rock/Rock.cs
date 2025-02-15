@@ -30,6 +30,7 @@ public class Rock : Character {
 	public bool isSlideColliding;
 	public Rush? rush;
 	public RushWeapon rushWeapon;
+	public bool rushWeaponSpecial;
 	public int rushWeaponIndex;
 	public int RushSearchCost = 5;
 	public bool hasSuperAdaptor;
@@ -57,7 +58,10 @@ public class Rock : Character {
 		charge2Time = 105;
 
 		rushWeapon = new RushWeapon();
-		weapons.Add(rushWeapon);
+		rushWeaponSpecial = Options.main.rushSpecial || player.isAI;
+		if (!rushWeaponSpecial) {
+			weapons.Add(rushWeapon);
+		}
 
 		noiseCrushEffect = new ChargeEffect();
 		noiseCrushEffect.character = this;
@@ -73,6 +77,10 @@ public class Rock : Character {
 		Helpers.decrementFrames(ref legBreakerCooldown);
 		Helpers.decrementFrames(ref weaponCooldown);
 		armless = saRocketPunchProj != null;
+		if (rushWeaponSpecial) {
+			rushWeapon.update();
+			rushWeapon.charLinkedUpdate(this, true);
+		}
 
 		timeSinceLastShoot++;
 		if (timeSinceLastShoot >= 30) lemons = 0;
@@ -126,11 +134,17 @@ public class Rock : Character {
 	}
 
 	public override bool normalCtrl() {
-		bool slidePressed = player.dashPressed(out string slideControl);
+		bool slidePressed = player.input.isPressed(Control.Dash, player);
+		if (!slidePressed && Options.main.downJumpSlide) {
+			slidePressed = (
+				player.input.isPressed(Control.Jump, player) && 
+				player.input.isHeld(Control.Down, player)
+			);
+		}
 		bool jumpPressed = player.input.isPressed(Control.Jump, player);
 
 		if (slidePressed && canSlide() && charState is not Slide) {
-			changeState(new Slide(slideControl), true);
+			changeState(new Slide(Control.Dash), true);
 			return true;
 		}
 
@@ -410,14 +424,43 @@ public class Rock : Character {
 
 	public override bool canAddAmmo() {
 		if (player.weapon == null) { return false; }
-		bool hasEmptyAmmo = false;
-		foreach (Weapon weapon in player.weapons) {
-			if (weapon.canHealAmmo && weapon.ammo < weapon.maxAmmo) {
-				hasEmptyAmmo = true;
-				break;
+		return getRefillTargetWeapon() != null;
+	}
+
+	public override void addPercentAmmo(float amount) {
+		Weapon? targetWeapon = getRefillTargetWeapon();
+		if (targetWeapon == null) {
+			return;
+		}
+		if (ownedByLocalPlayer && targetWeapon != currentWeapon && targetWeapon is not RushWeapon) {
+			playSound("heal");
+		}
+		targetWeapon.addAmmoPercentHeal(amount);
+	}
+
+	public Weapon? getRefillTargetWeapon() {
+		if (currentWeapon.canHealAmmo && currentWeapon.ammo < currentWeapon.maxAmmo) {
+			return player.weapon;
+		}
+		if (rushWeapon.ammo < rushWeapon.maxAmmo) {
+			return rushWeapon;
+		}
+		Weapon? targetWeapon = null;
+		float targetAmmo = Int32.MaxValue;
+
+		foreach (Weapon weapon in weapons) {
+			if (!weapon.canHealAmmo) {
+				continue;
+			}
+			if (weapon != currentWeapon &&
+				weapon.ammo < weapon.maxAmmo &&
+				weapon.ammo < targetAmmo
+			) {
+				targetWeapon = weapon;
+				targetAmmo = targetWeapon.ammo;
 			}
 		}
-		return hasEmptyAmmo;
+		return targetWeapon;
 	}
 
 	public override int getMaxChargeLevel() {
@@ -654,12 +697,20 @@ public class Rock : Character {
 
 
 	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
-		base.renderBuffs(offset, position);
 		int drawDir = 1;
 		if (position == GameMode.HUDHealthPosition.Right) {
 			drawDir = -1;
 		}
 		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+
+		if (rushWeaponSpecial && !boughtSuperAdaptorOnce) {
+			drawBuffAlt(
+				drawPos, rushWeapon.ammo / rushWeapon.maxAmmo,
+				"hud_weapon_icon", 11
+			);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
 
 		if (boughtSuperAdaptorOnce) {
 			drawBuff(
@@ -675,6 +726,8 @@ public class Rock : Character {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
+
+		base.renderBuffs(offset, position);
 	}
 
 

@@ -700,6 +700,45 @@ public class OptionsMenu : IMainMenu {
 			};
 		} else if (charNum == (int)CharIds.Rock) {
 			menuOptions = new List<MenuOption>() {
+				//Grid Mode
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.downJumpSlide);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText, "Down+Jump slide:".ToUpper(),
+ 							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.downJumpSlide),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Allows to slide using.\n" +
+					"Down+Jump like NES games."
+				),
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.rushSpecial);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"SPECIAL KEY RUSH:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.rushSpecial),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Allows to call Rush by pressing SPECIAL,\n" +
+					"but you lose the ability to switch to it."
+				),
 				// Random Loadout
 				new MenuOption(
 					30, startY,
@@ -710,12 +749,12 @@ public class OptionsMenu : IMainMenu {
 						Fonts.drawText(
 							optionFontText,
 							"USE RANDOM LOADOUT:",
-							pos.x, pos.y
+							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 
 						Fonts.drawText(
 							optionFontValue, Helpers.boolYesNo(Options.main.useRandomRockLoadout),
-							pos.x + 200, pos.y
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
 					"Generates a random loadout when respawning."
@@ -740,69 +779,28 @@ public class OptionsMenu : IMainMenu {
 					"For weapon switch in certain or all modes.\n" +
 					"Hold WEAPON L/R and use a directon to switch weapon."
 				),
-
-				new MenuOption(
-					30, startY,
-					() => {
-						Helpers.menuLeftRightBool(ref Options.main.rushSpecial);
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText,
-							"SPECIAL KEY RUSH:",
-							pos.x, pos.y
-						);
-
-						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.rushSpecial),
-							pos.x + 200, pos.y
-						);
-					},
-					"Allows to call Rush by pressing SPECIAL,\n" +
-					"but you lose the ability to switch to it."
-				),
 			};
 		} else if (charNum == (int)CharIds.Blues) {
 			menuOptions = new List<MenuOption>() {
-				// Shield Toggle/Hold
-				new MenuOption(
-					30, startY,
-					() => {
-						Helpers.menuLeftRightBool(ref Options.main.protoShieldHold);
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText,
-							"SHIELD BEHAVIOUR:",
-							pos.x, pos.y
-						);
-
-						Fonts.drawText(
-							optionFontValue, Options.main.protoShieldHold ? "HOLD" : "TOGGLE",
-							pos.x + 200, pos.y
-						);
-					},
-					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
-				),
 				//Switch Shield Dash input.
 				new MenuOption(
 					30, startY,
 					() => {
-						Helpers.menuLeftRightBool(ref Options.main.altDashInput);
+						Helpers.menuLeftRightBool(ref Options.main.altSlideInput);
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
 							optionFontText,
-							"SWITCH DASH INPUT:",
-							pos.x, pos.y
+							"ALT SLIDE INPUT:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 
 						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.altDashInput),
-							pos.x + 200, pos.y
+							optionFontValue, Helpers.boolYesNo(Options.main.altSlideInput),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
-					"If enabled, you will use shield dash with \n" + "slide input and viceversa."
+					"If enabled, you will use shield dash with \n" + "the dash button."
 				),
 				new MenuOption(
 					30, startY,
@@ -813,12 +811,12 @@ public class OptionsMenu : IMainMenu {
 						Fonts.drawText(
 							optionFontText,
 							"CORE HEAT DISPLAY:",
-							pos.x, pos.y
+							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 
 						Fonts.drawText(
 							optionFontValue, coreHeatStr(Options.main.coreHeatDisplay),
-							pos.x + 200, pos.y
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					}
 				)
@@ -834,12 +832,12 @@ public class OptionsMenu : IMainMenu {
 						Fonts.drawText(
 							optionFontText,
 							"USE RANDOM LOADOUT:",
-							pos.x, pos.y
+							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 
 						Fonts.drawText(
 							optionFontValue, Helpers.boolYesNo(Options.main.useRandomBassLoadout),
-							pos.x + 200, pos.y
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
 					"Generates a random loadout when respawning."

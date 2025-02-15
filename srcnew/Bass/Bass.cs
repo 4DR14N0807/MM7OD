@@ -51,14 +51,40 @@ public class Bass : Character {
 
 	public override bool canAddAmmo() {
 		if (player.weapon == null) { return false; }
-		bool hasEmptyAmmo = false;
-		foreach (Weapon weapon in player.weapons) {
-			if (weapon.canHealAmmo && weapon.ammo < weapon.maxAmmo) {
-				hasEmptyAmmo = true;
-				break;
+		return getRefillTargetWeapon() != null;
+	}
+
+	public override void addPercentAmmo(float amount) {
+		Weapon? targetWeapon = getRefillTargetWeapon();
+		if (targetWeapon == null) {
+			return;
+		}
+		if (ownedByLocalPlayer && targetWeapon != currentWeapon && targetWeapon is not RushWeapon) {
+			playSound("heal");
+		}
+		targetWeapon.addAmmoPercentHeal(amount);
+	}
+
+	public Weapon? getRefillTargetWeapon() {
+		if (currentWeapon.canHealAmmo && currentWeapon.ammo < currentWeapon.maxAmmo) {
+			return player.weapon;
+		}
+		Weapon? targetWeapon = null;
+		float targetAmmo = Int32.MaxValue;
+
+		foreach (Weapon weapon in weapons) {
+			if (!weapon.canHealAmmo) {
+				continue;
+			}
+			if (weapon != currentWeapon &&
+				weapon.ammo < weapon.maxAmmo &&
+				weapon.ammo < targetAmmo
+			) {
+				targetWeapon = weapon;
+				targetAmmo = targetWeapon.ammo;
 			}
 		}
-		return hasEmptyAmmo;
+		return targetWeapon;
 	}
 
 	public bool canGoSuperBass() {
@@ -334,8 +360,6 @@ public class Bass : Character {
 	public List<Weapon> getLoadout() {
 		if (Global.level.isTraining() && !Global.level.server.useLoadout) {
 			return getAllWeapons();
-		} else if (!Global.level.is1v1() && !Global.level.isTraining() && Options.main.useRandomBassLoadout) {
-			return getRandomLoadout();
 		} else if (Global.level.is1v1()) {
 			return getAllWeapons();
 		}

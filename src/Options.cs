@@ -108,14 +108,14 @@ public class Options {
 	public RockLoadout rockLoadout = new RockLoadout();
 	public int gridModeRock;
 	public bool rushSpecial = true;
+	public bool downJumpSlide = true;
 
 	// ProtoMan
 	public bool useRandomBluesLoadout;
 	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;
-	public bool switchDashInput;
 	public int coreHeatDisplay;
-	public bool altDashInput;
+	public bool altSlideInput;
 
 	// Bass
 	public BassLoadout bassLoadout = BassLoadout.createDefault();

@@ -80,9 +80,10 @@ public class SAArrowSlashState : CharState {
 	public override void update() {
 		base.update();
 
-		if (!fired && rock.ownedByLocalPlayer) {
+		if (!fired) {
 			new ArrowSlashProj(rock, rock.getCenterPos(), rock.xDir, player.getNextActorNetId(), true);
 			fired = true;
+			rock.playSound("slash_claw", sendRpc: true);
 		}
 
 		if (rock.isAnimOver()) rock.changeToIdleOrFall();

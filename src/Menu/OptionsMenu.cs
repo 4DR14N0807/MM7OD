@@ -759,7 +759,6 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Generates a random loadout when respawning."
 				),
-
 				//Grid Mode
 				new MenuOption(
 					30, startY,

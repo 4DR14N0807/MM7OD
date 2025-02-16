@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public static  List<MagicCardProj> cardsOnField = new();
-	public int cards;
+	public int cardCount ;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -16,6 +16,7 @@ public class MagicCard : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 20;
+		isStream = true;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -40,10 +41,10 @@ public class MagicCard : Weapon {
 		}
 
 		int effect = 0;
-		cards++;
+		cardCount--;
 
-		if (cards >= 7) {
-			cards = 0;
+		if (cardCount < 0) {
+			cardCount += 7;
 			addAmmo(-3, player);
 			bass.playSound("upgrade");
 			effect = Helpers.randomRange(1,4);
@@ -52,6 +53,7 @@ public class MagicCard : Weapon {
 			// 2: Duplicate on collision.
 			// 3: Ammo refill.
 			// 4: Multiple Cards.
+			if (effect ==)
 
 			bass.showNumberTime = 60;
 			bass.lastCardNumber = effect;
@@ -71,7 +73,6 @@ public class MagicCard : Weapon {
 	}
 }
 
-
 public class MagicCardProj : Projectile {
 	bool reversed;
 	Character? shooter;
@@ -84,6 +85,7 @@ public class MagicCardProj : Projectile {
 	float startAngle;
 	Actor ownChr = null!;
 	private Point returnPos;
+	bool duplicated;
 
 	public MagicCardProj(
 		Actor owner, Weapon weapon, Point pos, int xDir, float byteAngle,
@@ -144,10 +146,8 @@ public class MagicCardProj : Projectile {
 			vel = new Point(0, 0);
 			frameSpeed = -2;
 			if (frameIndex == 0) frameIndex = sprite.totalFrameNum - 1;
-
-			
 			returnPos = shooter.getCenterPos();
-			
+
 			if (shooter.sprite.name.Contains("shoot")) {
 				Point poi = shooter.pos;
 				var pois = shooter.sprite.getCurrentFrame()?.POIs;
@@ -197,17 +197,12 @@ public class MagicCardProj : Projectile {
 			}
 			destroySelf();
 		}
-
-		if (effect == 2) {
+		if (effect == 2 && !duplicated) {
 			var proj = other.gameObject as Projectile;
-			
 			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
 				destroySelf();
-
-				new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, 1, true);
-				new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
-				playSound("magiccard", true);
 			}
+			duplicated = true;
 		}
 	}
 
@@ -232,8 +227,10 @@ public class MagicCardProj : Projectile {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
 		if (effect == 2 && !duplicated) {
-			new MagicCardSpecialProj(ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
+			new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, 1, true);
+			new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
 			playSound("magiccard", true);
+			duplicated = true;
 		}
 	}
 

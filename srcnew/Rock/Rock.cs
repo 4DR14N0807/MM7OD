@@ -58,7 +58,7 @@ public class Rock : Character {
 		charge2Time = 105;
 
 		rushWeapon = new RushWeapon();
-		rushWeaponSpecial = Options.main.rushSpecial || player.isAI;
+		rushWeaponSpecial = !ownedByLocalPlayer || Options.main.rushSpecial || player.isAI;
 		if (!rushWeaponSpecial) {
 			weapons.Add(rushWeapon);
 		}
@@ -166,7 +166,7 @@ public class Rock : Character {
 		bool slidePressed = player.dashPressed(out string slideControl);
 		bool arrowSlashInput = player.input.checkHadoken(player, xDir, Control.Shoot);
 
-		if (specialPressed && canCallRush(0) && Options.main.rushSpecial) {
+		if (specialPressed && canCallRush(0) && rushWeaponSpecial) {
 			rushWeapon.shoot(this, 0);
 			return true;
 		}

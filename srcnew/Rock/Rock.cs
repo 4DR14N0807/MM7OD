@@ -328,7 +328,6 @@ public class Rock : Character {
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (charState is LegBreakerState) return false;
-		if (isBurnState) return false;
 		if (rootTime > 0) return false;
 		return true;
 	}
@@ -703,6 +702,10 @@ public class Rock : Character {
 		}
 		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
 
+		if (Global.level.mainPlayer != player) {
+			base.renderBuffs(offset, position);
+			return;
+		}
 		if (rushWeaponSpecial && !boughtSuperAdaptorOnce) {
 			drawBuffAlt(
 				drawPos, rushWeapon.ammo / rushWeapon.maxAmmo,

@@ -477,9 +477,6 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) {
 			return false;
 		}
-		/* if (this is Vile vile && vile.isShootingLongshotGizmo) {
-			return false;
-		} */
 		if (isDWrapped) return false;
 
 		return true;
@@ -547,10 +544,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canClimbLadder() {
-		if (rideArmorPlatform != null) {
-			return false;
-		}
-		if (shootAnimTime > 0 || isSoftLocked()) {
+		if (rideArmorPlatform != null || isSoftLocked()) {
 			return false;
 		}
 		if (isDWrapped || rootTime > 0) return false;
@@ -1526,7 +1520,7 @@ public partial class Character : Actor, IDamagable {
 		changeState(new Burning(-xDir, attacker), true);
 		// Hud stuff.
 		burnInvulnTime = 120 + 15;
-		buffList.Add(new Buff("hud_debuffs", 0, false, 120 + 15, 120 + 15));
+		buffList.Add(new Buff("hud_debuffs", 3, false, 120 + 15, 120 + 15));
 	}
 
 	public void root(float time, float cooldown, int playerid) {
@@ -1600,11 +1594,6 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-
-	public bool canDWrap() {
-		if (isDWrapped) return false;
-		return true;
-	}
 
 	public virtual void chargeGfx() {
 		if (ownedByLocalPlayer) {
@@ -3003,6 +2992,7 @@ public partial class Character : Actor, IDamagable {
 	public DWrapBigBubble? bigBubble;
 
 	public void addBubble(Player attacker) {
+		if (isSlowImmune() || isStunImmune()) return;
 		if (!ownedByLocalPlayer || dwrapInvulnTime > 0) return;
 		if (bigBubble != null) return;
 
@@ -3010,7 +3000,7 @@ public partial class Character : Actor, IDamagable {
 		//dWrappedTime = Global.spf;
 		dWrapDamager = damager;
 		bigBubble = new DWrapBigBubble(pos, player, xDir,
-			player.getNextActorNetId(), true, true);
+		player.getNextActorNetId(), true, true);
 		dwrapStart();
 		//changeState(new DWrapped(true))
 		//bubbleAnim = new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, player.getNextActorNetId(), true, true);

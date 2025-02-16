@@ -109,19 +109,19 @@ public class Blues : Character {
 		float runSpeed = Physics.WalkSpeed;
 		if (overdrive) {
 			if (isShieldActive) {
-				runSpeed *= 0.55f;
+				runSpeed *= 0.825f * 60;
 			} else {
-				runSpeed *= 0.8f;
+				runSpeed *= 1.2f * 60;
 			}
 		}
 		else if (overheating) {
-			runSpeed *= 0.5f;
+			runSpeed = 0.75f * 60;
 			if (isShieldActive) {
-				runSpeed *= 0.9375f;
+				runSpeed = 1.4f * 60;
 			}
 		}
 		else if (isShieldActive) {
-			runSpeed *= 0.75f;
+			runSpeed = 1.125f * 60;
 		}
 		return runSpeed * getRunDebuffs();
 	}
@@ -141,9 +141,9 @@ public class Blues : Character {
 	}
 
 	public float getSlideSpeed() {
-		float runSpeed = 3f * 60;
+		float runSpeed = 3 * 60;
 		if (overheating) {
-			runSpeed *= 0.5f;
+			runSpeed = 1.5f * 60;
 		}
 		return runSpeed * getRunDebuffs();
 	}
@@ -596,7 +596,10 @@ public class Blues : Character {
 				if (vel.y < 0 && isShieldActive) {
 					vel.y *= 0.25f;
 				}
-				if (!grounded && lastShieldMode != isShieldActive && player.input.isHeld(Control.Down, player)) {
+				if (!grounded && lastShieldMode != isShieldActive &&
+					player.input.isHeld(Control.Down, player) &&
+					isBreakMan
+				) {
 					if (vel.y < 4 * 60) {
 						vel.y = 4 * 60;
 					}

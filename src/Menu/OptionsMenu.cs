@@ -781,6 +781,26 @@ public class OptionsMenu : IMainMenu {
 			};
 		} else if (charNum == (int)CharIds.Blues) {
 			menuOptions = new List<MenuOption>() {
+				// Shield Toggle/Hold
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.protoShieldHold);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"SHIELD BEHAVIOUR:",
+							pos.x, pos.y
+						);
+
+						Fonts.drawText(
+							optionFontValue, Options.main.protoShieldHold ? "HOLD" : "TOGGLE",
+							pos.x + 200, pos.y
+						);
+					},
+					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
+				),
 				//Switch Shield Dash input.
 				new MenuOption(
 					30, startY,

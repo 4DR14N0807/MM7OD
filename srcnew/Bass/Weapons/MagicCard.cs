@@ -6,8 +6,8 @@ namespace MMXOnline;
 
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
-	public static  List<MagicCardProj> cardsOnField = new();
-	public int cardCount ;
+	public List<MagicCardProj> cardsOnField = new();
+	public int cardCount;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -27,16 +27,17 @@ public class MagicCard : Weapon {
 		Point shootPos = character.getShootPos();
 		float shootAngle = bass.getShootAngle(true, false);
 		Player player = character.player;
+
+		for (int i = cardsOnField.Count - 1; i >= 0; i--) {
+			if (cardsOnField[i].destroyed) {
+				cardsOnField.RemoveAt(i);
+			}
+		}
 		
 		if (shootAngle is 0 or 128) {
-			int offset = 12;
-			for (int i = cardsOnField.Count - 1; i >= 0; i--) {
-				if (cardsOnField[i].destroyed) {
-					cardsOnField.RemoveAt(i);
-				}
-			}
+			int offset = 8;
 			int offset2 = Math.Min(cardsOnField.Count * offset, 2 * offset);
-
+			
 			shootPos = shootPos.addxy(0, offset - offset2);
 		}
 
@@ -45,7 +46,7 @@ public class MagicCard : Weapon {
 
 		if (cardCount < 0) {
 			cardCount += 7;
-			addAmmo(-3, player);
+			addAmmo(-2, player);
 			bass.playSound("upgrade");
 			effect = Helpers.randomRange(1,4);
 			// 0: No effect.
@@ -53,7 +54,6 @@ public class MagicCard : Weapon {
 			// 2: Duplicate on collision.
 			// 3: Ammo refill.
 			// 4: Multiple Cards.
-			if (effect ==)
 
 			bass.showNumberTime = 60;
 			bass.lastCardNumber = effect;
@@ -215,7 +215,6 @@ public class MagicCardProj : Projectile {
 			) {
 				if (damagable is not Character chr) return;
 				else {
-
 					hits++;
 					if (hits >= 4) destroySelf();
 				}
@@ -225,12 +224,9 @@ public class MagicCardProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-		if (effect == 2 && !duplicated) {
-			new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, 1, true);
-			new MagicCardSpecialProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
-			playSound("magiccard", true);
-			duplicated = true;
+		if (pickup != null) {
+			pickup.useGravity = true;
+			pickup.collider.isTrigger = false;
 		}
 	}
 

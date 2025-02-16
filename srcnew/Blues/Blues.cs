@@ -582,14 +582,15 @@ public class Blues : Character {
 
 	public override bool normalCtrl() {
 		//For getting the slide and shield dash input
-		bool shieldDash = shieldDashInput();
 		bool slide = slideInput();
+		bool shieldDash = shieldDashInput();
 
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
 		if (!player.isAI && shieldHP > 0 && shootAnimTime <= 0 && canUseShield()) {
-			if (player.input.isWeaponLeftOrRightPressed(player)) {
+			if (Options.main.protoShieldHold) isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
+			else if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
 			}
 			if (lastShieldMode != isShieldActive) {
@@ -633,15 +634,16 @@ public class Blues : Character {
 				}
 			}
 		}
-		if (slide && canSlide())  {
-			changeState(new BluesSlide(), true);
-			return true;
-		}
 		if (shieldDash && canShieldDash()) {
 			addCoreAmmo(2);
 			changeState(new ShieldDash(), true);
 			return true;
 		}
+		if (slide && canSlide())  {
+			changeState(new BluesSlide(), true);
+			return true;
+		}
+		
 		return base.normalCtrl();
 	}
 
@@ -951,17 +953,23 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		return player.input.isPressed(Control.Dash, player);
+		if (Options.main.altSlideInput) {
+			return (
+				player.input.isPressed(Control.Dash, player) &&
+				player.input.isHeld(Control.Down, player)
+			);
+		}
+		return player.input.isPressed(Control.Dash, player) &&
+			!player.input.isHeld(Control.Down, player);
 	}
 
 	public bool slideInput() {
 		if (Options.main.altSlideInput) {
-			return (player.input.isPressed(Control.Dash, player) &&
-				player.input.isHeld(Control.Down, player)
-			);
+			return player.input.isPressed(Control.Dash, player) &&
+				!player.input.isHeld(Control.Down, player);
 		}
 		return (
-			player.input.isPressed(Control.Jump, player) &&
+			player.input.isPressed(Control.Dash, player) &&
 			player.input.isHeld(Control.Down, player)
 		);
 	}

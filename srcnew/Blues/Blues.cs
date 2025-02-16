@@ -109,9 +109,9 @@ public class Blues : Character {
 		float runSpeed = Physics.WalkSpeed;
 		if (overdrive) {
 			if (isShieldActive) {
-				runSpeed *= 0.825f * 60;
+				runSpeed = 0.825f * 60;
 			} else {
-				runSpeed *= 1.2f * 60;
+				runSpeed = 1.2f * 60;
 			}
 		}
 		else if (overheating) {
@@ -600,12 +600,13 @@ public class Blues : Character {
 					vel.y *= 0.625f;
 				}
 				if (!grounded && lastShieldMode != isShieldActive &&
-					player.input.isHeld(Control.Down, player) &&
-					isBreakMan
+					isBreakMan && !overheating &&
+					player.input.isHeld(Control.Down, player)
 				) {
-					if (vel.y < 4 * 60) {
-						vel.y = 4 * 60;
+					if (vel.y < 6 * 60) {
+						vel.y = 6 * 60;
 					}
+					isShieldActive = true;
 					changeState(new BluesShieldSwapAir());
 					return true;
 				}

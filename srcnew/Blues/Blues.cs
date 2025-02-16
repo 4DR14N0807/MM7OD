@@ -102,7 +102,7 @@ public class Blues : Character {
 	}
 
 	public override bool canAddAmmo() {
-		return (coreAmmo > 0 && !overheating);
+		return (coreAmmo > 0 && !overdrive);
 	}
 
 	public override float getRunSpeed() {
@@ -859,11 +859,7 @@ public class Blues : Character {
 		lTankHealShieldAmount = amount;
 	}
 
-	public void stopLTankHeal(bool stopCore = true, bool stopShield = true) {
-		if (stopCore) {
-			lTankCoreHealAmount = 0;
-			lTankCoreHealTime = 0;
-		}
+	public void stopLTankHeal(bool stopShield = true) {
 		if (stopShield) {
 			lTankHealShieldAmount = 0;
 			lTankHealShieldCooldown = 0;
@@ -1076,7 +1072,7 @@ public class Blues : Character {
 		// Shield front block check.
 		if (shieldHitFront && damage > 0) {
 			shieldDamaged = true;
-			stopLTankHeal(false);
+			stopLTankHeal();
 			// 1-2 damage scenario.
 			if (damageReduction > 0 && damage <= 2) {
 				if (damage <= 1) {
@@ -1134,7 +1130,6 @@ public class Blues : Character {
 			}
 		}
 		if (damage > 0) { 
-			stopLTankHeal(stopShield: false);
 			bodyDamaged = true;
 			customDamageDisplayOn = true;
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);

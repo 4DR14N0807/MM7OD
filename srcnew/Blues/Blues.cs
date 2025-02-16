@@ -636,16 +636,15 @@ public class Blues : Character {
 				}
 			}
 		}
+		if (slide && canSlide())  {
+			changeState(new BluesSlide(), true);
+			return true;
+		}
 		if (shieldDash && canShieldDash()) {
 			addCoreAmmo(2);
 			changeState(new ShieldDash(), true);
 			return true;
 		}
-		if (slide && canSlide())  {
-			changeState(new BluesSlide(), true);
-			return true;
-		}
-		
 		return base.normalCtrl();
 	}
 

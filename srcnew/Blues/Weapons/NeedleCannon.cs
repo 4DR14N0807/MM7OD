@@ -44,7 +44,7 @@ public class NeedleCannon : Weapon {
 			ownerActor = blues
 		};
 		blues.playSound("buster");
-		blues.xPushVel = 90 * -xDir;
+		blues.xPushVel = 60 * -xDir;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

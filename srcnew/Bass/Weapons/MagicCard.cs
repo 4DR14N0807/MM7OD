@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
-	public static  List<MagicCardProj> cardsOnField = new();
+	public List<MagicCardProj> cardsOnField = new();
 	public int cards;
 
 	public MagicCard() : base() {
@@ -26,16 +26,17 @@ public class MagicCard : Weapon {
 		Point shootPos = character.getShootPos();
 		float shootAngle = bass.getShootAngle(true, false);
 		Player player = character.player;
+
+		for (int i = cardsOnField.Count - 1; i >= 0; i--) {
+			if (cardsOnField[i].destroyed) {
+				cardsOnField.RemoveAt(i);
+			}
+		}
 		
 		if (shootAngle is 0 or 128) {
-			int offset = 12;
-			for (int i = cardsOnField.Count - 1; i >= 0; i--) {
-				if (cardsOnField[i].destroyed) {
-					cardsOnField.RemoveAt(i);
-				}
-			}
+			int offset = 8;
 			int offset2 = Math.Min(cardsOnField.Count * offset, 2 * offset);
-
+			
 			shootPos = shootPos.addxy(0, offset - offset2);
 		}
 
@@ -230,10 +231,9 @@ public class MagicCardProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-		if (effect == 2 && !duplicated) {
-			new MagicCardSpecialProj(ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true);
-			playSound("magiccard", true);
+		if (pickup != null) {
+			pickup.useGravity = true;
+			pickup.collider.isTrigger = false;
 		}
 	}
 

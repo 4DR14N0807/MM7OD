@@ -399,12 +399,11 @@ public class Burning : CharState {
 
 	public override bool canEnter(Character character) {
 		if (!base.canEnter(character) ||
-			character.burnInvulnTime > 0 ||
+			character.isStunImmune() ||
 			character.isInvulnerable() ||
 			character.charState.stunResistant ||
 			character.grabInvulnTime > 0 ||
 			character.charState.invincible
-			//character.isCCImmune()
 		) {
 			return false;
 		}
@@ -415,7 +414,6 @@ public class Burning : CharState {
 		base.onEnter(oldState);
 		if (!character.ownedByLocalPlayer) return;
 		if (character.vel.y < 0) character.vel.y = 0;
-		character.useGravity = false;
 		character.stopMoving();
 		player.delayETank();
 		player.delayLTank();
@@ -426,7 +424,6 @@ public class Burning : CharState {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
 		character.burnStunStacks = 0;
-		character.useGravity = true;
 		player.delayETank();
 		player.delayLTank();
 		character.isBurnState = false;
@@ -434,7 +431,6 @@ public class Burning : CharState {
 
 	public override void update() {
 		base.update();
-		character.burnInvulnTime = 10;
 		if (!character.ownedByLocalPlayer) return;
 
 		if (burnMoveSpeed != 0) {

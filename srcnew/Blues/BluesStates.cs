@@ -549,9 +549,11 @@ public class BluesRevive : CharState {
 					blues.shieldHP = blues.shieldMaxHP;
 					fullHP = true;
 				}
+			} else {
+				fullHP = true;
 			}
 			// Core.
-			if (blues.coreAmmo != 0) {
+			if (blues.coreAmmo > 0) {
 				blues.coreAmmo = Helpers.clampMin(blues.coreAmmo - 1, 0);
 			}
 			// Overdrive.
@@ -561,6 +563,8 @@ public class BluesRevive : CharState {
 					blues.overdriveAmmo = 20;
 					fullCore = true;
 				}
+			} else {
+				fullCore = true;
 			}
 			blues.playSound("heal", forcePlay: true, sendRpc: true);
 			healTime = 0;

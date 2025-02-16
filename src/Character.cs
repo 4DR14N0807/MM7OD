@@ -417,7 +417,6 @@ public partial class Character : Actor, IDamagable {
 		burningRecoveryCooldown = 0;
 		burnStunStacks += amount;
 		if (burnStunStacks >= Burning.maxStacks) {
-			burnStunStacks = 0;
 			burnStun(attacker);
 		}
 	}
@@ -1519,9 +1518,15 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void burnStun(Player attacker) {
-		if (isBurnState) return;
-
+		if (isBurnState) { return; }
+		if (isStunImmune()) { return; }
+		if (!ownedByLocalPlayer) { return; }
+		// Apply burn state.
+		burnStunStacks = 0;
 		changeState(new Burning(-xDir, attacker), true);
+		// Hud stuff.
+		burnInvulnTime = 120 + 15;
+		buffList.Add(new Buff("hud_debuffs", 0, false, 120 + 15, 120 + 15));
 	}
 
 	public void root(float time, float cooldown, int playerid) {
@@ -2110,9 +2115,7 @@ public partial class Character : Actor, IDamagable {
 		
 		bool drewETankHealing = drawETankHealing();
 		if (!player.isDead) {
-			bool drewStatusProgress = drawStatusProgress();
-
-			if (!drewStatusProgress && !drewETankHealing && dropFlagProgress > 0) {
+			if (!drewETankHealing && dropFlagProgress > 0) {
 				float healthBarInnerWidth = 30;
 
 				float progress = (dropFlagProgress);
@@ -2133,8 +2136,7 @@ public partial class Character : Actor, IDamagable {
 				);
 				deductLabelY(labelCooldownOffY);
 			}
-
-			if (!drewStatusProgress && !drewETankHealing && hyperProgress > 0) {
+			if (!drewETankHealing && hyperProgress > 0) {
 				float healthBarInnerWidth = 30;
 
 				float progress = (hyperProgress);
@@ -2153,60 +2155,6 @@ public partial class Character : Actor, IDamagable {
 					topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1,
 					true, Color.Yellow, 0, ZIndex.HUD - 1
 				);
-				/*Global.sprites["hud_killfeed_weapon"].draw(
-					label, pos.x, pos.y - 6 + currentLabelY, 1, 1, null, 1, 1, 1, ZIndex.HUD
-				);*/
-				deductLabelY(labelCooldownOffY);
-			}
-		}
-		bool drewWTankHealing = drawWTankHealing();
-		if (player.isMainPlayer && !player.isDead) {
-			bool drewStatusProgress = drawStatusProgress();
-
-			if (!drewStatusProgress && !drewWTankHealing && dropFlagProgress > 0) {
-				float ammoBarInnerWidth = 30;
-
-				float progress = (dropFlagProgress);
-				float width = progress * ammoBarInnerWidth;
-
-				getHealthNameOffsets(out bool shieldDrawn, ref progress);
-
-				Point topLeft = new Point(pos.x - 16, pos.y - 5 + currentLabelY);
-				Point botRight = new Point(pos.x + 16, pos.y + currentLabelY);
-
-				DrawWrappers.DrawRect(topLeft.x, topLeft.y, botRight.x, botRight.y, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
-				DrawWrappers.DrawRect(topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1, true, Color.Yellow, 0, ZIndex.HUD - 1);
-
-				Fonts.drawText(
-					FontType.WhiteSmall, "Dropping...",
-					pos.x + 5, pos.y - 15 + currentLabelY,
-					Alignment.Center, true, depth: ZIndex.HUD
-				);
-				deductLabelY(labelCooldownOffY);
-			}
-
-			if (!drewStatusProgress && !drewWTankHealing && hyperProgress > 0) {
-				float ammoBarInnerWidth = 30;
-
-				float progress = (hyperProgress);
-				float width = progress * ammoBarInnerWidth;
-
-				getHealthNameOffsets(out bool shieldDrawn, ref progress);
-
-				Point topLeft = new Point(pos.x - 16, pos.y - 5 + currentLabelY - 2.5f);
-				Point botRight = new Point(pos.x + 16, pos.y + currentLabelY - 2.5f);
-
-				DrawWrappers.DrawRect(
-					topLeft.x, topLeft.y, botRight.x, botRight.y,
-					true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White
-				);
-				DrawWrappers.DrawRect(
-					topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1,
-					true, Color.Yellow, 0, ZIndex.HUD - 1
-				);
-				/*Global.sprites["hud_killfeed_weapon"].draw(
-					label, pos.x, pos.y - 6 + currentLabelY, 1, 1, null, 1, 1, 1, ZIndex.HUD
-				);*/
 				deductLabelY(labelCooldownOffY);
 			}
 		}
@@ -2373,7 +2321,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool drawStatusProgress() {
-		if (!Options.main.showMashProgress || Global.level.mainPlayer.character != this) {
+		if (!Options.main.showMashProgress || Global.level.mainPlayer.character != this || true) {
 			return false;
 		}
 
@@ -2414,7 +2362,7 @@ public partial class Character : Actor, IDamagable {
 		} else if (charState is DarkHoldState darkHoldState) {
 			totalMashTime = DarkHoldState.totalStunTime;
 			statusProgress = darkHoldState.stunTime / totalMashTime;
-		} else if (dWrappedTime > 0) {
+		} else if (dWrappedTime > 0) { 
 			totalMashTime = DWrapped.DWrapMaxTime;
 			statusProgress = dWrapMashTime / totalMashTime;
 		} else if (charState is Burning burning) {

@@ -1377,10 +1377,10 @@ public class Blues : Character {
 		float baseY = hudHealthPosition.y + offset.y + 17;
 
 		int coreAmmoColor = 0;
+		int overdriveColor = 1;
 		if ((overheating || overdrive) && Global.frameCount % 6 >= 3) {
 			coreAmmoColor = 2;
 		}
-
 		if (Options.main.coreHeatDisplay == 1) return;
 
 		GameMode.renderAmmo(
@@ -1389,16 +1389,19 @@ public class Blues : Character {
 		);
 		if (overdrive) {
 			int yPos = MathInt.Ceiling(baseY - 16);
-			int color = 1;
+			overdriveColor = 1;
 			if (Global.frameCount % 6 >= 3) {
-				color = 3;
+				overdriveColor = 3;
 			}
 			float alpha = 1;
 			if (Global.frameCount % 4 >= 2) {
 				alpha = 0.25f;
 			}
 			for (var i = 0; i < overdriveAmmo; i++) {
-				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, alpha);
+				if (alpha < 1 && i > coreAmmo - 1) {
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(coreAmmoColor, baseX, yPos);
+				}
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(overdriveColor, baseX, yPos, alpha);
 				yPos -= 2;
 			}
 		}
@@ -1423,7 +1426,10 @@ public class Blues : Character {
 				if (i < actualUse) {
 					color = filledColor;
 				}
-				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos);
+				if (overdrive && i > coreAmmo - 1) {
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(coreAmmoColor, baseX, yPos);
+				}
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, 0.75f);
 				yPos -= 2;
 			}
 		}

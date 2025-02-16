@@ -632,25 +632,6 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Disables ability to slide by quickly\ntapping LEFT or RIGHT twice."
 				),
-				// Mash progress
-				new MenuOption(
-					30, startY,
-					() => {
-						Helpers.menuLeftRightBool(ref Options.main.showMashProgress);
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText, "SHOW MASH PROGRESS:",
- 							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.showMashProgress),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"When hit by moves that can be mashed out of,\n" +
-					"shows the mash progress above your head."
-				),
 				// Matchmaking Timeout
 				new MenuOption(
 					30, startY,

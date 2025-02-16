@@ -149,7 +149,7 @@ public class TenguBladeProj : Projectile {
 
 		vel.x = 120 * xDir;
 		damager.damage = 2;
-		damager.hitCooldown = 0.75f;
+		damager.hitCooldown = 30f;
 
 		canBeLocal = false;
 

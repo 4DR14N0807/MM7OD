@@ -161,7 +161,7 @@ public class ProtoBusterLv2Proj : Projectile {
 		vel.x = 325 * xDir;
 		damager.damage = 2;
 		damager.flinch = Global.miniFlinch;
-		damager.hitCooldown = 0.5f;
+		damager.hitCooldown = 30;
 
 		if (type == 1) {
 			damager.flinch = Global.halfFlinch;
@@ -199,7 +199,7 @@ public class ProtoBusterLv3Proj : Projectile {
 		vel.x = 325 * xDir;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
-		damager.hitCooldown = 0.5f;
+		damager.hitCooldown = 30f;
 
 		if (type == 1) {
 			damager.flinch = Global.defFlinch;
@@ -235,7 +235,7 @@ public class ProtoBusterLv4Proj : Projectile {
 		vel.x = 325 * xDir;
 		damager.damage = 4;
 		damager.flinch = Global.defFlinch;
-		damager.hitCooldown = 0.5f;
+		damager.hitCooldown = 30f;
 
 		if (type == 1) {
 			damager.flinch = Global.superFlinch;

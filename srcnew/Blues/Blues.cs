@@ -951,7 +951,7 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.altSlideInput) {
+		if (Options.main.altSlideInput && !overdrive) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
 				!player.input.isHeld(Control.Down, player)
@@ -962,8 +962,13 @@ public class Blues : Character {
 
 	public bool slideInput() {
 		if (Options.main.altSlideInput) {
-			return player.input.isPressed(Control.Dash, player) &&
-				player.input.isHeld(Control.Down, player);
+			if (overheating) {
+				return player.input.isPressed(Control.Dash, player);
+			}
+			return (
+				player.input.isPressed(Control.Dash, player) &&
+				player.input.isHeld(Control.Down, player)
+			);
 		}
 		return (
 			player.input.isPressed(Control.Jump, player) &&

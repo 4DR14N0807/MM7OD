@@ -10,6 +10,7 @@ public interface IDamagable {
 	bool canBeHealed(int healerAlliance);
 	void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true);
 	bool isPlayableDamagable();
+	Actor getActor { get; }
 }
 
 public class DamageText {

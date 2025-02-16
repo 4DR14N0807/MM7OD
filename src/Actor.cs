@@ -1851,6 +1851,8 @@ public partial class Actor : GameObject {
 		return Global.level.gravity * gravityModifier * gHoldModifier;
 	}
 
+	public Actor getActor => this;
+
 	public Actor[] getCloseActors(
 		int distance, bool isRequesterAI = false,
 		bool checkWalls = false, bool includeAllies = false

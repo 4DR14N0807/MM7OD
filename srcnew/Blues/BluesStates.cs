@@ -9,7 +9,6 @@ public class BluesShootAlt : CharState {
 	Blues blues = null!;
 
 	public BluesShootAlt(Weapon wep) : base("shoot2") {
-		normalCtrl = false;
 		airMove = true;
 		canStopJump = true;
 		stateWeapon = wep;
@@ -31,12 +30,12 @@ public class BluesShootAlt : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 		bool air = !blues.grounded || blues.vel.y < 0;
 
-		defaultSprite = sprite;
 		landSprite = "shoot2";
+		airSprite = "shoot2_air";
 		if (air) {
 			sprite = "shoot2_air";
-			defaultSprite = sprite;
 		}
+		defaultSprite = sprite;
 		blues.shieldCustomState = blues.isShieldActive;
 		blues.changeSpriteFromName(sprite, true);
 	}
@@ -525,6 +524,7 @@ public class BluesRevive : CharState {
 	float radius = 200;
 	float healTime = -50;
 	bool fullHP;
+	bool fullCore;
 	Blues blues = null!;
 
 	public BluesRevive() : base("revive") {
@@ -536,24 +536,40 @@ public class BluesRevive : CharState {
 		base.update();
 		blues.healShieldHPCooldown = 15;
 		healTime++;
-		if (!fullHP) {
+		if (!fullHP && !fullCore) {
 			character.addRenderEffect(RenderEffectType.Flash, 3, 5);
 			character.move(new Point(0, -10));
 		}
-		if (!fullHP && healTime >= 4) {
+		if (!(fullHP && fullCore) && healTime >= 4) {
+			// Health.
 			if (blues.health < blues.maxHealth) {
 				blues.health = Helpers.clampMax(blues.health + 1, blues.maxHealth);
 			}
-			else {
+			// Shield.
+			else if (blues.shieldHP < blues.shieldMaxHP) {
 				blues.shieldHP++;
 				if (blues.shieldHP >= blues.shieldMaxHP) {
 					blues.shieldHP = blues.shieldMaxHP;
 					fullHP = true;
-					blues.frameSpeed = 1;
+				}
+			}
+			// Core.
+			if (blues.coreAmmo != 0) {
+				blues.coreAmmo = Helpers.clampMin(blues.coreAmmo - 1, 0);
+			}
+			// Overdrive.
+			else if (blues.overdriveAmmo < 20) {
+				blues.overdriveAmmo++;
+				if (blues.overdriveAmmo >= 20) {
+					blues.overdriveAmmo = 20;
+					fullCore = true;
 				}
 			}
 			blues.playSound("heal", forcePlay: true, sendRpc: true);
 			healTime = 0;
+			if (fullHP && fullCore) {
+				blues.frameSpeed = 1;
+			}
 		}
 		if (blues.frameIndex >= 1 && !once) {
 			new GravityHoldProj(
@@ -562,7 +578,7 @@ public class BluesRevive : CharState {
 			);
 			once = true;
 		}
-		if (blues.isAnimOver() && fullHP) {
+		if (blues.isAnimOver() && fullHP && fullCore) {
 			blues.changeToIdleOrFall();
 		}
 	}
@@ -573,12 +589,14 @@ public class BluesRevive : CharState {
 		blues.isBreakMan = true;
 		blues.playSound("whistle", true, true);
 		blues.frameSpeed = 0;
-		blues.overheating = true;
+		blues.overdrive = true;
+		blues.overdriveAmmo = 0;
+		blues.overdriveAmmoDecreaseCooldown = 30;
 	}
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		character.removeRenderEffect(RenderEffectType.Flash);
-		blues.overheating = false;
+		blues.overdrive = true;
 	}
 }

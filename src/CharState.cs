@@ -259,17 +259,16 @@ public class CharState {
 			}
 		} else if (landSprite != "" && character.grounded && !wasGrounded && sprite == airSprite) {
 			character.playSound("land", sendRpc: true);
-			character.landingCode(false);
 			sprite = landSprite;
-			int oldFrameIndex = character.sprite.frameIndex;
-			float oldFrameTime = character.sprite.frameTime;
+			int oldFrameIndex = character.frameIndex;
+			float oldFrameTime = character.frameTime;
 			character.changeSpriteFromName(sprite, false);
 			if (oldFrameIndex < character.sprite.totalFrameNum) {
-				character.sprite.frameIndex = oldFrameIndex;
-				character.sprite.frameTime = oldFrameTime;
+				character.frameIndex = oldFrameIndex;
+				character.frameTime = oldFrameTime;
 			} else {
-				character.sprite.frameIndex = character.sprite.totalFrameNum - 1;
-				character.sprite.frameTime = character.sprite.getCurrentFrame().duration;
+				character.frameIndex = character.sprite.totalFrameNum - 1;
+				character.frameTime = character.sprite.getCurrentFrame().duration;
 			}
 		}
 	}

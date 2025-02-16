@@ -37,7 +37,6 @@ public class SparkShockProj : Projectile {
 	) : base(
 		pos, xDir, owner, "spark_shock_proj", netId, altPlayer
 	) {
-		//todo: improve sparkshock sprites
 		maxTime = 0.75f;
 		projId = (int)BluesProjIds.SparkShock;
 

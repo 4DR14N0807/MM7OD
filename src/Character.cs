@@ -1251,7 +1251,7 @@ public partial class Character : Actor, IDamagable {
 			!grounded && vel.y < 0 &&
 			!player.input.isHeld(Control.Jump, player)
 		) {
-			vel.y = 0;
+			vel.y *= 0.21875f;
 			charState.stoppedJump = true;
 		}
 		if (charState.airMove && !grounded) {

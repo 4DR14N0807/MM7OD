@@ -403,17 +403,19 @@ public class RedStrikeExplosionProj : Projectile {
 
 public class BigBangStrikeStart : CharState {
 	float shieldLossCD = 3;
+	float coreHeatCD = 2;
 	float shootTimer = 120;
 	Blues blues = null!;
 	BigBangStrikeBackwall bgEffect = null!;
 
 	public BigBangStrikeStart() : base("idle_charge") {
 		superArmor = true;
+		stunResistant = true;
+		immuneToWind = true;
 	}
 
 	public override void update() {
 		base.update();
-		blues.coreAmmo = blues.coreMaxAmmo;
 		blues.coreAmmoDecreaseCooldown = 10;
 		blues.healShieldHPCooldown = 180;
 		if (shieldLossCD <= 0 && blues.shieldHP > 0) {
@@ -428,7 +430,14 @@ public class BigBangStrikeStart : CharState {
 		} else {
 			shieldLossCD -= Global.speedMul;
 		}
+		if (coreHeatCD <= 0 && blues.coreAmmo < blues.coreMaxAmmo) {
+			blues.coreAmmo = Helpers.clampMax(blues.coreAmmo + 1, blues.coreMaxAmmo);
+			coreHeatCD = 2;
+		} else {
+			coreHeatCD -= Global.speedMul;
+		}
 		if (shootTimer <= 0) {
+			blues.coreAmmo = blues.coreMaxAmmo;
 			character.changeState(new BigBangStrikeState(), true);
 		}
 		shootTimer -= Global.speedMul;

@@ -61,6 +61,7 @@ public class PowerStoneProj : Projectile {
 		canBeLocal = false;
 
 		damager.damage = 2;
+		damager.flinch = Global.miniFlinch;
 		damager.hitCooldown = 60;
 		
 		origin = pos;
@@ -100,16 +101,10 @@ public class PowerStoneProj : Projectile {
 		radius += 1.25f;
 	}
 
-	public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-		if (!ownedByLocalPlayer) return;
-
-		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
-			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
-				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
-			) {
-				destroySelfNoEffect();
-			}
+	public override void afterDamage(IDamagable damagable, bool wasHit) {
+		if (!ownedByLocalPlayer) { return; }
+		if (wasHit) {
+			destroySelf();
 		}
 	}
 

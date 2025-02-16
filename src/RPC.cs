@@ -375,7 +375,7 @@ public class RPCApplyDamage : RPC {
 		//}
 
 		if (player != null && victim != null) {
-			Damager.applyDamage(
+			bool didHit = Damager.applyDamage(
 				player,
 				damage,
 				hitCooldown,
@@ -388,6 +388,9 @@ public class RPCApplyDamage : RPC {
 				projId,
 				sendRpc: false
 			);
+			if (actor is Projectile proj && victim is IDamagable damagable) {
+				proj.afterDamage(damagable, didHit);
+			}
 		}
 	}
 

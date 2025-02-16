@@ -47,10 +47,14 @@ public class Damager {
 		float newDamage = (overrideDamage != null ? (float)overrideDamage : damage);
 		int newFlinch = (overrideFlinch != null ? (int)overrideFlinch : flinch);
 
-		return applyDamage(
-			owner, newDamage, hitCooldown, newFlinch, victim as Actor,
+		bool didDamage = applyDamage(
+			owner, newDamage, hitCooldown, newFlinch, victim.getActor,
 			weakness, weapon.index, weapon.killFeedIndex, actor, projId, sendRpc
 		);
+		if (didDamage && actor is Projectile proj) {
+			proj.afterDamage(victim, didDamage);
+		}
+		return didDamage;
 	}
 
 	public static bool applyDamage(

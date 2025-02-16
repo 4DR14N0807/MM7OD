@@ -72,7 +72,7 @@ public class HardKnuckleProj : Projectile {
 	public override void update() {
 		base.update();
 		// Max distance check.
-		if (MathF.Abs(pos.x - spawnPointX) > 16 * 6) {
+		if (MathF.Abs(pos.x - spawnPointX) > 16 * 7) {
 			destroySelf();
 		}
 		// Aceleration,

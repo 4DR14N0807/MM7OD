@@ -20,7 +20,7 @@ public class Blues : Character {
 	public float coreMaxAmmo = 28;
 	public float coreAmmo;
 	public float coreAmmoMaxCooldown = 60;
-	public float coreAmmoDamageCooldown = 120;
+	public float coreAmmoDamageCooldown = 60;
 	public float coreAmmoDecreaseCooldown;
 	public bool overheating;
 	public float overheatEffectTime;
@@ -116,8 +116,8 @@ public class Blues : Character {
 		}
 		else if (overheating) {
 			runSpeed = 0.75f * 60;
-			if (isShieldActive) {
-				runSpeed = 1.4f * 60;
+			if (!isShieldActive) {
+				runSpeed = 1.35f * 60;
 			}
 		}
 		else if (isShieldActive) {
@@ -423,6 +423,7 @@ public class Blues : Character {
 				overdriveAmmo = 20;
 			} else {
 				overheating = true;
+				coreAmmoDecreaseCooldown = 60;
 			}
 			starCrash?.destroySelf();
 			delinkStarCrash();
@@ -431,7 +432,7 @@ public class Blues : Character {
 			stopCharge();
 			starCrashOverheat = false;
 		}
-		if (isCharging() && chargeTime <= charge3Time + (overdrive ? 20 : 10)) {
+		if (isCharging() && chargeTime <= charge3Time + (overdrive ? 20 : 10) && !overheating) {
 			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
@@ -452,7 +453,7 @@ public class Blues : Character {
 		}
 
 		bool overdriveLimit = false;
-		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive) {
+		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive && charState is not BluesRevive) {
 			overdriveAmmo--;
 			if (overdriveAmmo <= 0) {
 				overdriveAmmo = 0;
@@ -463,11 +464,12 @@ public class Blues : Character {
 		if (overdrive && (overdriveLimit || overdriveAmmo >= coreMaxAmmo)) {
 			overdrive = false;
 			overheating = true;
+			coreAmmoDecreaseCooldown = 60;
+			overdriveAmmoDecreaseCooldown = 10;
 			setHurt(0, Global.defFlinch, false);
 			xPushVel = -xDir * 4 * 60;
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
-			overdriveAmmoDecreaseCooldown = 10;
 		}
 
 		// L-Tank check.
@@ -576,7 +578,9 @@ public class Blues : Character {
 	}
 
 	public override void onFlinchOrStun(CharState newState) {
-		coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
+		if (!overdrive && !overheating) {
+			coreAmmoDecreaseCooldown = coreAmmoDamageCooldown;
+		}
 		base.onFlinchOrStun(newState);
 	}
 

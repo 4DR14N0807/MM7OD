@@ -605,6 +605,8 @@ public class Projectile : Actor {
 		}
 	}
 
+	public virtual void afterDamage(IDamagable damagable, bool wasHit) { }
+
 	// Can be used in lieu of the on<PROJ>Damage() method
 	// in damager method with caveat that this causes issues
 	// where the actor isn't created yet leading to point blank shots under lag not running this

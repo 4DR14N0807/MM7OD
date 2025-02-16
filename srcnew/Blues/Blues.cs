@@ -167,9 +167,9 @@ public class Blues : Character {
 				jumpSpeed = 5.125f * 60;
 			}
 		}
-		/* else if (isShieldActive) {
+		else if (isShieldActive) {
 			jumpSpeed = 5.25f * 60;
-		} */
+		}
 		return jumpSpeed * getJumpModifier();
 	}
 

@@ -435,7 +435,7 @@ public class Burning : CharState {
 
 		if (burnMoveSpeed != 0) {
 			burnMoveSpeed = Helpers.toZero(burnMoveSpeed, 400 * Global.spf, burnDir);
-			character.move(new Point(burnMoveSpeed, -character.getJumpPower() * 0.125f));
+			character.move(new Point(burnMoveSpeed, 0));
 		}
 
 		if (burnDamageCooldown > 0) burnDamageCooldown--;

@@ -819,7 +819,7 @@ public class OptionsMenu : IMainMenu {
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
-					"If enabled, you will use shield dash with \n" + "the dash button."
+					"If enabled, you will use slide with \n" + "dash+down."
 				),
 				new MenuOption(
 					30, startY,

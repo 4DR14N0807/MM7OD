@@ -1765,11 +1765,8 @@ public class GameMode {
 			}
 		}
 
-		if (weapon is MagicCard magicCard && magicCard.cards != 0) {
-			string text = magicCard.cards.ToString();
-			if (magicCard.cards >= 10) {
-				text = "?";
-			}
+		if (weapon is MagicCard magicCard && magicCard.cardCount != 0) {
+			string text = magicCard.cardCount.ToString();
 			Fonts.drawText(
 				selected ? FontType.GreenSmall : FontType.WhiteSmall,
 				text, x + 8, y, Alignment.Right

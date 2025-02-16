@@ -597,7 +597,7 @@ public class Blues : Character {
 			}
 			if (lastShieldMode != isShieldActive) {
 				if (vel.y < 0 && isShieldActive) {
-					vel.y *= 0.25f;
+					vel.y *= 0.625f;
 				}
 				if (!grounded && lastShieldMode != isShieldActive &&
 					player.input.isHeld(Control.Down, player) &&

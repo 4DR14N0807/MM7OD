@@ -963,7 +963,7 @@ public class Blues : Character {
 	public bool slideInput() {
 		if (Options.main.altSlideInput) {
 			return player.input.isPressed(Control.Dash, player) &&
-			!player.input.isHeld(Control.Down, player);
+				player.input.isHeld(Control.Down, player);
 		}
 		return (
 			player.input.isPressed(Control.Jump, player) &&

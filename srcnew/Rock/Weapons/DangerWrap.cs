@@ -363,7 +363,7 @@ public class DWrapped : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.dwrapStart();
-		character.stopMoving();
+		character.stopMovingWeak();
 		character.grounded = false;
 		character.useGravity = false;
 		Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StartDWrap);

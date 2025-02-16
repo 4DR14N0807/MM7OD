@@ -2899,7 +2899,7 @@ public partial class Character : Actor, IDamagable {
 	public void dwrapStart() {
 		isDWrapped = true;
 		useGravity = false;
-		stopMoving();
+		stopMovingWeak();
 		//changeSpriteFromName("idle", true);
 		//if (globalCollider != null) globalCollider.isClimbable = true;
 		//new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, null, true);
@@ -2909,7 +2909,6 @@ public partial class Character : Actor, IDamagable {
 	public void dwrapEnd() {
 		isDWrapped = false;
 		useGravity = true;
-		stopMoving();
 		playSound("hit");
 	}
 

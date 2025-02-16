@@ -287,6 +287,13 @@ public class Blues : Character {
 	public bool canUseBigBangStrike() {
 		return grounded && overheating;
 	}
+	
+	public bool canUseDropSwap() {
+		return (
+			isBreakMan && !overheating &&
+			rootTime <= 0 && !isDWrapped
+		);
+	}
 
 	public void delinkStarCrash() {
 		starCrash = null;
@@ -634,7 +641,7 @@ public class Blues : Character {
 					}
 				}
 				if (!grounded && lastShieldMode != isShieldActive &&
-					isBreakMan && !overheating &&
+					canUseDropSwap() &&
 					player.input.isHeld(Control.Down, player)
 				) {
 					if (vel.y < 6 * 60) {

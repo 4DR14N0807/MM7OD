@@ -210,7 +210,7 @@ public class ProtoStrikeProj : Projectile {
 }
 
 public class StrikeAttackPushProj : Projectile {
-	float radius = 40;
+	float radius = 45;
 	float pushPower = 200;
 	int flinchPower = Global.defFlinch;
 

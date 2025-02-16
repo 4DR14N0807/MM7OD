@@ -99,7 +99,12 @@ public class BluesShieldSwapAir : CharState {
 		if (inputDir != 0 && blues.canMove()) {
 			blues.move(new Point(inputDir * blues.getRunSpeed() * blues.getRunDebuffs(), 0));
 		}
-		if (blues.grounded) {
+		bool grounded = blues.grounded;
+		if (!blues.useGravity) {
+			blues.move(new Point(0, 240));
+			grounded = Global.level.checkTerrainCollisionOnce(blues, 0, 1) != null;
+		}
+		if (grounded) {
 			blues.shakeCamera();
 			blues.changeState(new BluesShieldSwapLand());
 		}

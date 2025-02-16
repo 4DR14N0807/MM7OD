@@ -592,14 +592,17 @@ public class Blues : Character {
 			if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
 			}
-			if (!grounded && lastShieldMode != isShieldActive && (isShieldActive ||
-				player.input.isHeld(Control.Down, player)
-			)) {
-				if (vel.y < 4 * 60) {
-					vel.y = 4 * 60;
+			if (lastShieldMode != isShieldActive) {
+				if (vel.y < 0 && isShieldActive) {
+					vel.y *= 0.25f;
 				}
-				changeState(new BluesShieldSwapAir());
-				return true;
+				if (!grounded && lastShieldMode != isShieldActive && player.input.isHeld(Control.Down, player)) {
+					if (vel.y < 4 * 60) {
+						vel.y = 4 * 60;
+					}
+					changeState(new BluesShieldSwapAir());
+					return true;
+				}
 			}
 		}
 		// Change sprite is shield mode changed.

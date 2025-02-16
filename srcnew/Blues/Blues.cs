@@ -589,7 +589,9 @@ public class Blues : Character {
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
 		if (!player.isAI && shieldHP > 0 && shootAnimTime <= 0 && canUseShield()) {
-			if (Options.main.protoShieldHold) isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
+			if (Options.main.protoShieldHold) {
+				isShieldActive = !player.input.isWeaponLeftOrRightHeld(player);
+			}
 			else if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
 			}
@@ -952,20 +954,19 @@ public class Blues : Character {
 		if (Options.main.altSlideInput) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
-				player.input.isHeld(Control.Down, player)
+				!player.input.isHeld(Control.Down, player)
 			);
 		}
-		return player.input.isPressed(Control.Dash, player) &&
-			!player.input.isHeld(Control.Down, player);
+		return player.input.isPressed(Control.Dash, player);
 	}
 
 	public bool slideInput() {
 		if (Options.main.altSlideInput) {
 			return player.input.isPressed(Control.Dash, player) &&
-				!player.input.isHeld(Control.Down, player);
+			!player.input.isHeld(Control.Down, player);
 		}
 		return (
-			player.input.isPressed(Control.Dash, player) &&
+			player.input.isPressed(Control.Jump, player) &&
 			player.input.isHeld(Control.Down, player)
 		);
 	}

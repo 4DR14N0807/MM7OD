@@ -47,7 +47,6 @@ public class BluesShootAlt : CharState {
 	}
 }
 
-
 public class BluesShootAltLadder : CharState {
 	Weapon stateWeapon;
 	bool fired;
@@ -153,6 +152,7 @@ public class ShieldDash : CharState {
 	Blues blues = null!;
 
 	public ShieldDash() : base("dash") {
+		normalCtrl = true;
 		accuracy = 10;
 		useGravity = false;
 	}
@@ -185,22 +185,21 @@ public class ShieldDash : CharState {
 			) { vel = new Point(0, -40) };
 			dustTimer = 0;
 		}
-		if (stateTime >= 4 && player.input.isPressed(Control.Jump, player)) {
-			if (blues.grounded) {
+		if (player.input.isPressed(Control.Jump, player)) {
+			if (blues.grounded || blues.canAirJump()) {
 				blues.vel.y = -blues.getJumpPower();
+				if (!blues.grounded) {
+					blues.lastJumpPressedTime = 0;
+					blues.dashedInAir++;
+					new Anim(blues.pos, "double_jump_anim", blues.xDir, player.getNextActorNetId(), true, true);
+				}
+				if (blues.shieldCustomState == false) {
+					blues.isDashing = true;
+				}
 				blues.changeState(new Jump());
-				return;
+			} else {
+				blues.changeToIdleOrFall();
 			}
-			if (blues.canAirJump()) {
-				blues.lastJumpPressedTime = 0;
-				blues.dashedInAir++;
-				new Anim(blues.pos, "double_jump_anim", blues.xDir, player.getNextActorNetId(), true, true);
-				blues.vel.y = -blues.getJumpPower();
-				blues.changeState(new Jump());
-				return;
-			}
-			blues.changeToIdleOrFall();
-			return;
 		}
 	}
 
@@ -209,7 +208,6 @@ public class ShieldDash : CharState {
 		blues.shieldCustomState = blues.isShieldActive;
 		base.onEnter(oldState);
 		initialXDir = character.xDir;
-		character.isDashing = true;
 		character.vel.y = 0;
 	}
 
@@ -280,7 +278,6 @@ public class BluesSlide : CharState {
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
-		//character.stopMovingWeak();
 	}
 }
 

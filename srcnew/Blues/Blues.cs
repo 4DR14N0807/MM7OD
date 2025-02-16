@@ -106,9 +106,10 @@ public class Blues : Character {
 	}
 
 	public override float getRunSpeed() {
+		bool shieldEquipped = isShieldEquipped();
 		float runSpeed = Physics.WalkSpeed;
 		if (overdrive) {
-			if (isShieldActive) {
+			if (shieldEquipped) {
 				runSpeed = 0.825f * 60;
 			} else {
 				runSpeed = 1.2f * 60;
@@ -116,58 +117,75 @@ public class Blues : Character {
 		}
 		else if (overheating) {
 			runSpeed = 0.75f * 60;
-			if (!isShieldActive) {
+			if (!shieldEquipped) {
 				runSpeed = 1.35f * 60;
 			}
 		}
-		else if (isShieldActive) {
+		else if (shieldEquipped) {
 			runSpeed = 1.125f * 60;
 		}
 		return runSpeed * getRunDebuffs();
 	}
 
-	public float getShieldDashSpeed() {
-		float runSpeed = 3.25f * 60;
+	public override float getDashSpeed() {
+		bool shieldEquipped = isShieldEquipped();
+		float dashSpeed = 3f * 60;
 		if (overdrive) {
-			runSpeed = 3f * 60;
-			if (isShieldActive) {
-				runSpeed = 2.5f * 60;
+			dashSpeed = 2.75f * 60;
+			if (shieldEquipped) {
+				dashSpeed = 2.25f * 60;
 			}
 		}
-		else if (isShieldActive) {
-			runSpeed = 2.75f * 60;
+		else if (shieldEquipped) {
+			dashSpeed = 2.5f * 60;
 		}
-		return runSpeed * getRunDebuffs();
+		return dashSpeed * getRunDebuffs();
+	}
+
+	public float getShieldDashSpeed() {
+		bool shieldEquipped = isShieldEquipped();
+		float dashSpeed = 3.25f * 60;
+		if (overdrive) {
+			dashSpeed = 3f * 60;
+			if (shieldEquipped) {
+				dashSpeed = 2.5f * 60;
+			}
+		}
+		else if (shieldEquipped) {
+			dashSpeed = 2.75f * 60;
+		}
+		return dashSpeed * getRunDebuffs();
 	}
 
 	public float getSlideSpeed() {
-		float runSpeed = 3 * 60;
+		float slideSpeed = 3 * 60;
 		if (overheating) {
-			runSpeed = 1.5f * 60;
+			slideSpeed = 1.5f * 60;
 		}
-		return runSpeed * getRunDebuffs();
+		return slideSpeed * getRunDebuffs();
 	}
 
 	public override float getJumpPower() {
 		if (flag != null) {
 			return base.getJumpPower();
 		}
+		bool shieldEquipped = isShieldEquipped();
 		float jumpSpeed = Physics.JumpSpeed;
 		if (overheating) {
-			if (isShieldActive) {
+			if (shieldEquipped) {
 				jumpSpeed = 5 * 60;
 			} else {
 				jumpSpeed = 5.25f * 60;
 			}
 		}
 		else if (overdrive) {
-			if (isShieldActive) {
+			if (shieldEquipped) {
 				jumpSpeed = 4.875f * 60;
 			} else {
 				jumpSpeed = 5.125f * 60;
 			}
 		}
-		else if (isShieldActive) {
+		else if (shieldEquipped) {
 			jumpSpeed = 5.25f * 60;
 		}
 		return jumpSpeed * getJumpModifier();
@@ -233,6 +251,14 @@ public class Blues : Character {
 		);
 	}
 
+
+	public override bool canJump() {
+		if (charState is ShieldDash) {
+			return false;
+		}
+		return base.canJump();
+	}
+
 	public bool canUseShield() {
 		if (shootAnimTime > 0 && !sprite.name.EndsWith("_shield") ||
 			!charState.normalCtrl || charState is Slide ||
@@ -281,10 +307,11 @@ public class Blues : Character {
 			base.changeSprite(spriteName, resetFrame);
 			return;
 		}
-		if (isShieldActive && spriteName == getSprite("idle_shield") && getChargeLevel() >= 2) {
+		bool shieldEquipped = isShieldEquipped();
+		if (shieldEquipped && spriteName == getSprite("idle_shield") && getChargeLevel() >= 2) {
 			spriteName = getSprite("idle_charge_shield");
 		}
-		else if (isShieldActive && Global.sprites.ContainsKey(spriteName + "_shield")) {
+		else if (shieldEquipped && Global.sprites.ContainsKey(spriteName + "_shield")) {
 			spriteName += "_shield";
 		}
 		List<Trail>? trails = sprite.lastFiveTrailDraws;
@@ -600,8 +627,11 @@ public class Blues : Character {
 				isShieldActive = !isShieldActive;
 			}
 			if (lastShieldMode != isShieldActive) {
-				if (vel.y < 0 && isShieldActive) {
-					vel.y *= 0.625f;
+				if (isShieldActive) {
+					isDashing = false;
+					if (vel.y < 0) {
+						vel.y *= 0.625f;
+					}
 				}
 				if (!grounded && lastShieldMode != isShieldActive &&
 					isBreakMan && !overheating &&
@@ -1005,6 +1035,13 @@ public class Blues : Character {
 			(shieldHP > 0 || charState is BigBangStrikeStart)
 		);
 	}
+	
+	public bool isShieldEquipped() {
+		if (!ownedByLocalPlayer) {
+			return isShieldActive;
+		}
+		return (shieldCustomState ?? isShieldActive);
+	}
 
 	public override void applyDamage(
 		float fDamage, Player? attacker, Actor? actor,
@@ -1032,14 +1069,14 @@ public class Blues : Character {
 		bool shieldPierced = false;
 		bool bodyPierced = false;
 		int damageReduction = 1;
-		bool shieldActive = isShieldFront();
-		bool shieldHitFront = (shieldActive && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
+		bool shieldFront = isShieldFront();
+		bool shieldHitFront = (shieldFront && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
 		bool shieldHitBack = (
-			!shieldActive && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
+			!shieldFront && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
 		);
 		if (projId == (int)BassProjIds.RemoteMineExplosion) {
-			if (shieldActive) {
+			if (shieldFront) {
 				shieldHitFront = true;
 			}
 		}

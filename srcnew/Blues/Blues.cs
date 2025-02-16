@@ -590,7 +590,7 @@ public class Blues : Character {
 		// Shield switch.
 		if (!player.isAI && shieldHP > 0 && shootAnimTime <= 0 && canUseShield()) {
 			if (Options.main.protoShieldHold) {
-				isShieldActive = !player.input.isWeaponLeftOrRightHeld(player);
+				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
 			}
 			else if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;

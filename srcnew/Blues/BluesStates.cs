@@ -395,7 +395,6 @@ public class ProtoStrike : CharState {
 			fired = true;
 			startTime = stateFrames;
 		}
-		
 		if (blues.overdrive && blues.overdriveAmmoDecreaseCooldown < 12) {
 			blues.overdriveAmmoDecreaseCooldown = 12;
 		}

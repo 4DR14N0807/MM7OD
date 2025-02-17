@@ -3315,7 +3315,7 @@ public partial class Character : Actor, IDamagable {
 		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
 		baseY -= 16;
 		decimal modifier = (decimal)Player.getHealthModifier();
-		decimal maxHP = maxHealth / modifier;
+		decimal maxHP = Math.Ceiling(maxHealth / modifier);
 		decimal curHP = Math.Floor(health / modifier);
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;

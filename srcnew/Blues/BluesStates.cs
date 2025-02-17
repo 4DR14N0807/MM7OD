@@ -190,7 +190,7 @@ public class ShieldDash : CharState {
 			) { vel = new Point(0, -40) };
 			dustTimer = 0;
 		}
-		if (player.input.isPressed(Control.Jump, player)) {
+		if (player.input.isPressed(Control.Jump, player) && stateFrames > 0) {
 			if (blues.grounded || blues.canAirJump()) {
 				blues.vel.y = -blues.getJumpPower();
 				if (!blues.grounded) {
@@ -394,6 +394,10 @@ public class ProtoStrike : CharState {
 			blues.playSound("danger_wrap_explosion", true, true);
 			fired = true;
 			startTime = stateFrames;
+		}
+		
+		if (blues.overdrive && blues.overdriveAmmoDecreaseCooldown < 12) {
+			blues.overdriveAmmoDecreaseCooldown = 12;
 		}
 		if (!fired) {
 			return;

@@ -99,7 +99,7 @@ public class Blues : Character {
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			shieldHP = 0;
-			healShieldHPCooldown = 81;
+			healShieldHPCooldown = 39 + MathF.Ceiling(42 * Player.getHealthModifier());
 			fastShieldHeal = true;
 		}
 	}
@@ -1398,10 +1398,10 @@ public class Blues : Character {
 		baseY += (float)(-21 - maxHP * 2);
 		decimal maxShield = shieldMaxHP / modifier;
 		decimal curShield = Math.Floor(shieldHP) / modifier;
-		decimal ceilhield = Math.Ceiling(health / modifier);
+		decimal ceilShield = Math.Ceiling(shieldHP / modifier);
 		decimal floatShield = health / modifier;
 		float fhpAlpha = (float)(floatShield - curShield);
-		decimal savings = curShield + (damageSavings / modifier);
+		decimal savings = curShield + Math.Ceiling((Math.Floor(damageSavings) / modifier));
 
 		for (int i = 0; i < Math.Ceiling(maxShield); i++) {
 			// Draw HP
@@ -1413,7 +1413,7 @@ public class Blues : Character {
 			}
 			else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
-				if (i < ceilhield) {
+				if (i < ceilShield) {
 					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, fhpAlpha);
 				}
 			}

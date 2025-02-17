@@ -216,6 +216,7 @@ public class Damager {
 					if (damagingActor is IceWallProj iceWall) {
 						// Ice wall. As the freeze is the same as flinch
 						// it just acts as a fancy flinch effect.
+						// Does not really affect balance.
 						if (iceWall.startedMoving) {
 							character.freeze(Global.halfFlinch, 140, owner.id);
 							flinch = Global.halfFlinch;

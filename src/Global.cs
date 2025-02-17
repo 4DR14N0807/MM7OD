@@ -16,7 +16,7 @@ namespace MMXOnline;
 
 public partial class Global {
 	public static decimal version = 20m;
-	public static string versionName = "v0.3a TEST5";
+	public static string versionName = "v0.3a TEST6";
 	public static string subVersionName = "Alpha 3";
 	public static string subVersionShortName = "Alpha 3";
 
@@ -30,7 +30,7 @@ public partial class Global {
 	public const string checksumPrefix = "[7OD]";
 	// Use this to make sure the checksum varies.
 	// Better to use together with "checksumPrefix" and be diferent from it.
-	public const string checksumPrefix2 = "7OD-A2-03-T5";
+	public const string checksumPrefix2 = "7OD-A2-03-T6";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;
 	// For displaying the name of the mod in the version string.

@@ -29,10 +29,10 @@ public class Rush : Actor, IDamagable {
 		if (ownedByLocalPlayer) {
 			this.character = owner.character ?? throw new NullReferenceException();
 			rock = character as Rock ?? throw new NullReferenceException();
+			this.xDir = character.xDir;
 		}
 		this.type = type;
 		//syncs rush xdir with rock xdir
-		this.xDir = character.xDir;
 		spriteToCollider["empty"] = null;
 		//spriteToCollider["warp_beam"] = null;
 		// Forcefull change sprite to something before we crash.

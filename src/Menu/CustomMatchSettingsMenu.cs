@@ -355,11 +355,12 @@ public class CustomMatchSettingsMenu : IMainMenu {
 	}
 
 	public string getSameCharString(int charNum) {
-		if (charNum > 7) charNum = 7;
-		if (charNum == 5) return "Megaman";
-		if (charNum == 6) return "Protoman";
-		if (charNum == 7) return "Bass";
-		return "No";
+		return charNum switch {
+			5 => "Megaman",
+			6 => "Protoman",
+			7 => "Bass",
+			_ => "ERROR"
+		};
 	}
 
 	public void update() {

@@ -1531,17 +1531,17 @@ public partial class Actor : GameObject {
 			return null;
 		}
 
-		int? charNum = null;
+		int? charSoundNum = null;
 		if (this is Character || this is Maverick) {
-			charNum = this is Character chr ? chr.player.charNum : 4;
+			charSoundNum = this is Character chr ? chr.player.charNum : 4;
 		}
 
 		SoundWrapper sound = createSoundWrapper(soundBuffer);
 		sound.play();
 
-		if (charNum != null && soundBuffer.soundPool != SoundPool.Voice) {
+		if (charSoundNum != null && soundBuffer.soundPool != SoundPool.Voice) {
 			var matchingVoice = Helpers.getRandomMatchingVoice(
-				Global.voiceBuffers, soundBuffer.soundKey, charNum.Value
+				Global.voiceBuffers, soundBuffer.soundKey, charSoundNum.Value
 			);
 			if (matchingVoice != null) {
 				playSound(matchingVoice);

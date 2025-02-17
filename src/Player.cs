@@ -398,7 +398,7 @@ public partial class Player {
 	public string name;
 	public int id;
 	public int alliance;    // Only set on spawn with data read from ServerPlayer alliance. The ServerPlayer alliance changes earlier on team change/autobalance
-	public int charNum;
+	public int charNum = 5;
 
 	public int newCharNum;
 	public int? delayedNewCharNum;
@@ -613,17 +613,6 @@ public partial class Player {
 		this.alliance = alliance;
 		newAlliance = alliance;
 		this.isAI = isAI;
-
-		if (getSameCharNum() != -1) charNum = getSameCharNum();
-		if (charNum >= 210) {
-			if (Global.level.is1v1()) {
-				maverick1v1 = charNum - 210;
-				charNum = 5;
-			} else {
-				charNum = 5;
-				playerData.charNum = 5;
-			}
-		}
 		this.charNum = charNum;
 		newCharNum = charNum;
 

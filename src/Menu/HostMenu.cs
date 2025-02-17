@@ -1314,18 +1314,11 @@ public class HostMenu : IMainMenu {
 	}
 
 	public void setMirroredBasedOnMapAndGameMode() {
-		if (selectedGameMode == GameMode.CTF || selectedGameMode == GameMode.KingOfTheHill) {
-			if (selectedLevel.supportedGameModesToMirrorSupport[selectedGameMode].mirrored) {
-				mirrored = true;
-			} else {
-				mirrored = false;
-			}
-		} else {
-			if (selectedLevel.supportedGameModesToMirrorSupport[selectedGameMode].nonMirrored) {
-				mirrored = false;
-			} else {
-				mirrored = true;
-			}
+		if (mirrored && !selectedLevel.supportedGameModesToMirrorSupport[selectedGameMode].mirrored) {
+			mirrored = false;
+		}
+		else if (!mirrored && !selectedLevel.supportedGameModesToMirrorSupport[selectedGameMode].nonMirrored) {
+			mirrored = true;
 		}
 	}
 

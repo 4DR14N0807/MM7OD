@@ -498,7 +498,7 @@ public partial class Level {
 				if (levelData.name != "giantdam" || enableGiantDamPropellers()) {
 					var moveZone = new MoveZone(
 						instanceName, points,
-						(float)instance.properties.moveX, (float)instance.properties.moveY
+						(float)(instance.properties.moveX ?? 0), (float)(instance.properties.moveY ?? 0)
 					);
 					addGameObject(moveZone);
 				}
@@ -961,6 +961,7 @@ public partial class Level {
 			if (hostPlayer.serverPlayer.id == mainPlayer.id) continue;
 			var player = players.Find(p => p.id == hostPlayer.serverPlayer.id);
 			if (player == null) continue;
+			if (player.ownedByLocalPlayer) continue;
 
 			player.alliance = hostPlayer.serverPlayer.alliance;
 			player.newAlliance = hostPlayer.newAlliance;
@@ -1790,8 +1791,6 @@ public partial class Level {
 
 	public void render() {
 		if (Global.level.mainPlayer == null) return;
-
-		if (Global.level.mainPlayer.charNum < 5) Global.sprites["nuh_uh"].drawToHUD(0, 0, 0);
 
 		if (Global.level.joinedLate && !Global.level.mainPlayer.warpedIn && Global.level.mainPlayer.character == null && blackJoinTime < 3) {
 			blackJoinTime += Global.spf;

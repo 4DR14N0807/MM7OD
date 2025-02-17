@@ -1352,6 +1352,7 @@ class Program {
 					render();
 				}
 			} else {
+				videoUpdatesThisSecond++;
 				window.Clear(Color.Black);
 				render();
 				window.Display();

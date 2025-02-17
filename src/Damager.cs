@@ -214,10 +214,14 @@ public class Damager {
 				}
 				case (int)BassProjIds.IceWall: {
 					if (damagingActor is IceWallProj iceWall) {
+						// Ice wall. As the freeze is the same as flinch
+						// it just acts as a fancy flinch effect.
 						if (iceWall.startedMoving) {
+							character.freeze(Global.halfFlinch, 140, owner.id);
 							flinch = Global.halfFlinch;
 						}
 						else if (iceWall.isFalling){
+							character.freeze(Global.defFlinch, 140, owner.id);
 							flinch = Global.defFlinch;
 							if (damage > 0) {
 								damage += 2;

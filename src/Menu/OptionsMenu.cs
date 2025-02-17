@@ -762,6 +762,64 @@ public class OptionsMenu : IMainMenu {
 			};
 		} else if (charNum == (int)CharIds.Blues) {
 			menuOptions = new List<MenuOption>() {
+				// Core HUD.
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightInc(ref Options.main.coreHeatDisplay, 0, 2);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"CORE HEAT DISPLAY:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, coreHeatStr(Options.main.coreHeatDisplay),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					}
+				),
+				// Switch Shield Dash input.
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.reverseBluesDashInput);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"SWAP DASH/SLIDE INPUTS:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.reverseBluesDashInput),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"If enabled, it swaps\nthe slide and dash inputs."
+				),
+				// Switch Shield Dash input.
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.altBluesSlideInput);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"ALT SLIDE INPUT:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.altBluesSlideInput),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"If enabled, you will use slide with \n" + "dash+down."
+				),
 				// Shield Toggle/Hold
 				new MenuOption(
 					30, startY,
@@ -782,44 +840,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
 				),
-				//Switch Shield Dash input.
-				new MenuOption(
-					30, startY,
-					() => {
-						Helpers.menuLeftRightBool(ref Options.main.altSlideInput);
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText,
-							"ALT SLIDE INPUT:",
-							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-
-						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.altSlideInput),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"If enabled, you will use slide with \n" + "dash+down."
-				),
-				new MenuOption(
-					30, startY,
-					() => {
-						Helpers.menuLeftRightInc(ref Options.main.coreHeatDisplay, 0, 2);
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText,
-							"CORE HEAT DISPLAY:",
-							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-
-						Fonts.drawText(
-							optionFontValue, coreHeatStr(Options.main.coreHeatDisplay),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					}
-				)
+				
 			};
 		} else if (charNum == (int)CharIds.Bass) {
 			menuOptions = new List<MenuOption>() {

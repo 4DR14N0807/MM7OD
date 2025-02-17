@@ -163,7 +163,7 @@ public class Blues : Character {
 	public float getSlideSpeed() {
 		float slideSpeed = 3 * 60;
 		if (overheating) {
-			slideSpeed = 1.5f * 60;
+			slideSpeed = 1.75f * 60;
 		}
 		return slideSpeed * getRunDebuffs();
 	}
@@ -625,6 +625,9 @@ public class Blues : Character {
 		//For getting the slide and shield dash input
 		bool slide = slideInput();
 		bool shieldDash = shieldDashInput();
+		if (Options.main.reverseBluesDashInput) {
+			(slide, shieldDash) = (shieldDash, slide);
+		}
 
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
@@ -995,7 +998,7 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.altSlideInput && !overdrive) {
+		if (Options.main.altBluesSlideInput && !overdrive) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
 				!player.input.isHeld(Control.Down, player)
@@ -1005,7 +1008,7 @@ public class Blues : Character {
 	}
 
 	public bool slideInput() {
-		if (Options.main.altSlideInput) {
+		if (Options.main.altBluesSlideInput) {
 			if (overheating) {
 				return player.input.isPressed(Control.Dash, player);
 			}

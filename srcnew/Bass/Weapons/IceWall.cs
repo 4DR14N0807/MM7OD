@@ -112,6 +112,7 @@ public class IceWallProj : Projectile, IDamagable {
 		} else {
 			gravityModifier = 1;
 		}
+		isFalling = deltaPos.y > 0;
 	}
 
 	public bool selectiveSolidity(GameObject other) {

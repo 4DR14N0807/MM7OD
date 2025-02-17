@@ -3297,10 +3297,14 @@ public partial class Character : Actor, IDamagable {
 		return ("hud_health_base", 0);
 	}
 
+	public virtual (string, int) getTopHpSprite() {
+		return ("hud_health_top", 0);
+	}
+
 	public virtual void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
-		float damageSavings = 0;
+		decimal damageSavings = 0;
 		if (health > 0 && health < maxHealth) {
-			damageSavings = MathInt.Floor(damageSavings);
+			damageSavings = MathInt.Floor(this.damageSavings);
 		}
 
 		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
@@ -3310,22 +3314,32 @@ public partial class Character : Actor, IDamagable {
 		(string healthBaseSprite, int baseSpriteIndex) = getBaseHpSprite();
 		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
 		baseY -= 16;
+		decimal modifier = (decimal)Player.getHealthModifier();
+		decimal maxHP = maxHealth / modifier;
+		decimal curHP = Math.Floor(health / modifier);
+		decimal ceilCurHP = Math.Ceiling(health / modifier);
+		decimal floatCurHP = health / modifier;
+		float fhpAlpha = (float)(floatCurHP - curHP);
+		decimal savings = curHP + (damageSavings / modifier);
 
-		for (var i = 0; i < MathF.Ceiling(player.getMaxHealth()); i++) {
-			float trueHP = player.getMaxHealth() - (player.evilEnergyStacks * player.hpPerStack); 
+		for (var i = 0; i < Math.Ceiling(maxHP); i++) {
 			// Draw HP
-			if (i < Math.Ceiling(health)) {
+			if (i < curHP) {
 				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
 			}
-			else if (i < MathInt.Ceiling(health) + damageSavings) {
-				Global.sprites["hud_health_full"].drawToHUD(4, baseX, baseY);
+			else if (i < savings) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
 			}
 			else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
+				if (i < ceilCurHP) {
+					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
+				}
 			}
 			baseY -= 2;
 		}
-		Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
+		(string healthTopSprite, int baseTopIndex) = getTopHpSprite();
+		Global.sprites[healthTopSprite].drawToHUD(baseTopIndex, baseX, baseY);
 	}
 
 	public virtual void renderAmmo(

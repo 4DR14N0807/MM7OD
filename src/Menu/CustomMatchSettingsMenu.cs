@@ -30,20 +30,19 @@ public class CustomMatchSettings {
 	public static CustomMatchSettings getDefaults() {
 		return new CustomMatchSettings {
 			hyperModeMatch = false,
-			startCurrency = 3,
+			startCurrency = 25,
 			startHeartTanks = 0,
-			startSubTanks = 0,
-			healthModifier = 16,
+			startETanks = 0,
+			startWTanks = 0,
+			healthModifier = 8,
 			damageModifier = 1,
-			sameCharNum = 4,
-			redSameCharNum = 4,
 			maxETanks = 2,
-			maxHeartTanks = 8,
+			maxWTanks = 1,
+			currencyGain = 8,
+			respawnTime = 0,
+			pickupItems = true,
 			heartTankHp = 1,
 			heartTankCost = 2,
-			currencyGain = 1,
-			respawnTime = 5,
-			pickupItems = true,
 		};
 	}
 }
@@ -210,36 +209,19 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.healthModifier, 8, 32);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.healthModifier, 1, 20);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
 						fontOption,
 						"HEALTH MODIFIER: " +
-						(savedMatchSettings.customMatchSettings.healthModifier * 10).ToString() + 
+						((savedMatchSettings.customMatchSettings.healthModifier  / 8f) * 100).ToString() + 
 						"%",
 						pos.x, pos.y, selected: selectArrowPosY == 5
 					);
 				}
 			)
 		);
-		/*
-		menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redHealthModifier, 1, 4);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						FontType.Blue,
-						"Red health modifier: " +
-						(savedMatchSettings.customMatchSettings.redHealthModifier * 100).ToString() + "%",
-						pos.x, pos.y, selected: selectArrowPosY == 8
-					);
-				}
-			)
-		);
-		*/
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
@@ -255,23 +237,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-		/*
-		menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redDamageModifier, 1, 4, true);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						FontType.Blue,
-						"Red damage modifier: " +
-						(savedMatchSettings.customMatchSettings.redDamageModifier * 100).ToString() + "%",
-						pos.x, pos.y, selected: selectArrowPosY == 10
-					);
-				}
-			)
-		);
-		*/
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
@@ -307,13 +272,15 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.currencyGain, 1, 10, true);
+					Helpers.menuLeftRightInc(
+						ref savedMatchSettings.customMatchSettings.currencyGain, 1, 80, true
+					);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
 						FontType.Blue,
 						"Currency Gain modifier: " +
-						savedMatchSettings.customMatchSettings.currencyGain.ToString(),
+						((savedMatchSettings.customMatchSettings.currencyGain / 8f) * 100) + "%",
 						pos.x, pos.y, selected: selectArrowPosY == 9
 					);
 				}
@@ -323,13 +290,17 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.respawnTime, 1, 8, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.respawnTime, 0, 12, true);
 				},
 				(Point pos, int index) => {
+					string text = savedMatchSettings.customMatchSettings.respawnTime.ToString();
+					if (savedMatchSettings.customMatchSettings.respawnTime == 0) {
+						text = "No";
+					}
 					Fonts.drawText(
 						FontType.Blue,
 						"Respawn Time modifier: " +
-						savedMatchSettings.customMatchSettings.respawnTime.ToString(),
+						text,
 						pos.x, pos.y, selected: selectArrowPosY == 10
 					);
 				}
@@ -359,6 +330,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 			5 => "Megaman",
 			6 => "Protoman",
 			7 => "Bass",
+			<5 => "No",
 			_ => "ERROR"
 		};
 	}

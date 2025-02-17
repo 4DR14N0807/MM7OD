@@ -158,6 +158,10 @@ public class Bass : Character {
 		//quickAdaptorUpgrade(); 
 	}
 
+	public override (string, int) getBaseHpSprite() {
+		return ("hud_health_base", 2);
+	}
+
 	public override void render(float x, float y) {
 		base.render(x, y);
 

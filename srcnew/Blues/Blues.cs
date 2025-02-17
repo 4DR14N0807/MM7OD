@@ -94,6 +94,9 @@ public class Blues : Character {
 			7 => new StarCrash(),
 			_ => new PowerStone(),
 		};
+		shieldMaxHP = (int)Player.getModifiedHealth(shieldMaxHP);
+		shieldHP = shieldMaxHP;
+
 		if (isWarpIn && ownedByLocalPlayer) {
 			shieldHP = 0;
 			healShieldHPCooldown = 81;
@@ -1371,11 +1374,52 @@ public class Blues : Character {
 		float baseX = hudHealthPosition.x + offset.x;
 		float baseY = hudHealthPosition.y + offset.y;
 
-		GameMode.renderAmmo(
-			baseX, baseY - 5 - player.maxHealth * 2, -1, 1,
-			MathInt.Ceiling(shieldHP), maxAmmo: shieldMaxHP
-		);
+		renderShieldBar(offset, position);
+	}
 
+	public override (string, int) getBaseHpSprite() {
+		return ("hud_health_base", 1);
+	}
+
+	public override (string, int) getTopHpSprite() {
+		return ("hud_health_top", 1);
+	}
+
+	public void renderShieldBar(Point offset, GameMode.HUDHealthPosition position) {
+		decimal damageSavings = 0;
+		if (shieldHP > 0) {
+			damageSavings = MathInt.Floor(this.shieldDamageSavings);
+		}
+		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
+		float baseX = hudHealthPosition.x + offset.x;
+		float baseY = hudHealthPosition.y + offset.y;
+		decimal modifier = (decimal)Player.getHealthModifier();
+		decimal maxHP = maxHealth / modifier;
+		baseY += (float)(-21 - maxHP * 2);
+		decimal maxShield = shieldMaxHP / modifier;
+		decimal curShield = Math.Floor(shieldHP) / modifier;
+		decimal ceilhield = Math.Ceiling(health / modifier);
+		decimal floatShield = health / modifier;
+		float fhpAlpha = (float)(floatShield - curShield);
+		decimal savings = curShield + (damageSavings / modifier);
+
+		for (int i = 0; i < Math.Ceiling(maxShield); i++) {
+			// Draw HP
+			if (i < curShield) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY);
+			}
+			else if (i < savings) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
+			}
+			else {
+				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
+				if (i < ceilhield) {
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, fhpAlpha);
+				}
+			}
+			baseY -= 2;
+		}
+		Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
 	}
 
 	public override void renderAmmo(Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null) {

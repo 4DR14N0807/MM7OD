@@ -697,13 +697,16 @@ public partial class Player {
 		return 16;
 	}
 
+	public static float getHealthModifier() {
+		if (Global.level.server.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.healthModifier / 8f;
+		}
+		return 1;
+	}
+
 	public static float getModifiedHealth(float health) {
 		if (Global.level.server.customMatchSettings != null) {
-			float retHp = getBaseHealth();
-			float extraHP = health - 16;
-
-			float hpMulitiplier = MathF.Ceiling(getBaseHealth() / 16);
-			retHp += MathF.Ceiling(extraHP * hpMulitiplier);
+			float retHp = MathF.Ceiling(health * getHealthModifier());
 
 			if (retHp < 1) {
 				retHp = 1;
@@ -731,12 +734,7 @@ public partial class Player {
 		} else if (isBass) {
 			baseHP = 20;
 		}
-		// 1v1 is the only mode without possible heart tanks/sub tanks
-		if (Global.level.is1v1()) {
-			return getModifiedHealth(baseHP);
-		}
-		
-		return MathF.Ceiling(baseHP);
+		return MathF.Ceiling(getModifiedHealth(baseHP));
 	}
 
 	public void creditHealing(float healAmount) {
@@ -1325,7 +1323,7 @@ public partial class Player {
 		int toAdd = isKiller ? 10 : 5;
 		
 		if (Global.level?.server?.customMatchSettings != null) {
-			currency += Global.level.server.customMatchSettings.currencyGain * toAdd;
+			currency += MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain / 8f) * toAdd);
 		} else {
 			currency += toAdd;
 		}
@@ -1338,7 +1336,7 @@ public partial class Player {
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
-		return 0;
+		return 25;
 	}
 
 	public void onKillEffects(bool isAssist) {
@@ -1362,7 +1360,9 @@ public partial class Player {
 		if (Global.level.gameMode is FFADeathMatch) {
 			return 5;
 		}
-		if (Global.level?.server?.customMatchSettings != null) {
+		if (Global.level?.server?.customMatchSettings != null &&
+			Global.level.server.customMatchSettings.respawnTime >= 0
+		) {
 			return Global.level.server.customMatchSettings.respawnTime;
 		} else {
 			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {

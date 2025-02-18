@@ -420,7 +420,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 	) {
 		netOwner = victim;
 		character = victim.character;
-		character?.stopMoving();
+		character?.stopMovingWeak();
 		useGravity = false;
 		canBeLocal = false;
 

@@ -271,8 +271,9 @@ public class BluesSlide : CharState {
 				initialSlideDir *= -1;
 			}
 			return;
-		} else locked = false;
-		
+		} else {
+			locked = false;
+		}
 		if (
 			player.input.getXDir(player) == -initialSlideDir ||
 			stateFrames >= 30 || (

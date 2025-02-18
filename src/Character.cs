@@ -2908,7 +2908,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void dwrapEnd() {
 		isDWrapped = false;
-		stopMoving();
+		stopMovingWeak();
 		useGravity = true;
 		playSound("hit");
 	}

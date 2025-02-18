@@ -198,9 +198,9 @@ public class ShieldDash : CharState {
 					blues.dashedInAir++;
 					new Anim(blues.pos, "double_jump_anim", blues.xDir, player.getNextActorNetId(), true, true);
 				}
-				/* if (blues.shieldCustomState == false) {
+				if (blues.shieldCustomState == false) {
 					blues.isDashing = true;
-				}  */
+				}  
 				blues.changeState(new Jump());
 			} else {
 				blues.changeToIdleOrFall();

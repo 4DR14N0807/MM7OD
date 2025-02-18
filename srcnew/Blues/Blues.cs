@@ -132,9 +132,15 @@ public class Blues : Character {
 
 	public override float getDashSpeed() {
 		bool shieldEquipped = isShieldEquipped();
-		float dashSpeed = 2.5f * 60;
+		float dashSpeed = 2.75f * 60;
 		if (overdrive) {
-			dashSpeed = 2f * 60;
+			dashSpeed = 2.5f * 60;
+			if (shieldEquipped) {
+				dashSpeed = 2f * 60;
+			}
+		}
+		else if (shieldEquipped) {
+			dashSpeed = 2.25f * 60;
 		}
 		return dashSpeed * getRunDebuffs();
 	}

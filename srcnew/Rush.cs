@@ -168,6 +168,7 @@ public class Rush : Actor, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
+		if (!ownedByLocalPlayer) { return; }
 		var chr = other.otherCollider.actor as Rock;
 		var wall = other.gameObject as Wall;
 
@@ -193,6 +194,7 @@ public class Rush : Actor, IDamagable {
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		health -= damage;
+		if (!ownedByLocalPlayer) { return; }
 		if (health <= 0) {
 			changeState(new RushHurt(xDir));
 		}
@@ -214,6 +216,7 @@ public class Rush : Actor, IDamagable {
 	}
 
 	public override void onDestroy() {
+		if (!ownedByLocalPlayer) { return; }
 		if (character is Rock rock && rock.rush != null) rock.rush = null!; 
 	}
 

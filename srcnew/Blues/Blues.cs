@@ -121,7 +121,7 @@ public class Blues : Character {
 		else if (overheating) {
 			runSpeed = 0.75f * 60;
 			if (!shieldEquipped) {
-				runSpeed = 1.35f * 60;
+				runSpeed = 1.25f * 60;
 			}
 		}
 		else if (shieldEquipped) {
@@ -243,7 +243,7 @@ public class Blues : Character {
 		return (
 			flag == null &&
 			grounded && vel.y >= 0 &&
-			charState is not BluesSlide and not ShieldDash &&
+			charState is not BluesSlide &&
 			!overdrive && rootTime <= 0
 		);
 	}

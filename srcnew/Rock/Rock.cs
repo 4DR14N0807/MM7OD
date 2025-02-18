@@ -164,10 +164,9 @@ public class Rock : Character {
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
 		bool downHeld = player.input.isHeld(Control.Down, player);
 		bool slidePressed = player.dashPressed(out string slideControl);
-		bool arrowSlashInput = player.input.checkHadoken(player, xDir, Control.Shoot);
 
 		if (specialPressed && canCallRush(0) && rushWeaponSpecial) {
-			rushWeapon.shoot(this, 0);
+			rushWeapon.shootRock(this, 0);
 			return true;
 		}
 

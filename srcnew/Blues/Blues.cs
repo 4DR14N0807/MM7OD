@@ -253,6 +253,7 @@ public class Blues : Character {
 		if (charState is ShieldDash) {
 			return false;
 		}
+		if (charState is BluesSlide bsd && bsd.locked) return false;
 		return base.canJump();
 	}
 
@@ -267,6 +268,12 @@ public class Blues : Character {
 		return true;
 	}
 
+	public override bool canShoot() {
+		if (charState is BluesSlide bsd && bsd.locked) return false;
+
+		return base.canShoot();
+	}
+
 	public bool canShootSpecial() {
 		if (flag != null ||
 			isCharging() ||
@@ -274,7 +281,8 @@ public class Blues : Character {
 			overdrive ||
 			specialWeapon.shootCooldown > 0 ||
 			!specialWeapon.canShoot(0, this) ||
-			invulnTime > 0
+			invulnTime > 0 ||
+			(charState is BluesSlide bsd && bsd.locked)
 		) {
 			return false;
 		}
@@ -731,7 +739,7 @@ public class Blues : Character {
 	}
 
 	public void shoot(int chargeLevel) {
-		if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer || !canShoot()) return;
 
 		int lemonNum = -1;
 		int type = overdrive ? 1 : 0;

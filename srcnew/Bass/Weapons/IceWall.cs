@@ -119,6 +119,10 @@ public class IceWallProj : Projectile, IDamagable {
 		if (other is not Character chara) {
 			return false;
 		}
+		if (!chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) && chara.player != damager.owner) {
+			return false;
+		}
+
 		// Fully solid for enemies.
 		if ((chara.player == damager.owner || chara.player.alliance != damager.owner.alliance) &&
 			chara.charState is not LadderClimb

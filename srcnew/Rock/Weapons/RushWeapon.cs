@@ -18,18 +18,18 @@ public class RushWeapon : Weapon {
 		return 0;
 	}
 
-	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
-		Point shootPos = character.getShootPos();
-		int xDir = character.getShootXDir();
-		Player player = character.player;
+	public override void shootRock(Rock rock, params int[] args) {
+		base.shootRock(rock, args);
+		Point shootPos = rock.getShootPos();
+		int xDir = rock.getShootXDir();
+		Player player = rock.player;
 		int type = 0;
 		if (player.input.isHeld(Control.Up, player)) type = 1;
 		else if (player.input.isHeld(Control.Down, player)) type = 2;
 
 		if (!player.ownedByLocalPlayer) return;
 
-		if (player.character is Rock rock) {
+		if (player.character is Rock) {
 			if (!rock.canCallRush(type)) return;
 			if (rock.rush != null) {
 				rock.rush.changeState(new RushWarpOut());

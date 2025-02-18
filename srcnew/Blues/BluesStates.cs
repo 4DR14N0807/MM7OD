@@ -204,7 +204,7 @@ public class ShieldDash : CharState {
 				}
 				if (blues.shieldCustomState == false) {
 					blues.isDashing = true;
-				}
+				}  
 				blues.changeState(new Jump());
 			} else {
 				blues.changeToIdleOrFall();
@@ -234,6 +234,7 @@ public class BluesSlide : CharState {
 	public int particles = 3;
 	Blues blues = null!;
 	Anim? dust;
+	public bool locked;
 
 	public BluesSlide() : base("slide") {
 		enterSound = "slide";
@@ -262,9 +263,16 @@ public class BluesSlide : CharState {
 		}
 
 		CollideData? cellingCheck = Global.level.checkTerrainCollisionOnce(character, 0, -16);
+
 		if (cellingCheck != null) {
+			locked = true;
+			if (player.input.getXDir(player) == -initialSlideDir) {
+				character.xDir *= -1;
+				initialSlideDir *= -1;
+			}
 			return;
-		}
+		} else locked = false;
+		
 		if (
 			player.input.getXDir(player) == -initialSlideDir ||
 			stateFrames >= 30 || (
@@ -611,5 +619,6 @@ public class BluesRevive : CharState {
 		base.onExit(newState);
 		character.removeRenderEffect(RenderEffectType.Flash);
 		blues.overdrive = true;
+		blues.overheating = false;
 	}
 }

@@ -88,31 +88,6 @@ public class BluesUpgradeMenu : IMainMenu {
 					}
 				}
 			}
-
-			//MTANKS SECTION
-			if (selectArrowPosX == 1) {
-				if (mainPlayer.mtanks.Count <= selectArrowPosY) {
-					if (mainPlayer.mtanks.Count < getMaxMTanks() && mainPlayer.currency >= mTankCost) {
-						mainPlayer.currency -= mTankCost;
-						mainPlayer.mtanks.Add(new MTank());
-						Global.playSound("upgrade");
-					} else if (mainPlayer.mtanks.InRange(selectArrowPosY)) {
-						
-						if (canUseMTankInMenu(mainPlayer.canUseMTank(mainPlayer.mtanks[selectArrowPosY]))) {
-							mainPlayer.mtanks[selectArrowPosY - 1].use(mainPlayer, mainPlayer.character);
-							mainPlayer.mtanks.RemoveAt(selectArrowPosY - 1);
-						}
-					}
-				}
-
-				else if (mainPlayer.mtanks.InRange(selectArrowPosY)) {
-
-					if (canUseMTankInMenu(mainPlayer.canUseMTank(mainPlayer.mtanks[selectArrowPosY]))) {
-						mainPlayer.mtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
-						mainPlayer.mtanks.RemoveAt(selectArrowPosY);
-					}
-				}
-			}
 		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
 			Menu.change(prevMenu);
 		}

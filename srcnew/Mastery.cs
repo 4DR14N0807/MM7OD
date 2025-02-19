@@ -66,7 +66,7 @@ public class MasteryTracker {
 
 	public void grantDamageLevel() {
 		damageLevelStacks++;
-		if (damageLevelStacks >= damageLevel) {
+		if (damageLevelStacks >= MathF.Ceiling(damageLevel / 6f)) {
 			damageLevel++;
 			damageLevelStacks = 0;
 			if (mainCharActive) {
@@ -85,7 +85,7 @@ public class MasteryTracker {
 	}
 	public void grantDefenseLevel() {
 		defenseLevelStacks++;
-		if (defenseLevelStacks >= defenseLevel) {
+		if (defenseLevelStacks >= MathF.Ceiling(defenseLevel / 6f)) {
 			defenseLevel++;
 			defenseLevelStacks = 0;
 			if (mainCharActive) {
@@ -99,7 +99,7 @@ public class MasteryTracker {
 	}
 	public void grantSupportLevel() {
 		supportLevelStacks++;
-		if (supportLevelStacks >= supportLevel) {
+		if (supportLevelStacks >= MathF.Ceiling(supportLevel / 6f)) {
 			supportLevel++;
 			supportLevelStacks = 0;
 			if (mainCharActive) {

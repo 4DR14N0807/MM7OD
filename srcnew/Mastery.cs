@@ -24,7 +24,7 @@ public class MasteryTracker {
 	public int supportLevel = 1;
 	public int supportLevelStacks;
 	public float mapExp;
-	public int mapLvLimit = 60;
+	public int mapLvLimit = 30;
 	public int mapLevel = 1;
 	public int mapLevelStacks;
 	public bool mainCharActive => player == Global.level.mainPlayer && player.character != null;
@@ -41,7 +41,7 @@ public class MasteryTracker {
 		if (!player.ownedByLocalPlayer) { return; }
 		value = roundedShortExp(value);
 		damageExp += value;
-		if (damageExp >= damageLvLimit) {
+		while (damageExp >= damageLvLimit) {
 			damageExp -= damageLvLimit;
 			grantDamageLevel();
 		}
@@ -53,7 +53,7 @@ public class MasteryTracker {
 		}
 		if (!player.ownedByLocalPlayer) { return; }
 		defenseExp += value;
-		if (defenseExp >= defenseLvLimit) {
+		while (defenseExp >= defenseLvLimit) {
 			defenseExp -= defenseLvLimit;
 			grantDefenseLevel();
 		}
@@ -65,7 +65,7 @@ public class MasteryTracker {
 		}
 		if (!player.ownedByLocalPlayer) { return; }
 		supportExp += value;
-		if (supportExp >= supportLvLimit) {
+		while (supportExp >= supportLvLimit) {
 			supportExp -= supportLvLimit;
 			grantSupportLevel();
 		}
@@ -77,7 +77,7 @@ public class MasteryTracker {
 		}
 		if (!player.ownedByLocalPlayer) { return; }
 		mapExp += value;
-		if (mapExp >= mapLvLimit) {
+		while (mapExp >= mapLvLimit) {
 			mapExp -= mapLvLimit;
 			grantMapLevel();
 		}
@@ -89,7 +89,7 @@ public class MasteryTracker {
 			damageLevel++;
 			damageLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"ATK L{damageLevel}!", (int)FontType.WhiteSmall);
+				player.character.addDamageText($"ATK L{damageLevel}!", (int)FontType.RedSmall);
 			}
 		}
 		player.awardCurrency(charId, 10);
@@ -108,7 +108,7 @@ public class MasteryTracker {
 			defenseLevel++;
 			defenseLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"DEF L{defenseLevel}!", (int)FontType.WhiteSmall);
+				player.character.addDamageText($"DEF L{defenseLevel}!", (int)FontType.BlueMenu);
 			}
 		}
 		player.awardCurrency(charId, 4);
@@ -122,7 +122,7 @@ public class MasteryTracker {
 			supportLevel++;
 			supportLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"SP L{supportLevel}!", (int)FontType.WhiteSmall);
+				player.character.addDamageText($"SP L{supportLevel}!", (int)FontType.GreenSmall);
 			}
 		}
 		player.awardCurrency(charId, 6);
@@ -136,12 +136,12 @@ public class MasteryTracker {
 			mapLevel++;
 			mapLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"MAP L{mapLevel}!", (int)FontType.WhiteSmall);
+				player.character.addDamageText($"MAP L{mapLevel}!", (int)FontType.PurpleSmall);
 			}
 		}
-		player.awardCurrency(charId, 4);
+		player.awardCurrency(charId, 2);
 		if (mainCharActive) {
-			createBoltsAtPos(player.character.getCenterPos(), 2);
+			createBoltsAtPos(player.character.getCenterPos(), 1);
 		}
 	}
 	

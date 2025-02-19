@@ -1207,17 +1207,12 @@ public partial class Actor : GameObject {
 	public void commonHealLogic(Player healer, decimal healAmount, decimal currentHealth, decimal maxHealth, bool drawHealText) {
 		if (drawHealText && ownedByLocalPlayer) {
 			float reportAmount = (float)Helpers.clampMax(healAmount, maxHealth - currentHealth);
-			if (reportAmount == 0) {
-				bool hasETankCapacity = false;
-				if (this is Character chr && chr.player.hasETankCapacity()) hasETankCapacity = true;
-				if (this is Maverick maverick && maverick.player.hasETankCapacity()) hasETankCapacity = true;
-				if (hasETankCapacity) {
-					RPC.playSound.sendRpc("subtank_fill", netId);
-				}
-			} else {
-				healer.creditHealing(reportAmount);
-				addDamageTextHelper(healer, -reportAmount, 16, sendRpc: true);
-			}
+			healer.creditHealing(reportAmount);
+			addDamageTextHelper(healer, -reportAmount, 16, sendRpc: true);
+		}
+		if (ownedByLocalPlayer && this is Character character) {
+			character.mastery.addDefenseExp(MathInt.Ceiling(healAmount), true);
+			healer.mastery.addSupportExp(MathInt.Ceiling(healAmount), true);
 		}
 	}
 

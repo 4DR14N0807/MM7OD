@@ -20,7 +20,6 @@ public class RockLoadoutSetup {
 			weapons.Add(getWeaponById(loadout.weapon2));
 			weapons.Add(getWeaponById(loadout.weapon3));
 		}
-
 		return weapons;
 	}
 

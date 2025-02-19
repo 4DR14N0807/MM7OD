@@ -50,7 +50,7 @@ public class Pickup : Actor {
 			if (!chr.ownedByLocalPlayer) return;
 
 			if (pickupType == PickupType.Health) {
-				if (chr.health >= chr.maxHealth && !chr.player.hasETankCapacity()) return;
+				if (chr.health >= chr.maxHealth) return;
 				chr.addHealth(healAmount);
 				destroySelf(doRpcEvenIfNotOwned: true);
 			} else if (pickupType == PickupType.Ammo) {
@@ -68,55 +68,6 @@ public class Pickup : Actor {
 					chr.player.currency += (int)healAmount;
 					destroySelf(doRpcEvenIfNotOwned: true);
 				}	
-			}
-		} else if (other.gameObject is RideArmor rideArmor) {
-			if (!rideArmor.ownedByLocalPlayer) return;
-
-			if (rideArmor.character != null) {
-				if (pickupType == PickupType.Health) {
-					if (rideArmor.health >= rideArmor.maxHealth) {
-						if (rideArmor.character != null && (
-							rideArmor.character.health >= rideArmor.character.maxHealth
-						)) {
-							return;
-						} else {
-							rideArmor.character?.addHealth(healAmount);
-						}
-					} else {
-						rideArmor.addHealth(healAmount);
-					}
-					destroySelf(doRpcEvenIfNotOwned: true);
-				} else if (pickupType == PickupType.Ammo) {
-					//rideArmor.character.addAmmo(this.healAmount);
-					//this.destroySelf();
-				}
-			}
-		} else if (other.gameObject is RideChaser rideChaser) {
-			if (!rideChaser.ownedByLocalPlayer) return;
-
-			if (rideChaser.character != null) {
-				if (pickupType == PickupType.Health) {
-					if (rideChaser.health >= rideChaser.maxHealth) {
-						if (rideChaser.character != null &&
-							rideChaser.character.health >= rideChaser.character.maxHealth
-						) {
-							return;
-						} else {
-							rideChaser.character?.addHealth(healAmount);
-						}
-					} else {
-						rideChaser.addHealth(healAmount);
-					}
-					destroySelf(doRpcEvenIfNotOwned: true);
-				}
-			}
-		} else if (other.gameObject is Maverick maverick && maverick.ownedByLocalPlayer) {
-			if (pickupType == PickupType.Health && (maverick.health < maverick.maxHealth || maverick.netOwner.hasETankCapacity())) {
-				maverick.addHealth(healAmount, true);
-				destroySelf(doRpcEvenIfNotOwned: true);
-			} else if (pickupType == PickupType.Ammo && maverick.ammo < maverick.maxAmmo) {
-				maverick.addAmmo(healAmount);
-				destroySelf(doRpcEvenIfNotOwned: true);
 			}
 		}
 	}

@@ -129,11 +129,6 @@ public class CharState {
 			character.stopMovingWeak();
 		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
-		if (this is not Run and not Idle and not Taunt) {
-			player.delayETank();
-			player.delayWTank();
-			player.delayLTank();
-		} 
 		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick and not TenguBladeState && (!oldState.canStopJump || oldState.stoppedJump)) {
 			stoppedJump = true;
@@ -1411,7 +1406,7 @@ public class Die : CharState {
 		if (!hidden && stateTime >= 0.75f) {
 			hidden = true;
 			character.visible = false;
-			new DieEffect(character.getCenterPos(), player.charNum);
+			new DieEffect(character.getCenterPos(), player.charNum, true);
 			character.playSound("die", sendRpc: true);
 		}
 		if (!character.ownedByLocalPlayer) {

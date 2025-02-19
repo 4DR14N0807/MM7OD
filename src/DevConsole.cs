@@ -101,13 +101,6 @@ public class DevConsole {
 		}
 	}
 
-	public static void fillETank(string[] args) {
-		if (Global.level.mainPlayer.ETanks.Count < 1) {
-			Global.level.mainPlayer.ETanks.Add(new ETank());
-		}
-		Global.level.mainPlayer.fillETank(12);
-	}
-
 	public static void showOrHideHitboxes(string[] args) {
 		Global.showHitboxes = !Global.showHitboxes;
 	}

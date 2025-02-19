@@ -77,19 +77,14 @@ public class BluesUpgradeMenu : IMainMenu {
 						mainPlayer.ltanks.Add(new LTank());
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ltanks.InRange(selectArrowPosY)) {
-						
 						if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY]))) {
 							mainPlayer.ltanks[selectArrowPosY - 1].use(mainPlayer, mainPlayer.character);
-							mainPlayer.ltanks.RemoveAt(selectArrowPosY - 1);
 						}
 					}
 				}
-
 				else if (mainPlayer.ltanks.InRange(selectArrowPosY)) {
-
 					if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY]))) {
 						mainPlayer.ltanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
-						mainPlayer.ltanks.RemoveAt(selectArrowPosY);
 					}
 				}
 			}
@@ -138,50 +133,67 @@ public class BluesUpgradeMenu : IMainMenu {
 			Global.screenW * 0.5f, 32, Alignment.Center
 		);
 
-		//LTANKS RENDER
+		// L-TANKS RENDER
 		for (int i = 0; i < getMaxLTanks(); i++) {
 			if (i > mainPlayer.ltanks.Count) continue;
 			bool canUseLtank = true;
-			bool buyOrUse = mainPlayer.ltanks.Count < i + 1;
-			string buyOrUseStr = buyOrUse ? "BUY L-TANK" : "USE L-TANK";
-			var optionPos = new Point(optionPositionsX[0], optionPositionsY[i]);
-			
-			if (!buyOrUse) {
-				var ltank = mainPlayer.ltanks[i];
+			bool owned = i < mainPlayer.ltanks.Count;
+			string useString = !owned ? "BUY L-TANK" : "USE L-TANK";
+			Point optionPos = new Point(optionPositionsX[0], optionPositionsY[i]);
+			Point spritePos = new Point(optionPos.x + 6, optionPos.y - 8);
+
+			if (owned) {
+				LTank ltank = mainPlayer.ltanks[i];
 				canUseLtank = mainPlayer.canUseLTank(ltank);
 
 				Global.sprites["menu_ltank"].drawToHUD(0, optionPos.x + 6, optionPos.y - 8);
 
-				if (!canUseLTankInMenu(canUseLtank)) {
-					if (canUseLtank) {
-						GameMode.drawWeaponSlotCooldown(optionPos.x + 14, optionPos.y, lTankDelay / maxLTankDelay);
-					} else {
-						Global.sprites["menu_ltank"].drawToHUD(2, optionPos.x + 6, optionPos.y - 8, 0.5f);
-					}
+				if (lTankDelay > 0) {
+					GameMode.drawWeaponSlotCooldown(optionPos.x + 14, optionPos.y, lTankDelay / maxLTankDelay);
+				} else {
+					Point topLeftBar = new Point(spritePos.x + 1, spritePos.y + 2);
+					Point botRightBar = new Point(spritePos.x + 15, spritePos.y + 14);
+					float yPos =  12 * (ltank.health / LTank.maxHealth);
+					DrawWrappers.DrawRect(
+						topLeftBar.x, topLeftBar.y, botRightBar.x - 7, botRightBar.y - yPos,
+						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
+					);
+					yPos = 12 * (ltank.ammo / LTank.maxAmmo);
+					DrawWrappers.DrawRect(
+						topLeftBar.x + 7, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
+						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
+					);
 				}
 			} else {
-				Global.sprites["menu_ltank"].drawToHUD(1, optionPos.x + 6, optionPos.y - 8);
+				Global.sprites["menu_ltank"].drawToHUD(1, spritePos.x, spritePos.y);
+				Point topLeftBar = new Point(spritePos.x, spritePos.y);
+				Point botRightBar = new Point(spritePos.x + 16, spritePos.y + 16);
+
+				DrawWrappers.DrawRect(
+					topLeftBar.x + 1, topLeftBar.y, botRightBar.x - 1, botRightBar.y,
+					true, new Color(0, 0, 0, 128), 1, ZIndex.HUD, isWorldPos: false
+				);
 			}
 
 			FontType font = canUseLtank ? FontType.Blue : FontType.Red;
-			if (!buyOrUse) {
+			if (owned) {
 				if (!canUseLtank) {
-					buyOrUseStr = "CANNOT USE L-TANK";
+					useString = "CANNOT USE L-TANK";
 					font = FontType.Red;
 				} 
 				Fonts.drawText(
-					font, buyOrUseStr, optionPos.x + 24, optionPos.y - 4,
+					font, useString, optionPos.x + 24, optionPos.y - 4,
 					selected: selectArrowPosY == i && selectArrowPosX == 0
 				);
 			} else {
 				Fonts.drawText(
-					font, buyOrUseStr, optionPos.x + 24, optionPos.y - 4,
+					font, useString, optionPos.x + 24, optionPos.y - 4,
 					selected: selectArrowPosY == i && selectArrowPosX == 0
 				);
 			}
-			if (buyOrUse) {
+			if (!owned) {
 				string costStr = $" ({lTankCost} {Global.nameCoins})";
-				int posOffset = Fonts.measureText(FontType.Grey, buyOrUseStr);
+				int posOffset = Fonts.measureText(FontType.Grey, useString);
 				Fonts.drawText(FontType.White, costStr, optionPos.x + 24 + posOffset, optionPos.y - 4);
 			}
 		}

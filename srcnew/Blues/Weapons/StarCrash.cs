@@ -90,7 +90,6 @@ public class StarCrashProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer) return;
 
 		frameCount++;
 		if (frameCount > 4) {
@@ -100,27 +99,20 @@ public class StarCrashProj : Projectile {
 
 		starAngle += 4;
 		if (starAngle >= 360) starAngle -= 360;
+
 		// We check if we shoot it already.
+		if (!ownedByLocalPlayer) return;
 		if (threw) return;
 
 		// Sync poses with protoman.
 		if (blues != null) {
 			changePos(blues.getCenterPos().round());
 			xDir = blues.xDir;
-		} 
-		
-		/* // Local player ends here.
-		if (!ownedByLocalPlayer) {
-			if (blues == null || blues.destroyed) {
-				destroySelf();
-			}
-			return;
-		} */
+		}
 		// Destroy if not linked with Protoman anymore.
 		if (blues == null || blues.destroyed || blues.starCrash != this ||
 			!blues.starCrashActive || blues.overheating || time >= 8
 		) {
-			blues?.delinkStarCrash();
 			destroySelf();
 		}
 	}
@@ -157,7 +149,7 @@ public class StarCrashProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
-		if (blues != null) blues.inCustomShootAnim = false;
+		blues?.delinkStarCrash();
 	}
 }
 

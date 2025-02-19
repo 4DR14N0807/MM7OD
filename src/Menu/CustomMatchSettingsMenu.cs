@@ -30,7 +30,7 @@ public class CustomMatchSettings {
 	public static CustomMatchSettings getDefaults() {
 		return new CustomMatchSettings {
 			hyperModeMatch = false,
-			startCurrency = 25,
+			startCurrency = 10,
 			startHeartTanks = 0,
 			startETanks = 0,
 			startWTanks = 0,

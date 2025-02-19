@@ -155,5 +155,19 @@ public class InGameMainMenu : IMainMenu {
 		Fonts.drawText(FontType.Blue, "SETTINGS", startX, optionPos[5], selected: selectY == 5);
 		Fonts.drawText(FontType.Blue, "LEAVE MATCH", startX, optionPos[6], selected: selectY == 6);
 		Fonts.drawTextEX(FontType.Blue, "[OK]: Choose, [ESC]: Cancel", Global.halfScreenW, 198, Alignment.Center);
+
+		MasteryTracker mastery = Global.level.mainPlayer.mastery;
+		Fonts.drawText(
+			FontType.OrangeSmall, $"ATK Lv{mastery.damageLevel}",
+			Global.screenW - 9, 8, Alignment.Right
+		);
+		Fonts.drawText(
+			FontType.OrangeSmall, $"DEF Lv{mastery.defenseLevel}",
+			Global.screenW - 9, 18, Alignment.Right
+		);
+		Fonts.drawText(
+			FontType.OrangeSmall, $"SP Lv{mastery.supportLevel}",
+			Global.screenW - 9, 28, Alignment.Right
+		);
 	}
 }

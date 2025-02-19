@@ -1487,6 +1487,10 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		freezeTime = time;
+		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
 
 		// Hud stuff.
 		buffList.Add(new Buff("hud_debuffs", 0, false, time, time));
@@ -1507,6 +1511,9 @@ public partial class Character : Actor, IDamagable {
 		// Hud stuff.
 		burnInvulnTime = 120 + 15;
 		buffList.Add(new Buff("hud_debuffs", 3, false, 120 + 15, 120 + 15));
+		if (attacker != null) {
+			attacker.mastery.addSupportExp(2, true);
+		}
 	}
 
 	public void root(float time, float cooldown, int playerid) {
@@ -1532,7 +1539,10 @@ public partial class Character : Actor, IDamagable {
 		stopMovingWeak();
 		useGravity = false;
 		charState.canStopJump = false;
-
+		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
 		// Hud stuff.
 		buffList.Add(new Buff("hud_debuffs", 1, false, time, time));
 	}

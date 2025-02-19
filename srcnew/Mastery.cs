@@ -23,6 +23,7 @@ public class MasteryTracker {
 	public int supportLvLimit = 16;
 	public int supportLevel = 1;
 	public int supportLevelStacks;
+	public bool mainCharActive => player == Global.level.mainPlayer && player.character != null;
 
 	public MasteryTracker(Player player, CharIds charId) {
 		this.player = player;
@@ -68,9 +69,12 @@ public class MasteryTracker {
 		if (damageLevelStacks >= damageLevel) {
 			damageLevel++;
 			damageLevelStacks = 0;
+			if (mainCharActive) {
+				player.character.addDamageText($"ATK LV {damageLevel}!", (int)FontType.WhiteSmall);
+			}
 		}
 		player.awardCurrency(charId, 10);
-		if (player == Global.level.mainPlayer && player.character != null) {
+		if (mainCharActive) {
 			Point spawnPos = player.character.getCenterPos();
 			if (player.lastDamagedCharacter != null) {
 				spawnPos = player.lastDamagedCharacter.getCenterPos();
@@ -84,9 +88,12 @@ public class MasteryTracker {
 		if (defenseLevelStacks >= defenseLevel) {
 			defenseLevel++;
 			defenseLevelStacks = 0;
+			if (mainCharActive) {
+				player.character.addDamageText($"DEF LV {defenseLevel}!", (int)FontType.WhiteSmall);
+			}
 		}
 		player.awardCurrency(charId, 4);
-		if (player == Global.level.mainPlayer && player.character != null) {
+		if (mainCharActive) {
 			createBoltsAtPos(player.character.getCenterPos(), 2);
 		}
 	}
@@ -95,9 +102,12 @@ public class MasteryTracker {
 		if (supportLevelStacks >= supportLevel) {
 			supportLevel++;
 			supportLevelStacks = 0;
+			if (mainCharActive) {
+				player.character.addDamageText($"SP LV {supportLevel}!", (int)FontType.WhiteSmall);
+			}
 		}
 		player.awardCurrency(charId, 6);
-		if (player == Global.level.mainPlayer && player.character != null) {
+		if (mainCharActive) {
 			createBoltsAtPos(player.character.getCenterPos(), 3);
 		}
 	}

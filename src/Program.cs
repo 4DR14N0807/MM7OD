@@ -994,7 +994,7 @@ class Program {
 		float startPos = 0;
 		float endPos = 0;
 		if (iniData["loopData"] is NullableMap<string, object> loopData) {
-			if ( loopData["loopStart"] is Decimal loopStart) {
+			if (loopData["loopStart"] is Decimal loopStart) {
 				startPos = float.Parse(loopStart.ToString());
 			}
 			if (loopData["loopEnd"] is Decimal loopEnd) {

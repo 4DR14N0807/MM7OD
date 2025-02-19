@@ -1,4 +1,7 @@
-﻿namespace MMXOnline;
+﻿
+using SFML.Graphics;
+
+namespace MMXOnline;
 
 public class InGameMainMenu : IMainMenu {
 	public static int selectY = 0;
@@ -156,18 +159,63 @@ public class InGameMainMenu : IMainMenu {
 		Fonts.drawText(FontType.Blue, "LEAVE MATCH", startX, optionPos[6], selected: selectY == 6);
 		Fonts.drawTextEX(FontType.Blue, "[OK]: Choose, [ESC]: Cancel", Global.halfScreenW, 198, Alignment.Center);
 
+		Color outline = new Color(41, 41, 41);
 		MasteryTracker mastery = Global.level.mainPlayer.mastery;
-		Fonts.drawText(
-			FontType.OrangeSmall, $"ATK Lv{mastery.damageLevel}",
-			Global.screenW - 9, 8, Alignment.Right
+
+		drawLevelBar(
+			$"ATK Lv {mastery.damageLevel}", Global.screenW - 76, 8,
+			FontType.RedSmall, new Color(255, 115, 127),
+			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 6f),
+			mastery.damageExp, mastery.damageLvLimit, mastery.damageLevel
 		);
-		Fonts.drawText(
-			FontType.OrangeSmall, $"DEF Lv{mastery.defenseLevel}",
-			Global.screenW - 9, 18, Alignment.Right
+		drawLevelBar(
+			$"ATK Lv {mastery.damageLevel}", Global.screenW - 76, 8,
+			FontType.RedSmall, new Color(255, 115, 127),
+			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 6f),
+			mastery.damageExp, mastery.damageLvLimit, mastery.damageLevel
 		);
-		Fonts.drawText(
-			FontType.OrangeSmall, $"SP Lv{mastery.supportLevel}",
-			Global.screenW - 9, 28, Alignment.Right
+		drawLevelBar(
+			$"DEF Lv {mastery.defenseLevel}", Global.screenW - 76, 23,
+			FontType.BlueSmall, new Color(66, 206, 239),
+			mastery.defenseLevelStacks, MathInt.Ceiling(mastery.defenseLevel / 6f),
+			mastery.defenseExp, mastery.defenseLvLimit, mastery.defenseLevel
+		);
+		drawLevelBar(
+			$"SP Lv {mastery.supportLevel}", Global.screenW - 76, 38,
+			FontType.GreenSmall, new Color(123, 231, 148),
+			mastery.supportLevelStacks, MathInt.Ceiling(mastery.supportLevel / 6f),
+			mastery.supportExp, mastery.supportLvLimit, mastery.supportLevel
+		);
+	}
+
+	public void drawLevelBar(
+		string text, float posX, float posY, FontType font, Color barColor,
+		int stacks, int segments, float exp, float cap, int level
+	) {
+		Color outline = new Color(41, 41, 41);
+		Fonts.drawText(font, text, posX, posY);
+		DrawWrappers.DrawRectWH(
+			posX, posY + 9, 66, 6, true, outline, 0, ZIndex.HUD, false
+		);
+		int spacing = 0;
+		if (segments > 1) {
+			spacing = segments - 1; 
+		}
+		int currentOffset = 0;
+		int barSize = MathInt.Round((64f - spacing) / segments);
+		for (int i = 0; i < stacks - 1; i++) {
+			DrawWrappers.DrawRectWH(
+				posX + 1 + currentOffset,
+				posY + 10, barSize, 4, true, barColor, 0, ZIndex.HUD, false
+			);
+			currentOffset += barSize + 1;
+		}
+		float progress = exp / cap;
+		float finalSize = 64 - currentOffset;
+		finalSize *= progress;
+		DrawWrappers.DrawRectWH(
+			posX + 1 + currentOffset, posY + 10,
+			finalSize, 4, true, barColor, 0, ZIndex.HUD, false
 		);
 	}
 }

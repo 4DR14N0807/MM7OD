@@ -108,7 +108,7 @@ public class MasteryTracker {
 			defenseLevel++;
 			defenseLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"DEF L{defenseLevel}!", (int)FontType.BlueMenu);
+				player.character.addDamageText($"DEF L{defenseLevel}!", (int)FontType.BlueSmall);
 			}
 		}
 		player.awardCurrency(charId, 4);

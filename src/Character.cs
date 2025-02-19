@@ -2550,7 +2550,9 @@ public partial class Character : Actor, IDamagable {
 			if (fDamage < Damager.ohkoDamage) {
 				mastery.addDefenseExp(fDamage);
 				attacker.mastery.addDamageExp(fDamage, true);
-				mastery.addMapExp(fDamage * 2);
+				if (flag != null) {
+					mastery.addMapExp(fDamage * 2);
+				}
 			}
 			if (ownedByLocalPlayer && !Damager.isDot(projId)) {
 				usedEtank = null;

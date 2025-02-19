@@ -163,25 +163,25 @@ public class InGameMainMenu : IMainMenu {
 		MasteryTracker mastery = Global.level.mainPlayer.mastery;
 
 		drawLevelBar(
-			$"ATK L{mastery.damageLevel}", Global.screenW - 76, 8,
+			$"ATK", Global.screenW - 76, 8,
 			FontType.RedSmall, new Color(255, 115, 127),
 			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 5f),
 			mastery.damageExp, mastery.damageLvLimit, mastery.damageLevel
 		);
 		drawLevelBar(
-			$"DEF L{mastery.defenseLevel}", Global.screenW - 76, 23,
+			$"DEF", Global.screenW - 76, 23,
 			FontType.BlueSmall, new Color(66, 206, 239),
 			mastery.defenseLevelStacks, MathInt.Ceiling(mastery.defenseLevel / 5f),
 			mastery.defenseExp, mastery.defenseLvLimit, mastery.defenseLevel
 		);
 		drawLevelBar(
-			$"SP L{mastery.supportLevel}", Global.screenW - 76, 38,
+			$"SP", Global.screenW - 76, 38,
 			FontType.GreenSmall, new Color(123, 231, 148),
 			mastery.supportLevelStacks, MathInt.Ceiling(mastery.supportLevel / 5f),
 			mastery.supportExp, mastery.supportLvLimit, mastery.supportLevel
 		);
 		drawLevelBar(
-			$"MAP L{mastery.mapLevel}", Global.screenW - 76, 53,
+			$"MAP", Global.screenW - 76, 53,
 			FontType.PurpleSmall, new Color(189, 115, 214),
 			mastery.mapLevelStacks, MathInt.Ceiling(mastery.mapLevel / 5f),
 			mastery.mapExp, mastery.mapLvLimit, mastery.mapLevel
@@ -194,6 +194,7 @@ public class InGameMainMenu : IMainMenu {
 	) {
 		Color outline = new Color(41, 41, 41);
 		Fonts.drawText(font, text, posX, posY);
+		Fonts.drawText(font, $"L{level}", posX + 66, posY, Alignment.Right);
 		DrawWrappers.DrawRectWH(
 			posX, posY + 9, 66, 6, true, outline, 0, ZIndex.HUD, false
 		);

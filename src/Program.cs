@@ -989,11 +989,11 @@ class Program {
 			Path.GetDirectoryName(file) + "/" +
 			Path.GetFileNameWithoutExtension(file) + ".ini"
 		);
-		NullableMap<string, object> iniData = IniParser.Parse(iniLocation);
+		NullableMap<string, dynamic> iniData = IniParser.Parse(iniLocation);
 
 		float startPos = 0;
 		float endPos = 0;
-		if (iniData["loopData"] is NullableMap<string, object> loopData) {
+		if (iniData["loopData"] is NullableMap<string, dynamic> loopData) {
 			if (loopData["loopStart"] is Decimal loopStart) {
 				startPos = float.Parse(loopStart.ToString());
 			}

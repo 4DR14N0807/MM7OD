@@ -45,7 +45,7 @@ public class IniParser {
 		LineBreak,
 	}
 
-	public static NullableMap<string, object> Parse(string fileLocation) {
+	public static NullableMap<string, dynamic> Parse(string fileLocation) {
 		string fileText = File.ReadAllText(fileLocation, Encoding.UTF8);
 		(Token token, string value)[] data = TokenizeIni(fileText);
 
@@ -53,16 +53,16 @@ public class IniParser {
 		return parsedIni;
 	}
 
-	public static NullableMap<string, object> ParseText(string fileText) {
+	public static NullableMap<string, dynamic> ParseText(string fileText) {
 		(Token token, string value)[] data = TokenizeIni(fileText);
 
 		var parsedIni = ParseTokens(data);
 		return parsedIni;
 	}
 
-	static NullableMap<string, object> ParseTokens((Token token, string value)[] data) {
-		var parsedIni = new NullableMap<string, object>();
-		List<NullableMap<string, object>> levels = new() { parsedIni };
+	static NullableMap<string, dynamic> ParseTokens((Token token, string value)[] data) {
+		var parsedIni = new NullableMap<string, dynamic>();
+		List<NullableMap<string, dynamic>> levels = new() { parsedIni };
 
 		for (int i = 0; i < data.Length; i++) {
 			var currentLevel = levels.Last();
@@ -72,7 +72,7 @@ public class IniParser {
 					if (levels.Count > 1) {
 						levels.RemoveAt(levels.Count - 1);
 					}
-					NullableMap<string, object> newLevel = new();
+					NullableMap<string, dynamic> newLevel = new();
 					levels.Last()[data[i].value] = newLevel;
 					levels.Add(newLevel);
 				} else {

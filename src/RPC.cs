@@ -2017,6 +2017,9 @@ public class RPCAddExp : RPC {
 		else if (type == 2) {
 			player.masteryLevels[charId].addSupportExp(exp);
 		}
+		else if (type == 3) {
+			player.masteryLevels[charId].addMapExp(exp);
+		}
 	}
 
 	public void sendRpc(Player player, int charId, int type, float exp) {

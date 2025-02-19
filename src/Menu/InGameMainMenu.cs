@@ -163,28 +163,28 @@ public class InGameMainMenu : IMainMenu {
 		MasteryTracker mastery = Global.level.mainPlayer.mastery;
 
 		drawLevelBar(
-			$"ATK Lv {mastery.damageLevel}", Global.screenW - 76, 8,
+			$"ATK L{mastery.damageLevel}", Global.screenW - 76, 8,
 			FontType.RedSmall, new Color(255, 115, 127),
-			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 6f),
+			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 5f),
 			mastery.damageExp, mastery.damageLvLimit, mastery.damageLevel
 		);
 		drawLevelBar(
-			$"ATK Lv {mastery.damageLevel}", Global.screenW - 76, 8,
-			FontType.RedSmall, new Color(255, 115, 127),
-			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 6f),
-			mastery.damageExp, mastery.damageLvLimit, mastery.damageLevel
-		);
-		drawLevelBar(
-			$"DEF Lv {mastery.defenseLevel}", Global.screenW - 76, 23,
+			$"DEF L{mastery.defenseLevel}", Global.screenW - 76, 23,
 			FontType.BlueSmall, new Color(66, 206, 239),
-			mastery.defenseLevelStacks, MathInt.Ceiling(mastery.defenseLevel / 6f),
+			mastery.defenseLevelStacks, MathInt.Ceiling(mastery.defenseLevel / 5f),
 			mastery.defenseExp, mastery.defenseLvLimit, mastery.defenseLevel
 		);
 		drawLevelBar(
-			$"SP Lv {mastery.supportLevel}", Global.screenW - 76, 38,
+			$"SP L{mastery.supportLevel}", Global.screenW - 76, 38,
 			FontType.GreenSmall, new Color(123, 231, 148),
-			mastery.supportLevelStacks, MathInt.Ceiling(mastery.supportLevel / 6f),
+			mastery.supportLevelStacks, MathInt.Ceiling(mastery.supportLevel / 5f),
 			mastery.supportExp, mastery.supportLvLimit, mastery.supportLevel
+		);
+		drawLevelBar(
+			$"MAP L{mastery.mapLevel}", Global.screenW - 76, 53,
+			FontType.PurpleSmall, new Color(189, 115, 214),
+			mastery.mapLevelStacks, MathInt.Ceiling(mastery.mapLevel / 5f),
+			mastery.mapExp, mastery.mapLvLimit, mastery.mapLevel
 		);
 	}
 
@@ -203,7 +203,7 @@ public class InGameMainMenu : IMainMenu {
 		}
 		int currentOffset = 0;
 		int barSize = MathInt.Round((64f - spacing) / segments);
-		for (int i = 0; i < stacks - 1; i++) {
+		for (int i = 0; i <= stacks - 1; i++) {
 			DrawWrappers.DrawRectWH(
 				posX + 1 + currentOffset,
 				posY + 10, barSize, 4, true, barColor, 0, ZIndex.HUD, false
@@ -211,7 +211,10 @@ public class InGameMainMenu : IMainMenu {
 			currentOffset += barSize + 1;
 		}
 		float progress = exp / cap;
-		float finalSize = 64 - currentOffset;
+		float finalSize = barSize;
+		if (segments == stacks + 1) {
+			finalSize = 64 - currentOffset;
+		}
 		finalSize *= progress;
 		DrawWrappers.DrawRectWH(
 			posX + 1 + currentOffset, posY + 10,

@@ -1320,7 +1320,7 @@ public partial class Player {
 	}
 	
 	public void awardKillExp(bool isKiller = true) {
-		int toAdd = isKiller ? 8 : 2;
+		int toAdd = isKiller ? 4 : 2;
 		
 		if (Global.level?.server?.customMatchSettings != null) {
 			mastery.addDamageExp(toAdd);

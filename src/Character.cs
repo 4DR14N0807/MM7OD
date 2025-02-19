@@ -2548,8 +2548,9 @@ public partial class Character : Actor, IDamagable {
 		// Apply mastery level before any reduction.
 		if (this is not Blues && attacker != null && attacker != player && attacker != Player.stagePlayer) {
 			if (fDamage < Damager.ohkoDamage) {
-				mastery.addDefenseExp(fDamage, true);
+				mastery.addDefenseExp(fDamage);
 				attacker.mastery.addDamageExp(fDamage, true);
+				mastery.addMapExp(fDamage * 2);
 			}
 			if (ownedByLocalPlayer && !Damager.isDot(projId)) {
 				usedEtank = null;
@@ -3012,6 +3013,7 @@ public partial class Character : Actor, IDamagable {
 		bigBubble = new DWrapBigBubble(pos, player, xDir,
 		player.getNextActorNetId(), true, true);
 		dwrapStart();
+		attacker.mastery.addSupportExp(2, true);
 		//changeState(new DWrapped(true))
 		//bubbleAnim = new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, player.getNextActorNetId(), true, true);
 	}

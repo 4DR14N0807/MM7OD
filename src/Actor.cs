@@ -1211,7 +1211,7 @@ public partial class Actor : GameObject {
 			addDamageTextHelper(healer, -reportAmount, 16, sendRpc: true);
 		}
 		if (ownedByLocalPlayer && this is Character character) {
-			character.mastery.addDefenseExp(MathInt.Ceiling(healAmount), true);
+			character.mastery.addDefenseExp(MathInt.Ceiling(healAmount));
 			healer.mastery.addSupportExp(MathInt.Ceiling(healAmount), true);
 		}
 	}

@@ -1076,7 +1076,7 @@ public class Blues : Character {
 			attacker != Player.stagePlayer
 		) {
 			if (fDamage < Damager.ohkoDamage) {
-				mastery.addDefenseExp(fDamage, true);
+				mastery.addDefenseExp(fDamage);
 				attacker.mastery.addDamageExp(fDamage, true);
 			}
 		}

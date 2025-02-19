@@ -23,6 +23,10 @@ public class MasteryTracker {
 	public int supportLvLimit = 16;
 	public int supportLevel = 1;
 	public int supportLevelStacks;
+	public float mapExp;
+	public int mapLvLimit = 60;
+	public int mapLevel = 1;
+	public int mapLevelStacks;
 	public bool mainCharActive => player == Global.level.mainPlayer && player.character != null;
 
 	public MasteryTracker(Player player, CharIds charId) {
@@ -31,46 +35,61 @@ public class MasteryTracker {
 	}
 
 	public void addDamageExp(float value, bool sendRpc = false) {
+		if (sendRpc) {
+			RPC.creditExp.sendRpc(player, charId, 0, value);	
+		}
+		if (!player.ownedByLocalPlayer) { return; }
 		value = roundedShortExp(value);
 		damageExp += value;
 		if (damageExp >= damageLvLimit) {
 			damageExp -= damageLvLimit;
 			grantDamageLevel();
 		}
-		if (sendRpc) {
-			RPC.creditExp.sendRpc(player, charId, 0, value);	
-		}
 	}
 	public void addDefenseExp(float value, bool sendRpc = false) {
 		value = roundedShortExp(value);
+		if (sendRpc) {
+			RPC.creditExp.sendRpc(player, charId, 1, value);	
+		}
+		if (!player.ownedByLocalPlayer) { return; }
 		defenseExp += value;
 		if (defenseExp >= defenseLvLimit) {
 			defenseExp -= defenseLvLimit;
 			grantDefenseLevel();
 		}
-		if (sendRpc) {
-			RPC.creditExp.sendRpc(player, charId, 1, value);	
-		}
 	}
 	public void addSupportExp(float value, bool sendRpc = false) {
 		value = roundedShortExp(value);
+		if (sendRpc) {
+			RPC.creditExp.sendRpc(player, charId, 2, value);
+		}
+		if (!player.ownedByLocalPlayer) { return; }
 		supportExp += value;
 		if (supportExp >= supportLvLimit) {
 			supportExp -= supportLvLimit;
 			grantSupportLevel();
 		}
+	}
+	public void addMapExp(float value, bool sendRpc = false) {
+		value = roundedShortExp(value);
 		if (sendRpc) {
-			RPC.creditExp.sendRpc(player, charId, 2, value);
+			RPC.creditExp.sendRpc(player, charId, 3, value);
+		}
+		if (!player.ownedByLocalPlayer) { return; }
+		mapExp += value;
+		if (mapExp >= mapLvLimit) {
+			mapExp -= mapLvLimit;
+			grantMapLevel();
 		}
 	}
 
 	public void grantDamageLevel() {
 		damageLevelStacks++;
-		if (damageLevelStacks >= MathF.Ceiling(damageLevel / 6f)) {
+		if (damageLevelStacks >= MathF.Ceiling(damageLevel / 5f)) {
 			damageLevel++;
 			damageLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"ATK LV {damageLevel}!", (int)FontType.WhiteSmall);
+				player.character.addDamageText($"ATK L{damageLevel}!", (int)FontType.WhiteSmall);
 			}
 		}
 		player.awardCurrency(charId, 10);
@@ -85,11 +104,11 @@ public class MasteryTracker {
 	}
 	public void grantDefenseLevel() {
 		defenseLevelStacks++;
-		if (defenseLevelStacks >= MathF.Ceiling(defenseLevel / 6f)) {
+		if (defenseLevelStacks >= MathF.Ceiling(defenseLevel / 5f)) {
 			defenseLevel++;
 			defenseLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"DEF LV {defenseLevel}!", (int)FontType.WhiteSmall);
+				player.character.addDamageText($"DEF L{defenseLevel}!", (int)FontType.WhiteSmall);
 			}
 		}
 		player.awardCurrency(charId, 4);
@@ -99,16 +118,30 @@ public class MasteryTracker {
 	}
 	public void grantSupportLevel() {
 		supportLevelStacks++;
-		if (supportLevelStacks >= MathF.Ceiling(supportLevel / 6f)) {
+		if (supportLevelStacks >= MathF.Ceiling(supportLevel / 5f)) {
 			supportLevel++;
 			supportLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"SP LV {supportLevel}!", (int)FontType.WhiteSmall);
+				player.character.addDamageText($"SP L{supportLevel}!", (int)FontType.WhiteSmall);
 			}
 		}
 		player.awardCurrency(charId, 6);
 		if (mainCharActive) {
 			createBoltsAtPos(player.character.getCenterPos(), 3);
+		}
+	}
+	public void grantMapLevel() {
+		mapLevelStacks++;
+		if (mapLevelStacks >= MathF.Ceiling(mapLevel / 5f)) {
+			mapLevel++;
+			mapLevelStacks = 0;
+			if (mainCharActive) {
+				player.character.addDamageText($"MAP L{mapLevel}!", (int)FontType.WhiteSmall);
+			}
+		}
+		player.awardCurrency(charId, 4);
+		if (mainCharActive) {
+			createBoltsAtPos(player.character.getCenterPos(), 2);
 		}
 	}
 	

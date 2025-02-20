@@ -1644,7 +1644,23 @@ public class GameMode {
 		var startY = Global.screenH - 12;
 
 		if (player.isGridModeEnabled()) {
-			if (player.gridModeHeld == true) {
+			if (player.gridModeHeld == true && player.character != null) {
+				
+				/* for (int i = 0; i < player.character.weapons.Count; i++) {
+					float ang = (360 / player.character.weapons.Count) * i;
+					Point iconPos = player.gridModePointsEX(
+						player.character.getCenterPos().substractxy(
+							Global.level.camX, Global.level.camY
+						), ang
+					);
+
+					drawWeaponSlot(player.character.weapons[i], iconPos.x, iconPos.y);
+
+					if (i == player.character.weaponSlot) {
+						drawWeaponStateOverlay(iconPos.x, iconPos.y, 0);
+					}		
+				} */
+
 				var gridPoints = player.gridModePoints();
 				for (int i = 0; i < player.weapons.Count && i < 9; i++) {
 					Point pos = gridPoints[i];
@@ -1664,7 +1680,7 @@ public class GameMode {
 					if (i == slotSelected) {
 						drawWeaponStateOverlay(x, y, 0);
 					}
-				}
+				} 
 			}
 		}
 		for (var i = 0; i < player.weapons.Count; i++) {
@@ -1709,6 +1725,9 @@ public class GameMode {
 				break;
 			}
 		}
+
+		if (player.isGridModeEnabled()) return;
+		
 		int offsetX = 0;
 		for (var i = 0; i < player.weapons.Count; i++) {
 			var weapon = player.weapons[i];

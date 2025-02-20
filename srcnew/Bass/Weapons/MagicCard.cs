@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
-	public int cardCount;
+	public int cardCount = 6;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;

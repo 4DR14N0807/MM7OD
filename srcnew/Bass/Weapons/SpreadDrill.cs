@@ -135,7 +135,7 @@ public class SpreadDrillMediumProj : Projectile {
 	int hits;
 	Point addPos;
 	Actor ownChr = null!;
-	float projSpeed = 200;
+	float projSpeed = 150;
 
 	public SpreadDrillMediumProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
@@ -143,7 +143,7 @@ public class SpreadDrillMediumProj : Projectile {
 	) : base(
 		pos, xDir, owner, "spread_drill_medium_proj", netProjId, altPlayer
 	) {
-		maxTime = 1f;
+		maxTime = 40f / 60f;
 		projId = (int)BassProjIds.SpreadDrillMid;
 		destroyOnHit = false;
 
@@ -227,14 +227,14 @@ public class SpreadDrillSmallProj : Projectile {
 	float sparksCooldown;
 	int hits;
 	Point addPos;
-	float projSpeed = 400;
+	float projSpeed = 200;
 	public SpreadDrillSmallProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "spread_drill_small_proj", netProjId, altPlayer
 	) {
-		maxTime = 1.5f;
+		maxTime = 0.5f;
 		projId = (int)BassProjIds.SpreadDrillSmall;
 		destroyOnHit = false;
 

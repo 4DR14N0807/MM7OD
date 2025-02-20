@@ -84,8 +84,28 @@ public partial class Player {
 
 		if (isGridModeEnabled() && character.weapons.Count > 1) {
 			if (input.isWeaponLeftOrRightHeld(this)) {
-				gridModePos.x = 0;
-				gridModePos.y = 0;
+
+				gridModeHeld = true;
+
+				/* if (input.getInputDir(this) != Point.zero) {
+					gridModePos = input.getInputDir(this);
+					float inputAngle = gridModePos.angle;
+					float divide = 360 / character.weapons.Count;
+					float dif = inputAngle;
+					int c = 0;
+
+					for (int i = 0; i < character.weapons.Count; i++) {
+						if (MathF.Abs(i * divide - inputAngle) < dif) {
+							dif = Math.Abs(i * divide - inputAngle);
+							c++;
+						}
+					}
+
+					changeWeaponSlot(c);
+				} */
+				
+				/* gridModePos.x = 0;
+				gridModePos.y = 0; */
 				gridModeHeld = true;
 				if (input.isPressedMenu(Control.Up)) gridModePos.y--;
 				else if (input.isPressedMenu(Control.Down)) gridModePos.y++;

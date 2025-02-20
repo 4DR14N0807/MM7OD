@@ -830,7 +830,7 @@ public class Dash : CharState {
 		this.initialDashButton = initialDashButton;
 		accuracy = 10;
 		//exitOnAirborne = true;
-		//attackCtrl = true;
+		attackCtrl = true;
 		normalCtrl = true;
 	}
 

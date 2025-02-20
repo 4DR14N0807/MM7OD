@@ -671,7 +671,7 @@ public class Blues : Character {
 				idleState.sprite = idleState.transitionSprite;
 				changeSprite(idleState.sprite, true);
 			}
-			else if (!isShieldActive || (shieldHP <= 0 && charState is not BigBangStrikeStart)) {
+			else if (!isShieldActive || (shieldHP <= 0)) {
 				isShieldActive = false;
 				if (sprite.name == getSprite("idle_charge_shield")) {
 					changeSpriteFromName("idle", true);
@@ -1000,28 +1000,32 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.altBluesSlideInput && !overdrive) {
+		if (Options.main.altBluesSlideInput == 2) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
-				!player.input.isHeld(Control.Down, player)
+				player.input.isHeld(Control.Down, player)
 			);
 		}
+		
 		return player.input.isPressed(Control.Dash, player);
 	}
 
 	public bool slideInput() {
-		if (Options.main.altBluesSlideInput) {
-			if (overheating) {
-				return player.input.isPressed(Control.Dash, player);
-			}
+		if (Options.main.altBluesSlideInput == 0) {
+			return (
+				player.input.isPressed(Control.Jump, player) &&
+				player.input.isHeld(Control.Down, player)
+			);
+		} 
+		else if (Options.main.altBluesSlideInput == 1) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
 				player.input.isHeld(Control.Down, player)
 			);
 		}
 		return (
-			player.input.isPressed(Control.Jump, player) &&
-			player.input.isHeld(Control.Down, player)
+			player.input.isPressed(Control.Dash, player) &&
+			!player.input.isHeld(Control.Down, player)
 		);
 	}
 

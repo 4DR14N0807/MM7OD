@@ -104,7 +104,9 @@ public class RemoteMineProj : Projectile {
 			landed && owner.input.isPressed(Control.Shoot, owner) &&
 			bass.currentWeapon is RemoteMine
 		) {
-			destroySelf();
+			if (!exploded) {
+				explode();
+			}	
 		}
 	}
 
@@ -125,6 +127,8 @@ public class RemoteMineProj : Projectile {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+		if (other.gameObject is KillZone) return;
+
 		var chr = other.gameObject as Character;
 		var wall = other.gameObject as Wall;
 
@@ -143,11 +147,11 @@ public class RemoteMineProj : Projectile {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (!exploded) {
-			explode();
-		}
+		
 		if (anim != null) anim.destroySelf();
 		if (bass != null) bass.rMine = null!;
+
+		if (time >= maxTime && !exploded) explode();
 	}
 
 	void explode() {
@@ -156,6 +160,7 @@ public class RemoteMineProj : Projectile {
 			new RemoteMineExplosionProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
 			playSound("remotemineExplode", true);
 		}
+		exploded = true;
 	}
 }
 

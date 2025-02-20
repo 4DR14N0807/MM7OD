@@ -264,10 +264,6 @@ public class Bass : Character {
 	}
 
 	public override bool normalCtrl() {
-		if (player.input.isPressed(Control.Dash, player) && canUseTBladeDash()) {
-			changeState(new TenguBladeDash(), true);
-			return true;
-		}
 		if (isSuperBass) {
 			if (player.input.isPressed(Control.Jump, player) && !grounded && dashedInAir <= 0) {
 				dashedInAir++;
@@ -294,6 +290,11 @@ public class Bass : Character {
 			shootPressed = player.input.isHeld(Control.Shoot, player);
 		} else {
 			shootPressed = player.input.isPressed(Control.Shoot, player);
+		}
+
+		if (player.input.isHeld(Control.Dash, player) && shootPressed && canUseTBladeDash()) {
+			changeState(new TenguBladeDash(), true);
+			return true;
 		}
 
 		if (shootPressed) {

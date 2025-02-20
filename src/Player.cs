@@ -1648,6 +1648,10 @@ public partial class Player {
 		return null;
 	}
 
+	public Point gridModePointsEX(Point originPos, float ang, int radius = 30) {
+		return originPos.add(Point.createFromAngle(ang).times(radius));
+	}
+
 	// 0000 0000 0000 0000 [boots][body][helmet][arm]
 	// 0000 = none, 0001 = x1, 0010 = x2, 0011 = x3, 1111 = chip
 	public static int getArmorNum(int armorFlag, int armorIndex, bool isChipCheck) {

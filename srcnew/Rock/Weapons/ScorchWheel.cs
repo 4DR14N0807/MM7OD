@@ -415,8 +415,6 @@ public class Burning : CharState {
 		if (!character.ownedByLocalPlayer) return;
 		if (character.vel.y < 0) character.vel.y = 0;
 		character.stopMoving();
-		player.delayETank();
-		player.delayLTank();
 		character.isBurnState = true;
 	}
 
@@ -424,8 +422,6 @@ public class Burning : CharState {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
 		character.burnStunStacks = 0;
-		player.delayETank();
-		player.delayLTank();
 		character.isBurnState = false;
 	}
 

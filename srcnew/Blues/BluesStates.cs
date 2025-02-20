@@ -153,7 +153,7 @@ public class BluesShieldSwapLand : CharState {
 public class ShieldDash : CharState {
 	bool soundPlayed;
 	int initialXDir;
-	float dustTimer;
+	float dustTimer = 4;
 	Blues blues = null!;
 
 	public ShieldDash() : base("dash") {
@@ -191,6 +191,10 @@ public class ShieldDash : CharState {
 			dustTimer = 0;
 		}
 		if (player.input.isPressed(Control.Jump, player) && stateFrames > 0) {
+			if (!soundPlayed) {
+				character.playSound("slide", sendRpc: true);
+				soundPlayed = true;
+			}
 			if (blues.grounded || blues.canAirJump()) {
 				blues.vel.y = -blues.getJumpPower();
 				if (!blues.grounded) {
@@ -267,8 +271,9 @@ public class BluesSlide : CharState {
 				initialSlideDir *= -1;
 			}
 			return;
-		} else locked = false;
-		
+		} else {
+			locked = false;
+		}
 		if (
 			player.input.getXDir(player) == -initialSlideDir ||
 			stateFrames >= 30 || (

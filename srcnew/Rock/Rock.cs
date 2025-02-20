@@ -34,7 +34,7 @@ public class Rock : Character {
 	public int rushWeaponIndex;
 	public int RushSearchCost = 5;
 	public bool hasSuperAdaptor;
-	public const int SuperAdaptorCost = 75;
+	public const int SuperAdaptorCost = 60;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -738,9 +738,8 @@ public class Rock : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
-		int weaponIndex = currentWeapon?.index ?? 255;
 		byte ammo = (byte)MathF.Ceiling(currentWeapon?.ammo ?? 0);
-		customData.Add((byte)weaponIndex);
+		customData.Add((byte)weaponSlot);
 		customData.Add(ammo);
 		customData.Add((byte)getChargeLevel());
 
@@ -759,10 +758,12 @@ public class Rock : Character {
 		data = data[data[0]..];
 
 		// Per-character data.
-		Weapon? targetWeapon = weapons.Find(w => w.index == data[0]);
-		if (targetWeapon != null) {
-			weaponSlot = weapons.IndexOf(targetWeapon);
-			targetWeapon.ammo = data[1];
+		int targetSlot = weaponSlot;
+		if (weaponSlot < weapons.Count) {
+			weaponSlot = targetSlot;
+			if (currentWeapon != null) {
+				currentWeapon.ammo = data[1];
+			}
 		}
 		int netChargeLevel = data[2];
 		if (netChargeLevel == 0) {

@@ -14,7 +14,7 @@ public class Blues : Character {
 	// Mode variables.
 	public bool isShieldActive = true;
 	public bool isBreakMan;
-	public const int reviveCost = 75;
+	public const int reviveCost = 60;
 
 	// Core heat system.
 	public float coreMaxAmmo = 28;
@@ -44,11 +44,12 @@ public class Blues : Character {
 	public bool fastShieldHeal;
 
 	// Tanks
-	public bool isUsingLTank;
-	public float lTankHealShieldAmount;
-	public float lTankHealShieldCooldown;
-	public float lTankCoreHealAmount;
+	public LTank? usedLtank;
 	public float lTankCoreHealTime;
+
+	// Capsules.
+	public float coreHealAmount;
+	public float coreHealTime;
 
 	// Special weapon stuff
 	public Weapon specialWeapon;
@@ -121,7 +122,7 @@ public class Blues : Character {
 		else if (overheating) {
 			runSpeed = 0.75f * 60;
 			if (!shieldEquipped) {
-				runSpeed = 1.35f * 60;
+				runSpeed = 1.25f * 60;
 			}
 		}
 		else if (shieldEquipped) {
@@ -243,7 +244,7 @@ public class Blues : Character {
 		return (
 			flag == null &&
 			grounded && vel.y >= 0 &&
-			charState is not BluesSlide and not ShieldDash &&
+			charState is not BluesSlide &&
 			!overdrive && rootTime <= 0
 		);
 	}
@@ -397,10 +398,9 @@ public class Blues : Character {
 		Helpers.decrementFrames(ref lemonCooldown);
 		Helpers.decrementFrames(ref redStrikeCooldown);
 		Helpers.decrementFrames(ref lTankCoreHealTime);
-		Helpers.decrementFrames(ref lTankHealShieldCooldown);
-		if (lTankHealShieldAmount <= 0) {
-			Helpers.decrementFrames(ref healShieldHPCooldown);
-		}
+		Helpers.decrementFrames(ref coreHealTime);
+		Helpers.decrementFrames(ref healShieldHPCooldown);
+
 		for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 			Helpers.decrementFrames(ref unchargedLemonCooldown[i]);
 		}
@@ -511,38 +511,43 @@ public class Blues : Character {
 			stopCharge();
 		}
 
-		// L-Tank check.
-		if (isUsingLTank && lTankCoreHealAmount <= 0 &&
-			lTankHealShieldAmount <= 0 && eTankHealAmount <= 0
-		) {
-			isUsingLTank = false;
+		// E-Tank heal.
+		if (usedLtank != null && health > 0) {
+			if (eTankHealTime <= 0 && usedLtank.health > 0 && health < maxHealth) {
+				usedLtank.health--;
+				health = Helpers.clampMax(health + 1, maxHealth);
+				eTankHealTime = 8;
+				playSound("heal", forcePlay: true, sendRpc: true);
+			}
+			if (lTankCoreHealTime <= 0 && usedLtank.ammo > 0) {
+				usedLtank.ammo--;
+				coreAmmo = Helpers.clampMin(coreAmmo - 1, 0);
+				lTankCoreHealTime = 4;
+			}
+			if (usedLtank.health <= 0 && usedLtank.ammo <= 0) {
+				player.ltanks.Remove(usedLtank);
+				usedLtank = null;
+				eTankHealTime = 0;
+				lTankCoreHealTime = 0;
+			}
+			else if (coreAmmo <= 0 && health >= maxHealth) {
+				usedLtank = null;
+				eTankHealTime = 0;
+				lTankCoreHealTime = 0;
+			}
 		}
 
-		// L-Tank Core cooling.
-		if (lTankCoreHealAmount > 0 && lTankCoreHealTime <= 0) {
-			lTankCoreHealAmount--;
-			lTankCoreHealTime = 3;
+		if (coreHealAmount > 0 && coreHealTime <= 0) {
+			coreHealAmount--;
+			coreHealTime = 3;
 			if (!overdrive) {
 				coreAmmo--;
 				if (coreAmmo <= 0) {
 					coreAmmo = 0;
-					lTankCoreHealAmount = 0;
-					lTankCoreHealTime = 0;
+					coreHealAmount = 0;
+					coreHealTime = 0;
 				}
 				playSound("heal");
-			}
-		}
-
-		// L-Tank Shield HP Heal.
-		if (lTankHealShieldAmount > 0 && lTankHealShieldCooldown <= 0) {
-			shieldHP++;
-			lTankHealShieldAmount--;
-			lTankHealShieldCooldown = 8;
-			playSound("heal");
-			if (shieldHP >= shieldMaxHP) {
-				shieldHP = shieldMaxHP;
-				lTankHealShieldAmount = 0;
-				lTankHealShieldCooldown = 0;
 			}
 		}
 
@@ -903,25 +908,26 @@ public class Blues : Character {
 	}
 
 	public void healCore(float amount) {
-		lTankCoreHealAmount = amount;
+		coreHealAmount = amount;
 	}
 
-	public void healShield(float amount) {
-		lTankHealShieldAmount = amount;
-	}
-
-	public void stopLTankHeal(bool stopShield = true) {
-		if (stopShield) {
-			lTankHealShieldAmount = 0;
-			lTankHealShieldCooldown = 0;
-		}
-	}
-	
-	public void drawLTankHealingInner() {
-		if (eTankHealAmount <= 0 && lTankHealShieldAmount <= 0 && lTankCoreHealAmount <= 0) return;
+	public void drawLTankHealingInner(float tankHealth, float tankAmmo) {
+		if (usedLtank == null) return;
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
+		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
+		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_ltank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
+		float yPos = 12 * (1 - tankHealth / LTank.maxHealth);
+		DrawWrappers.DrawRect(
+			topLeftBar.x, topLeftBar.y + yPos, pos.x, botRightBar.y,
+			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
+		);
+		yPos = 12 * (1 - tankAmmo / LTank.maxAmmo);
+		DrawWrappers.DrawRect(
+			pos.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
+			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
+		);
 		
 		deductLabelY(labelSubtankOffY);
 	}
@@ -1066,6 +1072,19 @@ public class Blues : Character {
 		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
+		if (fDamage <= 0) {
+			return;
+		}
+		// Apply mastery level before any reduction.
+		if (attacker != null && attacker != player &&
+			attacker != Player.stagePlayer
+		) {
+			if (fDamage < Damager.ohkoDamage) {
+				mastery.addDefenseExp(fDamage);
+				attacker.mastery.addDamageExp(fDamage, true);
+			}
+		}
+		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
 		}
@@ -1138,7 +1157,6 @@ public class Blues : Character {
 		// Shield front block check.
 		if (shieldHitFront && damage > 0) {
 			shieldDamaged = true;
-			stopLTankHeal();
 			// 1-2 damage scenario.
 			if (damageReduction > 0 && damage <= 2) {
 				if (damage <= 1) {
@@ -1240,6 +1258,18 @@ public class Blues : Character {
 			addDamageText(damageText, fontColor);
 			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 		}
+		// Disable L-Tanks only on external damage sources.
+		if (ogShieldHP - shieldHP > 0  && !Damager.isDot(projId) &&
+			attacker != null && attacker != player && attacker != Player.stagePlayer
+		) {
+			player.delayETank();
+			stopETankHeal();
+		}
+	}
+
+	public override void stopETankHeal() {
+		base.stopETankHeal();
+		usedLtank = null;
 	}
 
 	public override void aiAttack(Actor? target) {

@@ -287,6 +287,9 @@ public class Damager {
 					victim?.playSound("hit");
 				}
 			}
+			if (owner.ownedByLocalPlayer && damage > 0) {
+				owner.lastDamagedCharacter = character;
+			}
 		}
 
 		// Rush Jet flinch

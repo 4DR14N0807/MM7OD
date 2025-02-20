@@ -1,7 +1,9 @@
 ﻿namespace MMXOnline;
 
 public class LTank {
-	public const int maxAmmo = 28;
+	public static int maxHealth = 12;
+	public float health = 12;
+	public static int maxAmmo = 28;
 	public float ammo = 28;
 	public bool inUse;
 
@@ -13,10 +15,6 @@ public class LTank {
 		if (character is not Blues blues) {
 			return;
 		}
-		blues.isUsingLTank = true;
-
-		blues?.addETankHealth(player.maxHealth);
-		blues?.healCore(blues.coreMaxAmmo);
-		blues?.healShield(blues.shieldMaxHP);
+		blues.usedLtank = this;
 	}
 }

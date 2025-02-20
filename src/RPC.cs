@@ -75,6 +75,7 @@ public class RPC {
 	public static RPCUseETank useETank = new();
 	public static RPCUseWTank useWTank = new();
 	public static RPCResetFlag resetFlags = new();
+	public static RPCAddExp creditExp = new();
 	// For mods and stuff.
 	// It allow to not override stuff when developing mods.
 	public static RPCCustom custom = new();
@@ -147,6 +148,7 @@ public class RPC {
 		useSubtank,
 		useETank,
 		useWTank,
+		creditExp,
 		// Custom generic RCP.
 		custom,
 	};
@@ -1987,5 +1989,52 @@ public class PendingRPC {
 			return;
 		}
 		rpc.invoke(bytes);
+	}
+}
+
+
+public class RPCAddExp : RPC {
+	public RPCAddExp() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+	}
+
+	public override void invoke(params byte[] arguments) {
+		Player? player = Global.level.getPlayerById(arguments[0]);
+		int type = arguments[1];
+		int charId = arguments[2];
+		ushort expByte = BitConverter.ToUInt16(arguments[3..5]);
+		float exp = expByte / 256f;
+
+		if (player == null) {
+			return;
+		}
+		if (type == 0) {
+			player.masteryLevels[charId].addDamageExp(exp);
+		}
+		else if (type == 1) {
+			player.masteryLevels[charId].addDefenseExp(exp);
+		}
+		else if (type == 2) {
+			player.masteryLevels[charId].addSupportExp(exp);
+		}
+		else if (type == 3) {
+			player.masteryLevels[charId].addMapExp(exp);
+		}
+	}
+
+	public void sendRpc(Player player, int charId, int type, float exp) {
+		if (Global.serverClient == null) return;
+		if (player == null) return;
+		if (exp > 255) { exp = 255; }
+		ushort expShort = (ushort)MathF.Ceiling(exp * 256f);
+		byte[] expBytes = BitConverter.GetBytes(exp);
+
+		Global.serverClient?.rpc(
+			this,
+			(byte)player.id,
+			(byte)type,
+			(byte)charId,
+			expBytes[0], expBytes[1]
+		);
 	}
 }

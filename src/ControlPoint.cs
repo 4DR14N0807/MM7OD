@@ -232,14 +232,14 @@ public class ControlPoint : Actor {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) return;
-
-		if (!ownedByLocalPlayer) return;
-
 		if (captured || locked) return;
+		if (other.gameObject is not Character character) { return; }
 
-		var chr = other.gameObject as Character;
-		if (chr != null && !chrsOnPoint.Contains(chr)) {
-			chrsOnPoint.Add(chr);
+		if (character.ownedByLocalPlayer) {
+			character.mastery.addMapExp(1/64f);
+		}
+		if (ownedByLocalPlayer && !chrsOnPoint.Contains(character)) {
+			chrsOnPoint.Add(character);
 		}
 	}
 

@@ -17,6 +17,7 @@ public partial class Player {
 	public float fgMoveAmmo = 1920;
 	public float fgMoveMaxAmmo = 1920;
 	public bool isDefenderFavoredNonOwner;
+	public Character? lastDamagedCharacter;
 
 	public bool isDefenderFavored {
 		get {
@@ -223,20 +224,12 @@ public partial class Player {
 
 	// ETanks
 	private Dictionary<int, List<ETank>> charETanks = new Dictionary<int, List<ETank>>() {
-		{ (int)CharIds.X, new List<ETank>() },
-		{ (int)CharIds.Zero, new List<ETank>() },
-		{ (int)CharIds.Vile, new List<ETank>() },
-		{ (int)CharIds.Axl, new List<ETank>() },
-		{ (int)CharIds.Sigma, new List<ETank>() },
-		{ (int)CharIds.PunchyZero, new List<ETank>() },
-		{ (int)CharIds.BusterZero, new List<ETank>() },
 		{ (int)CharIds.Rock, new List<ETank>() },
 		{ (int)CharIds.Blues, new List<ETank>() },
 		{ (int)CharIds.Bass, new List<ETank>() },
 	};
 
 	// WTanks
-
 	public Dictionary<int, List<WTank>> charWTanks = new Dictionary<int, List<WTank>>() {
 		{ (int)CharIds.Rock, new List<WTank>() },
 		{ (int)CharIds.Blues, new List<WTank>() },
@@ -244,7 +237,6 @@ public partial class Player {
 	};
 
 	// Blues exclusive tanks (L and M)
-
 	public Dictionary<int, List<LTank>> charLTanks = new Dictionary<int, List<LTank>>() {
 		{ (int)CharIds.Blues, new List<LTank>() },
 	};
@@ -255,27 +247,19 @@ public partial class Player {
 
 	// Heart tanks
 	private Dictionary<int, ProtectedInt> charHeartTanks = new Dictionary<int, ProtectedInt>() {
-		{ (int)CharIds.X, new() },
-		{ (int)CharIds.Zero, new() },
-		{ (int)CharIds.Vile, new() },
-		{ (int)CharIds.Axl, new() },
-		{ (int)CharIds.Sigma, new() },
-		{ (int)CharIds.PunchyZero, new() },
-		{ (int)CharIds.BusterZero, new() },
 		{ (int)CharIds.Rock, new() },
 		{ (int)CharIds.Blues, new() },
 		{ (int)CharIds.Bass, new()}
 	};
-	
 
 	// Getter functions.
 	public List<ETank> ETanks {
-		get { return charETanks[isDisguisedAxl ? 3 : charNum]; }
-		set { charETanks[isDisguisedAxl ? 3 : charNum] = value; }
+		get { return charETanks[charNum]; }
+		set { charETanks[charNum] = value; }
 	}
 	public List<WTank> wtanks {
-		get { return charWTanks[isDisguisedAxl ? 3 : charNum];}
-		set { charWTanks[isDisguisedAxl ? 3 : charNum] = value;}
+		get { return charWTanks[charNum];}
+		set { charWTanks[charNum] = value;}
 	}
 	public List<LTank> ltanks {
 		get { return charLTanks[charNum]; }
@@ -288,12 +272,12 @@ public partial class Player {
 	public int heartTanks {
 		get {
 			if (!ownedByLocalPlayer) {
-				return charHeartTanks[isDisguisedAxl ? 3 : charNum].unsafeVal;
+				return charHeartTanks[charNum].unsafeVal;
 			}
-			return charHeartTanks[isDisguisedAxl ? 3 : charNum].value;
+			return charHeartTanks[charNum].value;
 		}
 		set {
-			charHeartTanks[isDisguisedAxl ? 3 : charNum].value = value;
+			charHeartTanks[charNum].value = value;
 		}
 	}
 
@@ -301,16 +285,20 @@ public partial class Player {
 	public const int maxCharCurrencyId = 12;
 	public static int curMul = Helpers.randomRange(2, 8);
 
+	// Mastery system.
+	public Dictionary<int, MasteryTracker> masteryLevels;
+	public MasteryTracker mastery => masteryLevels[(int?)character?.charId ?? charNum];
+
 	public ProtectedArrayInt charCurrency = new ProtectedArrayInt(maxCharCurrencyId);
 	public int currency {
 		get {
 			if (!ownedByLocalPlayer) {
-				return charCurrency.unsafeVal(isDisguisedAxl ? 3 : charNum);
+				return charCurrency.unsafeVal(charNum);
 			}
-			return charCurrency[isDisguisedAxl ? 3 : charNum];
+			return charCurrency[charNum];
 		}
 		set {
-			charCurrency[isDisguisedAxl ? 3 : charNum] = value;
+			charCurrency[charNum] = value;
 		}
 	}
 
@@ -615,28 +603,11 @@ public partial class Player {
 		this.isAI = isAI;
 		this.charNum = charNum;
 		newCharNum = charNum;
-
 		this.input = input;
 		this.ownedByLocalPlayer = ownedByLocalPlayer;
 
-		this.xArmor1v1 = playerData?.armorSet ?? 1;
-		if (Global.level.is1v1() && isX) {
-			legArmorNum = xArmor1v1;
-			bodyArmorNum = xArmor1v1;
-			helmetArmorNum = xArmor1v1;
-			armArmorNum = xArmor1v1;
-		}
-
 		for (int i = 0; i < charCurrency.Length; i++) {
 			charCurrency[i] = getStartCurrency();
-		}
-		foreach (var key in charHeartTanks.Keys) {
-			int htCount = getStartHeartTanksForChar();
-			int altHtCount = getStartHeartTanks();
-			if (altHtCount > htCount) {
-				htCount = altHtCount;
-			}
-			charHeartTanks[key].value = htCount;
 		}
 		foreach (var key in charETanks.Keys) {
 			int stCount = key == charNum ? getStartETanksForChar() : getStartETanks();
@@ -644,20 +615,25 @@ public partial class Player {
 				charETanks[key].Add(new ETank());
 			}
 		}
-
+		foreach (var key in charLTanks.Keys) {
+			int stCount = key == charNum ? getStartETanksForChar() : getStartETanks();
+			for (int i = 0; i < stCount; i++) {
+				charLTanks[key].Add(new LTank());
+			}
+		}
 		foreach (var key in charWTanks.Keys) {
 			int wtCount = getStartWTanks();
 			for (int i=0; i < wtCount; i++) {
 				charWTanks[key].Add(new WTank());
 			}
 		}
-
+		masteryLevels = new Dictionary<int, MasteryTracker>() {
+			{ (int)CharIds.Rock, new(this, CharIds.Rock) },
+			{ (int)CharIds.Blues, new(this, CharIds.Blues) },
+			{ (int)CharIds.Bass, new(this, CharIds.Bass) },
+		};
 		maxHealth = getMaxHealth();
-		if (charNum == (int)CharIds.Bass) maxHealth -= evilEnergyStacks * hpPerStack;
 		health = maxHealth;
-
-		aiArmorPath = new List<int>() { 1, 2, 3 }.GetRandomItem();
-		aiArmorUpgradeOrder = new List<int>() { 0, 1, 2, 3 }.Shuffle();
 
 		this.serverPlayer = serverPlayer;
 
@@ -1333,14 +1309,34 @@ public partial class Player {
 		}
 	}
 
+	public void awardCurrency(int charId, int value) {
+		if (Global.level?.server?.customMatchSettings != null) {
+			charCurrency[charId] += (
+				MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain / 8f) * value)
+			);
+		} else {
+			charCurrency[charId] += value;
+		}
+	}
+	
+	public void awardKillExp(bool isKiller = true) {
+		int toAdd = isKiller ? 4 : 2;
+		
+		if (Global.level?.server?.customMatchSettings != null) {
+			mastery.addDamageExp(toAdd);
+		} else {
+			mastery.addDamageExp(toAdd);
+		}
+	}
+
 	public int getStartCurrency() {
 		if (Global.level.levelData.isTraining() || Global.anyQuickStart) {
-			return 999;
+			return 800;
 		}
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
-		return 25;
+		return 10;
 	}
 
 	public void onKillEffects(bool isAssist) {
@@ -1978,82 +1974,35 @@ public partial class Player {
 		return isSigma && isPuppeteer() && currentMaverick != null && weapon is MaverickWeapon;
 	}
 
-	public bool hasETankCapacity() {
-		var Etanks = this.ETanks;
-		for (int i = 0; i < Etanks.Count; i++) {
-			if (Etanks[i].health < ETank.maxHealth) {
-				return true;
-			}
-		} 
-		return false;
-	}
-
 	public bool canUseEtank(ETank etank) {
 		if (isDead) return false;
-		if (character.healAmount > 0) return false;
 		if (health <= 0 || health >= maxHealth) return false;
-		if (etank.health <= 0) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
-		if (character is MegamanX { stingActiveTime: >0 }) return false;
-		// TODO: Add Wolf Check here.
-		//if (character.isHyperSigmaBS.getValue()) return false;
 
 		return true;
 	}
 
 	public bool canUseWTank(WTank wtank) {
 		if (isDead) return false;
+		if (health <= 0) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
-		//if (weaponToHeal.ammo >= weaponToHeal.maxAmmo) return false;
-		//if (weapon.ammo == weapon.maxAmmo) return false;
-		//if (weapon is not RockBuster) return true;
-		// (weapon is not SARocketPunch) return true;
-		
+		if (!character.canAddAmmo()) return false;
+
 		return true;
 	}
 
 	public bool canUseLTank(LTank ltank) {
-		if (character is Blues blues && character != null) {
+		if (character is Blues blues) {
 			if (isDead) return false;
-			if (blues?.charState is WarpOut) return false;
-			if (blues != null && blues.charState.invincible) return false;
-			if (blues?.charState is OverheatShutdown or
-				OverheatShutdownStart) return false;
-			if (health >= maxHealth && blues?.shieldHP >= blues?.shieldMaxHP && blues?.coreAmmo <= 0) return false;
+			if (health <= 0 || health >= maxHealth) return false;
+			if (blues.charState is WarpOut) return false;
+			if (blues.charState.invincible) return false;
+			if (blues.charState is OverheatShutdown or OverheatShutdownStart) return false;
 			return true;
 		} 
 		return false;
-	}
-
-	public bool canUseMTank(MTank mtank) {
-		if (isDead) return false;
-		if (character.charState is WarpOut) return false;
-		if (character.charState.invincible) return false;
-
-		return true;
-	}
-
-	public void fillETank(float amount) {
-		if (character?.healAmount > 0) return;
-		var etanks = this.ETanks;
-		for (int i = 0; i < etanks.Count; i++) {
-			if (etanks[i].health < ETank.maxHealth) {
-				etanks[i].health += amount;
-				if (etanks[i].health >= ETank.maxHealth) {
-					etanks[i].health = ETank.maxHealth;
-					//if (isMainPlayer) Global.playSound("subtankFull");
-				} else {
-					if (isMainPlayer) Global.playSound("subtank_fill");
-				}
-				break;
-			}
-		}
-	}
-
-	public bool isUsingETank() {
-		return character?.usedEtank != null;
 	}
 
 	public int getSpawnIndex(int spawnPointCount) {
@@ -2069,23 +2018,7 @@ public partial class Player {
 	public void delayETank() {
 		if (isMainPlayer) {
 			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
-		}
-	}
-
-	public void delayLTank() {
-		if (isMainPlayer) {
-			BluesUpgradeMenu.lTankDelay = BluesUpgradeMenu.maxLTankDelay;
-		}
-	}
-
-
-	public void stopETankHeal() {
-		if (character != null && character.eTankHealAmount > 0) character.eTankHealAmount = 0;
-	}
-
-	public void delayWTank() {
-		if (isMainPlayer) {
-			UpgradeMenu.wTankDelay = UpgradeMenu.maxWTankDelay;
+			BluesUpgradeMenu.lTankDelay = UpgradeMenu.maxETankDelay;
 		}
 	}
 }

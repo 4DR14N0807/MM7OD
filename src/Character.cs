@@ -29,6 +29,7 @@ public partial class Character : Actor, IDamagable {
 	
 	// Player linked data.
 	public Player player;
+	public MasteryTracker mastery => player.masteryLevels[(int)charId];
 	public int currency;
 
 	public List<Weapon> weapons = new();
@@ -72,8 +73,7 @@ public partial class Character : Actor, IDamagable {
 	public int healTime = 0;
 	public float weaponHealAmount = 0;
 	public float weaponHealTime = 0;
-	public int eTankHealTime = 0; // Etank heal stuff
-	public int eTankHealAmount;	  //
+	public float eTankHealTime = 0;
 	public float healthBarInnerWidth;
 	public float slideVel = 0;
 	public Flag? flag;
@@ -728,6 +728,7 @@ public partial class Character : Actor, IDamagable {
 		if (grounded && !isDashing) {
 			dashedInAir = 0;
 		}
+		Helpers.decrementFrames(ref eTankHealTime);
 	}
 
 	public override void onCollision(CollideData other) {
@@ -1052,54 +1053,39 @@ public partial class Character : Actor, IDamagable {
 			usedWtank = null;
 		}
 
-		//HP Capsules heal
+		// HP Capsules heal
 		if (healAmount > 0 && health > 0 && charState is not WarpIn) {
 			healTime++;
 			if (healTime >= 3) {
 				healTime = 0;
 				healAmount--;
-				if (usedEtank != null) {
-					usedEtank.health--;
-				}
 				health = Helpers.clampMax(health + 1, maxHealth);
 				if (acidTime > 0) {
 					acidTime--;
 					if (acidTime < 0) removeAcid();
 				}
 				if (player == Global.level.mainPlayer || playHealSound) {
-					if (this is MegamanX { hyperHelmetActive: true, helmetArmor: ArmorId.Max }) {
-						playSound("goldenHelmetHP", forcePlay: true, sendRpc: true);
-					} else {
-						playSound("heal", forcePlay: true, sendRpc: true);
-					}
+					playSound("heal", forcePlay: true, sendRpc: true);
 				}
 			}
 		}
-		
-		//ETanks heal
-		if (eTankHealAmount > 0 && player.health > 0) {
-			eTankHealTime++;
-			if (eTankHealTime >= 8) {
+
+		// E-Tank heal
+		if (usedEtank != null && health > 0 && eTankHealTime <= 0) {
+			usedEtank.health--;
+			health = Helpers.clampMax(health + 1, maxHealth);
+			eTankHealTime = 8;
+
+			if (usedEtank.health <= 0) {
+				player.ETanks.Remove(usedEtank);
+				usedEtank = null;
 				eTankHealTime = 0;
-				eTankHealAmount--;
-				if (usedEtank != null) {
-					usedEtank.health--;
-				}
-
-				if (player == Global.level.mainPlayer || playHealSound) {
-					if (player.health < player.maxHealth) playSound("heal", forcePlay: true, sendRpc: true);
-				}
-
-				player.health = Helpers.clampMax(player.health + 1, player.maxHealth);
 			}
-		} else {
-			playHealSound = false;
-		}
 
-		if (usedEtank != null && usedEtank.health <= 0) {
-			usedEtank = null;
+			if (player == Global.level.mainPlayer || playHealSound) {
+				playSound("heal", forcePlay: true, sendRpc: true);
+			}
 		}
-
 		if (usedWtank != null && usedWtank.ammo <= 0) {
 			usedWtank = null;
 		}
@@ -1501,6 +1487,10 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		freezeTime = time;
+		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
 
 		// Hud stuff.
 		buffList.Add(new Buff("hud_debuffs", 0, false, time, time));
@@ -1521,6 +1511,9 @@ public partial class Character : Actor, IDamagable {
 		// Hud stuff.
 		burnInvulnTime = 120 + 15;
 		buffList.Add(new Buff("hud_debuffs", 3, false, 120 + 15, 120 + 15));
+		if (attacker != null) {
+			attacker.mastery.addSupportExp(2, true);
+		}
 	}
 
 	public void root(float time, float cooldown, int playerid) {
@@ -1546,7 +1539,10 @@ public partial class Character : Actor, IDamagable {
 		stopMovingWeak();
 		useGravity = false;
 		charState.canStopJump = false;
-
+		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
 		// Hud stuff.
 		buffList.Add(new Buff("hud_debuffs", 1, false, time, time));
 	}
@@ -2241,8 +2237,8 @@ public partial class Character : Actor, IDamagable {
 
 	public bool drawETankHealing() {
 		if (this is Blues blues) {
-			if (blues.isUsingLTank) {
-				blues.drawLTankHealingInner();
+			if (blues.usedLtank != null) {
+				blues.drawLTankHealingInner(blues.usedLtank.health, blues.usedLtank.ammo);
 				return true;
 			}
 		} else {
@@ -2282,30 +2278,33 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
-	public void drawETankHealingInner(float health) {
-		if (eTankHealAmount <= 0) return;
+	public void drawETankHealingInner(float tankHealth) {
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
-		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
-		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
+		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
+		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 14 * (health / ETank.maxHealth);
-		//DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
-
+		float yPos = 12 * (1 - tankHealth / ETank.maxHealth);
+		DrawWrappers.DrawRect(
+			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
+			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
+		);
+		
 		deductLabelY(labelSubtankOffY);
 	}
 
-	public void drawWTankHealingInner(float ammo) {
+	public void drawWTankHealingInner(float tankAmmo) {
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
-		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
-		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
+		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
+		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_wtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 14 * (ammo / WTank.maxAmmo);
-		//DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
-
+		float yPos = 12 * (1 - tankAmmo / WTank.maxAmmo);
+		DrawWrappers.DrawRect(
+			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
+			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
+		);
+	
 		deductLabelY(labelSubtankOffY);
 	}
 
@@ -2543,13 +2542,30 @@ public partial class Character : Actor, IDamagable {
 	public virtual void applyDamage(
 		float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId
 	) {
+		if (fDamage <= 0) {
+			return;
+		}
+		// Apply mastery level before any reduction.
+		if (this is not Blues && attacker != null && attacker != player && attacker != Player.stagePlayer) {
+			if (fDamage < Damager.ohkoDamage) {
+				mastery.addDefenseExp(fDamage);
+				attacker.mastery.addDamageExp(fDamage, true);
+				if (flag != null) {
+					mastery.addMapExp(fDamage * 2);
+				}
+			}
+			if (ownedByLocalPlayer && !Damager.isDot(projId)) {
+				usedEtank = null;
+				usedWtank = null;
+			}
+		}
+		// Return if not owned.
 		if (!ownedByLocalPlayer) {
 			return;
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = health;
-
 		// For Dark Hold break.
 		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
@@ -2627,7 +2643,7 @@ public partial class Character : Actor, IDamagable {
 			attacker != null && attacker != player && attacker != Player.stagePlayer
 		) {
 			player.delayETank();
-			player.stopETankHeal();
+			stopETankHeal();
 		}
 		if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {
 			if (this is Blues blues && blues.customDamageDisplayOn) {
@@ -2652,6 +2668,10 @@ public partial class Character : Actor, IDamagable {
 			}
 			killPlayer(attacker, null, weaponIndex, projId);
 		}
+	}
+	
+	public virtual void stopETankHeal() {
+		usedEtank = null;
 	}
 
 	public void killPlayer(Player? killer, Player? assister, int? weaponIndex, int? projId) {
@@ -2678,7 +2698,7 @@ public partial class Character : Actor, IDamagable {
 					}
 				}
 
-				killer.awardCurrency();
+				killer.awardKillExp();
 				killer.onKillEffects(false);
 				//killer.currency += 10;
 			} else if (Global.level.gameMode.level.is1v1()) {
@@ -2693,7 +2713,7 @@ public partial class Character : Actor, IDamagable {
 				assister.addAssist();
 				assister.addKill();
 
-				assister.awardCurrency(false);
+				assister.awardKillExp(false);
 				assister.onKillEffects(true);
 				//assister.currency += 5;
 			}
@@ -2755,17 +2775,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void addHealth(float amount, bool fillEtank = true) {
-		if (health >= maxHealth && fillEtank) {
-			player.fillETank(amount);
+		if (health >= maxHealth) {
+			return;
 		}
 		healAmount += amount;
-	}
-
-	public void addETankHealth(float amount, bool fillEtank = true) {
-		if (health >= maxHealth && fillEtank) {
-			player.fillETank(amount);
-		}
-		eTankHealAmount += (int)amount;
 	}
 
 	public void fillHealthToMax() {
@@ -2908,7 +2921,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void dwrapEnd() {
 		isDWrapped = false;
-		stopMoving();
+		stopMovingWeak();
 		useGravity = true;
 		playSound("hit");
 	}
@@ -3002,6 +3015,7 @@ public partial class Character : Actor, IDamagable {
 		bigBubble = new DWrapBigBubble(pos, player, xDir,
 		player.getNextActorNetId(), true, true);
 		dwrapStart();
+		attacker.mastery.addSupportExp(2, true);
 		//changeState(new DWrapped(true))
 		//bubbleAnim = new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, player.getNextActorNetId(), true, true);
 	}

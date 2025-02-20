@@ -210,10 +210,7 @@ public class Maverick : Actor, IDamagable {
 		}
 	}
 
-	public void addHealth(float amount, bool fillETank) {
-		if (health >= maxHealth && fillETank) {
-			player.fillETank(amount);
-		}
+	public void addHealth(float amount) {
 		healAmount += amount;
 	}
 
@@ -1047,9 +1044,11 @@ public class Maverick : Actor, IDamagable {
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
 
 		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		//Global.sprites["menu_subtank_bar"].draw(0, topLeftBar.x, topLeftBar.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
 		float yPos = 14 * (health / ETank.maxHealth);
-		DrawWrappers.DrawRect(topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos, true, Color.Black, 1, ZIndex.HUD);
+		DrawWrappers.DrawRect(
+			topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
+			true, Color.Black, 1, ZIndex.HUD
+		);
 
 		deductLabelY(labelSubtankOffY);
 	}

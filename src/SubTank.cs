@@ -15,7 +15,7 @@ public class SubTank {
 	}
 
 	public void use(Maverick maverick) {
-		maverick.addHealth(health, false);
+		maverick.addHealth(health);
 		maverick.usedSubtank = this;
 		RPC.useSubtank.sendRpc(maverick.netId, (int)health);
 	}

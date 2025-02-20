@@ -1,4 +1,7 @@
-﻿namespace MMXOnline;
+﻿
+using SFML.Graphics;
+
+namespace MMXOnline;
 
 public class InGameMainMenu : IMainMenu {
 	public static int selectY = 0;
@@ -155,5 +158,68 @@ public class InGameMainMenu : IMainMenu {
 		Fonts.drawText(FontType.Blue, "SETTINGS", startX, optionPos[5], selected: selectY == 5);
 		Fonts.drawText(FontType.Blue, "LEAVE MATCH", startX, optionPos[6], selected: selectY == 6);
 		Fonts.drawTextEX(FontType.Blue, "[OK]: Choose, [ESC]: Cancel", Global.halfScreenW, 198, Alignment.Center);
+
+		Color outline = new Color(41, 41, 41);
+		MasteryTracker mastery = Global.level.mainPlayer.mastery;
+
+		drawLevelBar(
+			$"ATK", Global.screenW - 76, 8,
+			FontType.RedSmall, new Color(255, 115, 127),
+			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 5f),
+			mastery.damageExp, mastery.damageLvLimit, mastery.damageLevel
+		);
+		drawLevelBar(
+			$"DEF", Global.screenW - 76, 23,
+			FontType.BlueSmall, new Color(66, 206, 239),
+			mastery.defenseLevelStacks, MathInt.Ceiling(mastery.defenseLevel / 5f),
+			mastery.defenseExp, mastery.defenseLvLimit, mastery.defenseLevel
+		);
+		drawLevelBar(
+			$"SP", Global.screenW - 76, 38,
+			FontType.GreenSmall, new Color(123, 231, 148),
+			mastery.supportLevelStacks, MathInt.Ceiling(mastery.supportLevel / 5f),
+			mastery.supportExp, mastery.supportLvLimit, mastery.supportLevel
+		);
+		drawLevelBar(
+			$"MAP", Global.screenW - 76, 53,
+			FontType.PurpleSmall, new Color(189, 115, 214),
+			mastery.mapLevelStacks, MathInt.Ceiling(mastery.mapLevel / 5f),
+			mastery.mapExp, mastery.mapLvLimit, mastery.mapLevel
+		);
+	}
+
+	public void drawLevelBar(
+		string text, float posX, float posY, FontType font, Color barColor,
+		int stacks, int segments, float exp, float cap, int level
+	) {
+		Color outline = new Color(41, 41, 41);
+		Fonts.drawText(font, text, posX, posY);
+		Fonts.drawText(font, $"L{level}", posX + 66, posY, Alignment.Right);
+		DrawWrappers.DrawRectWH(
+			posX, posY + 9, 66, 6, true, outline, 0, ZIndex.HUD, false
+		);
+		int spacing = 0;
+		if (segments > 1) {
+			spacing = segments - 1; 
+		}
+		int currentOffset = 0;
+		int barSize = MathInt.Round((64f - spacing) / segments);
+		for (int i = 0; i <= stacks - 1; i++) {
+			DrawWrappers.DrawRectWH(
+				posX + 1 + currentOffset,
+				posY + 10, barSize, 4, true, barColor, 0, ZIndex.HUD, false
+			);
+			currentOffset += barSize + 1;
+		}
+		float progress = exp / cap;
+		float finalSize = barSize;
+		if (segments == stacks + 1) {
+			finalSize = 64 - currentOffset;
+		}
+		finalSize *= progress;
+		DrawWrappers.DrawRectWH(
+			posX + 1 + currentOffset, posY + 10,
+			finalSize, 4, true, barColor, 0, ZIndex.HUD, false
+		);
 	}
 }

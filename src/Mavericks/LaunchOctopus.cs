@@ -477,7 +477,7 @@ public class LaunchODrainState : MaverickState {
 			if (maverick.isDefenderFavored()) {
 				if (leechTime > 0.5f) {
 					leechTime = 0;
-					maverick.addHealth(2, true);
+					maverick.addHealth(2);
 				}
 				return;
 			}
@@ -485,7 +485,7 @@ public class LaunchODrainState : MaverickState {
 
 		if (leechTime > 0.5f) {
 			leechTime = 0;
-			maverick.addHealth(2, true);
+			maverick.addHealth(2);
 			var damager = new Damager(player, 2, 0, 0);
 			damager.applyDamage(victim, false, new LaunchODrainWeapon(), maverick, (int)ProjIds.LaunchODrain);
 		}

@@ -780,6 +780,27 @@ public class OptionsMenu : IMainMenu {
 						);
 					}
 				),
+				
+				// Switch Shield Dash input.
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.altBluesSlideInput);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"ALT SLIDE INPUT:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.altBluesSlideInput),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"If enabled, you will use slide with \n" + "dash+down."
+				),
 				// Switch Shield Dash input.
 				new MenuOption(
 					30, startY,
@@ -799,26 +820,6 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"If enabled, it swaps\nthe slide and dash inputs."
-				),
-				// Switch Shield Dash input.
-				new MenuOption(
-					30, startY,
-					() => {
-						Helpers.menuLeftRightInc(ref Options.main.altBluesSlideInput, 0, 2);;
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText,
-							"SLIDE INPUT:",
-							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-
-						Fonts.drawText(
-							optionFontValue, bluesSlideStr(Options.main.altBluesSlideInput),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Changes slide input."
 				),
 				// Shield Toggle/Hold
 				new MenuOption(
@@ -1505,14 +1506,6 @@ public class OptionsMenu : IMainMenu {
 			0 => "HUD",
 			1 => "Follow",
 			_ => "Both"
-		};
-	}
-
-	string bluesSlideStr(int mode) {
-		return mode switch {
-			0 => "Down + Jump",
-			1 => "Down + Dash",
-			_ => "Dash"
 		};
 	}
 

@@ -10,17 +10,19 @@ namespace MMXOnline;
 
 public partial class Character : Actor, IDamagable {
 	public static string[] charDisplayNames = {
-		"ERROR",
-		"ERROR",
-		"ERROR",
-		"ERROR",
-		"ERROR",
+		"ERROR", "ERROR", "ERROR", "ERROR", "ERROR",
+		"ERROR", "ERROR", "ERROR", "ERROR", "ERROR",
 		"Megaman",
 		"Protoman",
 		"Bass",
-		"",
-		"",
-		""
+		"Freezeman",
+		"Cloudman",
+		"Junkman",
+		"Burstman",
+		"Slashman",
+		"Shademan",
+		"Turboman",
+		"Springman",
 	};
 
 	// Health.

@@ -7,7 +7,7 @@ public class AddBotMenu : IMainMenu {
 	public int selectArrowPosY;
 	public IMainMenu previous;
 
-	public static int botCharNum = 5;
+	public static int botCharNum = 10;
 	public static int botTeamNum = -1;
 
 	public List<Point> optionPoses = new List<Point>()
@@ -28,18 +28,18 @@ public class AddBotMenu : IMainMenu {
 		if (selectArrowPosY == 0) {
 			if (Global.input.isPressedMenu(Control.MenuLeft)) {
 				botCharNum--;
-				if (botCharNum == 4) {
+				if (botCharNum == (int)CharIds.Rock - 1) {
 					botCharNum = -1;
 				}
 				else if (botCharNum <= -1) {
-					botCharNum = 7;
+					botCharNum = (int)CharIds.Bass;
 				}
 			} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 				botCharNum++;
 				if (botCharNum == 0) {
-					botCharNum = 5;
+					botCharNum = (int)CharIds.Rock;
 				}
-				else if (botCharNum > 7) {
+				else if (botCharNum > (int)CharIds.Bass) {
 					botCharNum = -1;
 				}
 			}
@@ -62,7 +62,7 @@ public class AddBotMenu : IMainMenu {
 				int charNum = botCharNum;
 				int alliance = botTeamNum;
 				if (charNum == -1) {
-					charNum = Helpers.randomRange(5, 7);
+					charNum = Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Bass);
 				}
 				if (alliance == -1) {
 					if (Global.level.gameMode.isTeamMode) {
@@ -98,9 +98,9 @@ public class AddBotMenu : IMainMenu {
 
 		string botCharStr = botCharNum switch {
 			-1 => "(Random)",
-			5 => "Megaman",
-			6 => "Protoman",
-			7 => "Bass",
+			10 => "Megaman",
+			11 => "Protoman",
+			12 => "Bass",
 			_ => "Error"
 		};
 

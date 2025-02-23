@@ -21,7 +21,7 @@ public class Options {
 	public int maxFPS = 60;
 	public bool cheatWarningShown;
 	public bool disableDoubleDash;
-	public int preferredCharacter;
+	public int preferredCharacter = 10;
 	public bool showMashProgress;
 	public bool killOnLoadoutChange = true;
 	public bool killOnCharChange = true;
@@ -165,7 +165,7 @@ public class Options {
 
 		hyperChargeSlot = Helpers.clamp(hyperChargeSlot, 0, 2);
 		sigmaWeaponSlot = Helpers.clamp(sigmaWeaponSlot, 0, 2);
-		preferredCharacter = Helpers.clamp(preferredCharacter, 5, 7);
+		preferredCharacter = Helpers.clamp(preferredCharacter, (int)CharIds.Rock, (int)CharIds.Bass);
 
 		xLoadout.validate();
 		zeroLoadout.validate();

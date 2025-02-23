@@ -386,7 +386,7 @@ public partial class Player {
 	public string name;
 	public int id;
 	public int alliance;    // Only set on spawn with data read from ServerPlayer alliance. The ServerPlayer alliance changes earlier on team change/autobalance
-	public int charNum = 5;
+	public int charNum = 10;
 
 	public int newCharNum;
 	public int? delayedNewCharNum;

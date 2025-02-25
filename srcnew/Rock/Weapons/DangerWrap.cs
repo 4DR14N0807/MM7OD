@@ -334,75 +334,11 @@ public class DangerWrapExplosionProj : Projectile {
 		if (transparency < 0) { transparency = 0; }
 		Color col1 = new(222, 41, 24, 128);
 		Color col2 = new(255, 255, 255, 255);
-		DrawWrappers.DrawCircle(pos.x + x, pos.y + y, radius, filled: true, col1, 4f, zIndex - 10, isWorldPos: true, col2);
+		DrawWrappers.DrawCircle(
+			pos.x + x, pos.y + y, radius, filled: true, col1, 4f, zIndex - 10, isWorldPos: true, col2
+		);
 	}
 }
-
-public class DWrapped : CharState {
-	bool flinch;
-	public const float DWrapMaxTime = 3;
-	public DWrapped(bool flinch) : base("idle", "shoot") {
-		this.flinch = flinch;
-		attackCtrl = true;
-		normalCtrl = false;
-	}
-	public override bool canEnter(Character character) {
-		if (!base.canEnter(character)) return false;
-		if (character.dwrapInvulnTime > 0) return false;
-		if (!character.ownedByLocalPlayer) return false;
-		if (character.isInvulnerable()) return false;
-		if (character.isVaccinated()) return false;
-		return /* !character.isCCImmune() &&  */!character.charState.invincible;
-	}
-
-	/*public override bool canExit(Character character, CharState newState) {
-		if (newState is Hurt || newState is Die) return true;
-		return isDone;
-	}*/
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.dwrapStart();
-		character.stopMovingWeak();
-		character.grounded = false;
-		character.useGravity = false;
-		Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StartDWrap);
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-		character.dwrapEnd();
-		character.dwrapInvulnTime = 3;
-		character.useGravity = true;
-		character.frameSpeed = 1;
-		character.vel.x = 0;
-		Global.serverClient?.rpc(RPC.playerToggle, (byte)character.player.id, (byte)RPCToggleType.StopDwrap);
-	}
-
-	public override void update() {
-		base.update();
-
-		if (character.isDWrapped) {
-			if (stateTime < 0.75) {
-				if (character.vel.y > -60) character.vel.y -= 5;
-				if (Math.Abs(character.vel.x) < 30) character.vel.x += 3 * character.xDir;
-			} else {
-				if (character.vel.y < 30) character.vel.y += 2;
-				if (Math.Abs(character.vel.x) > 0) character.vel.x -= 1 * character.xDir;
-			}
-		}
-
-		if (!character.hasBubble || character.dWrapDamager == null) {
-			//character.changeState(new Fall(), true);
-			//return;
-		}
-
-		/* if (character.dWrappedTime > 2 && !(character.charState is DWrapped)) {
-			character.removeBubble(false);
-		} */
-	}
-}
-
 
 public class DWrapBigBubble : Actor, IDamagable {
 	public Character? character;

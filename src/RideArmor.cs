@@ -2159,7 +2159,6 @@ public class InRideArmor : CharState {
 		if (stunTime > 0) {
 			stunTime -= (Global.spf + (healthPercent * player.input.mashCount * 0.25f));
 			if (stunTime <= 0) {
-				character.stunInvulnTime = 2;
 				stunTime = 0;
 			}
 		}

@@ -1847,21 +1847,7 @@ public partial class Player {
 		assists++;
 	}
 
-	public void addDeath(bool isSuicide) {
-		if (isSigma && maverick1v1 == null && Global.level.isHyper1v1() && !lastDeathWasSigmaHyper) {
-			return;
-		}
-
-		if (isSuicide) {
-			kills--;
-			currency -= 5;
-
-			if (!charNumToKills.ContainsKey(realCharNum)) {
-				charNumToKills[realCharNum] = 0;
-			}
-			charNumToKills[realCharNum]--;
-		}
-
+	public void addDeath() {
 		if (Global.serverClient == null) {
 			deaths++;
 		} else if (Global.canControlKillscore) {

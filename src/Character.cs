@@ -99,7 +99,6 @@ public partial class Character : Actor, IDamagable {
 	public const float maxLastAttackerTime = 5;
 
 	public float igFreezeProgress;
-	public float stunInvulnTime;
 	public float crystalizeInvulnTime;
 	public float dwrapInvulnTime;
 	public float grabInvulnTime;
@@ -165,6 +164,9 @@ public partial class Character : Actor, IDamagable {
 
 	public float burnEffectTime;
 	public float burnHurtCooldown;
+
+	// Generic stun.
+	public Dictionary<int, float> stunCooldown = new();
 
 	// Freeze.
 	public float freezeTime;
@@ -771,9 +773,6 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (oilTime > 0) {
 			oilTime -= Global.spf;
-			if (ownedByLocalPlayer && (isUnderwater() || charState.invincible || isStatusImmune())) {
-				oilTime = 0;
-			}
 			if (oilTime <= 0) {
 				oilTime = 0;
 			}
@@ -793,9 +792,6 @@ public partial class Character : Actor, IDamagable {
 						vel = new Point(0, -50)
 					};
 				}
-			}
-			if (isUnderwater() || charState.invincible || isStatusImmune()) {
-				acidTime = 0;
 			}
 			if (acidTime <= 0) {
 				removeAcid();
@@ -881,9 +877,6 @@ public partial class Character : Actor, IDamagable {
 				}
 				burnDamager?.applyDamage(this, false, burnWeapon, this, (int)ProjIds.Burn, overrideDamage: 1f);
 			}
-			if (isUnderwater() || charState.invincible || isStatusImmune()) {
-				burnTime = 0;
-			}
 			if (burnTime <= 0) {
 				removeBurn();
 			}
@@ -893,7 +886,7 @@ public partial class Character : Actor, IDamagable {
 			if (flattenedTime < 0) flattenedTime = 0;
 		}
 		Helpers.decrementFrames(ref slowdownTime);
-		
+
 		igFreezeRecoveryCooldown += Global.spf;
 		if (igFreezeRecoveryCooldown > 0.2f) {
 			igFreezeRecoveryCooldown = 0;
@@ -906,7 +899,6 @@ public partial class Character : Actor, IDamagable {
 			burnStunStacks--;
 			if (burnStunStacks < 0) burnStunStacks = 0;
 		}
-		Helpers.decrementFrames(ref stunInvulnTime);
 		Helpers.decrementFrames(ref crystalizeInvulnTime);
 		Helpers.decrementTime(ref grabInvulnTime);
 		Helpers.decrementTime(ref darkHoldInvulnTime);
@@ -918,6 +910,14 @@ public partial class Character : Actor, IDamagable {
 			rootCooldown[key] -= speedMul;
 			if (rootCooldown[key] <= 0) {
 				rootCooldown.Remove(key);
+			}
+		}
+
+		int[] stunKeys = stunCooldown.Keys.ToArray();
+		foreach(int key in stunKeys) {
+			stunCooldown[key] -= speedMul;
+			if (stunCooldown[key] <= 0) {
+				stunCooldown.Remove(key);
 			}
 		}
 
@@ -1031,7 +1031,6 @@ public partial class Character : Actor, IDamagable {
 			base.update();
 			return;
 		}
-		updateBubble();
 
 		if (pos.y > Global.level.killY && !isWarpIn() && charState is not WarpOut) {
 			if (charState is WolfSigmaRevive wsr) {
@@ -1549,49 +1548,42 @@ public partial class Character : Actor, IDamagable {
 		buffList.Add(new Buff("hud_debuffs", 1, false, time, time));
 	}
 
-	public void paralize(float timeToParalize = 60, float cooldown = 90) {
-		if (!ownedByLocalPlayer ||
-			isInvulnerable() ||
-			isVaccinated() ||
-			isStatusImmune() ||
-			charState.invincible ||
-			charState.stunResistant ||
-			(charState is Die or VileMK2Grabbed) ||
-			isStunImmune() ||
-		 	stunInvulnTime > 0
-		) {
+	public void paralize(float time, float cooldown, int playerid) {
+		if (!ownedByLocalPlayer) {
 			return;
 		}
-		paralyzedMaxTime = timeToParalize;
-		paralyzedTime = timeToParalize;
-		stunInvulnTime = cooldown;
+		if (stunCooldown.GetValueOrDefault(playerid) > 0) {
+			return;
+		}
+		// Cooldown.
+		// Disarray mechanic.
+		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
+		time = MathF.Floor(time * disarrayReduction);
+		disarrayStacks[playerid] = cooldown;
+		if (cooldown >= disarrayMaxLength) {
+			disarrayMaxLength = cooldown;
+		}
+		// Apply debuff.
+		stunCooldown[playerid] = cooldown;
+
+		if (paralyzedTime >= time) {
+			return;
+		}
+		paralyzedTime = time;
+		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
+
+		// Hud stuff.
+		buffList.Add(new Buff("hud_debuffs", 1, false, time, time));
+
+		paralyzedMaxTime = time;
+		paralyzedTime = time;
 		if (charState is not GenericStun) {
 			changeState(new GenericStun(), true);
 		}
 	}
-
-	public void crystalize(float timeToCrystalize = 120) {
-		if (!ownedByLocalPlayer ||
-			isInvulnerable() ||
-			isVaccinated() ||
-			isStatusImmune() ||
-			charState.invincible ||
-			charState.stunResistant ||
-			isCrystalized ||
-			(charState is Die) ||
-			isStunImmune() ||
-			crystalizeInvulnTime > 0
-		) {
-			return;
-		}
-		vel.y = 0;
-		crystalizedMaxTime = timeToCrystalize;
-		crystalizedTime = timeToCrystalize;
-		if (charState is not GenericStun) {
-			changeState(new GenericStun(), true);
-		}
-	}
-
 
 	public virtual void chargeGfx() {
 		if (ownedByLocalPlayer) {
@@ -2361,9 +2353,6 @@ public partial class Character : Actor, IDamagable {
 		} else if (charState is DarkHoldState darkHoldState) {
 			totalMashTime = DarkHoldState.totalStunTime;
 			statusProgress = darkHoldState.stunTime / totalMashTime;
-		} else if (dWrappedTime > 0) { 
-			totalMashTime = DWrapped.DWrapMaxTime;
-			statusProgress = dWrapMashTime / totalMashTime;
 		} else if (charState is Burning burning) {
 			statusProgress = burning.burningTime;
 		} else {
@@ -2708,9 +2697,10 @@ public partial class Character : Actor, IDamagable {
 						}
 					}
 				}
+				// TEMP: Remove on re-enable of EXP.
+				killer.awardCurrency();
 
 				killer.awardKillExp();
-				killer.awardCurrency();
 				killer.onKillEffects(false);
 				//killer.currency += 10;
 			} else if (Global.level.gameMode.level.is1v1()) {
@@ -2727,25 +2717,22 @@ public partial class Character : Actor, IDamagable {
 
 				assister.awardKillExp(false);
 				assister.onKillEffects(true);
-				assister.awardCurrency(false);
-				//assister.currency += 5;
-			}
-			//bool isSuicide = killer == null || killer == player;
-			player.addDeath(false);
-			/*
-			if (isSuicide && Global.isHost && Global.level.gameMode is TeamDeathMatch)
-			{
-				if (player.alliance == GameMode.redAlliance) Global.level.gameMode.redPoints--;
-				if (player.alliance == GameMode.blueAlliance) Global.level.gameMode.bluePoints--;
-				if (Global.level.gameMode.bluePoints < 0) Global.level.gameMode.bluePoints = 0;
-				if (Global.level.gameMode.redPoints < 0) Global.level.gameMode.redPoints = 0;
-				Global.level.gameMode.syncTeamScores();
-			}
-			*/
 
-			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(killer, assister, player, weaponIndex));
-			if (ownedByLocalPlayer && Global.level.isNon1v1Elimination() && player.deaths >= Global.level.gameMode.playingTo) {
-				Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(player.name + " was eliminated.", GameMode.blueAlliance), sendRpc: true);
+				// TEMP: Remove on re-enable of EXP.
+				assister.awardCurrency(false);
+			}
+			player.addDeath();
+
+			Global.level.gameMode.addKillFeedEntry(
+				new KillFeedEntry(killer, assister, player, weaponIndex)
+			);
+			if (ownedByLocalPlayer && Global.level.isNon1v1Elimination() &&
+				player.deaths >= Global.level.gameMode.playingTo
+			) {
+				Global.level.gameMode.addKillFeedEntry(
+					new KillFeedEntry(player.name + " was eliminated.", GameMode.blueAlliance),
+					sendRpc: true
+				);
 			}
 
 			if (killer?.ownedByLocalPlayer == true)
@@ -2926,10 +2913,6 @@ public partial class Character : Actor, IDamagable {
 		isDWrapped = true;
 		useGravity = false;
 		stopMovingWeak();
-		//changeSpriteFromName("idle", true);
-		//if (globalCollider != null) globalCollider.isClimbable = true;
-		//new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, null, true);
-		//playSound("hit");
 	}
 
 	public void dwrapEnd() {
@@ -3008,12 +2991,9 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	// DANGER WRAP SECTION
-
-	public Anim? bubbleAnim;
-
-	public bool hasBubble { get { return dWrappedTime > 0; } }
+	public bool hasBubble => ownedByLocalPlayer ? bigBubble != null : hasBubbleNet;
+	public bool hasBubbleNet;
 	public float dWrappedTime;
-	public float dWrapMashTime = DWrapped.DWrapMaxTime;
 	public Damager? dWrapDamager;
 	public DWrapBigBubble? bigBubble;
 
@@ -3023,50 +3003,16 @@ public partial class Character : Actor, IDamagable {
 		if (bigBubble != null) return;
 
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
-		//dWrappedTime = Global.spf;
 		dWrapDamager = damager;
 		bigBubble = new DWrapBigBubble(pos, player, xDir,
 		player.getNextActorNetId(), true, true);
 		dwrapStart();
 		attacker.mastery.addSupportExp(2, true);
-		//changeState(new DWrapped(true))
-		//bubbleAnim = new Anim(getCenterPos(), "danger_wrap_big_bubble", 1, player.getNextActorNetId(), true, true);
-	}
-
-	public void updateBubble() {
-		if (bigBubble == null || bigBubble.bubbleFrames <= 0) return;
-
-		/*if (!(charState is DWrapped)) { changeState(new DWrapped(true)); }
-
-		//Point centerPos = getCenterPos();
-		//bubbleAnim.changePos(getCenterPos());
-
-		dWrappedTime += Global.spf;
-		float mashValue = player.mashValue();
-		if (mashValue > Global.spf) {
-			dWrapMashTime -= mashValue;
-		}
-		if (dWrapMashTime <= 0 || !isDWrapped) {
-			dWrapMashTime = 0;
-			removeBubble(true);
-		} else if (dWrappedTime > 2 && (charState is DWrapped)) {
-			removeBubble(false);
-		}*/
 	}
 
 	public void removeBubble(bool ejected) {
 		if (!ownedByLocalPlayer) return;
 		if (dWrapDamager == null) return;
-
-		//bubbleAnim?.destroySelf();
-		
-		/*if (!ejected) dWrapDamager.applyDamage(this, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion, overrideDamage: 4, overrideFlinch: Global.defFlinch);	
-		
-		dWrappedTime = 0;
-		dWrapMashTime = DWrapped.DWrapMaxTime;
-		dWrapDamager = null;
-		isDWrapped = false;
-		if (charState is not Hurt) changeToIdleOrFall();*/
 	}
 
 	public bool genmuImmune(Player owner) {
@@ -3424,7 +3370,9 @@ public partial class Character : Actor, IDamagable {
 			isDarkHoldState,
 			isStrikeChainState,
 			isBurnState,
-			charState.immuneToWind
+			charState.immuneToWind,
+			charState.stunResistant,
+			hasBubble
 		]));
 
 		// Bool mask. Pos 5.
@@ -3437,16 +3385,9 @@ public partial class Character : Actor, IDamagable {
 		customData.Add(0);
 		customData.Add(0);
 
-		// Add each status effect and enabled their respective flag.
-		if (rideArmor?.netId != null && rideArmor.netId != 0 ||
-			rideChaser?.netId != null && rideChaser.netId != 0
-		) {
-			if (rideArmor != null) {
-				customData.AddRange(BitConverter.GetBytes(rideArmor?.netId ?? ushort.MaxValue));
-			} else {
-				customData.AddRange(BitConverter.GetBytes(rideChaser?.netId ?? ushort.MaxValue));
-			}
-			boolMask[8] = true;
+		if (acidTime > 0) {
+			customData.Add((byte)MathF.Ceiling(acidTime * 20));
+			boolMask[0] = true;
 		}
 		if (burnTime > 0) {
 			customData.Add((byte)MathF.Ceiling(burnTime * 30));
@@ -3507,26 +3448,16 @@ public partial class Character : Actor, IDamagable {
 		isStrikeChainState = boolData[3];
 		isBurnState = boolData[4];
 		charState.immuneToWind = boolData[5];
+		charState.stunResistant = boolData[6];
+		hasBubbleNet = boolData[7];
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[6]);
 		bool[] boolMaskB = Helpers.byteToBoolArray(data[7]);
 		int pos = 8;
-		// Update and increase pos as we go.
 		if (boolMask[0]) {
-			Actor? vehicleActor = Global.level.getActorByNetId(BitConverter.ToUInt16(data[pos..(pos+2)]));
-			if (vehicleActor is RideArmor rav) {
-				rideArmor = rav;
-				rav.zIndex = zIndex - 10;
-			}
-			else if (vehicleActor is RideChaser rcv) {
-				rideChaser = rcv;
-				rcv.zIndex = zIndex - 10;
-			}
-			pos += 2;
-		} else {
-			rideArmor = null;
-			rideChaser = null;
+			acidTime = data[pos] / 30f;
+			pos++;
 		}
 		if (boolMask[1]) {
 			burnTime = data[pos] / 30f;

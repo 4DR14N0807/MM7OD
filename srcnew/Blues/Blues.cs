@@ -261,6 +261,7 @@ public class Blues : Character {
 	public bool canUseShield() {
 		if (shootAnimTime > 0 && !sprite.name.EndsWith("_shield") ||
 			!charState.normalCtrl || charState is Slide ||
+			charState is ShieldDash ||
 			charState is BigBangStrikeState ||
 			charState is BigBangStrikeStart
 		) {
@@ -653,17 +654,18 @@ public class Blues : Character {
 						vel.y *= 0.625f;
 					}
 				}
-				if (!grounded && lastShieldMode != isShieldActive &&
-					canUseDropSwap() &&
-					player.input.isHeld(Control.Down, player)
-				) {
-					if (vel.y < 6 * 60) {
-						vel.y = 6 * 60;
-					}
-					isShieldActive = true;
-					changeState(new BluesShieldSwapAir());
-					return true;
+			}
+			if (
+				!grounded && canUseDropSwap() &&
+				player.input.checkDoubleTap2(Control.Down) && 
+				player.input.isPressed(Control.Down, player)
+			) {
+				if (vel.y < 6 * 60) {
+					vel.y = 6 * 60;
 				}
+				isShieldActive = true;
+				changeState(new BluesShieldSwapAir());
+				return true;
 			}
 		}
 		// Change sprite is shield mode changed.

@@ -395,6 +395,7 @@ public class Burning : CharState {
 		this.attacker = attacker;
 		normalCtrl = false;
 		attackCtrl = false;
+		useGravity = false;
 	}
 
 	public override bool canEnter(Character character) {

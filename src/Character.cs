@@ -234,7 +234,6 @@ public partial class Character : Actor, IDamagable {
 		spriteToCollider["warp_in"] = null;
 		spriteToCollider["revive"] = null;
 		spriteToCollider["die"] = null;
-		spriteToCollider["burning"] = null;
 
 		changeState(initialCharState, true);
 		visible = isVisible;
@@ -1676,6 +1675,7 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
 		if (isWarpIn()) return true;
 		if (invulnTime > 0) return true;
+		if (charState is CallDownRush) return true;
 		if (!ignoreRideArmorHide) { 
 			if (
 				charState.specialId == SpecialStateIds.AxlRoll || 
@@ -3418,7 +3418,7 @@ public partial class Character : Actor, IDamagable {
 		// Bool variables. Packed in a single byte.
 		customData.Add(Helpers.boolArrayToByte([
 			player.isDefenderFavored,
-			invulnTime > 0,
+			invulnTime > 0 || isInvulnerable(),
 			isDarkHoldState,
 			isStrikeChainState,
 			isBurnState,

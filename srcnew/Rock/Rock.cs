@@ -49,11 +49,6 @@ public class Rock : Character {
 		charId = CharIds.Rock;
 		weapons = RockLoadoutSetup.getLoadout(player.loadout.rockLoadout);
 
-		spriteToCollider["sa_activate_air"] = null;
-		spriteToCollider["sa_activate"] = null;
-		spriteToCollider["sa_activate_end"] = null;
-		spriteToCollider["sa_activate_end_air"] = null;
-
 		charge1Time = 40;
 		charge2Time = 105;
 

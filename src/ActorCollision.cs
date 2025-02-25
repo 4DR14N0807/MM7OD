@@ -336,7 +336,7 @@ public partial class Actor {
 		if (amount == Point.zero) {
 			return;
 		}
-		if (amount.x < 0) {
+		if (amount.y < 0) {
 			movedUp = true;
 		}
 		var times = useDeltaTime ? Global.spf : 1;

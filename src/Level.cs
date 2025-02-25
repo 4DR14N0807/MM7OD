@@ -1551,7 +1551,7 @@ public partial class Level {
 					int camSpeedY = 4;
 					float diference;
 					// Delta equation for X.
-					// Camera can break the max speed if far away.
+					// Camera can break the base speed if far away.
 					if (MathF.Abs(deltaX) > camSpeedX) {
 						diference = MathF.Floor(MathF.Abs((camSpeedX - MathF.Abs(deltaX)) / 24f));
 						deltaX = (camSpeedX + diference) * MathF.Sign(fullDeltaX);

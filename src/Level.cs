@@ -1545,7 +1545,7 @@ public partial class Level {
 					(camPlayer.character as Axl)?.isZooming() != true
 				) {
 					int camSpeedX = 4;
-					int camSpeedY = 6;
+					int camSpeedY = 4;
 					float diference;
 					if (MathF.Abs(deltaX) > camSpeedX) {
 						diference = MathF.Floor(MathF.Abs((camSpeedX - MathF.Abs(deltaX)) / 24f));

@@ -1544,13 +1544,18 @@ public partial class Level {
 				if (camPlayer.character?.charState is not InRideChaser &&
 					(camPlayer.character as Axl)?.isZooming() != true
 				) {
+					// Base speed of 4.
+					// If change also change the equation bellow.
 					int camSpeedX = 4;
 					int camSpeedY = 4;
 					float diference;
+					// Delta equation for X.
+					// Camera can break the max speed if far away.
 					if (MathF.Abs(deltaX) > camSpeedX) {
 						diference = MathF.Floor(MathF.Abs((camSpeedX - MathF.Abs(deltaX)) / 24f));
 						deltaX = (camSpeedX + diference) * MathF.Sign(fullDeltaX);
 					}
+					// Delta for Y.
 					if (MathF.Abs(deltaY) > camSpeedY) {
 						diference = MathF.Floor(MathF.Abs((camSpeedY - MathF.Abs(deltaY)) / 24f));
 						deltaY = (camSpeedY + diference) * MathF.Sign(fullDeltaY);

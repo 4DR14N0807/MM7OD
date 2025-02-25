@@ -1545,7 +1545,7 @@ public partial class Level {
 					(camPlayer.character as Axl)?.isZooming() != true
 				) {
 					// Base speed of 4.
-					// If change also change the equation bellow.
+					// If changed also change the equation bellow.
 					// This is NOT max speed but base speed and multipled.
 					int camSpeedX = 4;
 					int camSpeedY = 4;

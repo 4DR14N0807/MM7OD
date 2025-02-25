@@ -240,7 +240,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.sameCharNum, 4, 7);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.sameCharNum, 10, 12);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -256,7 +256,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redSameCharNum, 4, 7);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redSameCharNum, 10, 12);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -327,10 +327,10 @@ public class CustomMatchSettingsMenu : IMainMenu {
 
 	public string getSameCharString(int charNum) {
 		return charNum switch {
-			5 => "Megaman",
-			6 => "Protoman",
-			7 => "Bass",
-			<5 => "No",
+			10 => "Megaman",
+			11 => "Protoman",
+			12 => "Bass",
+			<10 => "No",
 			_ => "ERROR"
 		};
 	}

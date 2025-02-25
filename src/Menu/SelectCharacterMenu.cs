@@ -25,7 +25,6 @@ public class PlayerCharData {
 }
 
 public enum CharIds {
-
 	//Adrian: When adding new chars, remember to add them in charHeartTanks and the code crash bomb,
 	//and spawnCharatPoint().
 	X,
@@ -33,11 +32,21 @@ public enum CharIds {
 	Vile,
 	Axl,
 	Sigma,
-	Rock,
-	Blues,
-	Bass,
 	PunchyZero,
 	BusterZero,
+	// 7OD stuff.
+	Rock = 10,
+	Blues,
+	Bass,
+	// MM7 masters.
+	Freezeman,
+	Cloudman,
+	Junkman,
+	Burstman,
+	Slashman,
+	Shademan,
+	Turboman,
+	Springman,
 	// Non-standard chars start here.
 	WolfSigma = 100,
 	ViralSigma,
@@ -58,16 +67,12 @@ public class CharSelection {
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
 	public static CharSelection[] selections => [
-		new CharSelection("MEGA MAN", 5, 0, 0, "rock_idle", 0),
-		new CharSelection("PROTO MAN", 6, 0, 0, "blues_idle", 0 ),
-		new CharSelection("BASS", 7, 0, 0, "bass_idle", 0),
+		new CharSelection("MEGA MAN", 10, 0, 0, "rock_idle", 0),
+		new CharSelection("PROTO MAN", 11, 0, 0, "blues_idle", 0 ),
+		new CharSelection("BASS", 12, 0, 0, "bass_idle", 0),
 	];
 
-	public static CharSelection[] selections1v1 => [
-		new CharSelection("MEGA MAN", 5, 0, 0, "rock_idle", 0),
-		new CharSelection("PROTO MAN", 6, 0, 0, "blues_idle", 0 ),
-		new CharSelection("BASS", 7, 0, 0, "bass_idle", 0),
-	];
+	public static CharSelection[] selections1v1 => selections;
 
 	public CharSelection(
 		string name, int mappedCharNum, int mappedCharArmor,
@@ -127,18 +132,12 @@ public class SelectCharacterMenu : IMainMenu {
 
 		if (isInGame) fontOption = FontType.BlueMenu;
 
-		charSelections = is1v1 ? CharSelection.selections1v1 : CharSelection.selections;
+		charSelections = CharSelection.selections;
 		playerData.charNum = isInGame ? Global.level.mainPlayer.newCharNum : Options.main.preferredCharacter;
 
-		if (is1v1) {
-			playerData.uiSelectedCharIndex = Array.FindIndex(
-				charSelections, c => c.mappedCharNum == playerData.charNum && c.mappedCharArmor == playerData.armorSet
-			);
-		} else {
-			playerData.uiSelectedCharIndex = Array.FindIndex(
-				charSelections, c => c.mappedCharNum == playerData.charNum
-			);
-		}
+		playerData.uiSelectedCharIndex = Array.FindIndex(
+			charSelections, c => c.mappedCharNum == playerData.charNum
+		);
 	}
 
 	public Player mainPlayer { get { return Global.level.mainPlayer; } }

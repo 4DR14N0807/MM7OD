@@ -831,6 +831,9 @@ public enum ProjIds {
 	BassKick,
 	SonicCrusher,
 
+	//7OD stuff
+	SlashmanIdle,
+
 	// Special damage types.
 	SelfDmg = 30000,
 

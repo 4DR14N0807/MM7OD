@@ -654,18 +654,17 @@ public class Blues : Character {
 						vel.y *= 0.625f;
 					}
 				}
-			}
-			if (
-				!grounded && canUseDropSwap() &&
-				player.input.checkDoubleTap2(Control.Down) && 
-				player.input.isPressed(Control.Down, player)
-			) {
-				if (vel.y < 6 * 60) {
-					vel.y = 6 * 60;
+				if (!grounded && lastShieldMode != isShieldActive &&
+					canUseDropSwap() &&
+					player.input.isHeld(Control.Down, player)
+				) {
+					if (vel.y < 6 * 60) {
+						vel.y = 6 * 60;
+					}
+					isShieldActive = true;
+					changeState(new BluesShieldSwapAir());
+					return true;
 				}
-				isShieldActive = true;
-				changeState(new BluesShieldSwapAir());
-				return true;
 			}
 		}
 		// Change sprite is shield mode changed.

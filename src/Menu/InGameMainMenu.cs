@@ -162,7 +162,7 @@ public class InGameMainMenu : IMainMenu {
 		Color outline = new Color(41, 41, 41);
 		MasteryTracker mastery = Global.level.mainPlayer.mastery;
 
-		drawLevelBar(
+		/* drawLevelBar(
 			$"ATK", Global.screenW - 76, 8,
 			FontType.RedSmall, new Color(255, 115, 127),
 			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 5f),
@@ -185,7 +185,7 @@ public class InGameMainMenu : IMainMenu {
 			FontType.PurpleSmall, new Color(189, 115, 214),
 			mastery.mapLevelStacks, MathInt.Ceiling(mastery.mapLevel / 5f),
 			mastery.mapExp, mastery.mapLvLimit, mastery.mapLevel
-		);
+		); */
 	}
 
 	public void drawLevelBar(

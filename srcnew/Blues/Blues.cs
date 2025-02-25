@@ -14,7 +14,7 @@ public class Blues : Character {
 	// Mode variables.
 	public bool isShieldActive = true;
 	public bool isBreakMan;
-	public const int reviveCost = 60;
+	public const int reviveCost = 75;
 
 	// Core heat system.
 	public float coreMaxAmmo = 28;
@@ -719,10 +719,11 @@ public class Blues : Character {
 				changeState(new RedStrike(), true);
 				return true;
 			} else if (canUseBigBangStrike()) {
-				bool bufferedShield = isShieldActive;
-				isShieldActive = false;
+				//bool bufferedShield = isShieldActive;
+				//isShieldActive = false;
+				isShieldActive = true;
 				changeState(new BigBangStrikeStart(), true);
-				isShieldActive = bufferedShield;
+				//isShieldActive = bufferedShield;
 				return true;
 			}
 		}
@@ -1006,28 +1007,32 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.altBluesSlideInput && !overdrive) {
+		if (Options.main.altBluesSlideInput == 2) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
-				!player.input.isHeld(Control.Down, player)
+				player.input.isHeld(Control.Down, player)
 			);
 		}
+
 		return player.input.isPressed(Control.Dash, player);
 	}
 
 	public bool slideInput() {
-		if (Options.main.altBluesSlideInput) {
-			if (overheating) {
-				return player.input.isPressed(Control.Dash, player);
-			}
+		if (Options.main.altBluesSlideInput == 0) {
+			return (
+				player.input.isPressed(Control.Jump, player) &&
+				player.input.isHeld(Control.Down, player)
+			);
+		} 
+		else if (Options.main.altBluesSlideInput == 1) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
 				player.input.isHeld(Control.Down, player)
 			);
 		}
 		return (
-			player.input.isPressed(Control.Jump, player) &&
-			player.input.isHeld(Control.Down, player)
+			player.input.isPressed(Control.Dash, player) &&
+			!player.input.isHeld(Control.Down, player)
 		);
 	}
 

@@ -98,7 +98,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable &&
+				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
 				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
@@ -171,7 +171,7 @@ public class ProtoStrikeProj : Projectile {
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable &&
+				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
 				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
@@ -263,7 +263,7 @@ public class StrikeAttackPushProj : Projectile {
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable &&
+				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
 				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= radius) {
@@ -377,7 +377,7 @@ public class RedStrikeExplosionProj : Projectile {
 		foreach (var gameObject in Global.level.getGameObjectArray()) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable &&
+				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
 				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
@@ -446,7 +446,6 @@ public class BigBangStrikeStart : CharState {
 	public override void onEnter(CharState oldState) {
 		blues = character as Blues ?? throw new NullReferenceException();
 		character.stopMovingWeak();
-		//blues.isShieldActive = false;
 		bgEffect = new BigBangStrikeBackwall(character.pos, character);
 	}
 
@@ -455,6 +454,7 @@ public class BigBangStrikeStart : CharState {
 		if (bgEffect.effectTime < 2) {
 			bgEffect.effectTime = 2;
 		}
+		blues.isShieldActive = false;
 	}
 }
 

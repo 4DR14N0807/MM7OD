@@ -128,6 +128,9 @@ public class CharState {
 			character.useGravity = false;
 			character.stopMovingWeak();
 		}
+		if (this is not Run and not Idle and not Taunt) {
+			player.delayETank();
+		} 
 		wasGrounded = character.grounded && character.vel.y >= 0;
 		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick and not TenguBladeState && (!oldState.canStopJump || oldState.stoppedJump)) {
@@ -469,6 +472,8 @@ public class WarpIdle : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.useGravity = false;
+		character.invulnTime = 5;
+		specialId = SpecialStateIds.WarpIdle;
 		if (character is Blues) {
 			character.sprite.doesLoop = false;
 		}
@@ -479,6 +484,7 @@ public class WarpIdle : CharState {
 		character.visible = true;
 		character.useGravity = true;
 		character.splashable = true;
+		specialId = SpecialStateIds.None;
 		if (character.ownedByLocalPlayer) {
 			character.invulnTime = (player.warpedInOnce || Global.level.joinedLate) ? 2 : 0;
 		}

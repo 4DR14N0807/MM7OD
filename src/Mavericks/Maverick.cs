@@ -1039,7 +1039,7 @@ public class Maverick : Actor, IDamagable {
 	}
 
 	public void drawETankHealingInner(float health) {
-		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
+		/* Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 2, topLeft.y + 1);
 		Point botRightBar = new Point(pos.x + 2, topLeft.y + 15);
 
@@ -1050,7 +1050,7 @@ public class Maverick : Actor, IDamagable {
 			true, Color.Black, 1, ZIndex.HUD
 		);
 
-		deductLabelY(labelSubtankOffY);
+		deductLabelY(labelSubtankOffY); */
 	}
 
 	public override bool shouldDraw() {

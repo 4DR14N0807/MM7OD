@@ -260,7 +260,7 @@ public class Bass : Character {
 
 	public bool canUseTBladeDash() {
 		return player.weapon is TenguBlade tb && tb.ammo > 0 &&
-		grounded && tBladeDashCooldown <= 0;
+		grounded && tBladeDashCooldown <= 0 && flag == null;
 	}
 
 	public override bool normalCtrl() {

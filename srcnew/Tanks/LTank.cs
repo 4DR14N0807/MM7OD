@@ -6,6 +6,7 @@ public class LTank {
 	public static int maxAmmo = 28;
 	public float ammo = 28;
 	public bool inUse;
+	public bool once;
 
 	public LTank() {
 
@@ -15,6 +16,12 @@ public class LTank {
 		if (character is not Blues blues) {
 			return;
 		}
+		if (!once) {
+			maxHealth = (int)player.maxHealth;
+			health = maxHealth;
+			once = true;
+		}
+
 		blues.usedLtank = this;
 	}
 }

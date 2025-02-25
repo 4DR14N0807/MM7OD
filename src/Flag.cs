@@ -319,6 +319,8 @@ public class FlagPedestal : Actor {
 			if (chr.ai != null) {
 				chr.ai.changeState(new FindPlayer(chr));
 			}
+			chr.player.currency += 50;
+			RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
 			chr.mastery.addMapExp(30 * 3, true);
 			foreach (Player player in Global.level.players) {
 				if (!player.isSpectator && chr.player.alliance == player.alliance) {

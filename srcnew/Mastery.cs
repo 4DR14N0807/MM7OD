@@ -35,6 +35,7 @@ public class MasteryTracker {
 	}
 
 	public void addDamageExp(float value, bool sendRpc = false) {
+		return;
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 0, value);	
 		}
@@ -47,6 +48,7 @@ public class MasteryTracker {
 		}
 	}
 	public void addDefenseExp(float value, bool sendRpc = false) {
+		return;
 		value = roundedShortExp(value);
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 1, value);	
@@ -59,6 +61,7 @@ public class MasteryTracker {
 		}
 	}
 	public void addSupportExp(float value, bool sendRpc = false) {
+		return;
 		value = roundedShortExp(value);
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 2, value);
@@ -71,6 +74,7 @@ public class MasteryTracker {
 		}
 	}
 	public void addMapExp(float value, bool sendRpc = false) {
+		return;
 		value = roundedShortExp(value);
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 3, value);
@@ -84,6 +88,7 @@ public class MasteryTracker {
 	}
 
 	public void grantDamageLevel() {
+		return;
 		damageLevelStacks++;
 		if (damageLevelStacks >= MathF.Ceiling(damageLevel / 5f)) {
 			damageLevel++;
@@ -103,6 +108,7 @@ public class MasteryTracker {
 		
 	}
 	public void grantDefenseLevel() {
+		return;
 		defenseLevelStacks++;
 		if (defenseLevelStacks >= MathF.Ceiling(defenseLevel / 5f)) {
 			defenseLevel++;
@@ -117,6 +123,7 @@ public class MasteryTracker {
 		}
 	}
 	public void grantSupportLevel() {
+		return;
 		supportLevelStacks++;
 		if (supportLevelStacks >= MathF.Ceiling(supportLevel / 5f)) {
 			supportLevel++;
@@ -131,6 +138,7 @@ public class MasteryTracker {
 		}
 	}
 	public void grantMapLevel() {
+		return;
 		mapLevelStacks++;
 		if (mapLevelStacks >= MathF.Ceiling(mapLevel / 5f)) {
 			mapLevel++;

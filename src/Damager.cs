@@ -227,6 +227,7 @@ public class Damager {
 							if (damage > 0) {
 								damage += 2;
 							}
+							iceWall.destroySelf();
 						}
 						else {
 							damage = 0;

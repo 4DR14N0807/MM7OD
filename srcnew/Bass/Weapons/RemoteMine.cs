@@ -87,6 +87,11 @@ public class RemoteMineProj : Projectile {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+
+		if (landed) {
+			moveWithMovingPlatform();
+		} 
+
 		if (time >= maxTime && !destroyed && bass != null && bass.ownedByLocalPlayer){
 			//ruben: cant put this as fade anim or on destroy because it will conflict with the explosion anim
 			new Anim(
@@ -151,7 +156,7 @@ public class RemoteMineProj : Projectile {
 		if (anim != null) anim.destroySelf();
 		if (bass != null) bass.rMine = null!;
 
-		if (time >= maxTime && !exploded) explode();
+		if (time >= maxTime && !exploded && landed) explode();
 	}
 
 	void explode() {

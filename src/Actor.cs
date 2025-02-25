@@ -1778,7 +1778,7 @@ public partial class Actor : GameObject {
 			}
 			var hitWall = collideData?.gameObject as Wall;
 			if (hitWall != null && hitWall.isMoving) {
-				move(hitWall.deltaMove, useDeltaTime: false);
+				move(hitWall.deltaMove, useDeltaTime: true);
 				break;
 			}
 		}

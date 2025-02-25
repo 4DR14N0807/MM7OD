@@ -16,14 +16,14 @@ namespace MMXOnline;
 
 public partial class Global {
 	public static decimal version = 20m;
-	public static string versionName = "v0.3a TEST6";
+	public static string versionName = "v0.4";
 	public static string subVersionName = "Alpha 3";
 	public static string subVersionShortName = "Alpha 3";
 
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "17A261FA7824AB0BA7B5CA487878F53A";
+	private const string assetChecksum = "B76EB3FD6D51BA13D477C4E6865C6294";
 
 	// For forks/mods of the game, add a prefix here so that different forks
 	// don't conflict with each other or the base game

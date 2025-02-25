@@ -9,12 +9,13 @@ namespace MMXOnline;
 public class Rush : Actor, IDamagable {
 	public Character character = null!;
 	public Rock rock = null!;
-	public Player player => character.player;
+	public Player? player;
 	public RushState rushState;
 	public bool usedCoil;
 	public int type;
 	public float health = 3;
 	public bool isJetAndRide;
+	public bool isRushJet;
 
 	// Object initalization happens here.
 	public Rush(
@@ -30,6 +31,7 @@ public class Rush : Actor, IDamagable {
 			this.character = owner.character ?? throw new NullReferenceException();
 			rock = character as Rock ?? throw new NullReferenceException();
 			this.xDir = character.xDir;
+			player = owner;
 		}
 		this.type = type;
 		//syncs rush xdir with rock xdir
@@ -143,6 +145,8 @@ public class Rush : Actor, IDamagable {
 		} else {
 			isJetAndRide = false;
 		}
+
+		isRushJet = rushState is RushJetState;
 	}
 
 	public override void postUpdate() {
@@ -201,7 +205,7 @@ public class Rush : Actor, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return player.alliance != damagerAlliance && rushState is RushJetState;
+		return player?.alliance != damagerAlliance && isRushJet;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -222,6 +226,25 @@ public class Rush : Actor, IDamagable {
 
 	public bool isPlayableDamagable() {
 		return true;
+	}
+
+	public override List<byte> getCustomActorNetData() {
+		// Get base arguments.
+		List<byte> customData = base.getCustomActorNetData() ?? new();
+
+		customData.Add(Helpers.boolArrayToByte([
+			isRushJet
+		]));
+
+		return customData;
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		// Update base arguments.
+		base.updateCustomActorNetData(data);
+	
+		bool[] boolData = Helpers.byteToBoolArray(data[0]);
+		isRushJet = boolData[0];
 	}
 }
 

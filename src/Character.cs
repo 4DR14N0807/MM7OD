@@ -559,6 +559,7 @@ public partial class Character : Actor, IDamagable {
 		if (invulnTime > 0) return false;
 		if (flag != null) return false;
 		if (isWarpIn()) return false;
+		if (isInvulnerable()) return false;
 		return true;
 	}
 
@@ -1676,13 +1677,19 @@ public partial class Character : Actor, IDamagable {
 		if (isWarpIn()) return true;
 		if (invulnTime > 0) return true;
 		if (!ignoreRideArmorHide) { 
-			if (charState.specialId == SpecialStateIds.AxlRoll || charState.specialId == SpecialStateIds.XTeleport) {
+			if (
+				charState.specialId == SpecialStateIds.AxlRoll || 
+				charState.specialId == SpecialStateIds.XTeleport || 
+				charState.specialId == SpecialStateIds.WarpIdle
+			) 
+			{
 				return true;
 			}
 		}
 		if (ownedByLocalPlayer && charState is WarpOut) {
 			return true;
 		}
+		
 		return false;
 	}
 
@@ -2026,7 +2033,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override bool shouldDraw() {
-		if (invulnTime > 0) {
+		if (invulnTime > 0 || charState is WarpIdle) {
 			if (Global.level.frameCount % 4 < 2) { return false; }
 		}
 		return base.shouldDraw();
@@ -2279,12 +2286,14 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void drawETankHealingInner(float tankHealth) {
+		if (usedEtank == null) return;
+		
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 12 * (1 - tankHealth / ETank.maxHealth);
+		float yPos = 12 * (1 - tankHealth / usedEtank.maxHealth);
 		DrawWrappers.DrawRect(
 			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
@@ -2699,6 +2708,7 @@ public partial class Character : Actor, IDamagable {
 				}
 
 				killer.awardKillExp();
+				killer.awardCurrency();
 				killer.onKillEffects(false);
 				//killer.currency += 10;
 			} else if (Global.level.gameMode.level.is1v1()) {
@@ -2715,6 +2725,7 @@ public partial class Character : Actor, IDamagable {
 
 				assister.awardKillExp(false);
 				assister.onKillEffects(true);
+				assister.awardCurrency(false);
 				//assister.currency += 5;
 			}
 			//bool isSuicide = killer == null || killer == player;
@@ -3463,7 +3474,7 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)burnStunStacks);
 			boolMask[7] = true;
 		}
-		if (burnStunStacks > 0) {
+		if (rootTime > 0) {
 			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
 			boolMaskB[0] = true;
 		}
@@ -3486,7 +3497,7 @@ public partial class Character : Actor, IDamagable {
 		currency = data[4];
 
 		// Bool variables.
-		bool[] boolData = Helpers.byteToBoolArray(data[6]);
+		bool[] boolData = Helpers.byteToBoolArray(data[5]);
 
 		player.isDefenderFavoredNonOwner = boolData[0];
 		invulnTime = (boolData[1] ? 1 : 0);

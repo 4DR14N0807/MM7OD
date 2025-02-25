@@ -1336,7 +1336,7 @@ public partial class Player {
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
-		return 10;
+		return 0;
 	}
 
 	public void onKillEffects(bool isAssist) {
@@ -1979,6 +1979,7 @@ public partial class Player {
 		if (health <= 0 || health >= maxHealth) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
+		if (character.usedEtank != null) return false;
 
 		return true;
 	}

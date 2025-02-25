@@ -34,7 +34,7 @@ public class Rock : Character {
 	public int rushWeaponIndex;
 	public int RushSearchCost = 5;
 	public bool hasSuperAdaptor;
-	public const int SuperAdaptorCost = 60;
+	public const int SuperAdaptorCost = 75;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -117,7 +117,7 @@ public class Rock : Character {
 				changeSpriteFromName(charState.shootSprite, false);
 			}
 		} else if (shootAnimTime > 0 && !armless) {
-			shootAnimTime -= Global.spf;
+			shootAnimTime -= Global.speedMul;
 			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
 				if (sprite.name.EndsWith("_shoot")) {
@@ -212,8 +212,8 @@ public class Rock : Character {
 		weaponCooldown = currentWeapon?.fireRate ?? 0;
 		currentWeapon?.shootRock(this, chargeLevel, chargedNS);
 		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(chargeLevel) ?? 0, player);
-		if (oldShootAnimTime <= 0.25f && currentWeapon?.hasCustomAnim == false) {
-			shootAnimTime = 0.25f;
+		if (oldShootAnimTime <= 15f && currentWeapon?.hasCustomAnim == false) {
+			shootAnimTime = 15f;
 		}
 		stopCharge();
 	}
@@ -242,7 +242,7 @@ public class Rock : Character {
 				this.xDir = 1;
 			}
 		}
-		shootAnimTime = 0.3f;
+		shootAnimTime = 18;
 	}
 
 	public void quickAdaptorUpgrade() {
@@ -738,8 +738,9 @@ public class Rock : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
+		int weaponIndex = currentWeapon?.index ?? 255;
 		byte ammo = (byte)MathF.Ceiling(currentWeapon?.ammo ?? 0);
-		customData.Add((byte)weaponSlot);
+		customData.Add((byte)weaponIndex);
 		customData.Add(ammo);
 		customData.Add((byte)getChargeLevel());
 
@@ -758,13 +759,12 @@ public class Rock : Character {
 		data = data[data[0]..];
 
 		// Per-character data.
-		int targetSlot = weaponSlot;
-		if (weaponSlot < weapons.Count) {
-			weaponSlot = targetSlot;
-			if (currentWeapon != null) {
-				currentWeapon.ammo = data[1];
-			}
+		Weapon? targetWeapon = weapons.Find(w => w.index == data[0]);
+		if (targetWeapon != null) {
+			weaponSlot = weapons.IndexOf(targetWeapon);
+			targetWeapon.ammo = data[1];
 		}
+		
 		int netChargeLevel = data[2];
 		if (netChargeLevel == 0) {
 			stopCharge();

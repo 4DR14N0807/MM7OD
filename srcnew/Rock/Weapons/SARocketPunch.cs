@@ -47,6 +47,7 @@ public class SARocketPunch : Weapon {
 			if (rock.grounded) rock.changeState(new SARocketPunchState(), true);
 			else new SARocketPunchProj(rock, shootPos, xDir, player.getNextActorNetId(), true, player);
 			rock.playSound("super_adaptor_punch", sendRpc: true);
+			rock.setShootAnim();
 
 		} else if (chargeLevel == 1) {
 			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
@@ -171,6 +172,7 @@ public class SARocketPunchProj : Projectile {
 				returned = true;
 				destroySelf();
 				Global.playSound("super_adaptor_punch_recover");
+				rock.shootAnimTime = MathF.Min(3, rock.shootAnimTime);
 			}
 		}
 	}

@@ -11,8 +11,8 @@ public class UpgradeMenu : IMainMenu {
 	public IMainMenu prevMenu;
 	public static bool onUpgradeMenu = true;
 	public static bool isUsingWTank = false;
-	public int eTankCost = 28;
-	public int wTankCost = 22;
+	public int eTankCost = 40; // 28
+	public int wTankCost = 30; // 22
 	public List<Weapon> eTankTargets = new List<Weapon>();
 	public List<Weapon> wTankTargets = new List<Weapon>();
 	public static int eTankTargetIndex;
@@ -267,7 +267,7 @@ public class UpgradeMenu : IMainMenu {
 				} else {
 					Point topLeftBar = new Point(spritePos.x + 1, spritePos.y + 2);
 					Point botRightBar = new Point(spritePos.x + 15, spritePos.y + 14);
-					float yPos =  12 * (etank.health / ETank.maxHealth);
+					float yPos =  12 * (etank.health / etank.maxHealth);
 					DrawWrappers.DrawRect(
 						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
 						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false

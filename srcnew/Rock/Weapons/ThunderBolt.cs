@@ -25,7 +25,7 @@ public class ThunderBolt : Weapon {
 		Player player = rock.player;
 		ushort netId = player.getNextActorNetId();
 
-		new ThunderBoltProj(rock, shootPos, xDir, netId, 0);
+		new ThunderBoltProj(rock, shootPos, xDir, netId, 0, true);
 		rock.playSound("thunder_bolt", sendRpc: true);
 	}
 }

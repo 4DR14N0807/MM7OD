@@ -1239,6 +1239,7 @@ public class HostMenu : IMainMenu {
 		setMirroredBasedOnMapAndGameMode();
 		setMirroredBasedOnMap();
 		setMenuOptions();
+		if (!selectedLevel.mirroredOnly) mirrored = false;
 	}
 
 	private void removeMaverickCpuDatas() {
@@ -1261,6 +1262,8 @@ public class HostMenu : IMainMenu {
 		setMirroredBasedOnMapAndGameMode();
 		setMirroredBasedOnMap();
 		setMenuOptions();
+
+		if (!selectedLevel.mirroredOnly) mirrored = false;
 	}
 
 	public void setPlayToAndTimeLimitBasedOnGameMode() {

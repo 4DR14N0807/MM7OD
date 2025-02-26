@@ -659,7 +659,6 @@ public class Crouch : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.globalCollider = character.getCrouchingCollider();
 	}
 
 	public override void update() {
@@ -972,7 +971,6 @@ public class AirDash : CharState {
 		character.useGravity = false;
 		character.vel = new Point(0, 0);
 		character.dashedInAir++;
-		character.globalCollider = character.getDashingCollider();
 		new Anim(character.getDashSparkEffectPos(initialDashDir), "dash_sparks", initialDashDir, null, true);
 	}
 

@@ -25,7 +25,6 @@ public class Slide : CharState {
 		base.onEnter(oldState);
 		rock = character as Rock;
 		initialSlideDir = character.xDir;
-		if (rock != null) character.globalCollider = rock.getSlidingCollider();	
 	}
 
 	public override void onExit(CharState newState) {

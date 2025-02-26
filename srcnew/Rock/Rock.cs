@@ -672,7 +672,14 @@ public class Rock : Character {
 	}
 	
 	public override (float, float) getGlobalColliderSize() {
-		if (sprite.name == "rock_slide") {
+		if (sprite.name == "rock_slide" || sprite.name == "rock_sa_legbreaker") {
+			return (34, 14);
+		}
+		return (24, 36);
+	}
+
+	public override (float, float) getTerrainColliderSize() {
+		if (sprite.name == "rock_slide" || sprite.name == "rock_sa_legbreaker") {
 			return (34, 12);
 		}
 		return (24, 30);

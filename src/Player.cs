@@ -282,7 +282,7 @@ public partial class Player {
 	}
 
 	// Currency
-	public const int maxCharCurrencyId = 12;
+	public const int maxCharCurrencyId = 30;
 	public static int curMul = Helpers.randomRange(2, 8);
 
 	// Mastery system.

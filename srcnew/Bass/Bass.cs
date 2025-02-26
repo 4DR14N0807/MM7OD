@@ -439,6 +439,13 @@ public class Bass : Character {
 
 	public override (float, float) getGlobalColliderSize() {
 		if (sprite.name == getSprite("dash")) {
+			return (24, 30);
+		}
+		return (24, 36);
+	}
+
+	public override (float, float) getTerrainColliderSize() {
+		if (sprite.name == getSprite("dash")) {
 			return (24, 24);
 		}
 		return (24, 30);

@@ -694,7 +694,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual (float, float) getTerrainColliderSize() {
-		return getGlobalColliderSize();
+		return (18, 30);
 	}
 
 	public virtual Collider getDashingCollider() {

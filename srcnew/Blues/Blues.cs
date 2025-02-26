@@ -1356,8 +1356,8 @@ public class Blues : Character {
 	public override (float, float) getGlobalColliderSize() {
 		return sprite.name switch{ 
 			"blues_slide" => (34, 22),
-			"blues_dash" or "blues_dash_shield" => (34, 30),
-			_ => (24, 30)
+			"blues_dash" or "blues_dash_shield" => (34, 36),
+			_ => (24, 36)
 		};
 	}
 

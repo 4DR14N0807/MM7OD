@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
-	public int cardCount = 6;
+	public int cardCount = 0;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -37,27 +37,34 @@ public class MagicCard : Weapon {
 		if (shootAngle is 0 or 128) {
 			int offset = 8;
 			int offset2 = Math.Min(cardsOnField.Count * offset, 2 * offset);
-			
 			shootPos = shootPos.addxy(0, offset - offset2);
 		}
 
 		int effect = 0;
 		cardCount--;
 
-		if (cardCount < 0) {
+		if (cardCount < 0 || Helpers.randomRange(0, 16) == 0) {
+			// Every 7 shots. Or about 3 times. Remove 1 as it shots on 0.
 			cardCount += 7;
-			addAmmo(-2, player);
 			bass.playSound("upgrade");
-			effect = Helpers.randomRange(1,4);
+			int[] effectChances = [
+				1, 1, 1, 1,
+				2, 2, 2, 2,
+				3, 3, 3,
+				4, 4
+			];
+			int effectSel = Helpers.randomRange(0, effectChances.Length - 1);
+			effect = effectChances[effectSel];
 			// 0: No effect.
 			// 1: xDir flip.
-			// 2: Duplicate on collision.
-			// 3: Ammo refill.
+			// 2: Ammo refill.
+			// 3: Duplicate on collision.
 			// 4: Multiple Cards.
-
+			if (effect >= 2) {
+				addAmmo(-effect + 1, player);
+			}
 			bass.showNumberTime = 60;
 			bass.lastCardNumber = effect;
-		
 		}
 		if (effect >= 4) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
@@ -73,6 +80,14 @@ public class MagicCard : Weapon {
 	}
 }
 
+public enum MagicCardEffects {
+	None,
+	Flip,
+	Refill,
+	Duplicate,
+	MultiShot
+}
+
 public class MagicCardProj : Projectile {
 	bool reversed;
 	Character? shooter;
@@ -86,6 +101,7 @@ public class MagicCardProj : Projectile {
 	Actor ownChr = null!;
 	private Point returnPos;
 	bool duplicated;
+	int originalDir;
 
 	public MagicCardProj(
 		Actor owner, Weapon weapon, Point pos, int xDir, float byteAngle,
@@ -108,19 +124,20 @@ public class MagicCardProj : Projectile {
 				returnPos = shooter.getCenterPos();
 			}
 		}
-		destroyOnHit = effect != 3;
+		destroyOnHit = effect != (int)MagicCardEffects.Refill;
 
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
 		damager.damage = 1;
 		damager.hitCooldown = 18;
 		ownChr = owner;
-		
+		originalDir = xDir;
+
 		canBeLocal = false;
 		if (rpc) {
 			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, (byte)(xDir + 1));
 		}
 
-		if (effect == 1) projId = (int)BassProjIds.MagicCard1;
+		if (effect == (int)MagicCardEffects.Flip) projId = (int)BassProjIds.MagicCard1;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -197,11 +214,15 @@ public class MagicCardProj : Projectile {
 			}
 			destroySelf();
 		}
-		if (effect == 2 && !duplicated) {
+		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
 			var proj = other.gameObject as Projectile;
 			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
 				destroySelf();
 			}
+			new MagicCardSpecialProj(
+				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
+			);
+			playSound("magiccard", true);
 			duplicated = true;
 		}
 	}
@@ -216,7 +237,9 @@ public class MagicCardProj : Projectile {
 				if (damagable is not Character chr) return;
 				else {
 					hits++;
-					if (hits >= 4) destroySelf();
+					if (hits >= 4) {
+						updateDamager(0);
+					}
 				}
 			}
 		}
@@ -228,11 +251,25 @@ public class MagicCardProj : Projectile {
 			pickup.useGravity = true;
 			pickup.collider.isTrigger = false;
 		}
+		if (!ownedByLocalPlayer) { return; }
+		if (effect == 2 && !duplicated) {
+			new MagicCardSpecialProj(
+				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
+			);
+			playSound("magiccard", true);
+		}
 	}
 
 	float getAmmo() {
-		if (effect != 3 || hits == 0) return 1;
-		return 2 * hits;
+		// Refund the ammo use and 1 for each extra hit.
+		if (effect == (int)MagicCardEffects.Refill) {
+			return 2 + hits;
+		}
+		// Refund only the ammo use.
+		if (effect >= 2) {
+			return effect;
+		}
+		return 1;
 	}
 }
 

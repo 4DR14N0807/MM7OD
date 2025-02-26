@@ -65,7 +65,7 @@ public class MagicCard : Weapon {
 			bass.showNumberTime = 60;
 			bass.lastCardNumber = effect;
 		}
-		if (effect >= 4) {
+		if (effect >= (int)MagicCardEffects.MultiShot) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
 				shootAngle, player.getNextActorNetId(), true);
 		} else {

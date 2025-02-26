@@ -44,7 +44,6 @@ public class MagicCard : Weapon {
 		cardCount--;
 
 		if (cardCount < 0 || Helpers.randomRange(0, 16) == 0) {
-			// Every 7 shots. Or about 3 times.
 			cardCount += 7;
 			bass.playSound("upgrade");
 			int[] effectChances = [

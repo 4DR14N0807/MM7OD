@@ -113,7 +113,7 @@ public class Bass : Character {
 		base.update();
 	
 		//Hypermode Music.
-		if (!Global.level.isHyper1v1()) {
+		if (Global.level.enabledBreakmanMusic()) {
 			if (isSuperBass) {
 				if (musicSource == null) {
 					addMusicSource("basstheme", getCenterPos(), true);

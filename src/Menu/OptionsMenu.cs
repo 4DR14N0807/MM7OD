@@ -781,7 +781,7 @@ public class OptionsMenu : IMainMenu {
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
-					"Changes slide input."
+					"If enabled, you will use slide with \n" + "dash+down."
 				),
 				// Switch Shield Dash input.
 				new MenuOption(

@@ -338,7 +338,7 @@ public class OptionsMenu : IMainMenu {
 				new MenuOption(
 					30, startY,
 					() => {
-						Helpers.menuLeftRightInc(ref Options.main.preferredCharacter, 5, 7);
+						Helpers.menuLeftRightInc(ref Options.main.preferredCharacter, (int)CharIds.Rock, (int)CharIds.Bass);
 					},
 					(Point pos, int index) => {
 						string preferredChar = Character.charDisplayNames[Options.main.preferredCharacter];
@@ -1621,15 +1621,12 @@ public class OptionsMenu : IMainMenu {
 		}
 
 		string subtitle = "GENERAL SETTINGS";
-		if (isGraphics) subtitle = "GRAPHICS SETTINGS";
-		else if (charNum == 0) subtitle = "X SETTINGS";
-		else if (charNum == 1) subtitle = "ZERO SETTINGS";
-		else if (charNum == 2) subtitle = "VILE SETTINGS";
-		else if (charNum == 3) subtitle = "AXL SETTINGS";
-		else if (charNum == 4) subtitle = "SIGMA SETTINGS";
-		else if (charNum == 5) subtitle = "MEGAMAN SETTINGS";
-		else if (charNum == 6) subtitle = "PROTOMAN SETTINGS";
-		else if (charNum == 7) subtitle = "BASS SETTINGS";
+		if (isGameplay) subtitle = "GAMEPLAY SETTINGS";
+		else if (isGraphics) subtitle = "GRAPHICS SETTINGS";
+		else if (charNum == (int)CharIds.Rock) subtitle = "MEGAMAN SETTINGS";
+		else if (charNum == (int)CharIds.Blues) subtitle = "PROTOMAN SETTINGS";
+		else if (charNum == (int)CharIds.Bass) subtitle = "BASS SETTINGS";
+		
 		Fonts.drawText(FontType.BlueMenu, subtitle, Global.halfScreenW, 20, Alignment.Center);
 		Fonts.drawTextEX(
 			FontType.Grey, "[MLEFT]/[MRIGHT]: Change, [BACK]: Save and Back",

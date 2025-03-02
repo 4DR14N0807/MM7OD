@@ -416,6 +416,7 @@ public class Burning : CharState {
 		if (!character.ownedByLocalPlayer) return;
 		if (character.vel.y < 0) character.vel.y = 0;
 		character.stopMoving();
+		if (character.bigBubble != null) character.bigBubble.destroySelf();
 		character.isBurnState = true;
 	}
 

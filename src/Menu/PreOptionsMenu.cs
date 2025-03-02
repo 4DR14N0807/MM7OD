@@ -39,9 +39,10 @@ public class PreOptionsMenu : IMainMenu {
 		Helpers.menuUpDown(ref selectY, 0, 6);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			int? charNum = null;
-			if (selectY == 4) charNum = 5;
+			/* if (selectY == 4) charNum = 5;
 			else if (selectY == 5) charNum = 6;
-			else if (selectY == 6) charNum = 7;
+			else if (selectY == 6) charNum = 7; */
+			if (selectY >= 4) charNum = 6 + selectY;
 
 
 			Menu.change(new OptionsMenu(this, inGame, charNum, selectY));

@@ -180,6 +180,8 @@ public class Damager {
 				if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
 			}
 
+			if (proj == null) return false;
+
 			switch (projId) {
 				case (int)RockProjIds.ScorchWheel:
 					damagerMessage = onScorchDamage(damagable, owner, 1);
@@ -192,6 +194,9 @@ public class Damager {
 					break;
 				case (int)RockProjIds.DangerWrap:
 					damagerMessage = onDWrapDamage(damagable, owner);
+					break;
+				case (int)BassProjIds.RemoteMine:
+					damagerMessage = onRMineDamage(damagable, owner, proj);
 					break;
 			}
 			if (damagerMessage?.flinch != null) flinch = damagerMessage.flinch.Value;
@@ -210,6 +215,10 @@ public class Damager {
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
 					character.root(45, 100, owner.id);
+					break;
+				}
+				case (int)BassProjIds.RemoteMineExplosion: {
+					character.removeRMine(owner);
 					break;
 				}
 				case (int)BassProjIds.IceWall: {
@@ -489,6 +498,11 @@ public class Damager {
 
 	public static DamagerMessage? onScorchDamage(IDamagable damageable, Player attacker, float burnStacks) {
 		(damageable as Character)?.addBurnStunStacks(burnStacks, attacker);
+		return null;
+	}
+
+	public static DamagerMessage? onRMineDamage(IDamagable damagable, Player attacker, Projectile proj) {
+		(damagable as Character)?.addRMine(attacker, proj);
 		return null;
 	}
 	// Count for kills and assist even if it does 0 damage.

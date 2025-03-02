@@ -451,6 +451,11 @@ public class Bass : Character {
 		return (24, 30);
 	}
 
+	public override Point getCenterPos() {
+		float yCollider = getGlobalColliderSize().Item2 / 2;
+		return pos.addxy(0, -yCollider);
+	}
+
 	public override bool canCrouch() {
 		return false;
 	}

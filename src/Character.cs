@@ -174,6 +174,10 @@ public partial class Character : Actor, IDamagable {
 	// Burn Stun
 	public float burnStunStacks;
 
+	//Remote Mine
+	public Dictionary<int, Projectile> rMines = new();
+	public Anim? rMineAnim;
+
 	// Ice
 	public float slowdownTime;
 	// Parasite.
@@ -1669,6 +1673,7 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
 		if (isWarpIn()) return true;
 		if (invulnTime > 0) return true;
+		if (isBurnState) return true;
 		if (charState is CallDownRush) return true;
 		if (!ignoreRideArmorHide) { 
 			if (
@@ -2027,7 +2032,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override bool shouldDraw() {
-		if (invulnTime > 0 || charState is WarpIdle) {
+		if ((invulnTime > 0 || charState is WarpIdle) && !isBurnState) {
 			if (Global.level.frameCount % 4 < 2) { return false; }
 		}
 		return base.shouldDraw();
@@ -2920,6 +2925,30 @@ public partial class Character : Actor, IDamagable {
 		stopMovingWeak();
 		useGravity = true;
 		playSound("hit");
+	}
+
+	public void addRMine(Player attacker, Projectile mine) {
+		if (!ownedByLocalPlayer) return;
+		if (!rMines.ContainsKey(attacker.id)) {
+			rMines.Add(attacker.id, mine);
+		}
+		
+		if (rMineAnim == null) {
+			rMineAnim = new RemoteMineAnim(this, player, player.getNextActorNetId());
+		}
+	}
+
+	public void removeRMine(Player attacker) {
+		if (!ownedByLocalPlayer) return;
+
+		if (rMines.ContainsKey(attacker.id)) {
+			rMines.Remove(attacker.id);
+
+			if (rMines.Count <= 0 && rMineAnim != null) {
+				rMineAnim.destroySelf();
+				rMineAnim = null;
+			}
+		}
 	}
 
 	// PARASITE SECTION

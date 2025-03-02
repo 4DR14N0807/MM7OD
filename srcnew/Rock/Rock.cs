@@ -598,11 +598,6 @@ public class Rock : Character {
 		}
 	}
 
-	public virtual Collider getSlidingCollider() {
-		var rect = new Rect(0, 0, 36, 12);
-		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
-	}
-
 	public virtual float getSlideSpeed() {
 		if (flag != null) {
 			return getRunSpeed();
@@ -686,7 +681,8 @@ public class Rock : Character {
 	}
 
 	public override Point getCenterPos() {
-		return pos.addxy(0, -21);
+		float yCollider = getGlobalColliderSize().Item2 / 2;
+		return pos.addxy(0, -yCollider);
 	}
 
 	public override void onExitState(CharState oldState, CharState newState) {		 

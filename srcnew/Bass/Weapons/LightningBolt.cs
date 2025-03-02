@@ -181,7 +181,7 @@ public class LightningBoltState : CharState {
 		);
 
 		anim = new Anim(character.pos.add(animOffset), "lightning_bolt_anim", character.xDir,
-			character.player.getNextActorNetId(), true);
+			character.player.getNextActorNetId(), true, true);
 
 		character.playSound("lightningbolt", true);
 	}

@@ -1491,14 +1491,6 @@ public class OptionsMenu : IMainMenu {
 		};
 	}
 
-	string bluesSlideStr(int mode) {
-		return mode switch {
-			0 => "Down + Jump",
-			1 => "Down + Dash",
-			_ => "Dash"
-		};
-	}
-
 	public bool isRegionDisabled() {
 		if (inGame) return true;
 		return Global.regions == null || Global.regions.Count < 2;

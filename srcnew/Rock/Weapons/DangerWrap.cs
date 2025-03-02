@@ -365,7 +365,6 @@ public class DWrapBigBubble : Actor, IDamagable {
 				getCenterPos(), "danger_wrap_bomb", 
 				xDir, netOwner.getNextActorNetId(), false, true
 			);
-
 		}
 
 		netActorCreateId = NetActorCreateId.DWrapBigBubble;

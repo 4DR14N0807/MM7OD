@@ -78,6 +78,7 @@ public class Blues : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Blues;
+		maxHealth = (decimal)player.getMaxHealth(charId);
 		int protomanLoadout = player.loadout.bluesLoadout.specialWeapon;
 		charge1Time = 40;
 		charge2Time = 105;

@@ -707,13 +707,15 @@ public partial class Player {
 	}
 
 	public float getMaxHealth() {
-		int baseHP = 28;
+		return getMaxHealth((CharIds)charNum);
+	}
 
-		if (isBlues) {
-			baseHP = 14;
-		} else if (isBass) {
-			baseHP = 20;
-		}
+	public float getMaxHealth(CharIds charId) {
+		float baseHP = charId switch {
+			CharIds.Blues => 14,
+			CharIds.Bass => 20,
+			_ => 28
+		};
 		return MathF.Ceiling(getModifiedHealth(baseHP));
 	}
 

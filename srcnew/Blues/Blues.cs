@@ -721,11 +721,10 @@ public class Blues : Character {
 				changeState(new RedStrike(), true);
 				return true;
 			} else if (canUseBigBangStrike()) {
-				//bool bufferedShield = isShieldActive;
-				//isShieldActive = false;
-				isShieldActive = true;
+				bool bufferedShield = isShieldActive;
+				isShieldActive = false;
 				changeState(new BigBangStrikeStart(), true);
-				//isShieldActive = bufferedShield;
+				isShieldActive = bufferedShield;
 				return true;
 			}
 		}

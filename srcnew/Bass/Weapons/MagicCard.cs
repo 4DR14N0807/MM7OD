@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
-	public int cardCount = 0;
+	public int cardCount = 7;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -43,17 +43,12 @@ public class MagicCard : Weapon {
 		int effect = 0;
 		cardCount--;
 
-		if (cardCount < 0 || Helpers.randomRange(0, 17) == 4) {
+		//For the last damn time, it was just changing the ammo usage.
+		if (cardCount <= 0 ) {
 			cardCount += 7;
 			bass.playSound("upgrade");
-			int[] effectChances = [
-				1, 1, 1, 1,
-				2, 2, 2, 2,
-				3, 3, 3,
-				4, 4
-			];
-			int effectSel = Helpers.randomRange(0, effectChances.Length - 1);
-			effect = effectChances[effectSel];
+			
+			effect = Helpers.randomRange(2, 2);
 			// 0: No effect.
 			// 1: xDir flip.
 			// 2: Ammo refill.
@@ -82,8 +77,8 @@ public class MagicCard : Weapon {
 public enum MagicCardEffects {
 	None,
 	Flip,
-	Refill,
 	Duplicate,
+	Refill,
 	MultiShot
 }
 
@@ -216,13 +211,13 @@ public class MagicCardProj : Projectile {
 		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
 			var proj = other.gameObject as Projectile;
 			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
-				destroySelf();
+				new MagicCardSpecialProj(
+					ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
+				);
+
+				playSound("magiccard", true);
+				duplicated = true;
 			}
-			new MagicCardSpecialProj(
-				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
-			);
-			playSound("magiccard", true);
-			duplicated = true;
 		}
 	}
 
@@ -251,7 +246,7 @@ public class MagicCardProj : Projectile {
 			pickup.collider.isTrigger = false;
 		}
 		if (!ownedByLocalPlayer) { return; }
-		if (effect == 2 && !duplicated) {
+		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
 			new MagicCardSpecialProj(
 				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
 			);

@@ -2934,7 +2934,6 @@ public class GameMode {
 		if (level.mainPlayer.character == null) return;
 		navPoints.Add((objPos, label));
 
-		/*
 		if (!string.IsNullOrEmpty(label)) label += ":";
 
 		Point playerPos = level.mainPlayer.character.pos;
@@ -2991,7 +2990,7 @@ public class GameMode {
 				posX, posY, isLeft ? Alignment.Left : Alignment.Right
 			);
 		}
-		*/
+		
 	}
 
 	public void syncTeamScores() {

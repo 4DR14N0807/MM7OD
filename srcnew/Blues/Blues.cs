@@ -419,7 +419,7 @@ public class Blues : Character {
 		base.update();
 
 		// Hypermode music.
-		if (false && !Global.level.isHyper1v1()) {
+		if (!Global.level.isHyper1v1()) {
 			if (isBreakMan) { 
 				if (musicSource == null) {
 					addMusicSource("breakman", getCenterPos(), true);
@@ -1370,6 +1370,10 @@ public class Blues : Character {
 		};
 	}
 
+	public override Point getCenterPos() {
+		float yCollider = getGlobalColliderSize().Item2 / 2;
+		return pos.addxy(0, -yCollider);
+	}
 	public override void render(float x, float y) {
 		base.render(x,y);
 

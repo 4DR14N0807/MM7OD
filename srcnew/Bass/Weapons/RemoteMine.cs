@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MMXOnline;
 
@@ -84,6 +85,8 @@ public class RemoteMineProj : Projectile {
 
 	public override void update() {
 		base.update();
+
+		if (host != null) changePos(host.getCenterPos());
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -99,7 +102,7 @@ public class RemoteMineProj : Projectile {
 				bass.player.getNextActorNetId(), true, true
 			);
 		}
-		if (host != null) changePos(host.getCenterPos());
+
 		if (anim != null) anim.changePos(getCenterPos());
 
 		int moveY = owner.input.getYDir(owner);
@@ -136,10 +139,17 @@ public class RemoteMineProj : Projectile {
 
 		var chr = other.gameObject as Character;
 		var wall = other.gameObject as Wall;
+		bool characterLand = (
+			chr != null && chr != bass && 
+			chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)
+		);
 
-		if (!landed && ((chr != null && chr != bass && chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)) || wall != null)) {
-			stopMoving();
-			if (chr != null) host = chr; 
+		if (!landed && (characterLand || wall != null)) {
+			if (characterLand) {
+				host = chr;
+				visible = false;
+			}
+			stopMoving(); 
 			changeSprite("remote_mine_land", true);
 			playSound("remotemineStick", true);
 			landed = true;
@@ -166,6 +176,16 @@ public class RemoteMineProj : Projectile {
 			playSound("remotemineExplode", true);
 		}
 		exploded = true;
+	}
+
+	public override List<byte> getCustomActorNetData() {
+		return [Helpers.boolArrayToByte([
+			visible
+		])];
+	}
+	public override void updateCustomActorNetData(byte[] data) {
+		bool[] flags = Helpers.byteToBoolArray(data[0]);
+		visible = flags[0];
 	}
 }
 
@@ -255,5 +275,57 @@ public class RemoteMineExplosionProj : Projectile {
 		if (bass != null) {
 			bass.rMineExplosion = null;
 		}
+	}
+}
+
+
+public class RemoteMineAnim : Anim {
+
+	Character? chara;
+	Player? player;
+	Anim? anim;
+	public RemoteMineAnim(
+		Character chara, Player player, ushort? netId
+	) : base(
+		chara.getCenterPos(), "remote_mine_proj", chara.xDir, netId, false, true
+	) {
+		zIndex = chara.zIndex + 3;
+		if (ownedByLocalPlayer) {
+			this.chara = chara;
+			this.player = player;
+		} 
+	}
+
+	public override void onStart() {
+		base.onStart();
+		if (player == null) return;
+
+		anim = new Anim(
+			getCenterPos(), "remote_mine_anim", xDir, player.getNextActorNetId(), false
+		) { visible = false };
+	}
+
+	public override void update() {
+		base.update();
+		if (chara != null) {
+			changePos(chara.getCenterPos());
+		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x,y);
+		if (anim == null) return;
+
+		Point center = getCenterPos();
+
+		Global.sprites[anim.sprite.name].draw(
+			anim.frameIndex, center.x, center.y, xDir, yDir,
+			null, alpha, 1, 1, zIndex
+		);
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		anim?.destroySelf();
 	}
 }

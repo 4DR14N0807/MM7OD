@@ -37,11 +37,11 @@ public class InGameMainMenu : IMainMenu {
 				}
 
 				if (isSelWepDisabled()) return;
-				if (Global.level.mainPlayer.realCharNum == 5) {
+				if (Global.level.mainPlayer.realCharNum == (int)CharIds.Rock) {
 					Menu.change(new SelectRockWeaponMenu(this, true));
-				}  else if (Global.level.mainPlayer.realCharNum == 6) {
+				}  else if (Global.level.mainPlayer.realCharNum == (int)CharIds.Blues) {
 					Menu.change(new BluesWeaponMenu(this, true));
-				} else if (Global.level.mainPlayer.realCharNum == 7) {
+				} else if (Global.level.mainPlayer.realCharNum == (int)CharIds.Bass) {
 					Menu.change(new BassWeaponMenu(this, true));
 				}
 				 else if (Global.level.mainPlayer.realCharNum == 4) {

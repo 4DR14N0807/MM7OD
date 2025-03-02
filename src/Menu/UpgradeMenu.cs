@@ -165,7 +165,7 @@ public class UpgradeMenu : IMainMenu {
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 		if (selectArrowPosY > getMaxIndex() - 1) selectArrowPosY = getMaxIndex() - 1;
 
-		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
+		if (Global.input.isPressedMenu(Control.MenuConfirm) && mainPlayer.character != null) {
 			//ETANKS SECTION
 			if (selectArrowPosX == 0) {
 				if (mainPlayer.ETanks.Count <= selectArrowPosY) {

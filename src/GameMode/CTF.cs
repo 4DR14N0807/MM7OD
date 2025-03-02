@@ -14,8 +14,10 @@ public class CTF : GameMode {
 
 	public override void render() {
 		base.render();
-		drawObjectiveNavpoint("RFlag", level.redFlag.pos);
-		drawObjectiveNavpoint("BFlag", level.blueFlag.pos);
+		if (level.mainPlayer.character == null) return;
+		bool blue = level.mainPlayer.alliance == GameMode.blueAlliance;
+		drawObjectiveNavpoint(blue ? "Capture" : "Defend", level.redFlag.pos);
+		drawObjectiveNavpoint(!blue ? "Capture" : "Defend", level.blueFlag.pos);
 
 		if (level.blueFlag.chr != null) {
 			drawObjectiveNavpoint("Ped", level.redFlag.pos);

@@ -124,7 +124,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 
 public class ProtoStrikeProj : Projectile {
 	Character? ownerChar;
-	float radius = 38;
+	float radius = 48; //38
 	float absorbRadius = 80;
 
 	public ProtoStrikeProj(

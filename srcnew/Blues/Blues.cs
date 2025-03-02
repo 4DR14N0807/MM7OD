@@ -420,7 +420,7 @@ public class Blues : Character {
 
 		// Hypermode music.
 		if (!Global.level.isHyper1v1()) {
-			if (isBreakMan) { 
+			if (isBreakMan && overdrive) { 
 				if (musicSource == null) {
 					addMusicSource("breakman", getCenterPos(), true);
 				}

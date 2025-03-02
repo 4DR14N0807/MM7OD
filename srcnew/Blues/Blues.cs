@@ -1008,32 +1008,28 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.altBluesSlideInput == 2) {
+		if (Options.main.altBluesSlideInput && !overdrive) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
-				player.input.isHeld(Control.Down, player)
+				!player.input.isHeld(Control.Down, player)
 			);
 		}
-
 		return player.input.isPressed(Control.Dash, player);
 	}
 
 	public bool slideInput() {
-		if (Options.main.altBluesSlideInput == 0) {
-			return (
-				player.input.isPressed(Control.Jump, player) &&
-				player.input.isHeld(Control.Down, player)
-			);
-		} 
-		else if (Options.main.altBluesSlideInput == 1) {
+		if (Options.main.altBluesSlideInput) {
+			if (overheating) {
+				return player.input.isPressed(Control.Dash, player);
+			}
 			return (
 				player.input.isPressed(Control.Dash, player) &&
 				player.input.isHeld(Control.Down, player)
 			);
 		}
 		return (
-			player.input.isPressed(Control.Dash, player) &&
-			!player.input.isHeld(Control.Down, player)
+			player.input.isPressed(Control.Jump, player) &&
+			player.input.isHeld(Control.Down, player)
 		);
 	}
 

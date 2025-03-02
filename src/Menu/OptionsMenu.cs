@@ -767,7 +767,7 @@ public class OptionsMenu : IMainMenu {
 				new MenuOption(
 					30, startY,
 					() => {
-						Helpers.menuLeftRightInc(ref Options.main.altBluesSlideInput, 0, 2);;
+						Helpers.menuLeftRightBool(ref Options.main.altBluesSlideInput);;
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
@@ -777,14 +777,14 @@ public class OptionsMenu : IMainMenu {
 						);
 
 						Fonts.drawText(
-							optionFontValue, bluesSlideStr(Options.main.altBluesSlideInput),
+							optionFontValue, Helpers.boolYesNo(Options.main.altBluesSlideInput),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
 					"Changes slide input."
 				),
 				// Switch Shield Dash input.
-				/* new MenuOption(
+				new MenuOption(
 					30, startY,
 					() => {
 						Helpers.menuLeftRightBool(ref Options.main.reverseBluesDashInput);
@@ -802,7 +802,7 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"If enabled, it swaps\nthe slide and dash inputs."
-				), */
+				),
 				// Shield Toggle/Hold
 				new MenuOption(
 					30, startY,

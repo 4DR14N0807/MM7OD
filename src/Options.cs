@@ -116,7 +116,7 @@ public class Options {
 	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;
 	public int coreHeatDisplay;
-	public int altBluesSlideInput;
+	public bool altBluesSlideInput;
 	public bool reverseBluesDashInput;
 
 	// Bass

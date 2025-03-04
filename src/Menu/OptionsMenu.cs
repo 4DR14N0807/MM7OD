@@ -524,47 +524,6 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Preferred server region for hosting matches.\nChoose the one with lowest ping."
 				),
-				/* // Preferred character
-				new MenuOption(
-					30, startY,
-					() => {
-						Helpers.menuLeftRightInc(ref Options.main.preferredCharacter, 5, 5);
-					},
-					(Point pos, int index) => {
-						string preferredChar = Character.charDisplayNames[Options.main.preferredCharacter];
-						Fonts.drawText(
-							optionFontText, "PREFERRED CHARACTER:",
- 							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							optionFontValue, preferredChar,
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Choose a default character the game will\npre-select for you."
-				), */
-				// Hide Menu Helper Text
-				/*new MenuOption(
-					30, startY,
-					() => {
-						if (Global.input.isPressedMenu(Control.MenuLeft)) {
-							Options.main.showInGameMenuHUD = false;
-						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
-							Options.main.showInGameMenuHUD = true;
-						}
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontText, "Show in-game menu keys:",
- 							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.showInGameMenuHUD),
-							pos.x + 166, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Show or hide additional menu help text in\nbottom right of the in-match HUD."
-				),*/
 				// System requirements check
 				new MenuOption(
 					30, startY,
@@ -631,6 +590,30 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"Disables ability to slide by quickly\ntapping LEFT or RIGHT twice."
+				),
+				// Hypermode music.
+				new MenuOption(
+					30, startY,
+					() => {
+						if (Global.input.isHeldMenu(Control.MenuLeft)) {
+							Options.main.enableHyperMusic = false;
+						} else if (Global.input.isHeldMenu(Control.MenuRight)) {
+							Options.main.enableHyperMusic = true;
+						}
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"HYPERMODE MUSIC:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.enableHyperMusic),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Enables music for hypermodes."
 				),
 				// Matchmaking Timeout
 				new MenuOption(
@@ -780,12 +763,11 @@ public class OptionsMenu : IMainMenu {
 						);
 					}
 				),
-				
 				// Switch Shield Dash input.
 				new MenuOption(
 					30, startY,
 					() => {
-						Helpers.menuLeftRightInc(ref Options.main.altBluesSlideInput, 0, 2);;
+						Helpers.menuLeftRightBool(ref Options.main.altBluesSlideInput);;
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
@@ -795,14 +777,14 @@ public class OptionsMenu : IMainMenu {
 						);
 
 						Fonts.drawText(
-							optionFontValue, bluesSlideStr(Options.main.altBluesSlideInput),
+							optionFontValue, Helpers.boolYesNo(Options.main.altBluesSlideInput),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
-					"Changes slide input."
+					"If enabled, you will use slide with \n" + "dash+down."
 				),
 				// Switch Shield Dash input.
-				/* new MenuOption(
+				new MenuOption(
 					30, startY,
 					() => {
 						Helpers.menuLeftRightBool(ref Options.main.reverseBluesDashInput);
@@ -820,7 +802,7 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"If enabled, it swaps\nthe slide and dash inputs."
-				), */
+				),
 				// Shield Toggle/Hold
 				new MenuOption(
 					30, startY,
@@ -1506,14 +1488,6 @@ public class OptionsMenu : IMainMenu {
 			0 => "HUD",
 			1 => "Follow",
 			_ => "Both"
-		};
-	}
-
-	string bluesSlideStr(int mode) {
-		return mode switch {
-			0 => "Down + Jump",
-			1 => "Down + Dash",
-			_ => "Dash"
 		};
 	}
 

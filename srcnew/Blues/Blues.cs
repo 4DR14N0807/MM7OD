@@ -78,6 +78,7 @@ public class Blues : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Blues;
+		maxHealth = (decimal)player.getMaxHealth(charId);
 		int protomanLoadout = player.loadout.bluesLoadout.specialWeapon;
 		charge1Time = 40;
 		charge2Time = 105;
@@ -418,7 +419,7 @@ public class Blues : Character {
 		base.update();
 
 		// Hypermode music.
-		if (!Global.level.isHyper1v1()) {
+		if (Global.level.enabledBreakmanMusic()) {
 			if (isBreakMan) { 
 				if (musicSource == null) {
 					addMusicSource("breakman", getCenterPos(), true);
@@ -456,7 +457,6 @@ public class Blues : Character {
 				fastShieldHeal = false;
 			}
 		}
-
 		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive && !inCustomShootAnim) {
 			if (isBreakMan) {
 				overdrive = true;
@@ -1007,32 +1007,28 @@ public class Blues : Character {
 	}
 
 	public bool shieldDashInput() {
-		if (Options.main.altBluesSlideInput == 2) {
+		if (Options.main.altBluesSlideInput && !overdrive) {
 			return (
 				player.input.isPressed(Control.Dash, player) &&
-				player.input.isHeld(Control.Down, player)
+				!player.input.isHeld(Control.Down, player)
 			);
 		}
-
 		return player.input.isPressed(Control.Dash, player);
 	}
 
 	public bool slideInput() {
-		if (Options.main.altBluesSlideInput == 0) {
-			return (
-				player.input.isPressed(Control.Jump, player) &&
-				player.input.isHeld(Control.Down, player)
-			);
-		} 
-		else if (Options.main.altBluesSlideInput == 1) {
+		if (Options.main.altBluesSlideInput) {
+			if (overheating) {
+				return player.input.isPressed(Control.Dash, player);
+			}
 			return (
 				player.input.isPressed(Control.Dash, player) &&
 				player.input.isHeld(Control.Down, player)
 			);
 		}
 		return (
-			player.input.isPressed(Control.Dash, player) &&
-			!player.input.isHeld(Control.Down, player)
+			player.input.isPressed(Control.Jump, player) &&
+			player.input.isHeld(Control.Down, player)
 		);
 	}
 

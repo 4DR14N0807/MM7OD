@@ -44,6 +44,7 @@ public class Bass : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Bass;
+		maxHealth = (decimal)player.getMaxHealth(charId);
 		weapons = getLoadout();
 		charge1Time = 50;
 		maxHealth -= (decimal)player.evilEnergyStacks * (decimal)player.hpPerStack;
@@ -112,7 +113,7 @@ public class Bass : Character {
 		base.update();
 	
 		//Hypermode Music.
-		if (!Global.level.isHyper1v1()) {
+		if (Global.level.enabledBreakmanMusic()) {
 			if (isSuperBass) {
 				if (musicSource == null) {
 					addMusicSource("basstheme", getCenterPos(), true);
@@ -385,42 +386,27 @@ public class Bass : Character {
 		};
 	}
 
-	public List<Weapon> getWeaponsFromLoadout(BassLoadout loadout) {
-		var list = new List<Weapon>();
-
-		list.Add(getAllWeapons()[loadout.weapon1]);
-		list.Add(getAllWeapons()[loadout.weapon2]);
-		list.Add(getAllWeapons()[loadout.weapon3]);
-
-		return list;
+	public static Weapon getWeaponById(int id) {
+		return id switch {
+			1 => new IceWall(),
+			2 => new CopyVision(),
+			3 => new SpreadDrill(),
+			4 => new WaveBurner(),
+			5 => new RemoteMine(),
+			6 => new LightningBolt(),
+			7 => new TenguBlade(),
+			8 => new MagicCard(),
+			_ => new BassBuster()
+		};
 	}
 
-	public static List<Weapon> getRandomLoadout() {
-		Random slot0 = new Random(), slot1 = new Random(), slot2 = new Random();
-		bool hasRepeatedWeapons = true;
-		int[] weaponIndexes = new int[3];
-		var indices = new List<byte>();
+	public List<Weapon> getWeaponsFromLoadout(BassLoadout loadout) {
+		var list = new List<Weapon>();
+		list.Add(getWeaponById(loadout.weapon1));
+		list.Add(getWeaponById(loadout.weapon2));
+		list.Add(getWeaponById(loadout.weapon3));
 
-		while (hasRepeatedWeapons) {
-			weaponIndexes[0] = Helpers.randomRange(0, 8);
-			weaponIndexes[1] = Helpers.randomRange(0, 8);
-			weaponIndexes[2] = Helpers.randomRange(0, 8);
-
-			if (weaponIndexes[0] != weaponIndexes[1]
-				&& weaponIndexes[0] != weaponIndexes[2]
-				&& weaponIndexes[1] != weaponIndexes[2]) hasRepeatedWeapons = false;
-		}
-
-		indices.Add((byte)weaponIndexes[0]);
-		indices.Add((byte)weaponIndexes[1]);
-		indices.Add((byte)weaponIndexes[2]);
-
-		List<Weapon> nullableWeapons = indices.Select(index => {
-			return getAllWeapons().Find(w => w.index == index)!.clone();
-		}).ToList();
-		nullableWeapons.RemoveAll(item => item == null);
-
-		return nullableWeapons;
+		return list;
 	}
 
 	public void drawCardNumber(int number) {

@@ -2575,6 +2575,10 @@ public partial class Level {
 		return server?.customMatchSettings?.hyperModeMatch == true;
 	}
 
+	public bool enabledBreakmanMusic() {
+		return Options.main.enableHyperMusic;
+	}
+
 	public bool isTraining() {
 		return levelData.isTraining();
 	}

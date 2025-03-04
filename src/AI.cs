@@ -391,47 +391,7 @@ public class AI {
 	}
 
 	public void buySection() {
-		if (!player.isMainPlayer && character is MegamanX &&
-			player.aiArmorUpgradeIndex < player.aiArmorUpgradeOrder.Count && !Global.level.is1v1()
-		) {
-			var upgradeNumber = player.aiArmorUpgradeOrder[player.aiArmorUpgradeIndex];
-			if (upgradeNumber == 0 && player.currency >= MegamanX.bootsArmorCost) {
-				UpgradeArmorMenu.upgradeBootsArmor(player, player.aiArmorPath);
-				player.aiArmorUpgradeIndex++;
-			} else if (upgradeNumber == 1 && player.currency >= MegamanX.chestArmorCost) {
-				UpgradeArmorMenu.upgradeBodyArmor(player, player.aiArmorPath);
-				player.aiArmorUpgradeIndex++;
-			} else if (upgradeNumber == 2 && player.currency >= MegamanX.headArmorCost) {
-				UpgradeArmorMenu.upgradeHelmetArmor(player, player.aiArmorPath);
-				player.aiArmorUpgradeIndex++;
-			} else if (upgradeNumber == 3 && player.currency >= MegamanX.armArmorCost) {
-				UpgradeArmorMenu.upgradeArmArmor(player, player.aiArmorPath);
-				player.aiArmorUpgradeIndex++;
-			}
-		}
-		if (!player.isMainPlayer && character is Vile vile) {
-			if (player.currency >= 3 && !player.frozenCastle) {
-				player.frozenCastle = true;
-				vile.hasFrozenCastle = true;
-				player.currency -= Vile.frozenCastleCost;
-			}
-			if (player.currency >= 3 && !player.speedDevil) {
-				player.speedDevil = true;
-				vile.hasSpeedDevil = true;
-				player.currency -= Vile.speedDevilCost;
-			}
-		}
-		if (!player.isMainPlayer) {
-			if (player.heartTanks < UpgradeMenu.getMaxHeartTanks() &&
-				player.currency >= UpgradeMenu.getHeartTankCost()
-			) {
-				player.currency -=  UpgradeMenu.getHeartTankCost();
-				player.heartTanks++;
-				float currentMaxHp = player.maxHealth;
-				player.maxHealth = player.getMaxHealth();
-				player.character?.addHealth(player.maxHealth - currentMaxHp);
-			}
-		}
+		
 	}
 
 	public void randomlyChangeStuff() {

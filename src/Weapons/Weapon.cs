@@ -101,8 +101,6 @@ public class Weapon {
 		weaponList.AddRange(getAllXWeapons());
 		weaponList.AddRange(getAllAxlWeapons(axlLoadout));
 		weaponList.AddRange(getAllSigmaWeapons(null));
-		weaponList.AddRange(getAllRockWeapons());
-		weaponList.AddRange(Bass.getAllWeapons());
 		return weaponList;
 	}
 

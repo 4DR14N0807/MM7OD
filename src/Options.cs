@@ -27,6 +27,7 @@ public class Options {
 	public bool killOnCharChange = true;
 	public float networkTimeoutSeconds = 3;
 	public bool autoCreateDocFolderPromptShown = false;
+	public bool enableHyperMusic;
 
 	public int getNetworkTimeoutMs() {
 		networkTimeoutSeconds = Helpers.clamp(networkTimeoutSeconds, 1, 5);
@@ -115,7 +116,7 @@ public class Options {
 	public BluesLoadout bluesLoadout = BluesLoadout.createDefault();
 	public bool protoShieldHold;
 	public int coreHeatDisplay;
-	public int altBluesSlideInput;
+	public bool altBluesSlideInput;
 	public bool reverseBluesDashInput;
 
 	// Bass

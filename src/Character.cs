@@ -27,7 +27,7 @@ public partial class Character : Actor, IDamagable {
 
 	// Health.
 	public decimal health;
-	public decimal maxHealth;
+	public decimal maxHealth = 28;
 	
 	// Player linked data.
 	public Player player;
@@ -261,7 +261,7 @@ public partial class Character : Actor, IDamagable {
 
 		chargeEffect = new ChargeEffect();
 		lastGravityWellDamager = player;
-		maxHealth = (decimal)player.getMaxHealth();
+		maxHealth = 28;
 		health = 1;
 		if (player.disguise == null) {
 			healAmount = (float)maxHealth - 1;

@@ -295,7 +295,7 @@ public class Blues : Character {
 	public bool canUseBigBangStrike() {
 		return grounded && overheating;
 	}
-	
+
 	public bool canUseDropSwap() {
 		return (
 			isBreakMan && !overheating &&
@@ -408,7 +408,7 @@ public class Blues : Character {
 		}
 		// Core ammo regen.
 		if (!overdrive && !isCharging() ||
-			overdrive && chargeTime <= charge1Time/2f || 
+			overdrive && chargeTime <= charge1Time/2f ||
 			chargeTime > charge3Time + (overdrive ? 20 : 10)) {
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
@@ -420,7 +420,7 @@ public class Blues : Character {
 
 		// Hypermode music.
 		if (Global.level.enabledBreakmanMusic()) {
-			if (isBreakMan) { 
+			if (isBreakMan) {
 				if (musicSource == null) {
 					addMusicSource("breakman", getCenterPos(), true);
 				}
@@ -450,7 +450,7 @@ public class Blues : Character {
 			shieldHP++;
 			healShieldHPCooldown = 6;
 			if (fastShieldHeal) {
-				healShieldHPCooldown = 3; 
+				healShieldHPCooldown = 3;
 			}
 			if (shieldHP >= shieldMaxHP) {
 				shieldHP = shieldMaxHP;
@@ -929,7 +929,7 @@ public class Blues : Character {
 			pos.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
 		);
-		
+
 		deductLabelY(labelSubtankOffY);
 	}
 
@@ -1057,7 +1057,7 @@ public class Blues : Character {
 			(shieldHP > 0 || charState is BigBangStrikeStart)
 		);
 	}
-	
+
 	public bool isShieldEquipped() {
 		if (!ownedByLocalPlayer) {
 			return isShieldActive;
@@ -1210,7 +1210,7 @@ public class Blues : Character {
 				damage--;
 			}
 		}
-		if (damage > 0) { 
+		if (damage > 0) {
 			bodyDamaged = true;
 			customDamageDisplayOn = true;
 			base.applyDamage(float.Parse(damage.ToString()), attacker, actor, weaponIndex, projId);
@@ -1349,7 +1349,7 @@ public class Blues : Character {
 	}
 
 	public override (float, float) getGlobalColliderSize() {
-		return sprite.name switch{ 
+		return sprite.name switch {
 			"blues_slide" => (34, 22),
 			"blues_dash" or "blues_dash_shield" => (34, 36),
 			_ => (24, 36)
@@ -1357,7 +1357,7 @@ public class Blues : Character {
 	}
 
 	public override (float, float) getTerrainColliderSize() {
-		return sprite.name switch{ 
+		return sprite.name switch {
 			"blues_slide" => (34, 12),
 			"blues_dash" or "blues_dash_shield" => (34, 30),
 			_ => (24, 30)
@@ -1372,18 +1372,18 @@ public class Blues : Character {
 		base.render(x,y);
 
 		float pAmmo = getChargeShotCorePendingAmmo();
-		//Core ammo
+		// Core ammo
 		if (player.isMainPlayer && (coreAmmo > 0 || (pAmmo > 0 && !isBreakMan)) && Options.main.coreHeatDisplay >= 1) {
 			float corePct = Helpers.clamp01((coreMaxAmmo - coreAmmo) / coreMaxAmmo);
 			corePct = -corePct + 1;
-			
+
 			float pendAmmo = coreAmmo + pAmmo;
 			if (pendAmmo > coreMaxAmmo) {
 				pendAmmo = MathInt.Floor(coreMaxAmmo - coreAmmo);
 			}
 			float pendPct = Helpers.clamp01((coreMaxAmmo - pendAmmo) / coreMaxAmmo);
 			pendPct = -pendPct + 1;
-			
+
 			float sy = -27;
 			float sx = 20;
 			if (xDir == -1) sx = 90 - 20;

@@ -1578,7 +1578,6 @@ public class Blues : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
-		int weaponIndex = specialWeaponIndex;
 		customData.Add((byte)MathInt.Floor(coreAmmo));
 		customData.Add((byte)MathInt.Ceiling(shieldHP));
 		customData.Add((byte)getChargeLevel());
@@ -1605,7 +1604,6 @@ public class Blues : Character {
 		if (netChargeLevel == 0) {
 			stopCharge();
 		}
-
 		bool[] flags = Helpers.byteToBoolArray(data[3]);
 		isShieldActive = flags[0];
 		overheating = flags[1];

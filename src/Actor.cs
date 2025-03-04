@@ -951,38 +951,51 @@ public partial class Actor : GameObject {
 	) {
 		if (damageHistory.Count > 0) {
 			for (int i = damageHistory.Count - 1; i >= 0; i--) {
-				var lastAttacker = damageHistory[i];
-				if (lastAttacker.envKillOnly && weaponIndex != null) continue;
-				//if (Global.time - lastAttacker.time > 10) continue;
-				killer = lastAttacker.attacker;
-				weaponIndex = lastAttacker.weapon;
-				break;
-			}
-		}
-		if (damageHistory.Count > 0) {
-			for (int i = damageHistory.Count - 1; i >= 0; i--) {
-				var secondLastAttacker = damageHistory[i];
-				if (secondLastAttacker.attacker == killer) continue;
-
-				// Non-suicide case: prevent assists aggressively
-				if (killer != ownPlayer && (
-						secondLastAttacker.envKillOnly && weaponIndex != null ||
-						Global.time - secondLastAttacker.time > 4 ||
-						Global.time - secondLastAttacker.time > 0.5f && Damager.lowTimeAssist(secondLastAttacker.projId) ||
-						Damager.unassistable(secondLastAttacker.projId)
-					)
+				DamageEvent lastAttacker = damageHistory[i];
+				if (// Enviroment kill weapons.
+					lastAttacker.envKillOnly && weaponIndex != null ||
+					// Suicide.
+					killer != null && lastAttacker.attacker == ownPlayer ||
+					// Stage kill.
+					killer != null && killer != ownPlayer && lastAttacker.attacker == Player.stagePlayer
 				) {
 					continue;
 				}
-				// Suicide case: grant assists liberally to "punish" suicider more
-				else if (Global.time - secondLastAttacker.time > 10) {
+				killer = lastAttacker.attacker;
+				weaponIndex = lastAttacker.weapon;
+				// If a suicide or stage kill. Search for anyone else.
+				if (killer == Player.stagePlayer || killer == ownPlayer) continue;
+				break;
+			}
+		}
+		// Seach for assist.
+		// If out kill is ourself or the stage means we did not got a kill.
+		// In that case we do an alternate search.
+		if (damageHistory.Count > 0 && killer != Player.stagePlayer && killer != ownPlayer) {
+			for (int i = damageHistory.Count - 1; i >= 0; i--) {
+				var secondLastAttacker = damageHistory[i];
+				// Avoid the killer.
+				if (secondLastAttacker.attacker == killer) continue;
+				// Avoid self.
+				if (secondLastAttacker.attacker == ownPlayer) continue;
+
+				// Non-suicide case: prevent assists aggressively
+				if (secondLastAttacker.envKillOnly && weaponIndex != null ||
+					Global.time - secondLastAttacker.time > 4 ||
+					Global.time - secondLastAttacker.time > 0.5f && Damager.lowTimeAssist(secondLastAttacker.projId) ||
+					Damager.unassistable(secondLastAttacker.projId)
+				) {
 					continue;
 				}
-
 				assister = secondLastAttacker.attacker;
 				assisterProjId = secondLastAttacker.projId;
 				assisterWeaponId = secondLastAttacker.weapon;
 			}
+		}
+		// Use last damaged target if we have not a kill.
+		else if (ownPlayer.lastDamagedCharacter != null) {
+			killer = ownPlayer.lastDamagedCharacter.player;
+			weaponIndex = 0;
 		}
 	}
 

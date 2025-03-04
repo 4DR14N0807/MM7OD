@@ -2732,7 +2732,7 @@ public partial class Character : Actor, IDamagable {
 				// TEMP: Remove on re-enable of EXP.
 				assister.awardCurrency(false);
 			}
-			player.addDeath(killer == player);
+			player.addDeath();
 
 			Global.level.gameMode.addKillFeedEntry(
 				new KillFeedEntry(killer, assister, player, weaponIndex)

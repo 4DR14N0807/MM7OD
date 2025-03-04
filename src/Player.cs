@@ -1011,11 +1011,9 @@ public partial class Player {
 		if (sendRpc) {
 			RPC.spawnCharacter.sendRpc(spawnCharNum, extraData, pos, xDir, id, charNetId);
 		}
-
 		if (Global.level.gameMode.isTeamMode) {
 			alliance = newAlliance;
 		}
-
 		if (character != null && charNetId == character.netId) {
 			return;
 		}
@@ -1028,6 +1026,9 @@ public partial class Player {
 		} else if (isAI && Global.level.isTraining()) {
 			previousLoadout = loadout;
 			applyLoadoutChange();
+		}
+		if (ownedByLocalPlayer) {
+			lastDamagedCharacter = null;
 		}
 		if (pendingEvilEnergyStacks > 0 && charNum == (int)CharIds.Bass) {
 			evilEnergyStacks = pendingEvilEnergyStacks;
@@ -1849,17 +1850,11 @@ public partial class Player {
 		assists++;
 	}
 
-	public void addDeath(bool isSuicide) {
+	public void addDeath() {
 		if (Global.serverClient == null) {
 			deaths++;
-			if (isSuicide && kills >= 1) {
-				kills--;
-			} 
 		} else if (Global.canControlKillscore) {
 			deaths++;
-			if (isSuicide && kills >= 1) {
-				kills--;
-			} 
 			RPC.updatePlayer.sendRpc(id, kills, deaths);
 		}
 	}

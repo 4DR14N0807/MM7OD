@@ -457,7 +457,6 @@ public class Blues : Character {
 				fastShieldHeal = false;
 			}
 		}
-
 		if (coreAmmo >= coreMaxAmmo && !overheating && !overdrive && !inCustomShootAnim) {
 			if (isBreakMan) {
 				overdrive = true;

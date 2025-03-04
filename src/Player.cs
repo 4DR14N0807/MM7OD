@@ -1847,11 +1847,17 @@ public partial class Player {
 		assists++;
 	}
 
-	public void addDeath() {
+	public void addDeath(bool isSuicide) {
 		if (Global.serverClient == null) {
 			deaths++;
+			if (isSuicide && kills >= 1) {
+				kills--;
+			} 
 		} else if (Global.canControlKillscore) {
 			deaths++;
+			if (isSuicide && kills >= 1) {
+				kills--;
+			} 
 			RPC.updatePlayer.sendRpc(id, kills, deaths);
 		}
 	}

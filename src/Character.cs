@@ -1120,12 +1120,17 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		if (Global.level.checkTerrainCollisionOnce(this, 0, 1) != null) {
-			if (gHolded && gHoldModifier > 0) {
-				Damager.applyDamage(
-					gHoldOwner, 2, 1, Global.defFlinch, this,
+			if (gHolded && gHoldModifier > 0 && gHoldOwner != null) {
+				/* Damager.applyDamage(
+					gHoldOwner, 2, 60, Global.defFlinch, this,
 					false, (int)BluesWeaponIds.GravityHold, 0, gHoldOwner?.character ?? this,
 					(int)BluesProjIds.GravityHoldCrash
-				);
+				); */
+
+				//Temporal fix.
+				applyDamage(2, gHoldOwner, this, (int)BluesWeaponIds.GravityHold, (int)BluesProjIds.GravityHoldCrash);
+				setHurt(-xDir, Global.defFlinch, false);
+				playSound("hurt", sendRpc: true);
 				gHolded = false;
 			}
 		}
@@ -1477,6 +1482,7 @@ public partial class Character : Actor, IDamagable {
 		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
 			return;
 		}
+		if (charState.superArmor) return;
 		// Cooldown.
 		// Disarray mechanic.
 		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
@@ -2726,7 +2732,7 @@ public partial class Character : Actor, IDamagable {
 				// TEMP: Remove on re-enable of EXP.
 				assister.awardCurrency(false);
 			}
-			player.addDeath();
+			player.addDeath(killer == player);
 
 			Global.level.gameMode.addKillFeedEntry(
 				new KillFeedEntry(killer, assister, player, weaponIndex)

@@ -120,7 +120,7 @@ public class RemoteMineProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x,y);
-		if (anim == null) return;
+		if (anim == null || !visible) return;
 
 		Point center = getCenterPos();
 
@@ -290,6 +290,7 @@ public class RemoteMineAnim : Anim {
 		chara.getCenterPos(), "remote_mine_proj", chara.xDir, netId, false, true
 	) {
 		zIndex = chara.zIndex + 3;
+		frameSpeed = 0;
 		if (ownedByLocalPlayer) {
 			this.chara = chara;
 			this.player = player;

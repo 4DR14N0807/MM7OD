@@ -720,11 +720,10 @@ public class Blues : Character {
 				changeState(new RedStrike(), true);
 				return true;
 			} else if (canUseBigBangStrike()) {
-				//bool bufferedShield = isShieldActive;
-				//isShieldActive = false;
-				isShieldActive = true;
+				bool bufferedShield = isShieldActive;
+				isShieldActive = false;
 				changeState(new BigBangStrikeStart(), true);
-				//isShieldActive = bufferedShield;
+				isShieldActive = bufferedShield;
 				return true;
 			}
 		}
@@ -1377,7 +1376,8 @@ public class Blues : Character {
 		base.render(x,y);
 
 		float pAmmo = getChargeShotCorePendingAmmo();
-		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0) && Options.main.coreHeatDisplay >= 1) {
+		//Core ammo
+		if (player.isMainPlayer && (coreAmmo > 0 || (pAmmo > 0 && !isBreakMan)) && Options.main.coreHeatDisplay >= 1) {
 			float corePct = Helpers.clamp01((coreMaxAmmo - coreAmmo) / coreMaxAmmo);
 			corePct = -corePct + 1;
 			
@@ -1393,6 +1393,23 @@ public class Blues : Character {
 			if (xDir == -1) sx = 90 - 20;
 			drawCoreHeat(corePct, pendPct, sx, sy);
 		}
+		//Overdrive ammo
+		if (player.isMainPlayer && Options.main.coreHeatDisplay >= 1 && overdriveAmmo > 0 && overdrive) {
+			float ovrPct = Helpers.clamp01((coreMaxAmmo - overdriveAmmo) / coreMaxAmmo);
+			ovrPct = -ovrPct + 1;
+
+			float pendAmmo = overdriveAmmo + pAmmo;
+			if (pendAmmo > coreMaxAmmo) {
+				pendAmmo = MathInt.Floor(coreMaxAmmo - overdriveAmmo);
+			}
+			float pendPct = Helpers.clamp01((coreMaxAmmo - pendAmmo) / coreMaxAmmo);
+			pendPct = -pendPct + 1;
+
+			float sy = -27;
+			float sx = 20;
+			if (xDir == -1) sx = 90 - 20;
+			drawOverdriveAmmo(ovrPct, pendPct, sx, sy);
+		}
 	}
 
 	public void drawCoreHeat(float corePct, float pendPct, float sx, float sy) {
@@ -1403,6 +1420,19 @@ public class Blues : Character {
 		float width2 = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * pendPct), coreBarInnerWidth);
 
 		DrawWrappers.DrawRect(pos.x - 47 + sx, pos.y - 16 + sy, pos.x - 42 + sx, pos.y + 16 + sy, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
+		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width2 + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color2, 0, ZIndex.HUD - 1);
+		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
+	}
+
+	public void drawOverdriveAmmo(float ovrPct, float pendPct, float sx, float sy) {
+		float coreBarInnerWidth = 30;
+		Color color = Color.Blue;
+		Color color2 = Color.Yellow;
+
+		float width = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * ovrPct), coreBarInnerWidth);
+		float width2 = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * pendPct), coreBarInnerWidth);
+
+		if (coreAmmo <= 0) DrawWrappers.DrawRect(pos.x - 47 + sx, pos.y - 16 + sy, pos.x - 42 + sx, pos.y + 16 + sy, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
 		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width2 + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color2, 0, ZIndex.HUD - 1);
 		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
 	}

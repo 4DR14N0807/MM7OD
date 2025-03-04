@@ -67,7 +67,7 @@ public class InGameMainMenu : IMainMenu {
 					}
 				} else {
 					if (!Global.level.server.disableHtSt) {
-						if (Global.level.mainPlayer.realCharNum == 6) {
+						if (Global.level.mainPlayer.realCharNum == (int)CharIds.Blues) {
 							Menu.change(new BluesUpgradeMenu(this));
 						} else Menu.change(new UpgradeMenu(this));
 					}

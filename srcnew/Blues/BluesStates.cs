@@ -312,6 +312,12 @@ public class BluesSpreadShoot : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
+		blues.inCustomShootAnim = true;
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		blues.inCustomShootAnim = false;
 	}
 
 	public override void update() {

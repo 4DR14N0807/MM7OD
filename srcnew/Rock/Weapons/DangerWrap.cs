@@ -425,9 +425,16 @@ public class DWrapBigBubble : Actor, IDamagable {
 		}
 		if (bubbleFrames >= 180 && (character == null || character.dWrapDamager != null)) {
 			if (character?.ownedByLocalPlayer == true) {
-				character.dWrapDamager?.applyDamage(
+				/* character.dWrapDamager?.applyDamage(
 					character, false, new DangerWrap(), this, (int)RockProjIds.DangerWrapBubbleExplosion
+				); */
+
+				//Temporal fix.
+				character?.applyDamage(
+					4, netOwner, character, (int)RockWeaponIds.DangerWrap, (int)RockProjIds.DangerWrapBubbleExplosion
 				);
+				character?.playSound("hurt", sendRpc: true);
+				character?.setHurt(-character?.xDir ?? xDir, Global.defFlinch, false);
 			}
 			destroySelf();
 		}

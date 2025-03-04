@@ -408,7 +408,7 @@ public class Blues : Character {
 		}
 		// Core ammo regen.
 		if (!overdrive && !isCharging() ||
-			overdrive && chargeTime <= charge1Time/2f ||
+			overdrive && chargeTime <= charge1Time / 2f ||
 			chargeTime > charge3Time + (overdrive ? 20 : 10)) {
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
@@ -643,8 +643,8 @@ public class Blues : Character {
 		if (!player.isAI && shieldHP > 0 && shootAnimTime <= 0 && canUseShield()) {
 			if (Options.main.protoShieldHold) {
 				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
-			}
 			else if (player.input.isWeaponLeftOrRightPressed(player)) {
+			} else if (player.input.isWeaponLeftOrRightPressed(player)) {
 				isShieldActive = !isShieldActive;
 			}
 			if (lastShieldMode != isShieldActive) {
@@ -685,14 +685,15 @@ public class Blues : Character {
 				else if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
-			} else {
+			}
+			else {
 				isShieldActive = true;
 				if (!sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name + "_shield", false);
 				}
 			}
 		}
-		if (slide && canSlide())  {
+		if (slide && canSlide()) {
 			changeState(new BluesSlide(), true);
 			return true;
 		}
@@ -1157,7 +1158,7 @@ public class Blues : Character {
 			// 1-2 damage scenario.
 			if (damageReduction > 0 && damage <= 2) {
 				if (damage <= 1) {
-					shieldDamageSavings += damage * (1m/3m);
+					shieldDamageSavings += damage * (1m / 3m);
 				} else {
 					shieldDamageSavings += damage * 0.25m;
 				}
@@ -1256,7 +1257,7 @@ public class Blues : Character {
 			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
 		}
 		// Disable L-Tanks only on external damage sources.
-		if (ogShieldHP - shieldHP > 0  && !Damager.isDot(projId) &&
+		if (ogShieldHP - shieldHP > 0 && !Damager.isDot(projId) &&
 			attacker != null && attacker != player && attacker != Player.stagePlayer
 		) {
 			player.delayETank();
@@ -1369,7 +1370,7 @@ public class Blues : Character {
 		return pos.addxy(0, -yCollider);
 	}
 	public override void render(float x, float y) {
-		base.render(x,y);
+		base.render(x, y);
 
 		float pAmmo = getChargeShotCorePendingAmmo();
 		// Core ammo

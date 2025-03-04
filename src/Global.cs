@@ -16,7 +16,7 @@ namespace MMXOnline;
 
 public partial class Global {
 	public static decimal version = 20m;
-	public static string versionName = "v0.4b";
+	public static string versionName = "v0.4c";
 	public static string subVersionName = "Alpha 3";
 	public static string subVersionShortName = "Alpha 3";
 
@@ -61,8 +61,8 @@ public partial class Global {
 	 */
 
 	// Most common by far
-	public static int quickStartCharNum = 5;
-	public static int quickStartBotCharNum = 0;
+	public static int quickStartCharNum = 10;
+	public static int quickStartBotCharNum = 10;
 
 	public static bool _quickStart = true;
 	public static string quickStartMap = "training";

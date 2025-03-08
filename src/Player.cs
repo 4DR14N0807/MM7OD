@@ -2008,7 +2008,7 @@ public partial class Player {
 	public void delayETank() {
 		if (isMainPlayer) {
 			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
-			BluesUpgradeMenu.lTankDelay = UpgradeMenu.maxETankDelay;
+			BluesUpgradeMenu.lTankDelay = BluesUpgradeMenu.maxLTankDelay;
 		}
 	}
 }

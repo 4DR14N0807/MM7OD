@@ -293,22 +293,7 @@ public class Damager {
 				}
 				// Flinch above 0.
 				if (flinch > 0 && !weakness) {
-					if (character.gameChar == Character.GameChar.X1) {
-						victim?.playSound("hurt");
-					} else if (character.gameChar == Character.GameChar.X2) {
-						victim?.playSound("hurtX2");
-					} else if (character.gameChar == Character.GameChar.X3) {
-						victim?.playSound("hurtX3");
-					}
-					if (mmx?.chestArmor == ArmorId.Light || mmx?.chestArmor == ArmorId.None) {
-						victim?.playSound("hurt");
-					} 
-					if (mmx?.chestArmor == ArmorId.Giga) {
-						victim?.playSound("hurtX2");
-					} 
-					if (mmx?.chestArmor == ArmorId.Max) {
-						victim?.playSound("hurtX3");
-					}
+					character.playAltSound("hurt", altParams: "carmor");
 					character.setHurt(hurtDir, flinch, spiked);
 				}
 				else if (victim is not Blues) {

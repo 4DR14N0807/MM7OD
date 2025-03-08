@@ -1110,9 +1110,11 @@ public class Blues : Character {
 			!shieldFront && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
 		);
-		if (projId == (int)BassProjIds.RemoteMineExplosion) {
+		if (projId != null && Damager.alwaysDirBlock(projId.Value)) {
 			if (shieldFront) {
 				shieldHitFront = true;
+			} else {
+				shieldHitBack = true;
 			}
 		}
 		// Disable shield on any non DOT damage.

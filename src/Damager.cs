@@ -475,6 +475,14 @@ public class Damager {
 		return checkPos(actor, damagePos);
 	}
 
+	public static bool alwaysDirBlock(int projId) {
+		return projId switch {
+			(int)BassProjIds.RemoteMineExplosion => true,
+			(int)RockProjIds.ScorchWheel => true,
+			_ => false
+		};
+	}
+
 	private static bool isVictimImmuneToQuake(Actor victim) {
 		if (victim is CrackedWall) return false;
 		if (!victim.grounded) return true;

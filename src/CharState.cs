@@ -83,7 +83,7 @@ public class CharState {
 		}
 	}
 
-	public virtual void onExit(CharState newState) {
+	public virtual void onExit(CharState? newState) {
 		if (!useGravity) {
 			character.useGravity = true;
 		}
@@ -256,7 +256,8 @@ public class CharState {
 				character.sprite.frameTime = character.sprite.getCurrentFrame().duration;
 			}
 		} else if (landSprite != "" && character.grounded && !wasGrounded && sprite == airSprite) {
-			character.playSound("land", sendRpc: true);
+			GameCharPlaySound("land");
+			GameCharXSound("land", true, false, false, false);
 			sprite = landSprite;
 			int oldFrameIndex = character.frameIndex;
 			float oldFrameTime = character.frameTime;
@@ -359,7 +360,55 @@ public class CharState {
 			character.changePos(lerpPos);
 		}
 	}
-}
+
+	public void GameCharPlaySound(string sound) {
+		if (character.gameChar == Character.GameChar.X1) {
+			character.playSound(sound, false, true);
+		} else if (character.gameChar == Character.GameChar.X2) {
+			character.playSound(sound+"X2", false, true);
+		} else if (character.gameChar == Character.GameChar.X3) {
+			character.playSound(sound+"X3", false, true);
+		}
+	}
+
+	public void GameCharXSound(string sound, bool isLeg, bool isChest, bool isArm, bool isHelmet) {
+		if (character is MegamanX mmx) {
+			if (isArm) {
+				if (mmx.armArmor == ArmorId.Light || mmx.armArmor == ArmorId.None) {
+					character.playSound(sound, false, true);
+				} else if (mmx.armArmor == ArmorId.Giga) {
+					character.playSound(sound+"X2", false, true);
+				} else if (mmx.armArmor == ArmorId.Max) {
+					character.playSound(sound+"X3", false, true);
+				}
+			} else if (isChest) {
+				if (mmx.chestArmor == ArmorId.Light || mmx.chestArmor == ArmorId.None) {
+					character.playSound(sound, false, true);
+				} else if (mmx.chestArmor == ArmorId.Giga) {
+					character.playSound(sound+"X2", false, true);
+				} else if (mmx.chestArmor == ArmorId.Max) {
+					character.playSound(sound+"X3", false, true);
+				}
+			} else if (isLeg) {
+				if (mmx.legArmor == ArmorId.Light || mmx.legArmor == ArmorId.None) {
+					character.playSound(sound, false, true);
+				} else if (mmx.legArmor == ArmorId.Giga) {
+					character.playSound(sound+"X2", false, true);
+				} else if (mmx.legArmor == ArmorId.Max) {
+					character.playSound(sound+"X3", false, true);
+				}
+			} else if (isHelmet) {
+				if (mmx.helmetArmor == ArmorId.Light || mmx.helmetArmor == ArmorId.None) {
+					character.playSound(sound, false, true);
+				} else if (mmx.helmetArmor == ArmorId.Giga) {
+					character.playSound(sound+"X2", false, true);
+				} else if (mmx.helmetArmor == ArmorId.Max) {
+					character.playSound(sound+"X3", false, true);
+				}
+			}
+		}
+	}
+ }
 
 public class WarpIn : CharState {
 	public bool warpSoundPlayed;
@@ -377,7 +426,6 @@ public class WarpIn : CharState {
 	public bool decloaked;
 	public bool addInvulnFrames;
 	public bool sigma2Once;
-
 	public WarpIn(bool addInvulnFrames = true) : base("warp_in") {
 		this.addInvulnFrames = addInvulnFrames;
 		invincible = true;
@@ -413,13 +461,13 @@ public class WarpIn : CharState {
 		float yInc = Global.spf * 450;
 		warpAnim.incPos(new Point(0, yInc));
 
-		if (isSigma && !landOnce && warpAnim.pos.y >= destY - 1) {
+		if ((isSigma || player.isVile) && !landOnce && warpAnim.pos.y >= destY - 1) {
 			landOnce = true;
 			warpAnim.changePos(new Point(warpAnim.pos.x, destY - 1));
 		}
 
 		if (warpAnim.pos.y >= destY) {
-			if (!isSigma || sigmaRounds > 6) {
+			if (!(isSigma || player.isVile) || sigmaRounds > 6) {
 				warpAnim.destroySelf();
 				warpAnim = null;
 			} else {
@@ -564,25 +612,6 @@ public class Idle : CharState {
 				}
 			}
 		}
-		if ((character is PunchyZero)) {
-			if (player.health < 4) {
-				defaultSprite = "pweak";
-			} else {
-				defaultSprite = "pidle";
-			}
-			if (!inTransition()) {
-				sprite = defaultSprite;
-				character.changeSpriteFromName(sprite, true);
-			}
-		} 
-		if (character is Zero) {
-			if (player.health <= 4) {
-				sprite = "weak";
-			} else {
-				sprite = "idle";
-			}
-			character.changeSpriteFromName(sprite, true);				
-		}
 		character.dashedInAir = 0;
 	}
 
@@ -648,7 +677,7 @@ public class Run : CharState {
 }
 
 public class Crouch : CharState {
-	public Crouch(string transitionSprite = "crouch_start"
+	public Crouch(string transitionSprite = ""
 	) : base(
 		"crouch", "crouch_shoot", "attack_crouch", transitionSprite
 	) {
@@ -670,7 +699,7 @@ public class Crouch : CharState {
 		}
 
 		if (!character.grounded || !player.isCrouchHeld()) {
-			character.changeToIdleOrFall("crouch_start");
+			character.changeState(new CrouchEnd());
 			return;
 		}
 		if (Global.level.gameMode.isOver) {
@@ -750,7 +779,6 @@ public class ZeroClang : CharState {
 public class Jump : CharState {
 	public Jump() : base("jump", "jump_shoot", Options.main.getAirAttack()) {
 		accuracy = 5;
-		enterSound = "jump";
 		exitOnLanding = true;
 		useDashJumpSpeed = true;
 		airMove = true;
@@ -766,6 +794,23 @@ public class Jump : CharState {
 				character.changeState(new Fall());
 			}
 			return;
+		}
+		if (character is Zero zero) {
+			if (zero.kuuenbuJump >= 1) {
+				zero.kuuenbuJump = 0;
+				character.changeSpriteFromName("kuuenbu", true);
+			}
+		}
+		if (character is PunchyZero pzero) {
+			if (pzero.kuuenbuJump >= 1) {
+				pzero.kuuenbuJump = 0;
+				character.changeSpriteFromName("kuuenbu", true);
+			}
+		}
+		if (character.frameIndex <= 0 && !once) {
+			once = true;
+			GameCharPlaySound("jump");
+			GameCharXSound("jump", true, false, false, false);
 		}
 	}
 }
@@ -836,13 +881,7 @@ public class Dash : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-
 		initialDashDir = character.xDir;
-		if (character is Axl && (character.currentWeapon as AxlWeapon)?.isTwoHanded(false) == true) {
-			if (player.input.isHeld(Control.Left, player)) initialDashDir = -1;
-			else if (player.input.isHeld(Control.Right, player)) initialDashDir = 1;
-		}
-
 		character.isDashing = true;
 	}
 
@@ -872,7 +911,7 @@ public class Dash : CharState {
 				if (inputXDir != 0 && character.grounded) {
 					character.changeState(new Run(), true);
 				} else {
-					character.changeToIdleOrFall();
+					character.changeState(new DashEnd());
 				}
 				return;
 			}
@@ -903,7 +942,7 @@ public class Dash : CharState {
 		}
 		if (!character.grounded) {
 			character.dashedInAir++;
-			character.changeState(new Fall());
+			character.changeState(new DashEnd());
 		}
 	}
 }
@@ -913,9 +952,9 @@ public class AirDash : CharState {
 	public string initialDashButton;
 	public int initialDashDir;
 	public bool stop;
+	public Anim dashSpark;
 
 	public AirDash(string initialDashButton) : base("dash", "dash_shoot") {
-		enterSound = "";
 		this.initialDashButton = initialDashButton;
 		accuracy = 10;
 		attackCtrl = true;
@@ -926,11 +965,15 @@ public class AirDash : CharState {
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
 			dashTime = 50;
 		}
+		float inputXDir = player.input.getInputDir(player).x;
 		float speedModifier = 1;
 		float distanceModifier = 1;
 		if (character.sprite.name.EndsWith("unpo_grab_dash")) {
 			speedModifier = 1.25f;
 			distanceModifier = 1.25f;
+		}
+		if (character is CmdSigma or Doppma) {
+			character.frameIndex = 1;
 		}
 		if (dashTime > Global.spf * 28 * distanceModifier || stop) {
 			if (!stop) {
@@ -941,8 +984,10 @@ public class AirDash : CharState {
 				character.sprite.animTime = 0;
 				character.sprite.frameSpeed = 0.1f;
 				stop = true;
+			} if (inputXDir != 0 && character.grounded) {
+				character.changeState(new Run(), true);
 			} else {
-				character.changeState(new Fall());
+				character.changeState(new DashEnd());
 			}
 		}
 		if (dashTime > Global.spf * 3 || stop) {
@@ -959,7 +1004,8 @@ public class AirDash : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-
+		GameCharPlaySound("airdash");
+		GameCharXSound("airdash", true, false, false, false);
 		initialDashDir = character.xDir;
 
 		if (character is Axl && (character.currentWeapon as AxlWeapon)?.isTwoHanded(false) == true) {
@@ -975,6 +1021,9 @@ public class AirDash : CharState {
 	}
 
 	public override void onExit(CharState newState) {
+		if (!dashSpark.destroyed) {
+			dashSpark.destroySelf();
+		}
 		character.useGravity = true;
 		base.onExit(newState);
 	}
@@ -991,7 +1040,6 @@ public class WallSlide : CharState {
 	) : base(
 		"wall_slide", "wall_slide_shoot", "wall_slide_attack"
 	) {
-		enterSound = "land";
 		this.wallDir = wallDir;
 		this.wallCollider = wallCollider;
 		accuracy = 2;
@@ -1001,6 +1049,8 @@ public class WallSlide : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		mmx = character as MegamanX;
+		GameCharPlaySound("wallLand");
+		GameCharXSound("wallLand", true, false, false, false);
 		character.dashedInAir = 0;
 		if (player.isAI) {
 			character.ai.jumpTime = 0;
@@ -1127,7 +1177,6 @@ public class WallSlideAttack : CharState {
 
 public class WallKick : CharState {
 	public WallKick() : base("wall_kick", "wall_kick_shoot") {
-		enterSound = "jump";
 		accuracy = 5;
 		exitOnLanding = true;
 		useDashJumpSpeed = true;
@@ -1142,6 +1191,11 @@ public class WallKick : CharState {
 		if (character.vel.y > 0) {
 			character.changeState(new Fall());
 		}
+	}
+	public override void onEnter(CharState oldState) {
+		GameCharPlaySound("jump");
+		GameCharXSound("jump", true, false, false, false);
+		base.onEnter(oldState);
 	}
 }
 
@@ -1293,7 +1347,6 @@ public class Taunt : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		if (player.charNum == 0) tauntTime = 0.75f;
-		if (player.charNum == 1) tauntTime = 0.7f;
 		if (player.charNum == 3) tauntTime = 0.75f;
 		if (player.charNum == (int)CharIds.Blues) tauntTime = 1.25f;
 
@@ -1328,18 +1381,27 @@ public class Taunt : CharState {
 		} else if (stateTime >= tauntTime && !finishedMatch) {
 			character.changeToIdleOrFall();
 		}
-
-		if (player.charNum == (int)CharIds.Zero && player.input.isHeld(Control.Up, player)) {
-			character.changeSprite("zero_win2", true);
+		if (player.charNum == (int)CharIds.Zero || player.charNum == (int)CharIds.PunchyZero) {
+			character.changeSprite("zero_taunt", true);
 			if (character.isAnimOver()) {
 				character.changeToIdleOrFall();
-			}
+			} 
 		}
-		if (character.sprite.name == "zero_win2" && character.frameIndex == 1 && !once) {
+		if (character.sprite.name == "bzero_win" && character.frameIndex == 1 && !once) {
 			once = true;
 			character.playSound("ching", sendRpc: true);
 			zeroching = new Anim(
 				character.pos.addxy(character.xDir, -25f),
+				"zero_ching", -character.xDir,
+				player.getNextActorNetId(),
+				destroyOnEnd: true, sendRpc: true
+			);
+		}
+		if ((character.sprite.name == "zero_win" || character.sprite.name == "zero_taunt") && character.frameIndex == 6 && !once) {
+			once = true;
+			character.playSound("ching", sendRpc: true);
+			zeroching = new Anim(
+				character.pos.addxy(character.xDir * -7, -28f),
 				"zero_ching", -character.xDir,
 				player.getNextActorNetId(),
 				destroyOnEnd: true, sendRpc: true
@@ -1551,5 +1613,87 @@ public class NetLimbo : CharState {
 
 	public NetLimbo() : base("not_a_real_sprite") {
 
+	}
+}
+public class Land : CharState {
+	public Land() : base("land", "land_shoot") {
+		attackCtrl = true;
+		normalCtrl = true;
+	}
+
+	public override void update() {
+		base.update();
+		if (player.input.isHeld(Control.Left, player)
+		|| player.input.isHeld(Control.Right, player)
+		) {
+			character.changeState(new Run(), false);
+		}
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		}
+	}
+	public override void onEnter(CharState oldState) {
+		GameCharPlaySound("land");
+		GameCharXSound("land", true, false, false, false);
+		base.onEnter(oldState);
+	}
+}
+public class CrouchStart : CharState {
+	public CrouchStart() : base("crouch_start", "crouch_start_shoot") {
+		exitOnAirborne = true;
+		attackCtrl = true;
+		normalCtrl = true;
+	}
+	public override bool canEnter(Character character) {
+		if (character.charState is Crouch) return false;
+		return base.canEnter(character);
+	}
+	public override void update() {
+		base.update();
+		if (character.isAnimOver()) {
+			character.changeState(new Crouch());
+		}
+	}
+}
+public class CrouchEnd : CharState {
+	public CrouchEnd() : base("crouch_start", "crouch_start_shoot") {
+		exitOnAirborne = true;
+		attackCtrl = true;
+		normalCtrl = true;
+	}
+	public override void update() {
+		base.update();
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		}
+	}
+}
+public class DashEnd : CharState {
+	public DashEnd() : base("dash_end", "dash_end_shoot") {
+		attackCtrl = true;
+		normalCtrl = true;
+		useDashJumpSpeed = true;
+		airMove = true;
+	}
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		if (character is Doppma doppma && !doppma.grounded) {
+			character.changeSprite("sigma3_fall", false);
+			exitOnLanding = true;
+		}
+		if (character is CmdSigma cmdSigma && !cmdSigma.grounded) {
+			character.changeSprite("sigma_fall", false);
+			exitOnLanding = true;
+		}
+		if (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player)) {
+			character.frameTime = 6;
+		} else 
+		exitOnAirborne = false;
+	}
+	public override void update() {
+		base.update();
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		} 
 	}
 }

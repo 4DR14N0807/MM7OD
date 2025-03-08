@@ -273,16 +273,21 @@ public class ExplodeDieEffect : Effect {
 	public float timer = 3;
 	public float spawnTime = 0;
 	public int radius;
-	public Anim exploder;
+	public Anim? exploder;
 	public bool isExploderVisible;
 	public bool destroyed;
-	public Player owner;
+	public Player? owner;
 	public bool silent;
-	public Actor host;
+	public Actor? host;
+	public bool doExplosion = true;
 
-	public ExplodeDieEffect(Player owner, Point centerPos, Point animPos, string spriteName, int xDir, long zIndex, bool isExploderVisible, int radius, float maxTime, bool isMaverick) : base(centerPos) {
+	public ExplodeDieEffect(Player owner, Point centerPos, Point animPos, string spriteName, int xDir,
+		long zIndex, bool isExploderVisible, int radius, float maxTime,
+		bool isMaverick, bool doExplosion = true) : base(centerPos)
+	{
 		this.owner = owner;
 		this.radius = radius;
+		this.doExplosion = doExplosion;
 		timer = maxTime;
 		if (!owner.ownedByLocalPlayer) return;
 
@@ -293,12 +298,12 @@ public class ExplodeDieEffect : Effect {
 		exploder.maverickFade = isMaverick;
 	}
 
-	public static ExplodeDieEffect createFromActor(Player owner, Actor actor, int radius, float maxTime, bool isMaverick, Point? overrideCenterPos = null) {
-		return new ExplodeDieEffect(owner, overrideCenterPos ?? actor.getCenterPos(), actor.pos, actor.sprite.name, actor.xDir, actor.zIndex, true, radius, maxTime, isMaverick);
+	public static ExplodeDieEffect createFromActor(Player owner, Actor actor, int radius, float maxTime, bool isMaverick, Point? overrideCenterPos = null, bool doExplosion = true) {
+		return new ExplodeDieEffect(owner, overrideCenterPos ?? actor.getCenterPos(), actor.pos, actor.sprite.name, actor.xDir, actor.zIndex, true, radius, maxTime, isMaverick, doExplosion);
 	}
 
 	public override void update() {
-		if (!owner.ownedByLocalPlayer) {
+		if (!owner?.ownedByLocalPlayer == true) {
 			destroySelf();
 			return;
 		}
@@ -311,7 +316,7 @@ public class ExplodeDieEffect : Effect {
 
 		timer -= Global.spf;
 		if (timer <= 0) {
-			exploder.destroySelf();
+			exploder?.destroySelf();
 			destroySelf();
 			return;
 		}
@@ -325,12 +330,6 @@ public class ExplodeDieEffect : Effect {
 
 			if (owner != null && owner.ownedByLocalPlayer) {
 				new Anim(randomPos, "explosion", 1, owner.getNextActorNetId(), true, sendRpc: true);
-			}
-
-			if (!exploder.maverickFade) {
-				if (!silent) {
-					//exploder.playSound("explosion", sendRpc: true);
-				}
 			}
 		}
 	}

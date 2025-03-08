@@ -216,7 +216,7 @@ public class MaverickState {
 			//maverick.playSound("crash", sendRpc: true);
 		}
 		if (maverick is FlameMammoth fm) {
-			new FlameMStompShockwave(fm.stompWeapon, fm.pos, fm.xDir, player, player.getNextActorNetId(), rpc: true);
+			new FlameMStompShockwave(fm.pos, fm.xDir, fm, player, player.getNextActorNetId(), rpc: true);
 		}
 		if (maverick is VoltCatfish vc) {
 			if (!vc.bouncedOnce) {
@@ -1127,6 +1127,8 @@ public class MHurt : MaverickState {
 public class MDie : MaverickState {
 	bool isEnvDeath;
 	Point deathPos;
+	public float spawnTime = 0;
+	public int radius = 28;
 	public MDie(bool isEnvDeath) : base("die") {
 		this.isEnvDeath = isEnvDeath;
 		canBeCanceled = false;
@@ -1162,7 +1164,6 @@ public class MDie : MaverickState {
 		} else if (maverick is FakeZero) {
 			maxTime = 0;
 		}
-
 		if (stateTime > maxTime && !once) {
 			once = true;
 

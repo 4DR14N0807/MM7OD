@@ -64,6 +64,7 @@ public partial class Character : Actor, IDamagable {
 	public float shootAnimTime = 0;
 	public AI? ai;
 	public int dashedInAir = 0;
+	public int kuuenbuJump = 0;
 	public float healAmount = 0;
 	public ETank? usedSubtank;
 	public ETank? usedEtank;
@@ -206,6 +207,14 @@ public partial class Character : Actor, IDamagable {
 	public List<Buff> buffList = new();
 	public Dictionary<int, float> disarrayStacks = new();
 	public float disarrayMaxLength = 0;
+	public GameChar gameChar = GameChar.None;
+
+	public enum GameChar {
+		X1,
+		X2,
+		X3,
+		None,
+	}
 
 	// Main character class starts here.
 	public Character(
@@ -575,7 +584,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canChangeWeapons() {
-		if (player.weapon is AssassinBullet && chargeTime > 0) return false;
+		if (currentWeapon is AssassinBullet && chargeTime > 0) return false;
 		if (charState is ViralSigmaPossess) return false;
 		if (charState is InRideChaser) return false;
 
@@ -1223,7 +1232,8 @@ public partial class Character : Actor, IDamagable {
 			}
 			// Play sound and wallkick mid-state if not.
 			else {
-				playSound("jump", sendRpc: true);
+				charState.GameCharPlaySound("jump");
+				charState.GameCharXSound("jump", true, false, false, false);
 			}
 			// GFX.
 			var wallSparkPoint = pos.addxy(12 * xDir, 0);
@@ -1310,8 +1320,8 @@ public partial class Character : Actor, IDamagable {
 				changeState(new Jump());
 				return true;
 			}
-			if (player.isCrouchHeld() && canCrouch() && charState is not Crouch) {
-				changeState(new Crouch());
+			if (player.isCrouchHeld() && canCrouch() && charState is not CrouchStart or Crouch) {
+				changeState(new CrouchStart());
 				return true;
 			}
 			if (player.input.isPressed(Control.Taunt, player)) {
@@ -1768,13 +1778,7 @@ public partial class Character : Actor, IDamagable {
 		if (sprite.name.Contains("_ra_")) {
 			return pos.addxy(0, -10);
 		}
-		if (player.isSigma) {
-			if (player.isKaiserSigma() && !player.isKaiserViralSigma()) {
-				return pos.addxy(13 * xDir, -95);
-			}
-			return getCenterPos();
-		}
-		return pos.addxy(0, -18);
+		return getCenterPos();
 	}
 
 	public virtual Point getParasitePos() {
@@ -1927,7 +1931,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual void changeToLandingOrFall(bool useSound = true) {
 		if (grounded) {
-			landingCode(useSound);
+			landingCode();
 		} else {
 			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
 				changeState(new Jump() { enterSound = "" }, true);
@@ -1951,12 +1955,9 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public virtual void landingCode(bool useSound = true) {
-		if (useSound) {
-			playSound("land", sendRpc: true);
-		}
+	public virtual void landingCode() {
 		dashedInAir = 0;
-		changeState(new Idle("land"), true);
+		changeState(new Land(), true);
 	}
 
 	public virtual bool changeState(CharState newState, bool forceChange = false) {
@@ -2885,6 +2886,10 @@ public partial class Character : Actor, IDamagable {
 		charState?.onExit(null);
 	}
 
+	public virtual void onDeath() {
+		
+	}
+
 	public void cleanupBeforeTransform() {
 		parasiteAnim?.destroySelf();
 		parasiteTime = 0;
@@ -3005,24 +3010,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void removeParasite(bool ejected, bool carried) {
-		if (!ownedByLocalPlayer) return;
-		if (parasiteDamager == null) return;
 
-		parasiteAnim?.destroySelf();
-		if (ejected) {
-			new Anim(getCenterPos(), "parasitebomb_latch", 1, player.getNextActorNetId(), true, sendRpc: true, ownedByLocalPlayer) {
-				vel = new Point(50 * xDir, -50),
-				useGravity = true
-			};
-		} else {
-			new Anim(getCenterPos(), "explosion", 1, player.getNextActorNetId(), true, sendRpc: true, ownedByLocalPlayer);
-			//playSound("explosion", sendRpc: true);
-			if (!carried) parasiteDamager.applyDamage(this, player.weapon is FrostShield, new ParasiticBomb(), this, (int)ProjIds.ParasiticBombExplode, overrideDamage: 4, overrideFlinch: Global.defFlinch);
-		}
-
-		parasiteTime = 0;
-		parasiteMashTime = 0;
-		parasiteDamager = null;
 	}
 
 	// DANGER WRAP SECTION
@@ -3073,10 +3061,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool canEjectFromRideArmor() {
-		if (rideArmor == null) {
+		if (rideArmor == null || globalCollider == null) {
 			return true;
 		}
-		var shape = globalCollider.shape;
+		Shape shape = globalCollider.shape;
 		if (shape.minY < 0 && shape.maxY < 0) {
 			shape = shape.clone(0, MathF.Abs(shape.maxY) + 1);
 		}
@@ -3149,7 +3137,7 @@ public partial class Character : Actor, IDamagable {
 
 	// Axl DNA shenanigans.
 	public void updateDisguisedAxl() {
-		if (player.weapon is AssassinBullet) {
+		if (currentWeapon is AssassinBullet) {
 			// URGENT TODO
 			// player.assassinHitPos = player.character.getFirstHitPos(AssassinBulletProj.range);
 		}
@@ -3167,7 +3155,7 @@ public partial class Character : Actor, IDamagable {
 			player.changeWeaponControls();
 		}
 
-		if (player.weapon is UndisguiseWeapon) {
+		if (currentWeapon is UndisguiseWeapon) {
 			bool shootPressed = player.input.isPressed(Control.Shoot, player);
 			bool altShootPressed = player.input.isPressed(Control.Special1, player);
 			if ((shootPressed || altShootPressed)) {
@@ -3187,7 +3175,7 @@ public partial class Character : Actor, IDamagable {
 					) {
 						lastDNA.weapons[0] = player.getAxlBulletWeapon(0);
 					}
-					player.weapons.Insert(lastDNAIndex, lastDNA);
+					weapons.Insert(lastDNAIndex, lastDNA);
 				}
 				return;
 			}
@@ -3380,9 +3368,9 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public int getRandomWeaponIndex() {
-		if (player.weapons.Count == 0) return 0;
-		List<Weapon> weapons = player.weapons.FindAll(w => w is not DNACore).ToList();
-		return weapons.IndexOf(weapons.GetRandomItem());
+		if (weapons.Count == 0) return 0;
+		List<Weapon> weaponsList = weapons.FindAll(w => w is not DNACore).ToList();
+		return weaponsList.IndexOf(weaponsList.GetRandomItem());
 	}
 	
 	public override List<byte> getCustomActorNetData() {

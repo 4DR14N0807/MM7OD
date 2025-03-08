@@ -262,9 +262,9 @@ class Program {
 			);
 			Global.serverClient = ServerClient.CreateDirect(
 				args[0], int.Parse(args[1]), me,
-				out JoinServerResponse joinServerResponse, out string error
+				out JoinServerResponse? joinServerResponse, out string error
 			);
-			if (joinServerResponse != null && error == null) {
+			if (joinServerResponse != null && error == "") {
 				Menu.change(new WaitMenu(new MainMenu(), joinServerResponse.server, false));
 			} else {
 				Menu.change(new ErrorMenu(error, new MainMenu()));
@@ -683,7 +683,7 @@ class Program {
 	static void loadImages() {
 		string spritesheetPath = "assets/spritesheets";
 		if (Options.main.shouldUseOptimizedAssets()) spritesheetPath += "_optimized";
-		var spritesheets = Helpers.getFiles(Global.assetPath + spritesheetPath, false, "png", "psd");
+		var spritesheets = Helpers.getFiles(Global.assetPath + spritesheetPath, true, "png", "psd");
 
 		var menuImages = Helpers.getFiles(Global.assetPath + "assets/menu", true, "png", "psd");
 		var fontSprites = Helpers.getFiles(Global.assetPath + "assets/fonts", true, "png", "psd");

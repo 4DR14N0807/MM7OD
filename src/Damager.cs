@@ -60,8 +60,11 @@ public class Damager {
 	public static bool applyDamage(
 		Player owner, float damage, float hitCooldown, int flinch,
 		Actor victim, bool weakness, int weaponIndex, int weaponKillFeedIndex,
-		Actor damagingActor, int projId, bool sendRpc = true
+		Actor? damagingActor, int projId, bool sendRpc = true
 	) {
+		if (owner == null) {
+			throw new Exception("Null damage player source. Use stage or self if not from another player.");
+		}
 		if (victim is Character chr && chr.invulnTime > 0) {
 			return false;
 		}
@@ -290,7 +293,22 @@ public class Damager {
 				}
 				// Flinch above 0.
 				if (flinch > 0 && !weakness) {
-					victim?.playSound("hurt");
+					if (character.gameChar == Character.GameChar.X1) {
+						victim?.playSound("hurt");
+					} else if (character.gameChar == Character.GameChar.X2) {
+						victim?.playSound("hurtX2");
+					} else if (character.gameChar == Character.GameChar.X3) {
+						victim?.playSound("hurtX3");
+					}
+					if (mmx?.chestArmor == ArmorId.Light || mmx?.chestArmor == ArmorId.None) {
+						victim?.playSound("hurt");
+					} 
+					if (mmx?.chestArmor == ArmorId.Giga) {
+						victim?.playSound("hurtX2");
+					} 
+					if (mmx?.chestArmor == ArmorId.Max) {
+						victim?.playSound("hurtX3");
+					}
 					character.setHurt(hurtDir, flinch, spiked);
 				}
 				else if (victim is not Blues) {
@@ -652,7 +670,6 @@ public class Damager {
 		};
 	}
 }
-
 public class DamagerMessage {
 	public int? flinch;
 	public float? damage;

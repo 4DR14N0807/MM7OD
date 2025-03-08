@@ -289,9 +289,8 @@ public partial class Player {
 		changeWeaponSlot(ws);
 	}
 
-	public List<Weapon>? preSigmaReviveWeapons;
-	public void configureWeapons() {
-		weaponSlot = 0;
+	public void configureWeapons(Character character) {
+		// 7OD does not uses this at all.
 	}
 
 	private Weapon getAxlBullet(int axlBulletType) {

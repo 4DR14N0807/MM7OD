@@ -479,11 +479,11 @@ public partial class Actor : GameObject {
 		deltaPos = pos.subtract(prevPos);
 		prevPos = pos;
 
-		if (locallyControlled && sprite != null) {
+		if (locallyControlled && sprite.name != "null") {
 			int oldFrameIndex = sprite.frameIndex;
-			sprite?.update();
+			sprite.update();
 
-			if (sprite != null && sprite.frameIndex != oldFrameIndex) {
+			if (sprite.frameIndex != oldFrameIndex) {
 				string spriteFrameKey = sprite.name + "/" + sprite.frameIndex.ToString(CultureInfo.InvariantCulture);
 				if (spriteFrameToSounds.ContainsKey(spriteFrameKey)) {
 					playSound(spriteFrameToSounds[spriteFrameKey], sendRpc: true);

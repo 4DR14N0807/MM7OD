@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using ProtoBuf;
@@ -111,7 +113,7 @@ public partial class Player {
 
 	public Point? lastDeathPos;
 	public bool lastDeathWasVileMK2;
-	public bool lastDeathWasVileMK5;
+	public bool lastDeathWasVileV;
 	public bool lastDeathWasSigmaHyper;
 	public bool lastDeathWasXHyper;
 	public const int zeroHyperCost = 10;
@@ -125,7 +127,6 @@ public partial class Player {
 	public bool lastDeathCanRevive;
 	public int vileFormToRespawnAs;
 	public bool hyperSigmaRespawn;
-	public bool hyperXRespawn;
 	public float trainingDpsTotalDamage;
 	public float trainingDpsStartTime;
 	public bool showTrainingDps { get { return isAI && Global.serverClient == null && Global.level.isTraining(); } }
@@ -422,6 +423,7 @@ public partial class Player {
 	public ShaderWrapper xStingPaletteShader = Helpers.cloneGenericPaletteShader("cStingPalette");
 	public ShaderWrapper invisibleShader = Helpers.cloneShaderSafe("invisible");
 	//public ShaderWrapper zeroPaletteShader = Helpers.cloneGenericPaletteShader("hyperZeroPalette");
+	//public ShaderWrapper blackBusterZeroPaletteShader = Helpers.cloneGenericPaletteShader("hyperBusterZeroPalette");
 	//public ShaderWrapper nightmareZeroShader = Helpers.cloneGenericPaletteShader("paletteViralZero");
 	//public ShaderWrapper zeroAzPaletteShader = Helpers.cloneGenericPaletteShader("paletteAwakenedZero");
 	//public ShaderWrapper axlPaletteShader = Helpers.cloneShaderSafe("hyperaxl");
@@ -447,6 +449,17 @@ public partial class Player {
 	// Projectile shaders.
 	public ShaderWrapper timeSlowShader = Helpers.cloneShaderSafe("timeslow");
 	//public ShaderWrapper darkHoldScreenShader = Helpers.cloneShaderSafe("darkHoldScreen");
+	// Charge Lv
+	//public ShaderWrapper ZeroPinkC = Helpers.cloneGenericPaletteShader("zeroPinkCharge");
+	//public ShaderWrapper ZeroGreenC = Helpers.cloneGenericPaletteShader("zeroGreenCharge");
+	//public ShaderWrapper ZeroBlueC = Helpers.cloneGenericPaletteShader("zeroBlueCharge");
+	//public ShaderWrapper XPinkC = Helpers.cloneGenericPaletteShader("xPinkCharge");
+	//public ShaderWrapper XGreenC = Helpers.cloneGenericPaletteShader("xGreenCharge");
+	//public ShaderWrapper XBlueC = Helpers.cloneGenericPaletteShader("xBlueCharge");
+	//public ShaderWrapper XOrangeC = Helpers.cloneGenericPaletteShader("xOrangeCharge");
+
+	//public ShaderWrapper speedBurnerOrange = Helpers.cloneGenericPaletteShader("speedBurnerOrange");
+	//public ShaderWrapper speedBurnerGrey = Helpers.cloneGenericPaletteShader("speedBurnerGrey");
 
 	// New shaders.
 	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
@@ -491,8 +504,7 @@ public partial class Player {
 	public List<WSpongeSpike> seeds = new List<WSpongeSpike>();
 	public List<Actor> mechaniloids = new List<Actor>();
 
-	public ExplodeDieEffect explodeDieEffect;
-	public Character limboChar;
+	public ExplodeDieEffect? explodeDieEffect;
 	public bool suicided;
 
 	ushort savedArmorFlag;
@@ -756,11 +768,6 @@ public partial class Player {
 		return (ushort)(Level.firstNormalNetId + (ushort)(id * netIdsPerPlayer));
 	}
 
-	// The character net id is always the first net id of the player
-	//public ushort getCharActorNetId() {
-	//return getStartNetId();
-	//}
-
 	public static int? getPlayerIdFromCharNetId(ushort charNetId) {
 		int netIdInt = charNetId;
 		int maxIdInt = Level.firstNormalNetId;
@@ -794,7 +801,7 @@ public partial class Player {
 		return retId;
 	}
 
-	// Usually, only the main player is allowed to get the next actor net id.
+	// Usually, only the main player is allowed to get the next actor net id. 
 	// The exception is if you call setNextActorNetId() first. The assert checks for that in debug.
 	public ushort getNextActorNetId(bool allowNonMainPlayer = false) {
 		// Increase by 1 normall.
@@ -847,6 +854,9 @@ public partial class Player {
 		readyTime += Global.spf;
 		if (readyTime >= maxReadyTime) {
 			readyTextOver = true;
+		}
+		if (!ownedByLocalPlayer) {
+			return;
 		}
 		if (Global.level.gameMode.isOver && aiTakeover) {
 			aiTakeover = false;
@@ -1004,9 +1014,10 @@ public partial class Player {
 		return [];
 	}
 
-	public void spawnCharAtPoint(
+	public Character? spawnCharAtPoint(
 		int spawnCharNum, byte[] extraData,
-		Point pos, int xDir, ushort charNetId, bool sendRpc
+		Point pos, int xDir, ushort charNetId, bool sendRpc,
+		bool isMainChar = true, bool forceSpawn = false
 	) {
 		if (sendRpc) {
 			RPC.spawnCharacter.sendRpc(spawnCharNum, extraData, pos, xDir, id, charNetId);
@@ -1014,8 +1025,9 @@ public partial class Player {
 		if (Global.level.gameMode.isTeamMode) {
 			alliance = newAlliance;
 		}
-		if (character != null && charNetId == character.netId) {
-			return;
+
+		if (isMainChar && character != null && charNetId == character.netId) {
+			return null;
 		}
 		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
 		newCharNum = spawnCharNum;
@@ -1054,6 +1066,7 @@ public partial class Player {
 				false, charNetId, ownedByLocalPlayer
 			);
 		} else if (charNum == (int)CharIds.Bass) {
+			
 			loadout.bassLoadout.weapon1 = extraData[0];
 			loadout.bassLoadout.weapon2 = extraData[1];
 			loadout.bassLoadout.weapon3 = extraData[2];
@@ -1062,21 +1075,23 @@ public partial class Player {
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
-		} else {
+		}
+		// Error out if invalid id.
+		else {
 			throw new Exception("Error: Non-valid char ID: " + charNum);
 		}
 		// Do this once char has spawned and is not null.
-		configureWeapons();
-		lastCharacter = character;
-
-		if (isAI) {
-			character.addAI();
+		if (isMainChar) {
+			configureWeapons();
+			lastCharacter = character;
 		}
-
-		if (isCamPlayer) {
+		if (isAI) {
+			newChar.addAI();
+		}
+		if (isCamPlayer && isMainChar) {
 			Global.level.snapCamPos(character.getCamCenterPos(), null);
 		}
-		warpedIn = true;
+		return newChar;
 	}
 
 	public void startPossess(Player possesser, bool sendRpc = false) {
@@ -1368,11 +1383,11 @@ public partial class Player {
 		) {
 			return Global.level.server.customMatchSettings.respawnTime;
 		} else {
-			if (Global.level?.gameMode is ControlPoints && alliance == GameMode.redAlliance) {
+			if (Global.level?.gameMode is ControlPoints) {
 				return 7;
 			}
 			if (Global.level?.gameMode is KingOfTheHill) {
-				return 9;
+				return 7;
 			}
 		}
 		return 7;
@@ -1381,32 +1396,37 @@ public partial class Player {
 	public bool canReviveVile() {
 		if (Global.level.isElimination() ||
 			!lastDeathCanRevive ||
-			newCharNum != 2 ||
-			currency < reviveVileCost ||
-			lastDeathWasVileMK5
+			newCharNum != (int)CharIds.Vile ||
+			currency < reviveVileCost
 		) {
 			return false;
 		}
-		if (limboChar is not Vile vile || vile.summonedGoliath) {
+		if (character?.charState is not Die) {
+			return false;
+		}
+		if (character is not Vile vile || vile.summonedGoliath) {
 			return false;
 		}
 		return true;
 	}
 
-	public bool canReviveSigma(out Point spawnPoint) {
+	public bool canReviveSigma(out Point spawnPoint, int sigmaHypermode) {
 		spawnPoint = Point.zero;
-
+		if (character?.charState is not Die) {
+			return false;
+		}
+		spawnPoint = character.pos;
 		if (Global.level.isHyper1v1() &&
 			!lastDeathWasSigmaHyper &&
-			limboChar != null && isSigma
-			&& newCharNum == 4
+			character is BaseSigma &&
+			newCharNum == (int)CharIds.Sigma
 		) {
 			return true;
 		}
-		if (limboChar == null ||
+		if (character == null ||
 			!lastDeathCanRevive ||
 			!isSigma ||
-			newCharNum != 4 ||
+			newCharNum != (int)CharIds.Sigma ||
 			currency < reviveSigmaCost ||
 			lastDeathWasSigmaHyper
 		) {
@@ -1416,7 +1436,14 @@ public partial class Player {
 	}
 
 	public bool canReviveX() {
-		return !Global.level.isElimination() && armorFlag == 0 && character?.charState is Die && lastDeathCanRevive && isX && newCharNum == 0 && currency >= reviveXCost && !lastDeathWasXHyper;
+		return (
+			character is MegamanX mmx &&
+			!mmx.hasAnyArmor &&
+			mmx.charState is Die &&
+			lastDeathCanRevive &&
+			newCharNum == 0 &&
+			currency >= reviveXCost
+		);
 	}
 
 	public bool canReviveBlues() {
@@ -1432,7 +1459,9 @@ public partial class Player {
 
 	public void reviveVile(bool toMK5) {
 		currency -= reviveVileCost;
-		Vile vile = (limboChar as Vile);
+		if (character is not Vile vile) {
+			return;
+		}
 
 		if (toMK5) {
 			vileFormToRespawnAs = 2;
@@ -1443,78 +1472,66 @@ public partial class Player {
 		}
 
 		respawnTime = 0;
-		character = limboChar;
 		vile.alreadySummonedNewMech = false;
 		character.visible = true;
 		if (explodeDieEffect != null) {
 			explodeDieEffect.destroySelf();
 			explodeDieEffect = null;
 		}
-		limboChar = null;
 		vile.rideMenuWeapon = new MechMenuWeapon(VileMechMenuType.All);
 		character.changeState(new VileRevive(vileFormToRespawnAs == 2), true);
 		RPC.playerToggle.sendRpc(id, vileFormToRespawnAs == 2 ? RPCToggleType.ReviveVileTo5 : RPCToggleType.ReviveVileTo2);
 	}
 
 	public void reviveVileNonOwner(bool toMK5) {
-		Vile vile = (character as Vile);
-
+		if (character is not Vile vile) {
+			return;
+		}
 		if (toMK5) {
-			vileFormToRespawnAs = 2;
+			vile.vileForm = 2;
 		} else {
-			vileFormToRespawnAs = 1;
+			vile.vileForm = 1;
 		}
-
-		respawnTime = 0;
-		vile.alreadySummonedNewMech = false;
-		character.visible = true;
-		if (explodeDieEffect != null) {
-			explodeDieEffect.destroySelf();
-			explodeDieEffect = null;
-		}
-		character.changeState(new VileRevive(toMK5), true);
 	}
 
 	public void reviveSigma(int form, Point spawnPoint) {
 		currency -= reviveSigmaCost;
 		hyperSigmaRespawn = true;
 		respawnTime = 0;
-		character = limboChar;
-		limboChar = null;
-		if (character.destroyed == false) {
-			character.destroySelf();
+		if (character is not BaseSigma sigma) {
+			return;
 		}
+		if (character?.destroyed == false) {
+			destroyCharacter();
+		}
+		explodeDieEnd();
 		ushort newNetId = getNextATransNetId();
 		if (form == 0) {
-			if (Global.level.is1v1()) {
-				character.changePos(new Point(Global.level.width / 2, character.pos.y));
-			}
-			character.changeState(new WolfSigmaRevive(explodeDieEffect), true);
+			WolfSigma wolfSigma = new WolfSigma(
+				this, spawnPoint.x, spawnPoint.y, sigma.xDir, true,
+				newNetId, true
+			);
+			character = wolfSigma;
 		} else if (form == 1) {
-			explodeDieEffect.changeSprite("sigma2_revive");
-			character.changeState(new ViralSigmaRevive(explodeDieEffect), true);
+			ViralSigma viralSigma = new ViralSigma(
+				this, spawnPoint.x, spawnPoint.y, sigma.xDir, true,
+				newNetId, true
+			);
+			character = viralSigma;
 		} else {
 			KaiserSigma kaiserSigma = new KaiserSigma(
-				this, spawnPoint.x, spawnPoint.y, character.xDir, true,
+				this, spawnPoint.x, spawnPoint.y, sigma.xDir, true,
 				newNetId, true
 			);
 			character = kaiserSigma;
-			//explodeDieEffect.changeSprite("sigma3_revive");
-			if (Global.level.is1v1() && spawnPoint.isZero()) {
-				var closestSpawn = Global.level.spawnPoints.OrderBy(
-					s => s.pos.distanceTo(character.pos)
-				).FirstOrDefault();
-				spawnPoint = closestSpawn?.pos ?? new Point(Global.level.width / 2, character.pos.y);
-			}
 		}
 		//RPC.reviveSigma.sendRpc(form, spawnPoint, id, newNetId);
 	}
 
 	public void reviveSigmaNonOwner(int form, Point spawnPoint, ushort sigmaNetId) {
 		if (form >= 2) {
-			character.destroySelf();
 			KaiserSigma kaiserSigma = new KaiserSigma(
-				this, spawnPoint.x, spawnPoint.y, character.xDir, true,
+				this, spawnPoint.x, spawnPoint.y, character?.xDir ?? 1, true,
 				sigmaNetId, false
 			);
 			character = kaiserSigma;
@@ -1524,9 +1541,23 @@ public partial class Player {
 	}
 
 	public void reviveX() {
+		if (character == null) {
+			return;
+		}
 		currency -= reviveXCost;
-		hyperXRespawn = true;
 		respawnTime = 0;
+		// Save old char to variable and nuke him.
+		Character oldChar = character;
+		destroyCharacter(oldChar);
+		// Spawn RCX in the old position in the same frame.
+		character = spawnCharAtPoint(
+			(int)CharIds.RagingChargeX, [],
+			oldChar.pos, oldChar.xDir,
+			getNextATransNetId(), true,
+			forceSpawn: true
+		) ?? throw new Exception("Error spawning RCX.");
+		// Set the inital state.
+		character.health = 0;
 		character.changeState(new XRevive(), true);
 	}
 
@@ -1549,7 +1580,21 @@ public partial class Player {
 		character = null;
 	}
 
-	public bool destroyCharacter(ushort netId, bool createEffect = false) {
+	public void destroyCharacter(Character? targetChar, bool sendRpc = false) {
+		if (targetChar == null) {
+			return;
+		}
+		targetChar.destroySelf();
+		if (sendRpc) {
+			RPC.destroyCharacter.sendRpc(this, targetChar);
+		}
+		if (character == targetChar) {
+			onCharacterDeath();
+			character = null;
+		}
+	}
+
+	public bool destroyCharacter(ushort netId) {
 		if (character?.netId != netId) {
 			return false;
 		}
@@ -1886,41 +1931,12 @@ public partial class Player {
 	}
 
 	// Sigma helper functions
-
-	public bool isSigma1AndSigma() {
-		return isSigma1() && isSigma;
-	}
-
-	public bool isSigma2AndSigma() {
-		return isSigma2() && isSigma;
-	}
-
-	public bool isSigma3AndSigma() {
-		return isSigma3() && isSigma;
-	}
-
-	public bool isSigma1() {
-		return loadout?.sigmaLoadout?.sigmaForm == 0;
-	}
-
 	public bool isSigma2() {
 		return loadout?.sigmaLoadout?.sigmaForm == 1;
 	}
 
 	public bool isSigma3() {
 		return loadout?.sigmaLoadout?.sigmaForm == 2;
-	}
-
-	public bool isSigma1Or3() {
-		return isSigma1() || isSigma3();
-	}
-
-	public bool isWolfSigma() {
-		return character is WolfSigma;
-	}
-
-	public bool isViralSigma() {
-		return character is ViralSigma;
 	}
 
 	public bool isKaiserSigma() {
@@ -1965,6 +1981,8 @@ public partial class Player {
 
 	public bool canUseEtank(ETank etank) {
 		if (isDead) return false;
+		if (character == null) return false;
+		if (character.healAmount > 0) return false;
 		if (health <= 0 || health >= maxHealth) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;

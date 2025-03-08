@@ -1148,26 +1148,26 @@ public class GameMode {
 			frameIndex = player.character.rideArmor.raNum;
 			baseX = getHUDHealthPosition(position, false).x;
 			mechBarExists = false;
-			if (player.weapon.drawAmmo) {
+			if (player?.weapon?.drawAmmo == true) {
 				baseX += 15;
 			}
 			damageSavings = 0;
 		}
-		if (isMech && player.character?.rideArmorPlatform != null) {
+		if (isMech && player?.character?.rideArmorPlatform != null) {
 			spriteName = "hud_health_base_mech";
 			health = player.character.rideArmorPlatform.health;
 			maxHealth = player.character.rideArmorPlatform.maxHealth;
 			twoLayerHealth = player.character.rideArmorPlatform.goliathHealth;
 			frameIndex = player.character.rideArmorPlatform.raNum;
 			baseX = getHUDHealthPosition(position, false).x;
-			if (player.weapon.drawAmmo) {
+			if (player?.weapon?.drawAmmo == true) {
 				baseX += 15;
 			}
 			mechBarExists = false;
 			damageSavings = 0;
 		}
 
-		if (isMech && player.character?.rideChaser != null) {
+		if (isMech && player?.character?.rideChaser != null) {
 			spriteName = "hud_health_base_bike";
 			health = player.character.rideChaser.health;
 			maxHealth = player.character.rideChaser.maxHealth;
@@ -2352,7 +2352,7 @@ public class GameMode {
 
 			//Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, col2x + 4, labelTextY + 18 + i * rowH);
 		}
-		//drawSpectators();
+		drawSpectators();
 	}
 
 	public void  drawTeamScoreboard() {
@@ -2712,7 +2712,7 @@ public class GameMode {
 						Global.screenW / 2, 22 + Global.screenH / 2, Alignment.Center
 					);
 				}
-			} else if (level.mainPlayer.canReviveSigma(out _)) {
+			} else if (level.mainPlayer.canReviveSigma(out _, 2)) {
 				Fonts.drawText(
 					FontType.BlueMenu, respawnStr,
 					Global.screenW / 2, -10 + Global.screenH / 2, Alignment.Center

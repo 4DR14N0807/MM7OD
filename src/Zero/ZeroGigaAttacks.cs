@@ -112,6 +112,7 @@ public class CFlasher : Weapon {
 }
 
 public class ShinMessenkou : Weapon {
+	public static ShinMessenkou netWeapon = new();
 	public ShinMessenkou() : base() {
 		//damager = new Damager(player, 4, Global.defFlinch, 0.5f);
 		ammo = 0;
@@ -137,194 +138,96 @@ public class ShinMessenkou : Weapon {
 	}
 }
 
-public class Rakuhouha : CharState {
-	public Weapon weapon;
-	ZeroGigaType type { get { return (ZeroGigaType)weapon.type; } }
-	bool fired = false;
-	bool fired2 = false;
-	bool fired3 = false;
-	const float shinMessenkouWidth = 40;
-	public DarkHoldProj? darkHoldProj;
-	public Rakuhouha(
-		Weapon weapon
-	) : base(
-		(weapon.type == (int)ZeroGigaType.DarkHold) ? "darkhold" : 
-		weapon.type == (int)ZeroGigaType.CFlasher ||
-		weapon.type == (int)ZeroGigaType.DarkHold ? "cflasher" : "rakuhouha"
-	) {
-		this.weapon = weapon;
-		invincible = true;
+public class DarkHoldWeapon : Weapon {
+	public static DarkHoldWeapon netWeapon = new();
+	public DarkHoldWeapon() : base() {
+		ammo = 0;
+		maxAmmo = 28;
+		fireRate = 60 * 3;
+		index = (int)WeaponIds.DarkHold;
+		type = (int)ZeroGigaType.DarkHold;
+		killFeedIndex = 175;
+		weaponBarBaseIndex = 69;
+		weaponBarIndex = 58;
+		weaponSlotIndex = 122;
+		drawGrayOnLowAmmo = true;
+		drawRoundedDown = true;
+		allowSmallBar = false;
 	}
 
-	public override void update() {
-		base.update();
-		bool isCFlasher = type == ZeroGigaType.CFlasher;
-		bool isRakuhouha = type == ZeroGigaType.Rakuhouha;
-		bool isShinMessenkou = type == ZeroGigaType.ShinMessenkou;
-		bool isDarkHold = type == ZeroGigaType.DarkHold;
-		if (character.frameIndex == 5 && !once && !isDarkHold) {
-			once = true;
-			/*rakuanim = new Anim(
-				character.pos.addxy(character.xDir, 0),
-				"zero_rakuanim", character.xDir,
-				player.getNextActorNetId(),
-				destroyOnEnd: true, sendRpc: true
-			);*/
-		}
-		float x = character.pos.x;
-		float y = character.pos.y;
-		if (character.frameIndex > 7 && !fired) {
-			fired = true;
-			if (isShinMessenkou) {
-				//character.playSound("zeroshinmessenkoubullet", forcePlay: false, sendRpc: true);
-				new ShinMessenkouProj(
-					weapon, new Point(x - shinMessenkouWidth, y),
-					character.xDir, player, player.getNextActorNetId(), rpc: true
-				);
-				new ShinMessenkouProj(
-					weapon, new Point(x + shinMessenkouWidth, y), character.xDir,
-					player, player.getNextActorNetId(), rpc: true
-				);
-			} else if (isDarkHold) {
-				darkHoldProj = new DarkHoldProj(
-					weapon, new Point(x, y - 20), character.xDir, player, player.getNextActorNetId(), rpc: true
-				);
-			} else {
-				for (int i = 256; i >= 128; i -= 16) {
-					new RakuhouhaProj(
-						weapon, new Point(x, y), isCFlasher, i,
-						player, player.getNextActorNetId(), rpc: true
-					);
-				}
-			}
-			if (isRakuhouha) {
-				character.shakeCamera(sendRpc: true);
-				//character.playSound("rakuhouha", sendRpc: true);
-				//character.playSound("crash", sendRpc: true);
-			} else if (isCFlasher) { 
-				character.shakeCamera(sendRpc: true);
-				//character.playSound("messenkou", sendRpc: true);
-				//character.playSound("crashX3", sendRpc: true);
-			} else if (isDarkHold) {
-				//character.playSound("darkhold", forcePlay: false, sendRpc: true);
-			} else if (isShinMessenkou) {
-				//character.playSound("crash", forcePlay: false, sendRpc: true);
-				character.shakeCamera(sendRpc: true);
-			}
-		}
-		if (!fired2 && isShinMessenkou && character.frameIndex > 11) {
-			fired2 = true;
-			//character.playSound("zeroshinmessenkoubullet", forcePlay: false, sendRpc: true);
-			new ShinMessenkouProj(
-				weapon, new Point(x - shinMessenkouWidth * 2, y),
-				character.xDir, player, player.getNextActorNetId(), rpc: true
-			);
-			new ShinMessenkouProj(
-				weapon, new Point(x + shinMessenkouWidth * 2, y),
-				character.xDir, player, player.getNextActorNetId(), rpc: true
-			);
-		}
-		if (!fired3 && isShinMessenkou && character.frameIndex > 14) {
-			fired3 = true;
-			//character.playSound("zeroshinmessenkoubullet", forcePlay: false, sendRpc: true);
-			new ShinMessenkouProj(
-				weapon, new Point(x - shinMessenkouWidth * 3, y),
-				character.xDir, player, player.getNextActorNetId(), rpc: true
-			);
-			new ShinMessenkouProj(
-				weapon, new Point(x + shinMessenkouWidth * 3, y),
-				character.xDir, player, player.getNextActorNetId(), rpc: true
-			);
-		}
-
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-	}
-
-	public override void onExit(CharState newState) {
-		weapon.shootCooldown = weapon.fireRate;
-		base.onExit(newState);
+	public override float getAmmoUsage(int chargeLevel) {
+		return 14;
 	}
 }
 
 public class RakuhouhaProj : Projectile {
 	bool isCFlasher;
 	public RakuhouhaProj(
-		Weapon weapon, Point pos, bool isCFlasher, float byteAngle,
-		Player player, ushort netProjId, bool rpc = false
+		Point pos, bool isCFlasher, float byteAngle, int xDir, Actor owner, Player player, ushort? netId, bool rpc = false
 	) : base(
-		weapon, pos, 1, 300, 4, player, isCFlasher ? "cflasher" : "rakuhouha",
-		Global.defFlinch, 1f, netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, isCFlasher ? "cflasher" : "rakuhouha", netId, player	
 	) {
-		this.isCFlasher = isCFlasher;
+		weapon = isCFlasher ? CFlasher.netWeapon : RakuhouhaWeapon.netWeapon;
+		damager.damage = 4;
+		damager.hitCooldown = 60;
+		damager.flinch = Global.defFlinch;
 		byteAngle = byteAngle % 256;
-
-		/*if (angle == 128+16) {
-			var sprite = isCFlasher ? "cflasher_diag" : "rakuhouha_diag";
-			changeSprite(sprite, false);
-		} else if (angle == 128+32) {
-			var sprite = isCFlasher ? "cflasher_up" : "rakuhouha_up";
-			changeSprite(sprite, false);
-		} else if (angle == 128) {
-			xDir = -1;
-			var sprite = isCFlasher ? "cflasher_diag" : "rakuhouha_diag";
-			changeSprite(sprite, false);
-		} else if (angle == 180) {
-			xDir = -1;
-		}*/
-
+		this.byteAngle = byteAngle;
+		vel = new Point(300 * xDir, 0);
+		vel.x = 300 * Helpers.cosb(byteAngle);
+		vel.y = 300 * Helpers.sinb(byteAngle);
+		zIndex = ZIndex.Character;
+		this.isCFlasher = isCFlasher;
+		reflectable = true;
+		fadeOnAutoDestroy = true;
+		maxTime = 0.5f;
 		if (!isCFlasher) {
 			fadeSprite = "rakuhouha_fade";
+			projId = (int)ProjIds.Rakuhouha;
 		} else {
 			damager.damage = 2;
 			damager.hitCooldown = 30;
 			damager.flinch = 0;
 			destroyOnHit = false;
-		}
-
-		reflectable = true;
-		projId = (int)ProjIds.Rakuhouha;
-		if (isCFlasher) {
+			fadeSprite = "buster4_fade";
 			projId = (int)ProjIds.CFlasher;
 		}
-		vel.x = 300 * Helpers.cosb(byteAngle);
-		vel.y = 300 * Helpers.sinb(byteAngle);
-		this.byteAngle = byteAngle;
-
 		if (rpc) {
-			rpcCreate(
-				pos, player, netProjId, xDir,
-				new Byte[]{
-					(byte)byteAngle,
-				}
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle, 
+			new byte[] { isCFlasher ? (byte)1 : (byte)0}
 			);
 		}
 	}
-
-	public override void update() {
-		base.update();
-		if (time > 0.5) {
-			destroySelf(fadeSprite);
-		}
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new RakuhouhaProj(
+			args.pos, args.extraData[0] == 1, args.byteAngle,
+			args.xDir, args.owner, args.player, args.netId
+		);
 	}
 }
 
 public class ShinMessenkouProj : Projectile {
 	int state = 0;
-	public ShinMessenkouProj(Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false) :
-		base(weapon, pos, xDir, 0, 4, player, "shinmessenkou_start", Global.defFlinch, 1f, netProjId, player.ownedByLocalPlayer) {
+	public ShinMessenkouProj(
+		Point pos, int xDir, Actor owner, Player player, ushort? netId, bool rpc = false
+	) : base(
+		pos, xDir, owner, "shinmessenkou_start", netId, player
+	) {
+		weapon = ShinMessenkou.netWeapon;
+		damager.damage = 4;
+		damager.hitCooldown = 30;
+		damager.flinch = Global.defFlinch;
 		maxTime = 0.6f;
 		destroyOnHit = false;
 		projId = (int)ProjIds.ShinMessenkou;
-
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+	}
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ShinMessenkouProj(
+			args.pos, args.xDir, args.owner, args.player, args.netId
+		);
 	}
 
 	public override void update() {
@@ -337,108 +240,38 @@ public class ShinMessenkouProj : Projectile {
 	}
 }
 
-public class Rekkoha : CharState {
-	bool fired1 = false;
-	bool fired2 = false;
-	bool fired3 = false;
-	bool fired4 = false;
-	bool fired5 = false;
-	bool sound;
-	int loop;
-	public RekkohaEffect? effect;
-	public Weapon weapon;
-	public Rekkoha(Weapon weapon) : base("rekkoha") {
-		this.weapon = weapon;
-		invincible = true;
-		immuneToWind = true;
-	}
-
-	public override void update() {
-		base.update();
-
-		float topScreenY = Global.level.getTopScreenY(character.pos.y);
-
-		if (character.frameIndex == 13 && loop < 15) {
-			character.frameIndex = 10;
-			loop++;
-		}
-
-		if (character.frameIndex == 5 && !sound) {
-			sound = true;
-			character.shakeCamera(sendRpc: true);
-			//character.playSound("crash", sendRpc: true);
-			//character.playSound("rekkohax6", sendRpc: true);
-		}
-
-		if (stateTime > 26/60f && !fired1) {
-			fired1 = true;
-			new RekkohaProj(weapon, new Point(character.pos.x, topScreenY), player, player.getNextActorNetId(), rpc: true);
-		}
-		if (stateTime > 0.6f && !fired2) {
-			fired2 = true;
-			new RekkohaProj(weapon, new Point(character.pos.x - 35, topScreenY), player, player.getNextActorNetId(), rpc: true);
-			new RekkohaProj(weapon, new Point(character.pos.x + 35, topScreenY), player, player.getNextActorNetId(), rpc: true);
-		}
-		if (stateTime > 0.8f && !fired3) {
-			fired3 = true;
-			new RekkohaProj(weapon, new Point(character.pos.x - 70, topScreenY), player, player.getNextActorNetId(), rpc: true);
-			new RekkohaProj(weapon, new Point(character.pos.x + 70, topScreenY), player, player.getNextActorNetId(), rpc: true);
-		}
-		if (stateTime > 1f && !fired4) {
-			fired4 = true;
-			new RekkohaProj(weapon, new Point(character.pos.x - 110, topScreenY), player, player.getNextActorNetId(), rpc: true);
-			new RekkohaProj(weapon, new Point(character.pos.x + 110, topScreenY), player, player.getNextActorNetId(), rpc: true);
-		}
-		if (stateTime > 1.2f && !fired5) {
-			fired5 = true;
-			new RekkohaProj(weapon, new Point(character.pos.x - 150, topScreenY), player, player.getNextActorNetId(), rpc: true);
-			new RekkohaProj(weapon, new Point(character.pos.x + 150, topScreenY), player, player.getNextActorNetId(), rpc: true);
-		}
-
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		if (player.isMainPlayer) {
-			effect = new RekkohaEffect();
-		}
-	}
-
-	public override void onExit(CharState newState) {
-		weapon.shootCooldown = weapon.fireRate;
-		base.onExit(newState);
-	}
-}
-
 public class RekkohaProj : Projectile {
 	float len = 0;
 	private float reverseLen;
 	private bool updatedDamager = false;
 
 	public RekkohaProj(
-		Weapon weapon, Point pos, Player player, ushort netProjId, bool rpc = false
+		Point pos, int xDir, Actor owner, Player player, ushort? netId, bool rpc = false
 	) : base(
-		weapon, pos, 1, 0, 3, player, "rekkoha_proj",
-		Global.defFlinch, 0.5f, netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "rekkoha_proj", netId, player
 	) {
+		weapon = RekkohaWeapon.netWeapon;
+		damager.damage = 3;
+		damager.hitCooldown = 30;
+		damager.flinch = Global.defFlinch;
 		projId = (int)ProjIds.Rekkoha;
 		vel.y = 400;
 		maxTime = 1.6f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
-
-		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
-		}
 		netcodeOverride = NetcodeModel.FavorDefender;
-
 		isOwnerLinked = true;
-		if (player.character != null) {
-			ownerActor = player.character;
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+		if (ownerPlayer?.character != null) {
+			owningActor = ownerPlayer.character;
+		}
+	}
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new RekkohaProj(
+			args.pos, args.xDir, args.owner, args.player, args.netId
+		);
 	}
 
 	public override void update() {
@@ -478,14 +311,14 @@ public class RekkohaProj : Projectile {
 		Global.sprites["rekkoha_proj_mid"].draw(
 			sprite.frameIndex,
 			pos.x + x,
-			basePosY - 63f,
+			basePosY - 41f,
 			1, 1, null, alpha,
-			1f, finalLen / 23f + 0.01f, zIndex
+			1f, finalLen / 9f + 0.01f, zIndex
 		);
 		Global.sprites["rekkoha_proj_top"].draw(
 			sprite.frameIndex,
 			pos.x + x,
-			basePosY - 63f - finalLen,
+			basePosY - 41f - finalLen,
 			1, 1, null, alpha,
 			1f, 1f, zIndex
 		);
@@ -498,7 +331,6 @@ public class RekkohaProj : Projectile {
 		);
 	}
 }
-
 
 public class RekkohaEffect : Effect {
 	public RekkohaEffect() : base(new Point(Global.level.camX, Global.level.camY)) {
@@ -582,27 +414,6 @@ public class RekkohaEffect : Effect {
 	}
 }
 
-public class DarkHoldWeapon : Weapon {
-	public DarkHoldWeapon() : base() {
-		ammo = 0;
-		maxAmmo = 28;
-		fireRate = 60 * 3;
-		index = (int)WeaponIds.DarkHold;
-		type = (int)ZeroGigaType.DarkHold;
-		killFeedIndex = 175;
-		weaponBarBaseIndex = 69;
-		weaponBarIndex = 58;
-		weaponSlotIndex = 122;
-		drawGrayOnLowAmmo = true;
-		drawRoundedDown = true;
-		allowSmallBar = false;
-	}
-
-	public override float getAmmoUsage(int chargeLevel) {
-		return 14;
-	}
-}
-
 public class DarkHoldProj : Projectile {
 	public float radius = 10;
 	public float attackRadius => (radius + 15);
@@ -610,10 +421,12 @@ public class DarkHoldProj : Projectile {
 	float timeInFrames;
 
 	public DarkHoldProj(
-		Weapon weapon, Point pos, int xDir, Player player, ushort netProjId, bool rpc = false
+		Point pos, int xDir, Actor owner, Player player, ushort? netId, bool rpc = false
 	) : base(
-		weapon, pos, xDir, 0, 0, player, "empty", 0, 0.5f, netProjId, player.ownedByLocalPlayer
+		pos, xDir, owner, "empty", netId, player
 	) {
+		weapon = DarkHoldWeapon.netWeapon;
+		damager.hitCooldown = 30;
 		maxTime = 1.25f;
 		vel = new Point();
 		projId = (int)ProjIds.DarkHold;
@@ -624,8 +437,13 @@ public class DarkHoldProj : Projectile {
 			updateShader();
 		}
 		if (rpc) {
-			rpcCreate(pos, player, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+	}
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new DarkHoldProj(
+			args.pos, args.xDir, args.owner, args.player, args.netId
+		);
 	}
 
 	public override void update() {
@@ -722,6 +540,231 @@ public class DarkHoldProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		Global.level.darkHoldProjs.Remove(this);
+	}
+}
+
+public abstract class ZeroGigaAttack : CharState {
+	public bool exitOnOver = true;
+	public int loop;
+	public Anim? Anim;
+	public Weapon weapon;
+	public Zero zero = null!;
+	public ZeroGigaAttack(Weapon weapon, string spr) : base(spr) {
+		invincible = true;
+		this.weapon = weapon;
+	}
+
+	public override void update() {
+		base.update();
+		if (exitOnOver && character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		}
+	}
+	public void GigaAttackAnim(string sprite) {
+		int xDir = character.getShootXDir();
+		Anim = new Anim(
+			character.getCenterPos().addxy(4*xDir, 24),
+			sprite, xDir, player.getNextActorNetId(),
+			destroyOnEnd: true, sendRpc: true
+		);
+	}
+	public void LoopSprite(int firstFrame, int secondFrame, int frameloop) {
+		if (character.frameIndex == firstFrame && loop < frameloop) {
+			character.frameIndex = secondFrame;
+			character.shakeCamera(sendRpc: true);
+			loop++;
+		}
+	}
+	public void playSound(string sound) {
+		character.playSound(sound, forcePlay: false, sendRpc: true);
+	}
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		zero = character as Zero ?? throw new NullReferenceException();
+	}
+	public override void onExit(CharState newState) {
+		weapon.shootCooldown = weapon.fireRate;
+		if (Anim != null) {
+			Anim.destroySelf();
+		}
+		base.onExit(newState);
+	}
+}
+
+public class RakuhouhaState : ZeroGigaAttack {
+	public RakuhouhaState(Weapon weapon) : base(weapon, "rakuhouha") {
+		this.weapon = weapon;
+	}
+
+	public override void update() {
+		base.update();
+		RakuhouhaShoot();
+	}
+	public void FenghuangProj(bool isCFlasher) {
+		int xDir = character.getShootXDir();
+		float x = character.getCenterPos().x + 4 * xDir;
+		float y = character.getCenterPos().y + 12;
+		for (int i = 256; i >= 128; i -= 16) {
+			new RakuhouhaProj(new Point(x, y), isCFlasher, i, 1, zero,
+			player, player.getNextActorNetId(), rpc: true
+			);
+		}
+	}
+	public void RakuhouhaShoot() {
+		if (character.frameIndex >= 11 && !once) {
+			once = true;
+			GigaAttackAnim("zero_rakuanim");
+			FenghuangProj(false);
+			playSound("rakuhouha");
+			playSound("crash");
+		}
+		LoopSprite(13, 11, 3);
+	}
+}
+
+public class CFlasherState : ZeroGigaAttack {
+	public CFlasherState(Weapon weapon) : base(weapon, "cflasher") {
+		this.weapon = weapon;	
+	}
+
+	public override void update() {
+		base.update();
+		CFlasherShoot();
+	}
+	public void FenghuangProj(bool isCFlasher) {
+		int xDir = character.getShootXDir();
+		float x = character.getCenterPos().x + 4 * xDir;
+		float y = character.getCenterPos().y + 12;
+		for (int i = 256; i >= 128; i -= 16) {
+			new RakuhouhaProj(new Point(x, y), isCFlasher, i, 1, zero,
+			player, player.getNextActorNetId(), rpc: true
+			);
+		}
+	}
+	public void CFlasherShoot() {
+		if (character.frameIndex >= 11 && !once) {
+			once = true;
+			GigaAttackAnim("zero_cflasheranim");
+			FenghuangProj(true);
+			playSound("messenkou");
+			playSound("crashX3");
+		}
+		LoopSprite(13, 11, 3);
+	}
+}
+
+public class RekkohaState : ZeroGigaAttack {
+	public float[] StateTime = { 36f/60f, 48f/60f, 60f/60f, 72f/60f, 84f/60f };
+	public bool[] fired = { false, false, false, false, false };
+	public int[] Space = { 0, 35, 70, 110, 150 };
+	public bool sound;
+	public RekkohaEffect? effect;
+	public RekkohaState(Weapon weapon) : base(weapon, "rekkoha") {
+		this.weapon = weapon;	
+		immuneToWind = true;
+	}
+
+	public override void update() {
+		base.update();	
+		for (int i = 0; i < StateTime.Length; i++) {
+			if (stateTime > StateTime[i] && !fired[i]) {
+				fired[i] = true;
+		        RekkohaProj(i == 0 ? false : true, Space[i]);
+			}
+		}
+		LoopSprite(11, 9, 11);
+		playSoundRekkoha();
+	}
+	public void RekkohaProj(bool isDouble, int Space) {
+		float x = character.pos.x;
+		float y = character.pos.y;
+		float topScreenY = Global.level.getTopScreenY(y);
+		if (isDouble) {
+			new RekkohaProj(new Point(x + Space, topScreenY), 1, zero,
+			player, player.getNextActorNetId(), rpc: true);
+			new RekkohaProj(new Point(x - Space, topScreenY), 1, zero,
+			player, player.getNextActorNetId(), rpc: true);
+		} else {
+			new RekkohaProj(new Point(x, topScreenY), 1, zero,
+			player, player.getNextActorNetId(), rpc: true);
+		}
+	}
+	public void playSoundRekkoha() {
+		if (character.frameIndex == 9 && !sound) {
+			sound = true;
+			character.playSound("crashX2", sendRpc: true);
+			character.playSound("rekkoha", sendRpc: true);
+		}
+	}
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		if (player.isMainPlayer) {
+			effect = new RekkohaEffect();
+		}
+	}
+}
+
+public class ShinMessenkouState : ZeroGigaAttack {
+	public float[] AnimSeconds = { 20f/60f, 28f/60f, 36f/60f };
+	public bool[] fired = { false, false, false };
+	public const float shinMessenkouWidth = 40;
+	public ShinMessenkouState(Weapon weapon) : base(weapon, "rakuhouha") {
+		this.weapon = weapon;
+	}
+
+	public override void update() {
+		base.update();
+		ShinMessenkouShoot();
+	}
+	public void ShinMessenkouProj(int multiplier) {
+		float x = character.pos.x;
+		float y = character.pos.y;
+		new ShinMessenkouProj(
+			new Point(x - shinMessenkouWidth * multiplier, y),
+			character.xDir, zero, player, player.getNextActorNetId(), rpc: true
+		);
+		new ShinMessenkouProj(
+			new Point(x + shinMessenkouWidth * multiplier, y),
+			character.xDir, zero, player, player.getNextActorNetId(), rpc: true
+		);
+		playSound("zeroshinmessenkoubullet");
+	}
+	public void ShinMessenkouShoot() {
+		for (int i = 0; i < AnimSeconds.Length; i++) {
+			if (stateTime > AnimSeconds[i] && !fired[i]) {
+				fired[i] = true;
+		        ShinMessenkouProj(i+1);
+				if (i == 0) {
+					GigaAttackAnim("zero_rakuanim");
+      				playSound("crash");
+				}
+			}
+		}
+		LoopSprite(13, 11, 3);
+	}
+}
+
+public class DarkHoldShootState : ZeroGigaAttack {
+	public DarkHoldProj? darkHoldProj;
+	public DarkHoldShootState(Weapon weapon) : base(weapon, "darkhold") {
+		this.weapon = weapon;	
+	}
+	public override void update() {
+		base.update();
+		DarkHoldShoot();
+	}
+	public void DarkHoldShoot() {
+		int xDir = character.getShootXDir();
+		float x = character.getCenterPos().x - 2 * xDir;
+		float y = character.getCenterPos().y + 12;
+		if (character.frameIndex >= 10 && !once) {
+			once = true;
+			darkHoldProj = new DarkHoldProj(
+				new Point(x, y - 20), xDir, zero,
+				player, player.getNextActorNetId(), rpc: true
+			);
+			playSound("darkhold");	
+		}
 	}
 }
 

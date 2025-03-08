@@ -43,6 +43,9 @@ public class Hurt : CharState {
 			sprite = "hurt2";
 			character.changeSpriteFromName("hurt2", true);
 		}
+		if (player.isX && (player.hasBodyArmor(2) || player.hasBodyArmor(3))) {
+			character.changeSpriteFromName("hurt2", true);
+		}
 		if (!spiked) {
 			float flichLimitusTime = flinchTime <= 30 ? flinchTime : 30;
 
@@ -85,8 +88,10 @@ public class Hurt : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
+		//Intended. Do not remove.
+		character.dashedInAir = 0;
 	}
 }
 
@@ -266,8 +271,8 @@ public class KnockedDown : CharState {
 			character.move(new Point(hurtSpeed, 0));
 		}
 
-		if (player.character.canCharge() && player.input.isHeld(Control.Shoot, player)) {
-			player.character.increaseCharge();
+		if (character.canCharge() && player.input.isHeld(Control.Shoot, player)) {
+			character.increaseCharge();
 		}
 
 		if (stateTime >= flinchTime) {

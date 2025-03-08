@@ -452,8 +452,6 @@ public class AIState {
 		get {
 			if (player.character?.ai != null) {
 				return player.character.ai;
-			} else if (player.limboChar?.ai != null) {
-				return player.limboChar.ai;
 			} else {
 				return new AI(character);
 			}

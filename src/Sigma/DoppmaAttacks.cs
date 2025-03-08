@@ -87,7 +87,7 @@ public class SigmaShieldProj : Projectile {
 				travelDistance = 0;
 			}
 		} else {
-			var dTo = pos.directionTo(damager.owner.character.getCenterPos()).normalize();
+			var dTo = pos.directionTo(damager.owner.character!.getCenterPos()).normalize();
 			var destAngle = MathF.Atan2(dTo.y, dTo.x) * 180 / MathF.PI;
 
 			float distToDest = MathF.Abs(destAngle - ang);
@@ -154,7 +154,7 @@ public class SigmaThrowShieldState : CharState {
 			return;
 		}
 
-		if (proj == null && character.frameIndex >= 1) {
+		if (proj == null && character.frameIndex >= 2) {
 			proj = new SigmaShieldProj(
 				character.getFirstPOIOrDefault(),
 				character.xDir, player, player.getNextActorNetId(), sendRpc: true
@@ -263,20 +263,21 @@ public class Sigma3FireProj : Projectile {
 
 public class Sigma3Shoot : CharState {
 	bool hasShot;
-	public Doppma doppma;
+	public Doppma? doppma;
 
 	public Sigma3Shoot(Point inputDir) : base(getShootSprite(inputDir)) {
 		airMove = true;
 		canStopJump = true;
 		useDashJumpSpeed = true;
 		landSprite = "shoot";
+		airSprite = "jump_shoot";
 		shootSprite = sprite;
 	}
 
 	public override void update() {
 		base.update();
 		Point? shootPOI = character.getFirstPOI();
-		if (!hasShot && shootPOI != null) {
+		if (!hasShot && shootPOI != null && doppma != null) {
 			hasShot = true;
 			doppma.fireballWeapon.shootCooldown = 0.15f;
 			int upDownDir = MathF.Sign(player.input.getInputDir(player).y);

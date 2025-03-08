@@ -313,7 +313,11 @@ public class BaseSigma : Character {
 				weaponHealTime = 0;
 				weaponHealAmount--;
 				player.sigmaAmmo = Helpers.clampMax(player.sigmaAmmo + 1, player.sigmaMaxAmmo);
-				//playSound("heal", forcePlay: true);
+				if (this is CmdSigma) {
+					playSound("heal", forcePlay: true);
+				} else {
+					playSound("healX3", forcePlay: true);
+				}
 			}
 		}
 		if (player.maverick1v1 != null && player.readyTextOver &&

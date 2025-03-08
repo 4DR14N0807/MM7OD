@@ -124,7 +124,7 @@ public class LightDash : CharState {
 				if (inputXDir != 0 && character.grounded) {
 					character.changeState(new Run(), true);
 				} else {
-					character.changeToIdleOrFall();
+					character.changeState(new DashEnd());
 				}
 				return;
 			}
@@ -200,7 +200,7 @@ public class GigaAirDash : CharState {
 	public Anim? exaust = null!;
 
 	public GigaAirDash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
-		enterSound = "dash";
+		enterSound = "airdashX2";
 		this.initialDashButton = initialDashButton;
 		attackCtrl = true;
 		normalCtrl = true;
@@ -229,7 +229,7 @@ public class GigaAirDash : CharState {
 				if (inputXDir != 0 && character.grounded) {
 					character.changeState(new Run(), true);
 				} else {
-					character.changeToIdleOrFall();
+					character.changeState(new DashEnd());
 				}
 				return;
 			}
@@ -317,7 +317,7 @@ public class UpDash : CharState {
 			once = true;
 			character.vel = new Point(0, -character.getJumpPower() * 1.125f);
 			new Anim(character.pos.addxy(0, -10), "dash_sparks_up", character.xDir, player.getNextActorNetId(), true, sendRpc: true);
-			character.playSound("dash", sendRpc: true);
+			character.playSound("airdashupX3", sendRpc: true);
 		}
 
 		dashTime += Global.spf;
@@ -359,10 +359,10 @@ public class X2ChargeShot : CharState {
 	int shootNum;
 	bool pressFire;
 	Weapon? weaponOverride;
-	Weapon weapon => (weaponOverride ?? mmx.currentWeapon);
+	Weapon weapon => (weaponOverride ?? mmx.currentWeapon ?? mmx.specialBuster);
 	MegamanX mmx = null!;
 
-	public X2ChargeShot(Weapon weaponOverride, int shootNum) : base("x2_shot") {
+	public X2ChargeShot(Weapon? weaponOverride, int shootNum) : base("x2_shot") {
 		this.shootNum = shootNum;
 		this.weaponOverride = weaponOverride;
 		useDashJumpSpeed = true;
@@ -391,6 +391,7 @@ public class X2ChargeShot : CharState {
 					character.playSound(weapon.shootSounds[3], sendRpc: true);
 				}
 				weapon.addAmmo(-weapon.getAmmoUsageEX(3, character), player);
+				mmx.stockedTime = 0;
 			} else {
 				mmx.stockedBuster = false;
 				weapon.shoot(mmx, [4, 1]);
@@ -400,6 +401,7 @@ public class X2ChargeShot : CharState {
 					character.playSound(weapon.shootSounds[3], sendRpc: true);
 				}
 				weapon.addAmmo(-weapon.getAmmoUsageEX(3, character), player);
+				mmx.stockedTime = 0;
 			}
 		}
 		if (character.isAnimOver()) {
@@ -447,6 +449,7 @@ public class X2ChargeShot : CharState {
 			character.shootAnimTime = 20 - character.animTime;
 		}
 		mmx.lastShootPressed = 100;
+		mmx.stockedTime = 0;
 		base.onExit(newState);
 	}
 }
@@ -460,8 +463,12 @@ public class X3ChargeShot : CharState {
 
 	public X3ChargeShot(HyperCharge? hyperBusterWeapon) : base("x3_shot") {
 		this.hyperBusterWeapon = hyperBusterWeapon;
-		airMove = true;
 		useDashJumpSpeed = true;
+		airMove = true;
+		canStopJump = true;
+		landSprite = "x3_shot";
+		airSprite = "x3_air_shot";
+		canJump = true;
 	}
 
 	public override void update() {
@@ -479,9 +486,9 @@ public class X3ChargeShot : CharState {
 						shootPos, "buster4_x3_muzzle", shootDir,
 						player.getNextActorNetId(), true, sendRpc: true
 					);
-					new Buster3Proj(
+					new Buster4MaxProj(
 						shootPos, shootDir,
-						3, player, player.getNextActorNetId(), rpc: true
+						mmx, player, player.getNextActorNetId(), true
 					);
 					if (!(player.weapon is HyperCharge)) {
 						character.playSound("buster3X3", sendRpc: true);
@@ -489,11 +496,12 @@ public class X3ChargeShot : CharState {
 				} else {
 					new Anim(shootPos, "buster4_muzzle_flash", shootDir, null, true);
 					new BusterPlasmaProj(
-						shootPos, shootDir,
+						shootPos, shootDir, mmx,
 						player, player.getNextActorNetId(), rpc: true
 					);
 					character.playSound("plasmaShot", sendRpc: true);
 				}
+			mmx.stockedTime = 0;
 			} else {
 				if (hyperBusterWeapon != null) {
 					hyperBusterWeapon.ammo -= hyperBusterWeapon.getChipFactoredAmmoUsage(player);
@@ -501,22 +509,23 @@ public class X3ChargeShot : CharState {
 				character.playSound("buster3X3", sendRpc: true);
 				float xDir = character.getShootXDir();
 				new BusterX3Proj2(
-					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 0,
+					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 0, mmx,
 					player, player.getNextActorNetId(), rpc: true
 				);
 				new BusterX3Proj2(
-					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 1,
+					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 1, mmx,
 					player, player.getNextActorNetId(), rpc: true
 				);
 				new BusterX3Proj2(
-					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 2,
+					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 2, mmx,
 					player, player.getNextActorNetId(), rpc: true
 				);
 				new BusterX3Proj2(
-					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 3,
+					character.getShootPos().addxy(6 * xDir, -2), character.getShootXDir(), 3, mmx,
 					player, player.getNextActorNetId(), rpc: true
 				);
 			}
+			mmx.stockedTime = 0;
 		}
 		if (character.isAnimOver()) {
 			if (state == 0 && pressFire) {
@@ -596,6 +605,7 @@ public class X3ChargeShot : CharState {
 			mmx.stockedMaxBuster = false;
 		}
 		character.shootAnimTime = 0;
+		mmx.stockedTime = 0;
 		base.onExit(newState);
 	}
 }

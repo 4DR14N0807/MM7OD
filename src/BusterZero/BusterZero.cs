@@ -10,6 +10,7 @@ public class BusterZero : Character {
 	public bool isBlackZero;
 	public int stockedBusterLv;
 	public bool stockedSaber;
+	public float stockedTime;
 	public List<DZBusterProj> zeroLemonsOnField = new();
 	public ZBusterSaber meleeWeapon = new();
 	public int lastShootPressed;
@@ -21,31 +22,13 @@ public class BusterZero : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
 		charId = CharIds.BusterZero;
+		gameChar = GameChar.X3;
 	}
 
-	public override void update() {
-		base.update();
-		if (stockedBusterLv > 0 || stockedSaber) {
-			var renderGfx = stockedBusterLv switch {
-				_ when stockedSaber || stockedBusterLv == 2 => RenderEffectType.ChargeGreen,
-				1 or 3 => RenderEffectType.ChargePink,
-				2 or 4 => RenderEffectType.ChargeOrange,
-				_ => RenderEffectType.ChargeBlue
-			};
-			addRenderEffect(renderGfx, 3, 5);
-		}
+	public override void preUpdate() {
+		base.preUpdate();
 		if (!ownedByLocalPlayer) {
 			return;
-		}
-		// Hypermode music.
-		if (!Global.level.isHyper1v1()) {
-			if (isBlackZero && ownedByLocalPlayer) {
-				if (musicSource == null) {
-					addMusicSource("zero_X3", getCenterPos(), true);
-				}
-			} else {
-				destroyMusicSource();
-			}
 		}
 		// Cooldowns.
 		Helpers.decrementFrames(ref zSaberCooldown);
@@ -64,6 +47,29 @@ public class BusterZero : Character {
 				}
 			}
 		}
+		if (stockedSaber || stockedBusterLv > 0) {
+			stockedTime += Global.spf;
+			if (stockedTime >= 61f/60f) {
+				stockedTime = 0;
+				playSound("stockedSaber");
+			}
+		}
+	}
+	public override void update() {
+		base.update();
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		// Hypermode music.
+		if (!Global.level.isHyper1v1()) {
+			if (isBlackZero && ownedByLocalPlayer) {
+				if (musicSource == null) {
+					addMusicSource("zero_X3", getCenterPos(), true);
+				}
+			} else {
+				destroyMusicSource();
+			}
+		}
 		// Charge and release charge logic.
 		chargeLogic(shoot);
 	}
@@ -75,15 +81,6 @@ public class BusterZero : Character {
 		if (isCharging()) {
 			chargeSound.play();
 			int chargeType = 1;
-			int level = getChargeLevel();
-			var renderGfx = RenderEffectType.ChargeBlue;
-			renderGfx = level switch {
-				1 => RenderEffectType.ChargeBlue,
-				2 => RenderEffectType.ChargeYellow,
-				3 => RenderEffectType.ChargePink,
-				_ => RenderEffectType.ChargeGreen,
-			};
-			addRenderEffect(renderGfx, 3, 5);
 			chargeEffect.update(getChargeLevel(), chargeType);
 		}
 	}
@@ -202,20 +199,20 @@ public class BusterZero : Character {
 		if (chargeLevel == 0) {
 			playSound("busterX3", sendRpc: true);
 			var lemon = new DZBusterProj(
-				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+				shootPos, xDir, this, player, player.getNextActorNetId(), rpc: true
 			);
 			zeroLemonsOnField.Add(lemon);
 			lemonCooldown = 9;
 		} else if (chargeLevel == 1) {
 			playSound("buster2X3", sendRpc: true);
 			new DZBuster2Proj(
-				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+				shootPos, xDir, this, player, player.getNextActorNetId(), rpc: true
 			);
 			lemonCooldown = 22;
 		} else if (chargeLevel == 2) {
 			playSound("buster3X3", sendRpc: true);
 			new DZBuster3Proj(
-				shootPos, xDir, player, player.getNextActorNetId(), rpc: true
+				shootPos, xDir, this, player, player.getNextActorNetId(), rpc: true
 			);
 			lemonCooldown = 22;
 		} else if (chargeLevel == 3) {
@@ -334,6 +331,28 @@ public class BusterZero : Character {
 			palette = player.zeroPaletteShader;
 			palette?.SetUniform("palette", 1);
 			palette?.SetUniform("paletteTexture", Global.textures["hyperBusterZeroPalette"]);
+		}
+		if (Global.isOnFrameCycle(4)) {
+			switch (getChargeLevel()) {
+				case 1:
+					palette = player.ZeroBlueC;
+					break;
+				case 2:
+					palette = player.ZeroBlueC;
+					break;
+				case 3:
+					palette = player.ZeroPinkC;
+					break;
+				case 4:
+					palette = player.ZeroGreenC;
+					break;
+			}
+			if (stockedSaber || stockedBusterLv == 2) {
+					palette = player.ZeroGreenC;
+			}
+			if (stockedBusterLv == 1) {
+				palette = player.ZeroPinkC;
+			}
 		}
 		if (palette != null) {
 			shaders.Add(palette);

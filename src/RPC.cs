@@ -429,7 +429,7 @@ public class RPCApplyDamage : RPC {
 				addToLevel: false
 			) {
 				meleeId = meleeId,
-				owningActor = mainActor
+				ownerActor = mainActor
 			};
 		}
 		return actor;

@@ -812,28 +812,141 @@ public class Blues : Character {
 				addCoreAmmo(overdrive ? 6 : 4);
 				changeState(new ProtoStrike(), true);
 			} else {
-				if (type == 1) {
-					var proj = new ProtoBusterLv4Proj(
-						this, type, shootPos.addxy(-12 * xDir, 0), xDir, player.getNextActorNetId(), true
-					);
-					proj.frameIndex = 2;
-					proj.maxTime += 4 / 60f;
-				}
 				new ProtoBusterLv4Proj(
 					this, type, shootPos, xDir, player.getNextActorNetId(), true
 				);
-				if (type == 1) {
-					var proj = new ProtoBusterLv4Proj(
-						this, type, shootPos.addxy(12 * xDir, 0), xDir, player.getNextActorNetId(), true
-					);
-					proj.frameIndex = 1;
-					proj.maxTime -= 4 / 60f;
-				}
 				addCoreAmmo(getChargeShotAmmoUse(3));
 				playSound("buster3", sendRpc: true);
 				lemonCooldown = 12;
 			}
 		}
+	}
+
+	public void shoot(int chargeLevel) {
+		if (!ownedByLocalPlayer || !canShoot()) return;
+
+		int lemonNum = -1;
+		int type = overdrive ? 1 : 0;
+
+		if (chargeLevel == 0) {
+			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
+				if (unchargedLemonCooldown[i] <= 0) {
+					lemonNum = i;
+					break;
+				}
+			}
+			if (lemonNum == -1) {
+				return;
+			}
+		}
+		// Cancel non-invincible states.
+		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide) {
+			changeToIdleOrFall();
+		}
+		// Shoot anim and vars.
+		float oldShootAnimTime = shootAnimTime;
+		setShootAnim();
+		Point shootPos = getShootPos();
+		int xDir = getShootXDir();
+
+		// Lemons.
+		if (chargeLevel <= 0) {
+			if (type == 0) {
+				new ProtoBusterProj(
+					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
+				);
+			} else {
+				new ProtoBusterOverdriveProj(
+					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
+				);
+				playSound("buster2", sendRpc: true);
+				addCoreAmmo(0.75f);
+			}
+			playSound("buster", sendRpc: true);
+			lemonCooldown = 8;
+			unchargedLemonCooldown[lemonNum] = 50;
+			if (oldShootAnimTime <= 0.25f) {
+				shootAnimTime = 0.25f;
+			}
+		}
+		// Proto-strike.
+		else if (chargeLevel >= 3 && player.input.isHeld(Control.Up, player)) {
+			addCoreAmmo(overdrive ? 6 : 4);
+			changeState(new ProtoStrike(), true);
+		}
+		// Breakman overdrive charge shot.
+		else if (overdrive) {
+			shootSubBreak(chargeLevel);
+		}
+		// Regular charge shot.
+		else {
+			shootSubProto(chargeLevel);
+		}
+	}
+
+	public void shootSubProto(int chargeLevel) {
+		Point shootPos = getShootPos();
+		int xDir = getShootXDir();
+
+		if (chargeLevel <= 0) {
+			return;
+		}
+		if (chargeLevel == 1) {
+			new ProtoBusterLv2Proj(
+				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+			);
+			addCoreAmmo(getChargeShotAmmoUse(1));
+			playSound("buster2", sendRpc: true);
+			lemonCooldown = 12;
+		} else if (chargeLevel == 2) {
+			new ProtoBusterLv3Proj(
+				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+			);
+			addCoreAmmo(getChargeShotAmmoUse(2));
+			playSound("buster3", sendRpc: true);
+			lemonCooldown = 12;
+		}
+		else if (chargeLevel >= 3) {
+			new ProtoBusterLv4Proj(
+				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+			);
+			addCoreAmmo(getChargeShotAmmoUse(3));
+			playSound("buster3", sendRpc: true);
+			lemonCooldown = 12;
+		}
+	}
+
+	public void shootSubBreak(int chargeLevel) {
+		if (chargeLevel <= 0) { return; }
+		Point shootPos = getShootPos();
+		int xDir = getShootXDir();
+		float baseAngle = 0;
+		if (xDir == -1) {
+			baseAngle += 128;
+		}
+		if (chargeLevel >= 3) {
+			chargeLevel = 3;
+		}
+		// Extra shots per charge tier.
+		for (int i = 1; i > chargeLevel - 1; i++) {
+			Global.level.delayedActions.Add(new DelayedAction(
+				() => {
+					float angleOffset = Helpers.randomRange(-16, 16);
+					new ChargedBreakBusterProj(
+						this, chargeLevel - 1, shootPos, baseAngle + angleOffset,
+						player.getNextActorNetId(), true
+					);
+					playSound("buster3", sendRpc: true);
+				},
+				i * 4
+			));
+		}
+		new ChargedBreakBusterProj(
+			this, chargeLevel - 1, shootPos, baseAngle, player.getNextActorNetId(), true
+		);
+		addCoreAmmo(getChargeShotAmmoUse(chargeLevel));
+		playSound("buster3", sendRpc: true);
+		lemonCooldown = 12;
 	}
 
 	public void shootSpecial(int chargeLevel) {

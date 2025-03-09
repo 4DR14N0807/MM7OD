@@ -220,5 +220,5 @@ public class ViralSigma : Character {
 		ede.host = anim;
 		Global.level.addEffect(ede);
 	}
+	*/
 }
-	

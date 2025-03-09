@@ -790,7 +790,7 @@ public class MegamanX : Character {
 		}
 		return sound;
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -874,6 +874,7 @@ public class MegamanX : Character {
 		shaders.AddRange(baseShaders);
 		return shaders;
 	}
+	*/
 
 	public int getArmorByte() {
 		int armorByte = (byte)chestArmor;

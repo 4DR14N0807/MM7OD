@@ -95,7 +95,7 @@ public class TriadThunderProj : Projectile {
 
 		isMelee = true;
 		if (ownerPlayer?.character != null) {
-			owningActor = ownerPlayer.character;
+			ownerActor = ownerPlayer.character;
 		}
 	}
 
@@ -182,7 +182,7 @@ public class TriadThunderBall : Projectile {
 
 		isMelee = true;
 		if (ownerPlayer.character != null) {
-			owningActor = ownerPlayer.character;
+			ownerActor = ownerPlayer.character;
 		}
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -358,7 +358,7 @@ public class TriadThunderQuake : Projectile {
 
 		isMelee = true;
 		if (ownerPlayer?.character != null) {
-			owningActor = ownerPlayer.character;
+			ownerActor = ownerPlayer.character;
 		}
 	}
 

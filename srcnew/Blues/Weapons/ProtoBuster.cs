@@ -254,3 +254,47 @@ public class ProtoBusterLv4Proj : Projectile {
 		);
 	}
 }
+
+public class ChargedBreakBusterProj : Projectile {
+	public ChargedBreakBusterProj(
+		Actor owner, int type, Point pos, float byteAngle, ushort? netId, 
+		bool rpc = false, Player? altPlayer = null
+	) : base(
+		pos, 1, owner, "proto_chargeshot_proj", netId, altPlayer
+	) {
+		fadeSprite = "proto_chargeshot_proj_fade";
+		fadeOnAutoDestroy = true;
+		maxTime = 25 / 60f;
+		projId = (int)BluesProjIds.BusterLV2;
+
+		byteAngle = MathF.Round(byteAngle) % 256;
+		this.byteAngle = MathF.Round(byteAngle);
+		vel = Point.createFromByteAngle(byteAngle) * 325;
+		damager.damage = 2;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 30f;
+
+		if (rpc) {
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle, (byte)type);
+		}
+
+		if (type == 1) {
+			maxTime = 27 / 60f;
+			damager.damage = 3;
+			damager.flinch = Global.defFlinch;
+			projId = (int)BluesProjIds.BusterLV3;
+		}
+		else if (type >= 2) {
+			maxTime = 30 / 60f;
+			damager.damage = 4;
+			damager.flinch = Global.superFlinch;
+			projId = (int)BluesProjIds.BusterLV4;
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ChargedBreakBusterProj(
+			args.owner, args.extraData[0], args.pos, args.byteAngle, args.netId, altPlayer: args.player
+		);
+	}
+}

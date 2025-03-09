@@ -525,7 +525,7 @@ public class PunchyZero : Character {
 			chargeEffect.update(getChargeLevel(), chargeType);
 		}
 	}
-
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -567,6 +567,7 @@ public class PunchyZero : Character {
 		shaders.AddRange(baseShaders);
 		return shaders;
 	}
+	*/
 
 	public override int getHitboxMeleeId(Collider hitbox) {
 		return (int)(sprite.name switch {

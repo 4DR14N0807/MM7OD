@@ -245,7 +245,7 @@ public class DevConsole {
 			}
 		}),
 		new Command("hp", (args) => setHealth(args)),
-		new Command("freeze", (args) => Global.level.mainPlayer.character.freeze()),
+		//new Command("freeze", (args) => Global.level.mainPlayer.character.freeze()),
 		new Command("hurt", (args) => Global.level.mainPlayer.character.setHurt(-1, Global.defFlinch, false)),
 		new Command("trhealth", (args) => Global.spawnTrainingHealth = !Global.spawnTrainingHealth),
 		new Command("checksum", (args) => printChecksum(), false),

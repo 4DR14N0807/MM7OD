@@ -1956,7 +1956,12 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual void landingCode() {
 		dashedInAir = 0;
-		changeState(new Land(), true);
+		if (useSound) {
+			changeState(new Land(), true);
+		}
+		else {
+			changeState(new Land(), true);
+		}
 	}
 
 	public virtual bool changeState(CharState newState, bool forceChange = false) {

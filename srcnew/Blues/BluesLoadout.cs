@@ -91,7 +91,7 @@ public class BluesWeaponMenu : IMainMenu {
 
 		if (okPressed || backPressed && !inGame) {
 			bool isChanged = false;
-		
+
 			if (targetLoadout.specialWeapon != specialWeapon) {
 				targetLoadout.specialWeapon = specialWeapon;
 				isChanged = true;
@@ -110,7 +110,7 @@ public class BluesWeaponMenu : IMainMenu {
 				}
 				Options.main.saveToFile();
 			}
-			
+
 			if (inGame) Menu.exit();
 			else Menu.change(prevMenu);
 			return;

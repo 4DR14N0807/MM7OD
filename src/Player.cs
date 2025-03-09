@@ -1047,13 +1047,13 @@ public partial class Player {
 			pendingEvilEnergyStacks = 0;
 			evilEnergyTime = evilEnergyMaxTime;
 		}
-
+		Character newChar;
 		if (charNum == (int)CharIds.Rock) {
 			loadout.rockLoadout.weapon1 = extraData[0];
 			loadout.rockLoadout.weapon2 = extraData[1];
 			loadout.rockLoadout.weapon3 = extraData[2];
 
-			character = new Rock(
+			newChar = new Rock(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
@@ -1061,17 +1061,16 @@ public partial class Player {
 		else if (charNum == (int)CharIds.Blues) {
 			loadout.bluesLoadout.specialWeapon = extraData[0];
 
-			character = new Blues(
+			newChar = new Blues(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
 		} else if (charNum == (int)CharIds.Bass) {
-			
 			loadout.bassLoadout.weapon1 = extraData[0];
 			loadout.bassLoadout.weapon2 = extraData[1];
 			loadout.bassLoadout.weapon3 = extraData[2];
 
-			character = new Bass(
+			newChar = new Bass(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer
 			);
@@ -1082,14 +1081,15 @@ public partial class Player {
 		}
 		// Do this once char has spawned and is not null.
 		if (isMainChar) {
-			configureWeapons();
-			lastCharacter = character;
+			//configureWeapons();
+			character = newChar;
+			lastCharacter = newChar;
 		}
 		if (isAI) {
 			newChar.addAI();
 		}
 		if (isCamPlayer && isMainChar) {
-			Global.level.snapCamPos(character.getCamCenterPos(), null);
+			Global.level.snapCamPos(newChar.getCamCenterPos(), null);
 		}
 		return newChar;
 	}
@@ -1504,7 +1504,7 @@ public partial class Player {
 		if (character?.destroyed == false) {
 			destroyCharacter();
 		}
-		explodeDieEnd();
+		//explodeDieEnd();
 		ushort newNetId = getNextATransNetId();
 		if (form == 0) {
 			WolfSigma wolfSigma = new WolfSigma(

@@ -170,7 +170,7 @@ public class ShotgunIceProjCharged : Projectile {
 
 		isOwnerLinked = true;
 		if (ownerPlayer?.character != null) {
-			owningActor = ownerPlayer.character;
+			ownerActor = ownerPlayer.character;
 		}
 	}
 

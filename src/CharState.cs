@@ -1614,6 +1614,7 @@ public class CrouchEnd : CharState {
 		}
 	}
 }
+/*
 public class DashEnd : CharState {
 	public DashEnd() : base("dash_end", "dash_end_shoot") {
 		attackCtrl = true;
@@ -1643,3 +1644,4 @@ public class DashEnd : CharState {
 		} 
 	}
 }
+*/

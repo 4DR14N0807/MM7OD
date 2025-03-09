@@ -675,7 +675,7 @@ public partial class Player {
 	}
 
 	public bool hasAllItems() {
-		return ETanks.Count >= 4 && heartTanks >= 8;
+		return false;
 	}
 
 	public static float getBaseHealth() {
@@ -1633,7 +1633,7 @@ public partial class Player {
 	}
 
 	public void maverick1v1Kill() {
-		character?.applyDamage(1000, null, null, null, null);
+		character?.applyDamage(Damager.forceKillDamage, null, null, null, null);
 		character?.destroySelf();
 		character = null;
 		respawnTime = getRespawnTime() * (suicided ? 2 : 1);
@@ -1645,17 +1645,17 @@ public partial class Player {
 	public void forceKill() {
 		if (maverick1v1 != null && Global.level.is1v1()) {
 			//character?.applyDamage(null, null, 1000, null);
-			currentMaverick?.applyDamage(1000, this, character, null, null);
+			currentMaverick?.applyDamage(Damager.forceKillDamage, this, character, null, null);
 			return;
 		}
 
 		if (currentMaverick != null && isTagTeam()) {
 			destroyCharacter();
 		} else {
-			character?.applyDamage(1000, this, character, null, null);
+			character?.applyDamage(Damager.forceKillDamage, this, character, null, null);
 		}
 		foreach (var maverick in mavericks) {
-			maverick.applyDamage(1000, this, character, null, null);
+			maverick.applyDamage(Damager.forceKillDamage, this, character, null, null);
 		}
 	}
 

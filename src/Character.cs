@@ -584,7 +584,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canChangeWeapons() {
-		if (currentWeapon is AssassinBullet && chargeTime > 0) return false;
+		if (currentWeapon is AssassinBulletChar && chargeTime > 0) return false;
 		if (charState is ViralSigmaPossess) return false;
 		if (charState is InRideChaser) return false;
 
@@ -1954,7 +1954,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public virtual void landingCode() {
+	public virtual void landingCode(bool useSound = true) {
 		dashedInAir = 0;
 		if (useSound) {
 			changeState(new Land(), true);
@@ -3153,15 +3153,17 @@ public partial class Character : Actor, IDamagable {
 			} else {
 				updateAxlDirectionalAim();
 			}
+		}
 		*/
 
 		if (this is Zero or PunchyZero or BusterZero or Vile) {
 			player.changeWeaponControls();
 		}
-
+		bool shootPressed = player.input.isHeld(Control.Shoot, player);
+		bool altShootPressed = player.input.isHeld(Control.Special1, player);
+		bool specialPressed = player.input.isPressed(Control.Special1, player);
+		bool upPressed = player.input.isHeld(Control.Up, player);
 		if (currentWeapon is UndisguiseWeapon) {
-			bool shootPressed = player.input.isPressed(Control.Shoot, player);
-			bool altShootPressed = player.input.isPressed(Control.Special1, player);
 			if ((shootPressed || altShootPressed)) {
 				undisguiseTime = 0.33f;
 				DNACore lastDNA = player.lastDNACore;
@@ -3255,7 +3257,7 @@ public partial class Character : Actor, IDamagable {
 			AltSoundIds.X3 => "x3",
 			_ => ""
 		};
-		if (apendix != "" && Global.soundBuffers.ContainsKey(sound+apendix)) {
+		if (apendix != "" && Global.soundBuffers.ContainsKey(sound.ToLower() + apendix)) {
 			return sound+apendix;
 		}
 		return sound;

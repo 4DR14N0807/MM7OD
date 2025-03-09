@@ -25,6 +25,7 @@ public class CharState {
 	public float stateTime;
 	public float stateFrames;
 	public string enterSound = "";
+	public string enterSoundArgs = "";
 	public float framesJumpNotHeld = 0;
 	public bool once;
 	public bool useGravity = true;
@@ -119,7 +120,7 @@ public class CharState {
 
 	public virtual void onEnter(CharState oldState) {
 		if (!string.IsNullOrEmpty(enterSound)) {
-			character.playSound(enterSound, sendRpc: true);
+			character.playAltSound(enterSound, sendRpc: true, altParams: enterSoundArgs);
 		}
 		if (oldState is VileHover) {
 			wasVileHovering = true;
@@ -366,7 +367,7 @@ public class WarpIn : CharState {
 	public float destY;
 	public float destX;
 	public float startY;
-	public Anim warpAnim;
+	public Anim? warpAnim;
 	bool warpAnimOnce;
 
 	// Sigma-specific
@@ -478,7 +479,7 @@ public class WarpIdle : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.visible = true;
 		character.useGravity = true;
@@ -494,7 +495,7 @@ public class WarpOut : CharState {
 	public bool warpSoundPlayed;
 	public float destY;
 	public float startY;
-	public Anim warpAnim;
+	public Anim? warpAnim;
 	public const float yOffset = 200;
 	public bool isSigma { get { return player.isSigma; } }
 	public bool is1v1MaverickStart;
@@ -537,7 +538,7 @@ public class WarpOut : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		if (warpAnim != null) {
 			warpAnim.destroySelf();
@@ -573,7 +574,7 @@ public class Idle : CharState {
 			if (!character.isSoftLocked() && character.canTurn()) {
 				if (player.input.isHeld(Control.Left, player)) character.xDir = -1;
 				if (player.input.isHeld(Control.Right, player)) character.xDir = 1;
-				if (player.character.canMove()) character.changeState(new Run());
+				if (character.canMove()) character.changeState(new Run());
 			}
 		}
 
@@ -614,10 +615,10 @@ public class Run : CharState {
 		}
 		if (player.input.isHeld(Control.Left, player)) {
 			character.xDir = -1;
-			if (player.character.canMove()) move.x = -runSpeed;
+			if (character.canMove()) move.x = -runSpeed;
 		} else if (player.input.isHeld(Control.Right, player)) {
 			character.xDir = 1;
-			if (player.character.canMove()) move.x = runSpeed;
+			if (character.canMove()) move.x = runSpeed;
 		}
 		if (move.magnitude > 0) {
 			character.move(move);
@@ -674,6 +675,7 @@ public class SwordBlock : CharState {
 		attackCtrl = true;
 		normalCtrl = true;
 		stunResistant = true;
+		immuneToWind = true;
 	}
 
 	public override void update() {
@@ -736,6 +738,8 @@ public class Jump : CharState {
 		canStopJump = true;
 		attackCtrl = true;
 		normalCtrl = true;
+		enterSound = "jump";
+		enterSoundArgs = "larmor";
 	}
 
 	public override void update() {
@@ -758,16 +762,12 @@ public class Jump : CharState {
 				character.changeSpriteFromName("kuuenbu", true);
 			}
 		}
-		if (character.frameIndex <= 0 && !once) {
-			once = true;
-			character.playAltSound("jump", sendRpc: true, altParams: "larmor");
-		}
 	}
 }
 
 public class Fall : CharState {
 	public float limboVehicleCheckTime;
-	public Actor limboVehicle;
+	public Actor? limboVehicle;
 
 	public Fall() : base("fall", "fall_shoot", Options.main.getAirAttack(), "fall_start") {
 		accuracy = 5;
@@ -783,7 +783,7 @@ public class Fall : CharState {
 		base.update();
 		if (limboVehicleCheckTime > 0) {
 			limboVehicleCheckTime -= Global.spf;
-			if (limboVehicle.destroyed || limboVehicleCheckTime <= 0) {
+			if (limboVehicle?.destroyed == true || limboVehicleCheckTime <= 0) {
 				limboVehicleCheckTime = 0;
 				character.useGravity = true;
 				character.limboRACheckCooldown = 1;
@@ -806,7 +806,7 @@ public class Fall : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 	}
@@ -827,6 +827,8 @@ public class Dash : CharState {
 		//exitOnAirborne = true;
 		attackCtrl = true;
 		normalCtrl = true;
+		enterSound = "dash";
+		enterSoundArgs = "larmor";
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -835,21 +837,17 @@ public class Dash : CharState {
 		character.isDashing = true;
 	}
 
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-	}
-
 	public override void update() {
 		base.update();
 		isColliding = Global.level.checkTerrainCollisionOnce(character, 0, -10) != null;
 
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop && !isColliding) {
-			dashTime = 50;
+			dashTime = 800;
 		}
 		float speedModifier = 1;
 		float distanceModifier = 1;
 		float inputXDir = player.input.getInputDir(player).x;
-		if (dashTime > Global.spf * 32 * distanceModifier || stop) {
+		if (dashTime > 32 * distanceModifier || stop) {
 			if (!stop) {
 				dashTime = 0;
 				character.frameIndex = 0;
@@ -866,7 +864,7 @@ public class Dash : CharState {
 				return;
 			}
 		}
-		if (dashTime > Global.spf * 3 || stop) {
+		if (dashTime > 3 || stop) {
 			var move = new Point(0, 0);
 			move.x = character.getDashSpeed() * initialDashDir * speedModifier;
 			character.move(move);
@@ -875,13 +873,13 @@ public class Dash : CharState {
 			move.x = Physics.DashStartSpeed * character.getRunDebuffs() * initialDashDir * speedModifier; ;
 			character.move(move);
 		}
-		if (dashTime <= Global.spf * 3 || stop) {
+		if (dashTime <= 3 || stop) {
 			if (inputXDir != 0 && inputXDir != initialDashDir) {
 				character.xDir = (int)inputXDir;
 				initialDashDir = (int)inputXDir;
 			}
 		}
-		dashTime += Global.spf;
+		dashTime += Global.speedMul;
 		if (stateTime > 0.1 && !character.isUnderwater()) {
 			stateTime = 0;
 			new Anim(
@@ -890,7 +888,7 @@ public class Dash : CharState {
 				sendRpc: true
 			);
 		}
-		if (!character.grounded) {
+		if (!character.grounded || stop) {
 			character.dashedInAir++;
 			character.changeState(new DashEnd());
 		}
@@ -902,12 +900,14 @@ public class AirDash : CharState {
 	public string initialDashButton;
 	public int initialDashDir;
 	public bool stop;
-	public Anim dashSpark;
+	public Anim? dashSpark;
 
 	public AirDash(string initialDashButton) : base("dash", "dash_shoot") {
 		this.initialDashButton = initialDashButton;
 		accuracy = 10;
 		attackCtrl = true;
+		enterSound = "airdash";
+		enterSoundArgs = "larmor";
 	}
 
 	public override void update() {
@@ -954,7 +954,6 @@ public class AirDash : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.playAltSound("airdash", sendRpc: true, altParams: "larmor");
 		initialDashDir = character.xDir;
 
 		if (character is Axl && (character.currentWeapon as AxlWeapon)?.isTwoHanded(false) == true) {
@@ -969,9 +968,9 @@ public class AirDash : CharState {
 		new Anim(character.getDashSparkEffectPos(initialDashDir), "dash_sparks", initialDashDir, null, true);
 	}
 
-	public override void onExit(CharState newState) {
-		if (!dashSpark.destroyed) {
-			dashSpark.destroySelf();
+	public override void onExit(CharState? newState) {
+		if (!dashSpark?.destroyed == true) {
+			dashSpark?.destroySelf();
 		}
 		character.useGravity = true;
 		base.onExit(newState);
@@ -993,12 +992,13 @@ public class WallSlide : CharState {
 		this.wallCollider = wallCollider;
 		accuracy = 2;
 		attackCtrl = true;
+		enterSound = "wallLand";
+		enterSoundArgs = "larmor";
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		mmx = character as MegamanX;
-		character.playAltSound("wallLand", sendRpc: true, altParams: "larmor");
 		character.dashedInAir = 0;
 		if (player.isAI && character.ai != null) {
 			character.ai.jumpTime = 0;
@@ -1050,11 +1050,11 @@ public class WallSlide : CharState {
 				var hitWall = hit?.gameObject as Wall;
 
 				if (wallDir != player.input.getXDir(player)) {
-					player.character.changeState(new Fall());
+					character.changeState(new Fall());
 				} else if (hitWall == null || !hitWall.collider.isClimbable) {
 					var hitActor = hit?.gameObject as Actor;
 					if (hitActor == null || !hitActor.isPlatform) {
-						player.character.changeState(new Fall());
+						character.changeState(new Fall());
 					}
 				}
 			}
@@ -1068,7 +1068,7 @@ public class WallSlide : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		character.useGravity = true;
 		base.onExit(newState);
 	}
@@ -1132,6 +1132,8 @@ public class WallKick : CharState {
 		canStopJump = true;
 		attackCtrl = true;
 		normalCtrl = true;
+		enterSound = "jump";
+		enterSoundArgs = "larmor";
 	}
 
 	public override void update() {
@@ -1139,10 +1141,6 @@ public class WallKick : CharState {
 		if (character.vel.y > 0) {
 			character.changeState(new Fall());
 		}
-	}
-	public override void onEnter(CharState oldState) {
-		character.playAltSound("jump", sendRpc: true, altParams: "larmor");
-		base.onEnter(oldState);
 	}
 }
 
@@ -1178,7 +1176,7 @@ public class LadderClimb : CharState {
 		character.dashedInAir = 0;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.frameSpeed = 1;
 		character.useGravity = true;
@@ -1254,7 +1252,7 @@ public class LadderEnd : CharState {
 		character.stopMoving();
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 	}
@@ -1308,7 +1306,7 @@ public class Taunt : CharState {
 		if (air && finishedMatch) character.useGravity = false;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		zeroching?.destroySelf();
 	}
@@ -1547,7 +1545,7 @@ public class GenericGrabbedState : CharState {
 		else character.setzIndex(grabber.zIndex + 100);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.grabInvulnTime = 2;
 		character.useGravity = true;
@@ -1566,6 +1564,7 @@ public class Land : CharState {
 	public Land() : base("land", "land_shoot") {
 		attackCtrl = true;
 		normalCtrl = true;
+		enterSound = "land";
 	}
 
 	public override void update() {
@@ -1580,7 +1579,6 @@ public class Land : CharState {
 		}
 	}
 	public override void onEnter(CharState oldState) {
-		character.playAltSound("land", sendRpc: true, altParams: "larmor");
 		base.onEnter(oldState);
 	}
 }
@@ -1622,6 +1620,7 @@ public class DashEnd : CharState {
 		useDashJumpSpeed = true;
 		airMove = true;
 	}
+
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		if (character is Doppma doppma && !doppma.grounded) {
@@ -1634,14 +1633,15 @@ public class DashEnd : CharState {
 		}
 		if (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player)) {
 			character.frameTime = 6;
-		} else 
-		exitOnAirborne = false;
+		}
 	}
+
 	public override void update() {
 		base.update();
+
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();
-		} 
+		}
 	}
 }
 */

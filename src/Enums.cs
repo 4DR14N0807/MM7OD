@@ -608,6 +608,7 @@ public enum ProjIds {
 	CopyShot,
 	AssassinBullet,
 	AssassinBulletQuick,
+	AssassinBulletEX,
 	BlastLauncherGrenadeProj,
 	BlastLauncherMineGrenadeProj,
 	BlastLauncherGrenadeSplash,

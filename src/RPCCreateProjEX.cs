@@ -261,7 +261,7 @@ public partial class RPCCreateProj : RPC {
 
 		// Axl
 		{ (int)ProjIds.BlackArrowGround, BlackArrowGrounded.rpcInvoke },
-
+		{ (int)ProjIds.AssassinBulletEX, AssassinationProj.rpcInvoke },
 		// Rides
 		{ (int)ProjIds.MechTorpedo, TorpedoProjMech.rpcInvoke },
 		*/

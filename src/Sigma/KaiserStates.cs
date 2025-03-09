@@ -162,7 +162,7 @@ public class KaiserSigmaIdleState : KaiserSigmaBaseState {
 			if (kaiserSigma.kaiserHoverCooldown == 0 &&
 				kaiserSigma.kaiserHoverTime < kaiserSigma.kaiserMaxHoverTime - 0.25f
 			) {
-				character.vel.y -= 4.5f * 60;
+				character.vel.y -= 3f * 60f;
 				character.changeState(new KaiserSigmaJumpState(), true);
 				return;
 			}
@@ -193,8 +193,9 @@ public class KaiserSigmaIdleState : KaiserSigmaBaseState {
 }
 
 public class KaiserSigmaWalkState : KaiserSigmaBaseState {
-	public KaiserSigmaWalkState() : base("idle") {
-		canShootBallistics = true;
+	public bool once2, once3;
+	public KaiserSigmaWalkState() : base("run") {
+		canShootBallistics = false;
 		immuneToWind = true;
 	}
 
@@ -224,12 +225,26 @@ public class KaiserSigmaWalkState : KaiserSigmaBaseState {
 			return;
 		}
 
-		ballisticAttackLogic();
-
+		//ballisticAttackLogic();
+		if (character.frameIndex == 5 && !once) {
+			character.playSound("crashX3");
+			character.shakeCamera(sendRpc: true);
+			once = true;
+		}
+		if (character.frameIndex == 11 && !once2) {
+			character.playSound("crashX3");
+			character.shakeCamera(sendRpc: true);
+			once2 = true;
+		}
+		if (character.frameIndex == 0) {
+			once = false;
+			once2 = false;
+		}
 		int inputDir = player.input.getXDir(player);
 		if (inputDir != 0) {
-			character.move(new Point(75 * inputDir, 0));
 			character.xDir = inputDir;
+			if (character.frameIndex != 5 && character.frameIndex != 11 && character.frameIndex != 0 && character.frameIndex != 6)
+				character.move(new Point(40 * inputDir, 0));
 		} else {
 			character.changeState(new KaiserSigmaIdleState(), true);
 			return;
@@ -263,11 +278,11 @@ public class KaiserSigmaJumpState : KaiserSigmaBaseState {
 
 		int inputDir = player.input.getXDir(player);
 		if (inputDir != 0) {
-			character.move(new Point(75 * inputDir, 0));
+			character.move(new Point(40 * inputDir, 0));
 			character.xDir = inputDir;
 		}
 		if (isKaiserSigmaTouchingGround()) {
-			character.playSound("crash", sendRpc: true);
+			character.playSound("crashX3", sendRpc: true);
 			character.shakeCamera(sendRpc: true);
 			character.changeState(new KaiserSigmaIdleState(), true);
 			return;
@@ -325,7 +340,7 @@ public class KaiserSigmaHoverState : KaiserSigmaBaseState {
 			CollideData? collideData = character.checkCollision(0, moveAmount.y * Global.spf);
 			if (moveAmount.y > 0 && collideData?.isGroundHit() == true && isKaiserSigmaTouchingGround()) {
 				kaiserSigma.changeToKaiserIdleOrFall();
-				//character.playSound("crash", sendRpc: true);
+				character.playSound("crashX3", sendRpc: true);
 				character.shakeCamera(sendRpc: true);
 				return;
 			}
@@ -337,7 +352,7 @@ public class KaiserSigmaHoverState : KaiserSigmaBaseState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		kaiserSigma.kaiserHoverCooldown = 0.75f;
 	}
@@ -367,13 +382,13 @@ public class KaiserSigmaFallState : KaiserSigmaBaseState {
 
 		if (character.checkCollision(0, 1) != null) {
 			kaiserSigma.changeToKaiserIdleOrFall();
-			character.playSound("crash", sendRpc: true);
+			character.playSound("crashX3", sendRpc: true);
 			character.shakeCamera(sendRpc: true);
 			return;
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		kaiserSigma.kaiserHoverCooldown = 0.75f;
 	}
@@ -501,7 +516,7 @@ public class KaiserSigmaVirusState : CharState {
 		kaiserSigma = character as KaiserSigma ?? throw new NullReferenceException();
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.visible = true;
 		if (newState is Die && kaiserShell != null && !kaiserShell.destroyed) {
@@ -577,7 +592,7 @@ public class KaiserSigmaBeamState : KaiserSigmaBaseState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		proj?.destroySelf();
 	}
@@ -886,9 +901,9 @@ public class KaiserStompWeapon : Weapon {
 
 public class KaiserSigmaRevive : CharState {
 	int state = 0;
-	public ExplodeDieEffect explodeDieEffect;
+	public ExplodeDieEffect? explodeDieEffect;
 	public Point spawnPoint;
-	public KaiserSigmaRevive(ExplodeDieEffect explodeDieEffect) : base("enter") {
+	public KaiserSigmaRevive(ExplodeDieEffect? explodeDieEffect) : base("enter") {
 		this.explodeDieEffect = explodeDieEffect;
 	}
 

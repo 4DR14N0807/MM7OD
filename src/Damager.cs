@@ -17,6 +17,7 @@ public class Damager {
 	public const float envKillDamage = 2000;
 	public const float switchKillDamage = 1000;
 	public const float ohkoDamage = 500;
+	public const float forceKillDamage = 999;
 	public const float headshotModifier = 2;
 
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {

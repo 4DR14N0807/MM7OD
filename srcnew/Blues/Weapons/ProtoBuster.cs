@@ -302,7 +302,7 @@ public class ChargedBreakBusterProj : Projectile {
 			fadeSprite = "proto_chargeshot_red_proj_fade";
 			maxTime = 30 / 60f;
 			damager.flinch = Global.superFlinch;
-			projId = (int)BluesProjIds.BusterLV4;
+			projId = (int)BluesProjIds.BusterLV5;
 		}
 	}
 

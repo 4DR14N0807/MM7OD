@@ -400,7 +400,7 @@ public class WarpIn : CharState {
 				character.grounded = true;
 				character.pos.y = destY;
 				character.pos.x = destX;
-				character.changeState(new WarpIdle());
+				character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate));
 			}
 			return;
 		}
@@ -453,8 +453,11 @@ public class WarpIn : CharState {
 
 
 public class WarpIdle : CharState {
-	public WarpIdle() : base("win") {
+	public bool firstSpawn;
+
+	public WarpIdle(bool firstSpawn = false) : base("win") {
 		invincible = true;
+		this.firstSpawn = firstSpawn;
 	}
 
 	public override void update() {
@@ -472,11 +475,8 @@ public class WarpIdle : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.useGravity = false;
-		character.invulnTime = 5;
 		specialId = SpecialStateIds.WarpIdle;
-		if (character is Blues) {
-			character.sprite.doesLoop = false;
-		}
+		character.invulnTime = firstSpawn ? 5 : 0;
 	}
 
 	public override void onExit(CharState? newState) {
@@ -486,7 +486,7 @@ public class WarpIdle : CharState {
 		character.splashable = true;
 		specialId = SpecialStateIds.None;
 		if (character.ownedByLocalPlayer) {
-			character.invulnTime = (player.warpedInOnce || Global.level.joinedLate) ? 2 : 0;
+			character.invulnTime = firstSpawn ? 2 : 0;
 		}
 	}
 }

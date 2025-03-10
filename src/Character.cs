@@ -2043,9 +2043,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override bool shouldDraw() {
-		if ((invulnTime > 0 || charState is WarpIdle) && !isBurnState) {
-			if (Global.level.frameCount % 4 < 2) { return false; }
-		}
 		return base.shouldDraw();
 	}
 
@@ -2054,7 +2051,19 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		currentLabelY = -getLabelOffY();
+		float? savedAlpha = null;
+		if (invulnTime > 0) {
+			savedAlpha = alpha;
+			if (Global.level.frameCount % 4 < 2) {
+				alpha *= 0.15f;
+			} else {
+				alpha *= 0.85f;
+			}
+		}
 		base.render(x, y);
+		if (savedAlpha != null) {
+			alpha = savedAlpha.Value;
+		}
 		renderDamageText(35);
 
 		if (charState != null) {

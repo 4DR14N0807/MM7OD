@@ -344,6 +344,7 @@ public enum BluesProjIds  {
 	BusterLV2,
 	BusterLV3,
 	BusterLV4,
+	BusterLV5,
 	GeminiLaser,
 	HardKnuckle,
 	SearchSnake,

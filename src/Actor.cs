@@ -436,18 +436,19 @@ public partial class Actor : GameObject {
 			if (value == null) {
 				return;
 			}
+			angleSet = true;
 			_byteAngle = (value / 1.40625f) % 256;
 		}
 	}
 
-	public float? byteAngle {
+	
+	public bool angleSet;
+	public float byteAngle {
 		get {
-			return _byteAngle;
+			return _byteAngle ?? 0;
 		}
 		set {
-			if (value == null) {
-				return;
-			}
+			angleSet = true;
 			_byteAngle = value % 256;
 		}
 	}
@@ -993,7 +994,7 @@ public partial class Actor : GameObject {
 			}
 		}
 		// Use last damaged target if we have not a kill.
-		else if (ownPlayer.lastDamagedCharacter != null) {
+		else if (ownPlayer?.lastDamagedCharacter != null) {
 			killer = ownPlayer.lastDamagedCharacter.player;
 			weaponIndex = 0;
 		}
@@ -1151,7 +1152,7 @@ public partial class Actor : GameObject {
 				yDir = (int)netYDir;
 			}
 			if (netAngle != null && netAngle != lastAngle) {
-				byteAngle = netAngle;
+				byteAngle = netAngle.Value;
 			}
 		}
 	}
@@ -1400,14 +1401,7 @@ public partial class Actor : GameObject {
 		ushort spriteNameIndex = ushort.MaxValue;
 		if (!String.IsNullOrEmpty(spriteName)) {
 			var anim = new Anim(getCenterPos(), spriteName, xDir, null, true);
-			// TODO: Fix this. WTF GM19.
-			if (spriteName != "explosion") {
-				anim.byteAngle = byteAngle;
-				if (anim.angle != null) {
-					anim.xDir = 1;
-				}
-			}
-
+			anim.byteAngle = byteAngle;
 			anim.xScale = xScale;
 			anim.yScale = yScale;
 			spriteNameIndex = Global.spriteIndexByName[spriteName];

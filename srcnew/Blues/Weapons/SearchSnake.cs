@@ -52,7 +52,7 @@ public class SearchSnakeProj : Projectile {
 		xScale = 1;
 
 		if (rpc) {
-			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle ?? 0);
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle);
 		}
 
 		canBeLocal = false;
@@ -117,8 +117,8 @@ public class SearchSnakeProj : Projectile {
 		if (byteAngle != null) {
 			byte flip = 0;
 			if (byteAngle < 0) flip = 1;
-			byteAngle = Math.Abs(byteAngle.Value);
-			customData.Add((byte)byteAngle.Value);
+			byteAngle = Math.Abs(byteAngle);
+			customData.Add((byte)byteAngle);
 			customData.Add(flip);
 		} 
 

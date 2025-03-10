@@ -155,11 +155,6 @@ public class Projectile : Actor {
 		return vel.magnitude;
 	}
 
-	public int getRpcAngle() {
-		if (angle == null) return 0;
-		return (int)(Helpers.to360(angle.Value) * 0.5f);
-	}
-
 	public override void update() {
 		base.update();
 

@@ -996,7 +996,7 @@ public partial class Level {
 			player.charNum = hostPlayer.serverPlayer.charNum;
 			player.newCharNum = hostPlayer.newCharNum;
 			player.curMaxNetId = hostPlayer.curMaxNetId;
-			player.warpedIn = hostPlayer.warpedIn;
+			player.warpedInOnce = hostPlayer.warpedIn;
 			player.readyTime = hostPlayer.readyTime;
 			player.readyTextOver = hostPlayer.spawnChar;
 			player.armorFlag = hostPlayer.armorFlag;
@@ -1128,7 +1128,7 @@ public partial class Level {
 			ownedByLocalPlayer, serverPlayer.alliance, input, serverPlayer
 		);
 		if (joinedLate) {
-			player.warpedIn = true;
+			player.warpedInOnce = true;
 			player.readyTime = 10;
 		}
 		players.Add(player);
@@ -1856,7 +1856,7 @@ public partial class Level {
 	public void render() {
 		if (Global.level.mainPlayer == null) return;
 
-		if (Global.level.joinedLate && !Global.level.mainPlayer.warpedIn && Global.level.mainPlayer.character == null && blackJoinTime < 3) {
+		if (Global.level.joinedLate && !Global.level.mainPlayer.warpedInOnce && Global.level.mainPlayer.character == null && blackJoinTime < 3) {
 			blackJoinTime += Global.spf;
 			return;
 		}

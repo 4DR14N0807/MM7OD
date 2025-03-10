@@ -116,7 +116,7 @@ public class PlayerPB {
 			currentCharNum = (int)player.character.charId;
 		}
 		curMaxNetId = player.curMaxNetId;
-		warpedIn = player.warpedIn;
+		warpedIn = player.warpedInOnce;
 		readyTime = player.readyTime;
 		spawnChar = player.readyTextOver;
 		armorFlag = player.armorFlag;

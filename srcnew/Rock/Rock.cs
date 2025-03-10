@@ -594,7 +594,7 @@ public class Rock : Character {
 			};
 			addRenderEffect(renderGfx, 3, 5);
 			chargeEffect.character = this;
-			chargeEffect.update(level, 1);
+			chargeEffect.update(level, 0);
 		}
 	}
 

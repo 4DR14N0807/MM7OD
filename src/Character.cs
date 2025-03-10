@@ -1960,7 +1960,7 @@ public partial class Character : Actor, IDamagable {
 			changeState(new Land(), true);
 		}
 		else {
-			changeState(new Land(), true);
+			changeState(new Land() { enterSound = "" }, true);
 		}
 	}
 

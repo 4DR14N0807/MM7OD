@@ -104,48 +104,6 @@ public class ProtoBusterAngledProj : Projectile {
 	}
 }
 
-public class ProtoBusterOverdriveProj : Projectile {
-	public ProtoBusterOverdriveProj(
-		Actor owner, Point pos, int xDir, ushort? netId, 
-		Point? vel = null, bool rpc = false, Player? altPlayer = null
-	) : base(
-		pos, xDir, owner, "proto_midcharge_proj", netId, altPlayer
-	) {
-		maxTime = 0.425f;
-		projId = (int)BluesProjIds.LemonOverdrive;
-		fadeSprite = "proto_midcharge_proj_fade";
-		fadeOnAutoDestroy = true;
-
-		base.vel.x = 250 * xDir;
-		damager.damage = 1;
-		damager.flinch = Global.miniFlinch;
-
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
-		}
-	}
-
-	public static Projectile rpcInvoke(ProjParameters args) {
-		return new ProtoBusterProj(
-			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
-		);
-	}
-	public override void update() {
-		base.update();
-		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 300) {
-			vel.x += Global.spf * xDir * 900f;
-			if (System.MathF.Abs(vel.x) >= 300) {
-				vel.x = (float)xDir * 300;
-			}
-		}
-	}
-
-	public override void onReflect() {
-		vel.x = 300;
-		base.onReflect();
-	}
-}
-
 public class ProtoBusterLv2Proj : Projectile {
 	public ProtoBusterLv2Proj(
 		Actor owner, int type, Point pos, int xDir, 
@@ -255,14 +213,62 @@ public class ProtoBusterLv4Proj : Projectile {
 	}
 }
 
+public class BreakBusterProj : Projectile {
+	public BreakBusterProj(
+		Actor owner, Point pos, float byteAngle, ushort? netId, 
+		Point? vel = null, bool rpc = false, Player? altPlayer = null
+	) : base(
+		pos, 1, owner, "proto_midcharge_proj", netId, altPlayer
+	) {
+		maxTime = 0.425f;
+		projId = (int)BluesProjIds.LemonOverdrive;
+		fadeSprite = "proto_midcharge_proj_fade";
+		fadeOnAutoDestroy = true;
+
+		byteAngle = MathF.Round(byteAngle) % 256;
+		this.byteAngle = MathF.Round(byteAngle);
+		this.vel.x = Point.createFromByteAngle(byteAngle).x * 250;
+		this.vel.y = Point.createFromByteAngle(byteAngle).y * 300;
+		damager.damage = 1;
+		damager.flinch = Global.miniFlinch;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters args) {
+		return new ProtoBusterProj(
+			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
+		);
+	}
+
+	public override void update() {
+		base.update();
+		if (reflectCount == 0 && System.MathF.Abs(vel.x) < 300) {
+			vel.x += Global.spf * MathF.Sign(vel.x) * 900f;
+			if (System.MathF.Abs(vel.x) >= 300) {
+				vel.x = MathF.Sign(vel.x) * 300;
+			}
+		}
+	}
+
+	public override void onReflect() {
+		vel = Point.createFromByteAngle(byteAngle) * 300;
+		vel.x *= -1;
+		byteAngle = MathF.Round(vel.byteAngle);
+		base.onReflect();
+	}
+}
+
 public class ChargedBreakBusterProj : Projectile {
 	public ChargedBreakBusterProj(
 		Actor owner, int type, Point pos, float byteAngle, ushort? netId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, 1, owner, "proto_chargeshot_proj", netId, altPlayer
+		pos, 1, owner, "rock_buster2_proj", netId, altPlayer
 	) {
-		fadeSprite = "proto_chargeshot_proj_fade";
+		fadeSprite = "rock_buster2_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 25 / 60f;
 		projId = (int)BluesProjIds.BusterLV2;
@@ -270,23 +276,31 @@ public class ChargedBreakBusterProj : Projectile {
 		byteAngle = MathF.Round(byteAngle) % 256;
 		this.byteAngle = MathF.Round(byteAngle);
 		vel = Point.createFromByteAngle(byteAngle) * 325;
-		damager.damage = 2;
+		damager.damage = 1;
 		damager.flinch = Global.halfFlinch;
-		damager.hitCooldown = 30f;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle, (byte)type);
 		}
 
 		if (type == 1) {
+			changeSprite("proto_chargeshot_purple_proj", true);
+			fadeSprite = "proto_chargeshot_purple_proj_fade";
 			maxTime = 27 / 60f;
-			damager.damage = 3;
 			damager.flinch = Global.defFlinch;
 			projId = (int)BluesProjIds.BusterLV3;
 		}
-		else if (type >= 2) {
+		else if (type == 2) {
+			changeSprite("proto_chargeshot_proj", true);
+			fadeSprite = "proto_chargeshot_proj_fade";
 			maxTime = 30 / 60f;
-			damager.damage = 4;
+			damager.flinch = Global.superFlinch;
+			projId = (int)BluesProjIds.BusterLV4;
+		}
+		else if (type >= 3) {
+			changeSprite("proto_chargeshot_red_proj", true);
+			fadeSprite = "proto_chargeshot_red_proj_fade";
+			maxTime = 30 / 60f;
 			damager.flinch = Global.superFlinch;
 			projId = (int)BluesProjIds.BusterLV4;
 		}

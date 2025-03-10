@@ -34,7 +34,7 @@ public partial class Actor {
 		mask[1] = !isStatic;                            // pos y
 		mask[2] = syncScale;                            // scale data
 		mask[3] = (sprite.totalFrameNum != 0); // frame index data
-		mask[4] = byteAngle != null;                    // angle
+		mask[4] = angleSet;                    // angle
 
 		// The rest are just always sent and contain actual bool data
 		mask[5] = visible;                      // visibility
@@ -66,7 +66,7 @@ public partial class Actor {
 		}
 		// add angle
 		if (mask[4]) {
-			byte[] angleBytes = BitConverter.GetBytes(byteAngle ?? 0);
+			byte[] angleBytes = BitConverter.GetBytes(byteAngle);
 			args.AddRange(angleBytes);
 		}
 

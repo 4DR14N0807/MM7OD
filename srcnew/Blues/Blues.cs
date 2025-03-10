@@ -9,7 +9,7 @@ namespace MMXOnline;
 public class Blues : Character {
 	// Lemons.
 	public float lemonCooldown;
-	public float[] unchargedLemonCooldown = new float[3];
+	public float[] unchargedLemonCooldown = new float[4];
 
 	// Mode variables.
 	public bool isShieldActive = true;
@@ -83,6 +83,7 @@ public class Blues : Character {
 		charge1Time = 40;
 		charge2Time = 105;
 		charge3Time = 170;
+		charge4Time = 235;
 
 		specialWeaponIndex = protomanLoadout;
 		specialWeapon = protomanLoadout switch {
@@ -472,7 +473,7 @@ public class Blues : Character {
 			stopCharge();
 			starCrashOverheat = false;
 		}
-		if (isCharging() && chargeTime <= charge3Time + (overdrive ? 20 : 10) && !overheating) {
+		if (isCharging() && !overheating && chargeTime <= (overdrive ? (charge4Time + 20) : (charge3Time + 10))) {
 			if (coreAmmoDecreaseCooldown < coreAmmoMaxCooldown) {
 				coreAmmoDecreaseCooldown = coreAmmoMaxCooldown;
 			}
@@ -601,6 +602,7 @@ public class Blues : Character {
 						1 => RenderEffectType.ChargeBlue,
 						2 => RenderEffectType.ChargePurple,
 						3 => RenderEffectType.ChargeGreen,
+						4 => RenderEffectType.ChargeOrange,
 						_ => RenderEffectType.ChargeYellow,
 					};
 					tempAnim.addRenderEffect(smokeEffect, 3, 120, 5);
@@ -613,6 +615,10 @@ public class Blues : Character {
 		else if (overheating) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 3, 5);
 		}
+	}
+
+	public override int getMaxChargeLevel() {
+		return overdrive ? 4 : 3;
 	}
 
 	public override int getChargeLevel() {
@@ -751,84 +757,10 @@ public class Blues : Character {
 		int type = overdrive ? 1 : 0;
 
 		if (chargeLevel == 0) {
-			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
-				if (unchargedLemonCooldown[i] <= 0) {
-					lemonNum = i;
-					break;
-				}
+			int lemonLimit = unchargedLemonCooldown.Length;
+			if (!overdrive && !overheating) {
+				lemonLimit = unchargedLemonCooldown.Length - 1;
 			}
-			if (lemonNum == -1) {
-				return;
-			}
-		}
-		// Cancel non-invincible states.
-		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide) {
-			changeToIdleOrFall();
-		}
-		// Shoot anim and vars.
-		float oldShootAnimTime = shootAnimTime;
-		setShootAnim();
-		Point shootPos = getShootPos();
-		int xDir = getShootXDir();
-
-		if (chargeLevel <= 0) {
-			if (type == 0) {
-				new ProtoBusterProj(
-					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
-				);
-			} else {
-				new ProtoBusterOverdriveProj(
-					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
-				);
-				playSound("buster2", sendRpc: true);
-				addCoreAmmo(0.75f);
-			}
-			playSound("buster", sendRpc: true);
-			lemonCooldown = 8;
-			unchargedLemonCooldown[lemonNum] = 50;
-			if (oldShootAnimTime <= 0.25f) {
-				shootAnimTime = 0.25f;
-			}
-		} else if (chargeLevel == 1) {
-			new ProtoBusterLv2Proj(
-				this, type, shootPos, xDir, player.getNextActorNetId(), true
-			);
-			addCoreAmmo(getChargeShotAmmoUse(1));
-			if (type == 0) {
-				playSound("buster2", sendRpc: true);
-			} else {
-				playSound("buster3", sendRpc: true);
-			}
-			lemonCooldown = 12;
-		} else if (chargeLevel == 2) {
-			new ProtoBusterLv3Proj(
-				this, type, shootPos, xDir, player.getNextActorNetId(), true
-			);
-			addCoreAmmo(getChargeShotAmmoUse(2));
-			playSound("buster3", sendRpc: true);
-			lemonCooldown = 12;
-		} else {
-			if (player.input.isHeld(Control.Up, player)) {
-				addCoreAmmo(overdrive ? 6 : 4);
-				changeState(new ProtoStrike(), true);
-			} else {
-				new ProtoBusterLv4Proj(
-					this, type, shootPos, xDir, player.getNextActorNetId(), true
-				);
-				addCoreAmmo(getChargeShotAmmoUse(3));
-				playSound("buster3", sendRpc: true);
-				lemonCooldown = 12;
-			}
-		}
-	}
-
-	public void shoot(int chargeLevel) {
-		if (!ownedByLocalPlayer || !canShoot()) return;
-
-		int lemonNum = -1;
-		int type = overdrive ? 1 : 0;
-
-		if (chargeLevel == 0) {
 			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
 				if (unchargedLemonCooldown[i] <= 0) {
 					lemonNum = i;
@@ -856,8 +788,10 @@ public class Blues : Character {
 					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
 				);
 			} else {
-				new ProtoBusterOverdriveProj(
-					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
+				float shootAngle = xDir == 1 ? 0 : 128;
+				shootAngle += Helpers.randomRange(-4, 4);
+				new BreakBusterProj(
+					this, shootPos, shootAngle, player.getNextActorNetId(), rpc: true
 				);
 				playSound("buster2", sendRpc: true);
 				addCoreAmmo(0.75f);
@@ -875,16 +809,16 @@ public class Blues : Character {
 			changeState(new ProtoStrike(), true);
 		}
 		// Breakman overdrive charge shot.
-		else if (overdrive) {
-			shootSubBreak(chargeLevel);
-		}
+		//else if (overdrive) {
+		//	shootSubBreak(chargeLevel);
+		//}
 		// Regular charge shot.
 		else {
-			shootSubProto(chargeLevel);
+			shootSubProto(chargeLevel, overdrive ? 1 : 0);
 		}
 	}
 
-	public void shootSubProto(int chargeLevel) {
+	public void shootSubProto(int chargeLevel, int type) {
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
@@ -893,14 +827,18 @@ public class Blues : Character {
 		}
 		if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
-				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(1));
-			playSound("buster2", sendRpc: true);
+			if (type == 0) {
+				playSound("buster2", sendRpc: true);
+			} else {
+				playSound("buster3", sendRpc: true);
+			}
 			lemonCooldown = 12;
 		} else if (chargeLevel == 2) {
 			new ProtoBusterLv3Proj(
-				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(2));
 			playSound("buster3", sendRpc: true);
@@ -908,7 +846,7 @@ public class Blues : Character {
 		}
 		else if (chargeLevel >= 3) {
 			new ProtoBusterLv4Proj(
-				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(3));
 			playSound("buster3", sendRpc: true);
@@ -924,21 +862,25 @@ public class Blues : Character {
 		if (xDir == -1) {
 			baseAngle += 128;
 		}
-		if (chargeLevel >= 3) {
-			chargeLevel = 3;
-		}
 		// Extra shots per charge tier.
-		for (int i = 1; i > chargeLevel - 1; i++) {
+		int count = chargeLevel;
+		for (int i = 1; i <= chargeLevel; i++) {
+			int j = i;
 			Global.level.delayedActions.Add(new DelayedAction(
 				() => {
-					float angleOffset = Helpers.randomRange(-16, 16);
+					float deviation = 4 + chargeLevel * 4;
+					float angleOffset = Helpers.randomRange(-deviation, deviation);
 					new ChargedBreakBusterProj(
 						this, chargeLevel - 1, shootPos, baseAngle + angleOffset,
 						player.getNextActorNetId(), true
 					);
-					playSound("buster3", sendRpc: true);
+					if (j % 2 == 0) {
+						playSound("buster3", sendRpc: true);
+					} else {
+						playSound("waveburnerEnd", sendRpc: true);
+					}
 				},
-				i * 4
+				(i * 4) / 60f
 			));
 		}
 		new ChargedBreakBusterProj(
@@ -1070,6 +1012,7 @@ public class Blues : Character {
 				1 => RenderEffectType.ChargeBlue,
 				2 => RenderEffectType.ChargePurple,
 				3 => RenderEffectType.ChargeGreen,
+				4 => RenderEffectType.ChargeOrange,
 				_ => RenderEffectType.ChargeBlue,
 			};
 			addRenderEffect(renderGfx, 3, 5);

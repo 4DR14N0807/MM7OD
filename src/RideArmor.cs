@@ -1254,7 +1254,10 @@ public class RideArmorState {
 			}
 		}
 
-		if (Global.level.checkTerrainCollisionOnce(rideArmor, 0, -1) != null && rideArmor?.vel.y < 0) {
+		if (rideArmor != null &&
+			Global.level.checkTerrainCollisionOnce(rideArmor, 0, -1) != null &&
+			rideArmor?.vel.y < 0
+		) {
 			rideArmor.vel.y = 0;
 		}
 

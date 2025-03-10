@@ -360,7 +360,6 @@ public partial class Player {
 	}
 	public ushort curMaxNetId;
 	public ushort curATransNetId;
-	public bool warpedIn = false;
 	public float readyTime;
 	public const float maxReadyTime = 1.75f;
 	public bool readyTextOver = false;
@@ -1084,6 +1083,9 @@ public partial class Player {
 			//configureWeapons();
 			character = newChar;
 			lastCharacter = newChar;
+			if (!ownedByLocalPlayer) {
+				warpedInOnce = true;
+			}
 		}
 		if (isAI) {
 			newChar.addAI();

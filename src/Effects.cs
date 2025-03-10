@@ -97,8 +97,9 @@ public class ChargeEffect {
 			};
 			if (chargeType == 1) {
 				chargePart = chargeLevel switch {
-					2 => character is Rock ? "charge_part_2" : "noise_crush_charge_part",
-					>=3 => "charge_part_2",
+					2 => "noise_crush_charge_part",
+					3 => "charge_part_2",
+					>=4 => "gravity_hold_charge_part",
 					_ => "charge_part_1"
 				};
 			} else if (chargeType == 2) {

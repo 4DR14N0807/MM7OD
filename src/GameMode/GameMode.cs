@@ -366,12 +366,17 @@ public class GameMode {
 		Helpers.decrementFrames(ref BluesUpgradeMenu.lTankDelay);
 
 		if (!isOver) {
-			if (!Menu.inMenu && ((level.mainPlayer.warpedIn && !isWarpIn) || Global.level.mainPlayer.isSpectator) && Global.input.isPressedMenu(Control.MenuPause) && !chatMenu.recentlyExited) {
-				if (mainPlayer.character is Axl axl) {
-					axl.resetToggle();
-				}
-				Menu.change(new InGameMainMenu());
-			} else if (Menu.inMenu && Global.input.isPressedMenu(Control.MenuPause) && !isBindingControl()) {
+			if (!Menu.inMenu && (
+				(level.mainPlayer.warpedInOnce && !isWarpIn) ||
+				Global.level.mainPlayer.isSpectator) &&
+				Global.input.isPressedMenu(Control.MenuPause) &&
+				!chatMenu.recentlyExited
+			) {
+				Menu.change(
+					new InGameMainMenu(
+				));
+			}
+			else if (Menu.inMenu && Global.input.isPressedMenu(Control.MenuPause) && !isBindingControl()) {
 				Menu.exit();
 			}
 		} else if (Global.serverClient != null) {
@@ -894,7 +899,7 @@ public class GameMode {
 			Color color = new Color(255, 255, 255);
 			Color outColor = new Color(255, 255, 255, 128);
 			float xPos = MathF.Round(navPoint.pos.x / mapScale) - offsetX;
-			float yPos = MathF.Round(navPoint.pos.y / mapScale) - offsetY - 1 ;
+			float yPos = MathF.Round(navPoint.pos.y / mapScale) - offsetY - 1;
 
 			if (navPoint.name == "RFlag") {
 				color = new Color(255, 64, 64);
@@ -939,12 +944,11 @@ public class GameMode {
 					color = Color.Green;
 				} else if (player.alliance == level.mainPlayer.alliance) {
 					color = Color.Yellow;
-				}
-				else {
+				} else {
 					color = Color.Red;
 				}
 			} else {
-				color = (player.alliance) switch  {
+				color = (player.alliance) switch {
 					0 => new Color(0, 255, 255), // Blue
 					1 => new Color(255, 64, 64), // Red
 					2 => new Color(128, 255, 128), // Green
@@ -986,8 +990,8 @@ public class GameMode {
 			outlineColor: Color.White
 		);
 		DrawWrappers.DrawRectWH(
-			radarX-1, radarY-1,
-			scaledW+2, scaledH+2,
+			radarX - 1, radarY - 1,
+			scaledW + 2, scaledH + 2,
 			true, Color.Transparent, 1,
 			ZIndex.HUD, isWorldPos: false,
 			outlineColor: Color.Black
@@ -1188,13 +1192,13 @@ public class GameMode {
 		int barIndex = 0;
 
 		for (var i = 0; i < MathF.Ceiling(player.maxHealth); i++) {
-			float trueHP = player.maxHealth - (player.evilEnergyStacks * player.hpPerStack); 
+			float trueHP = player.maxHealth - (player.evilEnergyStacks * player.hpPerStack);
 			// Draw HP
 			if (i < MathF.Ceiling(health)) {
 				Global.sprites["hud_health_full"].drawToHUD(barIndex, baseX, baseY);
 			} else if (i < MathInt.Ceiling(health) + damageSavings) {
 				Global.sprites["hud_health_full"].drawToHUD(4, baseX, baseY);
-			} 
+			}
 			//Evil Energy lost HP
 			else if (i >= trueHP && player.character != null && !player.character.destroyed) {
 				float t = player.evilEnergyTime / 10f;
@@ -1234,8 +1238,7 @@ public class GameMode {
 			if (i < Math.Ceiling(ammo)) {
 				if (ammo < grayAmmo) {
 					Global.sprites["hud_weapon_full"].drawToHUD(grayAmmoIndex, baseX, baseY);
-				}
-				else {
+				} else {
 					Global.sprites[barSprite].drawToHUD(barIndex, baseX, baseY);
 				}
 			} else {
@@ -1283,11 +1286,11 @@ public class GameMode {
 			// Level 1 Evil Energy Bar.
 			int color = energy >= maxEnergy ? 3 : 1;
 			color = Global.frameCount % 6 >= 3 ? 4 : color;
- 
+
 			renderAmmo(
 				baseX, baseY, -3, color, MathF.Ceiling(energy),
 				maxAmmo: maxEnergy, barSprite: "hud_energy_full"
-			); 
+			);
 
 			//Bar Base skull eyes
 			if ((charging || energy2 >= maxEnergy) && Global.frameCount % 3 == 0) {
@@ -1406,13 +1409,11 @@ public class GameMode {
 						victimColor = FontType.RedSmall;
 						killerColor = FontType.BlueSmall;
 						assisterColor = FontType.PurpleSmall;
-					}
-					else if (killFeed.assister != null && killFeed.assister == Global.level.mainPlayer) {
+					} else if (killFeed.assister != null && killFeed.assister == Global.level.mainPlayer) {
 						victimColor = FontType.RedSmall;
 						killerColor = FontType.PurpleSmall;
 						assisterColor = FontType.BlueSmall;
-					}
-					else if (killFeed.victim == Global.level.mainPlayer) {
+					} else if (killFeed.victim == Global.level.mainPlayer) {
 						victimColor = FontType.BlueSmall;
 						killerColor = FontType.RedSmall;
 						assisterColor = FontType.OrangeSmall;
@@ -1645,7 +1646,7 @@ public class GameMode {
 
 		if (player.isGridModeEnabled()) {
 			if (player.gridModeHeld == true && player.character != null) {
-				
+
 				/* for (int i = 0; i < player.character.weapons.Count; i++) {
 					float ang = (360 / player.character.weapons.Count) * i;
 					Point iconPos = player.gridModePointsEX(
@@ -1680,7 +1681,7 @@ public class GameMode {
 					if (i == slotSelected) {
 						drawWeaponStateOverlay(x, y, 0);
 					}
-				} 
+				}
 			}
 		}
 		for (var i = 0; i < player.weapons.Count; i++) {
@@ -1727,7 +1728,7 @@ public class GameMode {
 		}
 
 		if (player.isGridModeEnabled()) return;
-		
+
 		int offsetX = 0;
 		for (var i = 0; i < player.weapons.Count; i++) {
 			var weapon = player.weapons[i];
@@ -1746,7 +1747,7 @@ public class GameMode {
 					x - 7, y - 8, 14, 15, false,
 					Color.Black, 1, ZIndex.HUD, false
 				);
-				drawWeaponSlot(weapon, x, y-1, true);
+				drawWeaponSlot(weapon, x, y - 1, true);
 			} else {
 				drawWeaponSlot(weapon, x, y);
 			}
@@ -1818,7 +1819,7 @@ public class GameMode {
 		if (weapon is DNACore dnaCore && level.mainPlayer.weapon == weapon && level.mainPlayer.input.isHeld(Control.Special1, level.mainPlayer)) {
 			drawTransformPreviewInfo(dnaCore, x, y);
 		}
-		 
+
 		if (weapon is SigmaMenuWeapon) {
 			drawWeaponSlotCooldown(x, y, weapon.shootCooldown / 4);
 		}
@@ -2355,7 +2356,7 @@ public class GameMode {
 		drawSpectators();
 	}
 
-	public void  drawTeamScoreboard() {
+	public void drawTeamScoreboard() {
 		int padding = 16;
 		int top = 16;
 		var hPadding = padding + 5;
@@ -2891,7 +2892,7 @@ public class GameMode {
 		}
 		int maxTeams = Global.level.teamNum;
 
-		string teamText = $"{teamNames[teamSide]}: {teamPoints[teamSide].ToString().PadLeft(2 ,' ')}";
+		string teamText = $"{teamNames[teamSide]}: {teamPoints[teamSide].ToString().PadLeft(2, ' ')}";
 		Fonts.drawText(
 			teamFonts[teamSide], teamText,
 			Global.screenW - 56, 17, Alignment.Right
@@ -2911,12 +2912,12 @@ public class GameMode {
 		}
 		if (!moreThanOneLeader) {
 			Fonts.drawText(
-				teamFonts[leaderTeam], $"Leader: {leaderScore.ToString().PadLeft(2 ,' ')}",
+				teamFonts[leaderTeam], $"Leader: {leaderScore.ToString().PadLeft(2, ' ')}",
 				Global.screenW - 56, 7, Alignment.Right
 			);
 		} else {
 			Fonts.drawText(
-				FontType.WhiteSmall, $"Leader:{leaderScore.ToString().PadLeft(2 ,' ')}",
+				FontType.WhiteSmall, $"Leader:{leaderScore.ToString().PadLeft(2, ' ')}",
 				Global.screenW - 56, 7, Alignment.Right
 			);
 		}
@@ -2990,7 +2991,7 @@ public class GameMode {
 				posX, posY, isLeft ? Alignment.Left : Alignment.Right
 			);
 		}
-		
+
 	}
 
 	public void syncTeamScores() {

@@ -96,10 +96,11 @@ public class LightDash : CharState {
 	public Anim? exaust;
 
 	public LightDash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
-		enterSound = "dash";
-		this.initialDashButton = initialDashButton;
 		attackCtrl = true;
 		normalCtrl = true;
+		this.initialDashButton = initialDashButton;
+		enterSound = "dash";
+		enterSoundArgs = "larmor";
 	}
 
 	public override void update() {
@@ -107,46 +108,39 @@ public class LightDash : CharState {
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
 			dashTime = 900;
 		}
-		float inputXDir = player.input.getInputDir(player).x;
+		int inputXDir = player.input.getXDir(player);
+		bool dashHeld = player.input.isHeld(initialDashButton, player);
 
-		if (dashTime > 37 || stop) {
-			if (!stop) {
-				if (exaust?.destroyed == false) {
-					exaust.destroySelf();
-				}
-				dashTime = 0;
-				character.frameIndex = 0;
-				character.sprite.frameTime = 0;
-				character.sprite.animTime = 0;
-				character.sprite.frameSpeed = 0.1f;
-				stop = true;
-			} else {
-				if (inputXDir != 0 && character.grounded) {
-					character.changeState(new Run(), true);
-				} else {
-					character.changeState(new DashEnd());
-				}
-				return;
+		if (dashTime > 32 && !stop) {
+			if (exaust?.destroyed == false) {
+				exaust.destroySelf();
 			}
+			dashTime = 0;
+			stop = true;
+			sprite = "dash_end";
+			shootSprite = "dash_end_shoot";
+			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
 		}
-		if (dashTime > 3 || stop) {
-			character.move(new Point(character.getDashSpeed() * 1.15f * dashDir, 0));
-		} else {
-			character.move(new Point(Physics.DashStartSpeed * character.getRunDebuffs() * dashDir * 1.15f, 0));
-		}
-
 		if (dashTime <= 3 || stop) {
 			if (inputXDir != 0 && inputXDir != dashDir) {
 				character.xDir = (int)inputXDir;
 				dashDir = character.xDir;
 			}
 		}
-
-		if (!character.grounded) {
-			character.dashedInAir++;
-			character.changeState(new Fall());
+		// Dash regular speed.
+		if (dashTime > 3 && !stop) {
+			character.move(new Point(character.getDashSpeed() * 1.15f * dashDir, 0));
 		}
-
+		// End move.
+		else if (stop && inputXDir != 0) {
+			character.move(new Point(character.getRunSpeed() * inputXDir * 1.15f, 0));
+			character.changeState(new Run(), true);
+			return;
+		}
+		// Speed at start and end.
+		else if (!stop || dashHeld) {
+			character.move(new Point(character.getRunSpeed() * dashDir * 1.15f, 0));
+		}
 		if (exaust == null && dashTime > 3 && !stop) {
 			exaust = new Anim(
 				character.pos.addxy(-15 * dashDir, -7),
@@ -154,7 +148,7 @@ public class LightDash : CharState {
 				false, sendRpc: true, zIndex: character.zIndex - 100, host: character 
 			);
 		}
-
+		// Dust effect.
 		if (dustTime >= 6 && !character.isUnderwater()) {
 			dustTime = 0;
 			new Anim(
@@ -165,14 +159,24 @@ public class LightDash : CharState {
 		} else {
 			dustTime += character.speedMul;
 		}
+		// Timer.
 		dashTime += character.speedMul;
+		// End.
+		if (stop && character.isAnimOver()) {
+			character.changeToIdleOrFall();
+			return;
+		}
+		if (!character.grounded) {
+			character.dashedInAir++;
+			character.changeToIdleOrFall();
+			return;
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		dashDir = character.xDir;
 		character.isDashing = true;
-		character.globalCollider = character.getDashingCollider();
 		dashSpark = new Anim(
 			character.getDashSparkEffectPos(dashDir),
 			"dash_sparks", dashDir, player.getNextActorNetId(),
@@ -200,11 +204,12 @@ public class GigaAirDash : CharState {
 	public Anim? exaust = null!;
 
 	public GigaAirDash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
-		enterSound = "airdashX2";
-		this.initialDashButton = initialDashButton;
 		attackCtrl = true;
 		normalCtrl = true;
 		useGravity = false;
+		this.initialDashButton = initialDashButton;
+		enterSound = "airdashX2";
+		enterSoundArgs = "larmor";
 	}
 
 	public override void update() {
@@ -212,32 +217,37 @@ public class GigaAirDash : CharState {
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
 			dashTime = 900;
 		}
-		float inputXDir = player.input.getInputDir(player).x;
+		int inputXDir = player.input.getXDir(player);
+		bool dashHeld = player.input.isHeld(initialDashButton, player);
 
-		if (dashTime > 37 || stop) {
-			if (!stop) {
-				if (exaust?.destroyed == false) {
-					exaust.destroySelf();
-				}
-				dashTime = 0;
-				character.frameIndex = 0;
-				character.sprite.frameTime = 0;
-				character.sprite.animTime = 0;
-				character.sprite.frameSpeed = 0.1f;
-				stop = true;
-			} else {
-				if (inputXDir != 0 && character.grounded) {
-					character.changeState(new Run(), true);
-				} else {
-					character.changeState(new DashEnd());
-				}
-				return;
+		if (dashTime > 28 && !stop) {
+			if (exaust?.destroyed == false) {
+				exaust.destroySelf();
+			}
+			character.useGravity = true;
+			dashTime = 0;
+			stop = true;
+			sprite = "dash_end";
+			shootSprite = "dash_end_shoot";
+			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
+		}
+		if (dashTime <= 3 || stop) {
+			if (inputXDir != 0 && inputXDir != dashDir) {
+				character.xDir = (int)inputXDir;
+				dashDir = character.xDir;
 			}
 		}
-		if (dashTime > 3 || stop) {
+		// Dash regular speed.
+		if (dashTime > 3 && !stop || stop && dashHeld) {
 			character.move(new Point(character.getDashSpeed() * 1.15f * dashDir, 0));
-		} else {
+		}
+		// Dash start and end while hold.
+		else if (!stop) {
 			character.move(new Point(character.getRunSpeed() * dashDir * 1.15f, 0));
+		}
+		// Air move.
+		else if (inputXDir != 0) {
+			character.move(new Point(character.getDashSpeed() * inputXDir, 0));
 		}
 		if (exaust == null && dashTime > 3 && !stop) {
 			exaust = new Anim(
@@ -246,14 +256,12 @@ public class GigaAirDash : CharState {
 				false, sendRpc: true, zIndex: character.zIndex - 100, host: character 
 			);
 		}
-
-		if (dashTime <= 3 || stop) {
-			if (inputXDir != 0 && inputXDir != dashDir) {
-				character.xDir = (int)inputXDir;
-				dashDir = character.xDir;
-			}
-		}
 		dashTime += character.speedMul;
+
+		if (stop && character.isAnimOver()) {
+			character.changeToIdleOrFall();
+			return;
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -261,7 +269,6 @@ public class GigaAirDash : CharState {
 		character.dashedInAir++;
 		dashDir = character.xDir;
 		character.isDashing = true;
-		character.globalCollider = character.getDashingCollider();
 		dashSpark = new Anim(
 			character.getDashSparkEffectPos(dashDir),
 			"dash_sparks", dashDir, player.getNextActorNetId(),
@@ -362,20 +369,20 @@ public class X2ChargeShot : CharState {
 	Weapon weapon => (weaponOverride ?? mmx.currentWeapon ?? mmx.specialBuster);
 	MegamanX mmx = null!;
 
-	public X2ChargeShot(Weapon? weaponOverride, int shootNum) : base("x2_shot") {
+	public X2ChargeShot(Weapon? weaponOverride, int shootNum) : base("cross_shot") {
 		this.shootNum = shootNum;
 		this.weaponOverride = weaponOverride;
 		useDashJumpSpeed = true;
 		airMove = true;
 		canStopJump = true;
-		landSprite = "x2_shot";
-		airSprite = "x2_air_shot";
+		landSprite = "cross_shot";
+		airSprite = "cross_air_shot";
 		canJump = true;
 		if (shootNum == 1) {
-			sprite = "x2_shot2";
+			sprite = "cross_shot2";
 			defaultSprite = sprite;
 			landSprite = sprite;
-			airSprite = "x2_air_shot2";
+			airSprite = "cross_air_shot2";
 		}
 	}
 
@@ -408,18 +415,20 @@ public class X2ChargeShot : CharState {
 			if (shootNum == 0 && pressFire) {
 				fired = false;
 				shootNum = 1;
-				sprite = "x2_shot2";
+				sprite = "cross_shot2";
 				defaultSprite = sprite;
 				landSprite = sprite;
-				airSprite = "x2_air_shot2";
+				airSprite = "cross_air_shot2";
 				if (!character.grounded || character.vel.y < 0) {
-					sprite = "x2_air_shot2";
+					sprite = "cross_air_shot2";
 				}
 				character.changeSpriteFromName(sprite, true);
 			} else {
 				character.changeToIdleOrFall();
 			}
-		} else if (!pressFire && stateTime > Global.spf && player.input.isPressed(Control.Shoot, player)) {
+		} else if (
+			!pressFire && stateTime > 6f / 60f && player.input.isPressed(Control.Shoot, player)
+		) {
 			pressFire = true;
 		}
 	}
@@ -429,9 +438,9 @@ public class X2ChargeShot : CharState {
 		mmx = character as MegamanX ?? throw new NullReferenceException();
 		if (!character.grounded || character.vel.y > 0) {
 			if (shootNum == 0) {
-				sprite = "x2_air_shot";
+				sprite = "cross_air_shot";
 			} else {
-				sprite = "x2_air_shot2";
+				sprite = "cross_air_shot2";
 			}
 		}
 		if (mmx.chargedTornadoFang != null) {
@@ -442,7 +451,7 @@ public class X2ChargeShot : CharState {
 
 	public override void onExit(CharState newState) {
 		if (mmx.hasLastingProj()) {
-			character.shootAnimTime = 4;
+			character.shootAnimTime = 8;
 		} else if (newState is not AirDash and not WallSlide) {
 			character.shootAnimTime = 0;
 		}  else {
@@ -461,13 +470,13 @@ public class X3ChargeShot : CharState {
 	MegamanX mmx = null!;
 	public HyperCharge? hyperBusterWeapon;
 
-	public X3ChargeShot(HyperCharge? hyperBusterWeapon) : base("x3_shot") {
+	public X3ChargeShot(HyperCharge? hyperBusterWeapon) : base("cross_shot") {
 		this.hyperBusterWeapon = hyperBusterWeapon;
 		useDashJumpSpeed = true;
 		airMove = true;
 		canStopJump = true;
-		landSprite = "x3_shot";
-		airSprite = "x3_air_shot";
+		landSprite = "cross_shot";
+		airSprite = "cross_air_shot";
 		canJump = true;
 	}
 
@@ -501,11 +510,8 @@ public class X3ChargeShot : CharState {
 					);
 					character.playSound("plasmaShot", sendRpc: true);
 				}
-			mmx.stockedTime = 0;
+				mmx.stockedTime = 0;
 			} else {
-				if (hyperBusterWeapon != null) {
-					hyperBusterWeapon.ammo -= hyperBusterWeapon.getChipFactoredAmmoUsage(player);
-				}
 				character.playSound("buster3X3", sendRpc: true);
 				float xDir = character.getShootXDir();
 				new BusterX3Proj2(
@@ -529,18 +535,10 @@ public class X3ChargeShot : CharState {
 		}
 		if (character.isAnimOver()) {
 			if (state == 0 && pressFire) {
-				if (hyperBusterWeapon != null) {
-					if (hyperBusterWeapon.ammo < hyperBusterWeapon.getChipFactoredAmmoUsage(player)) {
-						character.changeToIdleOrFall();
-						return;
-					}
-				} else {
-					mmx.stockedMaxBuster = false;
-				}
-				sprite = "x3_shot2";
-				landSprite = "x3_shot2";
+				sprite = "cross_shot2";
+				landSprite = "cross_shot2";
 				if (!character.grounded || character.vel.y < 0) {
-					sprite = "x3_air_shot2";
+					sprite = "cross_air_shot2";
 					defaultSprite = sprite;
 				}
 				defaultSprite = sprite;
@@ -557,10 +555,10 @@ public class X3ChargeShot : CharState {
 			if (character.grounded && player.input.isPressed(Control.Jump, player)) {
 				character.vel.y = -character.getJumpPower();
 				if (state == 0) {
-					sprite = "x2_air_shot";
+					sprite = "cross_air_shot";
 					defaultSprite = sprite;
 				} else {
-					sprite = "x2_air_shot2";
+					sprite = "cross_air_shot2";
 					defaultSprite = sprite;
 				}
 				character.changeSpriteFromName(sprite, false);
@@ -578,21 +576,21 @@ public class X3ChargeShot : CharState {
 			if (hyperBusterWeapon == null) {
 				mmx.stockedMaxBuster = true;
 			}
-			sprite = "x3_shot";
+			sprite = "cross_shot";
 			defaultSprite = sprite;
-			landSprite = "x3_shot";
+			landSprite = "cross_shot";
 			if (!character.grounded) {
-				sprite = "x3_air_shot";
+				sprite = "cross_air_shot";
 			}
 			character.changeSpriteFromName(sprite, true);
 		} else {
 			mmx.stockedMaxBuster = false;
 			state = 1;
-			sprite = "x3_shot2";
+			sprite = "cross_shot2";
 			defaultSprite = sprite;
-			landSprite = "x3_shot2";
+			landSprite = "cross_shot2";
 			if (!character.grounded) {
-				sprite = "x3_air_shot2";
+				sprite = "cross_air_shot2";
 			}
 			character.changeSpriteFromName(sprite, true);
 		}

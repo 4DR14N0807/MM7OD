@@ -9,6 +9,12 @@ public class CharState {
 	public string attackSprite;
 	public string shootSprite;
 	public string transitionSprite;
+	public string transShootSprite;
+	public string shootSpriteEx => (
+		(transShootSprite != "" && inTransition()) ?
+		transShootSprite :
+		shootSprite
+	);
 	public string landSprite = "";
 	public string airSprite = "";
 	public string fallSprite = "";
@@ -65,9 +71,16 @@ public class CharState {
 	public bool useDashJumpSpeed;
 	public SpecialStateIds specialId;
 
-	public CharState(string sprite, string shootSprite = "", string attackSprite = "", string transitionSprite = "") {
+	public CharState(
+		string sprite,
+		string shootSprite = "",
+		string attackSprite = "",
+		string transitionSprite = "",
+		string transShootSprite = ""
+	) {
 		this.sprite = string.IsNullOrEmpty(transitionSprite) ? sprite : transitionSprite;
 		this.transitionSprite = transitionSprite;
+		this.transShootSprite = transShootSprite;
 		defaultSprite = sprite;
 		this.shootSprite = shootSprite;
 		this.attackSprite = attackSprite;
@@ -166,9 +179,7 @@ public class CharState {
 	public bool inTransition() {
 		return (
 			!string.IsNullOrEmpty(transitionSprite) &&
-			sprite == transitionSprite &&
-			character.sprite.name != null &&
-			character.sprite.name.Contains(transitionSprite)
+			(sprite == transitionSprite || sprite == transShootSprite)
 		);
 	}
 
@@ -292,11 +303,10 @@ public class CharState {
 	}
 
 	public void changeToIdle(string ts = "") {
-		if (character.grounded &&
-			string.IsNullOrEmpty(ts) && (
+		if (character.grounded && (
 			player.input.isHeld(Control.Left, player) ||
-			player.input.isHeld(Control.Right, player))
-		) {
+			player.input.isHeld(Control.Right, player)
+		)) {
 			character.changeState(new Run());
 		} else {
 			character.changeToIdleOrFall(ts);
@@ -547,7 +557,11 @@ public class WarpOut : CharState {
 }
 
 public class Idle : CharState {
-	public Idle(string transitionSprite = "") : base("idle", "shoot", "attack", transitionSprite) {
+	public Idle(
+		string transitionSprite = "", string transShootSprite = ""
+	) : base(
+		"idle", "shoot", "attack", transitionSprite, transShootSprite
+	) {
 		exitOnAirborne = true;
 		attackCtrl = true;
 		normalCtrl = true;
@@ -629,9 +643,9 @@ public class Run : CharState {
 }
 
 public class Crouch : CharState {
-	public Crouch(string transitionSprite = ""
+	public Crouch(string transitionSprite = "crouch_start"
 	) : base(
-		"crouch", "crouch_shoot", "attack_crouch", transitionSprite
+		"crouch", "crouch_shoot", "attack_crouch", transitionSprite, "crouch_start_shoot"
 	) {
 		exitOnAirborne = true;
 		attackCtrl = true;
@@ -651,7 +665,7 @@ public class Crouch : CharState {
 		}
 
 		if (!character.grounded || !player.isCrouchHeld()) {
-			character.changeState(new CrouchEnd());
+			character.changeToIdleOrFall("crouch_start", "crouch_start_shoot");
 			return;
 		}
 		if (Global.level.gameMode.isOver) {
@@ -813,99 +827,115 @@ public class Fall : CharState {
 }
 
 public class Dash : CharState {
-	public float dashTime = 0;
+	public float dashTime;
+	public float dustTime;
 	public string initialDashButton;
-	public int initialDashDir;
+	public int dashDir;
 	public bool stop;
 	public Anim dashSpark;
 	public bool isColliding;
 
 	public Dash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
-		enterSound = "slide";
-		this.initialDashButton = initialDashButton;
-		accuracy = 10;
-		//exitOnAirborne = true;
 		attackCtrl = true;
 		normalCtrl = true;
-		enterSound = "dash";
-		enterSoundArgs = "larmor";
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		initialDashDir = character.xDir;
-		character.isDashing = true;
+		this.initialDashButton = initialDashButton;
+		enterSound = "slide";
 	}
 
 	public override void update() {
 		base.update();
-		isColliding = Global.level.checkTerrainCollisionOnce(character, 0, -10) != null;
+		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
+			dashTime = 900;
+		}
+		int inputXDir = player.input.getXDir(player);
+		bool dashHeld = player.input.isHeld(initialDashButton, player);
 
-		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop && !isColliding) {
-			dashTime = 800;
-		}
-		float speedModifier = 1;
-		float distanceModifier = 1;
-		float inputXDir = player.input.getInputDir(player).x;
-		if (dashTime > 32 * distanceModifier || stop) {
-			if (!stop) {
-				dashTime = 0;
-				character.frameIndex = 0;
-				character.sprite.frameTime = 0;
-				character.sprite.animTime = 0;
-				character.sprite.frameSpeed = 0.1f;
-				stop = true;
-			} else {
-				if (inputXDir != 0 && character.grounded) {
-					character.changeState(new Run(), true);
-				} else {
-					character.changeState(new DashEnd());
-				}
-				return;
-			}
-		}
-		if (dashTime > 3 || stop) {
-			var move = new Point(0, 0);
-			move.x = character.getDashSpeed() * initialDashDir * speedModifier;
-			character.move(move);
-		} else {
-			var move = new Point(0, 0);
-			move.x = Physics.DashStartSpeed * character.getRunDebuffs() * initialDashDir * speedModifier; ;
-			character.move(move);
+		if (dashTime > 30 && !stop) {
+			dashTime = 0;
+			stop = true;
+			sprite = "dash_end";
+			shootSprite = "dash_end_shoot";
+			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
 		}
 		if (dashTime <= 3 || stop) {
-			if (inputXDir != 0 && inputXDir != initialDashDir) {
+			if (inputXDir != 0 && inputXDir != dashDir) {
 				character.xDir = (int)inputXDir;
-				initialDashDir = (int)inputXDir;
+				dashDir = character.xDir;
 			}
 		}
-		dashTime += Global.speedMul;
-		if (stateTime > 0.1 && !character.isUnderwater()) {
-			stateTime = 0;
+		// Dash regular speed.
+		if (dashTime > 3 && !stop) {
+			character.move(new Point(character.getDashSpeed() * dashDir, 0));
+		}
+		// End move.
+		else if (stop && inputXDir != 0) {
+			character.move(new Point(character.getRunSpeed() * inputXDir, 0));
+			character.changeState(new Run(), true);
+			return;
+		}
+		// Speed at start and end.
+		else if (!stop || dashHeld) {
+			character.move(new Point(Physics.DashStartSpeed * character.getRunDebuffs() * dashDir, 0));
+		}
+		// Dust effect.
+		if (dustTime >= 6 && !character.isUnderwater()) {
+			dustTime = 0;
 			new Anim(
-				character.getDashDustEffectPos(initialDashDir),
-				"dust", initialDashDir, player.getNextActorNetId(), true,
+				character.getDashDustEffectPos(dashDir),
+				"dust", dashDir, player.getNextActorNetId(), true,
 				sendRpc: true
 			);
+		} else {
+			dustTime += character.speedMul;
 		}
-		if (!character.grounded || stop) {
+		// Timer.
+		dashTime += character.speedMul;
+
+		// End.
+		if (stop && character.isAnimOver()) {
+			character.changeToIdleOrFall();
+			return;
+		}
+		if (!character.grounded) {
 			character.dashedInAir++;
-			character.changeState(new DashEnd());
+			character.changeToIdleOrFall();
+			return;
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		dashDir = character.xDir;
+		character.isDashing = true;
+		//character.globalCollider = character.getDashingCollider();
+		/*dashSpark = new Anim(
+			character.getDashSparkEffectPos(dashDir),
+			"dash_sparks", dashDir, player.getNextActorNetId(),
+			true, sendRpc: true
+		);*/
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		if (dashSpark?.destroyed == false) {
+			dashSpark.destroySelf();
 		}
 	}
 }
 
 public class AirDash : CharState {
-	public float dashTime = 0;
+	public float dashTime;
 	public string initialDashButton;
-	public int initialDashDir;
+	public int dashDir;
 	public bool stop;
 	public Anim? dashSpark;
 
-	public AirDash(string initialDashButton) : base("dash", "dash_shoot") {
-		this.initialDashButton = initialDashButton;
+	public AirDash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
 		accuracy = 10;
 		attackCtrl = true;
+		normalCtrl = true;
+		useGravity = false;
+		this.initialDashButton = initialDashButton;
 		enterSound = "airdash";
 		enterSoundArgs = "larmor";
 	}
@@ -913,66 +943,64 @@ public class AirDash : CharState {
 	public override void update() {
 		base.update();
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
-			dashTime = 50;
+			dashTime = 900;
 		}
-		float inputXDir = player.input.getInputDir(player).x;
-		float speedModifier = 1;
-		float distanceModifier = 1;
-		if (character.sprite.name.EndsWith("unpo_grab_dash")) {
-			speedModifier = 1.25f;
-			distanceModifier = 1.25f;
+		int inputXDir = player.input.getXDir(player);
+		bool dashHeld = player.input.isHeld(initialDashButton, player);
+
+		if (dashTime > 28 && !stop) {
+			character.useGravity = true;
+			dashTime = 0;
+			stop = true;
+			sprite = "dash_end";
+			shootSprite = "dash_end_shoot";
+			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
 		}
-		if (character is CmdSigma or Doppma) {
-			character.frameIndex = 1;
-		}
-		if (dashTime > Global.spf * 28 * distanceModifier || stop) {
-			if (!stop) {
-				dashTime = 0;
-				stop = true;
-				character.frameIndex = 0;
-				character.sprite.frameTime = 0;
-				character.sprite.animTime = 0;
-				character.sprite.frameSpeed = 0.1f;
-				stop = true;
-			} if (inputXDir != 0 && character.grounded) {
-				character.changeState(new Run(), true);
-			} else {
-				character.changeState(new DashEnd());
+		if (dashTime <= 3 || stop) {
+			if (inputXDir != 0 && inputXDir != dashDir) {
+				character.xDir = (int)inputXDir;
+				dashDir = character.xDir;
 			}
 		}
-		if (dashTime > Global.spf * 3 || stop) {
-			var move = new Point(0, 0);
-			move.x = character.getDashSpeed() * initialDashDir * speedModifier;
-			character.move(move);
-		} else {
-			var move = new Point(0, 0);
-			move.x = Physics.DashStartSpeed * character.getRunDebuffs() * initialDashDir * speedModifier;
-			character.move(move);
+		// Dash regular speed.
+		if (dashTime > 3 && !stop) {
+			character.move(new Point(character.getDashSpeed() * dashDir, 0));
 		}
-		dashTime += Global.spf;
+		// End move.
+		else if (stop && inputXDir != 0) {
+			character.move(new Point(character.getDashSpeed() * inputXDir, 0));
+		}
+		// Speed at start and end.
+		else if (!stop || dashHeld) {
+			character.move(new Point(Physics.DashStartSpeed * character.getRunDebuffs() * dashDir, 0));
+		}
+		// Timer
+		dashTime += character.speedMul;
+
+		// End.
+		if (stop && character.isAnimOver()) {
+			character.changeToIdleOrFall();
+			return;
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		initialDashDir = character.xDir;
-
-		if (character is Axl && (character.currentWeapon as AxlWeapon)?.isTwoHanded(false) == true) {
-			if (player.input.isHeld(Control.Left, player)) initialDashDir = -1;
-			else if (player.input.isHeld(Control.Right, player)) initialDashDir = 1;
-		}
-
-		character.isDashing = true;
-		character.useGravity = false;
-		character.vel = new Point(0, 0);
 		character.dashedInAir++;
-		new Anim(character.getDashSparkEffectPos(initialDashDir), "dash_sparks", initialDashDir, null, true);
+		dashDir = character.xDir;
+		character.isDashing = true;
+		//character.globalCollider = character.getDashingCollider();
+		/*dashSpark = new Anim(
+			character.getDashSparkEffectPos(dashDir),
+			"dash_sparks", dashDir, player.getNextActorNetId(),
+			true, sendRpc: true
+		);*/
 	}
 
 	public override void onExit(CharState? newState) {
 		if (!dashSpark?.destroyed == true) {
 			dashSpark?.destroySelf();
 		}
-		character.useGravity = true;
 		base.onExit(newState);
 	}
 }
@@ -1560,88 +1588,3 @@ public class NetLimbo : CharState {
 
 	}
 }
-public class Land : CharState {
-	public Land() : base("land", "land_shoot") {
-		attackCtrl = true;
-		normalCtrl = true;
-		enterSound = "land";
-	}
-
-	public override void update() {
-		base.update();
-		if (player.input.isHeld(Control.Left, player)
-		|| player.input.isHeld(Control.Right, player)
-		) {
-			character.changeState(new Run(), false);
-		}
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
-	}
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-	}
-}
-public class CrouchStart : CharState {
-	public CrouchStart() : base("crouch_start", "crouch_start_shoot") {
-		exitOnAirborne = true;
-		attackCtrl = true;
-		normalCtrl = true;
-	}
-	public override bool canEnter(Character character) {
-		if (character.charState is Crouch) return false;
-		return base.canEnter(character);
-	}
-	public override void update() {
-		base.update();
-		if (character.isAnimOver()) {
-			character.changeState(new Crouch());
-		}
-	}
-}
-public class CrouchEnd : CharState {
-	public CrouchEnd() : base("crouch_start", "crouch_start_shoot") {
-		exitOnAirborne = true;
-		attackCtrl = true;
-		normalCtrl = true;
-	}
-	public override void update() {
-		base.update();
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
-	}
-}
-/*
-public class DashEnd : CharState {
-	public DashEnd() : base("dash_end", "dash_end_shoot") {
-		attackCtrl = true;
-		normalCtrl = true;
-		useDashJumpSpeed = true;
-		airMove = true;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		if (character is Doppma doppma && !doppma.grounded) {
-			character.changeSprite("sigma3_fall", false);
-			exitOnLanding = true;
-		}
-		if (character is CmdSigma cmdSigma && !cmdSigma.grounded) {
-			character.changeSprite("sigma_fall", false);
-			exitOnLanding = true;
-		}
-		if (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player)) {
-			character.frameTime = 6;
-		}
-	}
-
-	public override void update() {
-		base.update();
-
-		if (character.isAnimOver()) {
-			character.changeToIdleOrFall();
-		}
-	}
-}
-*/

@@ -20,6 +20,7 @@ public class RaySplasher : Weapon {
 		damage = "1/1";
 		effect = "Charged: Grants Super Armor.";
 		hitcooldown = "0.075";
+		hasCustomChargeAnim = true;
 	}
 
 	public override void shoot(Character character, int[] args) {
@@ -333,6 +334,9 @@ public class RaySplasherChargedState : CharState {
 	bool fired = false;
 	public RaySplasherChargedState() : base("point_up") {
 		superArmor = true;
+
+		landSprite = "point_up";
+		airSprite = "point_up_air";
 	}
 
 	public override void update() {
@@ -365,7 +369,8 @@ public class RaySplasherChargedState : CharState {
 		character.vel = new Point();
 		mmx = character as MegamanX ?? throw new NullReferenceException();
 		if (!character.grounded) {
-			character.frameIndex = 2;
+			sprite = airSprite;
+			character.changeSpriteFromName(sprite, true);
 		}
 	}
 

@@ -17,7 +17,7 @@ public class StrikeChain : Weapon {
 		weaponSlotIndex = 14;
 		killFeedIndex = 20 + (index - 9);
 		weaknessIndex = (int)WeaponIds.SonicSlicer;
-		//switchCooldown = 0;
+		switchCooldown = 20;
 		damage = "2/4";
 		effect = "Hooks enemies and items. Be Spider-Man.";
 		hitcooldown = "0.5";
@@ -73,14 +73,14 @@ public class StrikeChainPullToWall : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		player.character.useGravity = false;
-		player.character.vel.y = 0;
+		character.useGravity = false;
+		character.vel.y = 0;
 		character.changeSpriteFromName(sprite, true);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		player.character.useGravity = true;
+		character.useGravity = true;
 		if (scp != null && !scp.destroyed) scp.destroySelf();
 	}
 }
@@ -118,17 +118,17 @@ public class StrikeChainHooked : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		player.character.useGravity = false;
-		player.character.vel.y = 0;
+		character.useGravity = false;
+		character.vel.y = 0;
 		if (player.character is Vile vile) {
 			vile.rideArmorPlatform = null;
 		}
 		character.isStrikeChainState = true;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		player.character.useGravity = true;
+		character.useGravity = true;
 		character.isStrikeChainState = false;
 	}
 
@@ -145,7 +145,7 @@ public class StrikeChainHooked : CharState {
 		}
 
 		if (scp.destroyed || stateTime >= 5) {
-			player.character.useGravity = true;
+			character.useGravity = true;
 			stunTime += Global.spf;
 			if (!flinch || stunTime > 0.375f) {
 				isDone = true;
@@ -253,7 +253,9 @@ public class StrikeChainProj : Projectile {
 				destroySelf();
 				float momentum = 0.25f * (distRetracted / maxDist);
 				mmx.xSwingVel = toWallVel.x * (0.25f + momentum) * 0.5f;
-				if (mmx.isDashing && mmx.player.hasBootsArmor(ArmorId.Giga) && mmx.flag == null) mmx.xSwingVel *= 1.1f;
+				if (mmx.isDashing && mmx.legArmor == ArmorId.Giga && mmx.flag == null) {
+					mmx.xSwingVel *= 1.1f;
+				}
 				mmx.vel.y = toWallVel.y;
 				//Yes, X2 Boots increase it.
 			}	
@@ -344,7 +346,7 @@ public class StrikeChainProj : Projectile {
 			stopMoving();
 			reverse(toWallVel);
 			if (mmx.grounded) mmx.incPos(new Point(0, -4));
-			mmx.changeState(new StrikeChainPullToWall(this, mmx.charState.shootSprite, toWallVel.y < 0), true);
+			mmx.changeState(new StrikeChainPullToWall(this, mmx.charState.shootSpriteEx, toWallVel.y < 0), true);
 		}
 	}
 
@@ -494,7 +496,9 @@ public class StrikeChainProjCharged : Projectile {
 				destroySelf();
 				float momentum = 0.25f * (distRetracted / maxDist);
 				mmx.xSwingVel = toWallVel.x * (0.25f + momentum) * 0.5f;
-				if (mmx.isDashing && mmx.player.hasBootsArmor(ArmorId.Giga) && mmx.flag == null) mmx.xSwingVel *= 1.1f;
+				if (mmx.isDashing && mmx.legArmor == ArmorId.Giga && mmx.flag == null) {
+					mmx.xSwingVel *= 1.1f;
+				}
 				mmx.vel.y = toWallVel.y;
 				//Yes, X2 Boots increase it.
 			}	
@@ -587,7 +591,7 @@ public class StrikeChainProjCharged : Projectile {
 			stopMoving();
 			reverse(toWallVel);
 			if (mmx.grounded) mmx.incPos(new Point(0, -4));
-			mmx.changeState(new StrikeChainPullToWall(this, mmx.charState.shootSprite, toWallVel.y < 0), true);
+			mmx.changeState(new StrikeChainPullToWall(this, mmx.charState.shootSpriteEx, toWallVel.y < 0), true);
 		}
 	}
 

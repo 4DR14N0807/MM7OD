@@ -329,7 +329,7 @@ public class Sprite {
 				currentFrame.rect.w() + extraW,
 				currentFrame.rect.h() + extraY,
 				x, y, zIndex,
-				cx - frameOffsetX * xDirArg,
+				cx - (frameOffsetX - extraXOff) * xDirArg,
 				cy - (frameOffsetY - extraYOff) * yDirArg,
 				xDirArg, yDirArg,
 				angle, alpha, shaders, true

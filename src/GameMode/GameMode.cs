@@ -1775,14 +1775,13 @@ public class GameMode {
 		} else if (weapon is not AbsorbWeapon) {
 			Global.sprites[jsonName].drawToHUD(weapon.weaponSlotIndex, x, y);
 		}
-		if (selected) {
-			if (!weapon.canShoot(0, mainPlayer)) {
-				drawWeaponStateOverlay(x, y, 2);
-			} else if (weapon.shootCooldown > 0 && weapon.fireRate > 10 && weapon.drawCooldown) {
-				drawWeaponStateOverlay(x, y, 1);
-			} else if (selected) {
-				drawWeaponStateOverlay(x, y, 0);
-			}
+		bool canShoot = weapon.canShoot(0, mainPlayer);
+		if (!canShoot && (selected || weapon.ammo > 0)) {
+			drawWeaponStateOverlay(x, y, 2);
+		} else if (canShoot && weapon.shootCooldown > 0 && weapon.fireRate > 10 && weapon.drawCooldown) {
+			drawWeaponStateOverlay(x, y, 1);
+		} else if (selected) {
+			drawWeaponStateOverlay(x, y, 0);
 		}
 
 		if (weapon is MagicCard magicCard && magicCard.cardCount != 0) {

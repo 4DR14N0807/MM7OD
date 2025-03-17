@@ -16,7 +16,8 @@ public partial class Player {
 	public Character lastCharacter;
 	public bool ownedByLocalPlayer;
 	public int? awakenedCurrencyEnd;
-	public float fgMoveAmmo = 1920;
+	public float hadoukenAmmo = 1920;
+	public float shoryukenAmmo = 1920;
 	public float fgMoveMaxAmmo = 1920;
 	public bool isDefenderFavoredNonOwner;
 	public Character? lastDamagedCharacter;
@@ -449,14 +450,14 @@ public partial class Player {
 	public ShaderWrapper timeSlowShader = Helpers.cloneShaderSafe("timeslow");
 	//public ShaderWrapper darkHoldScreenShader = Helpers.cloneShaderSafe("darkHoldScreen");
 	// Charge Lv
-	//public ShaderWrapper ZeroPinkC = Helpers.cloneGenericPaletteShader("zeroPinkCharge");
-	//public ShaderWrapper ZeroGreenC = Helpers.cloneGenericPaletteShader("zeroGreenCharge");
-	//public ShaderWrapper ZeroBlueC = Helpers.cloneGenericPaletteShader("zeroBlueCharge");
-	//public ShaderWrapper XPinkC = Helpers.cloneGenericPaletteShader("xPinkCharge");
-	//public ShaderWrapper XGreenC = Helpers.cloneGenericPaletteShader("xGreenCharge");
-	//public ShaderWrapper XBlueC = Helpers.cloneGenericPaletteShader("xBlueCharge");
-	//public ShaderWrapper XOrangeC = Helpers.cloneGenericPaletteShader("xOrangeCharge");
-
+	//public static ShaderWrapper ZeroPinkC = Helpers.cloneGenericPaletteShader("zeroPinkCharge");
+	//public static ShaderWrapper ZeroGreenC = Helpers.cloneGenericPaletteShader("zeroGreenCharge");
+	//public static ShaderWrapper ZeroBlueC = Helpers.cloneGenericPaletteShader("zeroBlueCharge");
+	//public static ShaderWrapper XPinkC = Helpers.cloneGenericPaletteShader("xPinkCharge");
+	//public static ShaderWrapper XGreenC = Helpers.cloneGenericPaletteShader("xGreenCharge");
+	//public static ShaderWrapper XBlueC = Helpers.cloneGenericPaletteShader("xBlueCharge");
+	//public static ShaderWrapper XYellowC = Helpers.cloneGenericPaletteShader("xYellowCharge");
+	//public static ShaderWrapper XOrangeC = Helpers.cloneGenericPaletteShader("xOrangeCharge");
 	//public ShaderWrapper speedBurnerOrange = Helpers.cloneGenericPaletteShader("speedBurnerOrange");
 	//public ShaderWrapper speedBurnerGrey = Helpers.cloneGenericPaletteShader("speedBurnerGrey");
 
@@ -1054,7 +1055,8 @@ public partial class Player {
 
 			newChar = new Rock(
 				this, pos.x, pos.y, xDir,
-				false, charNetId, ownedByLocalPlayer
+				false, charNetId, ownedByLocalPlayer,
+				xLoadout: xLoadout
 			);
 		}
 		else if (charNum == (int)CharIds.Blues) {
@@ -1754,11 +1756,8 @@ public partial class Player {
 		set { setArmorNum(3, value); }
 	}
 
-	public bool hasBootsArmor(ArmorId armorId) { return legArmorNum == (int)armorId; }
-	public bool hasBodyArmor(ArmorId armorId) { return bodyArmorNum == (int)armorId; }
 	public bool hasHelmetArmor(ArmorId armorId) { return helmetArmorNum == (int)armorId; }
 	public bool hasArmArmor(ArmorId armorId) { return armArmorNum == (int)armorId; }
-
 	public bool hasBootsArmor(int xGame) { return legArmorNum == xGame; }
 	public bool hasBodyArmor(int xGame) { return bodyArmorNum == xGame; }
 	public bool hasHelmetArmor(int xGame) { return helmetArmorNum == xGame; }

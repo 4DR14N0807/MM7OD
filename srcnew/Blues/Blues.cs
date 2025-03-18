@@ -872,7 +872,7 @@ public class Blues : Character {
 			int j = i;
 			Global.level.delayedActions.Add(new DelayedAction(
 				() => {
-					float deviation = chargeLevel * 2;
+					float deviation = 1 + chargeLevel;
 					float angleOffset = Helpers.randomRange(-deviation, deviation);
 					new ChargedBreakBusterProj(
 						this, chargeLevel - 1, shootPos, baseAngle + angleOffset,

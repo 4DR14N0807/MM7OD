@@ -33,7 +33,7 @@ public class MagicCard : Weapon {
 				cardsOnField.RemoveAt(i);
 			}
 		}
-		
+
 		if (shootAngle is 0 or 128) {
 			int offset = 8;
 			int offset2 = Math.Min(cardsOnField.Count * offset, 2 * offset);
@@ -248,7 +248,9 @@ public class MagicCardProj : Projectile {
 		base.onDestroy();
 		if (pickup != null) {
 			pickup.useGravity = true;
-			pickup.collider.isTrigger = false;
+			if (pickup.collider != null) {
+				pickup.collider.isTrigger = false;
+			}
 		}
 		if (!ownedByLocalPlayer) { return; }
 		if (effect == 2 && !duplicated) {
@@ -289,7 +291,7 @@ public class MagicCardSpecialSpawn : Projectile {
 		maxTime = 2;
 		this.startAngle = startAngle;
 		ownChr = owner;
-		
+
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)startAngle };
 

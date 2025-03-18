@@ -43,7 +43,7 @@ public class MagicCard : Weapon {
 		int effect = 0;
 		cardCount--;
 
-		if (cardCount < 0 || Helpers.randomRange(0, 17) == 4) {
+		if (cardCount < 0) {
 			cardCount += 7;
 			bass.playSound("upgrade");
 			int[] effectChances = [

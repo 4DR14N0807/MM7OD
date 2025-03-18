@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
-	public int cardCount = 7;
+	public int cardCount = 0;
 
 	public MagicCard() : base() {
 		index = (int)BassWeaponIds.MagicCard;
@@ -43,12 +43,17 @@ public class MagicCard : Weapon {
 		int effect = 0;
 		cardCount--;
 
-		//For the last damn time, it was just changing the ammo usage.
-		if (cardCount <= 0 ) {
+		if (cardCount < 0 || Helpers.randomRange(0, 17) == 4) {
 			cardCount += 7;
 			bass.playSound("upgrade");
-			
-			effect = Helpers.randomRange(2, 2);
+			int[] effectChances = [
+				1, 1, 1, 1,
+				2, 2, 2, 2,
+				3, 3, 3,
+				4, 4
+			];
+			int effectSel = Helpers.randomRange(0, effectChances.Length - 1);
+			effect = effectChances[effectSel];
 			// 0: No effect.
 			// 1: xDir flip.
 			// 2: Ammo refill.
@@ -77,8 +82,8 @@ public class MagicCard : Weapon {
 public enum MagicCardEffects {
 	None,
 	Flip,
-	Duplicate,
 	Refill,
+	Duplicate,
 	MultiShot
 }
 
@@ -211,13 +216,13 @@ public class MagicCardProj : Projectile {
 		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
 			var proj = other.gameObject as Projectile;
 			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
-				new MagicCardSpecialProj(
-					ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
-				);
-
-				playSound("magiccard", true);
-				duplicated = true;
+				destroySelf();
 			}
+			new MagicCardSpecialProj(
+				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
+			);
+			playSound("magiccard", true);
+			duplicated = true;
 		}
 	}
 
@@ -246,7 +251,7 @@ public class MagicCardProj : Projectile {
 			pickup.collider.isTrigger = false;
 		}
 		if (!ownedByLocalPlayer) { return; }
-		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
+		if (effect == 2 && !duplicated) {
 			new MagicCardSpecialProj(
 				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
 			);
@@ -340,7 +345,7 @@ public class MagicCardSpecialProj : Projectile {
 		this.type = type;
 		base.byteAngle = (type * 10 ) + startAngle;
 		if (xDir < 0 && startAngle != 128) byteAngle = -byteAngle + 128;
-		vel = Point.createFromByteAngle(byteAngle).times(speed);
+		vel = Point.createFromByteAngle(byteAngle.Value).times(speed);
 		damager.damage = 1;
 
 		if (rpc) {

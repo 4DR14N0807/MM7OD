@@ -345,7 +345,7 @@ public class MagicCardSpecialProj : Projectile {
 		this.type = type;
 		base.byteAngle = (type * 10 ) + startAngle;
 		if (xDir < 0 && startAngle != 128) byteAngle = -byteAngle + 128;
-		vel = Point.createFromByteAngle(byteAngle.Value).times(speed);
+		vel = Point.createFromByteAngle(byteAngle).times(speed);
 		damager.damage = 1;
 
 		if (rpc) {

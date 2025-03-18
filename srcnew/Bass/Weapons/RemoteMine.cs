@@ -162,7 +162,7 @@ public class RemoteMineProj : Projectile {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		
+
 		if (anim != null) anim.destroySelf();
 		if (bass != null) bass.rMine = null!;
 

@@ -465,10 +465,14 @@ public class Damager {
 		return checkPos(actor, damagePos);
 	}
 
-	public static bool alwaysDirBlock(int projId) {
+	public static bool alwaysDirBlock(Actor actor, int projId) {
+		if (projId == (int)BassProjIds.RemoteMineExplosion && actor is RemoteMineExplosionProj remoteMine) {
+			return remoteMine.time >= 6f / 60f;
+		}
+		if (projId == (int)RockProjIds.ScorchWheel && actor is ScorchWheelProj) {
+			return true;
+		}
 		return projId switch {
-			(int)BassProjIds.RemoteMineExplosion => true,
-			(int)RockProjIds.ScorchWheel => true,
 			(int)RockProjIds.ScorchWheelBurn => true,
 			(int)ProjIds.AcidBurstPoison => true,
 			(int)ProjIds.Burn => true,

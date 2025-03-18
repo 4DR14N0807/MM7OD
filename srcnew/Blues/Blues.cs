@@ -1170,7 +1170,7 @@ public class Blues : Character {
 			!shieldFront && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
 		);
-		if (projId != null && Damager.alwaysDirBlock(projId.Value)) {
+		if (projId != null && Damager.alwaysDirBlock(actor, projId.Value)) {
 			if (shieldFront) {
 				shieldHitFront = true;
 			} else {

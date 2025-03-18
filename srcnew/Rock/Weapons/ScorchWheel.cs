@@ -134,7 +134,6 @@ public class ScorchWheelSpawn : Projectile {
 
 
 public class ScorchWheelProj : Projectile {
-
 	float projAngle;
 	Rock? rock;
 	Player? player;
@@ -178,7 +177,6 @@ public class ScorchWheelProj : Projectile {
 		);
 	}
 
-
 	public override void update() {
 		base.update();
 		if (rock == null) return;
@@ -203,7 +201,6 @@ public class ScorchWheelProj : Projectile {
 				destroySelf();
 				return;
 			}
-
 
 			if (!hasHeld || holdTime >= 2 || rock?.currentWeapon is not ScorchWheel) {
 				destroySelf();

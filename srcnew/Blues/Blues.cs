@@ -793,7 +793,7 @@ public class Blues : Character {
 				);
 			} else {
 				float shootAngle = xDir == 1 ? 0 : 128;
-				shootAngle += Helpers.randomRange(-4, 4);
+				shootAngle += Helpers.randomRange(-2, 2);
 				new BreakBusterProj(
 					this, shootPos, shootAngle, player.getNextActorNetId(), rpc: true
 				);
@@ -872,7 +872,7 @@ public class Blues : Character {
 			int j = i;
 			Global.level.delayedActions.Add(new DelayedAction(
 				() => {
-					float deviation = 4 + chargeLevel * 4;
+					float deviation = chargeLevel * 2;
 					float angleOffset = Helpers.randomRange(-deviation, deviation);
 					new ChargedBreakBusterProj(
 						this, chargeLevel - 1, shootPos, baseAngle + angleOffset,

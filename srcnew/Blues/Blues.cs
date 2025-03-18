@@ -196,6 +196,9 @@ public class Blues : Character {
 	}
 
 	public override bool canAirJump() {
+		if (isBreakMan && overdrive) {
+			return (dashedInAir == 0);
+		}
 		return false;
 	}
 
@@ -790,7 +793,7 @@ public class Blues : Character {
 				);
 			} else {
 				float shootAngle = xDir == 1 ? 0 : 128;
-				//shootAngle += Helpers.randomRange(-4, 4);
+				shootAngle += Helpers.randomRange(-4, 4);
 				new BreakBusterProj(
 					this, shootPos, shootAngle, player.getNextActorNetId(), rpc: true
 				);
@@ -810,11 +813,9 @@ public class Blues : Character {
 			changeState(new ProtoStrike(), true);
 		}
 		// Breakman overdrive charge shot.
-		/*
 		else if (overdrive) {
 			shootSubBreak(chargeLevel);
 		}
-		*/
 		// Regular charge shot.
 		else {
 			shootSubProto(chargeLevel, overdrive ? 1 : 0);
@@ -830,7 +831,7 @@ public class Blues : Character {
 		}
 		if (chargeLevel == 1) {
 			new ProtoBusterLv2Proj(
-				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(1));
 			if (type == 0) {
@@ -841,7 +842,7 @@ public class Blues : Character {
 			lemonCooldown = 12;
 		} else if (chargeLevel == 2) {
 			new ProtoBusterLv3Proj(
-				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(2));
 			playSound("buster3", sendRpc: true);
@@ -849,7 +850,7 @@ public class Blues : Character {
 		}
 		else if (chargeLevel >= 3) {
 			new ProtoBusterLv4Proj(
-				this, 0, shootPos, xDir, player.getNextActorNetId(), true
+				this, type, shootPos, xDir, player.getNextActorNetId(), true
 			);
 			addCoreAmmo(getChargeShotAmmoUse(3));
 			playSound("buster3", sendRpc: true);

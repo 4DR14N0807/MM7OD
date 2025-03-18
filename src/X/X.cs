@@ -851,11 +851,13 @@ public class MegamanX : Character {
 				0, pos.x + x - (xDir * 2), pos.y + y + 1, xDir, 1, null, 1, 1, 1, zIndex + 1
 			);
 		}
+		/*
 		if (getChargeShaders().Count != 0) {
 			chargePalleteTime += Global.gameSpeed;
 		} else {
 			chargePalleteTime = 0;
 		}
+		*/
 		float backupAlpha = alpha;
 		if (stingActiveTime > 0) {
 			if (stingPaletteTime > 6) {
@@ -975,7 +977,6 @@ public class MegamanX : Character {
 		shaders.AddRange(baseShaders);
 		return shaders;
 	}
-	*/
 
 	public List<ShaderWrapper> getChargeShaders() {
 		List<ShaderWrapper> chargePalletes = new();
@@ -1024,6 +1025,7 @@ public class MegamanX : Character {
 		}
 		return chargePalletes;
 	}
+	*/
 
 	public int getArmorByte() {
 		int armorByte = (byte)chestArmor;

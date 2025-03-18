@@ -1049,22 +1049,29 @@ public partial class Player {
 		}
 		Character newChar;
 		if (charNum == (int)CharIds.Rock) {
-			loadout.rockLoadout.weapon1 = extraData[0];
-			loadout.rockLoadout.weapon2 = extraData[1];
-			loadout.rockLoadout.weapon3 = extraData[2];
+			RockLoadout rockLoadout = new RockLoadout();
+			rockLoadout.weapon1 = extraData[0];
+			rockLoadout.weapon2 = extraData[1];
+			rockLoadout.weapon3 = extraData[2];
 
+			if (isMainChar) {
+				loadout.rockLoadout = rockLoadout;
+			}
 			newChar = new Rock(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer,
-				xLoadout: xLoadout
+				rockLoadout: rockLoadout
 			);
 		}
 		else if (charNum == (int)CharIds.Blues) {
-			loadout.bluesLoadout.specialWeapon = extraData[0];
-
+			int specialWeapon = extraData[0];
+			if (isMainChar) {
+				loadout.bluesLoadout.specialWeapon = extraData[0];
+			}
 			newChar = new Blues(
 				this, pos.x, pos.y, xDir,
-				false, charNetId, ownedByLocalPlayer
+				false, charNetId, ownedByLocalPlayer,
+				specialWeaponIndex: specialWeapon
 			);
 		} else if (charNum == (int)CharIds.Bass) {
 			loadout.bassLoadout.weapon1 = extraData[0];

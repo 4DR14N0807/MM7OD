@@ -691,6 +691,11 @@ public class GameMode {
 		}
 	}
 
+	public void setHUDDebugWarning(string message) {
+		hudErrorMsg = message;
+		hudErrorMsgTime = 2;
+	}
+
 	public bool shouldDrawRadar() {
 		return Options.main.drawMiniMap;
 	}

@@ -174,6 +174,7 @@ public partial class Character : Actor, IDamagable {
 	public Dictionary<int, float> freezeCooldown = new();
 	// Burn Stun
 	public float burnStunStacks;
+	public float burnStunTime;
 
 	//Remote Mine
 	public Dictionary<int, Projectile> rMines = new();
@@ -1083,8 +1084,6 @@ public partial class Character : Actor, IDamagable {
 			igFreezeRecoveryCooldown = 0;
 			igFreezeProgress = Helpers.clampMin0(igFreezeProgress - 1);
 		}
-		Helpers.decrementTime(ref freezeInvulnTime);
-		Helpers.decrementTime(ref stunInvulnTime);
 		Helpers.decrementTime(ref crystalizeInvulnTime);
 		Helpers.decrementTime(ref grabInvulnTime);
 		Helpers.decrementTime(ref darkHoldInvulnTime);
@@ -1636,6 +1635,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
+		if (!Global.sprites.ContainsKey(spriteName)) {
+			Global.level.gameMode.setHUDDebugWarning("test 1");
+			return;
+		}
 		List<Trail>? trails = sprite?.lastFiveTrailDraws;
 		base.changeSprite(spriteName, resetFrame);
 		if (trails != null && sprite != null) {
@@ -1651,10 +1654,10 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+		if (isStunImmune()) { return; }
 		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
 			return;
 		}
-		if (charState.superArmor) return;
 		// Cooldown.
 		// Disarray mechanic.
 		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
@@ -2143,27 +2146,11 @@ public partial class Character : Actor, IDamagable {
 		// Set the character as soon as posible.
 		newState.character = this;
 		newState.altCtrls = new bool[altCtrlsLength];
-
 		// Check if we can change.
 		if (!forceChange &&
 			(charState.GetType() == newState.GetType() || changedStateInFrame)
 		) {
 			return false;
-		}
-		// For Ride Armor stuns.
-		if (charState is InRideArmor inRideArmor) {
-			if (newState is GenericStun) {
-				if (crystalizedTime > 0) {
-					inRideArmor.crystalize(crystalizedTime / 60f);
-				}
-				if (freezeTime > 0) {
-					inRideArmor.freeze(freezeTime / 60f);
-				}
-				if (paralyzedTime > 0) {
-					inRideArmor.stun(paralyzedTime / 60f);
-				}
-				return false;
-			}
 		}
 		if (!charState.canExit(this, newState)) {
 			return false; 
@@ -2178,7 +2165,8 @@ public partial class Character : Actor, IDamagable {
 		bool hasShootAnim = newState.canUseShootAnim();
 		if (shootAnimTime > 0 && hasShootAnim) {
 			changeSprite(getSprite(newState.shootSpriteEx), true);
-		} else {
+		}
+		else {
 			string spriteName = sprite.name;
 			string targetSprite = newState.sprite;
 			if (newState.sprite == newState.transitionSprite &&
@@ -2187,15 +2175,16 @@ public partial class Character : Actor, IDamagable {
 				targetSprite = newState.defaultSprite;
 				newState.sprite = newState.defaultSprite;
 			}
-
-			changeSprite(getSprite(newState.sprite), true);
-			if (spriteName == sprite.name) {
-				sprite.frameIndex = 0;
-				sprite.frameTime = 0;
-				sprite.animTime = 0;
-				sprite.frameSpeed = 1;
-				sprite.loopCount = 0;
-				sprite.visible = true;
+			if (Global.sprites.ContainsKey(getSprite(newState.sprite))) {
+				changeSprite(getSprite(newState.sprite), true);
+				if (spriteName == sprite.name) {
+					sprite.frameIndex = 0;
+					sprite.frameTime = 0;
+					sprite.animTime = 0;
+					sprite.frameSpeed = 1;
+					sprite.loopCount = 0;
+					sprite.visible = true;
+				}
 			}
 		}
 

@@ -144,7 +144,7 @@ public class CharState {
 		}
 		if (this is not Run and not Idle and not Taunt) {
 			player.delayETank();
-		} 
+		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
 		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick and not TenguBladeState && (!oldState.canStopJump || oldState.stoppedJump)) {
@@ -267,7 +267,11 @@ public class CharState {
 				character.sprite.frameIndex = character.sprite.totalFrameNum - 1;
 				character.sprite.frameTime = character.sprite.getCurrentFrame().duration;
 			}
-		} else if (landSprite != "" && character.grounded && !wasGrounded && sprite == airSprite) {
+		}
+		else if (
+			landSprite != "" && character.grounded && !wasGrounded &&
+			(sprite == airSprite || sprite == fallSprite)
+		) {
 			character.playAltSound("land", sendRpc: true, altParams: "larmor");
 			sprite = landSprite;
 			int oldFrameIndex = character.frameIndex;
@@ -557,6 +561,9 @@ public class WarpOut : CharState {
 }
 
 public class Idle : CharState {
+	public bool hasHurtIdle;
+	public bool hurtIdleSet;
+
 	public Idle(
 		string transitionSprite = "", string transShootSprite = ""
 	) : base(
@@ -565,20 +572,6 @@ public class Idle : CharState {
 		exitOnAirborne = true;
 		attackCtrl = true;
 		normalCtrl = true;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		if ((character is RagingChargeX || player.health < 4)) {
-			if (Global.sprites.ContainsKey(character.getSprite("weak"))) {
-				defaultSprite = "weak";
-				if (!inTransition()) {
-					sprite = defaultSprite;
-					character.changeSpriteFromName("weak", true);
-				}
-			}
-		}
-		character.dashedInAir = 0;
 	}
 
 	public override void update() {
@@ -595,7 +588,6 @@ public class Idle : CharState {
 		if (Global.level.gameMode.isOver) {
 			if (Global.level.gameMode.playerWon(player)) {
 				character.changeState(new Win(), true);
-				
 			} else {
 				if (!character.sprite.name.Contains("lose")) {
 					string loseSprite;
@@ -608,7 +600,30 @@ public class Idle : CharState {
 					character.changeSpriteFromName(loseSprite, true);
 				}
 			}
+		} else {
+			hurtIdleCheck();
 		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.dashedInAir = 0;
+		hasHurtIdle = Global.sprites.ContainsKey(character.getSprite("idle_hurt"));
+		hurtIdleCheck();
+	}
+
+	public void hurtIdleCheck() {
+		if (!hasHurtIdle || hurtIdleSet) {
+			return;
+		}
+		if (character.health <= 4 || character.health <= Math.Ceiling(character.maxHealth * 0.3m)) {
+			defaultSprite = "idle_hurt";
+			if (!inTransition()) {
+				sprite = defaultSprite;
+				character.changeSpriteFromName(defaultSprite, true);
+			}
+		}
+		hurtIdleSet = true;
 	}
 }
 

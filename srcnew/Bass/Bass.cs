@@ -334,9 +334,7 @@ public class Bass : Character {
 			else {
 				changeState(new BassShoot(), true);
 			}
-		} /* else {
-			changeSprite(getSprite(charState.shootSprite), true);
-		} */
+		}
 		currentWeapon?.shoot(this, chargeLevel);
 		weaponCooldown = currentWeapon?.fireRate ?? 0;
 		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(0) ?? 0, player);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MMXOnline;
 
@@ -101,6 +102,7 @@ public class GenericStun : CharState {
 	public Anim? paralyzeAnim;
 	public bool changeAnim = true;
 	public bool canPlayFrozenSound = true;
+	public bool canPlayBurnSound = true;
 	public bool canPlayStaticSound = true;
 	public int hurtDir = 1;
 	public float hurtSpeed;
@@ -115,9 +117,9 @@ public class GenericStun : CharState {
 
 	public override void update() {
 		Helpers.decrementFrames(ref flinchTime);
-
 		paralizeAnimLogic();
 		freezeLogic();
+		burnLogic();
 
 		if (hurtSpeed != 0) {
 			hurtSpeed = Helpers.toZero(hurtSpeed, 1.6f / flinchMaxTime * Global.speedMul, hurtDir);
@@ -127,12 +129,12 @@ public class GenericStun : CharState {
 		if (changeAnim) {
 			string stunAnim = getStunAnim();
 			character.changeSpriteFromName(getStunAnim(), true);
-			if (stunAnim == "idle") {
-				character.sprite.frameSpeed = 0;
-			}
 		}
 
-		if (character.freezeTime == 0 && character.crystalizedTime == 0 && character.paralyzedTime == 0) {
+		if (character.freezeTime == 0 &&
+			character.burnStunTime == 0 &&
+			character.paralyzedTime == 0
+		) {
 			if (flinchTime > 0) {
 				character.changeState(
 					new Hurt(hurtDir, MathInt.Ceiling(flinchTime), false, flinchYPos
@@ -161,6 +163,22 @@ public class GenericStun : CharState {
 		}
 	}
 
+	public void burnLogic() {
+		if (character.burnStunTime == 0) {
+			return;
+		}
+		if (canPlayBurnSound) {
+			character.playSound("scorch_wheel", true);
+			canPlayBurnSound = false;
+		}
+		Helpers.decrementFrames(ref character.burnStunTime);
+
+		if (character.burnStunTime == 0) {
+			canPlayBurnSound = true;
+			changeAnim = true;
+		}
+	}
+
 	public void paralizeAnimLogic() {
 		if (character.paralyzedTime == 0) {
 			return;
@@ -182,11 +200,11 @@ public class GenericStun : CharState {
 	}
 
 	public string getStunAnim() {
+		if (character.burnStunTime > 0) {
+			return "burning";
+		}
 		if (character.freezeTime > 0) {
 			return "frozen";
-		}
-		if (character.paralyzedTime > 0 && character.grounded) {
-			return "lose";
 		}
 		return "hurt";
 	}
@@ -228,13 +246,21 @@ public class GenericStun : CharState {
 				flinchTime = 0;
 			}
 		}
+		else {
+			float[] times = [character.burnStunTime, character.paralyzedTime, character.freezeTime];
+			float maxTime = times.Max();
+			hurtSpeed = 1.6f * -character.xDir;
+			flinchMaxTime = maxTime;
+			character.vel.y = (-0.125f * (maxTime - 1)) * 60f;
+		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		if (paralyzeAnim != null) {
 			paralyzeAnim.destroySelf();
 			paralyzeAnim = null;
 		}
+		character.burnStunTime = 0;
 		character.paralyzedTime = 0;
 		character.freezeTime = 0;
 

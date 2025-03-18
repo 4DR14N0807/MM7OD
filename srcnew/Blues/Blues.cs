@@ -30,7 +30,7 @@ public class Blues : Character {
 	public bool overdrive;
 	public float overdriveAmmo = 20;
 	public float overdriveAmmoDecreaseCooldown;
-	public float overdriveAmmoMaxCooldown = 15;
+	public float overdriveAmmoMaxCooldown = 20;
 	public float redStrikeCooldown = 0;
 
 	// Shield vars.
@@ -73,20 +73,24 @@ public class Blues : Character {
 	// Creation code.
 	public Blues(
 		Player player, float x, float y, int xDir, bool isVisible,
-		ushort? netId, bool ownedByLocalPlayer, bool isWarpIn = true
+		ushort? netId, bool ownedByLocalPlayer, bool isWarpIn = true,
+		int? specialWeaponIndex = null
 	) : base(
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Blues;
 		maxHealth = (decimal)player.getMaxHealth(charId);
-		int protomanLoadout = player.loadout.bluesLoadout.specialWeapon;
+
 		charge1Time = 40;
 		charge2Time = 105;
 		charge3Time = 170;
 		charge4Time = 235;
 
-		specialWeaponIndex = protomanLoadout;
-		specialWeapon = protomanLoadout switch {
+		if (specialWeaponIndex == null) {
+			specialWeaponIndex = player.loadout.bluesLoadout.specialWeapon;
+		}
+		this.specialWeaponIndex = specialWeaponIndex.Value;
+		specialWeapon = specialWeaponIndex switch {
 			0 => new NeedleCannon(),
 			1 => new HardKnuckle(),
 			2 => new SearchSnake(),
@@ -124,7 +128,7 @@ public class Blues : Character {
 		else if (overheating) {
 			runSpeed = 0.75f * 60;
 			if (!shieldEquipped) {
-				runSpeed = 1.25f * 60;
+				runSpeed = 1.125f * 60;
 			}
 		}
 		else if (shieldEquipped) {
@@ -160,7 +164,7 @@ public class Blues : Character {
 	public float getSlideSpeed() {
 		float slideSpeed = 3 * 60;
 		if (overheating) {
-			slideSpeed = 1.75f * 60;
+			slideSpeed = 2.125f * 60;
 		}
 		return slideSpeed * getRunDebuffs();
 	}
@@ -809,9 +813,9 @@ public class Blues : Character {
 			changeState(new ProtoStrike(), true);
 		}
 		// Breakman overdrive charge shot.
-		//else if (overdrive) {
-		//	shootSubBreak(chargeLevel);
-		//}
+		else if (overdrive) {
+			shootSubBreak(chargeLevel);
+		}
 		// Regular charge shot.
 		else {
 			shootSubProto(chargeLevel, overdrive ? 1 : 0);

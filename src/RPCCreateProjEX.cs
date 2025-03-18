@@ -296,6 +296,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BluesProjIds.BusterLV2, ProtoBusterLv2Proj.rpcInvoke },
 		{ (int)BluesProjIds.BusterLV3, ProtoBusterLv3Proj.rpcInvoke },
 		{ (int)BluesProjIds.BusterLV4, ProtoBusterLv4Proj.rpcInvoke },
+		{ (int)BluesProjIds.BusterBreak, ChargedBreakBusterProj.rpcInvoke },
 		{ (int)BluesProjIds.NeedleCannon, NeedleCannonProj.rpcInvoke },
 		{ (int)BluesProjIds.HardKnuckle, HardKnuckleProj.rpcInvoke },
 		{ (int)BluesProjIds.SearchSnake, SearchSnakeProj.rpcInvoke },

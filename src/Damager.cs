@@ -231,20 +231,16 @@ public class Damager {
 						// it just acts as a fancy flinch effect.
 						// Does not really affect balance.
 						if (iceWall.startedMoving) {
-							character.freeze(Global.halfFlinch, 140, owner.id);
-							flinch = Global.halfFlinch;
+							if (!character.charState.superArmor) {
+								character.freeze(Global.halfFlinch, 140, owner.id);
+							}
 						}
 						else if (iceWall.isFalling){
 							character.freeze(Global.defFlinch, 140, owner.id);
-							flinch = Global.defFlinch;
-							if (damage > 0) {
-								damage += 2;
-							}
+							damage += 2;
 							iceWall.destroySelf();
-						}
-						else {
+						} else {
 							damage = 0;
-							flinch = 0;
 						}
 					}
 					break;
@@ -473,6 +469,9 @@ public class Damager {
 		return projId switch {
 			(int)BassProjIds.RemoteMineExplosion => true,
 			(int)RockProjIds.ScorchWheel => true,
+			(int)RockProjIds.ScorchWheelBurn => true,
+			(int)ProjIds.AcidBurstPoison => true,
+			(int)ProjIds.Burn => true,
 			_ => false
 		};
 	}

@@ -438,7 +438,9 @@ public class Burning : CharState {
 
 		if (burnDamageCooldown > 0) burnDamageCooldown--;
         if (burnDamageCooldown <= 0) {
-            character.applyDamage(1, attacker, character, (int)RockWeaponIds.ScorchWheel, (int)RockProjIds.ScorchWheelBurn);
+            character.applyDamage(
+				1, attacker, character, (int)RockWeaponIds.ScorchWheel, (int)RockProjIds.ScorchWheelBurn
+			);
             Global.playSound("hurt");
             burnDamageCooldown = 45;
         }

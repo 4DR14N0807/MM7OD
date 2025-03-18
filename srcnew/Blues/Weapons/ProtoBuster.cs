@@ -271,8 +271,7 @@ public class ChargedBreakBusterProj : Projectile {
 		fadeSprite = "rock_buster2_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 25 / 60f;
-		projId = (int)BluesProjIds.BusterLV2;
-
+		projId = (int)BluesProjIds.BusterBreak;
 		byteAngle = MathF.Round(byteAngle) % 256;
 		this.byteAngle = MathF.Round(byteAngle);
 		vel = Point.createFromByteAngle(byteAngle) * 325;
@@ -282,6 +281,7 @@ public class ChargedBreakBusterProj : Projectile {
 		if (rpc) {
 			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle, (byte)type);
 		}
+		projId = (int)BluesProjIds.BusterLV2;
 
 		if (type == 1) {
 			changeSprite("proto_chargeshot_purple_proj", true);

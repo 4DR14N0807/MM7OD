@@ -42,11 +42,17 @@ public class Rock : Character {
 	public Rock(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
-		bool isWarpIn = true
+		bool isWarpIn = true, RockLoadout? rockLoadout = null
 	) : base(
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
 	) {
 		charId = CharIds.Rock;
+		if (rockLoadout == null) {
+			rockLoadout = new RockLoadout();
+			rockLoadout.weapon1 = player.loadout.rockLoadout.weapon1;
+			rockLoadout.weapon2 = player.loadout.rockLoadout.weapon2;
+			rockLoadout.weapon2 = player.loadout.rockLoadout.weapon3;
+		}
 		weapons = RockLoadoutSetup.getLoadout(player.loadout.rockLoadout);
 
 		charge1Time = 40;
@@ -496,19 +502,6 @@ public class Rock : Character {
 
 		if (isGHit && isLanding() && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
 			rjs.once = true;
-			
-		}
-	}
-
-	public override void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {
-		base.onWeaponChange(oldWeapon, newWeapon);
-		
-		if (getChargeLevel() >= 2) {
-			weaponCooldown = 0;
-		} else {
-			if (oldWeapon.switchCooldownFrames != null && weaponCooldown > 0) {
-				weaponCooldown = Math.Max(weaponCooldown, oldWeapon.switchCooldownFrames.Value);
-			} 
 		}
 	}
 

@@ -305,6 +305,7 @@ public class BluesSpreadShoot : CharState {
 	Blues blues = null!;
 
 	public BluesSpreadShoot() : base("spreadshoot_air") {
+		canJump = true;
 		airMove = true;
 		exitOnLanding = true;
 	}
@@ -342,7 +343,7 @@ public class BluesSpreadShoot : CharState {
 				blues.playSound("buster2", sendRpc: true);
 			}
 			if (type == 2){
-				blues.addCoreAmmo(-0.5f);
+				blues.addCoreAmmo(-0.5f, resetCooldown: true);
 				blues.playSound("buster3", sendRpc: true);
 			}
 			shotAngle -= 16;

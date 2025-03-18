@@ -236,6 +236,7 @@ public class Sprite {
 		List<Texture> compositeBitmaps = new();
 		float extraY = 0;
 		float extraYOff = 0;
+		float extraXOff = 0;
 		float extraW = 0;
 		float flippedExtraW = 0;
 

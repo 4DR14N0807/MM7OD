@@ -8,7 +8,7 @@ namespace MMXOnline;
 public class BassShoot : CharState {
 	Bass bass = null!;
 
-	public BassShoot() : base("shoot") {
+	public BassShoot() : base("not_a_real_sprite") {
 		attackCtrl = true;
 		airMove = true;
 		useDashJumpSpeed = true;
@@ -37,18 +37,25 @@ public class BassShoot : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 
-		sprite = getShootSprite(bass.getShootYDir(), bass.currentWeapon ?? throw new NullReferenceException());
+		sprite = getShootSprite(
+			bass.getShootYDir(true, true),
+			bass.currentWeapon ?? throw new NullReferenceException()
+		);
 		landSprite = sprite;
 		airSprite = "jump_" + sprite;
 		fallSprite = "fall_" + sprite;
 
 		if (!bass.grounded || bass.vel.y < 0) {
-			string tempSprite = airSprite;
-			/* if (bass.vel.y >= 0) {
-				tempSprite = fallSprite;
-			} */
-			if (bass.sprite.name != bass.getSprite("tempSprite")) {
-				bass.changeSpriteFromName(tempSprite, false);
+			sprite = airSprite;
+			if (bass.vel.y >= 0) {
+				sprite = fallSprite;
+				if (bass.sprite.name != bass.getSprite(sprite)) {
+					bass.changeSpriteFromName(sprite, !bass.sprite.name.StartsWith(bass.getSprite("fall")));
+				}
+			} else {
+				if (bass.sprite.name != bass.getSprite(sprite)) {
+					bass.changeSpriteFromName(sprite, false);
+				}
 			}
 		} else {
 			bass.changeSpriteFromName(sprite, true);
@@ -64,17 +71,23 @@ public class BassShoot : CharState {
 		) {
 			return "shoot";
 		}
-		if (wep is RemoteMine && dir == -2) {
-			dir = -1;
+		if (wep is RemoteMine) {
+			if (dir == -2) { dir = -1; }
+			if (dir == 2) { dir = 1; }
 		}
-		if (wep is MagicCard && dir == -1) {
-			dir = -2;
+		if (wep is MagicCard) {
+			if (dir == -1) { dir = -2; }
+			if (dir == 1) { dir = 2; }
+		}
+		if (wep is BassBuster) {
+			if (dir == 2) { dir = 1; }
 		}
 		return dir switch {
 			-2 => "shoot_up",
 			-1 => "shoot_up_diag",
 			0 => "shoot",
-			1 or 2 => "shoot_down_diag",
+			1 => "shoot_down_diag",
+			2 => "shoot_down",
 			_ => "shoot"
 		};
 	}
@@ -99,7 +112,10 @@ public class BassShootLadder : CharState {
 		bass = character as Bass ?? throw new NullReferenceException();
 		bass.useGravity = false;
 
-		sprite = getShootSprite(bass.getShootYDir(), bass.currentWeapon ?? throw new NullReferenceException());
+		sprite = getShootSprite(
+			bass.getShootYDir(true, true),
+			bass.currentWeapon ?? throw new NullReferenceException()
+		);
  
 		bass.changeSpriteFromName(sprite, true);
 		bass.sprite.restart();
@@ -128,7 +144,8 @@ public class BassShootLadder : CharState {
 			-2 => "ladder_shoot_up",
 			-1 => "ladder_shoot_up_diag",
 			0 => "ladder_shoot",
-			1 or 2 => "ladder_shoot_down_diag",
+			1 => "ladder_shoot_down_diag",
+			2 => "ladder_shoot_down",
 			_ => "ladder_shoot"
 		};
 	}

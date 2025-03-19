@@ -1104,8 +1104,8 @@ public class Blues : Character {
 				charState.attackCtrl ||
 				charState.normalCtrl ||
 				charState is BigBangStrikeStart ||
-				charState is Hurt { stateFrames: < 2 } ||
-				charState is GenericStun { stateFrames: < 2 }
+				charState is Hurt ||
+				charState is GenericStun
 			);
 			if (shootAnimTime > 0 || charState is LadderClimb) {
 				canShieldBeActive = false;
@@ -1500,7 +1500,7 @@ public class Blues : Character {
 	}
 
 	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
-		offset = offset.addxy(0, 17);
+		offset = offset.addxy(0, 21);
 		base.renderLifebar(offset, position);
 
 		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
@@ -1558,7 +1558,7 @@ public class Blues : Character {
 	public override void renderAmmo(Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null) {
 		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, false);
 		float baseX = hudHealthPosition.x + offset.x;
-		float baseY = hudHealthPosition.y + offset.y + 17;
+		float baseY = hudHealthPosition.y + offset.y + 21;
 
 		int coreAmmoColor = 0;
 		int overdriveColor = 1;
@@ -1620,7 +1620,7 @@ public class Blues : Character {
 	}
 
 	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
-		offset.y += 17;
+		offset.y += 21;
 		base.renderBuffs(offset, position);
 		int drawDir = 1;
 		if (position == GameMode.HUDHealthPosition.Right) {

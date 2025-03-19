@@ -3225,6 +3225,16 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer || dwrapInvulnTime > 0) return;
 		if (bigBubble != null) return;
 
+		// Duration.
+		float cooldown = 3;
+		int playerid = attacker.id;
+
+		// Disarray mechanic.
+		disarrayStacks[playerid] = cooldown;
+		if (cooldown >= disarrayMaxLength) {
+			disarrayMaxLength = cooldown;
+		}
+
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
 		dWrapDamager = damager;
 		bigBubble = new DWrapBigBubble(pos, player, xDir,

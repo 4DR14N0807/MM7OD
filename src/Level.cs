@@ -1613,7 +1613,7 @@ public partial class Level {
 					}
 					// Delta for Y.
 					if (MathF.Abs(deltaY) > camSpeedY) {
-						diference = MathF.Floor(MathF.Abs((camSpeedY - MathF.Abs(altDeltaY)) / 20f));
+						diference = MathF.Floor(MathF.Abs((camSpeedY - MathF.Abs(altDeltaY)) / 24f));
 						deltaY = (camSpeedY + diference) * MathF.Sign(fullDeltaY);
 					}
 				}

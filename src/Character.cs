@@ -1974,15 +1974,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual Point getCamCenterPos(bool ignoreZoom = false) {
-		if (rideArmorPlatform != null) {
-			return rideArmorPlatform.pos.round().addxy(0, -70);
-		}
-		if (rideArmor != null) {
-			if (ownedByLocalPlayer && rideArmor.rideArmorState is RADropIn rADropInState) {
-				return rADropInState.spawnPos.addxy(0, -24);
-			}
-			return rideArmor.pos.round().addxy(camOffsetX, -24);
-		}
 		return pos.round().addxy(camOffsetX, -30);
 	}
 

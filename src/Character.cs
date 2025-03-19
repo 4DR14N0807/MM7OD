@@ -1636,7 +1636,6 @@ public partial class Character : Actor, IDamagable {
 
 	public override void changeSprite(string spriteName, bool resetFrame) {
 		if (!Global.sprites.ContainsKey(spriteName)) {
-			Global.level.gameMode.setHUDDebugWarning("test 1");
 			return;
 		}
 		List<Trail>? trails = sprite?.lastFiveTrailDraws;

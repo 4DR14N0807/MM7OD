@@ -379,7 +379,6 @@ public enum RockProjIds  {
 	JunkShield2,
 	ScorchWheelSpawn,
 	ScorchWheel,
-	ScorchWheelLoop,
 	ScorchWheelMove,
 	ScorchWheelUnderwater,
 	ScorchWheelBurn,

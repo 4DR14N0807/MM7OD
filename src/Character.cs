@@ -427,14 +427,14 @@ public partial class Character : Actor, IDamagable {
 	
 	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
-		if (isBurnState) return;
 		if (isStunImmune()) return;
 		if (isInvulnerable()) return;
 
-		burningRecoveryCooldown = 0;
+		burningRecoveryCooldown = 120;
 		burnStunStacks += amount;
 		if (burnStunStacks >= Burning.maxStacks) {
-			burnStun(attacker);
+			burnStunStacks = 0;
+			burnStun(1.5f * 60, 3.5f * 60, attacker.id);
 		}
 	}
 
@@ -838,14 +838,14 @@ public partial class Character : Actor, IDamagable {
 				Point burnPos = getCenterPos();
 
 				new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
-				if (burnStunStacks >= 2) {
+				if (burnStunStacks >= 1) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
 				}
-				if (burnStunStacks >= 3) {
+				if (burnStunStacks >= 2) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
 					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -60)};
 				}
-				if (burnStunStacks >= 4) {
+				if (burnStunStacks >= 3) {
 					new Anim(burnPos.addRand(16, 16), "scorch_wheel_burn", 1, null, true, host: this);
 					new Anim(burnPos.addRand(16, 16), "dust", 1, null, true, host: this) {vel = new Point(0, -120)};
 				}
@@ -925,11 +925,16 @@ public partial class Character : Actor, IDamagable {
 			igFreezeProgress--;
 			if (igFreezeProgress < 0) igFreezeProgress = 0;
 		}
-		if (burnStunStacks > 0) burningRecoveryCooldown++;
-		if (burningRecoveryCooldown >= 60 && burnStunStacks > 0) {
-			burningRecoveryCooldown = 0;
-			burnStunStacks--;
-			if (burnStunStacks < 0) burnStunStacks = 0;
+		if (burnStunStacks > 0) {
+			if (burningRecoveryCooldown <= 0) {
+				burningRecoveryCooldown = 20;
+				burnStunStacks--;
+				if (burnStunStacks < 0) {
+					burnStunStacks = 0;
+				}
+			} else {
+				burningRecoveryCooldown -= speedMul;
+			}
 		}
 		Helpers.decrementFrames(ref crystalizeInvulnTime);
 		Helpers.decrementTime(ref grabInvulnTime);
@@ -1686,18 +1691,37 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void burnStun(Player attacker) {
-		if (isBurnState) { return; }
+	public void burnStun(float time, float cooldown, int playerid) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (isStunImmune()) { return; }
-		if (!ownedByLocalPlayer) { return; }
-		// Apply burn state.
-		burnStunStacks = 0;
-		changeState(new Burning(-xDir, attacker), true);
+		if (burnInvulnTime > 0) { return; }
+		// Cooldown.
+		// Disarray mechanic.
+		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
+		time = MathF.Floor(time * disarrayReduction);
+		disarrayStacks[playerid] = cooldown;
+		if (cooldown >= disarrayMaxLength) {
+			disarrayMaxLength = cooldown;
+		}
+		// Apply debuff.
+		burnInvulnTime = cooldown;
+
+		if (burnStunTime >= time) {
+			return;
+		}
+		burnStunTime = time;
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
+
 		// Hud stuff.
-		burnInvulnTime = 120 + 15;
-		buffList.Add(new Buff("hud_debuffs", 3, false, 120 + 15, 120 + 15));
-		if (attacker != null) {
-			attacker.mastery.addSupportExp(2, true);
+		buffList.Add(new Buff("hud_debuffs", 3, false, time, time));
+
+		if (charState is not GenericStun) {
+			changeState(new GenericStun(), true);
 		}
 	}
 
@@ -3714,10 +3738,12 @@ public partial class Character : Actor, IDamagable {
 			vaccineTime = data[pos] / 30f;
 			pos++;
 		}
+		burnStunStacks = 0;
 		if (boolMask[7]) {
 			burnStunStacks = data[pos];
 			pos++;
 		}
+		rootTime = 0;
 		if (boolMaskB[0]) {
 			rootTime = data[pos] * 2;
 			pos++;

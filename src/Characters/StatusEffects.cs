@@ -129,6 +129,7 @@ public class GenericStun : CharState {
 		if (changeAnim) {
 			string stunAnim = getStunAnim();
 			character.changeSpriteFromName(getStunAnim(), true);
+			changeAnim = false;
 		}
 
 		if (character.freezeTime == 0 &&
@@ -248,7 +249,7 @@ public class GenericStun : CharState {
 		}
 		else {
 			float[] times = [character.burnStunTime, character.paralyzedTime, character.freezeTime];
-			float maxTime = times.Max();
+			float maxTime = Helpers.clampMax(times.Max(), 32);
 			hurtSpeed = 1.6f * -character.xDir;
 			flinchMaxTime = maxTime;
 			character.vel.y = (-0.125f * (maxTime - 1)) * 60f;

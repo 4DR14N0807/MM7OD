@@ -188,13 +188,8 @@ public class Damager {
 
 			switch (projId) {
 				case (int)RockProjIds.ScorchWheel:
-					damagerMessage = onScorchDamage(damagable, owner, 1);
-					break;
-				case (int)RockProjIds.ScorchWheelLoop:
-					damagerMessage = onScorchDamage(damagable, owner, 1);
-					break;
 				case (int)RockProjIds.ScorchWheelMove:
-					damagerMessage = onScorchDamage(damagable, owner, 2);
+					damagerMessage = onScorchDamage(damagable, owner, 1);
 					break;
 				case (int)RockProjIds.DangerWrap:
 					damagerMessage = onDWrapDamage(damagable, owner);

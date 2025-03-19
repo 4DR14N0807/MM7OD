@@ -206,8 +206,7 @@ public partial class Character : Actor, IDamagable {
 	public int camOffsetX;
 	public int secondBarOffset;
 	public List<Buff> buffList = new();
-	public Dictionary<int, float> disarrayStacks = new();
-	public float disarrayMaxLength = 0;
+	public Dictionary<string, DisarrayStack> disarrayStacks = new();
 
 	public AltSoundIds altSoundId = AltSoundIds.None;
 	public enum AltSoundIds {
@@ -966,15 +965,12 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		int[] disarrayKeys = disarrayStacks.Keys.ToArray();
-		foreach (int key in disarrayKeys) {
-			disarrayStacks[key] -= speedMul;
-			if (disarrayStacks[key] <= 0) {
+		string[] disarrayKeys = disarrayStacks.Keys.ToArray();
+		foreach (string key in disarrayKeys) {
+			disarrayStacks[key].time -= speedMul;
+			if (disarrayStacks[key].time <= 0) {
 				disarrayStacks.Remove(key);
 			}
-		}
-		if (disarrayStacks.Count == 0) {
-			disarrayMaxLength = 0;
 		}
 
 		for (int i = buffList.Count - 1; i >= 0; i--) {
@@ -1666,10 +1662,7 @@ public partial class Character : Actor, IDamagable {
 		// Disarray mechanic.
 		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
 		time = MathF.Floor(time * disarrayReduction);
-		disarrayStacks[playerid] = cooldown;
-		if (cooldown >= disarrayMaxLength) {
-			disarrayMaxLength = cooldown;
-		}
+		disarrayStacks[$"{playerid}_freeze"] = new DisarrayStack(cooldown);
 		// Apply debuff.
 		freezeCooldown[playerid] = cooldown;
 
@@ -1701,10 +1694,7 @@ public partial class Character : Actor, IDamagable {
 		// Disarray mechanic.
 		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
 		time = MathF.Floor(time * disarrayReduction);
-		disarrayStacks[playerid] = cooldown;
-		if (cooldown >= disarrayMaxLength) {
-			disarrayMaxLength = cooldown;
-		}
+		disarrayStacks[$"{playerid}_bstun"] = new DisarrayStack(cooldown);
 		// Apply debuff.
 		burnInvulnTime = cooldown;
 
@@ -1735,10 +1725,7 @@ public partial class Character : Actor, IDamagable {
 		// Disarray mechanic.
 		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
 		time = MathF.Floor(time * disarrayReduction);
-		disarrayStacks[playerid] = cooldown;
-		if (cooldown >= disarrayMaxLength) {
-			disarrayMaxLength = cooldown;
-		}
+		disarrayStacks[$"{playerid}_root"] = new DisarrayStack(cooldown);
 		// Apply debuff.
 		rootCooldown[playerid] = time + 60;
 		
@@ -1767,10 +1754,7 @@ public partial class Character : Actor, IDamagable {
 		// Disarray mechanic.
 		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
 		time = MathF.Floor(time * disarrayReduction);
-		disarrayStacks[playerid] = cooldown;
-		if (cooldown >= disarrayMaxLength) {
-			disarrayMaxLength = cooldown;
-		}
+		disarrayStacks[$"{playerid}_paralize"] = new DisarrayStack(cooldown);
 		// Apply debuff.
 		stunCooldown[playerid] = cooldown;
 
@@ -3226,14 +3210,11 @@ public partial class Character : Actor, IDamagable {
 		if (bigBubble != null) return;
 
 		// Duration.
-		float cooldown = 3;
+		float cooldown = 5 * 60;
 		int playerid = attacker.id;
 
 		// Disarray mechanic.
-		disarrayStacks[playerid] = cooldown;
-		if (cooldown >= disarrayMaxLength) {
-			disarrayMaxLength = cooldown;
-		}
+		disarrayStacks[$"{playerid}_dwarp"] = new DisarrayStack(cooldown);
 
 		Damager damager = new Damager(attacker, 4, Global.defFlinch, 0);
 		dWrapDamager = damager;
@@ -3492,9 +3473,11 @@ public partial class Character : Actor, IDamagable {
 
 		// Disarray.
 		if (disarrayStacks.Count >= 2) {
-			float[] activeList = disarrayStacks.Values.ToArray();
+			DisarrayStack lowerStack = disarrayStacks.MinBy(
+				(KeyValuePair <string, DisarrayStack> kvp) => kvp.Value.time
+			).Value;
 			drawBuff(
-				drawPos, activeList.Max() / disarrayMaxLength,
+				drawPos, lowerStack.time / lowerStack.maxTime,
 				"hud_buffs", 0
 			);
 			if (disarrayStacks.Count >= 3) {
@@ -3790,5 +3773,15 @@ public class Buff {
 		this.time = time;
 		this.maxTime = maxTime;
 		this.isBuff = isBuff;
+	}
+}
+
+public class DisarrayStack {
+	public float maxTime;
+	public float time;
+
+	public DisarrayStack(float time) {
+		this.time = time;
+		this.maxTime = time;
 	}
 }

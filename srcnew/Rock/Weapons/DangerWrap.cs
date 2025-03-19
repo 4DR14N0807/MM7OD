@@ -342,7 +342,7 @@ public class DangerWrapExplosionProj : Projectile {
 
 public class DWrapBigBubble : Actor, IDamagable {
 	public Character? character;
-	public float health = 4;
+	public float health = 3;
 	public float bubbleFrames;
 	public Anim? bomb;
 

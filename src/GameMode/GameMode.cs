@@ -612,7 +612,7 @@ public class GameMode {
 			);
 		} else if (hudErrorMsgTime > 0) {
 			Fonts.drawText(
-				FontType.WhiteSmall, hudErrorMsg,
+				FontType.BlueSmall, hudErrorMsg,
 				Global.halfScreenW, 50, Alignment.Center
 			);
 		}

@@ -1577,7 +1577,6 @@ public partial class Level {
 				float fullDeltaX = MathF.Round(expectedCamPos.x + extraPos) - camX;
 				float fullDeltaY = MathF.Round(expectedCamPos.y) - camY;
 				float altDeltaY = fullDeltaY - camOffsetY;
-				Global.level.gameMode.setHUDDebugWarning(altDeltaY.ToString());
 
 				if (followActor != null && followActor.grounded == false) {
 					if (altDeltaY > -46 && altDeltaY < 46 &&

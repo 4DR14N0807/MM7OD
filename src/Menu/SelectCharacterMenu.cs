@@ -282,7 +282,7 @@ public class SelectCharacterMenu : IMainMenu {
 				"Mid range character who has\ngood attack and defense\nBut it's limited by it's unstable core."
 			},
 			(int)CharIds.Bass =>  new string[]{
-				"(Unfinished)"
+				"Long range character with\nhigh mobility but has\nlow damage and defense."
 			},
 			_ => new string[] { "ERROR" }
 		};

@@ -1228,7 +1228,7 @@ public class GameMode {
 		float baseX, float baseY, int baseIndex,
 		int barIndex, float ammo, float grayAmmo = 0, float maxAmmo = 32,
 		bool allowSmall = true, string barSprite = "hud_weapon_full", string baseSprite = "hud_weapon_base",
-		int eeStacks = 0
+		int eeStacks = 0, float ammoDisplayScale = 1
 	) {
 		if (baseIndex >= 0) {
 			Global.sprites[baseSprite].drawToHUD(baseIndex, baseX, baseY);
@@ -1238,9 +1238,15 @@ public class GameMode {
 			Global.sprites["hud_energy_base"].drawToHUD(eeStacks, baseX, baseY);
 		}
 		baseY -= 16;
+		float maxAP = MathF.Ceiling(maxAmmo / ammoDisplayScale);
+		float curAP = MathF.Floor(ammo / ammoDisplayScale);
+		if (ammo == maxAmmo) { curAP = maxAP; }
+		float ceilCurAP = MathF.Ceiling(ammo / ammoDisplayScale);
+		float floatCurAP = ammo / ammoDisplayScale;
+		float fhpAlpha = floatCurAP - curAP;
 
-		for (var i = 0; i < MathF.Ceiling(maxAmmo); i++) {
-			if (i < Math.Ceiling(ammo)) {
+		for (int i = 0; i < maxAP; i++) {
+			if (i < curAP) {
 				if (ammo < grayAmmo) {
 					Global.sprites["hud_weapon_full"].drawToHUD(grayAmmoIndex, baseX, baseY);
 				} else {
@@ -1248,6 +1254,9 @@ public class GameMode {
 				}
 			} else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
+				if (i < ceilCurAP) {
+					Global.sprites[barSprite].drawToHUD(barIndex, baseX, baseY, fhpAlpha);
+				}
 			}
 			baseY -= 2;
 		}

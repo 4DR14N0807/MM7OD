@@ -3568,12 +3568,13 @@ public partial class Character : Actor, IDamagable {
 		string baseBarName = player.isRock ? "hud_weapon_base" : "hud_weapon_base_bass";
 		string fullBarName = player.isRock ? "hud_weapon_full" : "hud_weapon_full_bass";
 
-		float ammo = MathF.Ceiling(renderWeapon.ammo / renderWeapon.ammoDisplayScale);
-		float maxAmmo = MathF.Ceiling(renderWeapon.maxAmmo / renderWeapon.ammoDisplayScale);
+		float ammo = renderWeapon.ammo;
+		float maxAmmo = renderWeapon.maxAmmo;
 
 		GameMode.renderAmmo(
 			baseX, baseY, renderWeapon.weaponBarBaseIndex, renderWeapon.weaponBarIndex,
-			ammo, 0, maxAmmo, false, fullBarName, baseBarName
+			ammo, 0, maxAmmo, false, fullBarName, baseBarName,
+			ammoDisplayScale: renderWeapon.ammoDisplayScale
 		);
 	}
 

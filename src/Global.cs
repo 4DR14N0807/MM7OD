@@ -16,21 +16,21 @@ namespace MMXOnline;
 
 public partial class Global {
 	public static decimal version = 20m;
-	public static string versionName = "v0.4c";
-	public static string subVersionName = "Alpha 3";
-	public static string subVersionShortName = "Alpha 3";
+	public static string versionName = "v0.5";
+	public static string subVersionName = "Test 4";
+	public static string subVersionShortName = "T4";
 
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "F7C16A22DF694719FD3D34DA6F45F473";
+	private const string assetChecksum = "6F01182975BBAD936B777FAF98C1509C";
 
 	// For forks/mods of the game, add a prefix here so that different forks
 	// don't conflict with each other or the base game
 	public const string checksumPrefix = "[7OD]";
 	// Use this to make sure the checksum varies.
 	// Better to use together with "checksumPrefix" and be diferent from it.
-	public const string checksumPrefix2 = "7OD-A2-04-T1";
+	public const string checksumPrefix2 = "7OD-A2-05-T5";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;
 	// For displaying the name of the mod in the version string.

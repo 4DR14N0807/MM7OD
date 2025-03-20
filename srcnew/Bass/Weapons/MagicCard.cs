@@ -10,13 +10,16 @@ public class MagicCard : Weapon {
 	public int cardCount = 7;
 
 	public MagicCard() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.MagicCard;
 		displayName = "MAGIC CARD";
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 20;
+		ammoDisplayScale = 2;
 		isStream = true;
+		drawCooldown = false;
 	}
 
 	public override void shoot(Character character, params int[] args) {

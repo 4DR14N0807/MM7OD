@@ -15,6 +15,7 @@ public class WildCoil : Weapon {
 		maxAmmo = 20;
 		ammo = maxAmmo;
 		fireRate = 60;
+		switchCooldown = 45;
 		description = new string[] { "Throws coils in both sides that", "can be charged to reach more height.", "Use Up/Down to change bounce patterns." };
 	}
 

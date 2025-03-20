@@ -8,12 +8,14 @@ public class BassBuster : Weapon {
 	public List<BassBusterProj> lemonsOnField = new List<BassBusterProj>();
 
 	public BassBuster() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.BassBuster;
 		displayName = "BASS BUSTER";
 		weaponSlotIndex = index;
 		fireRate = 6;
 		isStream = true;
 		drawAmmo = false;
+		drawCooldown = false;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

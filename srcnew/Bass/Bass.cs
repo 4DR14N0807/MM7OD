@@ -163,6 +163,10 @@ public class Bass : Character {
 		return ("hud_health_base", 2);
 	}
 
+	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
+		base.renderHUD(offset.addxy(0, -16), position);
+	}
+
 	public override void render(float x, float y) {
 		base.render(x, y);
 
@@ -299,7 +303,10 @@ public class Bass : Character {
 		}
 
 		if (shootPressed) {
-			if (weaponCooldown <= 0 && currentWeapon?.canShoot(0, this) == true) {
+			if (weaponCooldown <= 0 &&
+				currentWeapon?.canShoot(0, this) == true &&
+				currentWeapon?.shootCooldown <= 0
+			) {
 				shoot(getChargeLevel());
 				return true;
 			}
@@ -322,9 +329,11 @@ public class Bass : Character {
 
 	public void shoot(int chargeLevel) {
 		if (!ownedByLocalPlayer) return;
-
+		if (currentWeapon == null) {
+			return;
+		}
 		turnToInput(player.input, player);
-		if (currentWeapon?.hasCustomAnim == false) {
+		if (!currentWeapon.hasCustomAnim) {
 			if (charState is LadderClimb lc) {
 				changeState(new BassShootLadder(lc.ladder), true);
 			}
@@ -335,10 +344,13 @@ public class Bass : Character {
 				changeState(new BassShoot(), true);
 			}
 		}
-		currentWeapon?.shoot(this, chargeLevel);
-		weaponCooldown = currentWeapon?.fireRate ?? 0;
-		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(0) ?? 0, player);
-		stopCharge();
+		currentWeapon.shoot(this, chargeLevel);
+		currentWeapon.shootCooldown = currentWeapon.fireRate;
+		weaponCooldown = currentWeapon.fireRate;
+		if (currentWeapon.switchCooldown < weaponCooldown) {
+			weaponCooldown = currentWeapon.switchCooldown;
+		}
+		currentWeapon.addAmmo(-currentWeapon.getAmmoUsageEX(0, this), player);
 	}
 
 	public int getShootYDir(bool allowDown = false, bool allowDiagonal = true) {
@@ -475,6 +487,17 @@ public class Bass : Character {
 	/* public override bool canChangeWeapons() {
 		return base.canChangeWeapons() && charState is not LightningBoltState;
 	} */
+
+	public override float getJumpPower() {
+		if (flag != null) {
+			return base.getJumpPower();
+		}
+		return (5.7f * 60) * getJumpModifier();
+	}
+
+	public override float getDashSpeed() {
+		return (3.45f * 60f) * getRunDebuffs();
+	}
 
 	public override bool canAirJump() {
 		return dashedInAir == 0 && rootTime <= 0 && charState is not BassShootLadder;

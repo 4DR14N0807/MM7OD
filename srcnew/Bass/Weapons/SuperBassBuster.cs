@@ -7,6 +7,7 @@ public class SBassBuster : Weapon {
 	public static SBassBuster netWeapon = new();
 
 	public SBassBuster() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SuperBassBuster;
 		fireRate = 15;
 		drawAmmo = false;

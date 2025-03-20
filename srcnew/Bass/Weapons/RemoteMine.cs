@@ -7,6 +7,7 @@ public class RemoteMine : Weapon {
 	public static RemoteMine netWeapon = new();
 
 	public RemoteMine() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.RemoteMine;
 		displayName = "REMOTE MINE";
 		maxAmmo = 16;
@@ -15,6 +16,7 @@ public class RemoteMine : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 45;
+		switchCooldown = 30;
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {

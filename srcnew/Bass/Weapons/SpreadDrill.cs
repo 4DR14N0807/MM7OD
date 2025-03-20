@@ -7,6 +7,7 @@ public class SpreadDrill : Weapon {
 	public static SpreadDrill netWeapon = new();
 
 	public SpreadDrill() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SpreadDrill;
 		displayName = "SPREAD DRILL";
 		weaponSlotIndex = index;
@@ -15,6 +16,7 @@ public class SpreadDrill : Weapon {
 		maxAmmo = 10;
 		ammo = maxAmmo;
 		fireRate = 90;
+		switchCooldown = 30;
 		descriptionV2 = (
 			"Shoots a drill that spread by pressing SPECIAL." + "\n" +
 			"Slowdown on hit, the smaller the drill the faster the drill."

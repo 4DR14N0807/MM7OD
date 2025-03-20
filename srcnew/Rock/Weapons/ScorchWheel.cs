@@ -15,6 +15,7 @@ public class ScorchWheel : Weapon {
 		maxAmmo = 16;
 		ammo = maxAmmo;
 		fireRate = 60;
+		switchCooldown = 45;
 		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };
 	}
 

@@ -63,6 +63,7 @@ public class Weapon {
 	public string Flinch = "";
 	public string FlinchCD = "";
 	public bool hasCustomChargeAnim;
+	public string iconSprite = "hud_weapon_icon";
 
 	public Weapon() {
 		maxAmmo = 28;

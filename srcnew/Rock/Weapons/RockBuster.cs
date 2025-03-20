@@ -36,7 +36,7 @@ public class RockBuster : Weapon {
 				continue;
 			}
 		}
-		return lemonsOnField.Count < 3 && rock?.weaponCooldown <= 0;
+		return lemonsOnField.Count < 3;
 	}
 
 	public override void shootRock(Rock rock, params int[] args) {

@@ -10,6 +10,7 @@ public class IceWall : Weapon {
 	public Actor wall = null!;
 
 	public IceWall() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.IceWall;
 		displayName = "ICE WALL";
 		maxAmmo = 14;

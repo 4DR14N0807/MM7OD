@@ -9,6 +9,7 @@ public class LightningBolt : Weapon {
 	public static float cooldown = 45;
 
 	public LightningBolt() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.LightningBolt;
 		displayName = "LIGHTNING BOLT";
 		maxAmmo = 10;
@@ -16,7 +17,8 @@ public class LightningBolt : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = cooldown;
+		fireRate = 60;
+		switchCooldown = 45;
 		hasCustomAnim = true;
 	}
 
@@ -76,6 +78,7 @@ public class LightningBoltState : CharState {
 	float minTime = 6;
 	float maxTime = 60;
 	float chargeTime = 30;
+	bool shot;
 
 	public LightningBoltState() : base("lbolt") {
 	}
@@ -153,6 +156,10 @@ public class LightningBoltState : CharState {
 				once = true;
 			}
 			phase = 2;
+			shot = true;
+			if (bolt != null) {
+				bolt.shootCooldown = LightningBolt.cooldown;
+			}
 		}
 
 		if (phase == 2) {
@@ -170,8 +177,13 @@ public class LightningBoltState : CharState {
 		character.stopMovingWeak();
 		character.useGravity = true;
 		aim?.destroySelf();
-		bass.weaponCooldown = LightningBolt.cooldown;
-
+		Weapon? bolt = bass.weapons.FirstOrDefault((Weapon w) => w is LightningBolt);
+		if (bolt != null) {
+			bolt.shootCooldown = LightningBolt.cooldown;
+		}
+		if (bass.weaponCooldown <= 10) {
+			bass.weaponCooldown = 10;
+		}
 	}
 
 	void charge() {

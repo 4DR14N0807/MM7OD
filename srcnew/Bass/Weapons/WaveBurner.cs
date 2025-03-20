@@ -7,6 +7,7 @@ public class WaveBurner : Weapon {
 	public static WaveBurner netWeapon = new();
 
 	public WaveBurner() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.WaveBurner;
 		displayName = "WAVE BURNER";
 		weaponSlotIndex = index;
@@ -17,8 +18,9 @@ public class WaveBurner : Weapon {
 		maxAmmo = 168;
 		ammo = maxAmmo;
 		allowSmallBar = false;
-		ammoDisplayScale = 6;
+		ammoDisplayScale = 9;
 		ammoGainMultiplier = ammoDisplayScale;
+		drawCooldown = false;
 	}
 
 	public override void shoot(Character character, params int[] args) {

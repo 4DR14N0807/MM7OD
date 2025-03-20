@@ -13,6 +13,7 @@ public class JunkShield : Weapon {
 	public JunkShield() : base() {
 		shootSounds = new string[] { "", "", "", "" };
 		fireRate = cooldown;
+		switchCooldown = 45;
 		index = (int)RockWeaponIds.JunkShield;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.JunkShield;
 		weaponBarIndex = weaponBarBaseIndex;

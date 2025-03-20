@@ -10,6 +10,7 @@ public class CopyVision : Weapon {
 	public CopyVisionClone? bassClone;
 
 	public CopyVision() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.CopyVision;
 		displayName = "COPY VISION";
 		weaponSlotIndex = index;
@@ -20,6 +21,7 @@ public class CopyVision : Weapon {
 		ammo = maxAmmo;
 		//switchCooldown = 0.75f; //gambiarrita
 		fireRate = 9;
+		drawCooldown = false;
 
 		descriptionV2 = (
 			"Creates a clone that attack automatically." + "\n" +

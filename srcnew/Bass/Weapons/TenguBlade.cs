@@ -7,15 +7,18 @@ public class TenguBlade : Weapon {
 	public static TenguBlade netWeapon = new();
 
 	public TenguBlade() : base() {
+		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.TenguBlade;
 		displayName = "TENGU BLADE";
-		maxAmmo = 24;
+		maxAmmo = 48;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 60;
+		switchCooldown = 30;
 		hasCustomAnim = true;
+		ammoDisplayScale = 4;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -25,6 +28,10 @@ public class TenguBlade : Weapon {
 
 		if (character.charState is LadderClimb lc) character.changeState(new TenguBladeLadder(lc.ladder), true);
 		else character.changeState(new TenguBladeState(), true);
+	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 2;
 	}
 }
 

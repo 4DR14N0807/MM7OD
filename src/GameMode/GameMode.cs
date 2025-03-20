@@ -701,7 +701,10 @@ public class GameMode {
 	}
 
 	void drawRadar() {
-		if (Global.level.is1v1() || Global.level.isTraining() || Global.level.mainPlayer.isSpectator) {
+		if (Global.level.is1v1() ||
+			Global.level.isTraining() ||
+			Global.level.mainPlayer.isSpectator
+		) {
 			return;
 		}
 		float mapScale = 16;
@@ -1779,16 +1782,8 @@ public class GameMode {
 	}
 
 	public void drawWeaponSlot(Weapon weapon, float x, float y, bool selected = false) {
-		string jsonName = mainPlayer.isBass ? "hud_weapon_icon_bass" : "hud_weapon_icon";
-		if (weapon is MechMenuWeapon && !mainPlayer.isSpectator && level.mainPlayer.character?.linkedRideArmor != null) {
-			int index = 37 + level.mainPlayer.character.linkedRideArmor.raNum;
-			if (index == 42) index = 119;
-			Global.sprites["hud_weapon_icon"].drawToHUD(index, x, y);
-		} else if (weapon is MechMenuWeapon && level.mainPlayer.isSelectingRA()) {
-			return;
-		} else if (weapon is not AbsorbWeapon) {
-			Global.sprites[jsonName].drawToHUD(weapon.weaponSlotIndex, x, y);
-		}
+		Global.sprites[weapon.iconSprite].drawToHUD(weapon.weaponSlotIndex, x, y);
+		
 		bool canShoot = weapon.canShoot(0, mainPlayer);
 		if (!canShoot && (selected || weapon.ammo > 0)) {
 			drawWeaponStateOverlay(x, y, 2);
@@ -1811,135 +1806,6 @@ public class GameMode {
 
 		if (weapon.ammo < weapon.maxAmmo && weapon.drawAmmo) {
 			drawWeaponSlotAmmo(x, y, weapon.ammo / weapon.maxAmmo);
-		}
-
-		if (weapon is MechaniloidWeapon mew) {
-			if (mew.mechaniloidType == MechaniloidType.Tank && level.mainPlayer.tankMechaniloidCount() > 0) {
-				drawWeaponText(x, y, level.mainPlayer.tankMechaniloidCount().ToString());
-			} else if (mew.mechaniloidType == MechaniloidType.Hopper && level.mainPlayer.hopperMechaniloidCount() > 0) {
-				drawWeaponText(x, y, level.mainPlayer.hopperMechaniloidCount().ToString());
-			} else if (mew.mechaniloidType == MechaniloidType.Bird && level.mainPlayer.birdMechaniloidCount() > 0) {
-				drawWeaponText(x, y, level.mainPlayer.birdMechaniloidCount().ToString());
-			} else if (mew.mechaniloidType == MechaniloidType.Fish && level.mainPlayer.fishMechaniloidCount() > 0) {
-				drawWeaponText(x, y, level.mainPlayer.fishMechaniloidCount().ToString());
-			}
-		}
-
-		if (weapon is BlastLauncher && level.mainPlayer.axlLoadout.blastLauncherAlt == 1 && level.mainPlayer.grenades.Count > 0) {
-			drawWeaponText(x, y, level.mainPlayer.grenades.Count.ToString());
-		}
-
-		if (weapon is DNACore dnaCore && level.mainPlayer.weapon == weapon && level.mainPlayer.input.isHeld(Control.Special1, level.mainPlayer)) {
-			drawTransformPreviewInfo(dnaCore, x, y);
-		}
-
-		if (weapon is SigmaMenuWeapon) {
-			drawWeaponSlotCooldown(x, y, weapon.shootCooldown / 4);
-		}
-
-		if (Global.debug && Global.quickStart && weapon is AxlWeapon aw2 && weapon is not DNACore) {
-			drawWeaponSlotCooldownBar(x, y, aw2.shootCooldown / aw2.fireRate);
-			drawWeaponSlotCooldownBar(x, y, aw2.altShotCooldown / aw2.altFireCooldown, true);
-		}
-
-		MaverickWeapon? mw = weapon as MaverickWeapon;
-		if (mw != null) {
-			float maxHealth = level.mainPlayer.getMaverickMaxHp();
-			if (level.mainPlayer.isSummoner()) {
-				float mHealth = mw.maverick?.health ?? mw.lastHealth;
-				float mMaxHealth = mw.maverick?.maxHealth ?? maxHealth;
-				if (!mw.summonedOnce) mHealth = 0;
-				drawWeaponSlotAmmo(x, y, mHealth / mMaxHealth);
-				drawWeaponSlotCooldown(x, y, mw.shootCooldown / MaverickWeapon.summonerCooldown);
-			} else if (level.mainPlayer.isPuppeteer()) {
-				float mHealth = mw.maverick?.health ?? mw.lastHealth;
-				float mMaxHealth = mw.maverick?.maxHealth ?? maxHealth;
-				if (!mw.summonedOnce) mHealth = 0;
-				drawWeaponSlotAmmo(x, y, mHealth / mMaxHealth);
-			} else if (level.mainPlayer.isStriker()) {
-				float mHealth = mw.maverick?.health ?? mw.lastHealth;
-				float mMaxHealth = mw.maverick?.maxHealth ?? maxHealth;
-				if (level.mainPlayer.isStriker() && level.mainPlayer.mavericks.Count > 0 && mw.maverick == null) {
-					mHealth = 0;
-				}
-
-				drawWeaponSlotAmmo(x, y, mHealth / mMaxHealth);
-				drawWeaponSlotCooldown(x, y, mw.cooldown / MaverickWeapon.strikerCooldown);
-			} else if (level.mainPlayer.isTagTeam()) {
-				float mHealth = mw.maverick?.health ?? mw.lastHealth;
-				float mMaxHealth = mw.maverick?.maxHealth ?? maxHealth;
-				if (!mw.summonedOnce) mHealth = 0;
-				drawWeaponSlotAmmo(x, y, mHealth / mMaxHealth);
-				drawWeaponSlotCooldown(x, y, mw.cooldown / MaverickWeapon.tagTeamCooldown);
-			}
-
-			if (mw is ChillPenguinWeapon) {
-				for (int i = 0; i < mainPlayer.iceStatues.Count; i++) {
-					Global.sprites["hud_ice_statue"].drawToHUD(0, x - 3 + (i * 6), y + 10);
-				}
-			}
-
-			if (mw is DrDopplerWeapon ddw && ddw.ballType == 1) {
-				Global.sprites["hud_doppler_weapon"].drawToHUD(ddw.ballType, x + 4, y + 4);
-			}
-
-			if (mw is WireSpongeWeapon && level.mainPlayer.seeds.Count > 0) {
-				drawWeaponText(x, y, level.mainPlayer.seeds.Count.ToString());
-			}
-
-			if (mw is BubbleCrabWeapon && mw.maverick is BubbleCrab bc && bc.crabs.Count > 0) {
-				drawWeaponText(x, y, bc.crabs.Count.ToString());
-			}
-		}
-
-		/*if (level.mainPlayer.weapon == weapon && !level.mainPlayer.isSelectingCommand()) {
-			drawWeaponSlotSelected(x, y);
-		}*/
-
-		if (weapon is AxlWeapon && Options.main.axlLoadout.altFireArray[Weapon.wiToFi(weapon.index)] == 1) {
-			//Helpers.drawWeaponSlotSymbol(x - 8, y - 8, "²");
-		}
-
-		if (weapon is SigmaMenuWeapon) {
-			if ((level.mainPlayer.isPuppeteer() || level.mainPlayer.isSummoner()) && level.mainPlayer.currentMaverickCommand == MaverickAIBehavior.Follow) {
-				Helpers.drawWeaponSlotSymbol(x - 8, y - 8, "ª");
-			}
-
-			/*
-			string commandModeSymbol = null;
-			//if (level.mainPlayer.isSummoner()) commandModeSymbol = "SUM";
-			if (level.mainPlayer.isPuppeteer()) commandModeSymbol = "PUP";
-			if (level.mainPlayer.isStriker()) commandModeSymbol = "STK";
-			if (level.mainPlayer.isTagTeam()) commandModeSymbol = "TAG";
-			if (commandModeSymbol != null)
-			{
-				Helpers.drawTextStd(commandModeSymbol, x - 7, y + 4, Alignment.Left, fontSize: 12);
-			}
-			*/
-		}
-
-		if (mw != null) {
-			if (mw.currencyHUDAnimTime > 0) {
-				float animProgress = mw.currencyHUDAnimTime / MaverickWeapon.currencyHUDMaxAnimTime;
-				float yOff = animProgress * 20;
-				float alpha = Helpers.clamp01(1 - animProgress);
-				Global.sprites["pickup_bolt_small"].drawToHUD(0, x - 6, y - yOff - 10, alpha);
-				//DrawWrappers.DrawText("+1", x - 6, y - yOff - 10, Alignment.Center, )
-				Fonts.drawText(FontType.RedishOrange, "+1", x - 4, y - yOff - 15, Alignment.Left);
-			}
-		}
-
-		if (weapon is AbsorbWeapon aw) {
-			var sprite = Global.sprites[aw.absorbedProj.sprite.name];
-
-			float w = sprite.frames[0].rect.w();
-			float h = sprite.frames[0].rect.h();
-
-			float scaleX = Helpers.clampMax(10f / w, 1);
-			float scaleY = Helpers.clampMax(10f / h, 1);
-
-			Global.sprites["hud_weapon_icon"].draw(weapon.weaponSlotIndex, Global.level.camX + x, Global.level.camY + y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-			Global.sprites[aw.absorbedProj.sprite.name].draw(0, Global.level.camX + x, Global.level.camY + y, 1, 1, null, 1, scaleX, scaleY, ZIndex.HUD);
 		}
 	}
 

@@ -113,8 +113,11 @@ public class Rock : Character {
 		}
 
 		// For the shooting animation.
-		if (isCharging()) {
+		if (isCharging() && currentWeapon is RockBuster) {
 			if (charState.attackCtrl && !sprite.name.EndsWith("_shoot") && charState is not LadderClimb) {
+				if (shootAnimTime < 2) {
+					shootAnimTime = 2;
+				}
 				changeSpriteFromName(charState.shootSprite, false);
 			}
 		} else if (shootAnimTime > 0 && !armless) {
@@ -198,20 +201,24 @@ public class Rock : Character {
 
 	public void shoot(int chargeLevel) {
 		if (!ownedByLocalPlayer) return;
-		if (currentWeapon?.canShoot(chargeLevel, player) == false) return;
+		if (currentWeapon == null) { return; }
+		if (currentWeapon.canShoot(chargeLevel, player) == false) return;
 		if (!canShoot()) return;
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
 		float oldShootAnimTime = shootAnimTime;
-		
-		if (currentWeapon?.hasCustomAnim == false) setShootAnim();
-
+		if (currentWeapon.hasCustomAnim == false) {
+			setShootAnim();
+		}
 		int chargedNS = hasChargedNoiseCrush ? 1 : 0;
-		
-		weaponCooldown = currentWeapon?.fireRate ?? 0;
-		currentWeapon?.shootRock(this, chargeLevel, chargedNS);
+		currentWeapon.shootRock(this, chargeLevel, chargedNS);
+		currentWeapon.shootCooldown = currentWeapon.fireRate;
+		weaponCooldown = currentWeapon.fireRate;
+		if (currentWeapon.switchCooldown < weaponCooldown) {
+			weaponCooldown = currentWeapon.switchCooldown;
+		}
 		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(chargeLevel) ?? 0, player);
 		if (oldShootAnimTime <= 15f && currentWeapon?.hasCustomAnim == false) {
 			shootAnimTime = 15f;

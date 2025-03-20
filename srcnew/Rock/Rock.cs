@@ -219,8 +219,8 @@ public class Rock : Character {
 		if (currentWeapon.switchCooldown < weaponCooldown) {
 			weaponCooldown = currentWeapon.switchCooldown;
 		}
-		currentWeapon?.addAmmo(-currentWeapon?.getAmmoUsage(chargeLevel) ?? 0, player);
-		if (oldShootAnimTime <= 15f && currentWeapon?.hasCustomAnim == false) {
+		currentWeapon.addAmmo(-currentWeapon.getAmmoUsage(chargeLevel), player);
+		if (oldShootAnimTime <= 15f && !currentWeapon.hasCustomAnim) {
 			shootAnimTime = 15f;
 		}
 		stopCharge();

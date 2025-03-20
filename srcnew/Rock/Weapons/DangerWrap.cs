@@ -45,13 +45,20 @@ public class DangerWrap : Weapon {
 		int xDir = rock.getShootXDir();
 		Player player = rock.player;
 		int input = player.input.getYDir(player);
-		if (player.input.getXDir(player) != 0 && input == 0) { input = 2; }
+		if (player.input.getXDir(player) != 0) { 
+			if (input == 0) {
+				input = 2;
+			}
+			else if (input == -1) {
+				input = 0;
+			}
+		}
 
 		if (input == 1) {
 			dangerMines.Add(
-				new DangerWrapMineProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player));
+				new DangerWrapMineProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true));
 		} else {
-			new DangerWrapBubbleProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), input, true, player);
+			new DangerWrapBubbleProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), input, true);
 		}
 		rock.playSound("buster2", sendRpc: true);
 	}
@@ -95,21 +102,19 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 				heightMultiplier = 0.65f;
 			}
 
-			if (ownedByLocalPlayer && altPlayer != null) {
-				bomb = new Anim(pos, "danger_wrap_bomb", xDir, altPlayer.getNextActorNetId(), true, true);
+			if (ownedByLocalPlayer && ownerPlayer != null) {
+				bomb = new Anim(pos, "danger_wrap_bomb", xDir, ownerPlayer.getNextActorNetId(), true, true);
 			}
 		}
 
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
+		if (rpc && ownerPlayer != null) {
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)(type+128));
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapBubbleProj(
-			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0]-128, 
 			arg.netId, altPlayer: arg.player
 		);
 	}

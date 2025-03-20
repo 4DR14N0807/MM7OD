@@ -250,8 +250,10 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			for (int i = 0; i < 6; i++) {
 				float x = Helpers.cosd(i * 60) * 180;
 				float y = Helpers.sind(i * 60) * 180;
-				new Anim(pos, "generic_explosion", 1, damager.owner.getNextActorNetId(), true, true) 
-				{ vel = new Point(x, y) };
+				new Anim(pos, "generic_explosion", 1, damager.owner.getNextActorNetId(), false, true) {
+					vel = new Point(x, y),
+					ttl = 0.2f
+				};
 			}
 
 			playSound("danger_wrap_explosion", sendRpc: true);
@@ -288,7 +290,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 public class DangerWrapExplosionProj : Projectile {
 	private int radius = 0;
-	private double maxRadius = 80;
+	private double maxRadius = 60;
 
 	public DangerWrapExplosionProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
@@ -297,7 +299,7 @@ public class DangerWrapExplosionProj : Projectile {
 		pos, xDir, owner, "empty", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.DangerWrapExplosion;
-		//maxTime = 0.2f;
+		maxTime = 0.3f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
 		damager.damage = 4;
@@ -338,10 +340,10 @@ public class DangerWrapExplosionProj : Projectile {
 		if (radius + 16 >= maxRadius) {
 			transparencyMultiplier = ((float)maxRadius - radius) / 16;
 		}
-		Color col1 = new(222, 41, 24, (byte)MathF.Ceiling(128 * transparencyMultiplier));
-		Color col2 = new(255, 220, 220, (byte)MathF.Ceiling(192 * transparencyMultiplier));
+		Color col1 = new(222, 41, 24, (byte)MathF.Ceiling(96 * transparencyMultiplier));
+		Color col2 = new(255, 220, 220, (byte)MathF.Ceiling(128 * transparencyMultiplier));
 		DrawWrappers.DrawCircle(
-			pos.x + x, pos.y + y, radius, filled: true, col1, 4f, zIndex - 10, isWorldPos: true, col2
+			pos.x + x, pos.y + y, radius, filled: true, col1, 4f, ZIndex.Background - 100, isWorldPos: true, col2
 		);
 	}
 }

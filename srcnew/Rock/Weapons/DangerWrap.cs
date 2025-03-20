@@ -45,7 +45,7 @@ public class DangerWrap : Weapon {
 		int xDir = rock.getShootXDir();
 		Player player = rock.player;
 		int input = player.input.getYDir(player);
-		if (player.input.getXDir(player) != 0) input = 2;
+		if (player.input.getXDir(player) != 0 && input == 0) { input = 2; }
 
 		if (input == 1) {
 			dangerMines.Add(
@@ -282,7 +282,6 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 
 public class DangerWrapExplosionProj : Projectile {
-
 	private int radius = 0;
 	private double maxRadius = 80;
 
@@ -292,7 +291,6 @@ public class DangerWrapExplosionProj : Projectile {
 	) : base(
 		pos, xDir, owner, "empty", netProjId, altPlayer
 	) {
-
 		projId = (int)RockProjIds.DangerWrapExplosion;
 		//maxTime = 0.2f;
 		destroyOnHit = false;
@@ -331,10 +329,12 @@ public class DangerWrapExplosionProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		double transparency = (time) / (0.4);
-		if (transparency < 0) { transparency = 0; }
-		Color col1 = new(222, 41, 24, 128);
-		Color col2 = new(255, 255, 255, 255);
+		float transparencyMultiplier = 1;
+		if (radius + 16 >= maxRadius) {
+			transparencyMultiplier = ((float)maxRadius - radius) / 16;
+		}
+		Color col1 = new(222, 41, 24, (byte)MathF.Ceiling(128 * transparencyMultiplier));
+		Color col2 = new(255, 220, 220, (byte)MathF.Ceiling(192 * transparencyMultiplier));
 		DrawWrappers.DrawCircle(
 			pos.x + x, pos.y + y, radius, filled: true, col1, 4f, zIndex - 10, isWorldPos: true, col2
 		);

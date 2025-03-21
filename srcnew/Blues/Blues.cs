@@ -1651,6 +1651,11 @@ public class Blues : Character {
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
+		// Debug flag. Remove later.
+		if (customData.Count < 4) {
+			throw new Exception("ERROR: Incomplete data");
+		} 
+
 		return customData;
 	}
 
@@ -1663,9 +1668,6 @@ public class Blues : Character {
 		coreAmmo = data[0];
 		shieldHP = data[1];
 		netChargeLevel = data[2];
-		if (netChargeLevel == 0) {
-			stopCharge();
-		}
 		bool[] flags = Helpers.byteToBoolArray(data[3]);
 		isShieldActive = flags[0];
 		overheating = flags[1];

@@ -983,9 +983,9 @@ public partial class Level {
 		if (hostPlayers == null) {
 			return;
 		}
-		foreach (var hostPlayer in hostPlayers) {
+		foreach (PlayerPB hostPlayer in hostPlayers) {
 			if (hostPlayer.serverPlayer.id == mainPlayer.id) continue;
-			var player = players.Find(p => p.id == hostPlayer.serverPlayer.id);
+			Player? player = players.Find(p => p.id == hostPlayer.serverPlayer.id);
 			if (player == null) continue;
 			if (player.ownedByLocalPlayer) continue;
 
@@ -993,39 +993,25 @@ public partial class Level {
 			player.newAlliance = hostPlayer.newAlliance;
 			player.kills = hostPlayer.serverPlayer.kills;
 			player.deaths = hostPlayer.serverPlayer.deaths;
-			player.charNum = hostPlayer.serverPlayer.charNum;
+			player.charNum = hostPlayer.currentCharNum ?? hostPlayer.serverPlayer.charNum;
 			player.newCharNum = hostPlayer.newCharNum;
 			player.curMaxNetId = hostPlayer.curMaxNetId;
 			player.warpedInOnce = hostPlayer.warpedIn;
 			player.readyTime = hostPlayer.readyTime;
-			player.readyTextOver = hostPlayer.spawnChar;
-			player.armorFlag = hostPlayer.armorFlag;
+			player.readyTextOver = hostPlayer.readyTextOver;
 			player.loadout = hostPlayer.loadoutData;
-			player.disguise = hostPlayer.disguise;
-			player.atransLoadout = hostPlayer.atransLoadout;
 
 			if (hostPlayer.currentCharNum != null && hostPlayer.charNetId != null &&
 				hostPlayer.charNetId != 0 && player.character == null
 			) {
 				int targetCharNum = hostPlayer.currentCharNum.Value;
 				LoadoutData currentLoadout = player.loadout;
-				if (player.atransLoadout != null) {
-					player.loadout = player.atransLoadout;
-				}
 				player.spawnCharAtPoint(
 					targetCharNum, player.getCharSpawnData(targetCharNum),
 					new Point(hostPlayer.charXPos, hostPlayer.charYPos),
 					hostPlayer.charXDir, (ushort)hostPlayer.charNetId, false
 				);
-				if (hostPlayer.charRollingShieldNetId != null) {
-					new RollingShieldProjCharged(
-						player.character.pos,
-						player.character.xDir, player.character, player, hostPlayer.charRollingShieldNetId.Value
-					);
-				}
 				player.loadout = currentLoadout;
-			} else {
-				player.atransLoadout = null;
 			}
 		}
 	}

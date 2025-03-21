@@ -1325,6 +1325,8 @@ public class Taunt : CharState {
 	public Taunt(bool finishedMatch = false) : base("win") {
 		this.finishedMatch = finishedMatch;
 		airMove = true;
+		normalCtrl = true;
+		attackCtrl = true;
 	}
 
 	public override bool canEnter(Character character){

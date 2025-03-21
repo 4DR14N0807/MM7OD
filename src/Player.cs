@@ -1030,8 +1030,10 @@ public partial class Player {
 			return null;
 		}
 		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
-		newCharNum = spawnCharNum;
-		charNum = spawnCharNum;
+		if (isMainChar) {
+			newCharNum = spawnCharNum;
+			charNum = spawnCharNum;
+		}
 		if (isMainPlayer) {
 			previousLoadout = loadout;
 			applyLoadoutChange();

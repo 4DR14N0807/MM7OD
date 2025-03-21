@@ -30,30 +30,18 @@ public class InGameMainMenu : IMainMenu {
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			if (selectY == 0) {
 				int selectedCharNum = Global.level.mainPlayer.newCharNum;
-				if (Global.level.mainPlayer.character == null ||
-					Global.level.mainPlayer.character.charState is Die
+				if (Global.level.mainPlayer.character != null &&
+					Global.level.mainPlayer.character.charState is not Die
 				) {
-					selectedCharNum = Global.level.mainPlayer.newCharNum;
+					selectedCharNum = (int)Global.level.mainPlayer.character.charId;
 				}
-
 				if (isSelWepDisabled()) return;
-				if (Global.level.mainPlayer.realCharNum == (int)CharIds.Rock) {
+				if (selectedCharNum == (int)CharIds.Rock) {
 					Menu.change(new SelectRockWeaponMenu(this, true));
-				}  else if (Global.level.mainPlayer.realCharNum == (int)CharIds.Blues) {
+				}  else if (selectedCharNum == (int)CharIds.Blues) {
 					Menu.change(new BluesWeaponMenu(this, true));
-				} else if (Global.level.mainPlayer.realCharNum == (int)CharIds.Bass) {
+				} else if (selectedCharNum == (int)CharIds.Bass) {
 					Menu.change(new BassWeaponMenu(this, true));
-				}
-				 else if (Global.level.mainPlayer.realCharNum == 4) {
-					Menu.change(new SelectSigmaWeaponMenu(this, true));
-				} else if (selectedCharNum == 3) {
-					Menu.change(new SelectAxlWeaponMenu(this, true));
-				} else if (selectedCharNum == 2) {
-					Menu.change(new SelectVileWeaponMenu(this, true));
-				} else if (selectedCharNum == 1) {
-					Menu.change(new SelectZeroWeaponMenu(this, true));
-				} else {
-					Menu.change(new SelectWeaponMenu(this, true));
 				}
 			} else if (selectY == 1) {
 				if (isSelArmorDisabled()) return;

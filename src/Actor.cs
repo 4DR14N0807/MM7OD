@@ -160,12 +160,14 @@ public partial class Actor : GameObject {
 	public Point? targetNetPos;
 	public bool interplorateNetPos = true;
 
-	private Point lastPos;
-	private int lastSpriteIndex;
-	private int lastFrameIndex;
-	private int lastXDir;
-	private int lastYDir;
-	private float? lastAngle;
+	// For RPC stuff.
+	private Point? lastPos;
+	private int lastSpriteIndex = -1000;
+	private int lastFrameIndex = -1000;
+	private int lastXDir = -1000;
+	private int lastYDir = -1000;
+	private bool? lastVisible = null;
+	private float lastAngle = -1000;
 	public float lastNetUpdate;
 
 	public NetActorCreateId netActorCreateId;
@@ -1101,7 +1103,7 @@ public partial class Actor : GameObject {
 
 					netXPos = null;
 					netYPos = null;
-					if (pos.distanceTo(framePos) > 0.001f) {
+					if (pos.distanceTo(framePos) > 1f/16f) {
 						changePos(framePos);
 						netXPos = null;
 						netYPos = null;
@@ -1127,7 +1129,6 @@ public partial class Actor : GameObject {
 				}
 			}
 
-			
 			int spriteIndex = -1;
 			if (Global.spriteIndexByName.ContainsKey(sprite.name)) {
 				spriteIndex = Global.spriteIndexByName[sprite.name];

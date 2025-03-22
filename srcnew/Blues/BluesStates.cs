@@ -596,7 +596,7 @@ public class BluesRevive : CharState {
 			} else {
 				fullCore = true;
 			}
-			blues.playSound("heal", forcePlay: true, sendRpc: true);
+			blues.playSound("heal", forcePlay: true);
 			healTime = 0;
 			if (fullHP && fullCore) {
 				blues.frameSpeed = 1;

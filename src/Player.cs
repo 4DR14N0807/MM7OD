@@ -1030,8 +1030,10 @@ public partial class Player {
 			return null;
 		}
 		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
-		newCharNum = spawnCharNum;
-		charNum = spawnCharNum;
+		if (isMainChar) {
+			newCharNum = spawnCharNum;
+			charNum = spawnCharNum;
+		}
 		if (isMainPlayer) {
 			previousLoadout = loadout;
 			applyLoadoutChange();
@@ -1383,25 +1385,27 @@ public partial class Player {
 	}
 
 	public int getRespawnTime() {
+		if (Global.level == null) {
+			return 5;
+		}
+		if (Global.level.server?.customMatchSettings != null &&
+			Global.level.server.customMatchSettings.respawnTime > 0
+		) {
+			return Global.level.server.customMatchSettings.respawnTime;
+		}
 		if (Global.level.isTraining() || Global.level.isRace()) {
 			return 2;
 		}
 		if (Global.level.gameMode is FFADeathMatch) {
 			return 5;
 		}
-		if (Global.level?.server?.customMatchSettings != null &&
-			Global.level.server.customMatchSettings.respawnTime >= 0
-		) {
-			return Global.level.server.customMatchSettings.respawnTime;
-		} else {
-			if (Global.level?.gameMode is ControlPoints) {
-				return 7;
-			}
-			if (Global.level?.gameMode is KingOfTheHill) {
-				return 7;
-			}
+		/*if (Global.level?.gameMode is ControlPoints) {
+			return 8;
 		}
-		return 7;
+		if (Global.level?.gameMode is KingOfTheHill) {
+			return 8;
+		}*/
+		return 8;
 	}
 
 	public bool canReviveVile() {

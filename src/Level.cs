@@ -41,11 +41,10 @@ public partial class Level {
 	public List<DelayedAction> delayedActions = new List<DelayedAction>();
 	public Dictionary<ushort, float> recentlyDestroyedNetActors = new Dictionary<ushort, float>();
 	public List<BufferedDestroyActor> bufferedDestroyActors = new List<BufferedDestroyActor>();
-	public Dictionary<int, FailedSpawn> failedSpawns = new Dictionary<int, FailedSpawn>();
 
 	public string getListCounts() {
 		return effects.Count + "," + recentClipCount.Keys.Count + "," + loopingSounds.Count + "," + musicSources.Count + "," + boundBlasterAltProjs.Count + "," + chargedCrystalHunters.Count + "," + unchargedGravityWells.Count + "," + backloggedSpawns.Count + "," +
-			delayedActions.Count + "," + recentlyDestroyedNetActors.Keys.Count + "," + bufferedDestroyActors.Count + "," + failedSpawns.Keys.Count;
+			delayedActions.Count + "," + recentlyDestroyedNetActors.Keys.Count + "," + bufferedDestroyActors.Count;
 	}
 	#endregion
 
@@ -960,14 +959,6 @@ public partial class Level {
 		return levelData.name == "giantdam" && !levelData.isMirrored && gameMode is CTF;
 	}
 
-	public void addFailedSpawn(int playerId, Point point, int xDir, ushort netId) {
-		if (!failedSpawns.ContainsKey(playerId)) {
-			failedSpawns[playerId] = new FailedSpawn(point, xDir, netId);
-		} else {
-			failedSpawns[playerId].time += Global.spf;
-		}
-	}
-
 	public bool pickupRestricted(dynamic instance) {
 		if (isNon1v1Elimination()) return true;
 		if (instance.properties.nonDmOnly == true && Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
@@ -983,9 +974,9 @@ public partial class Level {
 		if (hostPlayers == null) {
 			return;
 		}
-		foreach (var hostPlayer in hostPlayers) {
+		foreach (PlayerPB hostPlayer in hostPlayers) {
 			if (hostPlayer.serverPlayer.id == mainPlayer.id) continue;
-			var player = players.Find(p => p.id == hostPlayer.serverPlayer.id);
+			Player? player = players.Find(p => p.id == hostPlayer.serverPlayer.id);
 			if (player == null) continue;
 			if (player.ownedByLocalPlayer) continue;
 
@@ -993,39 +984,25 @@ public partial class Level {
 			player.newAlliance = hostPlayer.newAlliance;
 			player.kills = hostPlayer.serverPlayer.kills;
 			player.deaths = hostPlayer.serverPlayer.deaths;
-			player.charNum = hostPlayer.serverPlayer.charNum;
+			player.charNum = hostPlayer.currentCharNum ?? hostPlayer.serverPlayer.charNum;
 			player.newCharNum = hostPlayer.newCharNum;
 			player.curMaxNetId = hostPlayer.curMaxNetId;
 			player.warpedInOnce = hostPlayer.warpedIn;
 			player.readyTime = hostPlayer.readyTime;
-			player.readyTextOver = hostPlayer.spawnChar;
-			player.armorFlag = hostPlayer.armorFlag;
+			player.readyTextOver = hostPlayer.readyTextOver;
 			player.loadout = hostPlayer.loadoutData;
-			player.disguise = hostPlayer.disguise;
-			player.atransLoadout = hostPlayer.atransLoadout;
 
 			if (hostPlayer.currentCharNum != null && hostPlayer.charNetId != null &&
 				hostPlayer.charNetId != 0 && player.character == null
 			) {
 				int targetCharNum = hostPlayer.currentCharNum.Value;
 				LoadoutData currentLoadout = player.loadout;
-				if (player.atransLoadout != null) {
-					player.loadout = player.atransLoadout;
-				}
 				player.spawnCharAtPoint(
 					targetCharNum, player.getCharSpawnData(targetCharNum),
 					new Point(hostPlayer.charXPos, hostPlayer.charYPos),
 					hostPlayer.charXDir, (ushort)hostPlayer.charNetId, false
 				);
-				if (hostPlayer.charRollingShieldNetId != null) {
-					new RollingShieldProjCharged(
-						player.character.pos,
-						player.character.xDir, player.character, player, hostPlayer.charRollingShieldNetId.Value
-					);
-				}
 				player.loadout = currentLoadout;
-			} else {
-				player.atransLoadout = null;
 			}
 		}
 	}
@@ -1739,25 +1716,6 @@ public partial class Level {
 			if (backloggedSpawns[i].time >= 5 || backloggedSpawns[i].trySpawnPlayer()) {
 				backloggedSpawns.RemoveAt(i);
 			}
-		}
-
-		var keysToRemove = new List<int>();
-		foreach (var kvp in failedSpawns) {
-			var player = getPlayerById(kvp.Key);
-			if (player == null || player.character != null) {
-				keysToRemove.Add(kvp.Key);
-			} else if (kvp.Value.time >= 4f) {
-				keysToRemove.Add(kvp.Key);
-				if (player.character == null && player.loadoutSet) {
-					player?.spawnCharAtPoint(
-						player.newCharNum, player.getCharSpawnData(player.newCharNum),
-						kvp.Value.spawnPos, kvp.Value.xDir, kvp.Value.netId, false
-					);
-				}
-			}
-		}
-		foreach (var key in keysToRemove) {
-			failedSpawns.Remove(key);
 		}
 
 		foreach (var key in recentlyDestroyedNetActors.Keys.ToList()) {

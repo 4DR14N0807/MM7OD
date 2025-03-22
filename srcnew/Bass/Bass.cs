@@ -48,6 +48,11 @@ public class Bass : Character {
 		weapons = getLoadout();
 		charge1Time = 50;
 		maxHealth -= (decimal)player.evilEnergyStacks * (decimal)player.hpPerStack;
+		health = maxHealth;
+
+		if (isWarpIn && ownedByLocalPlayer) {
+			health = 0;
+		}
 	}
 
 	public override bool canAddAmmo() {

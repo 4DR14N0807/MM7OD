@@ -678,7 +678,7 @@ public class Idle : CharState {
 }
 
 public class Run : CharState {
-	public Run() : base("run", "run_shoot", "attack") {
+	public Run() : base("run", "run_shoot", "attack", "run_start", "run_shoot_start") {
 		accuracy = 5;
 		exitOnAirborne = true;
 		attackCtrl = true;

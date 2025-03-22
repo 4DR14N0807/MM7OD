@@ -1652,11 +1652,6 @@ public class Blues : Character {
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
-		// Debug flag. Remove later.
-		if (customData.Count < 4) {
-			throw new Exception("ERROR: Incomplete data");
-		} 
-
 		return customData;
 	}
 

@@ -105,7 +105,7 @@ public partial class Actor {
 
 public class RPCUpdateActor : RPC {
 	public RPCUpdateActor() {
-		netDeliveryMethod = NetDeliveryMethod.Unreliable;
+		netDeliveryMethod = NetDeliveryMethod.ReliableSequenced;
 		isPreUpdate = true;
 	}
 
@@ -170,13 +170,21 @@ public class RPCUpdateActor : RPC {
 			}
 		}
 		catch (IndexOutOfRangeException exception) {
+			string playerName = "null";
+			if (actor is Character character) {
+				playerName = character.player.name;
+			}
+			else if (actor.netOwner?.name != null) {
+				playerName = actor.netOwner.name;
+			}
 			string msg = (
 				"Index out of bounds.\n" + 
 				$"Actor type: {actor.GetType()}, " +
 				$"args len: {arguments.Length}, " +
 				$"extra args pos: {i}, " + 
 				$"netId: {netId} " +
-				$"maskBool: {netId.ToString()} "
+				$"maskBool: {netId.ToString()} " +
+				$"player: {playerName}"
 			);
 
 			throw new Exception(msg, exception.InnerException);

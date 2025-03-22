@@ -222,6 +222,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		if (!landed && other.gameObject is Wall) {
+			damager.damage = 3;
 			damager.flinch = Global.defFlinch;
 			vel = new Point();
 			time = 0;

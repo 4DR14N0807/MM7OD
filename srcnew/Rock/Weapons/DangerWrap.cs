@@ -186,10 +186,10 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		pos, xDir, owner, "danger_wrap_fall", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.DangerWrapMine;
-		maxTime = 2;
+		maxTime = 1;
 		useGravity = true;
 		fadeSprite = "generic_explosion";
-		damager.damage = 3;
+		damager.damage = 2;
 		damager.hitCooldown = 30;
 		ownChr = owner;
 
@@ -207,11 +207,8 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		}
 		moveWithMovingPlatform();
 
-		if (time >= 15) {
-			changeSprite("danger_wrap_land_active", false);
-		}
-		if (time >= 20) {
-			destroySelf();
+		if (time >= 13) {
+			changeSprite("danger_wrap_land_active", true);
 		}
 	}
 
@@ -225,12 +222,12 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		if (!landed && other.gameObject is Wall) {
-			damager.flinch = Global.defFlinch;
+			updateDamager(3, Global.defFlinch);
 			vel = new Point();
 			time = 0;
 			maxTime = 15;
 			useGravity = false;
-			changeSprite("danger_wrap_land", false);
+			changeSprite("danger_wrap_land", true);
 			landed = true;
 			projId = (int)RockProjIds.DangerWrapMineLanded;
 		}
@@ -300,7 +297,7 @@ public class DangerWrapExplosionProj : Projectile {
 		damager.hitCooldown = 30;
 
 		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
-		projId = (int)RockProjIds.DangerWrapMine;
+		projId = (int)RockProjIds.DangerWrapMineLanded;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

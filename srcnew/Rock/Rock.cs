@@ -66,6 +66,10 @@ public class Rock : Character {
 
 		noiseCrushEffect = new ChargeEffect();
 		noiseCrushEffect.character = this;
+
+		if (isWarpIn && ownedByLocalPlayer) {
+			health = 0;
+		}
 	}
 
 	public override void update() {

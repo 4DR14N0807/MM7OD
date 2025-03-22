@@ -1399,13 +1399,13 @@ public partial class Player {
 		if (Global.level.gameMode is FFADeathMatch) {
 			return 5;
 		}
-		if (Global.level?.gameMode is ControlPoints) {
-			return 7;
+		/*if (Global.level?.gameMode is ControlPoints) {
+			return 8;
 		}
 		if (Global.level?.gameMode is KingOfTheHill) {
-			return 7;
-		}
-		return 7;
+			return 8;
+		}*/
+		return 8;
 	}
 
 	public bool canReviveVile() {

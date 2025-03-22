@@ -271,9 +271,8 @@ public partial class Character : Actor, IDamagable {
 		chargeEffect = new ChargeEffect();
 		lastGravityWellDamager = player;
 		maxHealth = 28;
-		health = 1;
-		if (player.disguise == null) {
-			healAmount = (float)maxHealth - 1;
+		if (!ownedByLocalPlayer || !isWarpIn) {
+			health = maxHealth;
 		}
 	}
 

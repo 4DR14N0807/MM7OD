@@ -468,6 +468,9 @@ public class WarpIn : CharState {
 
 public class WarpIdle : CharState {
 	public bool firstSpawn;
+	public bool fullHP;
+	public bool fullAlt;
+	float healTime = -4;
 
 	public WarpIdle(bool firstSpawn = false) : base("win") {
 		invincible = true;
@@ -477,11 +480,58 @@ public class WarpIdle : CharState {
 	public override void update() {
 		base.update();
 
-		if ((character.isAnimOver() || character.sprite.loopCount >= 1) &&
-			character.health >= character.maxHealth &&
-			(character is not Blues blues || blues.shieldHP >= blues.shieldMaxHP)
-		) {
+		if (character is Blues blues) {
+			refillBlues(blues);
+		} else {
+			refillNormal();
+		}
+
+		if ((character.isAnimOver() || character.sprite.loopCount >= 1) && fullHP && fullAlt) {
 			character.changeToIdleOrFall();
+		}
+	}
+
+	
+	public void refillNormal() {
+		fullAlt = true;
+		healTime++;
+		if (!fullHP && healTime >= 3) {
+			// Health.
+			if (character.health < character.maxHealth) {
+				character.health = Helpers.clampMax(character.health + 1, character.maxHealth);
+			} else {
+				fullHP = true;
+			}
+			if (Global.level.mainPlayer.character == character) {
+				character.playSound("heal", forcePlay: true);
+			}
+			healTime = 0;
+		}
+	}
+
+	public void refillBlues(Blues blues) {
+		fullAlt = true;
+		blues.healShieldHPCooldown = 15;
+		healTime++;
+		if (!fullHP && healTime >= 3) {
+			// Health.
+			if (blues.health < blues.maxHealth) {
+				blues.health = Helpers.clampMax(blues.health + 1, blues.maxHealth);
+			}
+			// Shield.
+			else if (blues.shieldHP < blues.shieldMaxHP) {
+				blues.shieldHP++;
+				if (blues.shieldHP >= blues.shieldMaxHP) {
+					blues.shieldHP = blues.shieldMaxHP;
+					fullHP = true;
+				}
+			} else {
+				fullHP = true;
+			}
+			if (Global.level.mainPlayer.character == character) {
+				blues.playSound("heal", forcePlay: true);
+			}
+			healTime = 0;
 		}
 	}
 
@@ -500,7 +550,7 @@ public class WarpIdle : CharState {
 		character.splashable = true;
 		specialId = SpecialStateIds.None;
 		if (character.ownedByLocalPlayer) {
-			character.invulnTime = firstSpawn ? 2 : 0;
+			character.invulnTime = firstSpawn ? 1 : 0;
 		}
 	}
 }

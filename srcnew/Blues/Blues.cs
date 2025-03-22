@@ -80,6 +80,7 @@ public class Blues : Character {
 	) {
 		charId = CharIds.Blues;
 		maxHealth = (decimal)player.getMaxHealth(charId);
+		health = (decimal)player.getMaxHealth(charId);
 
 		charge1Time = 40;
 		charge2Time = 105;
@@ -106,8 +107,8 @@ public class Blues : Character {
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			shieldHP = 0;
-			healShieldHPCooldown = 39 + MathF.Ceiling(42 * Player.getHealthModifier());
-			fastShieldHeal = true;
+			health = 0;
+			healShieldHPCooldown = 60 * 4;
 		}
 	}
 

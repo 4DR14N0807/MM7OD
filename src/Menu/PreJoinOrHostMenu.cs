@@ -59,7 +59,7 @@ public class PreJoinOrHostMenu : IMainMenu {
 				Menu.change(new ErrorMenu(new string[] {
 						"No multiplayer regions configured.",
 						"Please add a region name/ip to region.json",
-						"in game or MMXOD folder, then restart the game.",
+						"in game or MM7OD folder, then restart the game.",
 				}, this));
 			} else {
 				state1Time = 0;

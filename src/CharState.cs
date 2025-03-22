@@ -1217,6 +1217,7 @@ public class LadderClimb : CharState {
 		character.stopMoving();
 		character.useGravity = false;
 		character.dashedInAir = 0;
+		character.shootAnimTime = 0;
 	}
 
 	public override void onExit(CharState? newState) {

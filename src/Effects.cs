@@ -96,7 +96,7 @@ public class ChargeEffect {
 				part.pos.y -= Global.speedMul * 4;
 			}
 			chargePart = chargeLevel switch {
-				>2 => "charge_part_2",
+				2 => "charge_part_2",
 				_ => "charge_part_1"
 			};
 			if (chargeType == 1) {

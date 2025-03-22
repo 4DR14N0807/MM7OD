@@ -113,8 +113,8 @@ public class Rock : Character {
 		}
 
 		// For the shooting animation.
-		if (isCharging() && currentWeapon is RockBuster) {
-			if (charState.attackCtrl && !sprite.name.EndsWith("_shoot") && charState is not LadderClimb) {
+		if (isCharging() && currentWeapon is RockBuster && charState is not LadderClimb) {
+			if (charState.attackCtrl && !sprite.name.EndsWith("_shoot")) {
 				if (shootAnimTime < 2) {
 					shootAnimTime = 2;
 				}
@@ -445,7 +445,7 @@ public class Rock : Character {
 	}
 
 	public Weapon? getRefillTargetWeapon() {
-		if (currentWeapon.canHealAmmo && currentWeapon.ammo < currentWeapon.maxAmmo) {
+		if (currentWeapon?.canHealAmmo == true && currentWeapon.ammo < currentWeapon.maxAmmo) {
 			return player.weapon;
 		}
 		if (rushWeapon.ammo < rushWeapon.maxAmmo) {

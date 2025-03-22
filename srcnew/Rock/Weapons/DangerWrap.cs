@@ -186,7 +186,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		pos, xDir, owner, "danger_wrap_fall", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.DangerWrapMine;
-		maxTime = 1;
+		maxTime = 1.125f;
 		useGravity = true;
 		fadeSprite = "generic_explosion";
 		damager.damage = 2;
@@ -207,7 +207,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		}
 		moveWithMovingPlatform();
 
-		if (time >= 13) {
+		if (time >= 18) {
 			changeSprite("danger_wrap_land_active", true);
 		}
 	}
@@ -222,10 +222,10 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		if (!landed && other.gameObject is Wall) {
-			updateDamager(3, Global.defFlinch);
+			damager.flinch = Global.defFlinch;
 			vel = new Point();
 			time = 0;
-			maxTime = 15;
+			maxTime = 20;
 			useGravity = false;
 			changeSprite("danger_wrap_land", true);
 			landed = true;

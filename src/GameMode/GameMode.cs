@@ -452,7 +452,11 @@ public class GameMode {
 					if (Global.isHost) {
 						if (!changedEndMenuOnceHost) {
 							changedEndMenuOnceHost = true;
-							nextMatchHostMenu = new HostMenu(null, level.server, false, level.server.isLAN);
+							nextMatchHostMenu = new HostMenu(
+								null, level.server, false,
+								level.server.isLAN,
+								level.server.isP2P
+							);
 							Menu.change(nextMatchHostMenu);
 						}
 					} else {

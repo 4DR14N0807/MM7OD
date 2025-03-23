@@ -1028,7 +1028,9 @@ public class HostMenu : IMainMenu {
 				serverData.region.ip, serverData.name, response.server.port, inputServerPlayer, out JoinServerResponse joinServerResponse, out string error
 			);
 			if (Global.serverClient == null) {
-				Menu.change(new ErrorMenu(new string[] { error, "Please try recreating match." }, new HostMenu(new MainMenu(), null, false, serverData.isLAN)));
+				Menu.change(
+					new ErrorMenu(new string[] { error, "Please try recreating match." },
+					new HostMenu(new MainMenu(), null, false, serverData.isLAN, serverData.isP2P)));
 				return;
 			}
 			Menu.change(new WaitMenu(menu, joinServerResponse.server, isRecreate));
@@ -1413,8 +1415,10 @@ public class HostMenu : IMainMenu {
 				Global.screenW * 0.5f, 20 + top, alignment: Alignment.Center
 			);
 		}
-		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, Time);
-		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, Time2);		
+		if (Global.level == null) {
+			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, Time);
+			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, Time2);
+		}
 
 	}
 	public void TimeUpdate() {

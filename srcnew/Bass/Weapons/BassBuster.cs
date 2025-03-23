@@ -65,7 +65,7 @@ public class BassBusterProj : Projectile {
 		maxTime = 0.7f;
 		this.byteAngle = byteAngle;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
-		//destroyOnHitWall = true;
+		destroyOnHitWall = true;
 		fadeSprite = "bass_buster_proj_fade";
 		fadeOnAutoDestroy = true;
 
@@ -80,11 +80,5 @@ public class BassBusterProj : Projectile {
 		return new BassBusterProj(
 			arg.owner, arg.pos, arg.byteAngle, arg.netId, altPlayer: arg.player
 		);
-	}
-
-	public override void onHitWall(CollideData other) {
-		base.onHitWall(other);
-
-		destroySelf();
 	}
 }

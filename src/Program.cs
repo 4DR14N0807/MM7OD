@@ -151,7 +151,7 @@ class Program {
 		loadText.Add("NOM BIOS v" + Global.version + ", An Energy Sunstar Ally");
 		loadText.Add("Copyright ©20XX, NOM Corporation");
 		loadText.Add("");
-		loadText.Add(Global.shortForkName + " " + Global.versionName + " " + Global.subVersionName);
+		loadText.Add(Global.shortForkName + " " + Global.versionName + " ");
 		loadText.Add("");
 		if (String.IsNullOrEmpty(Options.main.playerName)) {
 			loadText.Add("User: Dr. Light");

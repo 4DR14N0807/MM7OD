@@ -1497,11 +1497,11 @@ public class Blues : Character {
 	}
 
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
+		offset = offset.addxy(0, 17);
 		base.renderHUD(offset, position);
 	}
 
 	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
-		offset = offset.addxy(0, 21);
 		base.renderLifebar(offset, position);
 
 		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
@@ -1529,7 +1529,7 @@ public class Blues : Character {
 		float baseY = hudHealthPosition.y + offset.y;
 		decimal modifier = (decimal)Player.getHealthModifier();
 		decimal maxHP = maxHealth / modifier;
-		baseY += (float)(-21 - maxHP * 2);
+		baseY += -4 - offset.y - (float)(maxHP * 2);
 		decimal maxShield = shieldMaxHP / modifier;
 		decimal curShield = Math.Floor(shieldHP) / modifier;
 		decimal ceilShield = Math.Ceiling(shieldHP / modifier);
@@ -1559,7 +1559,7 @@ public class Blues : Character {
 	public override void renderAmmo(Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null) {
 		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, false);
 		float baseX = hudHealthPosition.x + offset.x;
-		float baseY = hudHealthPosition.y + offset.y + 21;
+		float baseY = hudHealthPosition.y + offset.y;
 
 		int coreAmmoColor = 0;
 		int overdriveColor = 1;
@@ -1621,7 +1621,6 @@ public class Blues : Character {
 	}
 
 	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
-		offset.y += 21;
 		base.renderBuffs(offset, position);
 		int drawDir = 1;
 		if (position == GameMode.HUDHealthPosition.Right) {

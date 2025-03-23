@@ -73,9 +73,9 @@ public partial class Actor {
 			send = true;
 		}
 		// The rest are just contain actual bool data.
-		mask[4] = visible;                      // Visibility
-		mask[5] = xDir <= -1 ? false : true;    // xDir
-		mask[6] = yDir <= -1 ? false : true;    // yDir
+		mask[5] = visible;                      // Visibility
+		mask[6] = xDir <= -1 ? false : true;    // xDir
+		mask[7] = yDir <= -1 ? false : true;    // yDir
 
 		// Check if anything changed on these bools.
 		if (lastXDir != xDir || lastYDir != yDir || lastVisible != visible) {
@@ -122,6 +122,7 @@ public class RPCUpdateActor : RPC {
 		i += 2;
 
 		// Bool mask
+		byte maskByte = arguments[i];
 		bool[] mask = Helpers.byteToBoolArray(arguments[i]);
 		i++;
 
@@ -159,8 +160,7 @@ public class RPCUpdateActor : RPC {
 		}
 		// Angle.
 		if (mask[4]) {
-			actor.byteAngle = BitConverter.ToSingle(arguments[i..(i + 4)]);
-			i += 4;
+			actor.byteAngle = arguments[i++];
 		}
 
 		try {
@@ -169,7 +169,7 @@ public class RPCUpdateActor : RPC {
 				actor.updateCustomActorNetData(arguments[i..]);
 			}
 		}
-		catch (IndexOutOfRangeException exception) {
+		catch (IndexOutOfRangeException) {
 			string playerName = "null";
 			if (actor is Character character) {
 				playerName = character.player.name;
@@ -177,17 +177,17 @@ public class RPCUpdateActor : RPC {
 			else if (actor.netOwner?.name != null) {
 				playerName = actor.netOwner.name;
 			}
-			string msg = (
+			Program.exceptionExtraData = (
 				"Index out of bounds.\n" + 
-				$"Actor type: {actor.GetType()}, " +
+				$"Actor type: {actor.GetType().ToString().RemovePrefix("MMXOnline.")}, " +
 				$"args len: {arguments.Length}, " +
 				$"extra args pos: {i}, " + 
 				$"netId: {netId} " +
-				$"maskBool: {netId.ToString()} " +
+				$"maskBool: {Convert.ToString(maskByte, 2).PadLeft(8, '0')}" +
 				$"player: {playerName}"
 			);
 
-			throw new Exception(msg, exception.InnerException);
+			throw;
 		}
 
 		actor.lastNetUpdate = Global.time;

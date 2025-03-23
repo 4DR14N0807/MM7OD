@@ -169,7 +169,7 @@ public class RPCUpdateActor : RPC {
 				actor.updateCustomActorNetData(arguments[i..]);
 			}
 		}
-		catch (IndexOutOfRangeException) {
+		catch {
 			string playerName = "null";
 			if (actor is Character character) {
 				playerName = character.player.name;

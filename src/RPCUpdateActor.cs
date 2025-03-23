@@ -31,8 +31,9 @@ public partial class Actor {
 		// These masks are for whether to send the following fields or not.
 		bool[] mask = new bool[8];
 
-		// Add the mask
-		args.Add(Helpers.boolArrayToByte(mask));
+		// Add a dummy mask.
+		int maskPos = args.Count;
+		args.Add(0);
 
 		// Pos.
 		if (!isStatic && lastPos != pos) {
@@ -87,6 +88,10 @@ public partial class Actor {
 			args.AddRange(customData);
 			send = true;
 		}
+
+		// Update the mask info.
+		args[maskPos] = Helpers.boolArrayToByte(mask);
+
 		// Send if anything changed.
 		// Otherwise skip.
 		if (send) {
@@ -180,11 +185,11 @@ public class RPCUpdateActor : RPC {
 			Program.exceptionExtraData = (
 				"Index out of bounds.\n" + 
 				$"Actor type: {actor.GetType().ToString().RemovePrefix("MMXOnline.")}, " +
+				$"player: {playerName}, " +
 				$"args len: {arguments.Length}, " +
 				$"extra args pos: {i}, " + 
-				$"netId: {netId} " +
-				$"maskBool: {Convert.ToString(maskByte, 2).PadLeft(8, '0')}" +
-				$"player: {playerName}"
+				$"netId: {netId}, " +
+				$"maskBool: {Convert.ToString(maskByte, 2).PadLeft(8, '0')}"
 			);
 
 			throw;

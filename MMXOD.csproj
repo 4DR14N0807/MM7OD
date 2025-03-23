@@ -2,7 +2,7 @@
 	<!--Common properties-->
 	<PropertyGroup>
 		<LangVersion>13</LangVersion>
-		<AssemblyName>MMXOD</AssemblyName>
+		<AssemblyName>MM7OD</AssemblyName>
 		<OutputType>WinExe</OutputType>
 		<!--Nullable>annotations</Nullable-->
 		<Nullable>enable</Nullable>
@@ -14,7 +14,7 @@
 		<SelfContained>false</SelfContained>
 		<OutputPath>./bin/</OutputPath>
 		<!--OutDir>./bin/anycpu/</OutDir-->
-		<RunWorkingDirectory>./bin/win-x64/</RunWorkingDirectory>
+		<RunWorkingDirectory>./bin/runenv/</RunWorkingDirectory>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<DebugType>embedded</DebugType>
 		<Deterministic>true</Deterministic>
@@ -26,6 +26,10 @@
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
 		<OutputPath>./bin/anycpu/</OutputPath>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Debug2'">
 		<OutputPath>./bin/anycpu2/</OutputPath>
 	</PropertyGroup>
@@ -35,16 +39,16 @@
 
 	<!--Dependencies-->
 	<ItemGroup>
-		<PackageReference Include="protobuf-net" Version="3.2.45" />
-		<PackageReference Include="protobuf-net.Core" Version="3.2.45" />
-		<PackageReference Include="SFML.Graphics" Version="2.6.0" />
-		<PackageReference Include="SFML.Window" Version="2.6.0" />
-		<PackageReference Include="SFML.System" Version="2.6.0" />
-		<PackageReference Include="SFML.Audio" Version="2.6.0" />
+		<PackageReference Include="protobuf-net" Version="3.2.46" />
+		<PackageReference Include="protobuf-net.Core" Version="3.2.46" />
+		<PackageReference Include="SFML.Graphics" Version="2.6.1" />
+		<PackageReference Include="SFML.Window" Version="2.6.1" />
+		<PackageReference Include="SFML.System" Version="2.6.1" />
+		<PackageReference Include="SFML.Audio" Version="2.6.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="DeviceId" Version="6.8.0" />
+		<PackageReference Include="DeviceId" Version="6.9.0" />
 		<PackageReference Include="Profanity.Detector" Version="0.1.8" />
 		<PackageReference Include="SpaceWizards.Lidgren.Network" Version="0.3.1" />
-		<PackageReference Include="System.IO.Hashing" Version="9.0.0" />
+		<PackageReference Include="System.IO.Hashing" Version="9.0.3" />
 	</ItemGroup>
 </Project>

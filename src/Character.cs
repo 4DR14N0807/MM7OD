@@ -1419,8 +1419,10 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (charState.canJump && (grounded || canAirJump() && flag == null)) {
 			if (player.input.isPressed(Control.Jump, player)) {
+				bool wasGrounded = grounded;
 				if (!grounded) {
 					dashedInAir++;
+					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
 				} else {
 					grounded = false;
 				}
@@ -1432,8 +1434,8 @@ public partial class Character : Actor, IDamagable {
 				}
 				vel.y = -getJumpPower();
 				playSound("jump", sendRpc: true);
-				new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
-				if (grounded && dashedInAir == 0 && isDashing) {
+
+				if (wasGrounded && dashedInAir == 0 && isDashing) {
 					dashedInAir++;
 				}
 			}

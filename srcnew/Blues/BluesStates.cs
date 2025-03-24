@@ -204,7 +204,8 @@ public class ShieldDash : CharState {
 				}
 				if (blues.shieldCustomState == false) {
 					blues.isDashing = true;
-				}  
+					blues.dashedInAir++;
+				}
 				blues.changeState(new Jump());
 			} else {
 				blues.changeToIdleOrFall();
@@ -218,6 +219,10 @@ public class ShieldDash : CharState {
 		base.onEnter(oldState);
 		initialXDir = character.xDir;
 		character.vel.y = 0;
+		if (!blues.isShieldActive) {
+			blues.isDashing = true;
+			useDashJumpSpeed = true;
+		}
 	}
 
 	public override void onExit(CharState newState) {

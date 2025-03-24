@@ -340,6 +340,7 @@ public class Rock : Character {
 		if (charState is SAArrowSlashState) return false;
 		if (charState is LegBreakerState) return false;
 		if (rootTime > 0) return false;
+		if (bigBubble != null) return false;
 		return true;
 	}
 

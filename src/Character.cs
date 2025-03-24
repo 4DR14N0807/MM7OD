@@ -1433,6 +1433,9 @@ public partial class Character : Actor, IDamagable {
 				vel.y = -getJumpPower();
 				playSound("jump", sendRpc: true);
 				new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
+				if (grounded && dashedInAir == 0 && isDashing) {
+					dashedInAir++;
+				}
 			}
 		}
 		if (charState.normalCtrl) {

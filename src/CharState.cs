@@ -1553,6 +1553,7 @@ public class Die : CharState {
 public class BottomlessPitState : CharState {
 	public Point lastGroundPos;
 	public bool changedAnim;
+	public bool warpBack;
 
 	public BottomlessPitState() : base("hurt") {
 		useGravity = false;
@@ -1577,9 +1578,10 @@ public class BottomlessPitState : CharState {
 		}
 		if (changedAnim && character.frameIndex == 0 && character.frameTime == 0) {
 			character.visible = false;
+			warpBack = true;
 		}
 
-		if (stateFrames >= 60) {
+		if (stateFrames >= 60 || warpBack) {
 			character.visible = true;
 			character.grounded = true;
 			character.changeState(new BottomlessPitWarpIn());

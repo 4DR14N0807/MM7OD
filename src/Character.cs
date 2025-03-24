@@ -514,6 +514,8 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null) return false;
 		if (charState is WallKick wallKick && wallKick.stateTime < 0.25f) return false;
 		if (isSoftLocked()) return false;
+		if (rootTime > 0) return false;
+		if (bigBubble != null) return false;
 		return flag == null;
 	}
 
@@ -3050,6 +3052,8 @@ public partial class Character : Actor, IDamagable {
 		chargeEffect?.destroy();
 		chargeSound?.destroy();
 		parasiteAnim?.destroySelf();
+		rMines.Clear();
+		rMineAnim?.destroySelf();
 
 		// This ensures that the "onExit" charState function
 		// Can do any cleanup it needs to do without having to copy-paste that code here too.

@@ -72,7 +72,7 @@ public class Bass : Character {
 	}
 
 	public Weapon? getRefillTargetWeapon() {
-		if (currentWeapon.canHealAmmo && currentWeapon.ammo < currentWeapon.maxAmmo) {
+		if (currentWeapon?.canHealAmmo == true && currentWeapon.ammo < currentWeapon.maxAmmo) {
 			return player.weapon;
 		}
 		Weapon? targetWeapon = null;
@@ -492,13 +492,6 @@ public class Bass : Character {
 	/* public override bool canChangeWeapons() {
 		return base.canChangeWeapons() && charState is not LightningBoltState;
 	} */
-
-	public override float getJumpPower() {
-		if (flag != null) {
-			return base.getJumpPower();
-		}
-		return (5.7f * 60) * getJumpModifier();
-	}
 
 	public override float getDashSpeed() {
 		return (3.45f * 60f) * getRunDebuffs();

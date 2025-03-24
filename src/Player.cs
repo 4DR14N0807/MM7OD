@@ -724,7 +724,7 @@ public partial class Player {
 
 	public float getMaxHealth(CharIds charId) {
 		float baseHP = charId switch {
-			CharIds.Blues => 14,
+			CharIds.Blues => 16,
 			CharIds.Bass => 20,
 			_ => 28
 		};

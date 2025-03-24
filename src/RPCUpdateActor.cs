@@ -53,15 +53,17 @@ public partial class Actor {
 		}
 		// Do not send sprite data if not in the sprite table.
 		if (spriteIndex != ushort.MaxValue) {
+			// We also send both changed if for some reason packets get lost.
+			bool frameChanged = sprite.totalFrameNum != 0 && lastFrameIndex != frameIndex;
 			// Sprite index.
-			if (lastSpriteIndex != spriteIndex) {
+			if (lastSpriteIndex != spriteIndex || frameChanged) {
 				byte[] spriteBytes = BitConverter.GetBytes((ushort)spriteIndex);
 				args.AddRange(spriteBytes);
 				mask[2] = true;
 				send = true;
 			}
 			// Frame index.
-			if (sprite.totalFrameNum != 0 && lastFrameIndex != frameIndex) {
+			if (frameChanged) {
 				args.Add((byte)frameIndex);
 				mask[3] = true;
 				send = true;
@@ -151,16 +153,19 @@ public class RPCUpdateActor : RPC {
 			actor.yScale = arguments[i++] / 20f;
 		}
 		// Sprite index.
+		bool spriteError = false;
 		if (mask[2]) {
 			int spriteIndex = BitConverter.ToUInt16(arguments[i..(i + 2)]);
 			if (spriteIndex >= 0 && spriteIndex < Global.spriteCount) {
-				string spriteName = Global.spriteNameByIndex[index];
+				string spriteName = Global.spriteNameByIndex[spriteIndex];
 				actor.changeSprite(spriteName, true);
+			} else {
+				spriteError = true;
 			}
 			i += 2;
 		}
 		// Frame index.
-		if (mask[3]) {
+		if (mask[3] && !spriteError) {
 			actor.frameIndex = arguments[i++];
 		}
 		// Angle.

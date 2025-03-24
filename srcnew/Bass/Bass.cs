@@ -494,7 +494,7 @@ public class Bass : Character {
 	} */
 
 	public override float getDashSpeed() {
-		return (4.25f * 60f) * getRunDebuffs();
+		return 215 * getRunDebuffs();
 	}
 
 	public override bool canAirJump() {

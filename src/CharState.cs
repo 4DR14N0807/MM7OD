@@ -1571,7 +1571,7 @@ public class BottomlessPitState : CharState {
 
 		if (stateFrames >= 8 && !changedAnim) {
 			character.changeSpriteFromName("warp_in", true);
-			character.frameIndex = character.sprite.totalFrameNum - 1;
+			character.frameIndex = 4;
 			character.frameTime = character.sprite.getCurrentFrame().duration - 1;
 			character.frameSpeed = -1;
 			changedAnim = true;
@@ -1581,7 +1581,7 @@ public class BottomlessPitState : CharState {
 			warpBack = true;
 		}
 
-		if (stateFrames >= 60 || warpBack) {
+		if (stateFrames >= 20 || warpBack) {
 			character.visible = true;
 			character.grounded = true;
 			character.changeState(new BottomlessPitWarpIn());
@@ -1592,6 +1592,7 @@ public class BottomlessPitState : CharState {
 				warpInPos = Global.level.getGroundPos(nearestSpawnPoint.pos);
 			}
 			character.changePos(warpInPos.Value);
+			character.deltaPos = Point.zero;
 		}
 	} 
 
@@ -1614,6 +1615,7 @@ public class BottomlessPitWarpIn : CharState {
 	}
 
 	public override void update() {
+		character.deltaPos = Point.zero;
 		base.update();
 
 		if (character.isAnimOver()) {

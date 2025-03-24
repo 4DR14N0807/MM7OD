@@ -316,11 +316,7 @@ public partial class Global {
 	public static int soundCount = 0;
 
 	// First: existing, second: new cloned sprite
-	public static Dictionary<string, string> spriteAliases = new Dictionary<string, string>()
-	{
-		{ "rock_warp_in", "rock_recall_in" },
-		{ "blues_warp_in", "blues_recall_in" },
-		{ "bass_warp_in", "bass_recall_in" },
+	public static Dictionary<string, string> spriteAliases = new Dictionary<string, string>() {
 	};
 
 	private static MatchmakingQuerier _matchmakingQuerier;

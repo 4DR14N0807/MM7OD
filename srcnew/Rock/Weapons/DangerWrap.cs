@@ -238,7 +238,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
 
-		if (ownedByLocalPlayer && landed && health >= 1) {
+		if (landed && health >= 1) {
 			for (int i = 0; i < 6; i++) {
 				float x = Helpers.cosd(i * 60) * 180;
 				float y = Helpers.sind(i * 60) * 180;

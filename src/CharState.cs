@@ -1608,7 +1608,7 @@ public class BottomlessPitState : CharState {
 
 
 public class BottomlessPitWarpIn : CharState {
-	public BottomlessPitWarpIn() : base("warp_in") {
+	public BottomlessPitWarpIn() : base("recall_in") {
 	}
 
 	public override void update() {

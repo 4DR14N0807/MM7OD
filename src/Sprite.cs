@@ -728,13 +728,18 @@ public class AnimData {
 			frameOffsetY = currentFrame.offset.y * flipY;
 		}
 
-		if (shaders == null) shaders = new List<ShaderWrapper>();
-
+		if (shaders == null) {
+			shaders = new List<ShaderWrapper>();
+		}
 		if (renderEffects != null) {
 			ShaderWrapper? shader = null;
 			if (renderEffects.Contains(RenderEffectType.Hit)) {
-				shader = Global.shaderWrappers.GetValueOrDefault("hit");
-				if (shaders.Count > 1) shaders.RemoveAt(1);
+				if (name.EndsWith("hit") || name.EndsWith("hit_shield") && frameIndex != 0) {
+					if (shaders.Count > 0) {
+						shaders.Clear();
+					}
+					shader = Global.shaderWrappers.GetValueOrDefault("hit");
+				}
 			} else if (renderEffects.Contains(RenderEffectType.Flash)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("flash");
 			} else if (renderEffects.Contains(RenderEffectType.InvisibleFlash) && alpha == 1) {

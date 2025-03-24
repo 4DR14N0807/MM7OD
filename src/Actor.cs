@@ -497,8 +497,8 @@ public partial class Actor : GameObject {
 		// Iterate and remove render effects.
 		HashSet<RenderEffectType> renderEffectsToRemove = new();
 		foreach (var kvp in renderEffects) {
-			kvp.Value.time -= speedMul;
-			if (kvp.Value.time <= 0) {
+			kvp.Value.time += speedMul;
+			if (kvp.Value.time >= kvp.Value.maxTime) {
 				renderEffectsToRemove.Add(kvp.Key);
 			}
 		}

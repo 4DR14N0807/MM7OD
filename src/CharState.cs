@@ -487,7 +487,11 @@ public class WarpIdle : CharState {
 		}
 
 		if ((character.isAnimOver() || character.sprite.loopCount >= 1) && fullHP && fullAlt) {
-			character.changeToIdleOrFall();
+			if (character is Blues) {
+				character.changeToIdleOrFall("swap");
+			} else {
+				character.changeToIdleOrFall();
+			}
 		}
 	}
 

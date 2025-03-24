@@ -519,6 +519,11 @@ public partial class Level {
 
 				var killZone = new KillZone(instanceName, points, killInvuln, damage, flinch, hitCooldown);
 				addGameObject(killZone);
+			} else if (instanceName.StartsWith("Sand Zone")) {
+				SandZone sandZone = new SandZone(
+					instanceName, points
+				);
+				addGameObject(sandZone);
 			} else if (objectName == "Move Zone") {
 				if (levelData.name != "giantdam" || enableGiantDamPropellers()) {
 					var moveZone = new MoveZone(

@@ -1550,6 +1550,78 @@ public class Die : CharState {
 	}
 }
 
+public class BottomlessPitState : CharState {
+	public Point lastGroundPos;
+	public bool changedAnim;
+
+	public BottomlessPitState() : base("hurt") {
+		useGravity = false;
+		invincible = true;
+		superArmor = true;
+		stunResistant = true;
+	}
+
+	public override void update() {
+		character.stopMoving();
+		if (!changedAnim) {
+			character.incPos(new Point(0, 0.25f));
+		}
+		base.update();
+
+		if (stateFrames >= 8 && !changedAnim) {
+			character.changeSpriteFromName("warp_in", true);
+			character.frameIndex = character.sprite.totalFrameNum - 1;
+			character.frameTime = character.sprite.getCurrentFrame().duration - 1;
+			character.frameSpeed = -1;
+			changedAnim = true;
+		}
+		if (changedAnim && character.frameIndex == 0 && character.frameTime == 0) {
+			character.visible = false;
+		}
+
+		if (stateFrames >= 60) {
+			character.visible = true;
+			character.grounded = true;
+			character.changeState(new BottomlessPitWarpIn());
+			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 32);
+
+			if (warpInPos == null) {
+				SpawnPoint nearestSpawnPoint = Global.level.getClosestSpawnPoint(lastGroundPos);
+				warpInPos = Global.level.getGroundPos(nearestSpawnPoint.pos);
+			}
+			character.changePos(warpInPos.Value);
+		}
+	} 
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.stopMoving();
+		character.canBeGrounded = false;
+		lastGroundPos = character.lastGroundedPos;
+	}
+
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		character.canBeGrounded = true;
+	}
+}
+
+
+public class BottomlessPitWarpIn : CharState {
+	public BottomlessPitWarpIn() : base("warp_in") {
+	}
+
+	public override void update() {
+		base.update();
+
+		if (character.isAnimOver()) {
+			character.grounded = true;
+			character.changeToIdleOrFall();
+		}
+	}
+}
+
+
 public class GenericGrabbedState : CharState {
 	public Actor grabber;
 	public long savedZIndex;

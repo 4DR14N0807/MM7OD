@@ -160,7 +160,7 @@ public class DevConsole {
 		if (Global.debug) {
 			Global.shouldAiAutoRevive = true;
 			Global.level.otherPlayer.character?.applyDamage(
-				Damager.envKillDamage, Global.level.otherPlayer, Global.level.otherPlayer.character, null, null
+				Damager.ohkoDamage, Global.level.otherPlayer, Global.level.otherPlayer.character, null, null
 			);
 		}
 	}

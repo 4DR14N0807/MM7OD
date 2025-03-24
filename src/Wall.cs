@@ -464,14 +464,27 @@ public class KillZone : Geometry {
 		this.killInvuln = killInvuln;
 		this.damage = damage ?? Damager.envKillDamage;
 		this.flinch = flinch;
-		this.hitCooldown = hitCooldown;
+		this.hitCooldown = hitCooldown * 60;
 		collider.isTrigger = true;
 	}
 
 	public void applyDamage(IDamagable damagable) {
 		if (!damagable.actor().ownedByLocalPlayer) return;
 		if (damage == Damager.envKillDamage) {
-			damagable.applyDamage(damage, null, null, null, null);
+			if (damagable is not Character character || Global.level.gameMode is not Race) {
+				damagable.applyDamage(damage, null, null, null, null);
+			} else {
+				if (damagable.projectileCooldown.GetValueOrDefault("killzone") > 0) {
+					return;
+				}
+				if (character.charState is not Die and not BottomlessPitState) {
+					float cooldown = hitCooldown == 0 ? 30 : hitCooldown;
+					damagable.projectileCooldown["killzone"] = cooldown;
+					character.playSound("hurt");
+					character.applyDamage(4, Player.stagePlayer, character, null, null);
+					character.changeState(new BottomlessPitState());
+				}
+			}
 			return;
 		}
 
@@ -512,6 +525,12 @@ public class MoveZone : Geometry {
 	public Point moveVel;
 	public MoveZone(string name, List<Point> points, float moveVelX, float moveVelY) : base(name, points) {
 		moveVel = new Point(moveVelX, moveVelY);
+		collider.isTrigger = true;
+	}
+}
+
+public class SandZone : Geometry {
+	public SandZone(string name, List<Point> points) : base(name, points) {
 		collider.isTrigger = true;
 	}
 }

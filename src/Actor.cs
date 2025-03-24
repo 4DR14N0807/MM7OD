@@ -76,6 +76,7 @@ public partial class Actor : GameObject {
 	public Point prevPos;
 	public Point deltaPos;
 	public Point vel;
+	public Point lastGroundedPos;
 	public float xPushVel;
 	public float xIceVel;
 	public float xSwingVel;
@@ -232,6 +233,7 @@ public partial class Actor : GameObject {
 		*/
 		this.netId = netId;
 		this.ownedByLocalPlayer = ownedByLocalPlayer;
+		lastGroundedPos = pos;
 		vel = new Point(0, 0);
 		useGravity = true;
 		frameIndex = 0;
@@ -854,7 +856,17 @@ public partial class Actor : GameObject {
 				yDist = 4;
 			}
 			yDist *= yMod;
-			CollideData? collideData = Global.level.checkTerrainCollisionOnce(this, 0, yDist, checkPlatforms: true);
+			CollideData? collideData = Global.level.checkTerrainCollisionOnce(
+				this, 0, yDist, checkPlatforms: true, checkQuicksand: true
+			);
+
+			bool isSand = false;
+			if (collideData?.gameObject is SandZone) {
+				move(new Point(0, 0.25f * 60));
+				if (collideData.gameObject.collider?.shape.minY <= pos.y) {
+					isSand = true;
+				}
+			}
 
 			Actor? hitActor = collideData?.gameObject as Actor;
 			bool isPlatform = false;
@@ -901,8 +913,10 @@ public partial class Actor : GameObject {
 				}
 
 				//If already grounded, snap to ground further
-				CollideData? collideDataCloseCheck = Global.level.checkTerrainCollisionOnce(this, 0, 0.05f * yMod);
-				if (collideDataCloseCheck == null) {
+				CollideData? collideDataCloseCheck = Global.level.checkTerrainCollisionOnce(
+					this, 0, 0.05f * yMod
+				);
+				if (!isSand && collideDataCloseCheck == null) {
 					var yVel = new Point(0, yDist);
 					var mtv = Global.level.getMtvDir(
 						this, 0, yDist, yVel, false, new List<CollideData>() { collideData }
@@ -916,6 +930,9 @@ public partial class Actor : GameObject {
 				grounded = false;
 				groundedIce = false;
 			}
+		}
+		if (grounded) {
+			lastGroundedPos = pos;
 		}
 		movedUp = false;
 	}

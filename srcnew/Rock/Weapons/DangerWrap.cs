@@ -215,14 +215,18 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (!landed && other.gameObject is Wall) {
+		if (!landed && (
+			other.gameObject is Wall ||
+			other.gameObject is MovingPlatform ||
+			other.gameObject is Actor actor && (actor.isPlatform || actor.isSolidWall)
+		)) {
 			landed = true;
 			destroySelf();
 
 			var mine = new DangerWrapLandProj(
 				ownChr, pos, xDir, damager.owner.getNextActorNetId(), true
 			);
-			(wep as DangerWrap)?.dangerMines.Add(mine);		
+			(wep as DangerWrap)?.dangerMines.Add(mine);
 		}
 	}
 

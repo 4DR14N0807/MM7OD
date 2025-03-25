@@ -320,6 +320,8 @@ public class RemoteMineAnim : Anim {
 		if (chara != null) {
 			changePos(chara.getCenterPos());
 		}
+
+		if (time >= 10) destroySelf();
 	}
 
 	public override void render(float x, float y) {

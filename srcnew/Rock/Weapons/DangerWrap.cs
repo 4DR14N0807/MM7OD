@@ -6,7 +6,7 @@ namespace MMXOnline;
 
 public class DangerWrap : Weapon {
 	public static DangerWrap netWeapon = new();
-	public List<DangerWrapMineProj> dangerMines = new List<DangerWrapMineProj>();
+	public List<Projectile> dangerMines = new();
 
 	public DangerWrap() : base() {
 		index = (int)RockWeaponIds.DangerWrap;
@@ -50,7 +50,7 @@ public class DangerWrap : Weapon {
 		}
 		if (input == 1) {
 			dangerMines.Add(
-				new DangerWrapMineProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true));
+				new DangerWrapMineProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, weapon: this));
 		} else {
 			new DangerWrapBubbleProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), input, true);
 		}
@@ -176,46 +176,33 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 }
 
 public class DangerWrapMineProj : Projectile, IDamagable {
-	public bool landed;
-	public bool active;
-	public float health = 1;
-	public Actor ownChr;
+	bool landed;
+	bool active;
+	float health = 1;
+	Actor ownChr;
+	Weapon? wep;
 
 	public DangerWrapMineProj(
 		Actor owner, Point pos, int xDir, int type,
-		ushort? netProjId, bool rpc = false, Player? altPlayer = null
+		ushort? netProjId, bool rpc = false, Player? altPlayer = null,
+		Weapon? weapon = null
 	) : base(
 		pos, xDir, owner, "danger_wrap_fall", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.DangerWrapMine;
 		maxTime = 1.125f;
 		useGravity = true;
-		fadeSprite = "generic_explosion";
 		damager.damage = 2;
 		damager.hitCooldown = 30;
 		ownChr = owner;
 		canBeGrounded = true;
 
+		if (ownedByLocalPlayer && weapon != null) wep = weapon;
+
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
-		}
-	}
-
-	public override void update() {
-		base.update();
-		if (!landed) {
-			return;
-		}
-		moveWithMovingPlatform();
-
-		if (time >= 18 && !active) {
-			active = true;
-			changeSprite("danger_wrap_land_active", true);
-		}
-		if (time >= 20) {
-			destroySelf();
 		}
 	}
 
@@ -228,20 +215,83 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (!landed && (
-			other.gameObject is Wall ||
-			other.gameObject is MovingPlatform ||
-			other.gameObject is Actor actor && (actor.isPlatform || actor.isSolidWall)
-		)) {
-			damager.damage = 3;
-			damager.flinch = Global.defFlinch;
-			vel = new Point();
-			time = 0;
-			maxTime = 20;
-			useGravity = false;
-			changeSprite("danger_wrap_land", true);
+		if (!landed && other.gameObject is Wall) {
 			landed = true;
-			projId = (int)RockProjIds.DangerWrapMineLanded;
+			destroySelf();
+
+			var mine = new DangerWrapLandProj(
+				ownChr, pos, xDir, damager.owner.getNextActorNetId(), true
+			);
+			(wep as DangerWrap)?.dangerMines.Add(mine);		
+		}
+	}
+
+	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
+		health -= damage;
+		if (health <= 0) {
+			destroySelf();
+		}
+	}
+
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
+		return damager.owner.alliance != damagerAlliance;
+	}
+
+	public bool isInvincible(Player attacker, int? projId) {
+		return false;
+	}
+
+	public bool canBeHealed(int healerAlliance) {
+		return false;
+	}
+
+	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	}
+
+	public bool isPlayableDamagable() {
+		return false;
+	}
+}
+
+public class DangerWrapLandProj : Projectile, IDamagable {
+	int health = 1;
+	Actor ownChr;
+
+	public DangerWrapLandProj(
+		Actor owner, Point pos, int xDir, ushort? netProjId,
+		bool rpc = false, Player? altPlayer = null
+	) : base (
+		pos, xDir, owner, "danger_wrap_land", netProjId, altPlayer
+	) {
+		projId = (int)RockProjIds.DangerWrapMineLanded;
+		maxTime = 20;
+		fadeSprite = "generic_explosion";
+
+		damager.damage = 3;
+		damager.flinch = Global.defFlinch;
+		damager.hitCooldown = 30;
+
+		ownChr = owner;
+		
+		if (rpc) {
+			rpcCreate(pos, ownerPlayer, netProjId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new DangerWrapLandProj(
+			arg.owner, arg.pos, arg.xDir,
+			arg.netId, altPlayer: arg.player
+		);
+	}
+
+	public override void update() {
+		base.update();
+		
+		moveWithMovingPlatform();
+
+		if (time >= 18) {
+			changeSprite("danger_wrap_land_active", true);
 		}
 	}
 
@@ -249,7 +299,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
 
-		if (landed && health >= 1) {
+		if (health >= 1) {
 			for (int i = 0; i < 6; i++) {
 				float x = Helpers.cosd(i * 60) * 180;
 				float y = Helpers.sind(i * 60) * 180;
@@ -263,9 +313,9 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			new DangerWrapExplosionProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), true);
 		}
 	}
+
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
-		health -= damage;
-		if (health <= 0) {
+		if (damage > 0) {
 			destroySelf();
 		}
 	}

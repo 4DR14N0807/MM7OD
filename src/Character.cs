@@ -1215,10 +1215,11 @@ public partial class Character : Actor, IDamagable {
 				useGravity = false;
 				wsr.groundStart = true;
 			} else {
-				if (charState is not Die) {
-					incPos(new Point(0, 25));
+				if (charState is not Die and not BottomlessPitState) {
+					playSound("hurt");
+					applyDamage(4, Player.stagePlayer, this, null, null);
+					changeState(new BottomlessPitState());
 				}
-				applyDamage(Damager.envKillDamage, player, this, null, null);
 			}
 		}
 
@@ -2863,7 +2864,10 @@ public partial class Character : Actor, IDamagable {
 		int? assisterProjId = null;
 		int? assisterWeaponId = null;
 		if (charState is not Die || !ownedByLocalPlayer) {
-			player.lastDeathCanRevive = Global.anyQuickStart || Global.debug || Global.level.isTraining() || killer != null;
+			player.lastDeathCanRevive = 
+				Global.anyQuickStart || Global.debug ||
+				Global.level.isTraining() || killer != null && killer != Player.stagePlayer
+			;
 			if (ownedByLocalPlayer) {
 				changeState(new Die(), true);
 			}
@@ -2871,7 +2875,7 @@ public partial class Character : Actor, IDamagable {
 				getKillerAndAssister(player, ref killer, ref assister, ref weaponIndex, ref assisterProjId, ref assisterWeaponId);
 			}
 
-			if (killer != null && killer != player) {
+			if (killer != null && killer != player && killer != Player.stagePlayer) {
 				killer.addKill();
 				if (Global.level.gameMode is TeamDeathMatch) {
 					if (Global.isHost) {
@@ -2895,7 +2899,7 @@ public partial class Character : Actor, IDamagable {
 				}
 			}
 
-			if (assister != null && assister != player) {
+			if (assister != null && assister != player && assister != Player.stagePlayer) {
 				assister.addAssist();
 				assister.addKill();
 

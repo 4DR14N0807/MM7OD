@@ -810,14 +810,16 @@ public partial class Level {
 
 	public CollideData? checkTerrainCollisionOnce(
 		Actor actor, float incX, float incY, Point? vel = null, bool autoVel = false,
-		bool checkPlatforms = false
+		bool checkPlatforms = false, bool checkQuicksand = false
 	) {
-		return checkTerrainCollision(actor, incX, incY, vel, autoVel, true, checkPlatforms).FirstOrDefault();
+		return checkTerrainCollision(
+			actor, incX, incY, vel, autoVel, true, checkPlatforms, checkQuicksand
+		).FirstOrDefault();
 	}
 
 	public List<CollideData> checkTerrainCollision(
 		Actor actor, float incX, float incY, Point? vel = null, bool autoVel = false,
-		bool returnOne = false, bool checkPlatforms = false
+		bool returnOne = false, bool checkPlatforms = false, bool checkQuicksand = false
 	) {
 		List<CollideData> collideDatas = new List<CollideData>();
 		// Use custom terrain collider by default.
@@ -840,7 +842,9 @@ public partial class Level {
 					isTrigger = false;
 				}
 			}
-			
+			if (go is SandZone) {
+				isTrigger = !checkQuicksand;
+			}
 			if (isTrigger) continue;
 			HitData? hitData = actorShape.intersectsShape(go.collider.shape, vel);
 			if (hitData != null) {

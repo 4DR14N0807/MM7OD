@@ -703,6 +703,24 @@ public class OptionsMenu : IMainMenu {
 					"Allows to call Rush by pressing SPECIAL,\n" +
 					"but you lose the ability to switch to it."
 				),
+				// Classic controls SWheel.
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.wheelDoubleTap);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText, "Double Tap SWheel:".ToUpper(),
+ 							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.wheelDoubleTap),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Makes SWheel require a 2nd tap to shoot\njust like other shields."
+				),
 				// Random Loadout
 				new MenuOption(
 					30, startY,

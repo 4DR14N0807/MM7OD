@@ -110,6 +110,7 @@ public class Options {
 	public int gridModeRock;
 	public bool rushSpecial = true;
 	public bool downJumpSlide = true;
+	public bool wheelDoubleTap = false;
 
 	// ProtoMan
 	public bool useRandomBluesLoadout;

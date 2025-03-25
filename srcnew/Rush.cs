@@ -241,10 +241,19 @@ public class Rush : Actor, IDamagable {
 
 	public override void updateCustomActorNetData(byte[] data) {
 		// Update base arguments.
-		base.updateCustomActorNetData(data);
+		bool wasRushJet = isRushJet;
 	
 		bool[] boolData = Helpers.byteToBoolArray(data[0]);
 		isRushJet = boolData[0];
+			Global.level.gameMode.setHUDDebugWarning("Rush Jet ON!");
+
+		if (!wasRushJet && isRushJet) {
+			isPlatform = true;
+			globalCollider = getJetCollider();
+			useGravity = false;
+			grounded = false;
+			canBeGrounded = false;
+		} 
 	}
 }
 

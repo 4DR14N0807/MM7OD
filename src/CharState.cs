@@ -179,7 +179,7 @@ public class CharState {
 	public bool inTransition() {
 		return (
 			!string.IsNullOrEmpty(transitionSprite) &&
-			(sprite == transitionSprite || sprite == transShootSprite)
+			(sprite == transitionSprite || transShootSprite != "" && sprite == transShootSprite)
 		);
 	}
 
@@ -192,13 +192,17 @@ public class CharState {
 			return;
 		}
 		if (inTransition()) {
-			character.frameSpeed = 1;
-			if (character.isAnimOver() && !Global.level.gameMode.isOver) {
+			if (character.sprite.name == character.getSprite(shootSprite)) {
 				sprite = defaultSprite;
-				if (character.shootAnimTime > 0 && shootSprite != "") {
-					character.changeSpriteFromName(shootSprite, true);
-				} else {
-					character.changeSpriteFromName(sprite, true);
+			} else {
+				character.frameSpeed = 1;
+				if (character.isAnimOver() && !Global.level.gameMode.isOver) {
+					sprite = defaultSprite;
+					if (character.shootAnimTime > 0 && shootSprite != "") {
+						character.changeSpriteFromName(shootSprite, true);
+					} else {
+						character.changeSpriteFromName(sprite, true);
+					}
 				}
 			}
 		}

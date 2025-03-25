@@ -52,9 +52,8 @@ public class ScorchWheel : Weapon {
 
 
 public class ScorchWheelSpawn : Projectile {
-
 	public Rock rock = null!;
-	bool hasHeld;
+	bool hasHeld = true;
 	Actor ownChr = null!;
 	Player? player;
 
@@ -95,12 +94,17 @@ public class ScorchWheelSpawn : Projectile {
 
 		//code that allow you to keep the wheel arround of you. Ruben: I swear if it doesnt work i kysm 
 		//may be used as a base for future fixes
-		if (owner.input.isHeld(Control.Shoot, owner)) {
-			hasHeld = true;
+		if (!Options.main.wheelDoubleTap) {
+			if (owner.input.isHeld(Control.Shoot, owner)) {
+				hasHeld = true;
+			} else {
+				hasHeld = false;
+			}
 		} else {
-			hasHeld = false;
+			if (time > 2/60f && owner.input.isPressed(Control.Shoot, owner)) {
+				hasHeld = true;
+			}
 		}
-
 		if (isAnimOver() && hasHeld == true) {
 			new ScorchWheelProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), rpc: true, player);
 			destroySelf();
@@ -123,7 +127,7 @@ public class ScorchWheelSpawn : Projectile {
 
 		if (rock != null) {
 			xDir = rock.getShootXDir();
-			changePos(rock.getCenterPos());
+			changePos(rock.pos.addxy(4 * xDir, -22));
 		}
 	}
 
@@ -136,6 +140,7 @@ public class ScorchWheelSpawn : Projectile {
 
 public class ScorchWheelProj : Projectile {
 	float projAngle;
+	float secondAngle;
 	Rock? rock;
 	Player? player;
 	Point centerPos;
@@ -181,21 +186,42 @@ public class ScorchWheelProj : Projectile {
 	public override void update() {
 		base.update();
 		if (rock == null) return;
-		
-		if (projAngle >= 256) projAngle = 0;
-		projAngle += 3;
+		if (rock != null) {
+			xDir = rock.getShootXDir();
+		}
+		projAngle += 3 * xDir;
+		if (projAngle >= 256 || projAngle < 0) {
+			projAngle += 256;
+			projAngle %= 256;
+		}
+		byteAngle = projAngle;
+		secondAngle += 16  * xDir;
+		if (secondAngle >= 256 || secondAngle < 0) {
+			secondAngle += 256;
+			secondAngle %= 256;
+		}
 
 		if (ownedByLocalPlayer && player != null) {
-			if (player.input.isHeld(Control.Shoot, owner)) {
-				hasHeld = true;
-				holdTime += Global.spf;
+			if (Options.main.wheelDoubleTap) {
+				if (!player.input.isPressed(Control.Shoot, owner)) {
+					hasHeld = true;
+					holdTime += Global.spf;
+				} else {
+					hasHeld = false;
+					holdTime = 0;
+				}
 			} else {
-				hasHeld = false;
-				holdTime = 0;
+				if (player.input.isHeld(Control.Shoot, owner)) {
+					hasHeld = true;
+					holdTime += Global.spf;
+				} else {
+					hasHeld = false;
+					holdTime = 0;
+				}
 			}
 			if (rock != null) {
 				xDir = rock.getShootXDir();
-				changePos(rock.getCenterPos());
+				changePos(rock.pos.addxy(4 * xDir, -22));
 			}
 
 			if (rock?.charState is Die) {
@@ -205,7 +231,9 @@ public class ScorchWheelProj : Projectile {
 
 			if (!hasHeld || holdTime >= 2 || rock?.currentWeapon is not ScorchWheel) {
 				destroySelf();
-				new ScorchWheelMoveProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), rpc: true, player);
+				new ScorchWheelMoveProj(
+					ownChr, pos, xDir, damager.owner.getNextActorNetId(true), rpc: true, player
+				);
 				playSound("scorch_wheel", true, true);
 				if (rock != null) rock.weaponCooldown = 60;
 				return;
@@ -216,17 +244,31 @@ public class ScorchWheelProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-
-		if (rock != null) centerPos = rock.getCenterPos();
+		if (rock != null) {
+			centerPos = rock.pos.addxy(4 * rock.xDir, -22);
+		} else {
+			centerPos = pos;
+		}
 
 		//main pieces render
 		for (var i = 0; i < 4; i++) {
 			float extraAngle = projAngle + i * 64;
-			if (extraAngle >= 256) extraAngle -= 256;
+			long altZIndex = zIndex;
+			if (extraAngle >= 256) extraAngle %= 256;
 			float xPlus = Helpers.cosd(extraAngle * 1.40625f) * radius;
 			float yPlus = Helpers.sind(extraAngle * 1.40625f) * radius;
-			if (rock != null) xDir = rock.getShootXDir();
-			fireballs[i].draw(frameIndex, centerPos.x + xPlus, centerPos.y + yPlus, xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex);
+			float drawAngle = MathF.Floor(secondAngle / 64f) * 64f;
+
+			if (extraAngle >= 128) {
+				altZIndex = ZIndex.Character - 100;
+			}
+
+			fireballs[i].draw(
+				frameIndex, centerPos.x + xPlus,
+				centerPos.y + yPlus, xDir, yDir,
+				getRenderEffectSet(), 1, 1, 1, altZIndex,
+				angle: Helpers.byteToDegree((byte)drawAngle)
+			);
 		}
 	}
 
@@ -259,6 +301,11 @@ public class ScorchWheelMoveProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
+
+		if (collider != null) {
+			collider.isTrigger = false;
+			collider.wallOnly = true;
+		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -269,22 +316,21 @@ public class ScorchWheelMoveProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer) return;
-
-		if (collider != null) {
-			collider.isTrigger = false;
-			collider.wallOnly = true;
-		}
-		checkUnderwater();
 	}
 
 	public override void onHitWall(CollideData other) {
 		if (!ownedByLocalPlayer) return;
-
-		var normal = other.hitData.normal ?? new Point(0, -1);
-
-		if (normal.isSideways()) {
+		if (other.gameObject is Wall wall && !wall.collider.shape.isRect()) {
+			return;
+		}
+		if (other.gameObject.collider?.shape.minY + 0.5f < collider?.shape.maxY &&
+			other.gameObject.collider?.shape.maxX - 0.5f > collider?.shape.minY
+		) {
 			destroySelf();
+			Anim.createGibEffect(
+				"scorch_wheel_fireball", pos, ownerPlayer, sendRpc: true,
+				pieceOverdive: 4, gibPattern: GibPattern.SemiCircle
+			);
 		}
 	}
 

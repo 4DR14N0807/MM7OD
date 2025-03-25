@@ -43,7 +43,9 @@ public class DangerWrap : Weapon {
 				}
 			}
 			if (dangerMines.Count >= 3) {
-				input = -1;
+				dangerMines[0].landed = false;
+				dangerMines[0].destroySelf();
+				dangerMines.RemoveAt(0);
 			}
 		}
 		if (input == 1) {
@@ -174,10 +176,10 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 }
 
 public class DangerWrapMineProj : Projectile, IDamagable {
-	bool landed;
-	bool active;
-	float health = 1;
-	Actor ownChr;
+	public bool landed;
+	public bool active;
+	public float health = 1;
+	public Actor ownChr;
 
 	public DangerWrapMineProj(
 		Actor owner, Point pos, int xDir, int type,
@@ -192,6 +194,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		damager.damage = 2;
 		damager.hitCooldown = 30;
 		ownChr = owner;
+		canBeGrounded = true;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
@@ -207,8 +210,12 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		}
 		moveWithMovingPlatform();
 
-		if (time >= 18) {
+		if (time >= 18 && !active) {
+			active = true;
 			changeSprite("danger_wrap_land_active", true);
+		}
+		if (time >= 20) {
+			destroySelf();
 		}
 	}
 
@@ -221,7 +228,11 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (!landed && other.gameObject is Wall) {
+		if (!landed && (
+			other.gameObject is Wall ||
+			other.gameObject is MovingPlatform ||
+			other.gameObject is Actor actor && (actor.isPlatform || actor.isSolidWall)
+		)) {
 			damager.damage = 3;
 			damager.flinch = Global.defFlinch;
 			vel = new Point();

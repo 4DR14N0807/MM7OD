@@ -106,6 +106,7 @@ public class LevelData {
 	public bool raceOnly;
 	public int customSize = -1;
 	public string customMusicName = "";
+	public string customIcon = "";
 
 	public LevelData() {
 	}
@@ -124,6 +125,9 @@ public class LevelData {
 					"xl" or "collosal" => 5,
 					_=> -1 
 				};
+			}
+			if (levelIni["MapData"]["icon"] is String customIconStr) {
+				customIcon = customIconStr;
 			}
 			if (levelIni["MapData"]["music"] is String customMusicStr) {
 				customMusicName = customMusicStr;
@@ -280,6 +284,9 @@ public class LevelData {
 			}
 		} else {
 			string thumbnailName = this.name;
+			if (customIcon != "") {
+				thumbnailName = customIcon;
+			} 
 			if (!File.Exists(getThumbnailPath(thumbnailName))) {
 				thumbnailName = name.Replace("_md", "").Replace("_1v1", "");
 			}

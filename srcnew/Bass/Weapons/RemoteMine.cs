@@ -140,13 +140,20 @@ public class RemoteMineProj : Projectile {
 		if (other.gameObject is KillZone) return;
 
 		var chr = other.gameObject as Character;
-		var wall = other.gameObject as Wall;
+		bool wallLanded = false;
 		bool characterLand = (
 			chr != null && chr != bass && 
 			chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)
 		);
-
-		if (!landed && (characterLand || wall != null)) {
+		
+		if (!landed && (
+			other.gameObject is Wall ||
+			other.gameObject is MovingPlatform ||
+			other.gameObject is Actor actor && (actor.isPlatform || actor.isSolidWall)
+		)) {
+			wallLanded = true;
+		}
+		if (!landed && (characterLand || wallLanded)) {
 			if (characterLand) {
 				host = chr;
 				visible = false;

@@ -144,8 +144,7 @@ public class RPCUpdateActor : RPC {
 			float posY = BitConverter.ToSingle(arguments[i..(i + 4)]);
 			i += 4;
 
-			actor.pos.x = posX;
-			actor.pos.y = posY;
+			actor.changePos(new Point(posX, posY));
 		}
 		// Scale.
 		if (mask[1]) {

@@ -577,7 +577,7 @@ public partial class Level {
 		Actor actor, Point posIncrease, params Type[] classTypes
 	) {
 		List<CollideData> triggers = new();
-		Collider? collider = actor.getTerrainCollider();
+		Collider? collider = actor.getTerrainCollider() ?? actor.physicsCollider ?? actor.collider;
 		if (collider == null) {
 			return triggers;
 		}
@@ -597,6 +597,14 @@ public partial class Level {
 			}
 			foreach (Collider otherCollider in otherColliders) {
 				var isTrigger = shouldTrigger(actor, go, collider, otherCollider, posIncrease);
+				if (go is Actor goActor) {
+					if (goActor.isSolidWall || goActor.isPlatform) {
+						isTrigger = true;
+					}
+				}
+				if (go is SandZone) {
+					isTrigger = true;
+				}
 				if (!isTrigger) { continue; }
 				var hitData = shape.intersectsShape(otherCollider.shape, posIncrease);
 				if (hitData != null) {

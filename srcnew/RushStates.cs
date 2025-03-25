@@ -221,6 +221,7 @@ public class RushJetState : RushState {
 		rush.globalCollider = rush.getJetCollider();
 		rush.useGravity = false;
 		rush.grounded = false;
+		rush.canBeGrounded = false;
 		rock = rush.character as Rock ?? throw new NullReferenceException();
 		Global.level.modifyObjectGridGroups(rush, isActor: true, isTerrain: true);
 	}

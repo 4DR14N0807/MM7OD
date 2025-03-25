@@ -282,6 +282,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.NoiseCrush, NoiseCrushProj.rpcInvoke },
 		{ (int)RockProjIds.NoiseCrushCharged, NoiseCrushChargedProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapMine, DangerWrapMineProj.rpcInvoke },
+		{ (int)RockProjIds.DangerWrapMineLanded, DangerWrapLandProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapExplosion, DangerWrapExplosionProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrap, DangerWrapBubbleProj.rpcInvoke },
 		{ (int)RockProjIds.WildCoil, WildCoilProj.rpcInvoke },

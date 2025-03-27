@@ -193,7 +193,7 @@ public class Rock : Character {
 		}
 
 		if (!isCharging()) {
-			if (shootPressed &&weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0) {
+			if (shootPressed && weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0) {
 				shoot(0);
 				return true;
 			}

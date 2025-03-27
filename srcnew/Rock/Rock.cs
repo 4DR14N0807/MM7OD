@@ -97,9 +97,13 @@ public class Rock : Character {
 		if (currentWeapon is not NoiseCrush) hasChargedNoiseCrush = false;
 
 		if (hasChargedNoiseCrush) {
-			if (chargedNoiseCrushSound == null) {	
-				if (!isCharging()) chargedNoiseCrushSound = new LoopingSound("charge_start", "charge_loop", this);
-			} else chargedNoiseCrushSound.play();
+			if (chargedNoiseCrushSound == null) {
+				if (!isCharging()) {
+					chargedNoiseCrushSound = new LoopingSound("charge_start", "charge_loop", this);
+				}
+			} else {
+				chargedNoiseCrushSound.play();
+			}
 		} else if (chargedNoiseCrushSound != null) {
 			chargedNoiseCrushSound.stop();
 			chargedNoiseCrushSound = null!;
@@ -134,7 +138,7 @@ public class Rock : Character {
 			}
 		}
 		player.changeWeaponControls();
-		
+
 		// Shoot logic.
 		chargeLogic(shoot);
 
@@ -145,7 +149,7 @@ public class Rock : Character {
 		bool slidePressed = player.input.isPressed(Control.Dash, player);
 		if (!slidePressed && Options.main.downJumpSlide) {
 			slidePressed = (
-				player.input.isPressed(Control.Jump, player) && 
+				player.input.isPressed(Control.Jump, player) &&
 				player.input.isHeld(Control.Down, player)
 			);
 		}
@@ -237,9 +241,9 @@ public class Rock : Character {
 				shootSprite = getSprite("jump_shoot");
 			}
 		}
-	
+
 		changeSprite(shootSprite, false);
-		
+
 		if (shootSprite == getSprite("shoot")) {
 			frameIndex = 0;
 			frameTime = 0;
@@ -297,7 +301,7 @@ public class Rock : Character {
 	}
 
 	public void drawChargedNoiseCrush(float x, float y) {
-		addRenderEffect(RenderEffectType.NCrushCharge, 3, 5); 
+		addRenderEffect(RenderEffectType.NCrushCharge, 3, 5);
 		noiseCrushEffect.character = this;
 		noiseCrushEffect.update(2, 2);
 		noiseCrushEffect.render(getCenterPos());
@@ -407,7 +411,7 @@ public class Rock : Character {
 	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
 	}
-	
+
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -484,7 +488,7 @@ public class Rock : Character {
 		/* foreach(var cd in collideDatas) {
 			if (cd.gameObject is Rush r) rj = r;
 		} */
-	
+
 		return collideData == null && rj != null/*  && rj.rushState is RushJetState */;
 	}
 
@@ -503,8 +507,12 @@ public class Rock : Character {
 		var wall = other.gameObject as Wall;
 		var rush = other.gameObject as Rush;
 		bool isGHit = Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true) != null;
-		bool isRushCoil = rush != null && rush == this.rush && rush.rushState is RushIdle or RushSleep && rush.type == 0;
-		bool isRushJet = rush != null && rush == this.rush  && rush.rushState is RushJetState;
+		bool isRushCoil = (
+			rush != null && rush == this.rush &&
+			rush.rushState is RushIdle or RushSleep &&
+			rush.type == 0
+		);
+		bool isRushJet = rush != null && rush == this.rush && rush.rushState is RushJetState;
 
 		if (charState is RockDoubleJump && wall != null) {
 			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
@@ -521,7 +529,7 @@ public class Rock : Character {
 			return null;
 		}
 		Projectile? proj = getMeleeProjById(meleeId, centerPoint);
-		
+
 		if (proj != null) {
 			proj.meleeId = meleeId;
 			proj.ownerActor = this;
@@ -537,7 +545,7 @@ public class Rock : Character {
 			"rock_slashclaw_air" or
 			"rock_ladder_slashclaw" => MeleeIds.SlashClaw2,
 
-			"rock_shoot_swell" or 
+			"rock_shoot_swell" or
 			"rock_ladder_shoot_swell" => MeleeIds.UnderWaterScorchWheel,
 
 			"rock_sa_legbreaker" => MeleeIds.LegBreaker,
@@ -624,7 +632,7 @@ public class Rock : Character {
 	public override void aiAttack(Actor? target) {
 		if (target == null) {
 			return;
-		} 
+		}
 		if (AI.trainingBehavior != 0) {
 			return;
 		}
@@ -671,7 +679,7 @@ public class Rock : Character {
 			hasSuperAdaptor = false;
 		}
 	}
-	
+
 	public override (float, float) getGlobalColliderSize() {
 		if (sprite.name == "rock_slide" || sprite.name == "rock_sa_legbreaker") {
 			return (34, 14);
@@ -691,8 +699,10 @@ public class Rock : Character {
 		return pos.addxy(0, -yCollider);
 	}
 
-	public override void onExitState(CharState oldState, CharState newState) {		 
-		if (newState.shootSprite != null && sprite.name != getSprite(newState.shootSprite) && shootAnimTime > 0) {
+	public override void onExitState(CharState oldState, CharState newState) {
+		if (newState.shootSprite != null &&
+			sprite.name != getSprite(newState.shootSprite) && shootAnimTime > 0
+		) {
 			changeSpriteFromName(newState.shootSprite, false);
 		}
 	}
@@ -768,7 +778,7 @@ public class Rock : Character {
 			weaponSlot = weapons.IndexOf(targetWeapon);
 			targetWeapon.ammo = data[1];
 		}
-		
+
 		int netChargeLevel = data[2];
 		if (netChargeLevel == 0) {
 			stopCharge();

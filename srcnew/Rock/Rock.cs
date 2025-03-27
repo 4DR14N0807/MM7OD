@@ -193,11 +193,9 @@ public class Rock : Character {
 		}
 
 		if (!isCharging()) {
-			if (shootPressed) {
-				if (weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0) {
-					shoot(0);
-					return true;
-				}
+			if (shootPressed &&weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0) {
+				shoot(0);
+				return true;
 			}
 		}
 		return base.attackCtrl();

@@ -94,7 +94,7 @@ public class Rock : Character {
 			weaponHealAmount = 0;
 		}
 
-		if (player.weapon is not NoiseCrush) hasChargedNoiseCrush = false;
+		if (currentWeapon is not NoiseCrush) hasChargedNoiseCrush = false;
 
 		if (hasChargedNoiseCrush) {
 			if (chargedNoiseCrushSound == null) {	
@@ -194,7 +194,7 @@ public class Rock : Character {
 
 		if (!isCharging()) {
 			if (shootPressed) {
-				if (weaponCooldown <= 0) {
+				if (weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0) {
 					shoot(0);
 					return true;
 				}
@@ -365,7 +365,7 @@ public class Rock : Character {
 		if (sWellSpawn != null) return false;
 		if (sWellU != null) return false;
 		if (charState is Slide)
-			return (player.weapon is RockBuster || player.weapon is WildCoil) && getChargeLevel() == 2;
+			return (currentWeapon is RockBuster || currentWeapon is WildCoil) && getChargeLevel() == 2;
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (isInvulnerableAttack()) return false;
@@ -434,7 +434,7 @@ public class Rock : Character {
 	}
 
 	public override bool canAddAmmo() {
-		if (player.weapon == null) { return false; }
+		if (currentWeapon == null) { return false; }
 		return getRefillTargetWeapon() != null;
 	}
 
@@ -451,7 +451,7 @@ public class Rock : Character {
 
 	public Weapon? getRefillTargetWeapon() {
 		if (currentWeapon?.canHealAmmo == true && currentWeapon.ammo < currentWeapon.maxAmmo) {
-			return player.weapon;
+			return currentWeapon;
 		}
 		if (rushWeapon.ammo < rushWeapon.maxAmmo) {
 			return rushWeapon;
@@ -630,7 +630,7 @@ public class Rock : Character {
 		if (AI.trainingBehavior != 0) {
 			return;
 		}
-		if (player.weapon == null) {
+		if (currentWeapon == null) {
 			return;
 		}
 		Helpers.decrementFrames(ref aiWeaponSwitchCooldown);
@@ -644,7 +644,7 @@ public class Rock : Character {
 			}
 			return;
 		}
-		if (canShoot() && player.weapon.shootCooldown == 0 && player.weapon.canShoot(0, player)) {
+		if (canShoot() && currentWeapon.shootCooldown == 0 && currentWeapon.canShoot(0, player)) {
 			shoot(0);
 			stopCharge();
 		} else if (canCharge() && shootAnimTime == 0) {

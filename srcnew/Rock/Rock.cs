@@ -644,7 +644,10 @@ public class Rock : Character {
 			}
 			return;
 		}
-		if (canShoot() && currentWeapon.shootCooldown == 0 && currentWeapon.canShoot(0, player)) {
+		if (canShoot() && weaponCooldown == 0 &&
+			currentWeapon.shootCooldown == 0 &&
+			currentWeapon.canShoot(0, player)
+		) {
 			shoot(0);
 			stopCharge();
 		} else if (canCharge() && shootAnimTime == 0) {

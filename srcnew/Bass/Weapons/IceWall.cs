@@ -35,33 +35,6 @@ public class IceWall : Weapon {
 		bass.playSound("icewall", true);
 	}
 }
-
-
-public class IceWallStart : Anim {
-	Player player;
-	Actor owner;
-	Weapon weapon;
-
-	public IceWallStart(
-		Actor owner, Point pos, int xDir, ushort? netId, Player player,
-		Weapon weapon, bool sendRpc = false, bool ownedByLocalPlayer = true
-	) : base(
-		pos, "ice_wall_spawn", xDir, netId, true, 
-		sendRpc, ownedByLocalPlayer
-	) {
-		this.player = player;
-		this.owner = owner;
-		this.weapon = weapon;
-	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (ownedByLocalPlayer) {
-			var wall = new IceWallProj(owner, pos, xDir, player.getNextActorNetId(), weapon, true, player);
-			if (weapon is IceWall iw) iw.wall = wall;
-		}
-	}
-}
 	
 public class IceWallProj : Projectile, IDamagable {
 	public bool startedMoving;
@@ -74,7 +47,7 @@ public class IceWallProj : Projectile, IDamagable {
 		Actor owner, Point pos, int xDir, ushort? netId,
 		Weapon weapon, bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "ice_wall_proj", netId, altPlayer
+		pos, xDir, owner, "ice_wall_spawn", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.IceWall;
 		damager.damage = 1;
@@ -106,6 +79,9 @@ public class IceWallProj : Projectile, IDamagable {
 		base.update();
 		if (!ownedByLocalPlayer) {
 			return;
+		}
+		if (sprite.name == "ice_wall_spawn" && isAnimOver()) {
+			changeSprite("ice_wall_proj", true);
 		}
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
 			vel.x += xDir * 0.1f * 60f;

@@ -62,7 +62,7 @@ public class BigBangStrikeProj : Projectile {
 
 public class BigBangStrikeExplosionProj : Projectile {
 	float radius = 38;
-	float absorbRadius = 120;
+	float absorbRadius = 140;
 
 	public BigBangStrikeExplosionProj(
 		Point pos, int xDir, Actor owner, ushort? netId,
@@ -201,12 +201,12 @@ public class ProtoStrikeProj : Projectile {
 		}
 	}
 
-	public override List<ShaderWrapper>? getShaders() {
+	/*public override List<ShaderWrapper>? getShaders() {
 		if (type == 1) {
 			return [RedStrikeProj.redStrikePalette];
 		}
 		return base.getShaders();
-	}
+	}*/
 
 	public override void render(float x, float y) {
 		long lastZIndex = zIndex;
@@ -312,9 +312,10 @@ public class RedStrikeProj : Projectile {
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
 		// Etc.
-		maxTime = 0.6f;
+		maxTime = 0.675f;
 		shouldShieldBlock = false;
 		reflectable = false;
+		vel.x = 60 * xDir;
 
 		if (sendRpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);

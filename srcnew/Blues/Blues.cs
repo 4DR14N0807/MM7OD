@@ -70,6 +70,9 @@ public class Blues : Character {
 	public int netChargeLevel;
 	public decimal lastDamageNum;
 
+	// MUSIC
+	public MusicWrapper? breakmanMusic;
+
 	// Creation code.
 	public Blues(
 		Player player, float x, float y, int xDir, bool isVisible,
@@ -425,10 +428,17 @@ public class Blues : Character {
 		base.update();
 
 		// Hypermode music.
-		if (Global.level.enabledBreakmanMusic()) {
-			if (isBreakMan) {
+		if (player == Global.level.mainPlayer || Global.level.enabledBreakmanMusic()) {
+			if (isBreakMan && sprite.name != "blues_revive") {
 				if (musicSource == null) {
-					addMusicSource("breakman", getCenterPos(), true);
+					addMusicSource("breakman", getCenterPos(), true, autoStart: false);
+				} else {
+					if (!overdrive && musicSource.isPlaying()) {
+						musicSource.pause();
+					}
+					else if (overdrive && !musicSource.isPlaying()) {
+						musicSource.play();
+					}
 				}
 			} else {
 				destroyMusicSource();

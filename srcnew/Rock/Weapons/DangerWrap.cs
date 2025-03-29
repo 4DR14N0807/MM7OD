@@ -43,6 +43,9 @@ public class DangerWrap : Weapon {
 				}
 			}
 			if (dangerMines.Count >= 3) {
+				if (dangerMines[0] is DangerWrapLandProj dwarpground) {
+					dwarpground.health = 0;
+				}
 				dangerMines[0].destroySelf();
 				dangerMines.RemoveAt(0);
 			}
@@ -175,11 +178,11 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 }
 
 public class DangerWrapMineProj : Projectile, IDamagable {
-	bool landed;
-	bool active;
-	float health = 1;
-	Actor ownChr;
-	Weapon? wep;
+	public bool landed;
+	public bool active;
+	public float health = 1;
+	public Actor ownChr;
+	public Weapon? wep;
 
 	public DangerWrapMineProj(
 		Actor owner, Point pos, int xDir, int type,
@@ -192,12 +195,14 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		maxTime = 1.125f;
 		useGravity = true;
 		damager.damage = 2;
+		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 30;
 		ownChr = owner;
 		canBeGrounded = true;
 
-		if (ownedByLocalPlayer && weapon != null) wep = weapon;
-
+		if (ownedByLocalPlayer && weapon != null) {
+			wep = weapon;
+		}
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
@@ -257,8 +262,8 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 }
 
 public class DangerWrapLandProj : Projectile, IDamagable {
-	int health = 1;
-	Actor ownChr;
+	public int health = 1;
+	public Actor ownChr;
 
 	public DangerWrapLandProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,

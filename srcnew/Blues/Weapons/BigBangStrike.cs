@@ -62,7 +62,7 @@ public class BigBangStrikeProj : Projectile {
 
 public class BigBangStrikeExplosionProj : Projectile {
 	float radius = 38;
-	float absorbRadius = 120;
+	float absorbRadius = 140;
 
 	public BigBangStrikeExplosionProj(
 		Point pos, int xDir, Actor owner, ushort? netId,
@@ -123,12 +123,13 @@ public class BigBangStrikeExplosionProj : Projectile {
 }
 
 public class ProtoStrikeProj : Projectile {
-	Character? ownerChar;
-	float radius = 48; //38
-	float absorbRadius = 80;
+	public int type; 
+	public Character? ownerChar;
+	public float radius = 42;
+	public float absorbRadius = 80;
 
 	public ProtoStrikeProj(
-		Point pos, int xDir, Actor owner, ushort? netId,
+		Point pos, int xDir, int type, Actor owner, ushort? netId,
 		bool sendRpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "big_bang_strike_explosion", netId, altPlayer
@@ -143,15 +144,20 @@ public class ProtoStrikeProj : Projectile {
 		destroyOnHit = false;
 		canBeLocal = false;
 		ownerChar = owner as Character;
+		isMelee = true;
+		this.type = type;
 
+		if (type == 0) {
+			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
+		}
 		if (sendRpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoStrikeProj(
-			args.pos, args.xDir, args.owner, args.netId, altPlayer: args.player
+			args.pos, args.xDir, args.extraData[0], args.owner, args.netId, altPlayer: args.player
 		);
 	}
 
@@ -195,24 +201,29 @@ public class ProtoStrikeProj : Projectile {
 		}
 	}
 
+	/*public override List<ShaderWrapper>? getShaders() {
+		if (type == 1) {
+			return [RedStrikeProj.redStrikePalette];
+		}
+		return base.getShaders();
+	}*/
+
 	public override void render(float x, float y) {
 		long lastZIndex = zIndex;
 		alpha = 0.5f;
-		addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		base.render(x, y);
 		alpha = 1;
 		zIndex = ZIndex.Character - 1000;
-		addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		base.render(x, y);
-		removeRenderEffect(RenderEffectType.ChargeOrange);
 		zIndex = lastZIndex;
 	}
 }
 
 public class StrikeAttackPushProj : Projectile {
-	float radius = 45;
-	float pushPower = 200;
-	int flinchPower = Global.defFlinch;
+	public int type;
+	public float radius = 45;
+	public float pushPower = 200;
+	public int flinchPower = Global.defFlinch;
 
 	public StrikeAttackPushProj(
 		Point pos, int type, int xDir, Actor owner, ushort? netId,
@@ -233,12 +244,10 @@ public class StrikeAttackPushProj : Projectile {
 		if (sendRpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}
+		this.type = type;
 
 		if (type == 1) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
-		}
-		else if (type == 2) {
-			addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 		}
 		else if (type == 3) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
@@ -279,14 +288,23 @@ public class StrikeAttackPushProj : Projectile {
 			}
 		}
 	}
+
+	public override List<ShaderWrapper>? getShaders() {
+		if (type == 2) {
+			return [RedStrikeProj.redStrikePalette];
+		}
+		return base.getShaders();
+	}
 }
 
 public class RedStrikeProj : Projectile {
+	public static ShaderWrapper redStrikePalette = Helpers.cloneGenericPaletteShader("redstrike_palette");
+
 	public RedStrikeProj(
 		Point pos, int xDir, Actor owner, ushort? netId,
 		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "big_bang_strike_proj", netId, altPlayer
+		pos, xDir, owner, "breakman_red_strike_proj", netId, altPlayer
 	) {
 		// Damage.
 		projId = (int)BluesProjIds.RedStrike;
@@ -294,10 +312,10 @@ public class RedStrikeProj : Projectile {
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
 		// Etc.
-		maxTime = 0.6f;
+		maxTime = 0.675f;
 		shouldShieldBlock = false;
 		reflectable = false;
-		addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
+		vel.x = 60 * xDir;
 
 		if (sendRpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -336,11 +354,15 @@ public class RedStrikeProj : Projectile {
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
 	}
+
+	public override List<ShaderWrapper>? getShaders() {
+		return [RedStrikeProj.redStrikePalette];
+	}
 }
 
 public class RedStrikeExplosionProj : Projectile {
 	float radius = 38;
-	float absorbRadius = 120;
+	float absorbRadius = 108;
 
 	public RedStrikeExplosionProj(
 		Point pos, int xDir, Actor owner, ushort? netId,
@@ -357,11 +379,12 @@ public class RedStrikeExplosionProj : Projectile {
 		maxTime = 1f;
 		destroyOnHit = false;
 		fadeOnAutoDestroy = true;
+		xScale = 0.9f;
+		yScale = 0.9f;
 
 		if (sendRpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
-		addRenderEffect(RenderEffectType.ChargePurple, 0, 600);
 		projId = (int)BluesProjIds.RedStrike;
 	}
 
@@ -398,6 +421,10 @@ public class RedStrikeExplosionProj : Projectile {
 				pos, 2, xDir, ownerActor, ownerPlayer.getNextActorNetId(), sendRpc: true
 			);
 		}
+	}
+
+	public override List<ShaderWrapper>? getShaders() {
+		return [RedStrikeProj.redStrikePalette];
 	}
 }
 

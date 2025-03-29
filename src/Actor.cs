@@ -116,7 +116,9 @@ public partial class Actor : GameObject {
 	public bool destroyed;
 	public long destroyedOnFrame;
 	public ShaderWrapper? genericShader;
-	public virtual List<ShaderWrapper>? getShaders() { return genericShader != null ? new List<ShaderWrapper> { genericShader } : null; }
+	public virtual List<ShaderWrapper>? getShaders() {
+		return genericShader != null ? new List<ShaderWrapper> { genericShader } : null;
+	}
 	public float alpha = 1;
 	public float xScale = 1;
 	public float yScale = 1;
@@ -1765,16 +1767,22 @@ public partial class Actor : GameObject {
 		return pos.add(deltaPos.times(pingSeconds / Global.spf));
 	}
 
-	public void addMusicSource(string musicName, Point worldPos, bool moveWithActor, bool loop = true) {
+	public MusicWrapper addMusicSource(
+		string musicName, Point worldPos, bool moveWithActor,
+		bool loop = true, bool autoStart = true
+	) {
 		var ms = Global.musics[musicName].clone();
 		ms.musicSourcePos = worldPos;
 		ms.musicSourceActor = this;
 		ms.volume = 0;
 		ms.moveWithActor = moveWithActor;
 		ms.loop = loop;
-		ms.play();
+		if (autoStart) {
+			ms.play();
+		}
 		Global.level.musicSources.Add(ms);
 		musicSource = ms;
+		return ms;
 	}
 
 	public void destroyMusicSource() {

@@ -2864,10 +2864,7 @@ public partial class Character : Actor, IDamagable {
 		int? assisterProjId = null;
 		int? assisterWeaponId = null;
 		if (charState is not Die || !ownedByLocalPlayer) {
-			player.lastDeathCanRevive = 
-				Global.anyQuickStart || Global.debug ||
-				Global.level.isTraining() || killer != null && killer != Player.stagePlayer
-			;
+			player.lastDeathCanRevive = true;
 			if (ownedByLocalPlayer) {
 				changeState(new Die(), true);
 			}

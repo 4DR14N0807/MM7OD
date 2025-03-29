@@ -7,10 +7,10 @@ namespace MMXOnline;
 public class Flag : Actor {
 	public int alliance = 0;
 	public Point pedestalPos;
-	public Character chr;
+	public Character? chr;
 	public float timeDropped = 0;
 	public bool pickedUpOnce;
-	public FlagPedestal pedestal;
+	public FlagPedestal pedestal = null!;
 	public float killFeedThrottleTime;
 	public float? updraftY;
 	public bool nonOwnerHasUpdraft;
@@ -24,7 +24,9 @@ public class Flag : Actor {
 		alliance == GameMode.blueAlliance ? "blue_flag" : "red_flag", pos, netId, ownedByLocalPlayer, false
 	) {
 		this.alliance = alliance;
-		collider.wallOnly = true;
+		if (collider != null) {
+			collider.wallOnly = true;
+		}
 		setzIndex(ZIndex.Character - 2);
 		for (int i = 0; i < 4; i++) {
 			particles.Add(getRandomParticle(i * (UpdraftParticle.maxTime * 0.25f)));
@@ -64,6 +66,7 @@ public class Flag : Actor {
 			) {
 				dropFlag();
 			}
+			xDir = -chr.xDir;
 		} else if (chr?.canKeepFlag() != true) {
 			dropFlag();
 		}
@@ -143,7 +146,7 @@ public class Flag : Actor {
 			new KillFeedEntry(chr.player.name + " took flag", chr.player.alliance, chr.player), true
 		);
 		if (chr.ai != null && chr.ai.aiState is FindPlayer) {
-			(chr.ai.aiState as FindPlayer).setDestNodePos();
+			(chr.ai.aiState as FindPlayer)?.setDestNodePos();
 		}
 	}
 
@@ -171,6 +174,11 @@ public class Flag : Actor {
 		}
 		chr = null;
 		changePos(pedestalPos);
+		if (alliance == GameMode.redAlliance) {
+			xDir = -1;
+		} else {
+			xDir = 1;
+		}
 	}
 
 	public UpdraftParticle getRandomParticle(float time) {
@@ -201,14 +209,10 @@ public class Flag : Actor {
 		}
 
 		// To avoid latency of flag not sticking to character in online
-		if (Global.serverClient != null) {
-			foreach (var player in Global.level.players) {
-				if (player.character != null && player.character.flag == this) {
-					Point centerPos = player.character.getCenterPos();
-					base.render(centerPos.x - pos.x, centerPos.y - pos.y);
-					return;
-				}
-			}
+		if (chr != null && !chr.destroyed) {
+			Point centerPos = chr.getCenterPos().addxy(-4 * chr.xDir, -2);
+			base.render(centerPos.x - pos.x, centerPos.y - pos.y);
+			return;
 		}
 
 		if (pickedUpOnce && timeDropped > 0 && chr == null) {
@@ -268,8 +272,12 @@ public class Flag : Actor {
 		if (chrNetId != ushort.MaxValue) {
 			chara = Global.level.getActorByNetId(chrNetId, true) as Character;
 
-			if (chara != null && chara.flag == null) {
-				chara.onFlagPickup(this);
+			if (chara != null) {
+				if (chara.flag == null) {
+					chara.onFlagPickup(this);
+				}
+				xDir = -chara.xDir;
+				chr = chara;
 			}
 		}
 		else if (wasActive) {
@@ -278,7 +286,7 @@ public class Flag : Actor {
 					player.character.flag = null;
 				}
 			}
-			chara = null;
+			chr = null;
 		}
 		isPickedUpNet = (chara != null);
 	}

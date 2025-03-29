@@ -123,7 +123,7 @@ public class ProtoBusterLv2Proj : Projectile {
 
 		if (type == 1) {
 			damager.flinch = Global.halfFlinch;
-			changeSprite("rock_buster2_proj", true);
+			changeSprite("proto_chargeshot_blue_proj", true);
 			fadeSprite = "rock_buster2_fade";
 		}
 
@@ -266,7 +266,7 @@ public class ChargedBreakBusterProj : Projectile {
 		Actor owner, int type, Point pos, float byteAngle, ushort? netId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, 1, owner, "rock_buster2_proj", netId, altPlayer
+		pos, 1, owner, "proto_chargeshot_blue_proj", netId, altPlayer
 	) {
 		fadeSprite = "rock_buster2_fade";
 		fadeOnAutoDestroy = true;

@@ -1276,6 +1276,10 @@ public class LadderClimb : CharState {
 		character.useGravity = false;
 		character.dashedInAir = 0;
 		character.shootAnimTime = 0;
+		
+		if (character.sprite.name.Contains(sprite)) {
+			character.changeSpriteFromName(sprite, true);
+		}
 	}
 
 	public override void onExit(CharState? newState) {

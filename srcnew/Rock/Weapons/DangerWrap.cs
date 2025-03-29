@@ -43,7 +43,6 @@ public class DangerWrap : Weapon {
 				}
 			}
 			if (dangerMines.Count >= 3) {
-				dangerMines[0].landed = false;
 				dangerMines[0].destroySelf();
 				dangerMines.RemoveAt(0);
 			}
@@ -276,9 +275,10 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 		damager.hitCooldown = 30;
 
 		ownChr = owner;
+		canBeLocal = false;
 		
 		if (rpc) {
-			rpcCreate(pos, ownerPlayer, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 

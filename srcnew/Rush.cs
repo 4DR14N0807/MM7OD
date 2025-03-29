@@ -245,7 +245,7 @@ public class Rush : Actor, IDamagable {
 	
 		bool[] boolData = Helpers.byteToBoolArray(data[0]);
 		isRushJet = boolData[0];
-			Global.level.gameMode.setHUDDebugWarning("Rush Jet ON!");
+			//Global.level.gameMode.setHUDDebugWarning("Rush Jet ON!");
 
 		if (!wasRushJet && isRushJet) {
 			isPlatform = true;

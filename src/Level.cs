@@ -1747,7 +1747,7 @@ public partial class Level {
 				continue;
 			}
 			musicWrapper.updateMusicSourceVolume(listenerPos);
-			if (musicWrapper.volume > 0) {
+			if (musicWrapper.volume > 0 && musicWrapper.isPlaying()) {
 				found = true;
 				foundVolume = musicWrapper.volume;
 			}

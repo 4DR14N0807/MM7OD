@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 public class IceWall : Weapon {
 	public static IceWall netWeapon = new();
-	public Actor wall = null!;
+	public IceWallProj? wall;
 
 	public IceWall() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -31,7 +31,10 @@ public class IceWall : Weapon {
 		Point shootPos = character.getShootPos().addxy(0, 2);
 		Player player = character.player;
 
-		wall = new IceWallStart(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), player, this, true);
+		wall = new IceWallProj(
+			bass, shootPos, bass.getShootXDir(),
+			player.getNextActorNetId(), rpc: true
+		);
 		bass.playSound("icewall", true);
 	}
 }
@@ -41,11 +44,10 @@ public class IceWallProj : Projectile, IDamagable {
 	public bool isFalling;
 	public float health = 2;
 	float maxSpeed = 3f * 60;
-	Weapon weapon;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
-		Weapon weapon, bool rpc = false, Player? altPlayer = null
+		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "ice_wall_spawn", netId, altPlayer
 	) {
@@ -62,7 +64,6 @@ public class IceWallProj : Projectile, IDamagable {
 		maxTime = 2f;
 		destroyOnHit = false;
 		splashable = true;
-		this.weapon = weapon;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
 		selectiveSolididyFunc = selectiveSolidity;
 
@@ -71,7 +72,7 @@ public class IceWallProj : Projectile, IDamagable {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new IceWallProj(
-			arg.owner, arg.pos, arg.xDir, arg.netId, IceWall.netWeapon, altPlayer: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
 	
@@ -145,11 +146,6 @@ public class IceWallProj : Projectile, IDamagable {
 				vel.x = xDir * 30;
 			}
 		}
-	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (ownedByLocalPlayer && weapon is IceWall iw) iw.wall = null!;
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {

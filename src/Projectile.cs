@@ -213,15 +213,6 @@ public class Projectile : Actor {
 		*/
 	}
 
-	public override List<ShaderWrapper>? getShaders() {
-		var shaders = new List<ShaderWrapper>();
-		if (shaders.Count > 0) {
-			return shaders;
-		} else {
-			return base.getShaders();
-		}
-	}
-
 	public void reflect(Player player, bool sendRpc = false) {
 		if (neverReflect) {
 			return;

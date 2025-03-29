@@ -116,7 +116,9 @@ public partial class Actor : GameObject {
 	public bool destroyed;
 	public long destroyedOnFrame;
 	public ShaderWrapper? genericShader;
-	public virtual List<ShaderWrapper>? getShaders() { return genericShader != null ? new List<ShaderWrapper> { genericShader } : null; }
+	public virtual List<ShaderWrapper>? getShaders() {
+		return genericShader != null ? new List<ShaderWrapper> { genericShader } : null;
+	}
 	public float alpha = 1;
 	public float xScale = 1;
 	public float yScale = 1;

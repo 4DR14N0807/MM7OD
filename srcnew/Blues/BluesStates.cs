@@ -414,7 +414,8 @@ public class ProtoStrike : CharState {
 		if (!fired && character.frameIndex >= 3) {
 			Point shootPos = character.getShootPos();
 			new ProtoStrikeProj(
-				shootPos, character.xDir, character, player.getNextActorNetId(), sendRpc: true
+				shootPos, character.xDir, blues.overdrive ? 1 : 0,
+				character, player.getNextActorNetId(), sendRpc: true
 			);
 			blues.playSound("danger_wrap_explosion", true, true);
 			fired = true;

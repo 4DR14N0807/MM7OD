@@ -179,7 +179,6 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 
 public class DangerWrapMineProj : Projectile, IDamagable {
 	public bool landed;
-	public bool active;
 	public float health = 1;
 	public Actor ownChr;
 	public Weapon? wep;
@@ -219,6 +218,9 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (!landed && (
 			other.gameObject is Wall ||
 			other.gameObject is MovingPlatform ||
@@ -236,7 +238,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
 		health -= damage;
-		if (health <= 0) {
+		if (ownedByLocalPlayer && health <= 0) {
 			destroySelf();
 		}
 	}
@@ -253,7 +255,9 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		return false;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public void heal(
+		Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false
+	) {
 	}
 
 	public bool isPlayableDamagable() {
@@ -262,7 +266,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 }
 
 public class DangerWrapLandProj : Projectile, IDamagable {
-	public int health = 1;
+	public float health = 1;
 	public Actor ownChr;
 
 	public DangerWrapLandProj(
@@ -271,19 +275,21 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 	) : base (
 		pos, xDir, owner, "danger_wrap_land", netProjId, altPlayer
 	) {
+		useGravity = true;
 		projId = (int)RockProjIds.DangerWrapMineLanded;
 		maxTime = 20;
 		fadeSprite = "generic_explosion";
+		fadeOnAutoDestroy = true;
 
 		damager.damage = 3;
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
-
 		ownChr = owner;
-		
+
 		if (rpc) {
 			rpcCreate(pos, ownerPlayer, netProjId, xDir);
 		}
+		projId = (int)RockProjIds.DangerWrapMine;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -295,7 +301,6 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 
 	public override void update() {
 		base.update();
-		
 		moveWithMovingPlatform();
 
 		if (time >= 18) {
@@ -305,8 +310,9 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (health >= 1) {
 			for (int i = 0; i < 6; i++) {
 				float x = Helpers.cosd(i * 60) * 180;
@@ -323,7 +329,8 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
-		if (damage > 0) {
+		health -= damage;
+		if (ownedByLocalPlayer && health <= 0) {
 			destroySelf();
 		}
 	}
@@ -340,7 +347,9 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 		return false;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public void heal(
+		Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false
+	) {
 	}
 
 	public bool isPlayableDamagable() {
@@ -367,7 +376,7 @@ public class DangerWrapExplosionProj : Projectile {
 		damager.hitCooldown = 30;
 
 		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
-		projId = (int)RockProjIds.DangerWrapMineLanded;
+		projId = (int)RockProjIds.DangerWrapMine;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -402,7 +411,8 @@ public class DangerWrapExplosionProj : Projectile {
 		Color col1 = new(222, 41, 24, (byte)MathF.Ceiling(96 * transparencyMultiplier));
 		Color col2 = new(255, 220, 220, (byte)MathF.Ceiling(128 * transparencyMultiplier));
 		DrawWrappers.DrawCircle(
-			pos.x + x, pos.y + y, radius, filled: true, col1, 4f, ZIndex.Background - 100, isWorldPos: true, col2
+			pos.x + x, pos.y + y, radius, filled: true, col1, 4f,
+			ZIndex.Background - 100, isWorldPos: true, col2
 		);
 	}
 }

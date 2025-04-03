@@ -57,7 +57,6 @@ public class IceWallProj : Projectile, IDamagable {
 
 		fadeSprite = "ice_wall_fade";
 		fadeOnAutoDestroy = true;
-		useGravity = true;
 		canBeLocal = false;
 		base.xDir = xDir;
 		isSolidWall = true;
@@ -83,6 +82,7 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 		if (sprite.name == "ice_wall_spawn" && isAnimOver()) {
 			changeSprite("ice_wall_proj", true);
+			useGravity = true;
 		}
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
 			vel.x += xDir * 0.1f * 60f;

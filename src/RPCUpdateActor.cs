@@ -152,6 +152,7 @@ public class RPCUpdateActor : RPC {
 			actor.yScale = arguments[i++] / 20f;
 		}
 		// Sprite index.
+		bool spriteChanged = false;
 		bool spriteError = false;
 		if (mask[2]) {
 			int spriteIndex = BitConverter.ToUInt16(arguments[i..(i + 2)]);
@@ -161,15 +162,20 @@ public class RPCUpdateActor : RPC {
 			} else {
 				spriteError = true;
 			}
+			spriteChanged = true;
 			i += 2;
 		}
 		// Frame index.
 		if (mask[3] && !spriteError) {
 			actor.frameIndex = arguments[i++];
+			spriteChanged = true;
 		}
 		// Angle.
 		if (mask[4]) {
 			actor.byteAngle = arguments[i++];
+		}
+		if (spriteChanged) {
+			actor.updateHitboxes();
 		}
 
 		try {

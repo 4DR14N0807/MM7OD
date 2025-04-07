@@ -510,6 +510,10 @@ public partial class Actor : GameObject {
 			renderEffects.Remove(renderEffect);
 		}
 
+		updateHitboxes();
+	}
+
+	public virtual void updateHitboxes() {
 		if (!useFrameProjs) {
 			return;
 		}

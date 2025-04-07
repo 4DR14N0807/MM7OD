@@ -52,7 +52,7 @@ public class DangerWrap : Weapon {
 		}
 		if (input == 1) {
 			dangerMines.Add(
-				new DangerWrapMineProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, weapon: this));
+				new DangerWrapMineProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player, weapon: this));
 		} else {
 			new DangerWrapBubbleProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), input, true);
 		}
@@ -182,6 +182,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 	public float health = 1;
 	public Actor ownChr;
 	public Weapon? wep;
+	Player player;
 
 	public DangerWrapMineProj(
 		Actor owner, Point pos, int xDir, int type,
@@ -198,6 +199,8 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		damager.hitCooldown = 30;
 		ownChr = owner;
 		canBeGrounded = true;
+		canBeLocal = false;
+		this.player = ownerPlayer;
 
 		if (ownedByLocalPlayer && weapon != null) {
 			wep = weapon;
@@ -230,7 +233,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 			destroySelf();
 
 			var mine = new DangerWrapLandProj(
-				ownChr, pos, xDir, damager.owner.getNextActorNetId(), true
+				ownChr, pos, xDir, player.getNextActorNetId(), true, player
 			);
 			(wep as DangerWrap)?.dangerMines.Add(mine);
 		}
@@ -268,6 +271,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 public class DangerWrapLandProj : Projectile, IDamagable {
 	public float health = 1;
 	public Actor ownChr;
+	Player player;
 
 	public DangerWrapLandProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
@@ -285,9 +289,8 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
 		ownChr = owner;
-
 		if (rpc) {
-			rpcCreate(pos, ownerPlayer, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 		projId = (int)RockProjIds.DangerWrapMine;
 	}

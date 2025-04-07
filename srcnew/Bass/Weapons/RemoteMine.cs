@@ -39,6 +39,7 @@ public class RemoteMine : Weapon {
 public class RemoteMineProj : Projectile {
 	bool exploded;
 	bool landed;
+	bool wallLanded;
 	Character? host;
 	Anim? anim;
 	string animName = "remote_mine_anim";
@@ -89,13 +90,14 @@ public class RemoteMineProj : Projectile {
 		base.update();
 
 		if (host != null) changePos(host.getCenterPos());
+
+		if (wallLanded) {
+			moveWithMovingPlatform();
+		}
+
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-
-		if (landed) {
-			moveWithMovingPlatform();
-		} 
 
 		if (time >= maxTime && !destroyed && bass != null && bass.ownedByLocalPlayer){
 			//ruben: cant put this as fade anim or on destroy because it will conflict with the explosion anim
@@ -140,7 +142,6 @@ public class RemoteMineProj : Projectile {
 		if (other.gameObject is KillZone) return;
 
 		var chr = other.gameObject as Character;
-		bool wallLanded = false;
 		bool characterLand = (
 			chr != null && chr != bass && 
 			chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)

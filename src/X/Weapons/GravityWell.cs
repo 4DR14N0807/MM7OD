@@ -236,7 +236,7 @@ public class GravityWellProj : Projectile, IDamagable {
 		if (projId == (int)ProjIds.RaySplasher || projId == (int)ProjIds.RaySplasherTurret) damage *= 2;
 		health -= damage;
 		if (health <= 0) {
-			fadeSound = "";
+			fadeSound = "explosionX3";
 			fadeSprite = "explosion";
 			destroySelf();
 		}
@@ -406,7 +406,7 @@ public class GravityWellChargedState : CharState {
 	}
 	public override void update() {
 		base.update();
-		if (character.frameIndex >= 5 && !fired) {
+		if (character.frameIndex >= 4 && !fired) {
 			fired = true;
 			stateTime = 0;
 			if (mmx != null) {
@@ -417,10 +417,7 @@ public class GravityWellChargedState : CharState {
 				);
 			}	
 		}
-		if (stateTime > 0.65f) {
-			character.changeToIdleOrFall();
-		}
-		if (!character.grounded && character.frameIndex > 8) {
+		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();
 		}
 	}
@@ -436,7 +433,7 @@ public class GravityWellChargedState : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 	}

@@ -134,7 +134,7 @@ public enum WeaponIds {
 	QuakeBlazer,
 	Rakuhouha,
 	Rekkoha,
-	CFlasher,
+	Messenkou,
 	Shippuuga,
 	EBlade,
 	Rising,

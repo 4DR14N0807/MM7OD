@@ -64,7 +64,7 @@ public class XHover : CharState {
 		if (hoverTime > 2 || player.input.checkDoubleTap(Control.Dash) ||
 			stateFrames > 12 && player.input.isPressed(Control.Jump, player)
 		) {
-			character.changeState(new Fall(), true);
+			character.changeState(character.getFallState(), true);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class XHover : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		if (sound != null && !sound.deleted) {
 			sound.sound?.Stop();
@@ -134,7 +134,7 @@ public class LightDash : CharState {
 		// End move.
 		else if (stop && inputXDir != 0) {
 			character.move(new Point(character.getRunSpeed() * inputXDir * 1.15f, 0));
-			character.changeState(new Run(), true);
+			character.changeState(character.getRunState(), true);
 			return;
 		}
 		// Speed at start and end.
@@ -184,7 +184,7 @@ public class LightDash : CharState {
 		);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		if (dashSpark?.destroyed == false) {
 			dashSpark.destroySelf();
@@ -276,7 +276,7 @@ public class GigaAirDash : CharState {
 		);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		if (dashSpark?.destroyed == false) {
 			dashSpark.destroySelf();
@@ -287,7 +287,6 @@ public class GigaAirDash : CharState {
 	}
 }
 
-
 public class UpDash : CharState {
 	public float dashTime = 0;
 	public string initialDashButton;
@@ -296,18 +295,7 @@ public class UpDash : CharState {
 		this.initialDashButton = initialDashButton;
 		attackCtrl = true;
 	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.vel = new Point(0, -4);
-		character.dashedInAir++;
-		character.frameSpeed = 2;
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-	}
-
+	
 	public override void update() {
 		base.update();
 		if (!player.input.isHeld(initialDashButton, player)) {
@@ -317,13 +305,16 @@ public class UpDash : CharState {
 		int xDir = player.input.getXDir(player);
 		if (xDir != 0) {
 			character.xDir = xDir;
-			character.move(new Point(xDir * 60, 0));
+			character.move(new Point(xDir * 60 * character.getRunDebuffs(), 0));
 		}
 
 		if (!once) {
 			once = true;
 			character.vel = new Point(0, -character.getJumpPower() * 1.125f);
-			new Anim(character.pos.addxy(0, -10), "dash_sparks_up", character.xDir, player.getNextActorNetId(), true, sendRpc: true);
+			new Anim(
+				character.pos.addxy(0, -10), "dash_sparks_up",
+				character.xDir, player.getNextActorNetId(), true, sendRpc: true
+			);
 			character.playSound("airdashupX3", sendRpc: true);
 		}
 
@@ -333,6 +324,13 @@ public class UpDash : CharState {
 			changeToFall();
 			return;
 		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.vel = new Point(0, -4);
+		character.dashedInAir++;
+		character.frameSpeed = 1;
 	}
 
 	public void changeToFall() {
@@ -346,7 +344,10 @@ public class UpDash : CharState {
 		int currentFrame = character.frameIndex;
 		float currentFrameTime = character.frameTime;
 
-		character.changeState(new Fall() { transitionSprite = spriteName, sprite = spriteName });
+		CharState fallState = character.getFallState();
+		fallState.transitionSprite = spriteName;
+		fallState.sprite = spriteName;
+		character.changeState(fallState);
 		if (animOver) {
 			if (character.shootAnimTime > 0) {
 				character.changeSpriteFromName("fall_shoot", true);
@@ -449,7 +450,7 @@ public class X2ChargeShot : CharState {
 		character.changeSpriteFromName(sprite, true);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		if (mmx.hasLastingProj()) {
 			character.shootAnimTime = 8;
 		} else if (newState is not AirDash and not WallSlide) {
@@ -596,7 +597,7 @@ public class X3ChargeShot : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		if (state == 0) {
 			mmx.stockedMaxBuster = true;
 		} else {

@@ -16,6 +16,8 @@ public class UpgradeArmorMenu : IMainMenu {
 
 	public UpgradeArmorMenu(IMainMenu prevMenu) {
 		this.prevMenu = prevMenu;
+		GoldenMenu = new UpgradeArmorMenuGolden(prevMenu);
+		UAXMenu = new UpgradeArmorMenuUAX(prevMenu);
 	}
 
 	public void update() {
@@ -53,15 +55,14 @@ public class UpgradeArmorMenu : IMainMenu {
 			return;
 		}
 		// Enable this to disable 14.0 UAX Menu
-		if (mmx?.hasFullHyperMaxArmor == true || mmx?.hasUltimateArmor == true) {
-			return;
-		}
-		/* if (mmx?.hasFullHyperMaxArmor == true) {
+		if (mmx?.hasFullHyperMaxArmor == true) {
 			Menu.change(new UpgradeArmorMenuGolden(GoldenMenu));
+			return;
 		}
 		if (mmx?.hasUltimateArmor == true) {
 			Menu.change(new UpgradeArmorMenuUAX(UAXMenu));
-		} */
+			return;
+		}
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			if (selectArrowPosY == 0) {
 				if (mainPlayer.helmetArmorNum != xGame) {
@@ -370,7 +371,7 @@ public class UpgradeArmorMenu : IMainMenu {
 				Fonts.drawText(FontType.Blue, "Reduces Flinch by 25.0%", optionPos2.x + 5, optionPos2.y + 20);
 				Fonts.drawText(FontType.Blue, "Powers up your Spiral Crush Buster", optionPos3.x + 5, optionPos3.y + 10);
 				Fonts.drawText(FontType.Blue, "by charging shots 50% Faster.", optionPos3.x + 5, optionPos3.y + 20);
-				Fonts.drawText(FontType.Blue, "Ground Dash 15% faster and konger.", optionPos4.x + 5, optionPos4.y + 10);
+				Fonts.drawText(FontType.Blue, "Ground Dash 15% faster and longer.", optionPos4.x + 5, optionPos4.y + 10);
 				break;
 			case 2: //Giga
 				Fonts.drawText(FontType.Blue, "Trace enemy hp and positioning", optionPos1.x + 5, optionPos1.y + 10);

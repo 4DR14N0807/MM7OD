@@ -25,8 +25,10 @@ public class Pickup : Actor {
 		sprite, pos, netId, ownedByLocalPlayer, false
 	) {
 		netOwner = owner;
-		collider.wallOnly = true;
-		collider.isTrigger = false;
+		if (collider != null) {
+			collider.wallOnly = true;
+			collider.isTrigger = false;
+		}
 
 		this.netActorCreateId = netActorCreateId;
 		if (sendRpc) {
@@ -44,7 +46,7 @@ public class Pickup : Actor {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (other.otherCollider.flag == (int)HitboxFlag.Hitbox) return;
+		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) return;
 
 		if (other.gameObject is Character chr) {
 			if (!chr.ownedByLocalPlayer) return;

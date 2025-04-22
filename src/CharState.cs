@@ -291,33 +291,13 @@ public class CharState {
 		}
 	}
 
-	public void landingCode() {
-		character.playSound("land", sendRpc: true);
-		character.dashedInAir = 0;
-		changeToIdle();
-		if (character.ai != null) {
-			character.ai.jumpTime = 0;
-		}
-	}
-
 	public void groundCodeWithMove() {
 		if (character.canTurn()) {
 			if (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player)) {
 				if (player.input.isHeld(Control.Left, player)) character.xDir = -1;
 				if (player.input.isHeld(Control.Right, player)) character.xDir = 1;
-				if (character.canMove()) character.changeState(new Run());
+				if (character.canMove()) character.changeState(character.getRunState());
 			}
-		}
-	}
-
-	public void changeToIdle(string ts = "") {
-		if (character.grounded && (
-			player.input.isHeld(Control.Left, player) ||
-			player.input.isHeld(Control.Right, player)
-		)) {
-			character.changeState(new Run());
-		} else {
-			character.changeToIdleOrFall(ts);
 		}
 	}
 
@@ -327,10 +307,13 @@ public class CharState {
 		}
 		if (player.input.isHeld(Control.Up, player)) {
 			List<CollideData> ladders = Global.level.getTerrainTriggerList(character, new Point(0, 0), typeof(Ladder));
-			if (ladders != null && ladders.Count > 0 && ladders[0].gameObject is Ladder ladder) {
-				var midX = ladders[0].otherCollider.shape.getRect().center().x;
+			if (ladders != null && ladders.Count > 0 &&
+				ladders[0].gameObject is Ladder ladder &&
+				ladders[0].otherCollider != null
+			) {
+				var midX = ladders[0].otherCollider!.shape.getRect().center().x;
 				if (Math.Abs(character.pos.x - midX) < 12) {
-					var rect = ladders[0].otherCollider.shape.getRect();
+					var rect = ladders[0].otherCollider!.shape.getRect();
 					var snapX = (rect.x1 + rect.x2) / 2;
 					if (Global.level.checkTerrainCollisionOnce(character, snapX - character.pos.x, 0) == null) {
 						float? incY = null;
@@ -343,12 +326,14 @@ public class CharState {
 		if (isGround && player.input.isPressed(Control.Down, player)) {
 			character.checkLadderDown = true;
 			var ladders = Global.level.getTerrainTriggerList(character, new Point(0, 1), typeof(Ladder));
-			if (ladders.Count > 0 && ladders[0].gameObject is Ladder ladder) {
-				var rect = ladders[0].otherCollider.shape.getRect();
+			if (ladders.Count > 0 && ladders[0].gameObject is Ladder ladder &&
+				ladders[0].otherCollider != null
+			) {
+				var rect = ladders[0].otherCollider!.shape.getRect();
 				var snapX = (rect.x1 + rect.x2) / 2;
 				float xDist = snapX - character.pos.x;
 				if (MathF.Abs(xDist) < 10 && Global.level.checkTerrainCollisionOnce(character, xDist, 30) == null) {
-					var midX = ladders[0].otherCollider.shape.getRect().center().x;
+					var midX = ladders[0].otherCollider!.shape.getRect().center().x;
 					character.changeState(new LadderClimb(ladder, midX, 30));
 					character.stopCamUpdate = true;
 				}
@@ -639,7 +624,7 @@ public class Idle : CharState {
 			if (!character.isSoftLocked() && character.canTurn()) {
 				if (player.input.isHeld(Control.Left, player)) character.xDir = -1;
 				if (player.input.isHeld(Control.Right, player)) character.xDir = 1;
-				if (character.canMove()) character.changeState(new Run());
+				if (character.canMove()) character.changeState(character.getRunState());
 			}
 		}
 
@@ -833,21 +818,9 @@ public class Jump : CharState {
 		base.update();
 		if (character.vel.y > 0) {
 			if (character.sprite.name.EndsWith("cannon_air") == false) {
-				character.changeState(new Fall());
+				character.changeState(character.getFallState());
 			}
 			return;
-		}
-		if (character is Zero zero) {
-			if (zero.kuuenbuJump >= 1) {
-				zero.kuuenbuJump = 0;
-				character.changeSpriteFromName("kuuenbu", true);
-			}
-		}
-		if (character is PunchyZero pzero) {
-			if (pzero.kuuenbuJump >= 1) {
-				pzero.kuuenbuJump = 0;
-				character.changeSpriteFromName("kuuenbu", true);
-			}
 		}
 	}
 }
@@ -856,7 +829,7 @@ public class Fall : CharState {
 	public float limboVehicleCheckTime;
 	public Actor? limboVehicle;
 
-	public Fall() : base("fall", "fall_shoot", Options.main.getAirAttack(), "fall_start") {
+	public Fall() : base("fall", "fall_shoot", Options.main.getAirAttack(), "fall_start", "fall_start_shoot") {
 		accuracy = 5;
 		exitOnLanding = true;
 		useDashJumpSpeed = true;
@@ -943,7 +916,7 @@ public class Dash : CharState {
 		// End move.
 		else if (stop && inputXDir != 0) {
 			character.move(new Point(character.getRunSpeed() * inputXDir, 0));
-			character.changeState(new Run(), true);
+			character.changeState(character.getRunState(true), true);
 			return;
 		}
 		// Speed at start and end.
@@ -988,7 +961,7 @@ public class Dash : CharState {
 		);*/
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		if (dashSpark?.destroyed == false) {
 			dashSpark.destroySelf();
@@ -1025,9 +998,19 @@ public class AirDash : CharState {
 			character.useGravity = true;
 			dashTime = 0;
 			stop = true;
-			sprite = "dash_end";
-			shootSprite = "dash_end_shoot";
-			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
+			if (character is not Doppma or CmdSigma) {
+				sprite = "dash_end";
+				shootSprite = "dash_end_shoot";
+				character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
+			}
+			else if (character is Doppma) {
+				character.changeSpriteFromName("fall", false);
+				exitOnLanding = true;
+			}
+			if (character is CmdSigma) {
+				character.changeSpriteFromName("fall", false);
+				exitOnLanding = true;
+			}
 		}
 		if (dashTime <= 3 || stop) {
 			if (inputXDir != 0 && inputXDir != dashDir) {
@@ -1044,7 +1027,7 @@ public class AirDash : CharState {
 			character.move(new Point(character.getDashSpeed() * inputXDir, 0));
 		}
 		// Speed at start and end.
-		else if (!stop || dashHeld) {
+		else if (!stop) {
 			character.move(new Point(Physics.DashStartSpeed * character.getRunDebuffs() * dashDir, 0));
 		}
 		// Timer
@@ -1151,11 +1134,11 @@ public class WallSlide : CharState {
 				var hitWall = hit?.gameObject as Wall;
 
 				if (wallDir != player.input.getXDir(player)) {
-					character.changeState(new Fall());
+					character.changeState(character.getFallState());
 				} else if (hitWall == null || !hitWall.collider.isClimbable) {
 					var hitActor = hit?.gameObject as Actor;
 					if (hitActor == null || !hitActor.isPlatform) {
-						character.changeState(new Fall());
+						character.changeState(character.getFallState());
 					}
 				}
 			}
@@ -1240,7 +1223,7 @@ public class WallKick : CharState {
 	public override void update() {
 		base.update();
 		if (character.vel.y > 0) {
-			character.changeState(new Fall());
+			character.changeState(character.getFallState());
 		}
 	}
 }
@@ -1319,15 +1302,20 @@ public class LadderClimb : CharState {
 		}
 
 		var ladderTop = ladder.collider.shape.getRect().y1;
-		var yDist = character.physicsCollider.shape.getRect().y2 - ladderTop;
-		if (!ladder.collider.isCollidingWith(character.physicsCollider) || MathF.Abs(yDist) < 12) {
+		var yDist = (character.physicsCollider?.shape.getRect().y2 ?? character.pos.y) - ladderTop;
+		if (character.physicsCollider == null ||
+			!ladder.collider.isCollidingWith(character.physicsCollider) ||
+			MathF.Abs(yDist) < 12
+		) {
 			if (player.input.isHeld(Control.Up, player)) {
 				var targetY = ladderTop - 1;
-				if (Global.level.checkTerrainCollisionOnce(character, 0, targetY - character.pos.y) == null && MathF.Abs(targetY - character.pos.y) < 20) {
+				if (Global.level.checkTerrainCollisionOnce(character, 0, targetY - character.pos.y) == null &&
+					MathF.Abs(targetY - character.pos.y) < 20
+				) {
 					character.changeState(new LadderEnd(targetY));
 				}
 			} else {
-				character.changeState(new Fall());
+				character.changeState(character.getFallState());
 			}
 		} else if (!player.isAI && player.input.isPressed(Control.Jump, player)) {
 			if (!isAttacking) {
@@ -1342,7 +1330,7 @@ public class LadderClimb : CharState {
 
 	// AI should call this manually when they want to drop from a ladder
 	public void dropFromLadder() {
-		character.changeState(new Fall());
+		character.changeState(character.getFallState());
 	}
 }
 
@@ -1459,6 +1447,20 @@ public class Taunt : CharState {
 				player.getNextActorNetId(),
 				destroyOnEnd: true, sendRpc: true
 			);
+		}
+		if (character.sprite.name == "mmx_win" && !once) {
+			once = true;
+			character.playSound("ching", sendRpc: true);
+			zeroching = new Anim(
+				character.pos.addxy(character.xDir*4, -22f),
+				"zero_ching", -character.xDir,
+				player.getNextActorNetId(),
+				destroyOnEnd: true, sendRpc: true
+			);
+		}
+		if (character.sprite.name == "axl_win" && !once) {
+			once = true;
+			character.playSound("ching", sendRpc: true);
 		}
 	}
 }
@@ -1691,6 +1693,9 @@ public class GenericGrabbedState : CharState {
 		grabTime -= player.mashValue();
 		if (grabTime <= 0) {
 			character.changeToIdleOrFall();
+		}
+		if (character is Axl axl) {
+			axl.stealthRevealTime = Axl.maxStealthRevealTime;
 		}
 	}
 

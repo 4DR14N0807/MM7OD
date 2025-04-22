@@ -1517,7 +1517,7 @@ public partial class Player {
 			return;
 		}
 		if (character?.destroyed == false) {
-			destroyCharacter();
+			destroyCharacter(true);
 		}
 		//explodeDieEnd();
 		ushort newNetId = getNextATransNetId();
@@ -1563,7 +1563,7 @@ public partial class Player {
 		respawnTime = 0;
 		// Save old char to variable and nuke him.
 		Character oldChar = character;
-		destroyCharacter(oldChar);
+		destroyCharacter(oldChar, true);
 		// Spawn RCX in the old position in the same frame.
 		character = spawnCharAtPoint(
 			(int)CharIds.RagingChargeX, [],
@@ -1633,9 +1633,13 @@ public partial class Player {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (delayedNewCharNum != null && Global.level.mainPlayer.charNum != delayedNewCharNum.Value) {
+		if (delayedNewCharNum != null &&
+			Global.level.mainPlayer.charNum != delayedNewCharNum.Value
+		) {
 			Global.level.mainPlayer.newCharNum = delayedNewCharNum.Value;
-			Global.serverClient?.rpc(RPC.switchCharacter, (byte)Global.level.mainPlayer.id, (byte)delayedNewCharNum.Value);
+			Global.serverClient?.rpc(
+				RPC.switchCharacter, (byte)Global.level.mainPlayer.id, (byte)delayedNewCharNum.Value
+			);
 		}
 		if (character == null) {
 			return;
@@ -1665,7 +1669,7 @@ public partial class Player {
 		}
 
 		if (currentMaverick != null && isTagTeam()) {
-			destroyCharacter();
+			destroyCharacter(true);
 		} else {
 			character?.applyDamage(Damager.forceKillDamage, this, character, null, null);
 		}

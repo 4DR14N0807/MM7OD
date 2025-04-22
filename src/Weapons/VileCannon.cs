@@ -116,7 +116,7 @@ public class VileCannon : Weapon {
 				vile.setVileShootTime(this);
 				if (!Options.main.lockInAirCannon) {
 					if (vile.charState is AirDash) {
-						vile.changeState(new Fall(), true);
+						vile.changeState(vile.getFallState(), true);
 					}
 					vile.changeSpriteFromName("cannon_air", true);
 					CannonAttack.shootLogic(vile);
@@ -292,7 +292,7 @@ public class CannonAttack : CharState {
 		
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		vile.isShootingLongshotGizmo = false;
 		character.useGravity = true;

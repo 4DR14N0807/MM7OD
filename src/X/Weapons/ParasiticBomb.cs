@@ -124,9 +124,9 @@ public class ParasiteCarry : CharState {
 		maxMoveAmount = character.getCenterPos().distanceTo(otherChar.getCenterPos()) * 1.5f;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		player.character.useGravity = true;
+		character.useGravity = true;
 	}
 
 	public override void update() {
@@ -306,7 +306,9 @@ public class BeeCursorAnim : Anim {
 							character.setShootAnim();
 							character.shootAnimTime = Character.DefaultShootAnimTime;
 						}
-						character.currentWeapon?.addAmmo(-player.weapon.getAmmoUsage(3), player);
+						if (character.currentWeapon is ParasiticBomb) {
+							character.currentWeapon.addAmmo(-character.currentWeapon.getAmmoUsage(3), player);
+						}
 						character.chargeTime = 0;
 						new ParasiticBombProjCharged(character.getShootPos(), character.pos.x - target.getCenterPos().x < 0 ? 1 : -1,
 						character, character.player, character.player.getNextActorNetId(), target, rpc: true);

@@ -311,7 +311,7 @@ public class AirBombAttack : CharState {
 		base.update();
 		if (vile.grenadeWeapon.type == (int)VileBallType.ExplosiveRound) {
 			if (bombNum > 0 && player.input.isPressed(Control.Special1, player)) {
-				character.changeState(new Fall(), true);
+				character.changeState(character.getFallState(), true);
 				return;
 			}
 			if (stateTime > 0f && bombNum == 0) {
@@ -363,7 +363,7 @@ public class AirBombAttack : CharState {
 		var inputDir = player.input.getInputDir(player);
 		if (inputDir.x == 0) inputDir.x = character.xDir;
 		if (!vile.tryUseVileAmmo(8)) {
-			character.changeState(new Fall(), true);
+			character.changeState(character.getFallState(), true);
 			return;
 		}
 		bombNum++;
@@ -380,7 +380,7 @@ public class AirBombAttack : CharState {
 		vile = character as Vile ?? throw new NullReferenceException();
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 		if (vile.napalmWeapon.type == (int)NapalmType.NoneBall) {
@@ -456,7 +456,7 @@ public class AirBombNapalm : NapalmAttackTypes {
 		return base.canEnter(character);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 		if (vile.grenadeWeapon.type != (int)VileBallType.NoneNapalm && vile.grenadeWeapon.type != (int)VileBallType.NoneFlamethrower) {

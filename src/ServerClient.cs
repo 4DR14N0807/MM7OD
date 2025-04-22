@@ -441,10 +441,11 @@ public class ServerClient {
 					if (rpcTemplate is RPCPeriodicServerPing) {
 						packetLossStopwatch.Restart();
 						packetsReceived++;
+						continue;
 					}
 
 					if (!rpcTemplate.isString) {
-						ushort argCount = BitConverter.ToUInt16(im.ReadBytes(2), 0);
+						ushort argCount = BitConverter.ToUInt16(im.ReadBytes(2));
 						var bytes = im.ReadBytes(argCount);
 						if (invokeRpcs && Global.level != null) {
 							if (rpcTemplate.isServerMessage || rpcTemplate.levelless) {

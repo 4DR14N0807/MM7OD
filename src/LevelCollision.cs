@@ -406,7 +406,7 @@ public partial class Level {
 		}
 	}
 
-	public CollideData checkCollisionPoint(Point point, List<GameObject> exclusions) {
+	public CollideData? checkCollisionPoint(Point point, List<GameObject> exclusions) {
 		var points = new List<Point>();
 		points.Add(point);
 		points.Add(point.addxy(1, 0));
@@ -416,14 +416,17 @@ public partial class Level {
 		return checkCollisionShape(shape, exclusions);
 	}
 
-	public CollideData checkCollisionShape(Shape shape, List<GameObject>? exclusions) {
-		var gameObjects = getTerrainInSameCell(shape);
+	public CollideData? checkCollisionShape(Shape? shape, List<GameObject>? exclusions) {
+		if (shape == null) {
+			return null;
+		}
+		var gameObjects = getTerrainInSameCell(shape.Value);
 		foreach (var go in gameObjects) {
 			if (go.collider == null) continue;
 			if (go is not Actor && go.collider.isTrigger) continue;
 			if (go is Actor && (go.collider.isTrigger || go.collider.wallOnly)) continue;
 			if (exclusions != null && exclusions.Contains(go)) continue;
-			var hitData = shape.intersectsShape(go.collider.shape);
+			var hitData = shape.Value.intersectsShape(go.collider.shape);
 			if (hitData != null) {
 				return new CollideData(null, go.collider, null, false, go, hitData);
 			}
@@ -1013,7 +1016,7 @@ public partial class Level {
 			if (trigger.gameObject is GenericMeleeProj && trigger.otherCollider.flag == (int)HitboxFlag.None &&
 				(trigger.otherCollider.originalSprite == "sigma_block" || trigger.otherCollider.originalSprite == "zero_block")) {
 				return 0;
-			} else if (trigger.otherCollider.originalSprite?.StartsWith("kaisersigma") == true && trigger.otherCollider.name == "head") {
+			} else if (trigger.otherCollider.originalSprite.StartsWith("kaisersigma") == true && trigger.otherCollider.name == "head") {
 				return 0;
 			} else if (trigger.gameObject is GenericMeleeProj && trigger.otherCollider.flag == (int)HitboxFlag.None && trigger.otherCollider.originalSprite == "drdoppler_absorb") {
 				return 0;

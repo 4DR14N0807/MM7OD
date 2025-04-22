@@ -271,11 +271,11 @@ public class StrikeChainProj : Projectile {
 				}
 				hookedActor.useGravity = false;
 				hookedActor.grounded = false;
-				hookedActor.move(hookedActor.pos.directionTo(player.character.getCenterPos()).normalize().times(400));
+				hookedActor.move(hookedActor.pos.directionTo(mmx.getCenterPos()).normalize().times(400));
 			}
 			if (distRetracted >= dist + 10) {
 				if (hookedActor != null && !(hookedActor is Character)) {
-					hookedActor.changePos(player.character.getCenterPos());
+					hookedActor.changePos(mmx.getCenterPos());
 					hookedActor.useGravity = true;
 				}
 				destroySelf();
@@ -303,15 +303,12 @@ public class StrikeChainProj : Projectile {
 		base.postUpdate();
 		//Syncs with current buster position.
 		Point shootPos = mmx.getShootPos();
-		if (angleSet) {
-			changePos(
-				new Point(
-					shootPos.x + (dist - distRetracted) * Helpers.cosb(byteAngle), 
-					shootPos.y + (dist - distRetracted) * Helpers.sinb(byteAngle)
-				)
-			);
-		}
-		
+		changePos(
+			new Point(
+				shootPos.x + (dist - distRetracted) * Helpers.cosb(byteAngle), 
+				shootPos.y + (dist - distRetracted) * Helpers.sinb(byteAngle)
+			)
+		);
 	}
 
 	public void reverse(Point newVel) {
@@ -384,7 +381,6 @@ public class StrikeChainProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x,y);
-		if (byteAngle == null) return;
 
 		float length = dist - distRetracted;
 		int pieceSize = 8;
@@ -514,11 +510,11 @@ public class StrikeChainProjCharged : Projectile {
 				}
 				hookedActor.useGravity = false;
 				hookedActor.grounded = false;
-				hookedActor.move(hookedActor.pos.directionTo(player.character.getCenterPos()).normalize().times(600));
+				hookedActor.move(hookedActor.pos.directionTo(mmx.getCenterPos()).normalize().times(600));
 			}
 			if (distRetracted >= dist + 10) {
 				if (hookedActor != null && !(hookedActor is Character)) {
-					hookedActor.changePos(player.character.getCenterPos());
+					hookedActor.changePos(mmx.getCenterPos());
 					hookedActor.useGravity = true;
 				}
 				destroySelf();
@@ -546,15 +542,12 @@ public class StrikeChainProjCharged : Projectile {
 		base.postUpdate();
 		//Syncs with current buster position.
 		Point shootPos = mmx.getShootPos();
-		if (angleSet) {
-			changePos(
-				new Point(
-					shootPos.x + (dist - distRetracted) * Helpers.cosb(byteAngle), 
+		changePos(
+			new Point(
+				shootPos.x + (dist - distRetracted) * Helpers.cosb(byteAngle), 
 					shootPos.y + (dist - distRetracted) * Helpers.sinb(byteAngle)
-				)
-			);
-		}
-		
+			)
+		);
 	}
 
 	public void reverse(Point newVel) {
@@ -629,7 +622,6 @@ public class StrikeChainProjCharged : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x,y);
-		if (byteAngle == null) return;
 
 		float length = dist - distRetracted;
 		int pieceSize = 8;

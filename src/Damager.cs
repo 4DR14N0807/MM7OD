@@ -45,8 +45,8 @@ public class Damager {
 		IDamagable victim, bool weakness, Weapon weapon, Actor actor,
 		int projId, float? overrideDamage = null, int? overrideFlinch = null, bool sendRpc = true
 	) {
-		float newDamage = (overrideDamage != null ? (float)overrideDamage : damage);
-		int newFlinch = (overrideFlinch != null ? (int)overrideFlinch : flinch);
+		float newDamage = (overrideDamage ?? damage);
+		int newFlinch = (overrideFlinch ?? flinch);
 
 		bool didDamage = applyDamage(
 			owner, newDamage, hitCooldown, newFlinch, victim.getActor,
@@ -122,7 +122,7 @@ public class Damager {
 				if (gmp.ownerActor?.netId != null) {
 					actorNetIdBytes = BitConverter.GetBytes(gmp.ownerActor?.netId ?? 0);
 				} else {
-					actorNetIdBytes = BitConverter.GetBytes(gmp.owner?.character?.netId ?? 0);
+					actorNetIdBytes = BitConverter.GetBytes(gmp.owner.character?.netId ?? 0);
 				}
 			}
 			var byteParams = new List<byte> {
@@ -307,7 +307,7 @@ public class Damager {
 		// Misc section
 		else {
 			if (damage > 0) {
-				victim?.playSound("hit");
+				victim.playSound("hit");
 			}
 		}
 

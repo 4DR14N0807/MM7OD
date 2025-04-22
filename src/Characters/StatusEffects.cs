@@ -69,6 +69,9 @@ public class Hurt : CharState {
 			hurtSpeed = Helpers.toZero(hurtSpeed, 1.6f / flinchTime * Global.speedMul, hurtDir);
 			character.move(new Point(hurtSpeed * 60f, 0));
 		}
+		if (character is Axl axl) {
+			axl.stealthRevealTime = Axl.maxStealthRevealTime;
+		}
 
 		if (isMiniFlinch()) {
 			character.frameSpeed = 0;
@@ -303,6 +306,10 @@ public class KnockedDown : CharState {
 			character.increaseCharge();
 		}
 
+		if (character is Axl axl) {
+			axl.stealthRevealTime = Axl.maxStealthRevealTime;
+		}
+
 		if (stateTime >= flinchTime) {
 			character.changeToIdleOrFall();
 		}
@@ -321,7 +328,7 @@ public class GoliathDragged : CharState {
 		character.vel.y = 0;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 	}

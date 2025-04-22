@@ -80,6 +80,7 @@ public partial class Character : Actor, IDamagable {
 	public float healthBarInnerWidth;
 	public float slideVel = 0;
 	public Flag? flag;
+	public Flag? ctfFlag;
 	public bool isCrystalized;
 	public bool isDWrapped;
 	public bool insideCharacter;
@@ -220,7 +221,7 @@ public partial class Character : Actor, IDamagable {
 	public Character(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
-		bool isWarpIn = true, bool mk2VileOverride = false, bool mk5VileOverride = false
+		bool isWarpIn = true
 	) : base(
 		null!, new Point(x, y), netId, ownedByLocalPlayer, addToLevel: true
 	) {
@@ -238,7 +239,7 @@ public partial class Character : Actor, IDamagable {
 
 		if (ownedByLocalPlayer) {
 			if (isWarpIn) { initialCharState = new WarpIn(); }
-			else { initialCharState = new Idle(); }
+			else { initialCharState = getIdleState(); }
 		} else {
 			initialCharState = new NetLimbo();
 			useGravity = false;
@@ -300,7 +301,7 @@ public partial class Character : Actor, IDamagable {
 		if (isVaccinated()) return;
 		if (charState.invincible) return;
 
-		Damager damager = new Damager(attacker, 0, 0, 0);
+		//Damager damager = new Damager(attacker, 0, 0, 0);
 		virusTime += time;
 		if (virusTime > 8) virusTime = 8;
 	}
@@ -471,7 +472,7 @@ public partial class Character : Actor, IDamagable {
 		if (isPushImmune()) return;
 
 		if (isClimbingLadder()) {
-			setFall();
+			changeState(getFallState());
 		} else {
 			float modifier = 1;
 			if (grounded) modifier = 0.5f;
@@ -584,7 +585,7 @@ public partial class Character : Actor, IDamagable {
 		if (flag != null) return false;
 		if (isWarpIn()) return false;
 		if (isInvulnerable()) return false;
-		return true;
+		return charState is not Die;
 	}
 
 	public virtual bool canShoot() {
@@ -640,6 +641,12 @@ public partial class Character : Actor, IDamagable {
 		}
 		return true;
 	}
+
+	public virtual CharState getIdleState() => new Idle();
+	public virtual CharState getRunState(bool skipInto = false) => new Run();
+	public virtual CharState getJumpState() => new Jump();
+	public virtual CharState getAirJumpState() => new Jump();
+	public virtual CharState getFallState() => new Fall();
 
 	public virtual float getRunSpeed() {
 		return Physics.WalkSpeed * getRunDebuffs();
@@ -1342,9 +1349,11 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (charState.exitOnLanding && grounded) {
 			landingCode();
+			return true;
 		}
 		if (charState.exitOnAirborne && !grounded) {
-			changeState(new Fall());
+			changeState(getFallState());
+			return true;
 		}
 		if (canWallClimb() &&
 			!grounded && vel.y >= 0 &&
@@ -1471,10 +1480,10 @@ public partial class Character : Actor, IDamagable {
 				isDashing = (
 					isDashing || player.dashPressed(out string dashControl) && canDash()
 				);
-				changeState(new Jump());
 				if (isDashing) {
 					dashedInAir++;
 				}
+				changeState(getJumpState());
 				return true;
 			} else if (player.dashPressed(out string dashControl) && canDash()) {
 				changeState(new Dash(dashControl), true);
@@ -1516,7 +1525,7 @@ public partial class Character : Actor, IDamagable {
 					// Adrian: como es que una anim puede desyncear tan durooooo.
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
 					vel.y = -getJumpPower();
-					changeState(new Jump(), true);
+					changeState(getAirJumpState(), true);
 					return true;
 				}
 			} else {
@@ -2004,10 +2013,6 @@ public partial class Character : Actor, IDamagable {
 		return this;
 	}
 
-	public void setFall() {
-		changeState(new Fall());
-	}
-
 	public bool isClimbingLadder() {
 		return charState is LadderClimb;
 	}
@@ -2086,13 +2091,21 @@ public partial class Character : Actor, IDamagable {
 		string transShootSprite = ""
 	) {
 		if (grounded) {
-			changeState(new Idle(transitionSprite, transShootSprite), true);
+			CharState idleState = getIdleState();
+			idleState.transitionSprite = transitionSprite;
+			idleState.transShootSprite = transShootSprite;
+			if (idleState.transitionSprite != "") {
+				idleState.sprite = idleState.transitionSprite;
+			}
+			changeState(idleState, true);
 		} else {
 			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
-				changeState(new Jump() { enterSound = "" }, true);
+				CharState jumpState = getJumpState();
+				jumpState.enterSound = "";
+				changeState(jumpState, true);
 				frameIndex = sprite.totalFrameNum - 1;
 			} else {
-				changeState(new Fall(), true);
+				changeState(getFallState(), true);
 			}
 		}
 	}
@@ -2102,10 +2115,12 @@ public partial class Character : Actor, IDamagable {
 			landingCode(useSound);
 		} else {
 			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
-				changeState(new Jump() { enterSound = "" }, true);
+				CharState jumpState = getJumpState();
+				jumpState.enterSound = "";
+				changeState(jumpState, true);
 				frameIndex = sprite.totalFrameNum - 1;
 			} else {
-				changeState(new Fall(), true);
+				changeState(getFallState(), true);
 			}
 		}
 	}
@@ -2115,10 +2130,12 @@ public partial class Character : Actor, IDamagable {
 			changeState(new Crouch(), true);
 		} else {
 			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
-				changeState(new Jump() { enterSound = "" }, true);
+				CharState jumpState = getJumpState();
+				jumpState.enterSound = "";
+				changeState(jumpState, true);
 				frameIndex = sprite.totalFrameNum - 1;
 			} else {
-				changeState(new Fall(), true);
+				changeState(getFallState(), true);
 			}
 		}
 	}
@@ -2132,10 +2149,16 @@ public partial class Character : Actor, IDamagable {
 			player.input.isHeld(Control.Left, player) ||
 			player.input.isHeld(Control.Right, player)
 		)) {
-			changeState(new Run());
+			changeState(getRunState(true));
 			return;
 		}
-		changeState(new Idle("land", "land_shoot"), true);
+		CharState idleState = getIdleState();
+		idleState.transitionSprite = "land";
+		idleState.transShootSprite = "land_shoot";
+		if (idleState.transitionSprite != "") {
+			idleState.sprite = idleState.transitionSprite;
+		}
+		changeState(idleState, true);
 	}
 
 	public virtual bool changeState(CharState newState, bool forceChange = false) {
@@ -2226,13 +2249,8 @@ public partial class Character : Actor, IDamagable {
 		}
 		renderDamageText(35);
 
-		if (charState != null) {
-			charState.render(x, y);
-		}
-
-		if (chargeEffect != null) {
-			chargeEffect.render(getParasitePos().add(new Point(x, y)));
-		}
+		charState?.render(x, y);
+		chargeEffect?.render(getParasitePos().add(new Point(x, y)));
 
 		if (isCrystalized) {
 			float yOff = 0;
@@ -2801,7 +2819,7 @@ public partial class Character : Actor, IDamagable {
 			// Decimal protection scenario.
 			if (damage > 0 && damageSavings > 0 && damageSavings + (1m/8m) >= damage) {
 				damage = 0;
-				damageSavings = damageSavings - damage;
+				damageSavings -= damage;
 				if (damageSavings <= 0) {
 					damageSavings = 0;
 				}
@@ -2964,11 +2982,15 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		healAmount += amount;
+		onHealing((decimal)amount);
 	}
 
 	public void fillHealthToMax() {
 		healAmount += (float)Math.Ceiling(maxHealth);
+		onHealing(Math.Ceiling(maxHealth));
 	}
+
+	public virtual void onHealing(decimal amount) { }
 
 	public virtual void addAmmo(float amount) {
 		currentWeapon?.addAmmoHeal(amount);
@@ -3179,7 +3201,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (parasiteMashTime > 5) {
 			removeParasite(true, false);
-		} else if (parasiteTime > 2 && !(charState is ParasiteCarry)) {
+		} else if (parasiteTime > 2 && charState is not ParasiteCarry) {
 			removeParasite(false, false);
 		}
 	}
@@ -3612,7 +3634,7 @@ public partial class Character : Actor, IDamagable {
 		// Bool mask. Pos 5.
 		// For things not always enabled.
 		// We also edit this later.
-		int boolMaskPos = customData.Count();
+		int boolMaskPos = customData.Count;
 		int boolMaskBPos = boolMaskPos + 1;
 		bool[] boolMask = new bool[8];
 		bool[] boolMaskB = new bool[8];
@@ -3677,7 +3699,7 @@ public partial class Character : Actor, IDamagable {
 		bool[] boolData = Helpers.byteToBoolArray(data[5]);
 
 		player.isDefenderFavoredNonOwner = boolData[0];
-		invulnTime = (boolData[1] ? 1 : 0);
+		invulnTime = boolData[1] ? 1 : 0;
 		isDarkHoldState = boolData[2];
 		isStrikeChainState = boolData[3];
 		isBurnState = boolData[4];

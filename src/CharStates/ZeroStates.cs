@@ -95,7 +95,7 @@ public class HyperZeroStart : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 		if (character != null) {
@@ -183,7 +183,7 @@ public class SaberParryStartState : CharState {
 		}
 	}
 
-	public void counterAttack(Player damagingPlayer, Actor damagingActor, float damage) {
+	public void counterAttack(Player damagingPlayer, Actor? damagingActor, float damage) {
 		Actor? counterAttackTarget = null;
 		bool stunnableParry = false;
 
@@ -214,11 +214,11 @@ public class SaberParryStartState : CharState {
 		character.changeState(new KKnuckleParryMeleeState(counterAttackTarget), true);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 	}
 
-	public bool canParry(Actor damagingActor) {
+	public bool canParry(Actor? damagingActor) {
 		if (damagingActor is not Projectile) {
 			return false;
 		}

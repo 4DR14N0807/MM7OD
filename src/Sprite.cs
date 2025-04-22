@@ -76,7 +76,7 @@ public class Sprite {
 		if (currentFrame == null || frameSpeed == 0) {
 			return false;
 		}
-		if (frameSpeed > 0 && frameTime >= currentFrame.duration) {
+		if (frameTime >= currentFrame.duration) {
 			bool onceEnd = !animData.loop && frameIndex == animData.frames.Length - 1;
 			if (!onceEnd) {
 				frameTime = 0;
@@ -146,6 +146,14 @@ public class Sprite {
 			currentFrame.rect.w(), currentFrame.rect.h(),
 			x - cx, y - cy,
 			alpha
+		);
+	}
+
+	public void drawSimple(Point pos, int xDir, long zIndex, float alpha = 1, Actor? actor = null) {
+		draw(
+			frameIndex, pos.x, pos.y, xDir, 1,
+			null, alpha, 1, 1, zIndex,
+			null, 0, actor: actor, useFrameOffsets: true
 		);
 	}
 

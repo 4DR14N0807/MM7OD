@@ -720,7 +720,7 @@ public class InRideChaser : CharState {
 			if (ejectInput && !character.rideChaser.isTurning) {
 				character.vel.y = -character.getJumpPower();
 				character.incPos(new Point(0, -5));
-				character.changeState(new Jump(), true);
+				character.changeState(character.getJumpState(), true);
 			}
 		}
 
@@ -742,7 +742,7 @@ public class InRideChaser : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		character.rideChaser = null;
 		character.useGravity = true;
 		character.setGlobalColliderTrigger(false);

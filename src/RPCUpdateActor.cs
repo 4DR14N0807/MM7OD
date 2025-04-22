@@ -77,8 +77,8 @@ public partial class Actor {
 		}
 		// The rest are just contain actual bool data.
 		mask[5] = visible;                      // Visibility
-		mask[6] = xDir <= -1 ? false : true;    // xDir
-		mask[7] = yDir <= -1 ? false : true;    // yDir
+		mask[6] = (xDir > -1);	// xDir
+		mask[7] = (yDir > -1);	// yDir
 
 		// Check if anything changed on these bools.
 		if (lastXDir != xDir || lastYDir != yDir || lastVisible != visible) {
@@ -112,7 +112,7 @@ public partial class Actor {
 
 public class RPCUpdateActor : RPC {
 	public RPCUpdateActor() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableSequenced;
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
 	}
 
@@ -139,9 +139,9 @@ public class RPCUpdateActor : RPC {
 
 		// Pos.
 		if (mask[0]) {
-			float posX = BitConverter.ToSingle(arguments[i..(i + 4)]);
+			float posX = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
-			float posY = BitConverter.ToSingle(arguments[i..(i + 4)]);
+			float posY = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
 
 			actor.changePos(new Point(posX, posY));
@@ -155,7 +155,7 @@ public class RPCUpdateActor : RPC {
 		bool spriteChanged = false;
 		bool spriteError = false;
 		if (mask[2]) {
-			int spriteIndex = BitConverter.ToUInt16(arguments[i..(i + 2)]);
+			int spriteIndex = BitConverter.ToUInt16(arguments.AsSpan()[i..(i + 2)]);
 			if (spriteIndex >= 0 && spriteIndex < Global.spriteCount) {
 				string spriteName = Global.spriteNameByIndex[spriteIndex];
 				actor.changeSprite(spriteName, true);

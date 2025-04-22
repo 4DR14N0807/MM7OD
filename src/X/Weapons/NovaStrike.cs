@@ -17,6 +17,7 @@ public class HyperNovaStrike : Weapon {
 		weaponSlotIndex = 95;
 		killFeedIndex = 104;
 		ammo = 28;
+		maxAmmo = 28;
 		drawGrayOnLowAmmo = true;
 		drawRoundedDown = true;
 	}
@@ -110,7 +111,7 @@ public class NovaStrikeState : CharState {
 		);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.yDir = 1;
 		character.visible = true;

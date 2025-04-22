@@ -55,6 +55,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 	public const uint fontSize = 24;
 	public IMainMenu prevMenu;
 	public bool inGame;
+	public int Page;
 	public bool isOffline;
 	private FontType fontOption = FontType.Blue; 
 	public List<MenuOption> menuOptions = new List<MenuOption>();
@@ -323,6 +324,21 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
+		menuOptions.Add(
+				new MenuOption(startX, currentY += lineH,
+					() => {
+						Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.SubtankGain, 1, 4, true);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							FontType.Blue,
+							"SubTank Gain: " +
+							savedMatchSettings.customMatchSettings.SubtankGain.ToString(),
+							pos.x, pos.y, selected: selectArrowPosY == 15
+						);
+					}
+				)
+			);
 	}
 
 	public string getSameCharString(int charNum) {

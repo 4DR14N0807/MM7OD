@@ -535,7 +535,7 @@ public class RPCDestroyCharacter : RPC {
 
 	public override void invoke(params byte[] arguments) {
 		int playerId = arguments[0];
-		ushort charNetId = BitConverter.ToUInt16(arguments[1..3]);
+		ushort charNetId = BitConverter.ToUInt16(arguments.AsSpan()[1..3]);
 		Player? player = Global.level.getPlayerById(playerId);
 		// We start by trying to call the regular destroy.
 		bool destroyedChar = false;

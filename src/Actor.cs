@@ -163,14 +163,13 @@ public partial class Actor : GameObject {
 	public Point? targetNetPos;
 	public bool interplorateNetPos = true;
 
-	// For RPC stuff.
 	private Point? lastPos;
-	private int lastSpriteIndex = -1000;
-	private int lastFrameIndex = -1000;
-	private int lastXDir = -1000;
-	private int lastYDir = -1000;
-	private bool? lastVisible = null;
-	private float lastAngle = -1000;
+	private int? lastSpriteIndex;
+	private int? lastFrameIndex;
+	private int? lastXDir;
+	private int? lastYDir;
+	private float? lastAngle;
+	private bool? lastVisible;
 	public float lastNetUpdate;
 
 	public NetActorCreateId netActorCreateId;
@@ -434,6 +433,7 @@ public partial class Actor : GameObject {
 		}
 	}
 
+	
 	public float? angle {
 		get {
 			return _byteAngle * 1.40625f;
@@ -447,7 +447,6 @@ public partial class Actor : GameObject {
 		}
 	}
 
-	
 	public bool angleSet;
 	public float byteAngle {
 		get {
@@ -458,6 +457,7 @@ public partial class Actor : GameObject {
 			_byteAngle = value % 256;
 		}
 	}
+
 
 	public void setzIndex(long val) {
 		this.zIndex = val;
@@ -509,11 +509,10 @@ public partial class Actor : GameObject {
 		foreach (var renderEffect in renderEffectsToRemove) {
 			renderEffects.Remove(renderEffect);
 		}
-
 		updateHitboxes();
 	}
 
-	public virtual void updateHitboxes() {
+	public void updateHitboxes() {
 		if (!useFrameProjs) {
 			return;
 		}

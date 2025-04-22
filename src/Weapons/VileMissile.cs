@@ -132,7 +132,7 @@ public class VileMissileProj : Projectile {
 	bool split;
 	public int num = 0;
 	public VileMissileProj(
-		Point pos, int xDir, int num, float? byteAngle, string sprite,
+		Point pos, int xDir, int num, float byteAngle, string sprite,
 		Actor owner, Player player, ushort? netId, bool rpc = false
 	) : base(
 		pos, xDir, owner, sprite , netId, player
@@ -146,9 +146,9 @@ public class VileMissileProj : Projectile {
 		reflectableFBurner = true;
 		this.num = num;
 		byteAngle = byteAngle % 256;
-		this.byteAngle = byteAngle ?? 0;
-		vel.x = 200 * Helpers.cosb(this.byteAngle);
-		vel.y = 200 * Helpers.sinb(this.byteAngle);
+		this.byteAngle = byteAngle;
+		vel.x = 200 * Helpers.cosb(byteAngle);
+		vel.y = 200 * Helpers.sinb(byteAngle);
 		if (num == (int)VileMissileType.HumerusCrush) {
 			weapon = VileMissile.netWeaponHC;
 			projId = (int)ProjIds.VileMissile;
@@ -156,8 +156,8 @@ public class VileMissileProj : Projectile {
 			damager.hitCooldown = 9;
 			maxTime = 0.35f;
 			sprite = "missile_hc_proj";
-			vel.x = 350 * Helpers.cosb(this.byteAngle);
-			vel.y = 350 * Helpers.sinb(this.byteAngle);
+			vel.x = 350 * Helpers.cosb(byteAngle);
+			vel.y = 350 * Helpers.sinb(byteAngle);
 		}
 		if (num == (int)VileMissileType.PopcornDemon) {
 			weapon = VileMissile.netWeaponPD;
@@ -178,7 +178,8 @@ public class VileMissileProj : Projectile {
 			};
 			extraBytes.Add((byte)num);
 			extraBytes.AddRange(Encoding.ASCII.GetBytes(sprite));
-			rpcCreateByteAngle(pos, ownerPlayer, netId, this.byteAngle, extraBytes.ToArray());
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle, extraBytes.ToArray());
+
 		}
 	}
 	public static Projectile rpcInvoke(ProjParameters args) {

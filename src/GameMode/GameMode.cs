@@ -574,6 +574,15 @@ public class GameMode {
 				);
 				Global.sprites["pickup_bolt_small"].drawToHUD(0, basePos.x + 4, basePos.y + 4);
 			}
+			if (drawPlayer.character is CmdSigma cmdSigma) {
+				int xStart = 11;
+				if (cmdSigma.leapSlashCooldown > 0) {
+					float cooldown = 1 - Helpers.progress(
+						cmdSigma.leapSlashCooldown, BaseSigma.maxLeapSlashCooldown
+					);
+					drawGigaWeaponCooldown(102, cooldown);
+				}
+			}
 			if (drawPlayer.weapons == null) {
 				return;
 			}
@@ -1131,16 +1140,22 @@ public class GameMode {
 		float health = player.health;
 		float maxHealth = player.maxHealth;
 		float damageSavings = 0;
-
-		if (player.character != null && player.health > 0 && player.health < player.maxHealth) {
-			damageSavings = MathInt.Floor(player.character.damageSavings);
-		}
+		float greyHp = 0;
 
 		if (player.currentMaverick != null) {
 			health = player.currentMaverick.health;
 			maxHealth = player.currentMaverick.maxHealth;
 			damageSavings = 0;
 		}
+		else if (player.character != null) {
+			if (player.health > 0 && player.health < player.maxHealth) {
+				damageSavings = MathInt.Floor(player.character.damageSavings);
+			}
+			if (player.character is MegamanX rmx && rmx.hyperHelmetArmor == ArmorId.Max) {
+				greyHp = (float)rmx.lastChipBaseHP;
+			}
+		}
+
 
 		int frameIndex = 0;
 		if (player.charNum == (int)CharIds.Blues) {
@@ -2004,7 +2019,7 @@ public class GameMode {
 			float slotY = sy;
 			Global.sprites["hud_weapon_icon"].drawToHUD(weapon.weaponSlotIndex, slotX, slotY);
 			float ammo = weapon.ammo;
-			if (weapon is RakuhouhaWeapon || weapon is RekkohaWeapon || weapon is CFlasher || weapon is DarkHoldWeapon) ammo = dnaCore.rakuhouhaAmmo;
+			if (weapon is RakuhouhaWeapon || weapon is RekkohaWeapon || weapon is Messenkou || weapon is DarkHoldWeapon) ammo = dnaCore.rakuhouhaAmmo;
 			if (weapon is not MechMenuWeapon) {
 				DrawWrappers.DrawRectWH(slotX - 8, slotY - 8, 16, 16 - MathF.Floor(16 * (ammo / weapon.maxAmmo)), true, new Color(0, 0, 0, 128), 1, ZIndex.HUD, false);
 			}

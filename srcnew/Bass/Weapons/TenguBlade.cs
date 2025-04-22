@@ -244,6 +244,7 @@ public class TenguBladeDash : CharState {
 		);
 		startXDir = character.xDir;
 		bass.currentWeapon?.addAmmo(-1, player);
+		bass.vel.y = 0;
 	}
 
 	public override void onExit(CharState newState) {

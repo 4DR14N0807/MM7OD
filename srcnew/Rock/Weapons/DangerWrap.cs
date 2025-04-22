@@ -285,6 +285,11 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 		fadeSprite = "generic_explosion";
 		fadeOnAutoDestroy = true;
 
+		if (collider != null) {
+			collider.isTrigger = false;
+			collider.wallOnly = true;
+		}
+
 		damager.damage = 3;
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;

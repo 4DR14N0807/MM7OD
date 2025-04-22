@@ -1260,7 +1260,7 @@ public class LadderClimb : CharState {
 		character.dashedInAir = 0;
 		character.shootAnimTime = 0;
 		
-		if (character.sprite.name.Contains(sprite)) {
+		if (!character.sprite.name.Contains(sprite)) {
 			character.changeSpriteFromName(sprite, true);
 		}
 	}

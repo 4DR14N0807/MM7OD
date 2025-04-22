@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -50,7 +50,7 @@ public class StarCrashProj : Projectile {
 	Blues? blues;
 	Player? player;
 	float starAngle;
-	int radius = 30;
+	int radius = 28;
 	int frameCount;
 	int starFrame;
 	List<Sprite> stars = new();
@@ -97,8 +97,9 @@ public class StarCrashProj : Projectile {
 			starFrame++;
 		}
 
-		starAngle += 4;
-		if (starAngle >= 360) starAngle -= 360;
+		starAngle += 4 * xDir;
+		if (starAngle >= 256) { starAngle -= 256; }
+		if (starAngle < 0) { starAngle += 256; }
 
 		// We check if we shoot it already.
 		if (!ownedByLocalPlayer) return;
@@ -106,7 +107,7 @@ public class StarCrashProj : Projectile {
 
 		// Sync poses with protoman.
 		if (blues != null) {
-			changePos(blues.getCenterPos().round());
+			changePos(blues.pos.addxy(2 * xDir, -20));
 			xDir = blues.xDir;
 		}
 		// Destroy if not linked with Protoman anymore.
@@ -133,17 +134,27 @@ public class StarCrashProj : Projectile {
 		base.render(x,y);
 		Point center = pos;
 
-		for (int i = 0; i < 3; i++) {
-			float extraAngle = (starAngle + i * 120) % 360;
-			float xPlus = (Helpers.cosd(extraAngle) * radius);
-			float yPlus = (Helpers.sind(extraAngle) * radius);
+		for (int i = 0; i < stars.Count; i++) {
+			float extraAngle = (starAngle + i * 85) % 256;
+			long altZIndex = extraAngle >= 128 ? ZIndex.Character - 100 : zIndex;
+			float xPlus = (Helpers.cosb(extraAngle) * radius);
+			float yPlus = (Helpers.sinb(extraAngle) * radius);
 
+			for (int j = 2; j >= 1; j--) {
+				float backAngle = extraAngle - (16 * j * xDir) % 256;
+				long altZIndex1 = backAngle >= 128 ? ZIndex.Character - 100 : zIndex;
+				float xBack = (Helpers.cosb(backAngle) * radius);
+				float yBack = (Helpers.sinb(backAngle) * radius);
+				stars[i].draw(
+					starFrame % 4, center.x + xBack, center.y + yBack,
+					xDir, yDir, getRenderEffectSet(), 0.6666f - (0.3333f * (j - 1)), 1, 1, altZIndex1
+				);
+			}
 			stars[i].draw(
-				starFrame % 4, center.x + xPlus, center.y + yPlus, 
-				xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex
+				starFrame % 4, center.x + xPlus, center.y + yPlus,
+				xDir, yDir, getRenderEffectSet(), 1, 1, 1, altZIndex
 			);
 		}
-		
 	}
 
 	public override void onDestroy() {
@@ -155,8 +166,7 @@ public class StarCrashProj : Projectile {
 
 
 public class StarCrashProj2 : Projectile {
-
-	int radius = 30;
+	int radius = 28;
 	int frameCount;
 	int starFrame;
 	List<Sprite> stars = new();
@@ -198,20 +208,31 @@ public class StarCrashProj2 : Projectile {
 			starFrame++;
 		}
 
-		starAngle += 4;
+		starAngle += 8 * xDir;
+		if (starAngle >= 256) { starAngle -= 256; }
+		if (starAngle < 0) { starAngle += 256; }
 	}
 
 	public override void render(float x, float y) {
 		base.render(x,y);
 		Point center = pos;
-		
-		for (int i = 0; i < 3; i++) {
-			float extraAngle = (starAngle + i * 120) % 360;
-			float xPlus = (Helpers.cosd(extraAngle) * radius);
-			float yPlus = (Helpers.sind(extraAngle) * radius);
 
+		for (int i = 0; i < stars.Count; i++) {
+			float extraAngle = (starAngle + i * 85) % 256;
+			float xPlus = (Helpers.cosb(extraAngle) * radius);
+			float yPlus = (Helpers.sinb(extraAngle) * radius);
+
+			for (int j = 3; j >= 1; j--) {
+				float backAngle = extraAngle - (16 * j * xDir) % 256;
+				float xBack = (Helpers.cosb(backAngle) * radius);
+				float yBack = (Helpers.sinb(backAngle) * radius);
+				stars[i].draw(
+					starFrame % 4, center.x + xBack, center.y + yBack,
+					xDir, yDir, getRenderEffectSet(), 0.75f - (0.25f * (j - 1)), 1, 1, zIndex
+				);
+			}
 			stars[i].draw(
-				starFrame % 4, center.x + xPlus, center.y + yPlus, 
+				starFrame % 4, center.x + xPlus, center.y + yPlus,
 				xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex
 			);
 		}

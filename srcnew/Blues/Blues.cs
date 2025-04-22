@@ -79,7 +79,7 @@ public class Blues : Character {
 		ushort? netId, bool ownedByLocalPlayer, bool isWarpIn = true,
 		int? specialWeaponIndex = null
 	) : base(
-		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
+		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
 		charId = CharIds.Blues;
 		maxHealth = (decimal)player.getMaxHealth(charId);
@@ -288,7 +288,6 @@ public class Blues : Character {
 
 	public bool canShootSpecial() {
 		if (flag != null ||
-			isCharging() ||
 			overheating ||
 			overdrive ||
 			specialWeapon.shootCooldown > 0 ||
@@ -933,7 +932,11 @@ public class Blues : Character {
 
 		specialWeapon.shootCooldown = specialWeapon.fireRate;
 		specialWeapon.shoot(this, chargeLevel, extraArg);
-		addCoreAmmo(specialWeapon.getAmmoUsage(chargeLevel));
+		float ammoUse = specialWeapon.getAmmoUsage(chargeLevel);
+		if (ammoUse >= 1 && isCharging()) {
+			ammoUse += MathF.Floor(ammoUse / 2f);
+		}
+		addCoreAmmo(ammoUse);
 		if (specialWeapon is StarCrash && coreAmmo >= coreMaxAmmo) starCrashOverheat = true;
 	}
 

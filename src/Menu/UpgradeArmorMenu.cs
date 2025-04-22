@@ -14,6 +14,9 @@ public class UpgradeArmorMenu : IMainMenu {
 
 	public static int xGame = 1;
 
+	public UpgradeArmorMenuGolden GoldenMenu;
+	public UpgradeArmorMenuUAX UAXMenu;
+
 	public UpgradeArmorMenu(IMainMenu prevMenu) {
 		this.prevMenu = prevMenu;
 		GoldenMenu = new UpgradeArmorMenuGolden(prevMenu);

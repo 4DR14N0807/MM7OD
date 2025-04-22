@@ -859,20 +859,17 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (rootTime > 0) {
-			stopMovingWeak();
+			//stopMovingWeak();
 			Helpers.decrementFrames(ref rootTime);
 			if (rootAnim == null || rootAnim.destroyed) {
 				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
 			}
 			if (rootTime <= 0) {
 				rootTime = 0;
-				if (ownedByLocalPlayer && charState.useGravity) {
-					useGravity = true;
-				}
 				if (rootAnim != null) {
 					rootAnim.destroySelf();
 					rootAnim = null;
-				} 
+				}
 			}
 		} else {
 			if (rootAnim?.destroyed == false) {
@@ -1739,8 +1736,8 @@ public partial class Character : Actor, IDamagable {
 		if (rootTime < time) {
 			rootTime = time;
 		}
+		//useGravity = false;
 		stopMovingWeak();
-		useGravity = false;
 		charState.canStopJump = false;
 		Player enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {

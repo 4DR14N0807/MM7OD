@@ -213,7 +213,7 @@ public class Damager {
 			// Status effects.
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
-					character.root(45, 100, owner.id);
+					character.root(60, 100, owner.id);
 					break;
 				}
 				case (int)BassProjIds.RemoteMineExplosion: {
@@ -595,7 +595,7 @@ public class Damager {
 
 
 	public static bool canDamageFrostShield(int projId) {
-		if (CrackedWall.canDamageCrackedWall(projId, null) != 0) {
+		if (CrackedWall.canDamageCrackedWall(1, null) != 0) {
 			return true;
 		}
 		return projId switch {

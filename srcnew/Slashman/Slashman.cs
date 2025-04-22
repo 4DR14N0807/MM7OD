@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,7 +10,7 @@ public class Slashman : Character {
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 		bool isWarpIn = true
 	) : base(
-		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn, false, false
+		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
 		charId = CharIds.Slashman;
 		charge1Time = 50;

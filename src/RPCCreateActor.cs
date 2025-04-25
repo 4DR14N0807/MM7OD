@@ -89,6 +89,15 @@ public class RPCCreateActor : RPC {
 			case (int)NetActorCreateId.SmallAmmo:
 				new SmallAmmoPickup(player, pos, netProjByte, false);
 				break;
+			case (int)NetActorCreateId.LargeBolt:
+				new LargeBoltPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.SmallBolt:
+				new SmallAmmoPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.Rush:
+				new Rush(pos, player, xDir, netProjByte, false);
+				break;
 		}
 	}
 }

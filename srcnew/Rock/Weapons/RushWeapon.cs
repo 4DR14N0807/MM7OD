@@ -75,24 +75,38 @@ public class RushSearchWeapon : RushWeapon {
 
 
 public class RSBombProj : Projectile {
+
+	Actor ownChr;
+
 	public RSBombProj( 
-		Point pos, int xDir, Player player, 
-		ushort? netId, bool rpc = false) 
-	: base
+		Actor owner, Point pos, int xDir, ushort? netProjId,
+		bool rpc = false, Player? altPlayer = null
+	) : base
 	(
-		RushWeapon.netWeapon, pos, xDir, 0, 0,
-		player, "rush_search_bomb", 0, 1, 
-		netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "rush_search_bomb", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.RSBomb;
 		maxTime = 2f;
 		destroyOnHitWall = true;
 		fadeSprite = "generic_explosion";
 		fadeSound = "danger_wrap_explosion";
+		damager.hitCooldown = 60;
 		base.vel.y = -360;
 		useGravity = true;
+
+		if (owner != null) ownChr = owner;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
 	}
 
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new RSBombProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
+	}
+	
 	public override void onCollision(CollideData other) {
 		var damagable = other.gameObject as IDamagable;
 		var wall = other.gameObject as Wall;
@@ -102,8 +116,9 @@ public class RSBombProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
 
-		new RSBombExplosionProj(pos, xDir, damager.owner, damager.owner.getNextActorNetId(), true);
+		new RSBombExplosionProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), true, damager.owner);
 	}
 }
 
@@ -113,16 +128,28 @@ public class RSBombExplosionProj : Projectile {
 	int radius;
 	float maxRadius = 64;
 	public RSBombExplosionProj(
-		Point pos, int xDir, Player player,
-		ushort? netId, bool rpc = false)
-	: base 
+		Actor owner, Point pos, int xDir, ushort? netProjId,
+		bool rpc = false, Player? altPlayer = null
+	) : base 
 	(
-		RushWeapon.netWeapon, pos, xDir, 0, 1,
-		player, "empty", Global.defFlinch, 1,
-		netId, player.ownedByLocalPlayer
+		pos, xDir, owner, "empty", netProjId, altPlayer
 	) {
-		//maxTime = 1f;
+		maxTime = 1f;
 		projId = (int)RockProjIds.RSBombExplosion;
+
+		damager.damage = 1;
+		damager.flinch = Global.defFlinch;
+		damager.hitCooldown = 60;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new RSBombExplosionProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
 	}
 
 	public override void update() {

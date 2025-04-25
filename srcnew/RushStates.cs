@@ -284,7 +284,7 @@ public class RushSearchState : RushState {
 	public int state;
 	bool digging;
 	int digTime;
-	Rock? rock;
+	Rock rock = null!;
 	Anim? pickup;
 	Point pickupPos;
 	int pickupTime;
@@ -296,7 +296,7 @@ public class RushSearchState : RushState {
 
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
-		rock = rush.character as Rock;
+		rock = rush.character as Rock ?? throw new NullReferenceException();
 		pickupPos = new Point(rush.pos.x + (rush.xDir * 10), rush.pos.y);
 		sound = Helpers.randomRange(0, 1);
 		soundStr = sound == 0 ? "rush_search_searching1" : "rush_search_searching2";
@@ -353,6 +353,7 @@ public class RushSearchState : RushState {
 	}
 
 	void getRandomItem(int dice) {
+		if (!rush.ownedByLocalPlayer) return;
 		var pl = Global.level.mainPlayer;
 		var clonePos = pickupPos.clone();
 		string text = "";
@@ -361,7 +362,7 @@ public class RushSearchState : RushState {
 		// 20 Bolts.
 		if (dice is > 95)
 		{
-			Global.playSound("upgrade");
+			rush.playSound("upgrade", true);
 			text = "20 BOLTS!!!";
 			font = FontType.Green;
 
@@ -382,7 +383,7 @@ public class RushSearchState : RushState {
 		else if (dice is >= 86 and <= 95) 
 		{
 			// Large HP/Ammo capsule.
-			Global.playSound("upgrade");
+			rush.playSound("upgrade", true);
 			if (dice % 2 == 0) {
 				text = "LARGE HEALTH CAPSULE!";
 				font = FontType.Yellow;
@@ -398,7 +399,7 @@ public class RushSearchState : RushState {
 		else if (dice is >= 71 and <= 85) 
 		{
 			// Small HP/Ammo capsule.
-			Global.playSound("rush_search_end");
+			rush.playSound("rush_search_end", true);
 			if (dice % 2 == 0) {
 				text = "Small health capsule";
 				font = FontType.Yellow;
@@ -414,7 +415,7 @@ public class RushSearchState : RushState {
 		else if (dice is >= 41 and <= 70) 
 		{
 			//5 Bolts.
-			Global.playSound("rush_search_end");
+			rush.playSound("rush_search_end", true);
 			text = "5 Bolts";
 			font = FontType.Green;
 			new SmallBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
@@ -423,7 +424,7 @@ public class RushSearchState : RushState {
 		else if (dice is >= 6 and <= 40) 
 		{
 			// Trash.
-			Global.playSound("rush_search_end");
+			rush.playSound("rush_search_end", true);
 			text = "Try Again.";
 			font = FontType.Grey;
 			pickup = new Trash(pickupPos.addxy(0, -4), rush.player.getNextActorNetId(), 
@@ -432,10 +433,10 @@ public class RushSearchState : RushState {
 		else 
 		{
 			// Bomb.
-			Global.playSound("rush_search_end");
+			rush.playSound("rush_search_end", true);
 			text = "KA-BOOM";
 			font = FontType.Red;
-			new RSBombProj(pickupPos, 1, rush.player, rush.player.getNextActorNetId(), true);
+			new RSBombProj(rock, pickupPos, 1, rush.player.getNextActorNetId(), true, rush.player);
 		}
 
 		Fonts.drawText(font, text, Global.halfScreenW, 64, Alignment.Center);

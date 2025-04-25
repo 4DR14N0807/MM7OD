@@ -76,24 +76,34 @@ public class RPCCreateActor : RPC {
 		if (Global.level.recentlyDestroyedNetActors.ContainsKey(netProjByte)) return;
 		Point pos = new Point(xPos, yPos);
 
-		if (createId == (int)NetActorCreateId.DWrapBigBubble) {
-			new DWrapBigBubble(pos, player, xDir, netProjByte, false);
-		} else if (createId == (int)NetActorCreateId.Rush) {
-			new Rush(pos, player, xDir, netProjByte, false);
-		} else if (createId == (int)NetActorCreateId.CopyVisionClone) {
-			new CopyVisionClone(actor, pos, xDir, netProjByte, false, altPlayer: player);
-		} else if (createId == (int)NetActorCreateId.LargeHealth) {
-			new LargeHealthPickup(player, pos, netProjByte, false);
-		} else if (createId == (int)NetActorCreateId.SmallHealth) {
-			new SmallHealthPickup(player, pos, netProjByte, false);
-		} else if (createId == (int)NetActorCreateId.LargeAmmo) {
-			new LargeAmmoPickup(player, pos, netProjByte, false);
-		} else if (createId == (int)NetActorCreateId.SmallAmmo) {
-			new SmallAmmoPickup(player, pos, netProjByte, false);
-		} else if (createId == (int)NetActorCreateId.LargeBolt) {
-			new LargeBoltPickup(player, pos, netProjByte, false);
-		} else if (createId == (int)NetActorCreateId.SmallBolt) {
-			new SmallBoltPickup(player, pos, netProjByte, false);
+		switch (createId) {
+			case (int)NetActorCreateId.DWrapBigBubble:
+				new DWrapBigBubble(pos, player, xDir, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.Rush:
+				new Rush(pos, player, xDir, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.CopyVisionClone:
+				new CopyVisionClone(actor, pos, xDir, netProjByte, false, altPlayer: player);
+				break;
+			case (int)NetActorCreateId.LargeHealth:
+				new LargeHealthPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.SmallHealth:
+				new SmallHealthPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.LargeAmmo:
+				new LargeAmmoPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.SmallAmmo:
+				new SmallAmmoPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.LargeBolt:
+				new LargeBoltPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.SmallBolt:
+				new SmallBoltPickup(player, pos, netProjByte, false);
+				break;
 		}
 	}
 }

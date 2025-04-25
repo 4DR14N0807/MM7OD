@@ -289,6 +289,8 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.WildCoilCharged, WildCoilChargedProj.rpcInvoke },
 		{ (int)RockProjIds.SARocketPunch, SARocketPunchProj.rpcInvoke },
 		{ (int)RockProjIds.SAArrowSlash, ArrowSlashProj.rpcInvoke },
+		{ (int)RockProjIds.RSBomb, RSBombProj.rpcInvoke },
+		{ (int)RockProjIds.RSBombExplosion, RSBombExplosionProj.rpcInvoke },
 
 		//Blues
 		{ (int)BluesProjIds.Lemon, ProtoBusterProj.rpcInvoke },

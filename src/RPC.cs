@@ -815,7 +815,7 @@ public class RPCKillPlayer : RPC {
 
 public class RPCCreateAnim : RPC {
 	public RPCCreateAnim() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableUnordered;
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
 	}
 

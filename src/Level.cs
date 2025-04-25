@@ -208,6 +208,7 @@ public partial class Level {
 	public PlayerCharData playerData;
 	public List<PlayerCharData> cpuDatas;
 	public List<BackloggedDamage> backloggedDamages = new();
+	public float backloggedDamageTimer = 0;
 
 	// Radar dimensions
 	public float scaleW;
@@ -1281,9 +1282,6 @@ public partial class Level {
 				delayedActions.RemoveAt(i);
 			}
 		}
-		
-		// Call net update before the frame starts.
-		netUpdate();
 
 		float playerX = 0;
 		float playerY = 0;
@@ -1487,29 +1485,25 @@ public partial class Level {
 			Global.speedMul = 1;
 		}
 
-		// Collision RPCs.
-		foreach (PendingRPC pendingRpc in pendingCollisionRpcs) {
-			pendingRpc.invoke();
-		}
-		pendingCollisionRpcs.Clear();
-
+		// Pending damage RPCs.
 		for (int i = backloggedDamages.Count - 1; i >= 0; i--) {
 			BackloggedDamage bd = backloggedDamages[i];
-			// Do not run on frame 0.
-			if (bd.time <= 0) {
-				bd.time++;
-				continue;
-			}
 			// Search for actor;
-			Actor? damagerActor =  Global.level.getActorByNetId(bd.actorId, true);
+			Actor? damagerActor = Global.level.getActorByNetId(bd.actorId, true);
 			// Run if we find an actor.
 			// Or Run anyway if more than 1s.
-			if (damagerActor != null || bd.time > 60) {
+			if (damagerActor != null || bd.time >= 6) {
 				bd.damageAction(damagerActor, bd.meleeId);
 				backloggedDamages.RemoveAt(i);
 			}
 			bd.time++;
 		}
+
+		// Collision RPCs.
+		foreach (PendingRPC pendingRpc in pendingCollisionRpcs) {
+			pendingRpc.invoke();
+		}
+		pendingCollisionRpcs.Clear();
 
 		foreach (GameObject go in gos) {
 			if (go.iDestroyed) {
@@ -2024,11 +2018,25 @@ public partial class Level {
 				Alignment.Right
 			);
 		}
+		if (Global.level != null) {
+			Global.level.backloggedDamageTimer--;
+			if (Global.level.backloggedDamages.Count > 0) {
+				Global.level.backloggedDamageTimer = 60;
+			}
+			if (Global.level.backloggedDamageTimer > 0) {
+				Fonts.drawText(
+					FontType.WhiteSmall,
+					"BDMG:" + Global.level.backloggedDamages.Count.ToString(),
+					Global.screenW - 5, 200 - 30,
+					Alignment.Right
+				);
+			}
+		}
 
 		DevConsole.drawConsole();
 	}
 
-	public void drawKeyRange(
+		public void drawKeyRange(
 		List<long> keys, long minVal, long maxVal, RenderTexture srt,
 		Dictionary<long, DrawLayer> walDrawObjects
 	) {

@@ -57,6 +57,7 @@ public class Flag : Actor {
 		}
 
 		if (chr != null) {
+			xDir = -chr.xDir;
 			if (!Global.level.gameObjects.Contains(chr) ||
 				chr.isWarpOut() ||
 				chr.charState.invincible ||
@@ -64,7 +65,6 @@ public class Flag : Actor {
 			) {
 				dropFlag();
 			}
-			xDir = -chr.xDir;
 		} else if (chr?.canKeepFlag() != true) {
 			dropFlag();
 		}

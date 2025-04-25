@@ -53,7 +53,7 @@ public partial class Player {
 		if (pingOrStartPing == null) {
 			return "?";
 		}
-		return MathInt.Floor(pingOrStartPing.Value / 10f).ToString();
+		return MathInt.Floor(pingOrStartPing.Value).ToString();
 	}
 
 	public int? getPingOrStartPing() {

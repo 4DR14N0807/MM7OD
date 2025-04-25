@@ -126,26 +126,26 @@ public class Damager {
 				}
 			}
 			var byteParams = new List<byte> {
-				(byte)owner.id,
-				damageBytes[0],
+				(byte)owner.id, // 0
+				damageBytes[0], // 1
 				damageBytes[1],
 				damageBytes[2],
 				damageBytes[3],
-				hitCooldownBytes[0],
+				hitCooldownBytes[0], // 5
 				hitCooldownBytes[1],
 				hitCooldownBytes[2],
 				hitCooldownBytes[3],
-				(byte)flinch,
-				victimNetIdBytes[0],
+				(byte)flinch, // 9
+				victimNetIdBytes[0], // 10
 				victimNetIdBytes[1],
-				weakness ? (byte)1 : (byte)0,
-				(byte)weaponIndex,
+				weakness ? (byte)1 : (byte)0, // 12
+				(byte)weaponIndex, // 13
 				(byte)weaponKillFeedIndex,
-				actorNetIdBytes[0],
+				actorNetIdBytes[0], // 15
 				actorNetIdBytes[1],
-				projIdBytes[0],
+				projIdBytes[0], // 17
 				projIdBytes[1],
-				linkedMeleeId,
+				linkedMeleeId, // 19
 			};
 			RPC.applyDamage.sendRpc(byteParams.ToArray());
 		}

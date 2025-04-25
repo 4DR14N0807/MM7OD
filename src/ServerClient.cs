@@ -251,6 +251,7 @@ public class ServerClient {
 		log += "\nFailed to get connect response from P2P server.";
 		joinServerResponse = null;
 		serverClient.disconnect("Client couldn't get response");
+		
 		client.Configuration.AutoFlushSendQueue = false;
 		return null;
 	}
@@ -357,7 +358,7 @@ public class ServerClient {
 	float gameLoopLagTime;
 	public bool isLagging() {
 		//Global.debugString1 = packetLossStopwatch.ElapsedMilliseconds.ToString();
-		if (packetLossStopwatch.ElapsedMilliseconds > 1000 || gameLoopLagTime > 0) {
+		if (packetLossStopwatch.ElapsedMilliseconds > 6000 || gameLoopLagTime > 0) {
 			return true;
 		}
 		return false;

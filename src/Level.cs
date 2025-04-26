@@ -458,7 +458,7 @@ public partial class Level {
 					var newRect = new Rect(rect.x1, rect.y2, rect.x2, rect.y2 + 1000);
 					var pitWall = new Wall(wall.name + "Pit", newRect.getPoints());
 					pitWall.collider.isClimbable = false;
-					addGameObject(pitWall); 
+					addGameObject(pitWall);
 				}
 
 				if (instance?.properties?.unclimbable != null && instance.properties.unclimbable == true) {
@@ -680,7 +680,7 @@ public partial class Level {
 				var spriteHeight = Global.sprites[spriteName].frames[0].rect.h();
 
 				if (!enabledInLargeCam && server.fixedCamera) {
-				// Do not add the map sprite
+					// Do not add the map sprite
 				} else if (rawParallaxIndex != null) {
 					if (Options.main.enableMapSprites) {
 						int parallaxIndex = rawParallaxIndex.Value - 1;
@@ -1367,7 +1367,7 @@ public partial class Level {
 		// Collision shenanigans.
 		collidedGObjs.Clear();
 		(int x, int y)[] arrayGrid = populatedGrids.ToArray();
-		foreach ((int x, int y)gridData in arrayGrid) {
+		foreach ((int x, int y) gridData in arrayGrid) {
 			// Initalize data.
 			List<GameObject> currentGrid = new(grid[gridData.x, gridData.y]);
 			// Give piority to some objects.
@@ -1650,8 +1650,7 @@ public partial class Level {
 
 		// Send RPCs.
 		if (Global.serverClient != null && isSendMessageFrame()) {
-				Global.serverClient.flush();
-			}
+			Global.serverClient.flush();
 		}
 	}
 
@@ -1926,7 +1925,7 @@ public partial class Level {
 			DrawWrappers.DrawMapTiles(level.backgroundSprites, 0, 0, srt, level.backgroundShader);
 		}
 
-		level.drawKeyRange(keys, ZIndex.Background, ZIndex.Foreground, srt, walDrawObjects);;
+		level.drawKeyRange(keys, ZIndex.Background, ZIndex.Foreground, srt, walDrawObjects); ;
 
 		DrawWrappers.DrawMapTiles(level.foregroundSprites, 0, 0, srt, level.backgroundShader);
 
@@ -2034,9 +2033,9 @@ public partial class Level {
 		DevConsole.drawConsole();
 	}
 
-		public void drawKeyRange(
-		List<long> keys, long minVal, long maxVal, RenderTexture srt,
-		Dictionary<long, DrawLayer> walDrawObjects
+	public void drawKeyRange(
+	List<long> keys, long minVal, long maxVal, RenderTexture srt,
+	Dictionary<long, DrawLayer> walDrawObjects
 	) {
 		foreach (long key in keys) {
 			if (key >= minVal && key < maxVal) {
@@ -2141,8 +2140,7 @@ public partial class Level {
 				}
 			}
 			Global.debugString2 = "Grid item count: " + gridItemCount.ToString();
-		}
-		else if (Global.showTerrainGridHitboxes) {
+		} else if (Global.showTerrainGridHitboxes) {
 			int gridItemCount = 0;
 			int offset = 0;
 			int startGridX = MathInt.Floor(camX / cellWidth);

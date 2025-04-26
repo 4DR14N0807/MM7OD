@@ -1649,17 +1649,15 @@ public partial class Level {
 		updateMusicSources();
 
 		// Send RPCs.
-		if (Global.serverClient != null) {
-			Global.serverClient.flush();
+		if (Global.serverClient != null && isSendMessageFrame()) {
+				Global.serverClient.flush();
+			}
 		}
 	}
 
 	public void netUpdate() {
 		if (Global.serverClient == null) {
 			return;
-		}
-		if (isSendMessageFrame()) {
-			Global.serverClient.flush();
 		}
 		Global.serverClient.getMessages(out var messages, true);
 

@@ -1314,7 +1314,7 @@ class Program {
 			if (Global.level != null) {
 				useFrameSkip = false;
 			} else {
-				useFrameSkip = false;
+				useFrameSkip = true;
 			}
 			if (!useFrameSkip || isFrameStep) {
 				update();

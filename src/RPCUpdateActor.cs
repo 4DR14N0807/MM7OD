@@ -114,6 +114,7 @@ public class RPCUpdateActor : RPC {
 	public RPCUpdateActor() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
+		channel = RpcChannels.UpdateActor;
 	}
 
 	public override void invoke(params byte[] arguments) {

@@ -1492,7 +1492,7 @@ public partial class Level {
 			Actor? damagerActor = Global.level.getActorByNetId(bd.actorId, true);
 			// Run if we find an actor.
 			// Or Run anyway if more than 1s.
-			if (damagerActor != null || bd.time >= 6) {
+			if (damagerActor != null || bd.time >= 10) {
 				bd.damageAction(damagerActor, bd.meleeId);
 				backloggedDamages.RemoveAt(i);
 			}
@@ -2017,8 +2017,8 @@ public partial class Level {
 		}
 		if (Global.level != null) {
 			Global.level.backloggedDamageTimer--;
-			if (Global.level.backloggedDamages.Count > 0) {
-				Global.level.backloggedDamageTimer = 60;
+			if (Global.level.backloggedDamages.Where(bd => (bd.time >= 2)).Count() > 0) {
+				Global.level.backloggedDamageTimer = 120;
 			}
 			if (Global.level.backloggedDamageTimer > 0) {
 				Fonts.drawText(

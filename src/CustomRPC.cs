@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Lidgren.Network;
 
 namespace MMXOnline;
@@ -10,6 +10,7 @@ public class RPCCustom : RPC {
 	public RPCCustom() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
+		channel = RpcChannels.Custom;
 	}
 
 	// Use custom invoke here.

@@ -1674,7 +1674,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		freezeTime = time;
-		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
@@ -1739,7 +1739,7 @@ public partial class Character : Actor, IDamagable {
 		//useGravity = false;
 		stopMovingWeak();
 		charState.canStopJump = false;
-		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
@@ -1766,7 +1766,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		paralyzedTime = time;
-		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}

@@ -264,7 +264,7 @@ public class BluesGravityHold : CharState {
 		blues.shieldCustomState = blues.isShieldActive;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		blues.shieldCustomState = null;
 		blues.inCustomShootAnim = false;
 		base.onExit(newState);

@@ -276,7 +276,7 @@ public class Rock : Character {
 			hyperProgress = 0;
 			return;
 		}
-		if (!(charState is WarpIn) && canGoSuperAdaptor()) {
+		if (charState is not WarpIn && canGoSuperAdaptor()) {
 
 			if (!boughtSuperAdaptorOnce) {
 				player.currency -= SuperAdaptorCost;

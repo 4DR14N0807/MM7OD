@@ -27,10 +27,6 @@ public class Slide : CharState {
 		initialSlideDir = character.xDir;
 	}
 
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-	}
-
 	public override void update() {
 		base.update();
 
@@ -95,10 +91,6 @@ public class SlideEnd : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
 	}
 
 	public override void update() {
@@ -269,7 +261,7 @@ public class RockDoubleJump : CharState {
 		//Global.playSound("super_adaptor_jump");
 	}
 
-	public override void onExit(CharState oldState) {
+	public override void onExit(CharState? oldState) {
 		base.onExit(oldState);
 		character.vel = new Point();
 		character.useGravity = true;
@@ -406,7 +398,7 @@ public class CallDownRush : CharState {
 		Global.playSound("warpin");
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 	}

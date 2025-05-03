@@ -984,7 +984,6 @@ public partial class Player {
 		);
 	}
 
-	
 	public byte[] getCharSpawnData(int charNum) {
 		if (ownedByLocalPlayer) {
 			if (!isAI) {
@@ -1026,7 +1025,7 @@ public partial class Player {
 			alliance = newAlliance;
 		}
 
-		if (isMainChar && character != null && charNetId == character.netId) {
+		if (isMainChar && character != null && charNetId == character.netId && !forceSpawn) {
 			return null;
 		}
 		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC

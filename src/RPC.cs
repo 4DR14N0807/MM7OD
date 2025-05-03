@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Lidgren.Network;
 using Newtonsoft.Json;
+using ProtoBuf;
 
 namespace MMXOnline;
 
@@ -36,6 +37,7 @@ public class RPC {
 	public static RPCStartLevel startLevel = new();
 	public static RPCSpawnCharacter spawnCharacter = new();
 	public static RPCUpdateActor updateActor = new();
+	public static RPCUpdateActor updateActorQuick = new() { netDeliveryMethod = NetDeliveryMethod.Unreliable };
 	public static RPCApplyDamage applyDamage = new();
 	public static RPCDestroyActor destroyActor = new();
 	public static RPCPlayerToggle playerToggle = new();
@@ -275,30 +277,26 @@ public class RPCSpawnCharacter : RPC {
 	}
 
 	public override void invoke(params byte[] arguments) {
-		float x = BitConverter.ToSingle(new byte[] { arguments[0], arguments[1], arguments[2], arguments[3] }, 0);
-		float y = BitConverter.ToSingle(new byte[] { arguments[4], arguments[5], arguments[6], arguments[7] }, 0);
-		int xDir = arguments[8] - 128;
-		int playerId = arguments[9];
-		ushort charNetId = BitConverter.ToUInt16(new byte[] { arguments[10], arguments[11] }, 0);
-		int charNum = arguments[12];
-		byte[] extraData;
-		if (arguments.Length > 13) {
-			extraData = arguments[13..];
-		} else {
-			extraData = [];
+		ScBuffer buffer = Helpers.deserialize<ScBuffer>(arguments);
+		Player? player = Global.level.getPlayerById(buffer.playerId);
+		int xDir = buffer.xDir ? 1 : -1;
+
+		// If it's 0 something is wrong. So we make everithing explode.
+		if (buffer.charNetId == 0) {
+			throw new Exception("Invalid netId for character");
 		}
-		var player = Global.level.getPlayerById(playerId);
+
 		// Player could not exist yet if late joiner.
 		if (player != null) {
 			player.spawnCharAtPoint(
-				charNum, extraData,
-				new Point(x, y), xDir, charNetId, false
+				buffer.charNum, buffer.extraData,
+				new Point(buffer.x, buffer.y), xDir, buffer.charNetId, false
 			);
 		} else {
 			Global.level.backloggedSpawns.Add(
 				new BackloggedSpawns(
-					charNum, extraData,
-					playerId, new Point(x, y), xDir, charNetId
+					buffer.charNum, buffer.extraData,
+					buffer.playerId, new Point(buffer.x, buffer.y), xDir, buffer.charNetId
 				)
 			);
 		}
@@ -306,17 +304,29 @@ public class RPCSpawnCharacter : RPC {
 
 	public void sendRpc(int charNum, byte[] extraData, Point spawnPos, int xDir, int playerId, ushort charNetId) {
 		if (Global.serverClient == null) return;
-		List<byte> sendBytes = new();
 
-		sendBytes.AddRange(BitConverter.GetBytes(spawnPos.x));
-		sendBytes.AddRange(BitConverter.GetBytes(spawnPos.y));
-		sendBytes.Add((byte)(xDir + 128));
-		sendBytes.Add((byte)playerId);
-		sendBytes.AddRange(BitConverter.GetBytes(charNetId));
-		sendBytes.Add((byte)charNum);
-		sendBytes.AddRange(extraData);
+		ScBuffer buffer = new() {
+			playerId = (byte)playerId,
+			charNetId = charNetId,
+			charNum = (byte)charNum,
+			x = (short)MathInt.Round(spawnPos.x),
+			y = (short)MathInt.Round(spawnPos.y),
+			xDir = xDir == 1,
+			extraData = extraData
+		};
 
-		Global.serverClient.rpc(this, sendBytes.ToArray());
+		Global.serverClient.rpc(this, Helpers.serialize(buffer));
+	}
+
+	[ProtoContract]
+	public struct ScBuffer {
+		[ProtoMember(1)] public byte playerId;
+		[ProtoMember(2)] public ushort charNetId;
+		[ProtoMember(3)] public byte charNum;
+		[ProtoMember(4)] public short x;
+		[ProtoMember(5)] public short y;
+		[ProtoMember(6)] public bool xDir;
+		[ProtoMember(7)] public byte[] extraData;
 	}
 }
 

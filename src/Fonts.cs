@@ -54,6 +54,7 @@ public class Fonts {
 			fontTextureSize = baseFontData[fontStr][0];
 			fontGridSpacing = baseFontData[fontStr][1];
 			fontDefaultWidth = baseFontData[fontStr][2];
+			fontSpaceWidth = fontDefaultWidth;
 			fontSpacing = baseFontData[fontStr][3];
 		}
 		// Set up drawing texture.

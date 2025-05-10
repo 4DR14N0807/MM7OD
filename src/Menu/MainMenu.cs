@@ -150,17 +150,16 @@ public class MainMenu : IMainMenu {
 			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0), 0, ZIndex.HUD, false);
 			Fonts.drawText(FontType.Grey, "Loading...", Global.screenW / 2, top, Alignment.Center);
 		} else {
-			string versionText = Global.shortForkName + " " + Global.versionName;
+			string versionText = Global.shortForkName + " " + Global.subVersionShortName;
 			int offset = 2;
-			
 			Fonts.drawText(FontType.WhiteSmall, versionText, 2, offset);
 
 			if (Global.checksum != Global.prodChecksum) {
-				Fonts.drawText(FontType.WhiteSmall, Global.CRC32Checksum, 2, offset + 10);
+				Fonts.drawText(FontType.PurpleSmall, Global.CRC32Checksum, 2, offset + 10);
 				offset += 10;
 			}
 			if (Global.radminIP != "") {
-				//Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
+				Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
 			}
 		}
 	}

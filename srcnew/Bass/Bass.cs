@@ -489,11 +489,18 @@ public class Bass : Character {
 	public override int getMaxChargeLevel() {
 		return 2;
 	}
-	/* public override bool canChangeWeapons() {
-		return base.canChangeWeapons() && charState is not LightningBoltState;
-	} */
+
+	/*
+	public override float getJumpPower() {
+		if (flag != null) {
+			return base.getJumpPower();
+		}
+		return (5.7f * 60) * getJumpModifier();
+	}
+	*/
 
 	public override float getDashSpeed() {
+		//return 3.45f * 60 * getRunDebuffs();
 		return 215 * getRunDebuffs();
 	}
 

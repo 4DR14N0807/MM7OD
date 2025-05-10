@@ -14,7 +14,7 @@ public class Race : GameMode {
 		base.render();
 		if (level?.goal == null) return;
 
-		drawObjectiveNavpoint("Goal", level.goal.pos);
+		addMapNavpoint("GFlag", level.goal.pos);
 	}
 
 	public List<Player> getSortedPlayers() {

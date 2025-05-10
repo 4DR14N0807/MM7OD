@@ -653,7 +653,7 @@ public class GameMode {
 		drawDiagnostics();
 
 		if (level.isNon1v1Elimination() && virusStarted > 0) {
-			drawObjectiveNavpoint("Safe Zone", safeZonePoint);
+			addMapNavpoint("GFlag", safeZonePoint);
 		}
 
 		if (level.mainPlayer.isX && level.mainPlayer.character?.charState is XReviveStart xrs) {
@@ -2829,10 +2829,13 @@ public class GameMode {
 		drawTimeIfSet(5 + 10 * (Global.level.teamNum + 1));
 	}
 
+
+	public void addMapNavpoint(string label, Point objPos) {
+		navPoints.Add((objPos, label));
+	}
+
 	public void drawObjectiveNavpoint(string label, Point objPos) {
 		if (level.mainPlayer.character == null) return;
-		navPoints.Add((objPos, label));
-
 		if (!string.IsNullOrEmpty(label)) label += ":";
 
 		Point playerPos = level.mainPlayer.character.pos;
@@ -2844,7 +2847,7 @@ public class GameMode {
 
 		var intersectionPoints = camRect.getShape().getLineIntersectCollisions(line);
 		if (intersectionPoints.Count > 0 && intersectionPoints[0].hitData?.hitPoint != null) {
-			Point intersectPoint = intersectionPoints[0].hitData.hitPoint.GetValueOrDefault();
+			Point intersectPoint = intersectionPoints[4].hitData.hitPoint.GetValueOrDefault();
 			var dirTo = playerPos.directionTo(objPos).normalize();
 
 			//a = arrow, l = length, m = minus

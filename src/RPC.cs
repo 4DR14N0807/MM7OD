@@ -130,6 +130,7 @@ public class RPC {
 		applyDamage,
 		heal,
 		updateActor,
+		updateActorQuick,
 		destroyActor,
 		actorToggle,
 		spawnCharacter,

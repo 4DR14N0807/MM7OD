@@ -281,8 +281,9 @@ public class SelectCharacterMenu : IMainMenu {
 			(int)CharIds.Blues =>  new string[]{
 				"Mid range character who has\ngood attack and defense\nBut it's limited by it's unstable core."
 			},
-			(int)CharIds.Bass =>  new string[]{
-				"UNFINISHED"//"Long range character with\nhigh mobility but has\nlow damage and defense."
+			(int)CharIds.Bass => new string[] {
+				//"Long range character with\nhigh mobility but has\nlow damage and defense."
+				"Long range character with high mobility\nbut has low damage and defense.\n[WARNING: Unfinished]"
 			},
 			_ => new string[] { "ERROR" }
 		};

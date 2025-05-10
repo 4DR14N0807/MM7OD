@@ -15,13 +15,21 @@ public class CTF : GameMode {
 	public override void render() {
 		base.render();
 		if (level.mainPlayer.character == null) return;
-		bool blue = level.mainPlayer.alliance == GameMode.blueAlliance;
-		drawObjectiveNavpoint(blue ? "Capture" : "Defend", level.redFlag.pos);
-		drawObjectiveNavpoint(!blue ? "Capture" : "Defend", level.blueFlag.pos);
+		bool isBlue = level.mainPlayer.alliance == GameMode.blueAlliance;
+		bool isRed = level.mainPlayer.alliance == GameMode.redAlliance;
 
-		if (level.blueFlag.chr != null) {
-			drawObjectiveNavpoint("Ped", level.redFlag.pos);
-		};
+		if (isBlue && level.redFlag.chr == level.mainPlayer.character) {
+			addMapNavpoint("Ped", level.blueFlag.pedestal.pos);
+		}
+		else if (level.redFlag.chr == null || Global.level.frameCount % 10 < 6) {
+			addMapNavpoint("RFlag", level.redFlag.pos);
+		}
+		if (isRed && level.blueFlag.chr == level.mainPlayer.character) {
+			addMapNavpoint("Ped", level.redFlag.pedestal.pos);
+		}
+		else if (level.blueFlag.chr == null || Global.level.frameCount % 10 < 6) {
+			addMapNavpoint("BFlag", level.blueFlag.pos);
+		}
 	}
 
 	public override void drawTopHUD() {

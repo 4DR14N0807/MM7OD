@@ -634,7 +634,7 @@ public class Projectile : Actor {
 		params byte[] extraData
 	) {
 		if (netProjId == null) {
-			throw new Exception($"Attempt to create RPC of projectile type {this.GetType().ToString()} with null ID");
+			throw new Exception($"Attempt to create RPC of projectile type {getActorTypeName()} with null ID");
 		}
 		byte[] projIdBytes = BitConverter.GetBytes((ushort)projId);
 		byte[] xBytes = BitConverter.GetBytes(pos.x);

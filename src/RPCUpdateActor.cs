@@ -15,13 +15,26 @@ public partial class Actor {
 
 	public void sendActorNetData() {
 		if (netId == null) {
+			if (this is Character chara) {
+				throw new Exception($"Error character {getActorTypeName()} has a null net id");
+			}
 			return;
 		}
+		// Every 12 frames we send the full thing.
+		bool sendFullData = false;
+		if (Global.frameCount % 30 == 0) {
+			sendFullData = true;
+			lastPos = null;
+			lastSpriteIndex = null;
+			lastFrameIndex = null;
+			lastXDir = null;
+			lastYDir = null;
+			lastAngle = null;
+			lastVisible = null;
+		}
 		byte[] networkIdBytes = Helpers.convertToBytes(netId.Value);
-		if ((netId == 10 || netId == 11) && this is not Flag) {
-			string msg = string.Format(
-				"NetId {0} was not flag. Was {1}", netId.Value.ToString(), this.GetType().ToString()
-			);
+		if (netId < Level.firstNormalNetId && this is not Flag) {
+			string msg = $"NetId {netId.Value} was not flag or system object. Was {getActorTypeName()}";
 			throw new Exception(msg);
 		}
 		bool send = false;
@@ -97,7 +110,7 @@ public partial class Actor {
 		// Send if anything changed.
 		// Otherwise skip.
 		if (send) {
-			if (forceNetUpdateNextFrame) {
+			if (forceNetUpdateNextFrame || sendFullData) {
 				Global.serverClient?.rpc(RPC.updateActor, args.ToArray());
 			} else {
 				Global.serverClient?.rpc(RPC.updateActorQuick, args.ToArray());
@@ -126,7 +139,7 @@ public class RPCUpdateActor : RPC {
 		int i = 0;
 
 		// Actor ID. Return if does not exist or we own it.
-		ushort netId = BitConverter.ToUInt16([ arguments[0], arguments[1] ]);
+		ushort netId = BitConverter.ToUInt16(arguments.AsSpan()[0..2]);
 		Actor? actor = Global.level.getActorByNetId(netId, true);
 		if (actor == null || actor.ownedByLocalPlayer) {
 			return;
@@ -199,7 +212,7 @@ public class RPCUpdateActor : RPC {
 			}
 			Program.exceptionExtraData = (
 				"Index out of bounds.\n" + 
-				$"Actor type: {actor.GetType().ToString().RemovePrefix("MMXOnline.")}, " +
+				$"Actor type: {actor.getActorTypeName()}, " +
 				$"player: {playerName}, " +
 				$"args len: {arguments.Length}, " +
 				$"extra args pos: {i}, " + 

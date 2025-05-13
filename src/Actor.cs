@@ -207,7 +207,7 @@ public partial class Actor : GameObject {
 			initalizeSprite(spriteName);
 			// Crash if spriteName was provided but does not exist.
 			if (sprite == null) {
-				string typeName = GetType().ToString().Replace("MMXOnline.", "");
+				string typeName = getActorTypeName();
 				throw new Exception(
 					"Null sprite at object" + typeName +
 					"with spritename variable \"" + spriteName + "\""
@@ -1929,5 +1929,9 @@ public partial class Actor : GameObject {
 			}
 		}
 		return closeActors.ToArray();
+	}
+
+	public string getActorTypeName() {
+		return GetType().ToString().RemovePrefix("MMXOnline.");
 	}
 }

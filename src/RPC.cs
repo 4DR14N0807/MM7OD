@@ -37,7 +37,9 @@ public class RPC {
 	public static RPCStartLevel startLevel = new();
 	public static RPCSpawnCharacter spawnCharacter = new();
 	public static RPCUpdateActor updateActor = new();
-	public static RPCUpdateActor updateActorQuick = new() { netDeliveryMethod = NetDeliveryMethod.Unreliable };
+	public static RPCUpdateActor updateActorQuick = new() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableSequenced
+	};
 	public static RPCApplyDamage applyDamage = new();
 	public static RPCDestroyActor destroyActor = new();
 	public static RPCPlayerToggle playerToggle = new();
@@ -291,7 +293,8 @@ public class RPCSpawnCharacter : RPC {
 		if (player != null) {
 			player.spawnCharAtPoint(
 				buffer.charNum, buffer.extraData,
-				new Point(buffer.x, buffer.y), xDir, buffer.charNetId, false
+				new Point(buffer.x, buffer.y), xDir, buffer.charNetId, false,
+				isMainChar: true, forceSpawn: true
 			);
 		} else {
 			Global.level.backloggedSpawns.Add(

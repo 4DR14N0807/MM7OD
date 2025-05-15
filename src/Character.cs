@@ -3461,11 +3461,11 @@ public partial class Character : Actor, IDamagable {
 		return sound;
 	}
 
-	public virtual void aiUpdate() { }
+	public virtual void aiUpdate(Actor? target) { }
 
-	public virtual void aiAttack(Actor? target) { }
+	public virtual void aiAttack(Actor target) { }
 
-	public virtual void aiDodge(Actor? target) { }
+	public virtual void aiDodge(Actor target) { }
 
 	public virtual void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		secondBarOffset = 0;

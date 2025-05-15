@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using static MMXOnline.GameMode;
 using SFML.Graphics;
+using System.Numerics;
+using SFML.System;
 
 namespace MMXOnline;
 
@@ -65,6 +67,7 @@ public class Blues : Character {
 	// AI variables.
 	public float aiSpecialUseTimer = 0;
 	public bool aiActivateShieldOnLand;
+	public bool aiJumpedOnFrame;
 
 	// Netcode stuff.
 	public int netChargeLevel;
@@ -1348,6 +1351,17 @@ public class Blues : Character {
 		usedLtank = null;
 	}
 
+	public override void aiUpdate(Actor? target) {
+		if (charState.normalCtrl && shieldHP > 0 && grounded && !aiJumpedOnFrame && !isShieldActive) {
+			isShieldActive = true;
+			isDashing = false;
+		}
+		aiJumpedOnFrame = false;
+		if (target == null) {
+			player.press(Control.Shoot);
+		}
+	}
+
 	public override void aiAttack(Actor? target) {
 		if (target == null) {
 			return;
@@ -1514,6 +1528,12 @@ public class Blues : Character {
 
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		offset = offset.addxy(0, 17);
+		if (overdrive) {
+			renderOverdriveHUD();
+		}
+		else if (overheating) {
+			renderOverheatHUD();
+		}
 		base.renderHUD(offset, position);
 	}
 
@@ -1578,7 +1598,6 @@ public class Blues : Character {
 		float baseY = hudHealthPosition.y + offset.y;
 
 		int coreAmmoColor = 0;
-		int overdriveColor = 1;
 		if ((overheating || overdrive) && Global.frameCount % 6 >= 3) {
 			coreAmmoColor = 2;
 		}
@@ -1590,7 +1609,7 @@ public class Blues : Character {
 		);
 		if (overdrive) {
 			int yPos = MathInt.Ceiling(baseY - 16);
-			overdriveColor = 1;
+			int overdriveColor = 1;
 			if (Global.frameCount % 6 >= 3) {
 				overdriveColor = 3;
 			}
@@ -1610,10 +1629,12 @@ public class Blues : Character {
 			int baseAmmo = MathInt.Floor(coreAmmo);
 			int baseColor = 2;
 			int filledColor = 0;
+			float ammoAlpha = 0.75f;
 			if (overdrive) {
 				baseAmmo = MathInt.Floor(overdriveAmmo);
 				baseColor = 3;
 				filledColor = 1;
+				ammoAlpha = 0.55f;
 			}
 			int yPos = MathInt.Ceiling(baseY - 16 - MathF.Ceiling(baseAmmo) * 2);
 
@@ -1630,7 +1651,7 @@ public class Blues : Character {
 				if (overdrive && i > coreAmmo - 1) {
 					Global.sprites["hud_weapon_full_blues"].drawToHUD(coreAmmoColor, baseX, yPos);
 				}
-				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, 0.75f);
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, ammoAlpha);
 				yPos -= 2;
 			}
 		}
@@ -1649,6 +1670,88 @@ public class Blues : Character {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
+	}
+
+	public void renderOverdriveHUD() {
+		byte salpha = (byte)MathF.Floor(Global.level.frameCount % 128);
+		if (salpha >= 64) {
+			salpha = (byte)MathF.Abs(128 - salpha);
+		}
+		int red = MathInt.Floor((float)Global.level.frameCount * 2 % 512);
+		if (red >= 256) {
+			red = Math.Abs(512 - red);
+			if (red >= 256) { red = 255; }
+		}
+		int blue = MathInt.Floor(((float)Global.level.frameCount * 2 + 128) % 512);
+		if (blue >= 256) {
+			blue = Math.Abs(512 - blue);
+			if (blue >= 256) { blue = 255; }
+		}
+		Color screenColor = new Color((byte)red, 0, (byte)blue, salpha);
+		Color textColor = new Color((byte)red, 0, (byte)blue, (byte)(salpha * 2));
+		Color bgColor = new Color((byte)(red / 2), 0, (byte)(blue / 2), (byte)(salpha * 2));
+
+		Vector2f[] offsets = [
+			((int)Global.halfScreenW, (int)Global.halfScreenH),
+			(0, (int)Global.halfScreenH),
+			(0, 0),
+			((int)Global.halfScreenW, 0)
+		];
+		for (int i = 0; i < 4; i++) {
+			Color[] colors = [Color.Transparent, Color.Transparent, Color.Transparent, Color.Transparent];
+			for (int j = 0; j < 4; j++) {
+				if (j != i) {
+					colors[j] = screenColor;
+				}
+			}
+			Vertex[] rectHud = [
+				new Vertex((0, 0) + offsets[i], colors[0]),
+				new Vertex((Global.halfScreenW, 0) + offsets[i], colors[1]),
+				new Vertex((Global.halfScreenW, Global.halfScreenH) + offsets[i], colors[2]),
+				new Vertex((0, Global.halfScreenH)  + offsets[i], colors[3]),
+			];
+			if (i == 1 || i == 3) {
+				rectHud = rectHud.Reverse().ToArray();
+			}
+			DrawWrappers.drawToHUD(rectHud, PrimitiveType.Quads);
+		}
+		DrawWrappers.DrawRect(
+			0, 0, Global.screenW, 12, true, bgColor, 0, ZIndex.HUD, false
+		);
+		DrawWrappers.DrawRect(
+			0, Global.screenH - 12, Global.screenW, Global.screenH, true, bgColor, 0, ZIndex.HUD, false
+		);
+		string text = "WARNING    WARNING    WARNING    WARNING    WARNING    WARNING    WARNING    WARNING";
+		Fonts.drawText(
+			FontType.White, text, Global.level.frameCount % 79 - 79, 2, color: textColor
+		);
+		Fonts.drawText(
+			FontType.White, text, -Global.level.frameCount % 79, Global.screenH - 10, color: textColor
+		);
+	}
+
+
+	public void renderOverheatHUD() {
+		byte salpha = (byte)MathF.Floor(Global.level.frameCount % 128);
+		if (salpha >= 64) {
+			salpha = (byte)MathF.Abs(128 - salpha);
+		}
+		Color textColor = new Color(255, 128, 0, (byte)(salpha * 2));
+		Color bgColor = new Color(128, 64, 0, salpha);
+
+		DrawWrappers.DrawRect(
+			0, 0, Global.screenW, 12, true, bgColor, 0, ZIndex.HUD, false
+		);
+		DrawWrappers.DrawRect(
+			0, Global.screenH - 12, Global.screenW, Global.screenH, true, bgColor, 0, ZIndex.HUD, false
+		);
+		string text = "WARNING    WARNING    WARNING    WARNING    WARNING    WARNING    WARNING    WARNING";
+		Fonts.drawText(
+			FontType.White, text, Global.level.frameCount % 79 - 79, 2, color: textColor
+		);
+		Fonts.drawText(
+			FontType.White, text, -Global.level.frameCount % 79, Global.screenH - 10, color: textColor
+		);
 	}
 
 	public override List<byte> getCustomActorNetData() {

@@ -23,7 +23,7 @@ public partial class Global {
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "897EB5ED768120EDBADABA90E01DE15B";
+	private const string assetChecksum = "761AE997D4EED5C75551BCABB9E73ECB";
 
 	// For forks/mods of the game, add a prefix here so that different forks
 	// don't conflict with each other or the base game

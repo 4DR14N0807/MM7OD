@@ -62,6 +62,15 @@ public class AI {
 
 	public void doJump(float jumpTime = 0.75f) {
 		if (this.jumpTime == 0) {
+			if (character is Blues blues && blues.grounded && blues.charState is Idle or Run) {
+				blues.isShieldActive = false;
+				if (blues.canShieldDash() && !blues.aiJumpedOnFrame &&
+					Global.level.getGroundPosNoKillzone(character.pos.addxy(16 * character.xDir, 0)) == null
+				) {
+					blues.changeState(new ShieldDash());
+				}
+				blues.aiJumpedOnFrame = true;
+			}
 			//this.player.release(Control.Jump);
 			player.press(Control.Jump);
 			this.jumpTime = jumpTime;
@@ -292,10 +301,6 @@ public class AI {
 						if (character.charState is not LadderClimb) {
 							doJump();
 							jumpZoneTime += Global.spf;
-							if (jumpZoneTime > 2 && character.player.isVile) {
-								jumpZoneTime = 0;
-								player.press(Control.Up);
-							}
 						}
 					}
 				} else {
@@ -358,10 +363,15 @@ public class AI {
 			if (jumpTime < 0) {
 				jumpTime = 0;
 			}
-		}	
+			else if (character.grounded && 
+				Global.level.getGroundPosNoKillzone(character.pos.addxy(16 * character.xDir, 0)) == null
+			) {
+				jumpTime = 0;
+			}
+		}
 		randomlyChangeStuff();
 		aiState.update();
-		character.aiUpdate();
+		character.aiUpdate(target);
 		if (aiState.shouldAttack && target != null) {
 			character.aiAttack(target);
 		}
@@ -586,11 +596,22 @@ public class FindPlayer : AIState {
 		}
 
 		float xDist = character.pos.x - nextNode.pos.x;
-		if (MathF.Abs(xDist) > 2.5f) {
-			if (xDist < 0) {
+		bool isOnPit = false;
+		if (Global.level.getGroundPosNoKillzone(character.pos) == null) {
+			if (character.xDir == 1) {
 				player.press(Control.Right);
-			} else if (xDist > 0) {
+			} else {
 				player.press(Control.Left);
+			}
+			isOnPit = true;
+		}
+		if (MathF.Abs(xDist) > 2.5f) {
+			if (!isOnPit) {
+				if (xDist < 0) {
+					player.press(Control.Right);
+				} else if (xDist > 0) {
+					player.press(Control.Left);
+				}
 			}
 			if (character.pos.x == lastX && character.grounded) {
 				runIntoWallTime += Global.spf;
@@ -760,8 +781,18 @@ public class InJumpZone : AIState {
 			player.press(Control.Right);
 		}
 
+		if (Global.level.getGroundPosNoKillzone(character.pos) == null) {
+			if (character.xDir == 1) {
+				player.press(Control.Right);
+			} else {
+				player.press(Control.Left);
+			}
+		}
+
 		//Check if out of zone
-		if (character != null && character.abstractedActor().collider != null) {
+		if (character != null && character.abstractedActor().collider != null ||
+			ai.jumpZoneTime >= 0.1 && character?.grounded == true
+		) {
 			if (!character.abstractedActor().collider!.isCollidingWith(jumpZone.collider)) {
 				ai.changeState(new FindPlayer(character));
 			}

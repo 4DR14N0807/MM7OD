@@ -147,9 +147,8 @@ public class ProtoStrikeProj : Projectile {
 		isMelee = true;
 		this.type = type;
 
-		if (type == 0) {
-			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
-		}
+		addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
+
 		if (sendRpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}

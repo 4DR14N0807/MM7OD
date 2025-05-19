@@ -209,8 +209,8 @@ public class Doppma : BaseSigma {
 		}
 		base.aiAttack(target);
 	}
-	public override void aiUpdate() {
-		base.aiUpdate();
+	public override void aiUpdate(Actor? target) {
+		base.aiUpdate(target);
 		if (charState is Die) {
 			foreach (Weapon weapon in weapons) {
 				if (weapon is MaverickWeapon mw && mw.maverick != null) {

@@ -16,7 +16,7 @@ public class ControlPoints : GameMode {
 		base.render();
 		var currentControlPoint = level.getCurrentControlPoint();
 		if (currentControlPoint != null) {
-			drawObjectiveNavpoint(Global.level.mainPlayer.alliance == redAlliance ? "Defend" : "Attack", currentControlPoint.pos);
+			addMapNavpoint("NFlag", currentControlPoint.pos);
 		}
 	}
 

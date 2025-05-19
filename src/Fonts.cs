@@ -30,9 +30,7 @@ public class Fonts {
 		if (string.IsNullOrEmpty(textStr)) { return; }
 		if (isWorldPos && Global.level == null) { return; }
 		// Get the font propieties.
-		if (color == null) {
-			color = Color.White;
-		}
+		Color drawColor = color ?? Color.White;
 		string[] textLines = textStr.Split('\n');
 		string fontStr = "";
 		if (!selected) {
@@ -54,6 +52,7 @@ public class Fonts {
 			fontTextureSize = baseFontData[fontStr][0];
 			fontGridSpacing = baseFontData[fontStr][1];
 			fontDefaultWidth = baseFontData[fontStr][2];
+			fontSpaceWidth = fontDefaultWidth;
 			fontSpacing = baseFontData[fontStr][3];
 		}
 		// Set up drawing texture.
@@ -94,7 +93,10 @@ public class Fonts {
 					)
 				);
 				if (alpha != null) {
-					textSprite.Color = new(255, 255, 255, alpha.Value);
+					textSprite.Color = drawColor with { A = alpha.Value };
+				}
+				else if (color != null) {
+					textSprite.Color = drawColor;
 				}
 				// For variable width fonts.
 				int fontWidth = fontDefaultWidth;
@@ -130,7 +132,7 @@ public class Fonts {
 				DrawWrappers.walDrawObjects[depth] = new DrawLayer();
 			}
 			drawLayer = DrawWrappers.walDrawObjects[depth];
-			drawLayer.oneOffs.Add(new DrawableWrapper(null, batchDrawable, color.Value));
+			drawLayer.oneOffs.Add(new DrawableWrapper(null, batchDrawable, drawColor));
 		} else {
 			if (!deferred) {
 				DrawWrappers.drawToHUD(batchDrawable);

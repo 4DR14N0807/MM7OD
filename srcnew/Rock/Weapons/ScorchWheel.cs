@@ -464,7 +464,7 @@ public class Burning : CharState {
 		character.isBurnState = true;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		if (!character.ownedByLocalPlayer) return;
 		character.burnStunStacks = 0;

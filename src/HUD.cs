@@ -38,6 +38,12 @@ public partial class DrawWrappers {
 		Global.window.SetView(Global.view);
 	}
 
+	public static void drawToHUD(Vertex[] vertices, PrimitiveType type) {
+		Global.window.SetView(hudView);
+		Global.window.Draw(vertices, type);
+		Global.window.SetView(Global.view);
+	}
+
 	public static void DrawTextureHUD(
 		Texture texture, float sx, float sy, float sw, float sh, float dx, float dy, float alpha = 1
 	) {

@@ -791,12 +791,12 @@ public partial class Player {
 
 	public ushort getNextATransNetId() {
 		if (curATransNetId < getStartNetId()) {
-			curATransNetId = (ushort)(getStartNetId());
+			curATransNetId = getStartNetId();
 		}
 		ushort retId = curATransNetId;
 		curATransNetId++;
 		if (curATransNetId >= getStartNetId() + 10) {
-			curATransNetId = (ushort)(getStartNetId());
+			curATransNetId = getStartNetId();
 		}
 		return retId;
 	}
@@ -983,7 +983,6 @@ public partial class Player {
 		);
 	}
 
-	
 	public byte[] getCharSpawnData(int charNum) {
 		if (ownedByLocalPlayer) {
 			if (!isAI) {
@@ -1025,7 +1024,7 @@ public partial class Player {
 			alliance = newAlliance;
 		}
 
-		if (isMainChar && character != null && charNetId == character.netId) {
+		if (isMainChar && character != null && charNetId == character.netId && !forceSpawn) {
 			return null;
 		}
 		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
@@ -1050,11 +1049,11 @@ public partial class Player {
 		}
 		Character newChar;
 		if (charNum == (int)CharIds.Rock) {
-			RockLoadout rockLoadout = new RockLoadout();
-			rockLoadout.weapon1 = extraData[0];
-			rockLoadout.weapon2 = extraData[1];
-			rockLoadout.weapon3 = extraData[2];
-
+			RockLoadout rockLoadout = new RockLoadout {
+				weapon1 = extraData[0],
+				weapon2 = extraData[1],
+				weapon3 = extraData[2]
+			};
 			if (isMainChar) {
 				loadout.rockLoadout = rockLoadout;
 			}
@@ -1075,13 +1074,18 @@ public partial class Player {
 				specialWeaponIndex: specialWeapon
 			);
 		} else if (charNum == (int)CharIds.Bass) {
-			loadout.bassLoadout.weapon1 = extraData[0];
-			loadout.bassLoadout.weapon2 = extraData[1];
-			loadout.bassLoadout.weapon3 = extraData[2];
-
+			BassLoadout bassLoadout = new() {
+				weapon1 = extraData[0],
+				weapon2 = extraData[1],
+				weapon3 = extraData[2]
+			};
+			if (isMainChar) {
+				loadout.bassLoadout = bassLoadout;
+			}
 			newChar = new Bass(
 				this, pos.x, pos.y, xDir,
-				false, charNetId, ownedByLocalPlayer
+				false, charNetId, ownedByLocalPlayer,
+				loadout: bassLoadout
 			);
 		}
 		// Error out if invalid id.

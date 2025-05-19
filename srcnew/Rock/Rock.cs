@@ -48,12 +48,13 @@ public class Rock : Character {
 	) {
 		charId = CharIds.Rock;
 		if (rockLoadout == null) {
-			rockLoadout = new RockLoadout();
-			rockLoadout.weapon1 = player.loadout.rockLoadout.weapon1;
-			rockLoadout.weapon2 = player.loadout.rockLoadout.weapon2;
-			rockLoadout.weapon2 = player.loadout.rockLoadout.weapon3;
+			rockLoadout = new RockLoadout {
+				weapon1 = player.loadout.rockLoadout.weapon1,
+				weapon2 = player.loadout.rockLoadout.weapon2,
+				weapon3 = player.loadout.rockLoadout.weapon3
+			};
 		}
-		weapons = RockLoadoutSetup.getLoadout(player.loadout.rockLoadout);
+		weapons = RockLoadoutSetup.getLoadout(rockLoadout);
 
 		charge1Time = 40;
 		charge2Time = 105;
@@ -276,7 +277,7 @@ public class Rock : Character {
 			hyperProgress = 0;
 			return;
 		}
-		if (!(charState is WarpIn) && canGoSuperAdaptor()) {
+		if (charState is not WarpIn && canGoSuperAdaptor()) {
 
 			if (!boughtSuperAdaptorOnce) {
 				player.currency -= SuperAdaptorCost;

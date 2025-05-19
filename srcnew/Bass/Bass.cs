@@ -7,6 +7,7 @@ namespace MMXOnline;
 
 public class Bass : Character {
 	// Weapons.
+	public BassLoadout loadout;
 	public float weaponCooldown;
 	public CopyVisionClone? cVclone;
 	public SpreadDrillProj? sDrill;
@@ -30,7 +31,7 @@ public class Bass : Character {
 	public const int MaxEvilEnergy = 28;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
-	bool refillFly;
+	public bool refillFly;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -38,11 +39,20 @@ public class Bass : Character {
 	public Bass(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
-		bool isWarpIn = true
+		bool isWarpIn = true, BassLoadout? loadout = null
 	) : base(
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
 		charId = CharIds.Bass;
+		if (loadout == null) {
+			loadout = new BassLoadout {
+				weapon1 = player.loadout.bassLoadout.weapon1,
+				weapon2 = player.loadout.bassLoadout.weapon2,
+				weapon3 = player.loadout.bassLoadout.weapon3
+			};
+		}
+		this.loadout = loadout;
+
 		maxHealth = (decimal)player.getMaxHealth(charId);
 		weapons = getLoadout();
 		charge1Time = 40;
@@ -444,16 +454,14 @@ public class Bass : Character {
 
 	// Loadout Stuff
 	public List<Weapon> getLoadout() {
-		if (Global.level.isTraining() && !Global.level.server.useLoadout) {
-			return getAllWeapons();
-		} else if (Global.level.is1v1()) {
+		if (Global.level.isTraining() && !Global.level.server.useLoadout || Global.level.is1v1()) {
 			return getAllWeapons();
 		}
-		return getWeaponsFromLoadout(player.loadout.bassLoadout);
+		return getWeaponsFromLoadout(loadout);
 	}
 
 	public static List<Weapon> getAllWeapons() {
-		return new List<Weapon>() {
+		return [
 			new BassBuster(),
 			new IceWall(),
 			new CopyVision(),
@@ -463,7 +471,7 @@ public class Bass : Character {
 			new LightningBolt(),
 			new TenguBlade(),
 			new MagicCard(),
-		};
+		];
 	}
 
 	public static Weapon getWeaponById(int id) {
@@ -481,12 +489,11 @@ public class Bass : Character {
 	}
 
 	public List<Weapon> getWeaponsFromLoadout(BassLoadout loadout) {
-		var list = new List<Weapon>();
-		list.Add(getWeaponById(loadout.weapon1));
-		list.Add(getWeaponById(loadout.weapon2));
-		list.Add(getWeaponById(loadout.weapon3));
-
-		return list;
+		return [
+			getWeaponById(loadout.weapon1),
+			getWeaponById(loadout.weapon2),
+			getWeaponById(loadout.weapon3)
+		];
 	}
 
 	public void drawCardNumber(int number) {
@@ -556,6 +563,7 @@ public class Bass : Character {
 		return 2;
 	}
 	public override float getDashSpeed() {
+		//return 3.45f * 60 * getRunDebuffs();
 		return 215 * getRunDebuffs();
 	}
 

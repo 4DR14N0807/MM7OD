@@ -1688,7 +1688,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		freezeTime = time;
-		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
@@ -1753,7 +1753,7 @@ public partial class Character : Actor, IDamagable {
 		//useGravity = false;
 		stopMovingWeak();
 		charState.canStopJump = false;
-		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
@@ -1780,7 +1780,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		paralyzedTime = time;
-		Player enemyPlayer = Global.level.getPlayerById(playerid);
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
@@ -3477,11 +3477,11 @@ public partial class Character : Actor, IDamagable {
 		return sound;
 	}
 
-	public virtual void aiUpdate() { }
+	public virtual void aiUpdate(Actor? target) { }
 
-	public virtual void aiAttack(Actor? target) { }
+	public virtual void aiAttack(Actor target) { }
 
-	public virtual void aiDodge(Actor? target) { }
+	public virtual void aiDodge(Actor target) { }
 
 	public virtual void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		secondBarOffset = 0;

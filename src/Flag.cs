@@ -57,6 +57,7 @@ public class Flag : Actor {
 		}
 
 		if (chr != null) {
+			changePos(chr.pos);
 			xDir = -chr.xDir;
 			if (!Global.level.gameObjects.Contains(chr) ||
 				chr.isWarpOut() ||
@@ -208,8 +209,9 @@ public class Flag : Actor {
 
 		// To avoid latency of flag not sticking to character in online
 		if (chr != null && !chr.destroyed) {
-			Point centerPos = chr.getCenterPos().addxy(-4 * chr.xDir, -2);
-			base.render(centerPos.x - pos.x, centerPos.y - pos.y);
+			Point centerPos = chr.pos.addxy(-10 * chr.xDir, -10);
+			Point renderPos = new Point(centerPos.x - MathF.Round(pos.x), centerPos.y - MathF.Round(pos.y));
+			base.render(renderPos.x, renderPos.y);
 			return;
 		}
 

@@ -1396,8 +1396,8 @@ public class MegamanX : Character {
 		base.aiDodge(target);
 	}
 
-	public override void aiUpdate() {
+	public override void aiUpdate(Actor? target) {
 		//Buying UAX and Golden Armor goes here
-		base.aiUpdate();
+		base.aiUpdate(target);
 	}
 }

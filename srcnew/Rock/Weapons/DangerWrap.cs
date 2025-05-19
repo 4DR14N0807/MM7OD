@@ -270,7 +270,6 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 public class DangerWrapLandProj : Projectile, IDamagable {
 	public float health = 1;
 	public Actor ownChr;
-	Player player;
 
 	public DangerWrapLandProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,

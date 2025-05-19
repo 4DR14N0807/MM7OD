@@ -41,6 +41,7 @@ public class StarCrash : Weapon {
 			blues.starCrashActive = true;
 			blues.gravityModifier = 0.625f;
 			shootCooldown = 0;
+			blues.playSound("voltcStatic", true, true);
 		}
 		blues.inCustomShootAnim = false;
 	}
@@ -123,11 +124,12 @@ public class StarCrashProj : Projectile {
 		if (blues != null) {
 			blues.delinkStarCrash();
 		}
-		new StarCrashProj2(
+		var newProj = new StarCrashProj2(
 			pos, xDir, damager.owner, 
 			damager.owner.getNextActorNetId(), 
 			starAngle, starFrame, true
 		);
+		newProj.playSound("tengublade", true, true);
 	}
 
 	public override void render(float x, float y) {

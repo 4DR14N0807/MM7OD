@@ -28,6 +28,8 @@ public partial class Character : Actor, IDamagable {
 	// Health.
 	public decimal health;
 	public decimal maxHealth = 28;
+	public float maxHealthToAdd;
+	public float maxHealthAddTime;
 	
 	// Player linked data.
 	public Player player;
@@ -461,7 +463,7 @@ public partial class Character : Actor, IDamagable {
 			shaders.Add(player.burnStateShader);
 		}
 		if (player.evilEnergyStacks > 0 && player.evilEnergyShader != null && this is Bass) {
-			player.evilEnergyShader.SetUniform("evilEnergyStacks", player.evilEnergyStacks / 2);
+			player.evilEnergyShader.SetUniform("stacks", player.evilEnergyStacks / 2f);
 			shaders.Add(player.evilEnergyShader);
 		}
 		return shaders;
@@ -1271,6 +1273,18 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (usedWtank != null && usedWtank.ammo <= 0) {
 			usedWtank = null;
+		}
+		//Max Health increase (Used for bass evil energy debuffs)
+		if (maxHealthToAdd > 0) {
+			maxHealthAddTime++;
+			if (maxHealthAddTime >= 3) {
+				maxHealthAddTime = 0;
+				maxHealthToAdd--;
+				maxHealth++;
+				if (player == Global.level.mainPlayer || playHealSound) {
+					playSound("heal", forcePlay: true, sendRpc: true);
+				}
+			}
 		}
 
 		if (ai != null) {
@@ -2136,6 +2150,8 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 	}
+
+	public virtual void changeToIdleFallorFly(string transitionSprite = "") {}
 
 	public virtual void landingCode(bool useSound = true) {
 		dashedInAir = 0;

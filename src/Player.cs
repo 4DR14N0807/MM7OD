@@ -881,11 +881,10 @@ public partial class Player {
 		if (character != null && !character.destroyed && character is Bass) {
 			Helpers.decrementFrames(ref evilEnergyTime);
 		} 
-		if (evilEnergyTime == 0 && evilEnergyStacks > 0) {
+		if (character != null && evilEnergyTime == 0 && evilEnergyStacks > 0) {
+			character.maxHealthToAdd += evilEnergyStacks * hpPerStack;
 			evilEnergyTime = evilEnergyMaxTime;
-			evilEnergyStacks--;
-			maxHealth += hpPerStack;
-			character?.playSound("heal");
+			evilEnergyStacks = 0;
 		}
 		// Never spawn a character if it already exists
 		if (character == null && ownedByLocalPlayer) {
@@ -1377,8 +1376,12 @@ public partial class Player {
 
 		if (!isAssist) {
 			if (character is Bass bass && bass.isSuperBass) {
-				if (bass.evilEnergy[bass.phase - 1] < Bass.MaxEvilEnergy) {
-					bass.evilEnergy[bass.phase - 1] += 7;
+				int level = Math.Min(bass.phase - 1, 1);
+				if (bass.evilEnergy[level] < Bass.MaxEvilEnergy) {
+					bass.evilEnergy[level] += 7;
+					if (bass.evilEnergy[level] >= Bass.MaxEvilEnergy) {
+						bass.evilEnergy[level] = Bass.MaxEvilEnergy;
+					}
 				} 
 			}
 		}

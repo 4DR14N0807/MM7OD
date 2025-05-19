@@ -39,7 +39,7 @@ public class Projectile : Actor {
 	//Clang for Zero (or could be in all characters in general)
 	public bool isZSaberClang;
 	public bool shouldVortexSuck = true;
-	bool damagedOnce;
+	public bool damagedOnce;
 	//public int? destroyFrames;
 	public Player ownerPlayer;
 

@@ -195,7 +195,6 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		maxTime = 1.125f;
 		useGravity = true;
 		damager.damage = 2;
-		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 30;
 		ownChr = owner;
 		canBeGrounded = true;

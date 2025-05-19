@@ -16,6 +16,7 @@ public enum BassWeaponIds {
 	TenguBlade,
 	MagicCard,
 	SuperBassBuster,
+	SuperBassRP,
 }
 
 [ProtoContract]

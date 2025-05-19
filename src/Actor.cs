@@ -583,11 +583,11 @@ public partial class Actor : GameObject {
 	}
 
 	public void addGravity(ref float yVar) {
-		float maxVelY = Physics.MaxFallSpeed;
+		float maxVelY = getFallSpeed();
 		float gravity = getGravity();
 
 		if (isUnderwater()) {
-			maxVelY = Physics.MaxUnderwaterFallSpeed;
+			//maxVelY = Physics.MaxUnderwaterFallSpeed;
 			gravity *= 0.5f;
 		}
 
@@ -737,9 +737,9 @@ public partial class Actor : GameObject {
 	public void localUpdate(bool underwater) {
 		Character? chr = this as Character;
 		float grav = getGravity();
-		float terminalVelUp = Physics.MaxFallSpeed;
-		float terminalVelDown = Physics.MaxFallSpeed;
-		if (underwater) terminalVelDown = Physics.MaxUnderwaterFallSpeed;
+		float terminalVelUp = getFallSpeed(false);
+		float terminalVelDown = getFallSpeed();
+		//if (underwater) terminalVelDown = Physics.MaxUnderwaterFallSpeed;
 
 		if (gravityOverride ?? useGravity && !grounded) {
 			if (underwater) {
@@ -1886,6 +1886,10 @@ public partial class Actor : GameObject {
 		return Global.level.gravity * gravityModifier * gHoldModifier;
 	}
 
+	public virtual float getFallSpeed(bool checkUnderwater = true) {
+		if (isUnderwater() && checkUnderwater) return Physics.MaxUnderwaterFallSpeed;
+		return Physics.MaxFallSpeed;
+	}
 	public Actor getActor => this;
 
 	public Actor[] getCloseActors(

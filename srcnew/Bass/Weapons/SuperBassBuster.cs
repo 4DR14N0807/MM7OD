@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MMXOnline;
+
+#region Buster Weapon
 
 public class SBassBuster : Weapon {
 	public static SBassBuster netWeapon = new();
@@ -24,9 +27,24 @@ public class SBassBuster : Weapon {
 		int chargeLevel = args[0];
 		Bass bass = character as Bass ?? throw new NullReferenceException();
 
-		if (chargeLevel >= 2) {
-			//new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
-			//character.playSound("super_adaptor_punch", sendRpc: true);
+		if (chargeLevel == 3) {
+			new ChamoBuster(bass, shootPos.addxy(12 * xDir, 0), xDir, player.getNextActorNetId(), true);
+			character.playSound("buster3", sendRpc: true);
+
+			for (int i = 1; i < 3; i++) {
+			Global.level.delayedActions.Add(new DelayedAction(
+				() => {
+					new SBassShot(
+						bass, bass.getShootPos().addxy(11 * xDir, 0), bass.getShootXDir(), 
+						player.getNextActorNetId(), true, superBass: bass.isSuperBass
+					);
+					character.playSound("buster2", sendRpc: true);
+				},
+				(i * 8) / 60f
+			));
+		}
+		}
+		else if (chargeLevel == 2) {
 			new ChamoBuster(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster3", sendRpc: true);
 		} 
@@ -52,7 +70,59 @@ public class SBassBuster : Weapon {
 	}
 }
 
+#endregion
 
+#region Rocket Punch Weapon
+
+public class SBassRP : Weapon {
+	public SBassRP() : base() {
+		iconSprite = "hud_weapon_icon_bass";
+		index = (int)BassWeaponIds.SuperBassRP;
+		fireRate = 15;
+		drawAmmo = false;
+	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
+	} 
+
+	public override void shoot(Character character, params int[] args) {
+		Point shootPos = character.getShootPos();
+		int xDir = character.getShootXDir();
+		Player player = character.player;
+		int chargeLevel = args[0];
+		Bass bass = character as Bass ?? throw new NullReferenceException();
+
+		if (chargeLevel >= 2) {
+			new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			character.playSound("super_adaptor_punch", sendRpc: true);
+		} 
+		else if (chargeLevel == 1) {
+			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			character.playSound("buster2", sendRpc: true);
+		}
+		else {
+			float ang = 32;
+			if (xDir < 0) ang = -ang + 128;
+			float speed = 360;
+
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
+				{ vel = Point.createFromByteAngle(-ang).times(speed) };
+
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true);
+
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
+				{ vel = Point.createFromByteAngle(ang).times(speed) };
+
+			character.playSound("buster");
+		}	
+	}
+}
+
+#endregion
+
+
+#region Projectiles
 public class SBassLemon : Projectile {
 	public SBassLemon(
 		Actor owner, Point pos, int xDir, ushort? netId, 
@@ -71,13 +141,19 @@ public class SBassLemon : Projectile {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SBassLemon(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
+	}
 }
 
 public class SBassShot : Projectile {
 
 	public SBassShot(
 		Actor owner, Point pos, int xDir, ushort? netId, 
-		bool rpc = false, Player? altPlayer = null
+		bool rpc = false, Player? altPlayer = null, bool superBass = false
 	) : base(
 		pos, xDir, owner, "bass_buster_proj2", netId, altPlayer
 	) {
@@ -86,10 +162,20 @@ public class SBassShot : Projectile {
 
 		vel.x = 300 * xDir;
 		damager.damage = 2;
+		if (superBass) {
+			damager.damage = 1;
+			damager.flinch = Global.miniFlinch;
+		}
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SBassShot(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
 	}
 }
 
@@ -104,9 +190,19 @@ public class ChamoBuster : Projectile {
 		projId = (int)BassProjIds.ChamoBuster;
 		maxTime = 0.5f;
 
-		vel.x = 340 * xDir;
+		vel.x = 350 * xDir;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new ChamoBuster(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
 	}
 }
 
@@ -126,7 +222,7 @@ public class SuperBassRP : Projectile {
 		pos, xDir, owner, "sb_rocket_punch", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassRocketPunch;
-		if (ownedByLocalPlayer ) {
+		if (ownedByLocalPlayer) {
 			bass = owner as Bass ?? throw new NullReferenceException();
 			if (bass != null) bass.sbRocketPunch = this;
 		}
@@ -142,6 +238,16 @@ public class SuperBassRP : Projectile {
 
 		destroyOnHit = false;
 		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SuperBassRP(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
 	}
 
 	public override void update() {
@@ -264,6 +370,219 @@ public class SuperBassRP : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
 		if (bass != null) bass.sbRocketPunch = null;
 	}
 }
+
+
+public class SweepingLaserProj : Projectile {
+
+	int startHeight;
+	Sprite? bodySprite;
+	int spriteHeight;
+	int maxPieces = 6;
+	Point endPos;
+	Anim? topAnim;
+	Anim? bodyAnim;
+	Anim? bottomAnim;
+	bool ground;
+	Bass bass = null!;
+	int groundTime;
+	int lastGroundTime;
+	public SweepingLaserProj(
+		Actor owner, Point pos, int xDir,
+		ushort? netId, bool rpc = false, Player? player = null
+	) : base(
+		pos, xDir, owner, "sweeping_laser_top", netId, player
+	) {
+
+		projId = (int)BassProjIds.SweepingLaser;
+		maxTime = 1;
+		setIndestructableProperties();
+		damager.damage = 3;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 30;
+
+		if (ownedByLocalPlayer) {
+			bass = owner as Bass ?? throw new NullReferenceException();
+		}
+	}
+
+	public override void onStart() {
+		base.onStart();
+		if (!ownedByLocalPlayer) return;
+
+		startHeight = (int)sprite.getCurrentFrame().rect.h();
+		bodySprite = new Sprite("sweeping_laser");
+		spriteHeight = (int)bodySprite.getCurrentFrame().rect.h();
+		checkGround();
+
+		topAnim = new Anim(pos, sprite.name, xDir, null, false) { visible = false };
+		bodyAnim = new Anim(pos, bodySprite.name, xDir, null, false) { visible = false };
+		bottomAnim = new Anim(pos, "sweeping_laser_bottom", xDir, null, false) { visible = false };
+	}
+
+	public override void update() {
+		base.update();
+
+		changePos(bass.getShootPos());
+		checkGround();
+		if (ground) groundTime++;
+
+		if (groundTime != lastGroundTime && groundTime % 4 == 0 && ground) {
+			new Anim(endPos, "dust_purple", xDir, damager.owner.getNextActorNetId(), true, true, zIndex: zIndex - 2)
+			{ vel = new Point(0, -60) };
+			lastGroundTime = groundTime;
+		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x,y);
+		if (bodyAnim == null || bodySprite == null) return;
+
+		int pieces = (MathInt.Floor(pos.distanceTo(endPos)) - startHeight) / spriteHeight;
+
+		for (int i = 0; i < pieces; i++) {
+			bodySprite.draw(
+				bodyAnim.frameIndex, pos.x, pos.y + ((i * spriteHeight) + startHeight),
+				xDir, yDir, null, alpha, 1, 1, zIndex
+			);
+		}
+
+		if (ground && bottomAnim != null) {
+			Global.sprites[bottomAnim.sprite.name].draw(
+				bottomAnim.frameIndex, pos.x, endPos.y, 
+				xDir, yDir, null, alpha, 1, 1, zIndex
+			);
+		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+
+		topAnim?.destroySelf();
+		bodyAnim?.destroySelf();
+		bottomAnim?.destroySelf();
+	}
+
+	void checkGround() {
+		var hits = Global.level.raycast(pos, pos.addxy(0, (maxPieces * spriteHeight) + startHeight), new List<Type>() { typeof(Wall), typeof(Ladder) });
+		if (hits != null) {
+			endPos = hits.getHitPointSafe();
+			ground = true;
+		} else {
+			endPos = new Point(pos.x, pos.y + (maxPieces * spriteHeight) + startHeight);
+			ground = false;
+		}
+
+		List<Point> points = new List<Point>() {
+			new Point(pos.x - 6, pos.y),
+			new Point(pos.x + 7, pos.y),
+			new Point(pos.x + 7, endPos.y),
+			new Point(pos.x - 6, endPos.y),
+		};
+		globalCollider = new Collider(points, true, null!, false, false, 0, Point.zero);
+	}
+}
+
+
+public class DarkCometUpProj : Projectile {
+
+	Actor? actor;
+	Anim? anim;
+
+	public DarkCometUpProj(
+		Actor owner, Point pos, int xDir,
+		ushort? netId, bool rpc = false, Player? player = null
+	) : base(
+		pos, xDir, owner, "dark_comet", netId, player
+	) {
+		projId = (int)BassProjIds.DarkCometUp;
+		maxTime = 0.5f;
+		damager.damage = 3;
+		damager.flinch = Global.halfFlinch;
+		
+		vel.y = -240;
+		yDir *= -1;
+
+		if (ownedByLocalPlayer && owner != null) actor = owner;
+	}
+
+	public override void onStart() {
+		base.onStart();
+		anim = new Anim(pos, "dark_comet_anim", xDir, null, false) { visible = false };
+	}
+
+	public override void render(float x, float y) {
+		if (anim != null) {
+			Global.sprites[anim.sprite.name].draw(
+				anim.frameIndex, pos.x, pos.y, 
+				xDir, yDir, null, alpha, 1, 1, zIndex
+			);
+		}
+
+		base.render(x,y);
+	} 
+
+	public override void onDestroy() {
+		base.onDestroy();
+		if (damagedOnce || !ownedByLocalPlayer || actor == null) return;
+
+		for (int i = -1; i < 2; i++) {
+			new DarkCometDownProj(
+				actor, pos.addxy(48 * i, 0), xDir, 
+				damager.owner.getNextActorNetId(), true, damager.owner
+			);
+		}
+	}
+}
+
+
+public class DarkCometDownProj : Projectile {
+
+	Anim? anim;
+
+	public DarkCometDownProj(
+		Actor owner, Point pos, int xDir,
+		ushort? netId, bool rpc = false, Player? player = null
+	) : base(
+		pos, xDir, owner, "dark_comet", netId, player
+	) {
+		projId = (int)BassProjIds.DarkCometDown;
+		maxTime = 1.5f;
+		damager.damage = 3;
+		damager.flinch = Global.halfFlinch;
+		
+		vel.y = 240;
+	}
+
+	public override void onStart() {
+		base.onStart();
+		anim = new Anim(pos, "dark_comet_anim", xDir, null, false) { visible = false };
+	}
+
+	public override void onHitWall(CollideData other) {
+		base.onHitWall(other);
+
+		var floor = other.gameObject as Wall;
+
+		if (floor != null && other.isGroundHit()) {
+			destroySelf();
+			new Anim(pos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true);
+		}
+	}
+
+	public override void render(float x, float y) {
+		if (anim != null) {
+			Global.sprites[anim.sprite.name].draw(
+				anim.frameIndex, pos.x, pos.y, 
+				xDir, yDir, null, alpha, 1, 1, zIndex
+			);
+		}
+
+		base.render(x,y);
+	} 
+}
+
+#endregion

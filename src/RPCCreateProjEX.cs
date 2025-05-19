@@ -334,7 +334,10 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.TenguBladeStart, TenguBladeStart.rpcInvoke },
 		{ (int)BassProjIds.TenguBladeProj, TenguBladeProj.rpcInvoke },
 		{ (int)BassProjIds.LightningBolt, LightningBoltProj.rpcInvoke },
-
+		{ (int)BassProjIds.SuperBassLemon, SBassLemon.rpcInvoke },
+		{ (int)BassProjIds.SuperBassShot, SBassShot.rpcInvoke },
+		{ (int)BassProjIds.ChamoBuster, ChamoBuster.rpcInvoke },
+		{ (int)BassProjIds.SuperBassRocketPunch, SuperBassRP.rpcInvoke },
 	};
 
 }

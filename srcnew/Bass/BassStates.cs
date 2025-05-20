@@ -353,7 +353,7 @@ public class EnergyCharge : CharState {
 
 	public EnergyCharge() : base("enter") {
 		normalCtrl = false;
-		attackCtrl = true;
+		attackCtrl = false;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -382,14 +382,14 @@ public class EnergyCharge : CharState {
 
 		aura?.changePos(bass.pos);
 
-		if (bass.evilEnergy[bass.phase - 1] >= Bass.MaxEvilEnergy) {
+		if (bass.evilEnergy[bass.phase] >= Bass.MaxEvilEnergy) {
 			bass.changeState(new EnergyIncrease(), true);
 			return;
 		}
 
 		if (stateFrames % 15 == 0 && stateFrames > 0) {
 			bass.playSound("heal");
-			bass.evilEnergy[bass.phase - 1]++;
+			bass.evilEnergy[bass.phase]++;
 		}	
 	}
 }

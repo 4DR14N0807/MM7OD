@@ -27,7 +27,7 @@ public class Bass : Character {
 	public bool isSuperBass;
 	public const int TrebleBoostCost = 75;
 	public int phase;
-	public int[] evilEnergy = new int[2] { 0, 0 };
+	public int[] evilEnergy = new int[3] { 0, 0, 0 };
 	public const int MaxEvilEnergy = 28;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
@@ -114,7 +114,7 @@ public class Bass : Character {
 
 	public void setSuperBass() {
 		isSuperBass = true;
-		phase = 1;
+		phase = 0;
 		player.changeWeaponSlot(0);
 		weapons.Clear();
 		weapons.Add(new SBassBuster());
@@ -122,9 +122,9 @@ public class Bass : Character {
 	}
 
 	public void nextPhase(int level) {
-		evilEnergy[phase - 1] = Bass.MaxEvilEnergy;
+		evilEnergy[phase] = Bass.MaxEvilEnergy;
 		phase = level;
-		player.pendingEvilEnergyStacks = level - 1;
+		player.pendingEvilEnergyStacks = level;
 		changeState(new EnergyIncrease());
 	}
 
@@ -201,30 +201,34 @@ public class Bass : Character {
 
 		Point energyBarPos = GameMode.getHUDHealthPosition(position, false).add(offset);
 
-		Global.sprites["hud_energy_base"].drawToHUD(phase - 1, energyBarPos.x, energyBarPos.y);
+		Global.sprites["hud_energy_base"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
+		if (Global.frameCount % 6 >= 3 && charState is EnergyCharge or EnergyIncrease) {
+			Global.sprites["hud_energy_eyes"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
+		}
 		energyBarPos.y -= 16;
 		Point energyStartPos = energyBarPos;
-		int amount =  evilEnergy[Math.Min(phase - 1, 1)];
 		int[][] index = new int[][] {
 			[0,1,2],
 			[3,4,5],
 			[6,7,8]			
 		};
 
-		for (int i = 0; i < phase; i++) {
+		for (int i = 0; i < phase + 1; i++) {
+			int amount =  evilEnergy[i];
 			energyBarPos = energyStartPos;
 			for (int j = 0; j < MaxEvilEnergy; j++) {
+				int k = i == 1 && evilEnergy[i] >= MaxEvilEnergy ? 2 : i;
 				if (j < amount) {
-					Global.sprites["hud_energy_full"].drawToHUD(index[phase - 1][phase - 1], energyBarPos.x, energyBarPos.y);
+					Global.sprites["hud_energy_full"].drawToHUD(index[phase][k], energyBarPos.x, energyBarPos.y);
 				}
-				else {
-					Global.sprites["hud_health_empty"].drawToHUD(0, energyBarPos.x, energyBarPos.y);
+				else if (i == 0){
+					Global.sprites["hud_energy_empty"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
 				}
 				energyBarPos.y -= 2;
 			}
 		}
 	
-		Global.sprites["hud_energy_top"].drawToHUD(phase - 1, energyBarPos.x, energyBarPos.y);
+		Global.sprites["hud_energy_top"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
 	}
 
 	public override void render(float x, float y) {
@@ -338,7 +342,7 @@ public class Bass : Character {
 			}
 			if (
 				player.input.isHeld(Control.Special2, player) &&
-				charState is not EnergyCharge && phase < 3
+				charState is not EnergyCharge && phase < 2
 			) {
 				changeState(new EnergyCharge(), true);
 				return true;
@@ -372,13 +376,13 @@ public class Bass : Character {
 		}
 
 		if (isSuperBass && player.input.isPressed(Control.Special1, player)) {
-			if (player.input.isHeld(Control.Down, player) && phase >= 2) {
+			if (player.input.isHeld(Control.Down, player) && phase >= 1) {
 				if (!grounded) {
 					changeState(new SweepingLaserState(), true);
 					return true;
 				}
 			}
-			if (player.input.isHeld(Control.Up, player) && phase >= 2) {
+			if (player.input.isHeld(Control.Up, player) && phase >= 1) {
 				if (!grounded) {
 					changeState(new DarkCometState(), true);
 					return true;
@@ -559,7 +563,7 @@ public class Bass : Character {
 	}
 
 	public override int getMaxChargeLevel() {
-		if (isSuperBass && phase >= 3) return 3;
+		if (isSuperBass && phase >= 2) return 3;
 		return 2;
 	}
 	public override float getDashSpeed() {

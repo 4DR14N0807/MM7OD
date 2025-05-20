@@ -33,7 +33,7 @@ public partial class Actor {
 			lastVisible = null;
 		}
 		byte[] networkIdBytes = Helpers.convertToBytes(netId.Value);
-		if (netId < Level.firstNormalNetId && this is not Flag) {
+		if (netId < Level.firstNormalNetId && this is not Flag and not ControlPoint) {
 			string msg = $"NetId {netId.Value} was not flag or system object. Was {getActorTypeName()}";
 			throw new Exception(msg);
 		}

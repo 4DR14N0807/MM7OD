@@ -3,8 +3,7 @@
 namespace MMXOnline;
 
 public class Tips {
-	public static List<string[]> xTipsPool = new List<string[]>()
-	{
+	public static List<string[]> xTipsPool = new List<string[]>() {
 			new string[]
 			{
 				"Every special weapon has a weakness!",

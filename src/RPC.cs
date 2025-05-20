@@ -37,9 +37,6 @@ public class RPC {
 	public static RPCStartLevel startLevel = new();
 	public static RPCSpawnCharacter spawnCharacter = new();
 	public static RPCUpdateActor updateActor = new();
-	public static RPCUpdateActor updateActorQuick = new() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableSequenced
-	};
 	public static RPCApplyDamage applyDamage = new();
 	public static RPCDestroyActor destroyActor = new();
 	public static RPCPlayerToggle playerToggle = new();
@@ -132,7 +129,6 @@ public class RPC {
 		applyDamage,
 		heal,
 		updateActor,
-		updateActorQuick,
 		destroyActor,
 		actorToggle,
 		spawnCharacter,

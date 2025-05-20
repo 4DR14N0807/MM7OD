@@ -217,6 +217,13 @@ public partial class Character : Actor, IDamagable {
 		X3,
 	}
 
+	// Netcode flags.
+	public byte? lastNetHP;
+	public byte? lastNetMaxHP;
+	public byte? lastNetAlliance;
+	public byte? lastNetCurrency;
+	public byte? lastNetStateFlag;
+
 	// Main character class starts here.
 	public Character(
 		Player player, float x, float y, int xDir,
@@ -3605,19 +3612,24 @@ public partial class Character : Actor, IDamagable {
 	
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = new();
+		bool send = false;
 
 		// For keeping track how long the normal args are.
 		// We need to edit this later.
 		customData.Add(0);
 
 		// Always on values.
-		customData.Add((byte)Math.Ceiling(health));
-		customData.Add((byte)Math.Ceiling(maxHealth));
-		customData.Add((byte)player.alliance);
-		customData.Add((byte)player.currency);
+		byte netHP = (byte)Math.Ceiling(health);
+		byte netMaxHP = (byte)Math.Ceiling(maxHealth);
+		byte netAlliance = (byte)player.alliance;
+		byte netCurrency = (byte)player.currency;
+		customData.Add(netHP);
+		customData.Add(netMaxHP);
+		customData.Add(netAlliance);
+		customData.Add(netCurrency);
 
 		// Bool variables. Packed in a single byte.
-		customData.Add(Helpers.boolArrayToByte([
+		byte stateFlag = Helpers.boolArrayToByte([
 			player.isDefenderFavored,
 			invulnTime > 0 || isInvulnerable(),
 			isDarkHoldState,
@@ -3626,7 +3638,8 @@ public partial class Character : Actor, IDamagable {
 			charState.immuneToWind,
 			charState.stunResistant,
 			hasBubble
-		]));
+		]);
+		customData.Add(stateFlag);
 
 		// Bool mask. Pos 5.
 		// For things not always enabled.
@@ -3641,38 +3654,47 @@ public partial class Character : Actor, IDamagable {
 		if (acidTime > 0) {
 			customData.Add((byte)MathF.Ceiling(acidTime * 20));
 			boolMask[0] = true;
+			send = true;
 		}
 		if (burnTime > 0) {
 			customData.Add((byte)MathF.Ceiling(burnTime * 30));
 			boolMask[1] = true;
+			send = true;
 		}
 		if (chargeTime > 0) {
 			customData.Add((byte)MathF.Ceiling(chargeTime / 3));
 			boolMask[2] = true;
+			send = true;
 		}
 		if (igFreezeProgress > 0) {
 			customData.Add((byte)MathF.Ceiling(igFreezeProgress * 30));
 			boolMask[3] = true;
+			send = true;
 		}
 		if (oilTime > 0) {
 			customData.Add((byte)MathF.Ceiling(oilTime * 30));
 			boolMask[4] = true;
+			send = true;
 		}
 		if (virusTime > 0) {
 			customData.Add((byte)MathF.Ceiling(virusTime * 30));
 			boolMask[5] = true;
+			send = true;
 		}
 		if (vaccineTime > 0) {
 			customData.Add((byte)MathF.Ceiling(vaccineTime * 30));
 			boolMask[6] = true;
+			send = true;
 		}
 		if (burnStunStacks > 0) {
 			customData.Add((byte)burnStunStacks);
 			boolMask[7] = true;
+			send = true;
 		}
 		if (rootTime > 0) {
 			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
 			boolMaskB[0] = true;
+			send = true;
 		}
 
 		// Add the final value of the bool mask.
@@ -3682,6 +3704,23 @@ public partial class Character : Actor, IDamagable {
 		// Add the total arguments size.
 		customData[0] = (byte)customData.Count;
 
+		if (netHP != lastNetHP || netMaxHP != lastNetMaxHP ||
+			netAlliance != lastNetAlliance || netCurrency != lastNetCurrency ||
+			stateFlag != lastNetStateFlag
+		) {
+			send = true;
+		}
+		// Update the old values.
+		lastNetHP = netHP;
+		lastNetMaxHP = netMaxHP;
+		lastNetAlliance = netAlliance;
+		lastNetCurrency = netCurrency;
+		lastNetStateFlag = stateFlag;
+
+		// Check and send.
+		if (!send) {
+			customData.Clear();
+		}
 		return customData;
 	}
 
@@ -3696,7 +3735,7 @@ public partial class Character : Actor, IDamagable {
 		bool[] boolData = Helpers.byteToBoolArray(data[5]);
 
 		player.isDefenderFavoredNonOwner = boolData[0];
-		invulnTime = boolData[1] ? 1 : 0;
+		invulnTime = boolData[1] ? 10 : 0;
 		isDarkHoldState = boolData[2];
 		isStrikeChainState = boolData[3];
 		isBurnState = boolData[4];
@@ -3708,6 +3747,9 @@ public partial class Character : Actor, IDamagable {
 		bool[] boolMask = Helpers.byteToBoolArray(data[6]);
 		bool[] boolMaskB = Helpers.byteToBoolArray(data[7]);
 		int pos = 8;
+
+		// States.
+		acidTime = 0;
 		if (boolMask[0]) {
 			acidTime = data[pos] / 30f;
 			pos++;
@@ -3750,7 +3792,6 @@ public partial class Character : Actor, IDamagable {
 		rootTime = 0;
 		if (boolMaskB[0]) {
 			rootTime = data[pos] * 2;
-			pos++;
 		}
 	}
 }

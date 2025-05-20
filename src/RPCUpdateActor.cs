@@ -15,12 +15,12 @@ public partial class Actor {
 
 	public void sendActorNetData() {
 		if (netId == null) {
-			if (this is Character chara) {
+			if (this is Character) {
 				throw new Exception($"Error character {getActorTypeName()} has a null net id");
 			}
 			return;
 		}
-		// Every 12 frames we send the full thing.
+		// Every 30 frames we send the full thing.
 		bool sendFullData = false;
 		if (Global.frameCount % 30 == 0) {
 			sendFullData = true;
@@ -89,9 +89,9 @@ public partial class Actor {
 			send = true;
 		}
 		// The rest are just contain actual bool data.
-		mask[5] = visible;                      // Visibility
-		mask[6] = (xDir > -1);	// xDir
-		mask[7] = (yDir > -1);	// yDir
+		mask[5] = visible; // Visibility
+		mask[6] = (xDir > -1); // xDir
+		mask[7] = (yDir > -1); // yDir
 
 		// Check if anything changed on these bools.
 		if (lastXDir != xDir || lastYDir != yDir || lastVisible != visible) {
@@ -99,7 +99,7 @@ public partial class Actor {
 		}
 
 		List<byte>? customData = getCustomActorNetData();
-		if (customData != null) {
+		if (customData != null && customData.Count > 0) {
 			args.AddRange(customData);
 			send = true;
 		}
@@ -112,8 +112,6 @@ public partial class Actor {
 		if (send) {
 			if (forceNetUpdateNextFrame || sendFullData) {
 				Global.serverClient?.rpc(RPC.updateActor, args.ToArray());
-			} else {
-				Global.serverClient?.rpc(RPC.updateActorQuick, args.ToArray());
 			}
 		}
 

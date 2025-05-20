@@ -69,12 +69,17 @@ public class Blues : Character {
 	public bool aiActivateShieldOnLand;
 	public bool aiJumpedOnFrame;
 
+	// Overdrive mode music.
+	public MusicWrapper? breakmanMusic;
+
 	// Netcode stuff.
 	public int netChargeLevel;
 	public decimal lastDamageNum;
 
-	// MUSIC
-	public MusicWrapper? breakmanMusic;
+	public byte? lastNetCore;
+	public byte? lastNetShieldHP;
+	public byte? lastNetChargeLevel;
+	public byte? lastNetBoolFlags;
 
 	// Creation code.
 	public Blues(
@@ -1759,16 +1764,32 @@ public class Blues : Character {
 		List<byte> customData = base.getCustomActorNetData() ?? new();
 
 		// Per-character data.
-		customData.Add((byte)MathInt.Floor(coreAmmo));
-		customData.Add((byte)MathInt.Ceiling(shieldHP));
-		customData.Add((byte)getChargeLevel());
-		bool[] flags = [
+		byte netCore = (byte)MathInt.Floor(coreAmmo);
+		byte netShieldHP = (byte)MathInt.Ceiling(shieldHP);
+		byte netChargeLV = (byte)getChargeLevel();
+		byte netBoolFlags = Helpers.boolArrayToByte([
 			isShieldFront(),
 			overheating,
 			isBreakMan,
 			overdrive
-		];
-		customData.Add(Helpers.boolArrayToByte(flags));
+		]);
+
+		// Check if change and if so add it.
+		if (netCore != lastNetCore || netShieldHP != lastNetShieldHP ||
+			netChargeLV != lastNetChargeLevel || netBoolFlags != lastNetBoolFlags
+		) {
+			customData.AddRange([
+				netCore,
+				netShieldHP,
+				netChargeLV,
+				netBoolFlags
+			]);
+		}
+		// Update values for future checks.
+		lastNetCore = netCore;
+		lastNetShieldHP = netShieldHP;
+		lastNetChargeLevel = netChargeLV;
+		lastNetBoolFlags = netBoolFlags;
 
 		return customData;
 	}
@@ -1777,6 +1798,10 @@ public class Blues : Character {
 		// Update base arguments.
 		base.updateCustomActorNetData(data);
 		data = data[data[0]..];
+		// Skip if no data changed.
+		if (data.Length == 0) {
+			return;
+		}
 
 		// Per-character data.
 		coreAmmo = data[0];

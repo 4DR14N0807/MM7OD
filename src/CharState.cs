@@ -69,6 +69,7 @@ public class CharState {
 	public bool exitOnLanding;
 	public bool exitOnAirborne;
 	public bool useDashJumpSpeed;
+	public bool wasFlying;
 	public SpecialStateIds specialId;
 
 	public CharState(
@@ -137,6 +138,9 @@ public class CharState {
 		}
 		if (oldState is VileHover) {
 			wasVileHovering = true;
+		}
+		if (oldState is BassFly) {
+			wasFlying = true;
 		}
 		if (!useGravity || character.isDWrapped) {
 			character.useGravity = false;

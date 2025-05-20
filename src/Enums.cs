@@ -335,6 +335,11 @@ public enum BassProjIds {
 	SuperBassShot,
 	ChamoBuster,
 	SuperBassRocketPunch,
+	BassKick,
+	SonicCrusher,
+	SweepingLaser,
+	DarkCometUp,
+	DarkCometDown,
 }
 
 public enum BluesProjIds  {

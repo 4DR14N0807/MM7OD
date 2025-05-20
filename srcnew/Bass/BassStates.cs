@@ -27,7 +27,7 @@ public class BassShoot : CharState {
 			}
 			return;
 		}
-		if (stateFrames >= 16) {
+		if (stateFrames >= 20) {
 			bass.changeToIdleOrFall();
 			return;
 		}
@@ -177,7 +177,9 @@ public class SuperBassStart : CharState {
 	Anim? aura;
 	int phase;
 	Point headPos;
-	bool jumped;
+	Point spawnPos;
+	float jumpMaxTime = 30;
+	float jumpTime;
 	bool drawSquare;
 	float s; // Square size
 	float a; // Square rotation
@@ -199,7 +201,7 @@ public class SuperBassStart : CharState {
 		bass.frameSpeed = 0;
 
 		//Spawns Treble.
-		Point spawnPos = character.pos.addxy(character.xDir * -32, -200);
+		spawnPos = character.pos.addxy(character.xDir * -32, -200);
 		treble = new Anim(
 			spawnPos, "treble_warp_beam", character.xDir, null, false, true) 
 			{ vel = new Point(0, 480), zIndex = ZIndex.Character + 10 };
@@ -235,24 +237,18 @@ public class SuperBassStart : CharState {
 					phase = 1;	
 				}
 				break;
-			//guau guau
+			//Jumps
 			case 1:
 				if (treble.isAnimOver()) {
-					treble.changeSprite("treble_bark", true);
-					character.playSound("treble", sendRpc: true);
-					phase = 2;
+					treble.changeSprite("treble_jump", true);
+					treble.vel = getJumpVel();
+					treble.useGravity = true;
+					phase = 2;			
 				}
 				break;
-			//Jumps
 			case 2:
-				if (treble.isAnimOver()) {
-						treble.stopMoving();
-						treble.changeSprite("treble_jump", true);
-						Point landPos = character.getShootPos();
-						treble.move(treble.pos.directionToNorm(landPos).times(300));
-						headPos = landPos;
-						if (treble.pos.distanceTo(landPos) < 10) phase = 3;
-					}
+				jumpTime++;
+				if (jumpTime >= jumpMaxTime) phase = 3;
 				break;
 			//Transforms and starts drawing the square
 			case 3:				
@@ -310,6 +306,13 @@ public class SuperBassStart : CharState {
 
 		DrawWrappers.DrawPolygon(points.ToList(), color, true, ZIndex.Foreground + 10);
 	}
+
+	Point getJumpVel() {
+		if (treble == null) return Point.zero;
+		float x = (bass.pos.x - spawnPos.x) / (jumpMaxTime / 60);
+		
+		return new Point(x, -300);
+	}
 }
 
 
@@ -350,7 +353,7 @@ public class EnergyCharge : CharState {
 
 	public EnergyCharge() : base("enter") {
 		normalCtrl = false;
-		attackCtrl = true;
+		attackCtrl = false;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -379,19 +382,23 @@ public class EnergyCharge : CharState {
 
 		aura?.changePos(bass.pos);
 
+		if (bass.evilEnergy[bass.phase] >= Bass.MaxEvilEnergy) {
+			bass.changeState(new EnergyIncrease(), true);
+			return;
+		}
+
 		if (stateFrames % 15 == 0 && stateFrames > 0) {
 			bass.playSound("heal");
-			bass.evilEnergy[bass.phase - 1]++;
-			if (bass.evilEnergy[bass.phase - 1] >= Bass.MaxEvilEnergy) {
-				bass.nextPhase(bass.phase + 1);
-				bass.changeState(new EnergyIncrease());
-			}
+			bass.evilEnergy[bass.phase]++;
 		}	
 	}
 }
 
 
 public class EnergyIncrease : CharState {
+
+	Bass bass = null!;
+
 	public EnergyIncrease() : base("enter") {
 		normalCtrl = false;
 		attackCtrl = false;
@@ -402,6 +409,8 @@ public class EnergyIncrease : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.gravityModifier = 0.1f;
+		bass = character as Bass ?? throw new NullReferenceException();
+		bass.nextPhase(bass.phase + 1);
 	}
 
 	public override void update() {
@@ -526,6 +535,10 @@ public class BassFly : CharState {
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
 		character.stopMoving();
+		if (newState is SweepingLaserState) {
+			character.xSwingVel = getFlightMove().x * 0.6f;
+			character.yPushVel = getFlightMove().y;
+		}
 	}
 }
 
@@ -629,5 +642,77 @@ public class SonicCrusher : CharState {
 
 		bass.flyTime += 1.25f;
 		if (stateFrames >= 32) character.changeToIdleOrFall();
+	}
+}
+
+public class SweepingLaserState : CharState {
+
+	Projectile? laser;
+	public SweepingLaserState() : base("sweeping_laser") {
+		useGravity = false;
+		useDashJumpSpeed = true;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.stopMovingWeak();
+		if (oldState is Jump or Fall) {
+			character.xSwingVel = character.getDashOrRunSpeed() * character.xDir * 0.6f;
+		}
+	}
+
+	public override void onExit(CharState newState) {
+		base.onExit(newState);
+		character.stopMoving();
+		laser?.destroySelf();
+	}
+
+	public override void update() {
+		base.update();
+
+		if (stateFrames < 20) return;
+
+		if (!once && character.ownedByLocalPlayer) {
+			laser = new SweepingLaserProj(
+				character, character.getShootPos(), character.xDir, 
+				player.getNextActorNetId(), true, player
+			);
+			character.stopMoving();
+			once = true;
+		}
+
+		character.move(new Point(300 * character.xDir, 0));
+		if (stateFrames >= 45) character.changeToIdleFallorFly();
+	}
+}
+
+public class DarkCometState : CharState {
+	public DarkCometState() : base("dark_comet") {
+		useGravity = false;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.stopMovingWeak();
+		if (oldState is Jump or Fall) {
+			character.xSwingVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
+		}
+	}
+
+	public override void update() {
+		base.update();
+
+		if (stateFrames < 10) return;
+
+		if (!once && character.ownedByLocalPlayer) {
+			new DarkCometUpProj(
+				character, character.getShootPos(), character.xDir, 
+				player.getNextActorNetId(), true, player
+			);
+			character.stopMoving();
+			once = true;
+		}
+
+		if (stateFrames >= 25) character.changeToIdleFallorFly();
 	}
 }

@@ -346,6 +346,9 @@ public class Damager {
 			(int)BassProjIds.LightningBolt => true,
 			(int)BassProjIds.RemoteMineExplosion => true,
 			(int)BassProjIds.SpreadDrill => true,
+			(int)ProjIds.BassKick => true,
+			(int)ProjIds.SonicCrusher => true,
+			(int)BassProjIds.SweepingLaser => true,
 			_ => false,
 		};
 	}

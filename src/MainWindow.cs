@@ -109,12 +109,13 @@ public partial class Global {
 		DrawWrappers.hudView.Viewport = viewPort;
 
 		window.SetView(view);
+		/* This is unneeded as frameskip exists.
 		if (Global.overrideFPS != null) {
 			window.SetFramerateLimit((uint)Global.overrideFPS);
 		} else {
 			window.SetFramerateLimit((uint)options.maxFPS);
 		}
-
+		*/
 		window.SetActive();
 	}
 

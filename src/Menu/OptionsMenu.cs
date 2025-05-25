@@ -95,7 +95,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "FULLSCREEN:",
+							optionFontText, "Fullscreen:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -121,7 +121,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "WINDOWED RESOLUTION:",
+							optionFontText, "Windowed resolution:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -143,7 +143,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "SHOW FPS:",
+							optionFontText, "Show fps:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -166,7 +166,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Blue : FontType.Grey, "MAX FPS:",
+							inGame ? FontType.Blue : FontType.Grey, "Max fps:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -185,7 +185,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Blue : FontType.Grey, "ENABLE VSYNC:",
+							inGame ? FontType.Blue : FontType.Grey, "Enable V-Sync:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -203,7 +203,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "INTEGER FULLSCREEN:",
+							optionFontText, "Integer fullscreen:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -222,7 +222,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "DRAW MINIMAP:",
+							optionFontText, "Draw minimap:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -243,7 +243,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontValue, "FAST SHADERS:",
+							optionFontValue, "Fast shaders:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -253,27 +253,6 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Disables special effects like team mode outlines.\nNot all PCs support this."
 				),
-				// Map Sprites
-				new MenuOption(40, startY,
-					() => {
-						if (Global.input.isPressedMenu(Control.MenuLeft)) {
-							Options.main.enableLowEndMap = false;
-						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
-							Options.main.enableLowEndMap = true;
-						}
-					},
-					(Point pos, int index) => {
-						Fonts.drawText(
-							optionFontValue, "LOW-END MAP:",
-							pos.x, pos.y, selected: selectedArrowPosY == index
-						);
-						Fonts.drawText(
-							optionFontValue, Helpers.boolYesNo(Options.main.enableLowEndMap),
-							pos.x + 200, pos.y, selected: selectedArrowPosY == index
-						);
-					},
-					"Enables a simpler map for faster performance."
-				),
 				// particleQuality
 				new MenuOption(40, startY,
 					() => {
@@ -281,7 +260,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontValue, "PARTICLE QUALITY:",
+							optionFontValue, "Particle quality:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -299,7 +278,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "ENABLE MAP SPRITES:",
+							inGame ? FontType.Black : FontType.Grey, "Enable map sprites:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -308,6 +287,44 @@ public class OptionsMenu : IMainMenu {
 						);
 					},
 					"Enable or disable map sprites.\nDisabling map sprites results in faster performance."
+				),
+				// Map Sprites
+				new MenuOption(40, startY,
+					() => {
+						if (Global.input.isPressedMenu(Control.MenuLeft)) {
+							Options.main.enableLowEndMap = false;
+						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+							Options.main.enableLowEndMap = true;
+						}
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontValue, "Low-end map:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.enableLowEndMap),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Enables a simpler map for faster performance."
+				),
+				// Alt Nav Points
+				new MenuOption(40, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.oldNavPoints);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontValue, "Alt Nav Points:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.oldNavPoints),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Shows nav points outside the minimap as text."
 				),
 				// Multi-threading rendering
 				new MenuOption(40, startY,
@@ -321,7 +338,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "MULTI-THREADING RENDERING:",
+							inGame ? FontType.Black : FontType.Grey, "Multi-threading rendering:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(

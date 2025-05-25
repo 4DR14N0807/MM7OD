@@ -3735,7 +3735,7 @@ public partial class Character : Actor, IDamagable {
 
 		// Check and send.
 		if (!send) {
-			customData.Clear();
+			return [1];
 		}
 		return customData;
 	}

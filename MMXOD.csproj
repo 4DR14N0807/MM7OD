@@ -20,11 +20,15 @@
 		<Deterministic>true</Deterministic>
 		<NeutralLanguage>en</NeutralLanguage>
 		<FileVersion>20.0</FileVersion>
+		<SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
 	</PropertyGroup>
 
 	<!--For making output go to anycpu if the RuntimeIdentifier is empty-->
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
 		<OutputPath>./bin/anycpu/</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+		<PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
 		<OutputType>Exe</OutputType>
@@ -39,8 +43,8 @@
 
 	<!--Dependencies-->
 	<ItemGroup>
-		<PackageReference Include="protobuf-net" Version="3.2.46" />
-		<PackageReference Include="protobuf-net.Core" Version="3.2.46" />
+		<PackageReference Include="protobuf-net" Version="3.2.52" />
+		<PackageReference Include="protobuf-net.Core" Version="3.2.52" />
 		<PackageReference Include="SFML.Graphics" Version="2.6.1" />
 		<PackageReference Include="SFML.Window" Version="2.6.1" />
 		<PackageReference Include="SFML.System" Version="2.6.1" />
@@ -49,6 +53,6 @@
 		<PackageReference Include="DeviceId" Version="6.9.0" />
 		<PackageReference Include="Profanity.Detector" Version="0.1.8" />
 		<PackageReference Include="SpaceWizards.Lidgren.Network" Version="0.3.1" />
-		<PackageReference Include="System.IO.Hashing" Version="9.0.3" />
+		<PackageReference Include="System.IO.Hashing" Version="9.0.5" />
 	</ItemGroup>
 </Project>

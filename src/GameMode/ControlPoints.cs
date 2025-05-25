@@ -14,9 +14,28 @@ public class ControlPoints : GameMode {
 
 	public override void render() {
 		base.render();
-		var currentControlPoint = level.getCurrentControlPoint();
+
+		foreach (ControlPoint controlPoint in level.controlPoints) {
+			string text = "NFlag";
+			if (!controlPoint.locked) {
+				if (controlPoint.captured) {
+					text = "RFlag";
+				} else {
+					text = "BFlag";
+				}
+			}
+			addMapNavpoint(text, controlPoint.pos);
+		}
+
+		if (level.mainPlayer.alliance > redAlliance || !Options.main.oldNavPoints) {
+			return;
+		}
+		ControlPoint? currentControlPoint = level.getCurrentControlPoint();
 		if (currentControlPoint != null) {
-			addMapNavpoint("NFlag", currentControlPoint.pos);
+			drawObjectiveNavpoint(
+				Global.level.mainPlayer.alliance == redAlliance ? "Defend" : "Attack",
+				currentControlPoint.pos
+			);
 		}
 	}
 

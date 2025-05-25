@@ -2835,6 +2835,7 @@ public class GameMode {
 	}
 
 	public void drawObjectiveNavpoint(string label, Point objPos) {
+		if (!Options.main.oldNavPoints) { return; }
 		if (level.mainPlayer.character == null) return;
 		if (!string.IsNullOrEmpty(label)) label += ":";
 
@@ -2846,53 +2847,57 @@ public class GameMode {
 		);
 
 		var intersectionPoints = camRect.getShape().getLineIntersectCollisions(line);
-		if (intersectionPoints.Count > 0 && intersectionPoints[0].hitData?.hitPoint != null) {
-			Point intersectPoint = intersectionPoints[4].hitData.hitPoint.GetValueOrDefault();
-			var dirTo = playerPos.directionTo(objPos).normalize();
-
-			//a = arrow, l = length, m = minus
-			float al = 10 / Global.viewSize;
-			float alm1 = 9 / Global.viewSize;
-			float alm2 = 8 / Global.viewSize;
-			float alm3 = 7 / Global.viewSize;
-			float alm4 = 5 / Global.viewSize;
-
-			intersectPoint.inc(dirTo.times(-10));
-			var posX = intersectPoint.x - Global.level.camX;
-			var posY = intersectPoint.y - Global.level.camY;
-
-			posX /= Global.viewSize;
-			posY /= Global.viewSize;
-
-			DrawWrappers.DrawLine(
-				posX, posY,
-				posX + dirTo.x * al, posY + dirTo.y * al,
-				Helpers.getAllianceColor(), 1, ZIndex.HUD, false
-			);
-			DrawWrappers.DrawLine(
-				posX + dirTo.x * alm4, posY + dirTo.y * alm4,
-				posX + dirTo.x * alm3, posY + dirTo.y * alm3,
-				Helpers.getAllianceColor(), 4, ZIndex.HUD, false
-			);
-			DrawWrappers.DrawLine(
-				posX + dirTo.x * alm3, posY + dirTo.y * alm3,
-				posX + dirTo.x * alm2, posY + dirTo.y * alm2,
-				Helpers.getAllianceColor(), 3, ZIndex.HUD, false
-			);
-			DrawWrappers.DrawLine(
-				posX + dirTo.x * alm2, posY + dirTo.y * alm2,
-				posX + dirTo.x * alm1, posY + dirTo.y * alm1,
-				Helpers.getAllianceColor(), 2, ZIndex.HUD, false
-			);
-
-			float distInMeters = objPos.distanceTo(playerPos) * 0.044f;
-			bool isLeft = posX < Global.viewScreenW / 2;
-			Fonts.drawText(
-				FontType.WhiteSmall, label + MathF.Round(distInMeters).ToString() + "m",
-				posX, posY, isLeft ? Alignment.Left : Alignment.Right
-			);
+		Point? intersectPointNull = null;
+		if (intersectionPoints.Count > 0) {
+			intersectPointNull = intersectionPoints[0].hitData?.hitPoint.GetValueOrDefault();
 		}
+		if (intersectPointNull == null) {
+			return;
+		}
+		Point intersectPoint = intersectPointNull.Value;
+		Point dirTo = playerPos.directionTo(objPos).normalize();
 
+		//a = arrow, l = length, m = minus
+		float al = 10 / Global.viewSize;
+		float alm1 = 9 / Global.viewSize;
+		float alm2 = 8 / Global.viewSize;
+		float alm3 = 7 / Global.viewSize;
+		float alm4 = 5 / Global.viewSize;
+
+		intersectPoint.inc(dirTo.times(-10));
+		var posX = intersectPoint.x - Global.level.camX;
+		var posY = intersectPoint.y - Global.level.camY;
+
+		posX /= Global.viewSize;
+		posY /= Global.viewSize;
+
+		DrawWrappers.DrawLine(
+			posX, posY,
+			posX + dirTo.x * al, posY + dirTo.y * al,
+			Helpers.getAllianceColor(), 1, ZIndex.HUD, false
+		);
+		DrawWrappers.DrawLine(
+			posX + dirTo.x * alm4, posY + dirTo.y * alm4,
+			posX + dirTo.x * alm3, posY + dirTo.y * alm3,
+			Helpers.getAllianceColor(), 4, ZIndex.HUD, false
+		);
+		DrawWrappers.DrawLine(
+			posX + dirTo.x * alm3, posY + dirTo.y * alm3,
+			posX + dirTo.x * alm2, posY + dirTo.y * alm2,
+			Helpers.getAllianceColor(), 3, ZIndex.HUD, false
+		);
+		DrawWrappers.DrawLine(
+			posX + dirTo.x * alm2, posY + dirTo.y * alm2,
+			posX + dirTo.x * alm1, posY + dirTo.y * alm1,
+			Helpers.getAllianceColor(), 2, ZIndex.HUD, false
+		);
+
+		decimal distInMeters = Math.Floor(Math.Abs((decimal)objPos.distanceTo(playerPos) / 32m));
+		bool isLeft = posX < Global.viewScreenW / 2;
+		Fonts.drawText(
+			FontType.White, $"{label} {distInMeters}m",
+			posX, posY, isLeft ? Alignment.Left : Alignment.Right
+		);
 	}
 
 	public void syncTeamScores() {

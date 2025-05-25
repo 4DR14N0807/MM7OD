@@ -2530,7 +2530,7 @@ public partial class Level {
 		return gameMode is Race;
 	}
 
-	public ControlPoint getCurrentControlPoint() {
+	public ControlPoint? getCurrentControlPoint() {
 		foreach (var controlPoint in controlPoints) {
 			if (!controlPoint.locked && !controlPoint.captured) return controlPoint;
 		}

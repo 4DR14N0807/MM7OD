@@ -1761,7 +1761,7 @@ public class Blues : Character {
 
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
-		List<byte> customData = base.getCustomActorNetData() ?? new();
+		List<byte> customData = base.getCustomActorNetData() ?? [1];
 
 		// Per-character data.
 		byte netCore = (byte)MathInt.Floor(coreAmmo);
@@ -1796,8 +1796,9 @@ public class Blues : Character {
 
 	public override void updateCustomActorNetData(byte[] data) {
 		// Update base arguments.
-		base.updateCustomActorNetData(data);
+		if (data[0] > 1) { base.updateCustomActorNetData(data); }
 		data = data[data[0]..];
+
 		// Skip if no data changed.
 		if (data.Length == 0) {
 			return;

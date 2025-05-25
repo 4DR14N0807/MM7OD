@@ -230,13 +230,9 @@ public class Rush : Actor, IDamagable {
 
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
-		List<byte> customData = base.getCustomActorNetData() ?? new();
-
-		customData.Add(Helpers.boolArrayToByte([
-			isRushJet
-		]));
-
-		return customData;
+		return [
+			Helpers.boolArrayToByte([ isRushJet ]),
+		];
 	}
 
 	public override void updateCustomActorNetData(byte[] data) {
@@ -245,7 +241,6 @@ public class Rush : Actor, IDamagable {
 	
 		bool[] boolData = Helpers.byteToBoolArray(data[0]);
 		isRushJet = boolData[0];
-			//Global.level.gameMode.setHUDDebugWarning("Rush Jet ON!");
 
 		if (!wasRushJet && isRushJet) {
 			isPlatform = true;

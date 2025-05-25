@@ -17,6 +17,10 @@ public class KingOfTheHill : GameMode {
 			level.hill.alliance == level.mainPlayer.alliance ? "BFlag" : "RFlag",
 			level.hill.pos
 		);
+		drawObjectiveNavpoint(
+			level.hill.alliance == level.mainPlayer.alliance ? "Defend" : "Attack",
+			level.hill.pos
+		);
 	}
 
 	public override void drawTopHUD() {

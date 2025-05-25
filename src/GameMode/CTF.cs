@@ -30,6 +30,25 @@ public class CTF : GameMode {
 		else if (level.blueFlag.chr == null || Global.level.frameCount % 10 < 6) {
 			addMapNavpoint("BFlag", level.blueFlag.pos);
 		}
+
+		if (!Options.main.oldNavPoints) { return; }
+		if (level.mainPlayer.alliance > redAlliance) { return; }
+		drawObjectiveNavpoint(
+			"Capture",
+			level.mainPlayer.alliance == redAlliance ? level.blueFlag.pos : level.redFlag.pos
+		);
+		if (level.mainPlayer.character?.flag != null) {
+			drawObjectiveNavpoint(
+				"Return",
+				level.mainPlayer.alliance == redAlliance ?
+				level.redFlag.pedestal.pos : level.blueFlag.pedestal.pos
+			);
+		} else {
+			drawObjectiveNavpoint(
+				"Defend", level.mainPlayer.alliance == redAlliance ?
+				level.redFlag.pos : level.blueFlag.pos
+			);
+		}
 	}
 
 	public override void drawTopHUD() {

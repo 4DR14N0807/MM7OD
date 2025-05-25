@@ -2892,7 +2892,7 @@ public class GameMode {
 			Helpers.getAllianceColor(), 2, ZIndex.HUD, false
 		);
 
-		decimal distInMeters = Math.Floor(Math.Abs((decimal)objPos.distanceTo(playerPos) / 8m));
+		decimal distInMeters = Math.Floor(Math.Abs((decimal)objPos.distanceTo(playerPos) / 32m));
 		bool isLeft = posX < Global.viewScreenW / 2;
 		Fonts.drawText(
 			FontType.White, $"{label} {distInMeters}m",

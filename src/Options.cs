@@ -42,10 +42,6 @@ public class Options {
 	public bool multithreadMode;
 	public bool vsync;
 	public bool drawMiniMap = true;
-	/*public bool areShadersDisabled() {
-		if (Global.disableShaderOverride) return true;
-		return disableShaders;
-	}*/
 	public int textQuality = 0;
 	public int fontType = 0; // 0 = bitmap only, 1 = bitmap + vector, 2 = vector only
 	public int? detectedGraphicsPreset = null;
@@ -55,6 +51,7 @@ public class Options {
 	public bool enableLowEndMap;
 	public bool enableSmallBars;
 	public bool smallBarsEx;
+	public bool oldNavPoints;
 
 	public bool lowQualityParticles() { return particleQuality == 0; }
 

@@ -196,7 +196,7 @@ public class SuperBassStart : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
-		headPos = character.pos.addxy(0, -32);
+		headPos = character.pos.addxy(0, -40);
 		bass = character as Bass ?? throw new NullReferenceException();
 		bass.frameSpeed = 0;
 
@@ -211,6 +211,7 @@ public class SuperBassStart : CharState {
 
 	public override void onExit(CharState newState) {
 		base.onExit(newState);
+		treble?.destroySelf();
 		aura?.destroySelf();
 	}
 
@@ -310,8 +311,10 @@ public class SuperBassStart : CharState {
 	Point getJumpVel() {
 		if (treble == null) return Point.zero;
 		float x = (bass.pos.x - spawnPos.x) / (jumpMaxTime / 60);
+		float y1 = (headPos.y - treble.pos.y) / (jumpMaxTime / 60);
+		float y2 = ((Physics.Gravity * 60) * (jumpMaxTime / 60)) / 2;
 		
-		return new Point(x, -300);
+		return new Point(x, y1 - y2);
 	}
 }
 

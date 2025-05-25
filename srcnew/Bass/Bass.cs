@@ -368,7 +368,7 @@ public class Bass : Character {
 		if (shootPressed) {
 			if (weaponCooldown <= 0 &&
 				currentWeapon?.canShoot(0, this) == true &&
-				currentWeapon?.shootCooldown <= 0
+				currentWeapon?.shootCooldown <= 0 && canShoot()
 			) {
 				shoot(getChargeLevel());
 				return true;
@@ -546,7 +546,6 @@ public class Bass : Character {
 
 	public override bool canShoot() {
 		if (weaponCooldown > 0 ||
-			charState is Dash ||
 			sbRocketPunch != null
 		) {
 			return false;

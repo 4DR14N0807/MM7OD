@@ -109,28 +109,4 @@ public class SearchSnakeProj : Projectile {
 		}
 		base.render(x, y);
 	}
-
-	
-	/* public override List<byte> getCustomActorNetData() {
-		List<byte> customData = base.getCustomActorNetData() ?? new();
-		
-		if (byteAngle != null) {
-			byte flip = 0;
-			if (byteAngle < 0) flip = 1;
-			byteAngle = Math.Abs(byteAngle);
-			customData.Add((byte)byteAngle);
-			customData.Add(flip);
-		} 
-
-		return customData;
-	}
-
-	public override void updateCustomActorNetData(byte[] data) {
-		base.updateCustomActorNetData(data);
-
-		byteAngle = data[0];
-		if (data[1] == 1) {
-			byteAngle *= -1;
-		}
-	} */
 }

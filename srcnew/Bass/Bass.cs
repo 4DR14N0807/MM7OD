@@ -653,7 +653,7 @@ public class Bass : Character {
 
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
-		List<byte> customData = base.getCustomActorNetData() ?? new();
+		List<byte> customData = base.getCustomActorNetData() ?? [1];
 
 		// Per-character data.
 		int weaponIndex = currentWeapon?.index ?? 255;
@@ -671,7 +671,7 @@ public class Bass : Character {
 
 	public override void updateCustomActorNetData(byte[] data) {
 		// Update base arguments.
-		base.updateCustomActorNetData(data);
+		if (data[0] > 1) { base.updateCustomActorNetData(data); }
 		data = data[data[0]..];
 
 		// Per-character data.

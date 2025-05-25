@@ -254,16 +254,13 @@ public class WildCoilChargedProj : Projectile {
 	}
 
 	public override List<byte> getCustomActorNetData() {
-		List<byte> customData = base.getCustomActorNetData() ?? new();
-		customData.Add((byte)bounceBuff);
-		customData.Add((byte)frame);
-
-		return customData;
+		return [
+			(byte)bounceBuff,
+			(byte)frame
+		];
 	}
 
 	public override void updateCustomActorNetData(byte[] data) {
-		base.updateCustomActorNetData(data);
-
 		bounceBuff = data[0];
 		frame = data[1];
 	}

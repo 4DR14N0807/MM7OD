@@ -153,13 +153,15 @@ public class MainMenu : IMainMenu {
 			string versionText = Global.shortForkName + " " + Global.subVersionShortName;
 			int offset = 2;
 			Fonts.drawText(FontType.WhiteSmall, versionText, 2, offset);
+			offset += 10;
+			Fonts.drawText(FontType.WhiteSmall, Global.versionName, 2, offset);
 
 			if (Global.checksum != Global.prodChecksum) {
 				Fonts.drawText(FontType.PurpleSmall, Global.CRC32Checksum, 2, offset + 10);
 				offset += 10;
 			}
 			if (Global.radminIP != "") {
-				Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
+				//Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);
 			}
 		}
 	}

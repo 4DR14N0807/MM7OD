@@ -1091,7 +1091,7 @@ public partial class Actor : GameObject {
 			sendActorNetData();
 		} else {
 			// 5 seconds since last net update: destroy the object
-			if (Global.time - lastNetUpdate > 5 && cleanUpOnNoResponse()) {
+			if (!canBeLocal && Global.time - lastNetUpdate > 5 && cleanUpOnNoResponse()) {
 				destroySelf(disableRpc: true);
 				return;
 			}

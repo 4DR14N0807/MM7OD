@@ -1095,7 +1095,6 @@ public partial class Actor : GameObject {
 				destroySelf(disableRpc: true);
 				return;
 			}
-
 			if (targetNetPos != null && Global.frameCount - lastNetFrame > 1) {
 				changePos(targetNetPos.Value);
 				targetNetPos = null;

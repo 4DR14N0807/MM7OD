@@ -151,7 +151,8 @@ public class RPCUpdateActor : RPC {
 			newPos.y = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
 
-			if (actor.interplorateNetPos &&
+			if (!actor.canBeLocal &&
+				actor.interplorateNetPos &&
 				frameSinceLastUpdate > 2 &&
 				actor.pos.round().distanceTo(newPos.round()) > 1
 			) {

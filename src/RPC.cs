@@ -290,7 +290,7 @@ public class RPCSpawnCharacter : RPC {
 			player.spawnCharAtPoint(
 				buffer.charNum, buffer.extraData,
 				new Point(buffer.x, buffer.y), xDir, buffer.charNetId, false,
-				isMainChar: true, forceSpawn: true
+				isMainChar: true
 			);
 		} else {
 			Global.level.backloggedSpawns.Add(

@@ -130,6 +130,8 @@ public class RPCUpdateActor : RPC {
 		if (actor == null || actor.ownedByLocalPlayer) {
 			return;
 		};
+		int frameSinceLastUpdate = Global.frameCount - actor.lastNetFrame;
+
 		i += 2;
 
 		// Bool mask
@@ -143,12 +145,22 @@ public class RPCUpdateActor : RPC {
 
 		// Pos.
 		if (mask[0]) {
-			float posX = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
+			Point newPos = new();
+			newPos.x = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
-			float posY = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
+			newPos.y = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
 
-			actor.changePos(new Point(posX, posY));
+			if (actor.interplorateNetPos &&
+				frameSinceLastUpdate > 2 &&
+				actor.pos.round().distanceTo(newPos.round()) > 1
+			) {
+				actor.targetNetPos = newPos;
+				newPos = newPos.subtract(actor.pos).times(0.5f);
+			} else {
+				actor.targetNetPos = null;
+			}
+			actor.changePos(newPos);
 		}
 		// Scale.
 		if (mask[1]) {
@@ -210,5 +222,6 @@ public class RPCUpdateActor : RPC {
 		}
 
 		actor.lastNetUpdate = Global.time;
+		actor.lastNetFrame = Global.frameCount;
 	}
 }

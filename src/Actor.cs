@@ -149,15 +149,6 @@ public partial class Actor : GameObject {
 	public bool forceNetUpdateNextFrame;
 
 	public ushort? netId;
-
-	public float? netXPos;
-	public float? netYPos;
-	public Point netIncPos;
-	public int? netSpriteIndex;
-	public int? netFrameIndex;
-	public int? netXDir;
-	public int? netYDir;
-	public float? netAngle;
 	public bool stopSyncingNetPos;
 	public bool syncScale;
 	public Point? targetNetPos;
@@ -171,6 +162,7 @@ public partial class Actor : GameObject {
 	private float? lastAngle;
 	private bool? lastVisible;
 	public float lastNetUpdate;
+	public int lastNetFrame = Global.frameCount;
 
 	public NetActorCreateId netActorCreateId;
 	public Player? netOwner;
@@ -1104,78 +1096,9 @@ public partial class Actor : GameObject {
 				return;
 			}
 
-			float frameSmooth = Global.tickRate;
-
-			if (frameSmooth > 1 && interplorateNetPos) {
-				if (targetNetPos != null) {
-					changePos(targetNetPos.Value);
-					targetNetPos = null;
-				}
-				if (!stopSyncingNetPos && (netXPos != null || netYPos != null)) {
-					var netPos = pos;
-					if (netXPos != null && !stopSyncingNetPos) {
-						netPos.x = (float)netXPos;
-					}
-					if (netYPos != null && !stopSyncingNetPos) {
-						netPos.y = (float)netYPos;
-					}
-
-					var incPos = netPos.subtract(pos).times(1f / frameSmooth);
-					var framePos = pos.add(incPos);
-
-					netXPos = null;
-					netYPos = null;
-					if (pos.distanceTo(framePos) > 1f/16f) {
-						changePos(framePos);
-						netXPos = null;
-						netYPos = null;
-						targetNetPos = netPos;
-					} else {
-						changePos(netPos);
-						targetNetPos = null;
-					}
-				}
-			} else if (!stopSyncingNetPos) {
-				var netPos = pos;
-				bool posChanged = false;
-				if (netXPos != null) {
-					netPos.x = (float)netXPos;
-					posChanged = true;
-				}
-				if (netYPos != null) {
-					netPos.y = (float)netYPos;
-					posChanged = true;
-				}
-				if (posChanged) {
-					changePos(netPos);
-				}
-			}
-
-			int spriteIndex = -1;
-			if (Global.spriteIndexByName.ContainsKey(sprite.name)) {
-				spriteIndex = Global.spriteIndexByName[sprite.name];
-			}
-			if (netSpriteIndex != null && netSpriteIndex != spriteIndex) {
-				int index = (int)netSpriteIndex;
-				if (index >= 0 && index < Global.spriteCount) {
-					string spriteName = Global.spriteNameByIndex[index];
-					changeSprite(spriteName, true);
-				}
-			}
-			if (netFrameIndex != null && frameIndex != netFrameIndex) {
-				if (netFrameIndex >= 0 && netFrameIndex < sprite.totalFrameNum) {
-					frameIndex = (int)netFrameIndex;
-				}
-			}
-
-			if (netXDir != null && xDir != netXDir) {
-				xDir = (int)netXDir;
-			}
-			if (netYDir != null && yDir != netYDir) {
-				yDir = (int)netYDir;
-			}
-			if (netAngle != null && netAngle != lastAngle) {
-				byteAngle = netAngle.Value;
+			if (targetNetPos != null && Global.frameCount - lastNetFrame > 1) {
+				changePos(targetNetPos.Value);
+				targetNetPos = null;
 			}
 		}
 	}

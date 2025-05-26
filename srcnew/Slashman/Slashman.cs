@@ -76,7 +76,7 @@ public class Slashman : Character {
 
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
-		List<byte> customData = base.getCustomActorNetData() ?? [1];
+		List<byte> customData = base.getCustomActorNetData();
 		return customData;
 	}
 

@@ -20,18 +20,8 @@ public partial class Actor {
 			}
 			return;
 		}
-		// Every 30 frames we send the full thing.
 		bool sendFullData = false;
-		if (Global.frameCount % 30 == 0) {
-			sendFullData = true;
-			lastPos = null;
-			lastSpriteIndex = null;
-			lastFrameIndex = null;
-			lastXDir = null;
-			lastYDir = null;
-			lastAngle = null;
-			lastVisible = null;
-		}
+
 		byte[] networkIdBytes = Helpers.convertToBytes(netId.Value);
 		if (netId < Level.firstNormalNetId && this is not Flag and not ControlPoint) {
 			string msg = $"NetId {netId.Value} was not flag or system object. Was {getActorTypeName()}";
@@ -110,9 +100,7 @@ public partial class Actor {
 		// Send if anything changed.
 		// Otherwise skip.
 		if (send) {
-			if (forceNetUpdateNextFrame || sendFullData) {
-				Global.serverClient?.rpc(RPC.updateActor, args.ToArray());
-			}
+			Global.serverClient?.rpc(RPC.updateActor, args.ToArray());
 		}
 
 		lastPos = pos;

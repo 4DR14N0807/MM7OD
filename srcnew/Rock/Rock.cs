@@ -750,7 +750,7 @@ public class Rock : Character {
 
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
-		List<byte> customData = base.getCustomActorNetData() ?? [1];
+		List<byte> customData = base.getCustomActorNetData();
 
 		// Per-character data.
 		int weaponIndex = currentWeapon?.index ?? 255;

@@ -3627,7 +3627,7 @@ public partial class Character : Actor, IDamagable {
 	}
 	
 	public override List<byte> getCustomActorNetData() {
-		List<byte> customData = new();
+		List<byte> customData = [];
 		bool send = false;
 
 		// For keeping track how long the normal args are.
@@ -3639,10 +3639,6 @@ public partial class Character : Actor, IDamagable {
 		byte netMaxHP = (byte)Math.Ceiling(maxHealth);
 		byte netAlliance = (byte)player.alliance;
 		byte netCurrency = (byte)player.currency;
-		customData.Add(netHP);
-		customData.Add(netMaxHP);
-		customData.Add(netAlliance);
-		customData.Add(netCurrency);
 
 		// Bool variables. Packed in a single byte.
 		byte stateFlag = Helpers.boolArrayToByte([
@@ -3655,6 +3651,11 @@ public partial class Character : Actor, IDamagable {
 			charState.stunResistant,
 			hasBubble
 		]);
+
+		customData.Add(netHP);
+		customData.Add(netMaxHP);
+		customData.Add(netAlliance);
+		customData.Add(netCurrency);
 		customData.Add(stateFlag);
 
 		// Bool mask. Pos 5.
@@ -3720,13 +3721,15 @@ public partial class Character : Actor, IDamagable {
 		// Add the total arguments size.
 		customData[0] = (byte)customData.Count;
 
-		if (netHP != lastNetHP || netMaxHP != lastNetMaxHP ||
-			netAlliance != lastNetAlliance || netCurrency != lastNetCurrency ||
+		if (netHP != lastNetHP ||
+			netMaxHP != lastNetMaxHP ||
+			netAlliance != lastNetAlliance ||
+			netCurrency != lastNetCurrency ||
 			stateFlag != lastNetStateFlag
 		) {
 			send = true;
 		}
-		// Update the old values.
+		// Update the old values even if we do not send them.
 		lastNetHP = netHP;
 		lastNetMaxHP = netMaxHP;
 		lastNetAlliance = netAlliance;

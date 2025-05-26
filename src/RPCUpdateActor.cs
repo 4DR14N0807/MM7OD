@@ -20,7 +20,6 @@ public partial class Actor {
 			}
 			return;
 		}
-		bool sendFullData = false;
 
 		byte[] networkIdBytes = Helpers.convertToBytes(netId.Value);
 		if (netId < Level.firstNormalNetId && this is not Flag and not ControlPoint) {

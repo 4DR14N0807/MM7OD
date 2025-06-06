@@ -138,13 +138,15 @@ public class RPCUpdateActor : RPC {
 		bool[] mask = Helpers.byteToBoolArray(arguments[i]);
 		i++;
 
-		actor.visible = mask[5];
+		//actor.visible = mask[5];
+		actor.visible = true;
 		actor.xDir = mask[6] ? 1 : -1;
 		actor.yDir = mask[7] ? 1 : -1;
 
 		// Pos.
 		if (mask[0]) {
 			Point newPos = new();
+			actor.visible = true;
 			newPos.x = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
 			newPos.y = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);

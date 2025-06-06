@@ -773,6 +773,7 @@ public partial class Character : Actor, IDamagable {
 		debuffGfx();
 		if (!ownedByLocalPlayer) { return; }
 		// Local only starts here.
+		updateAttackCooldowns();
 		debuffCooldowns();
 		Helpers.decrementFrames(ref eTankHealTime);
 		if (grounded && !isDashing) {

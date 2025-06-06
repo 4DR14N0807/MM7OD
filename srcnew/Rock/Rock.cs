@@ -24,8 +24,6 @@ public class Rock : Character {
 	public LoopingSound? chargedNoiseCrushSound;
 	public bool usedDoubleJump;
 	public bool boughtSuperAdaptorOnce;
-	public float arrowSlashCooldown;
-	public float legBreakerCooldown;
 	public float timeSinceLastShoot;
 	public bool isSlideColliding;
 	public Rush? rush;
@@ -68,6 +66,9 @@ public class Rock : Character {
 		noiseCrushEffect = new ChargeEffect();
 		noiseCrushEffect.character = this;
 
+		addAttackCooldown((int)AttackIds.LegBreaker, new AttackCooldown(0, 90));
+		addAttackCooldown((int)AttackIds.ArrowSlash, new AttackCooldown(0, 90));
+
 		if (isWarpIn && ownedByLocalPlayer) {
 			health = 0;
 		}
@@ -79,8 +80,6 @@ public class Rock : Character {
 		if (!ownedByLocalPlayer) return;
 
 		Helpers.decrementFrames(ref lemonTime);
-		Helpers.decrementFrames(ref arrowSlashCooldown);
-		Helpers.decrementFrames(ref legBreakerCooldown);
 		Helpers.decrementFrames(ref weaponCooldown);
 		armless = saRocketPunchProj != null;
 		if (rushWeaponSpecial) {
@@ -184,15 +183,13 @@ public class Rock : Character {
 		}
 
 		if (hasSuperAdaptor) {
-			if (slidePressed && downHeld && legBreakerCooldown <= 0 && canSlide()) {
+			if (slidePressed && downHeld && isCooldownOver((int)AttackIds.LegBreaker) && canSlide()) {
 				changeState(new LegBreakerState(slideControl), true);
-				legBreakerCooldown = 90f;
 				return true;
 			}
 
-			if (specialPressed && arrowSlashCooldown <= 0 && charState is not LadderClimb) {
+			if (specialPressed && isCooldownOver((int)AttackIds.ArrowSlash) && charState is not LadderClimb) {
 				changeState(new SAArrowSlashState(), true);
-				arrowSlashCooldown = 90f;
 				return true;
 			}
 		}
@@ -544,7 +541,7 @@ public class Rock : Character {
 		return (int)(sprite.name switch {
 			"rock_slashclaw" or
 			"rock_slashclaw_air" or
-			"rock_ladder_slashclaw" => MeleeIds.SlashClaw2,
+			"rock_ladder_slashclaw" => MeleeIds.SlashClaw,
 
 			"rock_shoot_swell" or
 			"rock_ladder_shoot_swell" => MeleeIds.UnderWaterScorchWheel,
@@ -557,10 +554,6 @@ public class Rock : Character {
 	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
 		Projectile? proj = id switch {
 			(int)MeleeIds.SlashClaw => new SlashClawMelee(
-				projPos, player, addToLevel: addToLevel
-			),
-
-			(int)MeleeIds.SlashClaw2 => new SlashClawMelee(
 				projPos, player, addToLevel: addToLevel
 			),
 
@@ -584,9 +577,14 @@ public class Rock : Character {
 	public enum MeleeIds {
 		None = -1,
 		SlashClaw,
-		SlashClaw2,
 		UnderWaterScorchWheel,
 		LegBreaker,
+	}
+
+	public enum AttackIds {
+		LegBreaker,
+		ArrowSlash,
+		
 	}
 
 	public override void chargeGfx() {
@@ -731,13 +729,13 @@ public class Rock : Character {
 
 		if (boughtSuperAdaptorOnce) {
 			drawBuff(
-				drawPos, arrowSlashCooldown / 90,
+				drawPos, attacksCooldown[(int)AttackIds.ArrowSlash].cooldown / attacksCooldown[(int)AttackIds.ArrowSlash].maxCooldown,
 				"hud_weapon_icon", (int)RockWeaponSlotIds.ArrowSlash
 			);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 			drawBuff(
-				drawPos, legBreakerCooldown / 90,
+				drawPos, attacksCooldown[(int)AttackIds.LegBreaker].cooldown / attacksCooldown[(int)AttackIds.LegBreaker].maxCooldown,
 				"hud_weapon_icon", (int)RockWeaponSlotIds.LegBreaker
 			);
 			secondBarOffset += 18 * drawDir;

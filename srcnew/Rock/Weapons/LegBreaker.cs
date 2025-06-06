@@ -38,9 +38,10 @@ public class LegBreakerState : CharState {
 		effect = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);
 	}
 
-	public override void onExit(CharState oldState) {
+	public override void onExit(CharState? oldState) {
 		base.onExit(oldState);
 		effect?.destroySelf();
+		rock.triggerCooldown((int)Rock.AttackIds.LegBreaker);
 	}
 
 	public override void update() {

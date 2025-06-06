@@ -35,10 +35,12 @@ public class SBassBuster : Weapon {
 			Global.level.delayedActions.Add(new DelayedAction(
 				() => {
 					new SBassShot(
-						bass, bass.getShootPos().addxy(11 * xDir, 0), bass.getShootXDir(), 
+						bass, shootPos.addxy(11 * xDir, 0), xDir, 
 						player.getNextActorNetId(), true, superBass: bass.isSuperBass
 					);
 					character.playSound("buster2", sendRpc: true);
+					shootCooldown = fireRate;
+					bass.weaponCooldown = fireRate;
 				},
 				(i * 8) / 60f
 			));
@@ -467,7 +469,7 @@ public class SweepingLaserProj : Projectile {
 	}
 
 	void checkGround() {
-		var hits = Global.level.raycast(pos, pos.addxy(0, (maxPieces * spriteHeight) + startHeight), new List<Type>() { typeof(Wall), typeof(Ladder) });
+		var hits = Global.level.raycast(pos, pos.addxy(0, (maxPieces * spriteHeight) + startHeight), new List<Type>() { typeof(Wall) });
 		if (hits != null) {
 			endPos = hits.getHitPointSafe();
 			ground = true;

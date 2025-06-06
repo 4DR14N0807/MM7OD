@@ -40,7 +40,7 @@ public class BluesShootAlt : CharState {
 		blues.changeSpriteFromName(sprite, true);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		blues.inCustomShootAnim = false;
 		blues.shieldCustomState = null;
 		base.onExit(newState);
@@ -68,7 +68,7 @@ public class BluesShootAltLadder : CharState {
 		midX = ladder.collider.shape.getRect().center().x;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		blues.inCustomShootAnim = false;
 	}
@@ -116,7 +116,7 @@ public class BluesShieldSwapAir : CharState {
 		blues.shieldCustomState = true;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		blues.shieldCustomState = null;
 		base.onExit(newState);
 	}
@@ -144,7 +144,7 @@ public class BluesShieldSwapLand : CharState {
 		blues.addCoreAmmo(3);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		blues.shieldCustomState = null;
 		base.onExit(newState);
 	}
@@ -225,7 +225,7 @@ public class ShieldDash : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		if (!character.grounded) {
 			character.dashedInAir++;
 		}
@@ -298,10 +298,6 @@ public class BluesSlide : CharState {
 		blues.shieldCustomState = false;
 		blues.changeGlobalColliderOnSpriteChange(blues.sprite.name);
 	}
-
-	public override void onExit(CharState newState) {
-		base.onExit(newState);
-	}
 }
 
 public class BluesSpreadShoot : CharState {
@@ -321,7 +317,7 @@ public class BluesSpreadShoot : CharState {
 		blues.inCustomShootAnim = true;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		blues.inCustomShootAnim = false;
 	}
@@ -475,9 +471,9 @@ public class RedStrike : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		blues.redStrikeCooldown = 4 * 60;
+		blues.triggerCooldown((int)Blues.AttackIds.RedStrike);
 	}
 }
 
@@ -631,7 +627,7 @@ public class BluesRevive : CharState {
 		blues.overdriveAmmoDecreaseCooldown = 30;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.removeRenderEffect(RenderEffectType.Flash);
 		blues.overdrive = true;

@@ -26,6 +26,9 @@ public enum RenderEffectType {
 	ChargeYellow,
 	ChargeBlue,
 	ChargePurple,
+	ChargeGreenBass,
+	ChargeGreenBass2,
+	ChargePurpleBass,
 
 	// MM7 Charges
 	RBlueCharge,

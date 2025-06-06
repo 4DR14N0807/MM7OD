@@ -133,6 +133,9 @@ public partial class Actor : GameObject {
 
 	public Dictionary<string, float> projectileCooldown { get; set; } = new Dictionary<string, float>();
 	public Dictionary<int, float> flinchCooldown { get; set; } = new Dictionary<int, float>();
+	//Cooldowns. This can be used for characters special attacks 
+	// (like bass kick, proto strike, leg breaker, robot master movesets, etc).
+	public Dictionary<int, AttackCooldown> attacksCooldown = new();
 
 	public MusicWrapper? musicSource;
 	public bool checkLadderDown = false;
@@ -1558,6 +1561,24 @@ public partial class Actor : GameObject {
 				flinchCooldown[projName] = Helpers.clampMin(cooldown - 1, 0);
 			}
 		}
+	}
+
+	public virtual void updateAttackCooldowns() {
+		foreach (var cooldown in attacksCooldown.Values) {
+			cooldown.updateCooldown();
+		}
+	}
+
+	public void addAttackCooldown(int id, AttackCooldown cooldown) {
+		attacksCooldown.Add(id, cooldown);
+	}
+
+	public void triggerCooldown(int id, float? overrideNewCooldown = null) {
+		attacksCooldown[id].cooldown = overrideNewCooldown ?? attacksCooldown[id].maxCooldown;
+	}
+
+	public bool isCooldownOver(int id) {
+		return attacksCooldown[id].cooldown <= 0;
 	}
 
 	public void turnToPos(Point lookPos) {

@@ -31,7 +31,7 @@ public class Bass : Character {
 	public const int MaxEvilEnergy = 28;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
-	public bool refillFly;
+	public bool canRefillFly;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -52,14 +52,19 @@ public class Bass : Character {
 			};
 		}
 		this.loadout = loadout;
+		weapons = getLoadout();
 
 		maxHealth = (decimal)player.getMaxHealth(charId);
-		weapons = getLoadout();
-		charge1Time = 40;
-		charge2Time = 105;
-		charge3Time = 150;
 		maxHealth -= (decimal)player.evilEnergyStacks * (decimal)player.hpPerStack;
 		health = maxHealth;
+
+		charge1Time = 40;
+		charge2Time = 105;
+		charge3Time = 180;
+
+		addAttackCooldown((int)AttackIds.Kick, new AttackCooldown(0, 75));
+		addAttackCooldown((int)AttackIds.SweepingLaser, new AttackCooldown(0, 90));
+		addAttackCooldown((int)AttackIds.DarkComet, new AttackCooldown(0, 90));
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			health = 0;
@@ -151,7 +156,7 @@ public class Bass : Character {
 		Helpers.decrementFrames(ref weaponCooldown);
 		Helpers.decrementFrames(ref tBladeDashCooldown);
 		Helpers.decrementFrames(ref showNumberTime);
-		if (refillFly) {
+		if (refillFly()) {
 			Helpers.decrementFrames(ref flyTime);
 		}
 		if (flyTime > MaxFlyTime) {
@@ -187,6 +192,27 @@ public class Bass : Character {
 			chargeLogic(shoot);
 		}
 		quickAdaptorUpgrade(); 
+	}
+
+	public override void chargeGfx() {
+		if (ownedByLocalPlayer) {
+			chargeEffect.stop();
+		}
+
+		if (isCharging()) {
+			chargeSound.play();
+			int level = getChargeLevel();
+			RenderEffectType renderGfx = RenderEffectType.ChargeBlue;
+			renderGfx = level switch {
+				1 => RenderEffectType.ChargeBlue,
+				2 => RenderEffectType.ChargeGreenBass2,
+				3 => RenderEffectType.ChargePurpleBass,
+				_ => RenderEffectType.None,
+			};
+			addRenderEffect(renderGfx, 3, 5);
+			chargeEffect.character = this;
+			chargeEffect.update(level, 0);
+		}
 	}
 
 	public override (string, int) getBaseHpSprite() {
@@ -229,6 +255,26 @@ public class Bass : Character {
 		}
 	
 		Global.sprites["hud_energy_top"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
+	}
+
+	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		base.renderBuffs(offset, position);
+		int drawDir = 1;
+		if (position == GameMode.HUDHealthPosition.Right) {
+			drawDir = -1;
+		}
+		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+		drawPos = drawPos.addxy(0, 16);
+
+		foreach (int key in attacksCooldown.Keys) {
+			float cooldown = attacksCooldown[key].cooldown;
+			float maxCooldown = attacksCooldown[key].maxCooldown;
+			if (cooldown > 0) {
+				drawBuff(drawPos, cooldown / maxCooldown, "hud_weapon_icon_bass", 0);
+				secondBarOffset += 18 * drawDir;
+				drawPos.x += 18 * drawDir;
+			}
+		}
 	}
 
 	public override void render(float x, float y) {
@@ -306,7 +352,7 @@ public class Bass : Character {
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.SonicCrusher => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.SonicCrusher, player, damager.damage, damager.flinch, 0.75f * 60,
+				new Weapon(), projPos, ProjIds.SonicCrusher, player, damager.damage, damager.flinch, 1 * 60,
 				addToLevel: addToLevel
 			),
 			_ => null
@@ -318,6 +364,12 @@ public class Bass : Character {
 		TenguBladeDash,
 		Kick,
 		SonicCrusher,
+	}
+
+	public enum AttackIds {
+		Kick,
+		DarkComet,
+		SweepingLaser,
 	}
 
 	Damager sonicCrusherDamager() {
@@ -336,7 +388,6 @@ public class Bass : Character {
 		if (isSuperBass) {
 			if (player.input.isPressed(Control.Jump, player) && !grounded && dashedInAir <= 0) {
 				dashedInAir++;
-				refillFly = false;
 				changeState(new BassFly(), true);
 				return true;
 			}
@@ -376,26 +427,25 @@ public class Bass : Character {
 		}
 
 		if (isSuperBass && player.input.isPressed(Control.Special1, player)) {
-			if (player.input.isHeld(Control.Down, player) && phase >= 1) {
+			if (player.input.isHeld(Control.Down, player) && phase >= 1 && isCooldownOver((int)AttackIds.SweepingLaser)) {
 				if (!grounded) {
 					changeState(new SweepingLaserState(), true);
 					return true;
 				}
 			}
-			if (player.input.isHeld(Control.Up, player) && phase >= 1) {
+			if (player.input.isHeld(Control.Up, player) && phase >= 1 && isCooldownOver((int)AttackIds.DarkComet)) {
 				if (!grounded) {
 					changeState(new DarkCometState(), true);
 					return true;
 				}
 			}
-			if (grounded) {
+			if (grounded && isCooldownOver((int)AttackIds.Kick)) {
 				changeState(new BassKick(), true);
 				return true;
 			} else {
 				float? vel = null;
 				if (charState is BassFly bfly) vel = bfly.getFlightMove().x;
 				changeState(new SonicCrusher(vel), true);
-				refillFly = false;
 				return true;
 			}
 		}
@@ -600,8 +650,10 @@ public class Bass : Character {
 
 	public override void landingCode(bool useSound = true) {
 		base.landingCode(useSound);
-		refillFly = true;
+		canRefillFly = true;
 	}
+
+	bool refillFly() { return grounded && canRefillFly; }
 
 	public override void aiAttack(Actor? target) {
 		if (target == null) {

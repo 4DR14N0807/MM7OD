@@ -138,8 +138,7 @@ public class RPCUpdateActor : RPC {
 		bool[] mask = Helpers.byteToBoolArray(arguments[i]);
 		i++;
 
-		//actor.visible = mask[5];
-		actor.visible = true;
+		actor.visible = mask[5];
 		actor.xDir = mask[6] ? 1 : -1;
 		actor.yDir = mask[7] ? 1 : -1;
 

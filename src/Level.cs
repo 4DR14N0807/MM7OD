@@ -2081,6 +2081,16 @@ public partial class Level {
 	}
 
 	public void drawDebug() {
+		if (Program.debugLogs.Count > 0) {
+			int currentOff = MathInt.Floor((Global.screenH - 10) / Global.getDebugFontScale());
+			for (int i = Program.debugLogs.Count - 1; i >= 0; i--) {
+				currentOff -= Fonts.drawDebug(Program.debugLogs[i], currentOff);
+			}
+
+			if (Program.debugLogs.Count > 100) {
+				Program.debugLogs.RemoveRange(0, Program.debugLogs.Count - 100);
+			}
+		}
 		if (Global.showGridHitboxes) {
 			int gridItemCount = 0;
 			int offset = 0;

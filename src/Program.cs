@@ -22,6 +22,7 @@ namespace MMXOnline;
 
 class Program {
 	public static string exceptionExtraData = "";
+	public static List<string> debugLogs = [];
 
 	static void Main(string[] args) {
 		if (args.Length > 0 && args[0] == "-relay") {

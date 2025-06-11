@@ -132,4 +132,20 @@ public partial class Global {
 
 		return new FloatRect(extraWidthPercent / 2f, extraHeightPercent / 2f, 1f - extraWidthPercent, 1f - extraHeightPercent);
 	}
+
+	public static float getDebugFontScale() {
+		if (fullscreen) {
+			return (float)screenH / getFullScreenViewPort().Height;
+		}
+		if (window != null) {
+			float xSize = (float)screenH / window.Size.Y;
+			float ySize = (float)screenW / window.Size.X;
+
+			if (xSize > ySize) {
+				return xSize;
+			}
+			return ySize;
+		}
+		return 1;
+	}
 }

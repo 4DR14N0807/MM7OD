@@ -150,6 +150,11 @@ public class RPCUpdateActor : RPC {
 			newPos.y = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
 
+			string visibiliyFlags = actor.visible ? "1" : "0";
+			visibiliyFlags += actor.xDir == 1 ? "1" : "0";
+			visibiliyFlags += actor.yDir == 1 ? "1" : "0";
+			Program.debugLogs.Add($"PosSet: {newPos.x}, {newPos.y} Flags: {visibiliyFlags}");
+
 			if (!actor.canBeLocal &&
 				actor.interplorateNetPos &&
 				frameSinceLastUpdate > 2 &&

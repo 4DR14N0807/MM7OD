@@ -142,6 +142,83 @@ public class Fonts {
 		}
 	}
 
+	public static int drawDebug(string textStr, int y) {
+		// To prevent crashes.
+		if (string.IsNullOrEmpty(textStr)) { return 0; }
+		if (Global.level == null) { return 0; }
+		// Get the font propieties.
+		string[] textLines = textStr.Split('\n');
+		string fontStr = getFontSrt(FontType.WhiteSmall);
+		int fontTextureSize = 8;
+		int fontGridSpacing = 1;
+		int fontDefaultWidth = 7;
+		int fontSpacing = 1;
+		int newLineSpacing = 10;
+		int fontSpaceWidth = 8;
+		if (baseFontData.ContainsKey(fontStr)) {
+			fontTextureSize = baseFontData[fontStr][0];
+			fontGridSpacing = baseFontData[fontStr][1];
+			fontDefaultWidth = baseFontData[fontStr][2];
+			fontSpaceWidth = fontDefaultWidth;
+			fontSpacing = baseFontData[fontStr][3];
+		}
+		// Set up drawing texture.
+		Texture bitmapFontTexture = Global.fontTextures[fontStr];
+		BatchDrawable batchDrawable = new BatchDrawable(bitmapFontTexture);
+		// Draw every character.
+		for (int line = 0; line < textLines.Length; line++) {
+			string textLine = textLines[line];
+			var currentXOff = 4;
+
+			for (int pos = 0; pos < textLine.Length; pos++) {
+				char letter = textLine[pos];
+				int charInt = letter;
+				if (charInt > 191) {
+					letter = '?';
+					charInt = letter;
+				}
+				int rx = charInt % 16;
+				int ry = MathInt.Floor(charInt / 16.0);
+
+				var textSprite = new SFML.Graphics.Sprite(
+					bitmapFontTexture, new IntRect(
+						(rx * fontTextureSize) + ((rx + 1) * fontGridSpacing),
+						(ry * fontTextureSize) + ((ry + 1) * fontGridSpacing),
+						fontTextureSize, fontTextureSize
+					)
+				);
+				// Transparency.
+				textSprite.Color = Color.White with { A = 192 };
+				// For variable width fonts.
+				int fontWidth = fontDefaultWidth;
+				if (fontSizes.ContainsKey(fontStr)) {
+					fontWidth = fontSizes[fontStr][charInt];
+					fontSpaceWidth = fontWidth;
+				}
+				float yPos = y + (line * newLineSpacing);
+				textSprite.Position = new Vector2f(currentXOff, yPos);
+				// Text spacing.
+				if (char.IsWhiteSpace(letter) ||
+					pos >= textLines[line].Length - 1 ||
+					char.IsWhiteSpace(textLines[line][pos + 1])
+				) {
+					currentXOff += fontSpaceWidth;
+				} else {
+					currentXOff += fontWidth + fontSpacing;
+				}
+				// Add to array.
+				DrawWrappers.addToVertexArray(batchDrawable, textSprite);
+				textSprite.Dispose();
+			}
+		}
+		// Set scale to 1X of the resolution.
+		float size = Global.getDebugFontScale();
+		batchDrawable.Scale = (size, size);
+		// Draw the result in the debug view.
+		DrawWrappers.drawToHUD(batchDrawable);
+		return 10;
+	}
+
 	public static int measureText(string fontStr, string text) {
 		int size = 0;
 		int fontDefaultWidth = 7;

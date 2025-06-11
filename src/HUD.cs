@@ -32,6 +32,7 @@ public partial class DrawWrappers {
 			new Vector2f(Global.screenW, Global.screenH)
 		);
 	}
+
 	public static void drawToHUD(Drawable drawable) {
 		Global.window.SetView(hudView);
 		Global.window.Draw(drawable);

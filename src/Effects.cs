@@ -97,6 +97,7 @@ public class ChargeEffect {
 			}
 			chargePart = chargeLevel switch {
 				2 => "charge_part_2",
+				3 => "noise_crush_charge_part",
 				_ => "charge_part_1"
 			};
 			if (chargeType == 1) {

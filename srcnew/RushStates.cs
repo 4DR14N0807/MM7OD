@@ -427,7 +427,7 @@ public class RushSearchState : RushState {
 			rush.playSound("rush_search_end", true);
 			text = "Try Again.";
 			font = FontType.Grey;
-			pickup = new Trash(pickupPos.addxy(0, -4), rush.player.getNextActorNetId(), 
+			pickup = new Trash(pickupPos.addxy(0, -4), rush.player?.getNextActorNetId(), 
 			sendRpc: true); 
 		} 
 		else 
@@ -436,7 +436,7 @@ public class RushSearchState : RushState {
 			rush.playSound("rush_search_end", true);
 			text = "KA-BOOM";
 			font = FontType.Red;
-			new RSBombProj(rock, pickupPos, 1, rush.player.getNextActorNetId(), true, rush.player);
+			new RSBombProj(rock, pickupPos, 1, rush.player?.getNextActorNetId(), true, rush.player);
 		}
 
 		Fonts.drawText(font, text, Global.halfScreenW, 64, Alignment.Center);
@@ -521,7 +521,7 @@ public class Trash : Anim {
 		frameIndex = Helpers.randomRange(0, sprite.totalFrameNum - 1);
 		vel = new Point(0, -360);
 		useGravity = true;
-		collider.wallOnly = true;
+		if (collider != null) collider.wallOnly = true;
 	}
 
 	public override void update() {

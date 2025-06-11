@@ -77,6 +77,11 @@ public class SAArrowSlashState : CharState {
 		rock = character as Rock ?? throw new NullReferenceException();
 	}
 
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		rock.triggerCooldown((int)Rock.AttackIds.ArrowSlash);
+	}
+
 	public override void update() {
 		base.update();
 

@@ -33,7 +33,6 @@ public class Blues : Character {
 	public float overdriveAmmo = 20;
 	public float overdriveAmmoDecreaseCooldown;
 	public float overdriveAmmoMaxCooldown = 20;
-	public float redStrikeCooldown = 0;
 
 	// Shield vars.
 	public decimal shieldHP = 20;
@@ -115,6 +114,8 @@ public class Blues : Character {
 		};
 		shieldMaxHP = (int)Player.getModifiedHealth(shieldMaxHP);
 		shieldHP = shieldMaxHP;
+
+		addAttackCooldown((int)AttackIds.RedStrike, new AttackCooldown(0, 240));
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			shieldHP = 0;
@@ -406,6 +407,10 @@ public class Blues : Character {
 		ProtoStrike,
 	}
 
+	public enum AttackIds {
+		RedStrike,
+	}
+
 	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
 	}
@@ -414,7 +419,6 @@ public class Blues : Character {
 		base.preUpdate();
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
-		Helpers.decrementFrames(ref redStrikeCooldown);
 		Helpers.decrementFrames(ref lTankCoreHealTime);
 		Helpers.decrementFrames(ref coreHealTime);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
@@ -747,7 +751,7 @@ public class Blues : Character {
 			if (canShootSpecial()) {
 				shootSpecial(0);
 				return true;
-			} else if (overdrive && redStrikeCooldown == 0) {
+			} else if (overdrive && isCooldownOver((int)AttackIds.RedStrike)) {
 				changeState(new RedStrike(), true);
 				return true;
 			} else if (canUseBigBangStrike()) {
@@ -1670,8 +1674,15 @@ public class Blues : Character {
 		}
 		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
 
+		float redStrikeCooldown = attacksCooldown[(int)AttackIds.RedStrike].cooldown;
+		float redStrikeMaxCooldown = attacksCooldown[(int)AttackIds.RedStrike].maxCooldown;
+
 		if (redStrikeCooldown > 0) {
-			drawBuff(drawPos, redStrikeCooldown / 240, "hud_blues_weapon_icon", 3);
+			drawBuff(
+				drawPos, 
+				redStrikeCooldown / redStrikeMaxCooldown, 
+				"hud_blues_weapon_icon", 3
+			);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}

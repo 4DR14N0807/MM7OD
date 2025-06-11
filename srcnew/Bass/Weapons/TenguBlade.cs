@@ -247,7 +247,7 @@ public class TenguBladeDash : CharState {
 		bass.vel.y = 0;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.isDashing = false;
 		bass.tBladeDashCooldown = 10;

@@ -234,6 +234,14 @@ public class Sprite {
 				shader = Global.shaderWrappers.GetValueOrDefault("chargeBlue");
 			} else if (renderEffects.Contains(RenderEffectType.ChargePurple)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("chargePurple");
+			} else if (renderEffects.Contains(RenderEffectType.ChargeGreenBass)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargeGreenBass");
+				shader?.SetUniform("factor", 0.35f);
+			} else if (renderEffects.Contains(RenderEffectType.ChargeGreenBass2)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargeGreenBass");
+				shader?.SetUniform("factor", 0.5f);
+			} else if (renderEffects.Contains(RenderEffectType.ChargePurpleBass)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargePurpleBass");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeBlue)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_blue");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeRed)) {
@@ -781,6 +789,14 @@ public class AnimData {
 				shader = Global.shaderWrappers.GetValueOrDefault("chargeBlue");
 			} else if (renderEffects.Contains(RenderEffectType.ChargePurple)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("chargePurple");
+			} else if (renderEffects.Contains(RenderEffectType.ChargeGreenBass)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargeGreenBass");
+				shader?.SetUniform("factor", 0.15f);
+			} else if (renderEffects.Contains(RenderEffectType.ChargeGreenBass2)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargeGreenBass");
+				shader?.SetUniform("factor", 0.5f);
+			} else if (renderEffects.Contains(RenderEffectType.ChargePurpleBass)) {
+				shader = Global.shaderWrappers.GetValueOrDefault("chargePurpleBass");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeBlue)) {
 				shader = Global.shaderWrappers.GetValueOrDefault("stealthmode_blue");
 			} else if (renderEffects.Contains(RenderEffectType.StealthModeRed)) {

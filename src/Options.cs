@@ -51,7 +51,7 @@ public class Options {
 	public bool enableLowEndMap;
 	public bool enableSmallBars;
 	public bool smallBarsEx;
-	public bool oldNavPoints;
+	public bool oldNavPoints = true;
 
 	public bool lowQualityParticles() { return particleQuality == 0; }
 

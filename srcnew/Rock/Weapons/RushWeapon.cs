@@ -76,7 +76,7 @@ public class RushSearchWeapon : RushWeapon {
 
 public class RSBombProj : Projectile {
 
-	Actor ownChr;
+	Actor ownChr = null!;
 
 	public RSBombProj( 
 		Actor owner, Point pos, int xDir, ushort? netProjId,
@@ -94,7 +94,7 @@ public class RSBombProj : Projectile {
 		base.vel.y = -360;
 		useGravity = true;
 
-		if (owner != null) ownChr = owner;
+		if (ownedByLocalPlayer) ownChr = owner;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);

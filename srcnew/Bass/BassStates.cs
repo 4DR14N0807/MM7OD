@@ -209,7 +209,7 @@ public class SuperBassStart : CharState {
 		character.playSound("warpin", sendRpc: true);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		treble?.destroySelf();
 		aura?.destroySelf();
@@ -369,7 +369,7 @@ public class EnergyCharge : CharState {
 		bass.gravityModifier = 0.1f;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		aura?.destroySelf();
 		bass.gravityModifier = 1;
@@ -422,7 +422,7 @@ public class EnergyIncrease : CharState {
 		if (stateFrames >= 30) character.changeToIdleOrFall();
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.gravityModifier = 1;
 	}
@@ -511,6 +511,7 @@ public class BassFly : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
+		bass.canRefillFly = false;
 
 		float flyVelX = 0;
 		if (character.isDashing && character.deltaPos.x != 0) {
@@ -535,13 +536,14 @@ public class BassFly : CharState {
 		character.stopMoving();
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.stopMoving();
-		if (newState is SweepingLaserState) {
+		if (newState is SweepingLaserState or DarkCometState) {
 			character.xSwingVel = getFlightMove().x * 0.6f;
 			character.yPushVel = getFlightMove().y;
 		}
+		bass.canRefillFly = true;
 	}
 }
 
@@ -562,12 +564,17 @@ public class BassKick : CharState {
 		character.vel.x = character.xDir * 120;
 	}
 
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		character.triggerCooldown((int)Bass.AttackIds.Kick);
+	}
+
 	public override void update() {
 		base.update();
 
 		if (!jumped) {
 
-			if (character.frameIndex >= 2) {
+			if (character.frameIndex >= 1) {
 				jumped = true;
 				character.vel.y = -character.getJumpPower();
 			} 
@@ -608,6 +615,7 @@ public class SonicCrusher : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
+		bass.canRefillFly = false;
 		float full = Bass.MaxFlyTime;
 		float half = full / 2;
 
@@ -623,6 +631,11 @@ public class SonicCrusher : CharState {
 		} else {
 			speed = 60;
 		}
+	}
+
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		bass.canRefillFly = true;
 	}
 
 	public override void update () {
@@ -659,15 +672,18 @@ public class SweepingLaserState : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMovingWeak();
-		if (oldState is Jump or Fall) {
+		character.frameSpeed = 0;
+		if (!character.grounded && oldState is not BassFly) {
 			character.xSwingVel = character.getDashOrRunSpeed() * character.xDir * 0.6f;
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.stopMoving();
 		laser?.destroySelf();
+		character.triggerCooldown((int)Bass.AttackIds.SweepingLaser);
+		if (character.frameSpeed == 0) character.frameSpeed = 1;
 	}
 
 	public override void update() {
@@ -681,6 +697,7 @@ public class SweepingLaserState : CharState {
 				player.getNextActorNetId(), true, player
 			);
 			character.stopMoving();
+			character.frameSpeed = 1;
 			once = true;
 		}
 
@@ -692,14 +709,22 @@ public class SweepingLaserState : CharState {
 public class DarkCometState : CharState {
 	public DarkCometState() : base("dark_comet") {
 		useGravity = false;
+		useDashJumpSpeed = true;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMovingWeak();
-		if (oldState is Jump or Fall) {
-			character.xSwingVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
+		character.frameSpeed = 0;
+		if (!character.grounded && character.isDashing) {
+			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
 		}
+	}
+
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		character.triggerCooldown((int)Bass.AttackIds.DarkComet);
+		if (character.frameSpeed == 0) character.frameSpeed = 1;
 	}
 
 	public override void update() {
@@ -707,7 +732,9 @@ public class DarkCometState : CharState {
 
 		if (stateFrames < 10) return;
 
-		if (!once && character.ownedByLocalPlayer) {
+		if (character.frameSpeed == 0) character.frameSpeed = 1;
+
+		if (!once && character.ownedByLocalPlayer && character.currentFrame.getBusterOffset() != null) {
 			new DarkCometUpProj(
 				character, character.getShootPos(), character.xDir, 
 				player.getNextActorNetId(), true, player

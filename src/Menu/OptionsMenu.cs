@@ -95,11 +95,11 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "Fullscreen:",
+							optionFontText, "FULLSCREEN:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
-							optionFontValue, Options.main.fullScreen ? "Yes" : "No",
+							optionFontValue, Helpers.boolYesNo(Options.main.fullScreen),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
 					},
@@ -121,7 +121,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "Windowed resolution:",
+							optionFontText, "WINDOWED RESOLUTION:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -143,7 +143,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "Show fps:",
+							optionFontText, "SHOW FPS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -166,7 +166,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Blue : FontType.Grey, "Max fps:",
+							inGame ? FontType.Blue : FontType.Grey, "MAX FPS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -185,7 +185,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Blue : FontType.Grey, "Enable V-Sync:",
+							inGame ? FontType.Blue : FontType.Grey, "ENABLE V-SYNC:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -203,7 +203,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "Integer fullscreen:",
+							optionFontText, "INTEGER FULLSCREEN:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -222,7 +222,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontText, "Draw minimap:",
+							optionFontText, "DRAW MINIMAP:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -243,7 +243,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontValue, "Fast shaders:",
+							optionFontValue, "FAST SHADERS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -260,7 +260,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontValue, "Particle quality:",
+							optionFontValue, "PARTICLE QUALITY:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -278,7 +278,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "Enable map sprites:",
+							inGame ? FontType.Black : FontType.Grey, "ENABLE MAP SPRITES:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -299,7 +299,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontValue, "Low-end map:",
+							optionFontValue, "LOW-END MAP:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -316,7 +316,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							optionFontValue, "Alt Nav Points:",
+							optionFontValue, "ALT NAV POINTS:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(
@@ -338,7 +338,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					(Point pos, int index) => {
 						Fonts.drawText(
-							inGame ? FontType.Black : FontType.Grey, "Multi-threading rendering:",
+							inGame ? FontType.Black : FontType.Grey, "MULTI-THREADING RENDERING:",
 							pos.x, pos.y, selected: selectedArrowPosY == index
 						);
 						Fonts.drawText(

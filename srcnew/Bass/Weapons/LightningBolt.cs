@@ -172,7 +172,7 @@ public class LightningBoltState : CharState {
 		
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.stopMovingWeak();
 		character.useGravity = true;
@@ -245,7 +245,10 @@ public class LightningBoltProj : Projectile {
 		if (isAnimOver()) destroySelf();
 		
 		timeInFrames++;
+		
 
+		if (collider == null) return;
+		
 		Rect rect = collider._shape.getRect();
 		rect.y1 = -bodySpriteHeight;
 		rect.y2 = getPiecesAmount() * bodySpriteHeight;

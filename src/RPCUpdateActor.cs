@@ -48,7 +48,7 @@ public partial class Actor {
 		}
 		// Scale.
 		(int x, int y) curScale = (1, 1);
-		if (syncScale) {
+		if (syncScale || lastScale != null) {
 			curScale = (MathInt.Round(xScale * 20), MathInt.Round(yScale * 20));
 			if (curScale != lastScale) {
 				args.Add((byte)curScale.x);

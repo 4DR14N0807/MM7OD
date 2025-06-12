@@ -1838,6 +1838,14 @@ public partial class Level {
 
 		foreach (var go in gameObjects) {
 			if (go.iDestroyed) {
+				if (go is Character chara) {
+					DrawWrappers.DrawRect(
+						chara.pos.x - 1, chara.pos.y - 2,
+						chara.pos.x + 1, chara.pos.y,
+						true, new Color(255, 0, 0, 64), 1,
+						ZIndex.HUD, true, new Color(255, 0, 0, 125)
+					);
+				}
 				continue;
 			}
 			go.render(0, 0);

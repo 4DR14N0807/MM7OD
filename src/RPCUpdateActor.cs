@@ -129,6 +129,7 @@ public class RPCUpdateActor : RPC {
 		if (actor == null || actor.ownedByLocalPlayer) {
 			return;
 		};
+		string actorName = actor.getActorTypeName();
 		int frameSinceLastUpdate = Global.frameCount - actor.lastNetFrame;
 
 		i += 2;
@@ -154,7 +155,7 @@ public class RPCUpdateActor : RPC {
 			string visibiliyFlags = actor.visible ? "1" : "0";
 			visibiliyFlags += actor.xDir == 1 ? "1" : "0";
 			visibiliyFlags += actor.yDir == 1 ? "1" : "0";
-			Program.debugLogs.Add($"PosSet: {newPos.x}, {newPos.y} Flags: {visibiliyFlags}");
+			Program.debugLogs.Add($"{actorName} PosSet: {newPos.x}, {newPos.y} Flags: {visibiliyFlags}");
 
 			if (!actor.canBeLocal &&
 				actor.interplorateNetPos &&
@@ -172,7 +173,7 @@ public class RPCUpdateActor : RPC {
 		if (mask[1]) {
 			actor.xScale = arguments[i++] / 20f;
 			actor.yScale = arguments[i++] / 20f;
-			Program.debugLogs.Add($"Scale: {actor.xScale}, {actor.yScale}");
+			Program.debugLogs.Add($"{actorName} Scale: {actor.xScale}, {actor.yScale}");
 		}
 		// Sprite index.
 		bool spriteChanged = false;
@@ -182,10 +183,10 @@ public class RPCUpdateActor : RPC {
 			if (spriteIndex >= 0 && spriteIndex < Global.spriteCount) {
 				string spriteName = Global.spriteNameByIndex[spriteIndex];
 				actor.changeSprite(spriteName, true);
-				Program.debugLogs.Add($"Sprite set to {spriteName}");
+				Program.debugLogs.Add($"{actorName} sprite set to {spriteName}");
 			} else {
 				spriteError = true;
-				Program.debugLogs.Add("Sprite Error detected.");
+				Program.debugLogs.Add($"{actorName} sprite error detected.");
 			}
 			spriteChanged = true;
 			i += 2;
@@ -195,7 +196,7 @@ public class RPCUpdateActor : RPC {
 			int frameIndex = arguments[i++];
 			actor.frameIndex = frameIndex;
 			spriteChanged = true;
-			Program.debugLogs.Add($"Frame set to {frameIndex}");
+			Program.debugLogs.Add($"{actorName} frame set to {frameIndex}");
 		}
 		// Angle.
 		if (mask[4]) {

@@ -2090,7 +2090,7 @@ public partial class Level {
 
 	public void drawDebug() {
 		if (Program.debugLogs.Count > 0) {
-			float maxNum = MathInt.Ceiling(20 / Global.getDebugFontScale());
+			float maxNum = MathInt.Ceiling(18 / Global.getDebugFontScale());
 			int currentOff = MathInt.Floor((Global.screenH - 10) / Global.getDebugFontScale());
 			int j = 0;
 			for (int i = Program.debugLogs.Count - 1; i >= 0 && j <= maxNum; i--) {

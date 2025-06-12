@@ -1515,8 +1515,8 @@ public partial class Level {
 			}
 			go.postUpdate();
 			go.statePostUpdate();
-			Global.speedMul = 1;
 			go.netUpdate();
+			Global.speedMul = 1;
 		}
 
 		if (camPlayer.character != null) {

@@ -155,7 +155,9 @@ public class RPCUpdateActor : RPC {
 			string visibiliyFlags = actor.visible ? "1" : "0";
 			visibiliyFlags += actor.xDir == 1 ? "1" : "0";
 			visibiliyFlags += actor.yDir == 1 ? "1" : "0";
-			Program.debugLogs.Add($"{actorName} PosSet: {newPos.x}, {newPos.y} Flags: {visibiliyFlags}");
+			Program.debugLogs.Add(
+				$"{actorName} PosSet: {MathF.Round(newPos.x)}, {MathF.Round(newPos.y)} Flags: {visibiliyFlags}"
+			);
 
 			if (!actor.canBeLocal &&
 				actor.interplorateNetPos &&
@@ -169,6 +171,18 @@ public class RPCUpdateActor : RPC {
 			}
 			actor.changePos(newPos);
 		}
+		// Update target net pos if pos update is skipped this frame.
+		else if (actor.targetNetPos != null) {
+			actor.changePos(actor.targetNetPos.Value);
+			Point newPos = actor.targetNetPos.Value;
+
+			actor.targetNetPos = null;
+			// Debuginfo.
+			Program.debugLogs.Add(
+				$"{actorName} TPosSet: {MathF.Round(newPos.x)}, {MathF.Round(newPos.y)}"
+			);
+		}
+
 		// Scale.
 		if (mask[1]) {
 			actor.xScale = arguments[i++] / 20f;

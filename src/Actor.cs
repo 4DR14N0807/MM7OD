@@ -1076,7 +1076,9 @@ public partial class Actor : GameObject {
 	}
 
 	public void netUpdate() {
-		if (netId == null) return;
+		if (netId == null) {
+			return;
+		}
 		if (destroyPosSet) {
 			destroyPosTime += Global.spf;
 			incPos(vel.times(Global.spf));
@@ -1089,18 +1091,26 @@ public partial class Actor : GameObject {
 			return;
 		}
 		forceNetUpdateNextFrame = false;
+
 		if (ownedByLocalPlayer) {
-			if (!Global.level.isSendMessageFrame()) return;
-			sendActorNetData();
+			if (Global.level.isSendMessageFrame() || forceNetUpdateNextFrame) {
+				sendActorNetData();
+			}
 		} else {
-			// 5 seconds since last net update: destroy the object
+			// 5 seconds since last net update: destroy the object.
 			if (!canBeLocal && Global.time - lastNetUpdate > 5 && cleanUpOnNoResponse()) {
 				destroySelf(disableRpc: true);
 				return;
 			}
 			if (targetNetPos != null && Global.frameCount - lastNetFrame > 1) {
 				changePos(targetNetPos.Value);
+				Point newPos = targetNetPos.Value;
+
 				targetNetPos = null;
+				// Debuginfo.
+				Program.debugLogs.Add(
+					$"{getActorTypeName()} TPosSet: {MathF.Round(newPos.x)}, {MathF.Round(newPos.y)}"
+				);
 			}
 		}
 	}
@@ -1309,7 +1319,11 @@ public partial class Actor : GameObject {
 
 	// These are ones that should be cleaned up when the player leaves, but too important to be deleted if no response in 5 seconds
 	public bool cleanUpOnPlayerLeave() {
-		return this is Maverick || this is RideArmor || this is WolfSigmaHand || this is WolfSigmaHead;
+		return (
+			this is Character ||
+			this is Maverick || this is RideArmor ||
+			this is WolfSigmaHand || this is WolfSigmaHead
+		);
 	}
 
 	public virtual void onDestroy() {

@@ -172,6 +172,7 @@ public class RPCUpdateActor : RPC {
 		if (mask[1]) {
 			actor.xScale = arguments[i++] / 20f;
 			actor.yScale = arguments[i++] / 20f;
+			Program.debugLogs.Add($"Scale: {actor.xScale}, {actor.yScale}");
 		}
 		// Sprite index.
 		bool spriteChanged = false;
@@ -181,16 +182,20 @@ public class RPCUpdateActor : RPC {
 			if (spriteIndex >= 0 && spriteIndex < Global.spriteCount) {
 				string spriteName = Global.spriteNameByIndex[spriteIndex];
 				actor.changeSprite(spriteName, true);
+				Program.debugLogs.Add($"Sprite set to {spriteName}");
 			} else {
 				spriteError = true;
+				Program.debugLogs.Add("Sprite Error detected.");
 			}
 			spriteChanged = true;
 			i += 2;
 		}
 		// Frame index.
 		if (mask[3] && !spriteError) {
-			actor.frameIndex = arguments[i++];
+			int frameIndex = arguments[i++]
+			actor.frameIndex = frameIndex;
 			spriteChanged = true;
+			Program.debugLogs.Add($"Frame set to {frameIndex}");
 		}
 		// Angle.
 		if (mask[4]) {

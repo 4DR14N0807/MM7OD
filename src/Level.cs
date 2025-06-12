@@ -2087,7 +2087,7 @@ public partial class Level {
 				currentOff -= Fonts.drawDebug(Program.debugLogs[i], currentOff);
 			}
 
-			if (Program.debugLogs.Count > 100) {
+			if (Program.debugLogs.Count > 50) {
 				Program.debugLogs.RemoveRange(0, Program.debugLogs.Count - 100);
 			}
 		}

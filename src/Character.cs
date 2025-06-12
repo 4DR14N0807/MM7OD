@@ -2255,7 +2255,7 @@ public partial class Character : Actor, IDamagable {
 			pos.x - 1, pos.y - 2, pos.x + 1, pos.y, true, new Color(0, 0, 0, 64), 1,
 			ZIndex.HUD, true, new Color(0, 0, 0, 125)
 		);
-		if (!ownedByLocalPlayer || true) {
+		if (!ownedByLocalPlayer) {
 			Fonts.drawText(
 				FontType.RedSmall,
 				$"{getActorTypeName()} pos: {MathF.Round(pos.x)} {MathF.Round(pos.y)}" +

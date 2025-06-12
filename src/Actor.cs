@@ -164,6 +164,7 @@ public partial class Actor : GameObject {
 	private int? lastYDir;
 	private float? lastAngle;
 	private bool? lastVisible;
+	private (int x, int y)? lastScale;
 	public float lastNetUpdate;
 	public int lastNetFrame = Global.frameCount;
 
@@ -1104,13 +1105,7 @@ public partial class Actor : GameObject {
 			}
 			if (targetNetPos != null && Global.frameCount - lastNetFrame > 1) {
 				changePos(targetNetPos.Value);
-				Point newPos = targetNetPos.Value;
-
 				targetNetPos = null;
-				// Debuginfo.
-				Program.debugLogs.Add(
-					$"{getActorTypeName()} TPosSet: {MathF.Round(newPos.x)}, {MathF.Round(newPos.y)}"
-				);
 			}
 		}
 	}

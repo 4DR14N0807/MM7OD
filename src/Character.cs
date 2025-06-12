@@ -2251,21 +2251,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void render(float x, float y) {
-		DrawWrappers.DrawRect(
-			pos.x - 1, pos.y - 2, pos.x + 1, pos.y, true, new Color(0, 0, 0, 64), 1,
-			ZIndex.HUD, true, new Color(0, 0, 0, 125)
-		);
-		if (!ownedByLocalPlayer) {
-			Fonts.drawText(
-				FontType.RedSmall,
-				$"{getActorTypeName()} pos: {MathF.Round(pos.x)} {MathF.Round(pos.y)}" +
-				" v: " + (visible ? "0" : "1") + $" dir {xDir},{yDir}" +
-				$" anim: {sprite.name} {frameIndex}",
-				Global.level.camX + Global.screenW - 10, 2 + Global.level.camY,
-				Alignment.Right,
-				isWorldPos: true
-			);
-		}
 		if (!shouldRender(x, y)) {
 			return;
 		}

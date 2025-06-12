@@ -47,11 +47,15 @@ public partial class Actor {
 			send = true;
 		}
 		// Scale.
+		(int x, int y) curScale = (1, 1);
 		if (syncScale) {
-			args.Add((byte)MathF.Round(xScale * 20));
-			args.Add((byte)MathF.Round(yScale * 20));
-			mask[1] = true;
-			send = true;
+			curScale = (MathInt.Round(xScale * 20), MathInt.Round(yScale * 20));
+			if (curScale != lastScale) {
+				args.Add((byte)curScale.x);
+				args.Add((byte)curScale.y);
+				mask[1] = true;
+				send = true;
+			}
 		}
 		// Do not send sprite data if not in the sprite table.
 		if (spriteIndex != ushort.MaxValue) {
@@ -109,6 +113,10 @@ public partial class Actor {
 		lastYDir = yDir;
 		lastAngle = byteAngle;
 		lastVisible = visible;
+		lastScale = null;
+		if (syncScale) {
+			lastScale = curScale;
+		}
 	}
 }
 
@@ -152,13 +160,6 @@ public class RPCUpdateActor : RPC {
 			newPos.y = BitConverter.ToSingle(arguments.AsSpan()[i..(i + 4)]);
 			i += 4;
 
-			string visibiliyFlags = actor.visible ? "1" : "0";
-			visibiliyFlags += actor.xDir == 1 ? "1" : "0";
-			visibiliyFlags += actor.yDir == 1 ? "1" : "0";
-			Program.debugLogs.Add(
-				$"{actorName} PosSet: {MathF.Round(newPos.x)}, {MathF.Round(newPos.y)} Flags: {visibiliyFlags}"
-			);
-
 			if (!actor.canBeLocal &&
 				actor.interplorateNetPos &&
 				frameSinceLastUpdate > 2 &&
@@ -177,17 +178,12 @@ public class RPCUpdateActor : RPC {
 			Point newPos = actor.targetNetPos.Value;
 
 			actor.targetNetPos = null;
-			// Debuginfo.
-			Program.debugLogs.Add(
-				$"{actorName} TPosSet: {MathF.Round(newPos.x)}, {MathF.Round(newPos.y)}"
-			);
 		}
 
 		// Scale.
 		if (mask[1]) {
 			actor.xScale = arguments[i++] / 20f;
 			actor.yScale = arguments[i++] / 20f;
-			Program.debugLogs.Add($"{actorName} Scale: {actor.xScale}, {actor.yScale}");
 		}
 		// Sprite index.
 		bool spriteChanged = false;
@@ -197,10 +193,8 @@ public class RPCUpdateActor : RPC {
 			if (spriteIndex >= 0 && spriteIndex < Global.spriteCount) {
 				string spriteName = Global.spriteNameByIndex[spriteIndex];
 				actor.changeSprite(spriteName, true);
-				Program.debugLogs.Add($"{actorName} sprite set to {spriteName}");
 			} else {
 				spriteError = true;
-				Program.debugLogs.Add($"{actorName} sprite error detected.");
 			}
 			spriteChanged = true;
 			i += 2;
@@ -210,7 +204,6 @@ public class RPCUpdateActor : RPC {
 			int frameIndex = arguments[i++];
 			actor.frameIndex = frameIndex;
 			spriteChanged = true;
-			Program.debugLogs.Add($"{actorName} frame set to {frameIndex}");
 		}
 		// Angle.
 		if (mask[4]) {

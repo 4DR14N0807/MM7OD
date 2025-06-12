@@ -192,7 +192,7 @@ public class RPCUpdateActor : RPC {
 		}
 		// Frame index.
 		if (mask[3] && !spriteError) {
-			int frameIndex = arguments[i++]
+			int frameIndex = arguments[i++];
 			actor.frameIndex = frameIndex;
 			spriteChanged = true;
 			Program.debugLogs.Add($"Frame set to {frameIndex}");

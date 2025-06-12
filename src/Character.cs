@@ -2251,6 +2251,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void render(float x, float y) {
+		DrawWrappers.DrawRect(
+			pos.x - 2, pos.y - 1, pos.x, pos.x + 1, true, new Color(0, 0, 0, 64), 1,
+			ZIndex.HUD, true, new Color(0, 0, 0, 125)
+		);
 		if (!shouldRender(x, y)) {
 			return;
 		}

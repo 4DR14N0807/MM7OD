@@ -165,7 +165,7 @@ public class RPCUpdateActor : RPC {
 				actor.pos.round().distanceTo(newPos.round()) > 1
 			) {
 				actor.targetNetPos = newPos;
-				newPos = newPos.subtract(actor.pos).times(0.5f);
+				newPos = (newPos - actor.pos) * 0.5f + actor.pos;
 			} else {
 				actor.targetNetPos = null;
 			}

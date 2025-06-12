@@ -24,6 +24,7 @@ public class Pickup : Actor {
 	) : base(
 		sprite, pos, netId, ownedByLocalPlayer, false
 	) {
+		canBeLocal = true;
 		netOwner = owner;
 		if (collider != null) {
 			collider.wallOnly = true;

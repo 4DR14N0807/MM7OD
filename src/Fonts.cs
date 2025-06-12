@@ -188,7 +188,7 @@ public class Fonts {
 					)
 				);
 				// Transparency.
-				textSprite.Color = Color.White with { A = 192 };
+				textSprite.Color = Color.White with { A = 128 };
 				// For variable width fonts.
 				int fontWidth = fontDefaultWidth;
 				if (fontSizes.ContainsKey(fontStr)) {

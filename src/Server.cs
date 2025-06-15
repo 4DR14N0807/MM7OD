@@ -978,7 +978,7 @@ public class Server {
 				s_server.SendMessage(om, host.connection, rpcTemplate.netDeliveryMethod);
 			}
 		} else if (all.Count > 0) {
-			s_server.SendMessage(om, all, rpcTemplate.netDeliveryMethod);
+			s_server.SendMessage(om, all, rpcTemplate.netDeliveryMethod, 0);
 		}
 	}
 

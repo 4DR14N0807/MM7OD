@@ -383,7 +383,7 @@ public class ServerClient {
 		om.Write(rpcIndexByte);
 		om.Write((ushort)arguments.Length);
 		om.Write(arguments);
-		client.SendMessage(om, rpcTemplate.netDeliveryMethod, (int)rpcTemplate.channel);
+		client.SendMessage(om, rpcTemplate.netDeliveryMethod);
 	}
 
 	public void rpc(RPC rpcTemplate, string message) {
@@ -395,7 +395,7 @@ public class ServerClient {
 		NetOutgoingMessage om = client.CreateMessage();
 		om.Write(rpcIndexByte);
 		om.Write(message);
-		client.SendMessage(om, rpcTemplate.netDeliveryMethod, (int)rpcTemplate.channel);
+		client.SendMessage(om, rpcTemplate.netDeliveryMethod);
 	}
 
 	public void getMessages(out List<string> stringMessages, bool invokeRpcs) {

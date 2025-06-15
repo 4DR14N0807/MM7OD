@@ -234,6 +234,7 @@ public partial class Character : Actor, IDamagable {
 	) : base(
 		null!, new Point(x, y), netId, ownedByLocalPlayer, addToLevel: true
 	) {
+		hasStateMachine = true;
 		this.player = player;
 		netOwner = player;
 		this.xDir = xDir;
@@ -1106,6 +1107,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void update() {
+		base.update();
 		if (charState is not InRideChaser) {
 			camOffsetX = MathInt.Round(Helpers.lerp(camOffsetX, 0, 10));
 		}

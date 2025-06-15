@@ -34,6 +34,7 @@ public class Rush : Actor, IDamagable {
 			player = owner;
 		}
 		this.type = type;
+		hasStateMachine = true;
 		//syncs rush xdir with rock xdir
 		spriteToCollider["empty"] = null;
 		//spriteToCollider["warp_beam"] = null;

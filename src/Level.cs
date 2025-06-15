@@ -1133,11 +1133,20 @@ public partial class Level {
 		}
 	}
 
-	public void removePlayer(Player player) {
+	public void removePlayer(Player player, int mode) {
 		if (!Global.level.players.Contains(player)) return;
 
-		string leaveMsg = player.name + " left match.";
-		if (player.isBot) leaveMsg = player.name + " removed from match.";
+		string reason = mode switch {
+			0 => "(Disconected)",
+			1 => "(Bot removed)",
+			2 => "(Sync)",
+			_ => "[Debug Error]"
+		};
+
+		string leaveMsg = $"{player.name} left match. {reason}";
+		if (player.isBot) {
+			leaveMsg = player.name + " removed from match.";
+		}
 		gameMode.chatMenu.addChatEntry(new ChatEntry(leaveMsg, null, null, true));
 		player.destroy();
 		players.Remove(player);
@@ -1305,7 +1314,7 @@ public partial class Level {
 				go.speedMul = slowAmount;
 			}
 			go.preUpdate();
-			go.statePreUpdate();
+			if (go.hasStateMachine) { go.statePreUpdate(); }
 			Global.speedMul = 1;
 		}
 
@@ -1328,7 +1337,7 @@ public partial class Level {
 				go.speedMul = slowAmount;
 			}
 			go.update();
-			go.stateUpdate();
+			if (go.hasStateMachine) { go.stateUpdate(); }
 			if (isNon1v1Elimination() &&
 				gameMode.virusStarted > 0 && go is Actor actor &&
 				actor.ownedByLocalPlayer && go is IDamagable damagable
@@ -1514,7 +1523,7 @@ public partial class Level {
 				go.speedMul = slowAmount;
 			}
 			go.postUpdate();
-			go.statePostUpdate();
+			if (go.hasStateMachine) { go.statePostUpdate(); }
 			go.netUpdate();
 			Global.speedMul = 1;
 		}
@@ -1686,7 +1695,7 @@ public partial class Level {
 				if (playerLeft != null) {
 					var player = Global.level.getPlayerById(playerLeft.id);
 					if (player != null) {
-						removePlayer(player);
+						removePlayer(player, 0);
 					}
 				}
 			}
@@ -2089,7 +2098,7 @@ public partial class Level {
 	}
 
 	public void drawDebug() {
-		if (Program.debugLogs.Count > 0) {
+		/*if (Program.debugLogs.Count > 0) {
 			float maxNum = MathInt.Ceiling(18 / Global.getDebugFontScale());
 			int currentOff = MathInt.Floor((Global.screenH - 10) / Global.getDebugFontScale());
 			int j = 0;
@@ -2101,7 +2110,7 @@ public partial class Level {
 			if (Program.debugLogs.Count > 50) {
 				Program.debugLogs.RemoveRange(0, Program.debugLogs.Count - 50);
 			}
-		}
+		}*/
 		if (Global.showGridHitboxes) {
 			int gridItemCount = 0;
 			int offset = 0;

@@ -1407,7 +1407,7 @@ public class RPCPeriodicServerSync : RPC {
 		}
 		foreach (var player in Global.level.players.ToList()) {
 			if (!syncModel.players.Any(sp => sp.id == player.id)) {
-				Global.level.removePlayer(player);
+				Global.level.removePlayer(player, 2);
 			}
 		}
 	}

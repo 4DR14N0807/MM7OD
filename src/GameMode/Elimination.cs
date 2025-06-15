@@ -52,8 +52,9 @@ public class Elimination : GameMode {
 		int lives = playingTo - level.mainPlayer.deaths;
 		string topText = "Lives:" + lives.ToString().PadLeft(2 ,' ');
 		string botText = "Alive:" + (playersStillAlive.Length).ToString().PadLeft(2 ,' ');
-		Fonts.drawText(FontType.WhiteSmall, botText,  Global.screenW - 56, 7, Alignment.Right);
-		Fonts.drawText(FontType.WhiteSmall, topText,  Global.screenW - 56, 17, Alignment.Right);
+		float mapOffset = shouldDrawRadar() ? 0 : 48;
+		Fonts.drawText(FontType.WhiteSmall, botText,  Global.screenW - 56 + mapOffset, 7, Alignment.Right);
+		Fonts.drawText(FontType.WhiteSmall, topText,  Global.screenW - 56 + mapOffset, 17, Alignment.Right);
 
 		if (virusStarted != 1) {
 			drawTimeIfSet(37);

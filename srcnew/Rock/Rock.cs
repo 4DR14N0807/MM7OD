@@ -177,7 +177,7 @@ public class Rock : Character {
 		bool downHeld = player.input.isHeld(Control.Down, player);
 		bool slidePressed = player.dashPressed(out string slideControl);
 
-		if (specialPressed && canCallRush(0) && rushWeaponSpecial) {
+		if (specialPressed && canCallRush(0) && rushWeaponSpecial && !isSlideColliding) {
 			rushWeapon.shootRock(this, 0);
 			return true;
 		}
@@ -188,13 +188,13 @@ public class Rock : Character {
 				return true;
 			}
 
-			if (specialPressed && isCooldownOver((int)AttackIds.ArrowSlash) && charState is not LadderClimb) {
+			if (specialPressed && isCooldownOver((int)AttackIds.ArrowSlash) && charState is not LadderClimb && !isSlideColliding) {
 				changeState(new SAArrowSlashState(), true);
 				return true;
 			}
 		}
 
-		if (!isCharging()) {
+		if (!isCharging() && !isSlideColliding) {
 			if (shootPressed && weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0) {
 				shoot(0);
 				return true;
@@ -361,6 +361,7 @@ public class Rock : Character {
 	}
 
 	public override bool canShoot() {
+		if (isSlideColliding) return false;
 		if (sWell != null) return false;
 		if (sWellSpawn != null) return false;
 		if (sWellU != null) return false;
@@ -408,6 +409,12 @@ public class Rock : Character {
 
 	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
+	}
+
+	public override bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
+		if (charState is CallDownRush) return true;
+ 		
+		return base.isInvulnerable(ignoreRideArmorHide, factorHyperMode);
 	}
 
 	public override List<ShaderWrapper> getShaders() {
@@ -582,9 +589,8 @@ public class Rock : Character {
 	}
 
 	public enum AttackIds {
-		LegBreaker,
 		ArrowSlash,
-		
+		LegBreaker,
 	}
 
 	public override void chargeGfx() {
@@ -728,18 +734,19 @@ public class Rock : Character {
 		}
 
 		if (boughtSuperAdaptorOnce) {
-			drawBuff(
-				drawPos, attacksCooldown[(int)AttackIds.ArrowSlash].cooldown / attacksCooldown[(int)AttackIds.ArrowSlash].maxCooldown,
-				"hud_weapon_icon", (int)RockWeaponSlotIds.ArrowSlash
-			);
-			secondBarOffset += 18 * drawDir;
-			drawPos.x += 18 * drawDir;
-			drawBuff(
-				drawPos, attacksCooldown[(int)AttackIds.LegBreaker].cooldown / attacksCooldown[(int)AttackIds.LegBreaker].maxCooldown,
-				"hud_weapon_icon", (int)RockWeaponSlotIds.LegBreaker
-			);
-			secondBarOffset += 18 * drawDir;
-			drawPos.x += 18 * drawDir;
+			for (int i = 0; i < 2; i++) {
+				float cd = attacksCooldown[i].cooldown;
+				float maxCd = attacksCooldown[i].maxCooldown;
+
+				if (cd > 0) {
+					drawBuff(
+						drawPos, cd / maxCd, "hud_weapon_icon", (int)RockWeaponSlotIds.ArrowSlash + i
+					);
+
+					secondBarOffset += 18 * drawDir;
+					drawPos.x += 18 * drawDir;
+				}
+			}
 		}
 
 		base.renderBuffs(offset, position);

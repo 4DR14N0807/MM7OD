@@ -46,13 +46,22 @@ public class GameMode {
 		"Yellow",
 		"Orange"
 	};
-	public FontType[] teamFonts = {
+	public FontType[] teamFontsSmall = {
 		FontType.BlueSmall,
 		FontType.RedSmall,
 		FontType.GreenSmall,
 		FontType.PurpleSmall,
 		FontType.YellowSmall,
 		FontType.OrangeSmall
+	};
+
+	public FontType[] teamFonts = {
+		FontType.Blue,
+		FontType.Red,
+		FontType.Green,
+		FontType.Purple,
+		FontType.Yellow,
+		FontType.Orange
 	};
 
 	public VoteKick? currentVoteKick;
@@ -564,6 +573,7 @@ public class GameMode {
 						basePos.y += 18;
 					}
 				}
+				if (!shouldDrawRadar() && !level.levelData.isTraining()) basePos.x += 48;
 				Fonts.drawText(
 					FontType.WhiteSmall,
 					"x", basePos.x + 9, basePos.y, Alignment.Left
@@ -1554,7 +1564,7 @@ public class GameMode {
 		});
 		string spectatorStr = string.Join(",", spectatorNames);
 		if (!string.IsNullOrEmpty(spectatorStr)) {
-			Fonts.drawText(FontType.BlueMenu, "Spectators: " + spectatorStr, 15, 200);
+			Fonts.drawText(FontType.Black, "SPECTATORS: " + spectatorStr, 15, 200);
 		}
 	}
 
@@ -2348,11 +2358,11 @@ public class GameMode {
 		);
 
 		Fonts.drawText(color, title, cols[0] + 12, rows[0]);
-		Fonts.drawText(FontType.Orange, "Player", cols[0] + 12, rows[1]);
-		Fonts.drawText(FontType.Orange, "K", cols[1], rows[1]);
-		Fonts.drawText(FontType.Orange, isTE ? "L" : "D", cols[2], rows[1]);
+		Fonts.drawText(FontType.OrangeSmall, "Player", cols[0] + 12, rows[1]);
+		Fonts.drawText(FontType.OrangeSmall, "K", cols[1], rows[1]);
+		Fonts.drawText(FontType.OrangeSmall, isTE ? "L" : "D", cols[2], rows[1]);
 		if (Global.serverClient != null) {
-			Fonts.drawText(FontType.Orange, "P", cols[3], rows[1]);
+			Fonts.drawText(FontType.OrangeSmall, "P", cols[3], rows[1]);
 		}
 		// Player draw
 		Player[] players = level.players.Where(p => p.alliance == alliance && !p.isSpectator).ToArray();
@@ -2789,11 +2799,12 @@ public class GameMode {
 			return;
 		}
 		int maxTeams = Global.level.teamNum;
+		float mapOffset = shouldDrawRadar() ? 0 : 48;
 
 		string teamText = $"{teamNames[teamSide]}: {teamPoints[teamSide].ToString().PadLeft(2, ' ')}";
 		Fonts.drawText(
-			teamFonts[teamSide], teamText,
-			Global.screenW - 56, 17, Alignment.Right
+			teamFontsSmall[teamSide], teamText,
+			Global.screenW - 56 + mapOffset, 17, Alignment.Right
 		);
 
 		int leaderTeam = 0;
@@ -2810,13 +2821,13 @@ public class GameMode {
 		}
 		if (!moreThanOneLeader) {
 			Fonts.drawText(
-				teamFonts[leaderTeam], $"Leader: {leaderScore.ToString().PadLeft(2, ' ')}",
-				Global.screenW - 56, 7, Alignment.Right
+				teamFontsSmall[leaderTeam], $"Leader: {leaderScore.ToString().PadLeft(2, ' ')}",
+				Global.screenW - 56 + mapOffset, 7, Alignment.Right
 			);
 		} else {
 			Fonts.drawText(
 				FontType.WhiteSmall, $"Leader:{leaderScore.ToString().PadLeft(2, ' ')}",
-				Global.screenW - 56, 7, Alignment.Right
+				Global.screenW - 56 + mapOffset, 7, Alignment.Right
 			);
 		}
 		drawTimeIfSet(37);
@@ -2824,7 +2835,7 @@ public class GameMode {
 
 	public void drawAllTeamsHUD() {
 		for (int i = 0; i < Global.level.teamNum; i++) {
-			Fonts.drawText(teamFonts[i], $"{teamNames[i]}: {teamPoints[i]}", 5, 5 + i * 10);
+			Fonts.drawText(teamFontsSmall[i], $"{teamNames[i]}: {teamPoints[i]}", 5, 5 + i * 10);
 		}
 		drawTimeIfSet(5 + 10 * (Global.level.teamNum + 1));
 	}

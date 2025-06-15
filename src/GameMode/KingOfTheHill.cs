@@ -26,6 +26,7 @@ public class KingOfTheHill : GameMode {
 	public override void drawTopHUD() {
 		int hudcpY = 10;
 		int hudcpX = (int)Global.screenW - 111;
+		if (!shouldDrawRadar()) hudcpX += 48;
 
 		ControlPoint hill = level?.hill;
 		if (hill == null) return;

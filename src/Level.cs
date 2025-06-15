@@ -1133,11 +1133,20 @@ public partial class Level {
 		}
 	}
 
-	public void removePlayer(Player player) {
+	public void removePlayer(Player player, int mode) {
 		if (!Global.level.players.Contains(player)) return;
 
-		string leaveMsg = player.name + " left match.";
-		if (player.isBot) leaveMsg = player.name + " removed from match.";
+		string reason = mode switch {
+			0 => "(Disconected)",
+			1 => "(Bot removed)",
+			2 => "(Sync)",
+			_ => "[Debug Error]"
+		};
+
+		string leaveMsg = $"{player.name} left match. {reason}";
+		if (player.isBot) {
+			leaveMsg = player.name + " removed from match.";
+		}
 		gameMode.chatMenu.addChatEntry(new ChatEntry(leaveMsg, null, null, true));
 		player.destroy();
 		players.Remove(player);
@@ -1686,7 +1695,7 @@ public partial class Level {
 				if (playerLeft != null) {
 					var player = Global.level.getPlayerById(playerLeft.id);
 					if (player != null) {
-						removePlayer(player);
+						removePlayer(player, 0);
 					}
 				}
 			}

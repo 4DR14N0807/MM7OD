@@ -158,7 +158,7 @@ public class MatchOptionsMenu : IMainMenu {
 						RPC.removeBot.sendRpc(botToRemove.id);
 					}
 					else {
-						Global.level.removePlayer(botToRemove);
+						Global.level.removePlayer(botToRemove, 1);
 					}
 				}
 			},

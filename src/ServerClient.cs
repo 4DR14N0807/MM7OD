@@ -442,7 +442,6 @@ public class ServerClient {
 					if (rpcTemplate is RPCPeriodicServerPing) {
 						packetLossStopwatch.Restart();
 						packetsReceived++;
-						continue;
 					}
 
 					if (!rpcTemplate.isString) {

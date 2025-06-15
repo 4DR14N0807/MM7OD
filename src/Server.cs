@@ -815,7 +815,7 @@ public class Server {
 				string reportedPlayerJson = JsonConvert.SerializeObject(reportedPlayer);
 				om.Write(reportedPlayerJson);
 				if (im.SenderConnection != null) {
-					s_server.SendMessage(om, im.SenderConnection, rpcTemplate.netDeliveryMethod);
+					s_server.SendMessage(om, im.SenderConnection, rpcTemplate.netDeliveryMethod, 0);
 				}
 			}
 		} else if (rpcTemplate is RPCKickPlayerRequest) {
@@ -975,7 +975,7 @@ public class Server {
 
 		if (rpcTemplate.toHostOnly) {
 			if (host?.connection != null) {
-				s_server.SendMessage(om, host.connection, rpcTemplate.netDeliveryMethod);
+				s_server.SendMessage(om, host.connection, rpcTemplate.netDeliveryMethod, 0);
 			}
 		} else if (all.Count > 0) {
 			s_server.SendMessage(om, all, rpcTemplate.netDeliveryMethod, 0);

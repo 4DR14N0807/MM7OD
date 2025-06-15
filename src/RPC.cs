@@ -1417,6 +1417,7 @@ public class RPCPeriodicServerPing : RPC {
 	public RPCPeriodicServerPing() {
 		netDeliveryMethod = NetDeliveryMethod.Unreliable;
 		channel = RpcChannels.Data;
+		levelless = true;
 	}
 }
 

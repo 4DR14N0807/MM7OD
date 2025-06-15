@@ -2098,7 +2098,7 @@ public partial class Level {
 	}
 
 	public void drawDebug() {
-		if (Program.debugLogs.Count > 0) {
+		/*if (Program.debugLogs.Count > 0) {
 			float maxNum = MathInt.Ceiling(18 / Global.getDebugFontScale());
 			int currentOff = MathInt.Floor((Global.screenH - 10) / Global.getDebugFontScale());
 			int j = 0;
@@ -2110,7 +2110,7 @@ public partial class Level {
 			if (Program.debugLogs.Count > 50) {
 				Program.debugLogs.RemoveRange(0, Program.debugLogs.Count - 50);
 			}
-		}
+		}*/
 		if (Global.showGridHitboxes) {
 			int gridItemCount = 0;
 			int offset = 0;

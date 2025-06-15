@@ -1890,7 +1890,6 @@ public partial class Character : Actor, IDamagable {
 		if (isWarpIn()) return true;
 		if (invulnTime > 0) return true;
 		if (isBurnState) return true;
-		if (charState is CallDownRush) return true;
 		if (!ignoreRideArmorHide) { 
 			if (
 				charState.specialId == SpecialStateIds.AxlRoll || 
@@ -2697,7 +2696,7 @@ public partial class Character : Actor, IDamagable {
 		string playerName = player.name;
 		FontType playerColor = FontType.Grey;
 		if (Global.level.gameMode.isTeamMode && player.alliance < Global.level.teamNum) {
-			playerColor = Global.level.gameMode.teamFonts[player.alliance];
+			playerColor = Global.level.gameMode.teamFontsSmall[player.alliance];
 		}
 
 		if (!string.IsNullOrEmpty(overrideName)) playerName = overrideName;

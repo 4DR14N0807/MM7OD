@@ -1022,7 +1022,7 @@ public class Maverick : Actor, IDamagable {
 		string playerName = player.name;
 		FontType playerColor = FontType.Grey;
 		if (Global.level.gameMode.isTeamMode && player.alliance < Global.level.teamNum) {
-			playerColor = Global.level.gameMode.teamFonts[player.alliance];
+			playerColor = Global.level.gameMode.teamFontsSmall[player.alliance];
 		}
 
 		if (!string.IsNullOrEmpty(overrideName)) playerName = overrideName;

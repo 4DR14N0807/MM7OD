@@ -191,7 +191,7 @@ public class Bass : Character {
 		if (isSuperBass) {
 			chargeLogic(shoot);
 		}
-		quickAdaptorUpgrade(); 
+		//quickAdaptorUpgrade(); 
 	}
 
 	public override void chargeGfx() {
@@ -651,6 +651,12 @@ public class Bass : Character {
 	public override void landingCode(bool useSound = true) {
 		base.landingCode(useSound);
 		canRefillFly = true;
+	}
+
+	public override bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
+		if (charState is SuperBassStart or EnergyIncrease) return true;
+ 		
+		return base.isInvulnerable(ignoreRideArmorHide, factorHyperMode);
 	}
 
 	bool refillFly() { return grounded && canRefillFly; }

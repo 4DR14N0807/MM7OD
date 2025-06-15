@@ -19,12 +19,13 @@ public class TeamElimination : GameMode {
 		Player[] allyPlayersAlive = level.players.Where(
 			p => !p.isSpectator && p.deaths < playingTo && p.alliance == Global.level.mainPlayer.alliance
 		).ToArray();
-		FontType fontColor = teamFonts[mainPlayer.alliance];
+		FontType fontColor = teamFontsSmall[mainPlayer.alliance];
 		int lives = playingTo - level.mainPlayer.deaths;
 		string topText = "Allies:" + (allyPlayersAlive.Length).ToString().PadLeft(2 ,' ');
 		string botText = "Lives:" + lives.ToString().PadLeft(2 ,' ');
-		Fonts.drawText(fontColor, topText,  Global.screenW - 56, 7, Alignment.Right);
-		Fonts.drawText(FontType.WhiteSmall, botText,  Global.screenW - 56, 17, Alignment.Right);
+		float mapOffset = shouldDrawRadar() ? 0 : 48;
+		Fonts.drawText(fontColor, topText,  Global.screenW - 56 + mapOffset, 7, Alignment.Right);
+		Fonts.drawText(FontType.WhiteSmall, botText,  Global.screenW - 56 + mapOffset, 17, Alignment.Right);
 
 		if (virusStarted != 1) {
 			drawTimeIfSet(37);

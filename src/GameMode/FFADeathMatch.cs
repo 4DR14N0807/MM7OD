@@ -49,8 +49,9 @@ public class FFADeathMatch : GameMode {
 			topText = "Leader:" + playerList[0].kills.ToString().PadLeft(2 ,' ');
 		}
 		string botText = "Kills:" + level.mainPlayer.kills.ToString().PadLeft(2 ,' ');
-		Fonts.drawText(FontType.WhiteSmall, botText, Global.screenW - 56, 7, Alignment.Right);
-		Fonts.drawText(FontType.WhiteSmall, topText, Global.screenW - 56, 17, Alignment.Right);
+		float mapOffset = shouldDrawRadar() ? 0 : 48;
+		Fonts.drawText(FontType.WhiteSmall, botText, Global.screenW - 56 + mapOffset, 7, Alignment.Right);
+		Fonts.drawText(FontType.WhiteSmall, topText, Global.screenW - 56 + mapOffset, 17, Alignment.Right);
 
 		drawTimeIfSet(37);
 	}

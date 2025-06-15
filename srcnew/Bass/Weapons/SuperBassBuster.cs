@@ -493,6 +493,7 @@ public class DarkCometUpProj : Projectile {
 
 	Actor? actor;
 	Anim? anim;
+	bool hitWall;
 
 	public DarkCometUpProj(
 		Actor owner, Point pos, int xDir,
@@ -525,11 +526,26 @@ public class DarkCometUpProj : Projectile {
 		}
 
 		base.render(x,y);
+	}
+
+	public override void onHitWall(CollideData other) {
+		base.onHitWall(other);
+		if (!ownedByLocalPlayer) return;
+
+		var wall = other.gameObject as Wall;
+		Point hitPos = other.hitData.hitPoint ?? pos;
+
+		if (wall != null && other.isCeilingHit()) {
+			hitWall = true;
+			destroySelf();
+			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true) 
+			{ yScale = yScale * -1 };
+		}
 	} 
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (damagedOnce || !ownedByLocalPlayer || actor == null) return;
+		if (damagedOnce || !ownedByLocalPlayer || actor == null || hitWall) return;
 
 		for (int i = -1; i < 2; i++) {
 			new DarkCometDownProj(
@@ -566,12 +582,14 @@ public class DarkCometDownProj : Projectile {
 
 	public override void onHitWall(CollideData other) {
 		base.onHitWall(other);
+		if (!ownedByLocalPlayer) return;
 
 		var floor = other.gameObject as Wall;
+		Point hitPos = other.hitData.hitPoint ?? pos;
 
 		if (floor != null && other.isGroundHit()) {
 			destroySelf();
-			new Anim(pos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true);
+			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true);
 		}
 	}
 

@@ -14,6 +14,7 @@ public class Geometry : GameObject {
 	public float speedMul { get; set; } = 1;
 	public bool useTerrainGrid { get; set; } = true;
 	public bool useActorGrid { get; set; } = false;
+	public bool hasStateMachine { get; set; } = false;
 
 	public Geometry(string name, List<Point> points) {
 		this.name = name;

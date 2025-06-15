@@ -1305,7 +1305,7 @@ public partial class Level {
 				go.speedMul = slowAmount;
 			}
 			go.preUpdate();
-			go.statePreUpdate();
+			if (go.hasStateMachine) { go.statePreUpdate(); }
 			Global.speedMul = 1;
 		}
 
@@ -1328,7 +1328,7 @@ public partial class Level {
 				go.speedMul = slowAmount;
 			}
 			go.update();
-			go.stateUpdate();
+			if (go.hasStateMachine) { go.stateUpdate(); }
 			if (isNon1v1Elimination() &&
 				gameMode.virusStarted > 0 && go is Actor actor &&
 				actor.ownedByLocalPlayer && go is IDamagable damagable
@@ -1514,7 +1514,7 @@ public partial class Level {
 				go.speedMul = slowAmount;
 			}
 			go.postUpdate();
-			go.statePostUpdate();
+			if (go.hasStateMachine) { go.statePostUpdate(); }
 			go.netUpdate();
 			Global.speedMul = 1;
 		}

@@ -33,6 +33,7 @@ public class NeutralEnemy : Actor, IDamagable {
 		}
 
 		this.alliance = alliance;
+		hasStateMachine = true;
 	}
 
 	public override void preUpdate() {

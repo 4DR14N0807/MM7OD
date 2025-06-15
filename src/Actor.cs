@@ -10,6 +10,7 @@ public partial class Actor : GameObject {
 	public Sprite sprite; //Current sprite
 	public bool useTerrainGrid { get; set; } = false;
 	public bool useActorGrid { get; set; } = true;
+	public bool hasStateMachine { get; set; } = false;
 	public bool iDestroyed => destroyed;
 	public bool disabled;
 	public bool iDisabled => disabled;

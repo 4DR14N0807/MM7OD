@@ -9,6 +9,7 @@ public interface GameObject {
 	float speedMul { get; set; }
 	bool useTerrainGrid { get; set; }
 	bool useActorGrid { get; set; }
+	bool hasStateMachine { get; }
 	void onStart();
 	void preUpdate();
 	void update();

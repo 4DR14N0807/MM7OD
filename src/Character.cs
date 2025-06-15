@@ -1107,7 +1107,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void update() {
-		base.update();
 		if (charState is not InRideChaser) {
 			camOffsetX = MathInt.Round(Helpers.lerp(camOffsetX, 0, 10));
 		}

@@ -38,7 +38,7 @@ public partial class Actor {
 		args.Add(0);
 
 		// Pos.
-		if (!isStatic && lastPos != pos) {
+		if (!isStatic) {
 			byte[] xBytes = BitConverter.GetBytes(pos.x);
 			byte[] yBytes = BitConverter.GetBytes(pos.y);
 			args.AddRange(xBytes);
@@ -60,14 +60,12 @@ public partial class Actor {
 		// Do not send sprite data if not in the sprite table.
 		if (spriteIndex != ushort.MaxValue) {
 			// We also send both changed if for some reason packets get lost.
-			bool frameChanged = sprite.totalFrameNum != 0 && lastFrameIndex != frameIndex;
+			bool frameChanged = sprite.totalFrameNum != 0;
 			// Sprite index.
-			if (lastSpriteIndex != spriteIndex || frameChanged) {
-				byte[] spriteBytes = BitConverter.GetBytes((ushort)spriteIndex);
-				args.AddRange(spriteBytes);
-				mask[2] = true;
-				send = true;
-			}
+			byte[] spriteBytes = BitConverter.GetBytes((ushort)spriteIndex);
+			args.AddRange(spriteBytes);
+			mask[2] = true;
+			send = true;
 			// Frame index.
 			if (frameChanged) {
 				args.Add((byte)frameIndex);

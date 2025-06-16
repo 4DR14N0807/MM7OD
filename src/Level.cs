@@ -1133,17 +1133,17 @@ public partial class Level {
 		}
 	}
 
-	public void removePlayer(Player player, int mode) {
+	public void removePlayer(Player player, int mode = -1) {
 		if (!Global.level.players.Contains(player)) return;
 
 		string reason = mode switch {
-			0 => "(Disconected)",
-			1 => "(Bot removed)",
-			2 => "(Sync)",
-			_ => "[Debug Error]"
+			0 => " (Disconected)",
+			1 => " (Bot removed)",
+			2 => " (Sync)",
+			_ => ""
 		};
 
-		string leaveMsg = $"{player.name} left match. {reason}";
+		string leaveMsg = $"{player.name} left match.{reason}";
 		if (player.isBot) {
 			leaveMsg = player.name + " removed from match.";
 		}

@@ -7,7 +7,6 @@ public partial class RPCCreateProj : RPC {
 	public RPCCreateProj() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.CreateDestroy;
 	}
 
 	public override void invoke(params byte[] arguments) {

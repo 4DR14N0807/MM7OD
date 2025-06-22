@@ -10,7 +10,6 @@ public class RPCCustom : RPC {
 	public RPCCustom() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.Custom;
 	}
 
 	// Use custom invoke here.

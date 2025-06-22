@@ -158,14 +158,16 @@ public partial class Actor : GameObject {
 	public Point? targetNetPos;
 	public bool interplorateNetPos = true;
 
-	private Point? lastPos;
-	private int? lastSpriteIndex;
-	private int? lastFrameIndex;
-	private int? lastXDir;
-	private int? lastYDir;
-	private float? lastAngle;
-	private bool? lastVisible;
-	private (int x, int y)? lastScale;
+	
+	public float? netXPos;
+	public float? netYPos;
+	public Point netIncPos;
+	public int? netSpriteIndex;
+	public int? netFrameIndex;
+	public int? netXDir;
+	public int? netYDir;
+	public float? netAngle;
+
 	public float lastNetUpdate;
 	public int lastNetFrame = Global.frameCount;
 
@@ -1078,9 +1080,7 @@ public partial class Actor : GameObject {
 	}
 
 	public void netUpdate() {
-		if (netId == null) {
-			return;
-		}
+		if (netId == null) return;
 		if (destroyPosSet) {
 			destroyPosTime += Global.spf;
 			incPos(vel.times(Global.spf));
@@ -1093,20 +1093,90 @@ public partial class Actor : GameObject {
 			return;
 		}
 		forceNetUpdateNextFrame = false;
-
 		if (ownedByLocalPlayer) {
-			if (Global.level.isSendMessageFrame() || forceNetUpdateNextFrame) {
-				sendActorNetData();
-			}
+			if (!Global.level.isSendMessageFrame()) return;
+			sendActorNetData();
 		} else {
-			// 5 seconds since last net update: destroy the object.
-			if (!canBeLocal && Global.time - lastNetUpdate > 5 && cleanUpOnNoResponse()) {
+			// 5 seconds since last net update: destroy the object
+			if (Global.time - lastNetUpdate > 5 && cleanUpOnNoResponse()) {
 				destroySelf(disableRpc: true);
 				return;
 			}
-			if (targetNetPos != null && Global.frameCount - lastNetFrame > 1) {
-				changePos(targetNetPos.Value);
-				targetNetPos = null;
+
+			float frameSmooth = Global.frameCount - lastNetFrame + 1;
+			if (frameSmooth < 1) { frameSmooth = 1; }
+
+			if (frameSmooth > 1 && interplorateNetPos) {
+				if (targetNetPos != null) {
+					changePos(targetNetPos.Value);
+					targetNetPos = null;
+				}
+				if (!stopSyncingNetPos && (netXPos != null || netYPos != null)) {
+					var netPos = pos;
+					if (netXPos != null && !stopSyncingNetPos) {
+						netPos.x = (float)netXPos;
+					}
+					if (netYPos != null && !stopSyncingNetPos) {
+						netPos.y = (float)netYPos;
+					}
+
+					var incPos = netPos.subtract(pos).times(1f / frameSmooth);
+					var framePos = pos.add(incPos);
+
+					netXPos = null;
+					netYPos = null;
+					if (pos.distanceTo(framePos) > 0.001f) {
+						changePos(framePos);
+						netXPos = null;
+						netYPos = null;
+						targetNetPos = netPos;
+					} else {
+						changePos(netPos);
+						targetNetPos = null;
+					}
+				}
+			} else if (!stopSyncingNetPos) {
+				var netPos = pos;
+				bool posChanged = false;
+				if (netXPos != null) {
+					netPos.x = (float)netXPos;
+					posChanged = true;
+				}
+				if (netYPos != null) {
+					netPos.y = (float)netYPos;
+					posChanged = true;
+				}
+				if (posChanged) {
+					changePos(netPos);
+				}
+			}
+
+			
+			int spriteIndex = -1;
+			if (Global.spriteIndexByName.ContainsKey(sprite.name)) {
+				spriteIndex = Global.spriteIndexByName[sprite.name];
+			}
+			if (netSpriteIndex != null && netSpriteIndex != spriteIndex) {
+				int index = (int)netSpriteIndex;
+				if (index >= 0 && index < Global.spriteCount) {
+					string spriteName = Global.spriteNameByIndex[index];
+					changeSprite(spriteName, true);
+				}
+			}
+			if (netFrameIndex != null && frameIndex != netFrameIndex) {
+				if (netFrameIndex >= 0 && netFrameIndex < sprite.totalFrameNum) {
+					frameIndex = (int)netFrameIndex;
+				}
+			}
+
+			if (netXDir != null && xDir != netXDir) {
+				xDir = (int)netXDir;
+			}
+			if (netYDir != null && yDir != netYDir) {
+				yDir = (int)netYDir;
+			}
+			if (netAngle != null && netAngle != byteAngle) {
+				byteAngle = netAngle.Value;
 			}
 		}
 	}

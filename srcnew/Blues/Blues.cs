@@ -1775,48 +1775,24 @@ public class Blues : Character {
 		List<byte> customData = base.getCustomActorNetData();
 
 		// Per-character data.
-		byte netCore = (byte)MathInt.Floor(coreAmmo);
-		byte netShieldHP = (byte)MathInt.Ceiling(shieldHP);
-		byte netChargeLV = (byte)getChargeLevel();
-		byte netBoolFlags = Helpers.boolArrayToByte([
+		customData.Add((byte)MathInt.Floor(coreAmmo));
+		customData.Add((byte)MathInt.Ceiling(shieldHP));
+		customData.Add((byte)getChargeLevel());
+		bool[] flags = [
 			isShieldFront(),
 			overheating,
 			isBreakMan,
 			overdrive
-		]);
+		];
+		customData.Add(Helpers.boolArrayToByte(flags));
 
-		// Check if change and if so add it.
-		if (netCore != lastNetCore || netShieldHP != lastNetShieldHP ||
-			netChargeLV != lastNetChargeLevel || netBoolFlags != lastNetBoolFlags
-		) {
-			customData.AddRange([
-				netCore,
-				netShieldHP,
-				netChargeLV,
-				netBoolFlags
-			]);
-		}
-		// Update values for future checks.
-		lastNetCore = netCore;
-		lastNetShieldHP = netShieldHP;
-		lastNetChargeLevel = netChargeLV;
-		lastNetBoolFlags = netBoolFlags;
-
-		if (customData.Count <= 1) {
-			customData.Clear();
-		}
 		return customData;
 	}
 
 	public override void updateCustomActorNetData(byte[] data) {
 		// Update base arguments.
-		if (data[0] > 1) { base.updateCustomActorNetData(data); }
+		base.updateCustomActorNetData(data);
 		data = data[data[0]..];
-
-		// Skip if no data changed.
-		if (data.Length == 0) {
-			return;
-		}
 
 		// Per-character data.
 		coreAmmo = data[0];

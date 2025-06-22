@@ -1956,7 +1956,7 @@ public enum EffectIds {
 
 public class RPCCreateEffect : RPC {
 	public RPCCreateEffect() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		netDeliveryMethod = NetDeliveryMethod.Unreliable;
 		isPreUpdate = true;
 	}
 

@@ -748,7 +748,6 @@ public class Rock : Character {
 		base.renderBuffs(offset, position);
 	}
 
-
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
 		List<byte> customData = base.getCustomActorNetData();

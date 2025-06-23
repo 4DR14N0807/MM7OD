@@ -1667,12 +1667,13 @@ public partial class Level {
 		if (Global.serverClient == null) {
 			return;
 		}
+		Global.serverClient.flush();
 		Global.serverClient.getMessages(out var messages, true);
 
 		foreach (var message in messages) {
 			if (message.StartsWith("hostdisconnect:")) {
 				string reason = message.Split(':')[1];
-				if (reason == "RecreateMS" &&
+				if (reason == "RecreateMS" && 
 					Global.serverClient.serverId != null
 				) {
 					server.uniqueID = Global.serverClient.serverId.Value;

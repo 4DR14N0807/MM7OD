@@ -4,21 +4,8 @@ using System.Globalization;
 using System.Linq;
 using Lidgren.Network;
 using Newtonsoft.Json;
-using ProtoBuf;
 
 namespace MMXOnline;
-
-public enum RpcChannels {
-	Default,
-	Data,
-	Unordered,
-	UpdateActor,
-	CreateDestroy,
-	CreateEffect,
-	Damage,
-	Sounds,
-	Custom
-}
 
 public class RPC {
 	public NetDeliveryMethod netDeliveryMethod;
@@ -29,7 +16,6 @@ public class RPC {
 	public bool isCollision;
 	public bool levelless;
 	public int index;
-	public RpcChannels channel = RpcChannels.Default;
 
 	// Need templates? Use these:
 	// -Sending a value to an actor: RPCChangeDamage
@@ -198,7 +184,6 @@ public class RPCSendString : RPC {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
 		levelless = true;
-		channel = RpcChannels.Data;
 	}
 }
 
@@ -207,7 +192,6 @@ public class RPCStartLevel : RPC {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
 		levelless = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string message) {
@@ -271,7 +255,6 @@ public class RPCSpawnCharacter : RPC {
 	public RPCSpawnCharacter() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.CreateDestroy;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -336,7 +319,6 @@ public class RPCApplyDamage : RPC {
 	public RPCApplyDamage() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isCollision = true;
-		channel = RpcChannels.Damage;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -452,6 +434,7 @@ public class BackloggedDamage {
 		this.actorId = actorId;
 		this.meleeId = meleeId;
 		this.damageAction = damageAction;
+
 	}
 }
 
@@ -471,7 +454,6 @@ public class RPCDestroyActor : RPC {
 	public RPCDestroyActor() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableUnordered;
 		isPreUpdate = true;
-		channel = RpcChannels.Unordered;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -539,12 +521,11 @@ public class RPCDestroyCharacter : RPC {
 	public RPCDestroyCharacter() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableUnordered;
 		isPreUpdate = true;
-		channel = RpcChannels.Unordered;
 	}
 
 	public override void invoke(params byte[] arguments) {
 		int playerId = arguments[0];
-		ushort charNetId = BitConverter.ToUInt16(arguments.AsSpan()[1..3]);
+		ushort charNetId = BitConverter.ToUInt16(arguments[1..3]);
 		Player? player = Global.level.getPlayerById(playerId);
 		// We start by trying to call the regular destroy.
 		bool destroyedChar = false;
@@ -566,7 +547,7 @@ public class RPCDestroyCharacter : RPC {
 		args.Add((byte)player.id);
 		args.AddRange(BitConverter.GetBytes(character.netId.Value));
 
-		Global.serverClient.rpc(destroyCharacter, args.ToArray());
+		Global.serverClient?.rpc(RPC.destroyCharacter, args.ToArray());
 	}
 }
 
@@ -649,6 +630,12 @@ public class RPCPlayerToggle : RPC {
 			if (player.character is Axl axl) {
 				axl.whiteAxlTime = axl.maxHyperAxlTime;
 			}
+		} else if (toggleId == RPCToggleType.ReviveVileTo2) {
+			player.reviveVileNonOwner(false);
+		} else if (toggleId == RPCToggleType.ReviveVileTo5) {
+			player.reviveVileNonOwner(true);
+		} else if (toggleId == RPCToggleType.ReviveX) {
+			player.reviveXNonOwner();
 		} else if (toggleId == RPCToggleType.StartRev) {
 			if (player.character is Axl axl) {
 				axl.isNonOwnerRev = true;
@@ -796,7 +783,6 @@ public class RPCKillPlayer : RPC {
 	public RPCKillPlayer() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.CreateDestroy;
 	}
 	public override void invoke(params byte[] arguments) {
 		int hasOwnerId = arguments[0];
@@ -825,9 +811,8 @@ public class RPCKillPlayer : RPC {
 
 public class RPCCreateAnim : RPC {
 	public RPCCreateAnim() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		netDeliveryMethod = NetDeliveryMethod.Unreliable;
 		isPreUpdate = true;
-		channel = RpcChannels.CreateEffect;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -893,7 +878,6 @@ public class RPCSwitchTeam : RPC {
 	public RPCSwitchTeam() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string message) {
@@ -920,7 +904,6 @@ public class RPCReflectProj : RPC {
 	public RPCReflectProj() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.Damage;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -952,7 +935,6 @@ public class RPCJoinLateRequest : RPC {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
 		toHostOnly = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1024,11 +1006,10 @@ public class RPCJoinLateResponse : RPC {
 	public RPCJoinLateResponse() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		levelless = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
-		JoinLateResponseModel joinLateResponseModel;
+		JoinLateResponseModel joinLateResponseModel = null;
 		try {
 			joinLateResponseModel = Helpers.deserialize<JoinLateResponseModel>(arguments);
 		} catch {
@@ -1061,7 +1042,6 @@ public class RPCUpdateStarted : RPC {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isServerMessage = true;
 		levelless = true;
-		channel = RpcChannels.Data;
 	}
 }
 
@@ -1069,7 +1049,6 @@ public class RPCHostPromotion : RPC {
 	public RPCHostPromotion() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		levelless = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1090,7 +1069,6 @@ public class RPCMatchOver : RPC {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
 		levelless = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string message) {
@@ -1102,7 +1080,6 @@ public class RPCMatchOver : RPC {
 public class RPCSyncTeamScores : RPC {
 	public RPCSyncTeamScores() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1116,7 +1093,6 @@ public class RPCSyncGameTime : RPC {
 	public RPCSyncGameTime() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1136,7 +1112,6 @@ public class RPCSyncGameTime : RPC {
 public class RPCSyncSetupTime : RPC {
 	public RPCSyncSetupTime() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1183,7 +1158,6 @@ public class RPCSendChatMessage : RPC {
 	public RPCSendChatMessage() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string message) {
@@ -1238,7 +1212,6 @@ public class RPCReportPlayerRequest : RPC {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
 		isServerMessage = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string playerName) {
@@ -1249,7 +1222,6 @@ public class RPCReportPlayerResponse : RPC {
 	public RPCReportPlayerResponse() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string json) {
@@ -1281,7 +1253,6 @@ public class RPCKickPlayerRequest : RPC {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
 		isServerMessage = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string playerName) {
@@ -1292,7 +1263,6 @@ public class RPCKickPlayerResponse : RPC {
 	public RPCKickPlayerResponse() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string kickPlayerJson) {
@@ -1310,7 +1280,6 @@ public class RPCVoteKickStart : RPC {
 	public RPCVoteKickStart() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isString = true;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(string kickPlayerJson) {
@@ -1325,7 +1294,6 @@ public class RPCVoteKickStart : RPC {
 public class RPCVoteKickEnd : RPC {
 	public RPCVoteKickEnd() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1352,7 +1320,6 @@ public class RPCVoteKick : RPC {
 public class RPCEndMatchRequest : RPC {
 	public RPCEndMatchRequest() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1369,7 +1336,6 @@ public class RPCEndMatchRequest : RPC {
 public class RPCPeriodicServerSync : RPC {
 	public RPCPeriodicServerSync() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1397,7 +1363,7 @@ public class RPCPeriodicServerSync : RPC {
 		}
 		foreach (var player in Global.level.players.ToList()) {
 			if (!syncModel.players.Any(sp => sp.id == player.id)) {
-				Global.level.removePlayer(player, 2);
+				Global.level.removePlayer(player);
 			}
 		}
 	}
@@ -1406,15 +1372,12 @@ public class RPCPeriodicServerSync : RPC {
 public class RPCPeriodicServerPing : RPC {
 	public RPCPeriodicServerPing() {
 		netDeliveryMethod = NetDeliveryMethod.Unreliable;
-		channel = RpcChannels.Data;
-		levelless = true;
 	}
 }
 
 public class RPCPeriodicHostSync : RPC {
 	public RPCPeriodicHostSync() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1450,7 +1413,6 @@ public class RPCUpdatePlayer : RPC {
 	public RPCUpdatePlayer() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isServerMessage = true;
-		channel = RpcChannels.Data;
 	}
 
 	public void sendRpc(int playerId, int kills, int deaths) {
@@ -1464,7 +1426,6 @@ public class RPCAddBot : RPC {
 	public RPCAddBot() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isServerMessage = true;
-		channel = RpcChannels.Data;
 	}
 
 	public void sendRpc(int charNum, int team) {
@@ -1478,7 +1439,6 @@ public class RPCRemoveBot : RPC {
 	public RPCRemoveBot() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isServerMessage = true;
-		channel = RpcChannels.Data;
 	}
 
 	public void sendRpc(int playerId) {
@@ -1490,7 +1450,6 @@ public class RPCMakeSpectator : RPC {
 	public RPCMakeSpectator() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isServerMessage = true;
-		channel = RpcChannels.Data;
 	}
 
 	public void sendRpc(int playerId, bool makeSpectator) {
@@ -1501,7 +1460,6 @@ public class RPCMakeSpectator : RPC {
 public class RPCSyncValue : RPC {
 	public RPCSyncValue() {
 		netDeliveryMethod = NetDeliveryMethod.Unreliable;
-		channel = RpcChannels.Data;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1519,7 +1477,6 @@ public class RPCHeal : RPC {
 	public RPCHeal() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.Damage;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1566,7 +1523,6 @@ public enum CommandGrabScenario {
 public class RPCCommandGrabPlayer : RPC {
 	public RPCCommandGrabPlayer() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Damage;
 	}
 
 	public void maverickGrabCode(
@@ -1728,7 +1684,6 @@ public class RPCClearOwnership : RPC {
 public class RPCPlaySound : RPC {
 	public RPCPlaySound() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Sounds;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1764,7 +1719,6 @@ public class RPCPlaySound : RPC {
 public class RPCStopSound : RPC {
 	public RPCStopSound() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		channel = RpcChannels.Sounds;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1868,7 +1822,6 @@ public class RPCChangeDamage : RPC {
 	public RPCChangeDamage() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isPreUpdate = true;
-		channel = RpcChannels.Damage;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -1899,7 +1852,6 @@ public class RPCLogWeaponKills : RPC {
 	public RPCLogWeaponKills() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		isServerMessage = true;
-		channel = RpcChannels.Data;
 	}
 
 	public void sendRpc() {
@@ -1996,6 +1948,7 @@ public class RPCResetFlag : RPC {
 	}
 }
 
+
 public enum EffectIds {
 	None,
 	DieEffect,
@@ -2003,9 +1956,8 @@ public enum EffectIds {
 
 public class RPCCreateEffect : RPC {
 	public RPCCreateEffect() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		netDeliveryMethod = NetDeliveryMethod.Unreliable;
 		isPreUpdate = true;
-		channel = RpcChannels.CreateEffect;
 	}
 
 	public override void invoke(params byte[] arguments) {
@@ -2020,9 +1972,9 @@ public class RPCCreateEffect : RPC {
 
 		switch (id) {
 			case EffectIds.DieEffect: {
-				new DieEffect(pos, extraArgs[0]);
-				break;
-			}
+					new DieEffect(pos, extraArgs[0]);
+					break;
+				}
 		}
 	}
 
@@ -2083,14 +2035,11 @@ public class RPCAddExp : RPC {
 		}
 		if (type == 0) {
 			player.masteryLevels[charId].addDamageExp(exp);
-		}
-		else if (type == 1) {
+		} else if (type == 1) {
 			player.masteryLevels[charId].addDefenseExp(exp);
-		}
-		else if (type == 2) {
+		} else if (type == 2) {
 			player.masteryLevels[charId].addSupportExp(exp);
-		}
-		else if (type == 3) {
+		} else if (type == 3) {
 			player.masteryLevels[charId].addMapExp(exp);
 		}
 	}

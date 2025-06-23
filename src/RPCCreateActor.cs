@@ -58,7 +58,6 @@ public class RPCCreateActor : RPC {
 	public RPCCreateActor() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered; 
 		isPreUpdate = true;
-		channel = RpcChannels.CreateDestroy;
 	}
 
 	public override void invoke(params byte[] arguments) {

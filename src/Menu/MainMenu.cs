@@ -153,7 +153,6 @@ public class MainMenu : IMainMenu {
 			string versionText = Global.shortForkName + " " + Global.subVersionShortName/*  + " " + Global.versionName */;
 			int offset = 2;
 			Fonts.drawText(FontType.WhiteSmall, versionText, 2, offset);
-			offset += 10;
 
 			if (Global.radminIP != "") {
 				Fonts.drawText(FontType.GreenSmall, "Radmin", 2, offset);

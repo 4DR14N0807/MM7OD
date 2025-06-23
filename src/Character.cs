@@ -3629,7 +3629,6 @@ public partial class Character : Actor, IDamagable {
 	
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = [];
-		bool send = false;
 
 		// For keeping track how long the normal args are.
 		// We need to edit this later.
@@ -3672,47 +3671,38 @@ public partial class Character : Actor, IDamagable {
 		if (acidTime > 0) {
 			customData.Add((byte)MathF.Ceiling(acidTime * 20));
 			boolMask[0] = true;
-			send = true;
 		}
 		if (burnTime > 0) {
 			customData.Add((byte)MathF.Ceiling(burnTime * 30));
 			boolMask[1] = true;
-			send = true;
 		}
 		if (chargeTime > 0) {
 			customData.Add((byte)MathF.Ceiling(chargeTime / 3));
 			boolMask[2] = true;
-			send = true;
 		}
 		if (igFreezeProgress > 0) {
 			customData.Add((byte)MathF.Ceiling(igFreezeProgress * 30));
 			boolMask[3] = true;
-			send = true;
 		}
 		if (oilTime > 0) {
 			customData.Add((byte)MathF.Ceiling(oilTime * 30));
 			boolMask[4] = true;
-			send = true;
 		}
 		if (virusTime > 0) {
 			customData.Add((byte)MathF.Ceiling(virusTime * 30));
 			boolMask[5] = true;
-			send = true;
 		}
 		if (vaccineTime > 0) {
 			customData.Add((byte)MathF.Ceiling(vaccineTime * 30));
 			boolMask[6] = true;
-			send = true;
 		}
 		if (burnStunStacks > 0) {
 			customData.Add((byte)burnStunStacks);
 			boolMask[7] = true;
-			send = true;
 		}
 		if (rootTime > 0) {
 			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
 			boolMaskB[0] = true;
-			send = true;
 		}
 
 		// Add the final value of the bool mask.
@@ -3722,14 +3712,6 @@ public partial class Character : Actor, IDamagable {
 		// Add the total arguments size.
 		customData[0] = (byte)customData.Count;
 
-		if (netHP != lastNetHP ||
-			netMaxHP != lastNetMaxHP ||
-			netAlliance != lastNetAlliance ||
-			netCurrency != lastNetCurrency ||
-			stateFlag != lastNetStateFlag
-		) {
-			send = true;
-		}
 		// Update the old values even if we do not send them.
 		lastNetHP = netHP;
 		lastNetMaxHP = netMaxHP;
@@ -3737,10 +3719,6 @@ public partial class Character : Actor, IDamagable {
 		lastNetCurrency = netCurrency;
 		lastNetStateFlag = stateFlag;
 
-		// Check and send.
-		if (!send) {
-			return [1];
-		}
 		return customData;
 	}
 

@@ -183,7 +183,7 @@ public class HardKnuckleShoot : CharState {
 		}
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		blues.inCustomShootAnim = false;
 	}

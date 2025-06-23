@@ -475,7 +475,7 @@ public class BigBangStrikeStart : CharState {
 		bgEffect = new BigBangStrikeBackwall(character.pos, character);
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		if (bgEffect.effectTime < 2) {
 			bgEffect.effectTime = 2;

@@ -840,7 +840,7 @@ public class HostMenu : IMainMenu {
 		"urbanarea_md", "iceberg_md", "robotmuseum_md", "willy2_md", "willy3_md",
 		//Large Maps
 		"urbanarea", "iceberg", "recyclingplant", "substancefactory", "weatherinstitute", 
-		"dinosaurjungle", "willy3", 
+		"dinosaurjungle", "willy1", "willy4", 
 	};
 	public int mapSortFunc(LevelData a, LevelData b) {
 		int aIndex = -1;

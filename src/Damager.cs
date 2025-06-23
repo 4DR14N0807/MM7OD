@@ -252,7 +252,11 @@ public class Damager {
 					character.slowdownTime = MathF.Max(character.slowdownTime, 15);
 					break;
 				case (int)BassProjIds.WaveBurnerUnderwater:
-					character.xPushVel += 180 * damagingActor?.xDir ?? 180 * -character.xDir;
+					if (damagingActor != null) {
+						Point push = Point.createFromByteAngle(damagingActor.byteAngle).times(300);
+						character.xPushVel += push.x;
+						character.yPushVel += push.y;
+					}
 					break;
 			}
 			float flinchCooldown = 0;
@@ -338,7 +342,12 @@ public class Damager {
 		if (projId == null) return false;
 		return projId switch {
 			(int)RockProjIds.SlashClaw => true,
+			(int)RockProjIds.DangerWrapBubbleExplosion => true,
+			(int)RockProjIds.DangerWrapExplosion => true,
+			(int)RockProjIds.DangerWrapMine => true,
+			(int)RockProjIds.DangerWrapMineLanded => true,
 			(int)RockProjIds.LegBreaker => true,
+			(int)BluesProjIds.GravityHoldCrash => true,
 			(int)BluesProjIds.BigBangStrike => true,
 			(int)BluesProjIds.BigBangStrikeExplosion => true,
 			(int)ProjIds.TenguBladeDash => true,

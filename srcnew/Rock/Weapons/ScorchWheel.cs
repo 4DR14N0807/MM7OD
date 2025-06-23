@@ -5,7 +5,8 @@ namespace MMXOnline;
 
 public class ScorchWheel : Weapon {
 	public static ScorchWheel netWeapon = new();
-
+	public float ogCooldown = 60;
+	public float uwCooldown = 45;
 	public ScorchWheel() : base() {
 		index = (int)RockWeaponIds.ScorchWheel;
 		weaponSlotIndex = (int)RockWeaponSlotIds.ScorchWheel;
@@ -14,7 +15,7 @@ public class ScorchWheel : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 16;
 		ammo = maxAmmo;
-		fireRate = 60;
+		fireRate = ogCooldown;
 		switchCooldown = 45;
 		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };
 	}
@@ -22,6 +23,8 @@ public class ScorchWheel : Weapon {
 	public override void shootRock(Rock rock, params int[] args) {
 		base.shootRock(rock, args);
 		int chargeLevel = args[0];
+
+		fireRate = rock.isUnderwater() ? uwCooldown : ogCooldown;
 
 		if (rock.charState is LadderClimb lc) {
 			rock.changeState(new ShootAltLadder(lc.ladder, this, chargeLevel, rock.isUnderwater()), true);
@@ -35,7 +38,7 @@ public class ScorchWheel : Weapon {
 		Player player = rock.player;
 
 		if (rock.isUnderwater()) {
-			new UnderwaterScorchWheelProj
+			new UnderwaterScorchWheelSpawn
 			(
 				rock, rock.getCenterPos(), rock.getShootXDir(), 
 				player.getNextActorNetId(true), rpc: true, player
@@ -185,7 +188,8 @@ public class ScorchWheelProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (rock == null) return;
+		checkUnderwater();
+		if (rock == null || destroyed) return;
 		if (rock != null) {
 			xDir = rock.getShootXDir();
 		}
@@ -272,6 +276,18 @@ public class ScorchWheelProj : Projectile {
 		}
 	}
 
+	public void checkUnderwater() {
+		if (isUnderwater()) {
+			new BubbleAnim(pos, "bubbles") { vel = new Point(0, -60) };
+			Global.level.delayedActions.Add(new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f));
+
+			if (rock == null || rock.charState is Die || (rock.player.weapon is not JunkShield)) {
+				destroySelf();
+				return;
+			}
+		}
+	}
+
 	public override void onDestroy() {
 		base.onDestroy();
 		if (rock != null && ownedByLocalPlayer) rock.sWell = null;
@@ -316,6 +332,7 @@ public class ScorchWheelMoveProj : Projectile {
 
 	public override void update() {
 		base.update();
+		checkUnderwater();
 	}
 
 	public override void onHitWall(CollideData other) {
@@ -329,7 +346,7 @@ public class ScorchWheelMoveProj : Projectile {
 			destroySelf();
 			Anim.createGibEffect(
 				"scorch_wheel_fireball", pos, ownerPlayer, sendRpc: true,
-				pieceOverdive: 4, gibPattern: GibPattern.SemiCircle
+				pieceOverdive: 4, gibPattern: GibPattern.SemiCircle, blink: true, alpha: 0.5f
 			);
 		}
 	}
@@ -348,7 +365,7 @@ public class ScorchWheelMoveProj : Projectile {
 }
 
 
-public class UnderwaterScorchWheelProj : Projectile {
+public class UnderwaterScorchWheelSpawn : Projectile {
 
 	int bubblesAmount;
 	int counter = 0;
@@ -356,20 +373,20 @@ public class UnderwaterScorchWheelProj : Projectile {
 	int counterSmall = 0;
 	Rock rock = null!;
 
-	public UnderwaterScorchWheelProj(
+	public UnderwaterScorchWheelSpawn(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "empty", netProjId, altPlayer
 	) {
-		projId = (int)RockProjIds.ScorchWheelUnderwater;
-		maxTime = 1.5f;
+		projId = (int)RockProjIds.ScorchWheelUnderwaterSpawn;
+		maxTime = 0.2f;
 		destroyOnHit = false;
+		setIndestructableProperties();
 
 		if (ownedByLocalPlayer) {
 			rock = owner as Rock ?? throw new NullReferenceException();
 			if (rock != null) rock.sWellU = this;
-			if (rock != null) rock.underwaterScorchWheel = this;
 		}
 		
 		damager.damage = 2;
@@ -382,9 +399,21 @@ public class UnderwaterScorchWheelProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new UnderwaterScorchWheelProj(
+		return new UnderwaterScorchWheelSpawn(
 			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
+	}
+
+	public override void onStart() {
+		base.onStart();
+		if (!ownedByLocalPlayer) return;
+
+		for (int i = 0; i < 8; i++) {
+			float extraAng = Helpers.randomRange(0, 16);
+			new UnderwaterScorchWheelProj(
+				rock, pos, xDir, damager.owner.getNextActorNetId(), i, extraAng, true
+			);
+		}
 	}
 
 	public override void update() {
@@ -423,6 +452,65 @@ public class UnderwaterScorchWheelProj : Projectile {
 		if (rock != null && ownedByLocalPlayer) rock.sWellU = null!;
 	}
 }
+
+
+public class UnderwaterScorchWheelProj : Projectile {
+
+	int phase;
+	float ang;
+	float extraAng;
+
+	public UnderwaterScorchWheelProj(
+		Actor owner, Point pos, int xDir, ushort? netId, int type, 
+		float extraAng, bool rpc = false, Player? player = null
+	) : base(
+		pos, xDir, owner, "scorch_wheel_proj_uw", netId, player
+	) {
+		projId = (int)RockProjIds.ScorchWheelUnderwaterProj;
+		maxTime = 1.5f;
+		destroyOnHit = false;
+
+		damager.damage = 2;
+		damager.hitCooldown = 60;
+
+		this.extraAng = extraAng;
+		if (type % 2 == 0) extraAng *= -1;
+		if (extraAng < 0) extraAng += 256;
+
+		ang = (MathF.Floor(type / 2) * 64) + 32 + extraAng;
+		vel = Point.createFromByteAngle(ang).times(240);
+
+		if (rpc) rpcCreate(pos, owner, ownerPlayer, netId, xDir, new[] { (byte)type, (byte)extraAng} );
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new UnderwaterScorchWheelProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId,
+			arg.extraData[0], arg.extraData[1], player: arg.player
+		);
+	} 
+
+	public override void update() {
+		base.update();
+		if (!isUnderwater()) {
+			destroySelf();
+			return;
+		} 
+
+		if (phase == 0) {
+			vel = vel.subtract(Point.createFromByteAngle(ang).times(960 / 60));
+			if (time >= 0.25f) {
+				stopMoving();
+				changeSprite("scorch_wheel_proj_uw2", true);
+				phase = 1;
+			}
+		}
+		else if (vel.y > -180) {
+			vel.x += MathF.Round(1 * Helpers.cosb(ang));
+			vel.y -= 8;
+		}
+	}
+} 
 
 public class Burning : CharState {
 	public float burningTime = 120;

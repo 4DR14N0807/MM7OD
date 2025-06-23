@@ -21,7 +21,7 @@ public class LegBreakerState : CharState {
 	Anim? dust;
 	Anim? effect;
 	int particles = 3;
-	Rock? rock;
+	Rock rock = null!;
 	public LegBreakerState(string initialSlideButton) : base("sa_legbreaker", "", "", "") {
 		enterSound = "slide";
 		this.initialSlideButton = initialSlideButton;

@@ -170,11 +170,6 @@ public class Bass : Character {
 		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
 			wBurnerAngleMod = 1;
 			wBurnerAngle = 0;
-			if (wBurnerSound != null) {
-				wBurnerSound.stop();
-				wBurnerSound = null!;
-				//playSound("waveburnerEnd", true);
-			}
 		}
 
 		// For the shooting animation.
@@ -506,6 +501,13 @@ public class Bass : Character {
 		return getShootYDir(allowDown, allowDiagonal) * xDir * 32 + baseAngle;
 	}
 
+	public override void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {
+		base.onWeaponChange(oldWeapon, newWeapon);
+		if (charState is BassShoot && oldWeapon is WaveBurner) {
+			playSound("waveburnerEnd", sendRpc: true);
+		}
+	}
+
 	// Loadout Stuff
 	public List<Weapon> getLoadout() {
 		if (Global.level.isTraining() && !Global.level.server.useLoadout || Global.level.is1v1()) {
@@ -685,8 +687,7 @@ public class Bass : Character {
 	}
 
 	public override List<ShaderWrapper> getShaders() {
-		List<ShaderWrapper> baseShaders = base.getShaders();
-		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper> shaders = base.getShaders();
 		ShaderWrapper? palette = null;
 
 		int index = (currentWeapon?.index ?? 0) + 1;
@@ -700,11 +701,6 @@ public class Bass : Character {
 			shaders.Add(palette);
 		}
 		
-		if (shaders.Count == 0) {
-			return baseShaders;
-		}
-
-		shaders.AddRange(baseShaders);
 		return shaders;
 	}
 

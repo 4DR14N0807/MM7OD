@@ -76,6 +76,7 @@ public class Projectile : Actor {
 	int? destIndex;
 	float initWallCooldown;
 	public Point currentWallDest;
+	public float dirToDestByteAngle;
 	
 
 	public Projectile(
@@ -891,6 +892,7 @@ public class Projectile : Actor {
 		Point destPoint = nextNode.point;
 		Point dirToDest = pos.directionToNorm(destPoint);
 		currentWallDest = dirToDest;
+		dirToDestByteAngle = dirToDest.byteAngle;
 		move(dirToDest.times(wallCrawlSpeed));
 		if (wallCrawlUpdateAngle) {
 			angle = dirToDest.angle;

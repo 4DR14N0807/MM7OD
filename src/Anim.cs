@@ -247,7 +247,7 @@ public class Anim : Actor {
 		Player player, GibPattern gibPattern = GibPattern.Radial,
 		float randVelStart = 100, float randVelEnd = 200,
 		float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false,
-		long? zIndex= null, int pieceOverdive = 0
+		long? zIndex= null, int pieceOverdive = 0, bool blink = false, float alpha = 1f
 	) {
 		AnimData sprite = Global.sprites[spriteName];
 		float startAngle = 0;
@@ -274,6 +274,8 @@ public class Anim : Actor {
 			anim.vel = new Point(compX * randVel, compY * randVel * 1.25f);
 			anim.frameSpeed = 0;
 			anim.frameIndex = frame;
+			anim.blink = blink;
+			anim.alpha = alpha;
 
 			if (gibPattern == GibPattern.Radial) {
 				startAngle -= 360 / sprite.frames.Length;

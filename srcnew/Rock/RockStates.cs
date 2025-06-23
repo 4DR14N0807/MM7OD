@@ -121,6 +121,7 @@ public class ShootAltRock : CharState {
 		canStopJump = true;
 		this.stateWeapon = stateWeapon;
 		this.chargeLv = chargeLv;
+		landSprite = underwater ? "shoot_swell" : "shoot2";
 	}
 
 	public override void onEnter(CharState oldState) {

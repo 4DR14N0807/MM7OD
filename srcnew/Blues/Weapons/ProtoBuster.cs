@@ -233,13 +233,13 @@ public class BreakBusterProj : Projectile {
 		damager.flinch = Global.miniFlinch;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
-		return new ProtoBusterProj(
-			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
+		return new BreakBusterProj(
+			args.owner, args.pos, args.byteAngle, args.netId, altPlayer: args.player
 		);
 	}
 

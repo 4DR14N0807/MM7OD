@@ -1386,9 +1386,7 @@ public partial class Actor : GameObject {
 	// These are ones that should be cleaned up when the player leaves, but too important to be deleted if no response in 5 seconds
 	public bool cleanUpOnPlayerLeave() {
 		return (
-			this is Character ||
-			this is Maverick || this is RideArmor ||
-			this is WolfSigmaHand || this is WolfSigmaHead
+			this is Character or Maverick or RideArmor or WolfSigmaHand or WolfSigmaHead or Rush
 		);
 	}
 

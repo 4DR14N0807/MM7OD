@@ -339,6 +339,8 @@ public class Damager {
 		return projId switch {
 			(int)RockProjIds.SlashClaw => true,
 			(int)RockProjIds.LegBreaker => true,
+			(int)BluesProjIds.ProtoStrike => true,
+			(int)BluesProjIds.ProtoStrikePush => true,
 			(int)BluesProjIds.BigBangStrike => true,
 			(int)BluesProjIds.BigBangStrikeExplosion => true,
 			(int)ProjIds.TenguBladeDash => true,

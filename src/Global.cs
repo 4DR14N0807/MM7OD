@@ -17,15 +17,16 @@ namespace MMXOnline;
 public partial class Global {
 	public static decimal version = 20m;
 	public static string versionName = "Alpha 5";
-	public static string subVersionName = "Test 13";
-	public static string subVersionShortName = "v0.5 T13";
+	public static string subVersionName = "";
+	public static string subVersionShortName = "v0.5";
 
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "3C8E96523FDE33D7C6F19E6B68EBF0DF";
+	private const string assetChecksum = "821834B7DF36C1C64E63D6BA7A1CBCEF";
 
 	// Use this to make sure the checksum varies.
+	public const string checksumPrefix = "[7OD]";
 	public const string checksumPrefix2 = "70D-R220-06-FINAL";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;

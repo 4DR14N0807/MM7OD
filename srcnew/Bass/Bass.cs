@@ -12,7 +12,7 @@ public class Bass : Character {
 	public CopyVisionClone? cVclone;
 	public SpreadDrillProj? sDrill;
 	public SpreadDrillMediumProj? sDrillM;
-	public RemoteMineProj? rMine;
+	public Projectile? rMine;
 	public RemoteMineExplosionProj? rMineExplosion;
 	public LoopingSound? wBurnerSound;
 	public float wBurnerAngle;
@@ -250,6 +250,14 @@ public class Bass : Character {
 		}
 	
 		Global.sprites["hud_energy_top"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
+
+		if (player.isMainPlayer && (charState is BassFly || flyTime > 0)) {
+			int maxLength = 14;
+			int length = MathInt.Ceiling((maxLength * (MaxFlyTime - flyTime)) / MaxFlyTime);
+			int color = 4;
+			if (length <= maxLength * 0.5) color = 3;
+			drawFuelMeterEXV(length, maxLength, color, pos.addxy(-20 * xDir, -27));
+		}
 	}
 
 	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
@@ -269,18 +277,6 @@ public class Bass : Character {
 				secondBarOffset += 18 * drawDir;
 				drawPos.x += 18 * drawDir;
 			}
-		}
-	}
-
-	public override void render(float x, float y) {
-		base.render(x, y);
-
-		if (player.isMainPlayer && (charState is BassFly || flyTime > 0)) {
-			float healthPct = Helpers.clamp01((MaxFlyTime - flyTime) / MaxFlyTime);
-			float sy = -27;
-			float sx = 20;
-			if (xDir == -1) sx = 90 - 20;
-			drawFlightMeter(healthPct, sx, sy);
 		}
 	}
 
@@ -687,7 +683,8 @@ public class Bass : Character {
 	}
 
 	public override List<ShaderWrapper> getShaders() {
-		List<ShaderWrapper> shaders = base.getShaders();
+		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper> baseShaders = base.getShaders();
 		ShaderWrapper? palette = null;
 
 		int index = (currentWeapon?.index ?? 0) + 1;
@@ -700,6 +697,7 @@ public class Bass : Character {
 		if (palette != null && !isSuperBass) {
 			shaders.Add(palette);
 		}
+		shaders.AddRange(baseShaders);
 		
 		return shaders;
 	}

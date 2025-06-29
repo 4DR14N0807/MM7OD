@@ -1822,11 +1822,20 @@ public class GameMode {
 			drawWeaponStateOverlay(x, y, 0);
 		}
 
-		if (weapon is MagicCard magicCard && magicCard.cardCount != 0) {
-			string text = magicCard.cardCount.ToString();
+		string text = "";
+		if (weapon is DangerWrap dwrap && dwrap.dangerMines.Count > 0) {
+			text = dwrap.dangerMines.Count.ToString();
+		}
+		else if (weapon is RemoteMine rMine && rMine.mine?.destroyed == false) {
+			text = "1";
+		}
+		else if (weapon is MagicCard magicCard && magicCard.cardCount != 0) {
+			text = magicCard.cardCount.ToString();
 			if (magicCard.cardCount >= 10) {
 				text = "?";
 			}
+		}
+		if (text != "") {
 			Fonts.drawText(
 				selected ? FontType.GreenSmall : FontType.WhiteSmall,
 				text, x + 8, y, Alignment.Right

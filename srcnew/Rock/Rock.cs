@@ -267,7 +267,7 @@ public class Rock : Character {
 			hyperProgress = 0;
 			return;
 		}
-		if (charState is CallDownRush) {
+		if (charState is CallDownRush or WarpIdle) {
 			hyperProgress = 0;
 			return;
 		}
@@ -419,7 +419,8 @@ public class Rock : Character {
 	}
 
 	public override List<ShaderWrapper> getShaders() {
-		List<ShaderWrapper> shaders = base.getShaders();
+		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper> baseShaders = base.getShaders();
 		ShaderWrapper? palette = null;
 
 		int index = currentWeapon?.index ?? 0;
@@ -432,6 +433,7 @@ public class Rock : Character {
 		if (palette != null) {
 			shaders.Add(palette);
 		}
+		shaders.AddRange(baseShaders);
 		
 		return shaders;
 	}
@@ -666,7 +668,7 @@ public class Rock : Character {
 		return (
 			charState is not Die && charState is not CallDownRush &&
 			!hasSuperAdaptor && player.currency >= SuperAdaptorCost &&
-			rush == null
+			rush == null && charState.normalCtrl
 		);
 	}
 

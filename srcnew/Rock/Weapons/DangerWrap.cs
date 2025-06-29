@@ -22,6 +22,16 @@ public class DangerWrap : Weapon {
 		description = new string[] { "Complex weapon able to catch foes.", "Press UP/LEFT/RIGHT to change direction", "or press DOWN to leave a mine." };
 	}
 
+	public override void update() {
+		base.update();
+		for (int i = dangerMines.Count - 1; i >= 0; i--) {
+			if (dangerMines[i].destroyed) {
+				dangerMines.RemoveAt(i);
+				continue;
+			}
+		}
+	}
+
 	public override void shootRock(Rock rock, params int[] args) {
 		base.shootRock(rock, args);
 		Point shootPos = rock.getShootPos();
@@ -36,12 +46,6 @@ public class DangerWrap : Weapon {
 			}
 		}
 		if (input == 1) {
-			for (int i = dangerMines.Count - 1; i >= 0; i--) {
-				if (dangerMines[i].destroyed) {
-					dangerMines.RemoveAt(i);
-					continue;
-				}
-			}
 			if (dangerMines.Count >= 3) {
 				if (dangerMines[0] is DangerWrapLandProj dwarpground) {
 					dwarpground.health = 0;

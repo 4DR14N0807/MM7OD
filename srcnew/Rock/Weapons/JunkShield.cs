@@ -259,19 +259,12 @@ public class JunkShieldProj : Projectile {
 		}
 	}
 
-
-	/* public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-
-		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
-			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
-				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
-			) {
-				destroySelf();
-			}
-		}
-	} */
-
+	public override void onDamageEX() {
+		base.onDamageEX();
+		if (!ownedByLocalPlayer) return;
+		destroySelf();
+	}
+	
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer || rock == null) return;

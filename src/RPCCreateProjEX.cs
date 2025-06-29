@@ -326,6 +326,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.MagicCardSSpawn, MagicCardSpecialSpawn.rpcInvoke },
 		{ (int)BassProjIds.MagicCardS, MagicCardSpecialProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMine, RemoteMineProj.rpcInvoke },
+		{ (int)BassProjIds.RemoteMineLand, RemoteMineLandProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMineExplosion, RemoteMineExplosionProj.rpcInvoke },
 		{ (int)BassProjIds.SpreadDrill, SpreadDrillProj.rpcInvoke },
 		{ (int)BassProjIds.SpreadDrillMid, SpreadDrillMediumProj.rpcInvoke },

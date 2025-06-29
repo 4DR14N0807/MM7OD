@@ -5,6 +5,7 @@ namespace MMXOnline;
 
 public class RemoteMine : Weapon {
 	public static RemoteMine netWeapon = new();
+	public RemoteMineProj? mine;
 
 	public RemoteMine() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -31,7 +32,7 @@ public class RemoteMine : Weapon {
 		Player player = character.player;
 		Bass bass = character as Bass ?? throw new NullReferenceException();
 
-		new RemoteMineProj(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), true);
+		mine = new RemoteMineProj(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), true);
 	}
 }
 
@@ -39,11 +40,13 @@ public class RemoteMine : Weapon {
 public class RemoteMineProj : Projectile {
 	bool exploded;
 	bool landed;
+	bool landedOnce;
 	bool wallLanded;
 	Character? host;
 	Anim? anim;
 	string animName = "remote_mine_anim";
 	Bass bass = null!;
+	Wall? cWall;
 
 	public RemoteMineProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
@@ -93,6 +96,12 @@ public class RemoteMineProj : Projectile {
 
 		if (wallLanded) {
 			moveWithMovingPlatform();
+			if (cWall?.disabled == true) {
+				cWall = null!;
+				useGravity = true;
+				landed = false;
+				wallLanded = false;
+			}
 		}
 
 		if (!ownedByLocalPlayer) {
@@ -110,7 +119,7 @@ public class RemoteMineProj : Projectile {
 		if (anim != null) anim.changePos(getCenterPos());
 
 		int moveY = owner.input.getYDir(owner);
-		if (moveY != 0 && !landed) move(new Point(0, 90 * moveY ));
+		if (moveY != 0 && !landedOnce) move(new Point(0, 90 * moveY ));
 
 		if (ownedByLocalPlayer && bass?.rMine != null &&
 			landed && owner.input.isPressed(Control.Shoot, owner) &&
@@ -153,6 +162,12 @@ public class RemoteMineProj : Projectile {
 			other.gameObject is Actor actor && (actor.isPlatform || actor.isSolidWall)
 		)) {
 			wallLanded = true;
+			useGravity = false;
+			destroySelf();
+			var newProj = new RemoteMineLandProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
+			if (other.gameObject is Wall or MovingPlatform) newProj.wall = other.gameObject as Wall;
+			else if (other.gameObject is IceWallProj iWall) iWall.mine = newProj;
+			return;
 		}
 		if (!landed && (characterLand || wallLanded)) {
 			if (characterLand) {
@@ -163,7 +178,8 @@ public class RemoteMineProj : Projectile {
 			changeSprite("remote_mine_land", true);
 			playSound("remotemineStick", true);
 			landed = true;
-			maxTime = 3;
+			landedOnce = true;
+			maxTime = 10;
 		}
 	}
 
@@ -179,7 +195,147 @@ public class RemoteMineProj : Projectile {
 		if (time >= maxTime && !exploded && landed) explode();
 	}
 
-	void explode() {
+	public void explode() {
+		destroySelf();
+		if (ownedByLocalPlayer) {
+			new RemoteMineExplosionProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
+			playSound("remotemineExplode", true);
+		}
+		exploded = true;
+	}
+
+	public override List<byte> getCustomActorNetData() {
+		return [Helpers.boolArrayToByte([
+			visible
+		])];
+	}
+	public override void updateCustomActorNetData(byte[] data) {
+		bool[] flags = Helpers.byteToBoolArray(data[0]);
+		visible = flags[0];
+	}
+}
+
+
+public class RemoteMineLandProj : Projectile {
+
+	Bass bass = null!;
+	Anim? anim;
+	string animName = "remote_mine_anim";
+	public Wall? wall;
+	bool landed;
+	bool wallLanded;
+	bool characterLand;
+	bool exploded;
+	Character? host;
+	public RemoteMineLandProj(
+		Actor owner, Point pos, int xDir, ushort? netId,
+		bool rpc = false, Player? player = null
+	) : base(
+		pos, xDir, owner, "remote_mine_land", netId, player
+	) {
+		projId = (int)BassProjIds.RemoteMineLand;
+		maxTime = 10;
+		destroyOnHit = false;
+
+		if (ownedByLocalPlayer && owner.ownedByLocalPlayer) {
+			bass = ownerPlayer.character as Bass ?? throw new NullReferenceException();
+			bass.rMine = this;
+		}
+		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new RemoteMineLandProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+		);
+	}
+
+	public override void onStart() {
+		base.onStart();
+		if (bass != null && ownedByLocalPlayer && bass.ownedByLocalPlayer) {
+			anim = new Anim(
+				getCenterPos(), animName, xDir,
+				bass.player.getNextActorNetId(), false, true
+			);
+			anim.visible = false;
+		}
+	}
+
+	public override void update() {
+		base.update();
+
+		if (host != null) changePos(host.getCenterPos());
+		else {
+			if (wall?.disabled == true) {
+			destroySelf();
+			} else {
+				moveWithMovingPlatform();
+			}
+		}
+
+		if (ownedByLocalPlayer && bass?.rMine != null &&
+			owner.input.isPressed(Control.Shoot, owner) &&
+			bass.currentWeapon is RemoteMine
+		) {
+			if (!exploded) {
+				explode();
+			}	
+		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x,y);
+		if (anim == null || !visible) return;
+
+		Point center = getCenterPos();
+
+		Global.sprites[animName].draw(
+			anim.frameIndex, center.x, center.y, xDir, yDir,
+			null, alpha, 1, 1, zIndex
+		);
+	}
+
+	public override void onCollision(CollideData other) {
+		base.onCollision(other);
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (other.gameObject is KillZone) return;
+
+		var chr = other.gameObject as Character;
+		bool characterLand = (
+			chr != null && chr != bass && 
+			chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)
+		);
+		
+		if (!landed && characterLand) {
+			if (characterLand) {
+				host = chr;
+				visible = false;
+			}
+			stopMoving(); 
+			playSound("remotemineStick", true);
+			landed = true;
+		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+
+		if (anim != null) anim.destroySelf();
+		if (bass != null) bass.rMine = null!;
+
+		if (time >= maxTime && !exploded && landed) explode();
+	}
+
+	public void explode() {
 		destroySelf();
 		if (ownedByLocalPlayer) {
 			new RemoteMineExplosionProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
@@ -240,9 +396,6 @@ public class RemoteMineExplosionProj : Projectile {
 
 	public override void update() {
 		base.update();
-
-		if (expTime % 2 == 0) visible = true;
-		else visible = false;
 
 		expTime++;
 

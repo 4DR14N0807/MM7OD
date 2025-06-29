@@ -44,6 +44,7 @@ public class IceWallProj : Projectile, IDamagable {
 	public bool isFalling;
 	public float health = 2;
 	float maxSpeed = 3f * 60;
+	public Projectile? mine;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
@@ -123,6 +124,7 @@ public class IceWallProj : Projectile, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
+		if (sprite.name == "ice_wall_spawn") return;
 		// Wall hit.
 		if (other.gameObject is Wall) {
 			if (other.isSideWallHit()) {
@@ -140,12 +142,19 @@ public class IceWallProj : Projectile, IDamagable {
 		Character? ownChar = damager.owner?.character;
 		// Movement start.
 		if (other.gameObject == ownChar && !startedMoving) {
-			if (ownChar.pos.y >= getTopY() + 10 && ownChar.charState is Dash or Run or TenguBladeDash) {
+			if (ownChar.pos.y >= getTopY() + 10 && (ownChar.charState is Dash or Run or TenguBladeDash || (ownChar.canMove() && ownChar.player.input.getXDir(ownChar.player) != 0))) {
 				startedMoving = true;
 				xDir = MathF.Sign(pos.x - ownChar.pos.x) >= 0 ? 1 : -1;
 				vel.x = xDir * 30;
 			}
 		}
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
+		if (mine is RemoteMineProj rm) rm.explode();
+		else if (mine is RemoteMineLandProj rml) rml.explode();
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {

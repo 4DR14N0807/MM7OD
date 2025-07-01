@@ -793,7 +793,7 @@ public class InJumpZone : AIState {
 		if (character != null && character.abstractedActor().collider != null ||
 			ai.jumpZoneTime >= 0.1 && character?.grounded == true
 		) {
-			if (!character.abstractedActor().collider!.isCollidingWith(jumpZone.collider)) {
+			if (character.abstractedActor().collider?.isCollidingWith(jumpZone.collider) == false) {
 				ai.changeState(new FindPlayer(character));
 			}
 		}

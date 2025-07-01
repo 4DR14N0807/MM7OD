@@ -25,11 +25,7 @@ public partial class Global {
 	// This step could be automated as future improvement in build scripts.
 	private const string assetChecksum = "3C8E96523FDE33D7C6F19E6B68EBF0DF";
 
-	// For forks/mods of the game, add a prefix here so that different forks
-	// don't conflict with each other or the base game
-	public const string checksumPrefix = "[7OD]";
 	// Use this to make sure the checksum varies.
-	// Better to use together with "checksumPrefix" and be diferent from it.
 	public const string checksumPrefix2 = "70D-R220-06-FINAL";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;

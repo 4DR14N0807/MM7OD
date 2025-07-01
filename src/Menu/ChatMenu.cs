@@ -47,7 +47,7 @@ public class ChatMenu : IMainMenu {
 			if (typingChat) {
 				chatBlinkTime += Global.spf;
 				if (chatBlinkTime >= 1f) chatBlinkTime = 0;
-				currentTypedChat = Helpers.getTypedString(currentTypedChat, 24);
+				currentTypedChat = Helpers.getTypedString(currentTypedChat, 30);
 				if (Global.input.isPressed(Key.Enter) && !string.IsNullOrWhiteSpace(currentTypedChat)) {
 					currentTypedChat = Helpers.censor(currentTypedChat);
 					typingChat = false;
@@ -136,9 +136,9 @@ public class ChatMenu : IMainMenu {
 		int topLeftY = typedChatY - (chatLineHeight * chatLines) - 2;
 		for (var i = 0; i < chatFeed.Count; i++) {
 			var chat = chatFeed[i];
-			FontType color = FontType.White;
+			FontType color = FontType.WhiteSmall;
 			if (chat.alliance != null) {
-				color = (chat.alliance == GameMode.redAlliance ? FontType.Red : FontType.Blue);
+				color = (chat.alliance == GameMode.redAlliance ? FontType.RedSmall : FontType.BlueSmall);
 			}
 			Fonts.drawText(
 				color, chat.getDisplayMessage(),
@@ -171,10 +171,10 @@ public class ChatMenu : IMainMenu {
 				true, new Color(16, 16, 16), 1, ZIndex.HUD, false,
 				new Color(255, 255, 255)
 			);
-			Fonts.drawText(FontType.White, chatDisplay, topLeftX, typedChatY);
+			Fonts.drawText(FontType.WhiteSmall, chatDisplay, topLeftX, typedChatY);
 
 			if (chatBlinkTime >= 0.5f) {
-				Fonts.drawText(FontType.White, "|", topLeftX + width + 1, typedChatY);
+				Fonts.drawText(FontType.WhiteSmall, "|", topLeftX + width + 1, typedChatY);
 			}
 		}
 	}

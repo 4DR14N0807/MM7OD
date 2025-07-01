@@ -27,7 +27,7 @@ public class BassShoot : CharState {
 			}
 			return;
 		}
-		if (stateFrames >= 20) {
+		if (exitCondition()) {
 			bass.changeToIdleOrFall();
 			return;
 		}
@@ -63,6 +63,13 @@ public class BassShoot : CharState {
 		}
 	}
 
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		if (bass.currentWeapon is WaveBurner && newState is not BassShoot && !bass.isUnderwater()) {
+			bass.playSound("waveburnerEnd", sendRpc: true);
+		}
+ 	}
+
 	public static string getShootSprite(int dir, Weapon wep) {
 		if (wep is not BassBuster
 			and not MagicCard
@@ -90,6 +97,13 @@ public class BassShoot : CharState {
 			2 => "shoot_down",
 			_ => "shoot"
 		};
+	}
+
+	bool exitCondition() {
+		if (bass.currentWeapon?.isStream == true) {
+			return !player.input.isHeld(Control.Shoot, player);
+		} 
+		return stateFrames >= 20;
 	}
 }
 
@@ -120,6 +134,13 @@ public class BassShootLadder : CharState {
 		bass.changeSpriteFromName(sprite, true);
 		bass.sprite.restart();
 	}
+
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		if (bass.currentWeapon is WaveBurner) {
+			bass.playSound("waveburnerEnd", sendRpc: true);
+		}
+ 	}
 
 	public override void update() {
 		base.update();

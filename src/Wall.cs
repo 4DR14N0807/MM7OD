@@ -463,7 +463,7 @@ public class KillZone : Geometry {
 		this.killInvuln = killInvuln;
 		this.damage = damage ?? Damager.envKillDamage;
 		this.flinch = flinch;
-		this.hitCooldown = hitCooldown * 60;
+		this.hitCooldown = hitCooldown;
 		collider.isTrigger = true;
 	}
 

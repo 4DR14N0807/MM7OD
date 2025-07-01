@@ -13,8 +13,8 @@ public class Rock : Character {
 	public LoopingSound? junkShieldSound;
 	public ScorchWheelSpawn? sWellSpawn;
 	public ScorchWheelProj? sWell;
-	public UnderwaterScorchWheelProj? sWellU;
-	public UnderwaterScorchWheelProj? underwaterScorchWheel;
+	public UnderwaterScorchWheelSpawn? sWellU;
+	public UnderwaterScorchWheelSpawn? underwaterScorchWheel;
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
 	public bool armless;
@@ -127,6 +127,7 @@ public class Rock : Character {
 					shootAnimTime = 2;
 				}
 				changeSpriteFromName(charState.shootSprite, false);
+				if (charState is Idle) frameIndex = 3;
 			}
 		} else if (shootAnimTime > 0 && !armless) {
 			shootAnimTime -= Global.speedMul;
@@ -418,8 +419,7 @@ public class Rock : Character {
 	}
 
 	public override List<ShaderWrapper> getShaders() {
-		List<ShaderWrapper> baseShaders = base.getShaders();
-		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper> shaders = base.getShaders();
 		ShaderWrapper? palette = null;
 
 		int index = currentWeapon?.index ?? 0;
@@ -432,11 +432,7 @@ public class Rock : Character {
 		if (palette != null) {
 			shaders.Add(palette);
 		}
-		if (shaders.Count == 0) {
-			return baseShaders;
-		}
-
-		shaders.AddRange(baseShaders);
+		
 		return shaders;
 	}
 
@@ -566,7 +562,7 @@ public class Rock : Character {
 
 			(int)MeleeIds.UnderWaterScorchWheel => new GenericMeleeProj(
 				new ScorchWheel(), projPos, ProjIds.ScorchWheelUnderwater,
-				player, 2, 0, 0.5f * 60, addToLevel: addToLevel
+				player, 1, 0, 0.5f * 60, addToLevel: addToLevel
 			),
 
 			(int)MeleeIds.LegBreaker => new GenericMeleeProj(

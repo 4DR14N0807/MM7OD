@@ -101,10 +101,11 @@ public class SearchSnakeProj : Projectile {
 
 	public override void render(float x, float y) {
 		if (startAngleDrawing && currentWallDest != null) {
-			byteAngle = currentWallDest.byteAngle;
+			byteAngle = dirToDestByteAngle;
 			if (xDir < 0) byteAngle = -byteAngle + 128;
+			if (currentWallDest.y != 0 && xDir < 0) byteAngle += 128;
 
-			if (currentWallDest.y < 0 && currentWallDest.x == 0 && xDir < 0) byteAngle = -192;
+			//if (currentWallDest.y != 0 && currentWallDest.x == 0 && xDir < 0) byteAngle = -192;
 			//else if (xDir < 0) byteAngle += 128;
 		}
 		base.render(x, y);

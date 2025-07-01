@@ -154,7 +154,7 @@ public class ChatMenu : IMainMenu {
 				chatDisplay = "Console:" + currentTypedChat;
 				outlineColor = Color.Black;
 			}
-			int width = Fonts.measureText(Fonts.getFontSrt(FontType.Blue), chatDisplay);
+			int width = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteSmall), chatDisplay);
 
 			int bgWidth = width + 4;
 			if (bgWidth < 77) {

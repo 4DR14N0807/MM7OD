@@ -122,6 +122,8 @@ public class ShootAltRock : CharState {
 		this.stateWeapon = stateWeapon;
 		this.chargeLv = chargeLv;
 		landSprite = underwater ? "shoot_swell" : "shoot2";
+		fallSprite = landSprite;
+		airSprite = isUnderwaterSW ? "shoot_swell_air" : "shoot2_air";
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -133,13 +135,7 @@ public class ShootAltRock : CharState {
 
 		isUnderwaterSW = character.isUnderwater() && stateWeapon is ScorchWheel;
 		bool air = !character.grounded || character.vel.y < 0;
-		defaultSprite = sprite;
-		landSprite = isUnderwaterSW ? "shoot_swell" : "shoot2";
-		if (air) {
-			sprite = isUnderwaterSW ? "shoot_swell_air" : "shoot2_air";
-			defaultSprite = sprite;
-		}
-		character.changeSpriteFromName(sprite, true);
+		if (air) character.changeSpriteFromName(airSprite, true);
 	}
 
 	public override bool canEnter(Character character) {

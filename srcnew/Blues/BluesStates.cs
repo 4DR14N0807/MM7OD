@@ -309,6 +309,7 @@ public class BluesSpreadShoot : CharState {
 		canJump = true;
 		airMove = true;
 		exitOnLanding = true;
+		normalCtrl = true;
 	}
 
 	public override void onEnter(CharState oldState) {

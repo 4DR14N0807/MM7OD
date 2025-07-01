@@ -48,31 +48,28 @@ public class SlashClawState : CharState {
 		attackCtrl = false;
 		airMove = true;
 		canStopJump = true;
+		airSprite = "slashclaw_air";
+		landSprite = "slashclaw";
+		fallSprite = landSprite;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bool air = !character.grounded || character.vel.y < 0;
-		defaultSprite = sprite;
-		landSprite = "slashclaw";
-		if (air) {
-			sprite = "slashclaw_air";
-			defaultSprite = sprite;
-		}
-		character.changeSpriteFromName(sprite, true);
+		if (air) character.changeSpriteFromName(airSprite, true);
 	}
 
 	public override void update() {
 		base.update();
 
 		if (character.isAnimOver()) character.changeToIdleOrFall();
-		else {
+		/* else {
 			if (character.grounded && player.input.isPressed(Control.Jump, player)) {
 				character.vel.y = -character.getJumpPower();
 				sprite = "slashclaw_air";
 				character.changeSpriteFromName(sprite, false);
 			}
-		}
+		} */
 	}
  }
 

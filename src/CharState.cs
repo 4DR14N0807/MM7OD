@@ -1634,7 +1634,8 @@ public class BottomlessPitWarpIn : CharState {
 
 		if (character.isAnimOver()) {
 			character.grounded = true;
-			character.changeToIdleOrFall();
+			if (character is Blues {overheating: true} ) character.changeState(new OverheatShutdown(), true);
+			else character.changeToIdleOrFall();
 		}
 	}
 }

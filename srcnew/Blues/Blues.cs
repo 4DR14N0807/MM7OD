@@ -278,7 +278,7 @@ public class Blues : Character {
 	}
 
 	public bool canUseShield() {
-		if (shootAnimTime > 0 && !sprite.name.EndsWith("_shield") ||
+		if (//shootAnimTime > 0 && !sprite.name.EndsWith("_shield") ||
 			!charState.normalCtrl || charState is Slide ||
 			charState is ShieldDash ||
 			charState is BigBangStrikeState ||
@@ -672,7 +672,7 @@ public class Blues : Character {
 		// For keeping track of shield change.
 		bool lastShieldMode = isShieldActive;
 		// Shield switch.
-		if (!player.isAI && shieldHP > 0 && shootAnimTime <= 0 && canUseShield()) {
+		if (!player.isAI && shieldHP > 0 && canUseShield()) {
 			if (Options.main.protoShieldHold) {
 				isShieldActive = player.input.isWeaponLeftOrRightHeld(player);
 			} else if (player.input.isWeaponLeftOrRightPressed(player)) {
@@ -699,8 +699,8 @@ public class Blues : Character {
 			}
 		}
 		// Change sprite is shield mode changed.
-		if (lastShieldMode != isShieldActive) {
-			if (shootAnimTime == 0 && charState is Idle idleState) {
+		if (lastShieldMode != isShieldActive && shootAnimTime <= 0) {
+			if (shootAnimTime <= 0 && charState is Idle idleState) {
 				idleState.transitionSprite = getSprite("idle_swap");
 				if (isShieldActive) {
 					idleState.transitionSprite += "_shield";
@@ -1132,7 +1132,6 @@ public class Blues : Character {
 			canShieldBeActive = (
 				charState.attackCtrl ||
 				charState.normalCtrl ||
-				charState is BigBangStrikeStart ||
 				charState is Hurt ||
 				charState is GenericStun
 			);
@@ -1143,7 +1142,7 @@ public class Blues : Character {
 		return (
 			isShieldActive &&
 			canShieldBeActive &&
-			(shieldHP > 0 || charState is BigBangStrikeStart)
+			shieldHP > 0
 		);
 	}
 
@@ -1277,7 +1276,7 @@ public class Blues : Character {
 				shieldHP = 0;
 				shieldDamaged = false;
 			}
-			if (shieldHP <= 0 && charState is not BigBangStrikeStart) {
+			if (shieldHP <= 0) {
 				shieldHP = 0;
 				shieldDamageDebt = 0;
 				isShieldActive = false;
@@ -1470,71 +1469,7 @@ public class Blues : Character {
 		float yCollider = getGlobalColliderSize().Item2 / 2;
 		return pos.addxy(0, -yCollider);
 	}
-	public override void render(float x, float y) {
-		base.render(x, y);
-
-		float pAmmo = getChargeShotCorePendingAmmo();
-		// Core ammo
-		if (player.isMainPlayer && (coreAmmo > 0 || (pAmmo > 0 && !isBreakMan)) && Options.main.coreHeatDisplay >= 1) {
-			float corePct = Helpers.clamp01((coreMaxAmmo - coreAmmo) / coreMaxAmmo);
-			corePct = -corePct + 1;
-
-			float pendAmmo = coreAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = MathInt.Floor(coreMaxAmmo - coreAmmo);
-			}
-			float pendPct = Helpers.clamp01((coreMaxAmmo - pendAmmo) / coreMaxAmmo);
-			pendPct = -pendPct + 1;
-
-			float sy = -27;
-			float sx = 20;
-			if (xDir == -1) sx = 90 - 20;
-			drawCoreHeat(corePct, pendPct, sx, sy);
-		}
-		//Overdrive ammo
-		if (player.isMainPlayer && Options.main.coreHeatDisplay >= 1 && overdriveAmmo > 0 && overdrive) {
-			float ovrPct = Helpers.clamp01((coreMaxAmmo - overdriveAmmo) / coreMaxAmmo);
-			ovrPct = -ovrPct + 1;
-
-			float pendAmmo = overdriveAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = MathInt.Floor(coreMaxAmmo - overdriveAmmo);
-			}
-			float pendPct = Helpers.clamp01((coreMaxAmmo - pendAmmo) / coreMaxAmmo);
-			pendPct = -pendPct + 1;
-
-			float sy = -27;
-			float sx = 20;
-			if (xDir == -1) sx = 90 - 20;
-			drawOverdriveAmmo(ovrPct, pendPct, sx, sy);
-		}
-	}
-
-	public void drawCoreHeat(float corePct, float pendPct, float sx, float sy) {
-		float coreBarInnerWidth = 30;
-		Color color = Color.Red;
-		Color color2 = Color.Yellow;
-		float width = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * corePct), coreBarInnerWidth);
-		float width2 = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * pendPct), coreBarInnerWidth);
-
-		DrawWrappers.DrawRect(pos.x - 47 + sx, pos.y - 16 + sy, pos.x - 42 + sx, pos.y + 16 + sy, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
-		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width2 + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color2, 0, ZIndex.HUD - 1);
-		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
-	}
-
-	public void drawOverdriveAmmo(float ovrPct, float pendPct, float sx, float sy) {
-		float coreBarInnerWidth = 30;
-		Color color = Color.Blue;
-		Color color2 = Color.Yellow;
-
-		float width = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * ovrPct), coreBarInnerWidth);
-		float width2 = Helpers.clampMax(MathF.Ceiling(coreBarInnerWidth * pendPct), coreBarInnerWidth);
-
-		if (coreAmmo <= 0) DrawWrappers.DrawRect(pos.x - 47 + sx, pos.y - 16 + sy, pos.x - 42 + sx, pos.y + 16 + sy, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
-		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width2 + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color2, 0, ZIndex.HUD - 1);
-		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
-	}
-
+	
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		offset = offset.addxy(0, 17);
 		if (overdrive) {
@@ -1544,6 +1479,40 @@ public class Blues : Character {
 			renderOverheatHUD();
 		}
 		base.renderHUD(offset, position);
+
+		if (destroyed || charState is Die) return;
+
+		float pAmmo = getChargeShotCorePendingAmmo();
+		Point barPos = pos.addxy(-12, -44);
+		int maxLength = 14;
+		// Core ammo
+		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0 ) && Options.main.coreHeatDisplay >= 1) {
+
+			float pendAmmo = coreAmmo + pAmmo;
+			if (pendAmmo > coreMaxAmmo) {
+				pendAmmo = coreMaxAmmo;
+			}
+
+			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
+			int length = MathInt.Ceiling((maxLength * coreAmmo) / coreMaxAmmo);
+
+			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
+			drawFuelMeterEXH(length, maxLength, 3, barPos, false);
+		}
+
+		//Overdrive ammo
+		if (player.isMainPlayer && Options.main.coreHeatDisplay >= 1 && overdriveAmmo > 0 && overdrive) {
+			float pendAmmo = overdriveAmmo + pAmmo;
+			if (pendAmmo > coreMaxAmmo) {
+				pendAmmo = coreMaxAmmo;
+			}
+
+			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
+			int length = MathInt.Ceiling((maxLength * overdriveAmmo) / coreMaxAmmo);
+
+			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
+			drawFuelMeterEXH(length, maxLength, 2, barPos, false);
+		}
 	}
 
 	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {

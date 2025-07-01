@@ -174,12 +174,14 @@ public class Sprite {
 
 		// Character-specific draw section
 		Character? character = actor as Character;
+		bool isSA = false;
 		if (character != null) {
 			if (character.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
 			if (animData.textureName == "rock_default" && character is Rock rock && rock.hasSuperAdaptor) {
 				bitmap = rock.armless ? Sprite.superMegaManArmlessBitmap : Sprite.superMegaManBitmap;
+				isSA = true;
 			}
 			else if (animData.textureName == "blues_default" && character is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
@@ -272,6 +274,13 @@ public class Sprite {
 		float extraW = 0;
 		float flippedExtraW = 0;
 
+		if (isSA) {
+			extraYOff = 5;
+			extraY = extraYOff;
+			flippedExtraW = 5;
+			extraW = flippedExtraW;
+		}
+
 		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
 			if (!Options.main.fastShaders &&
 				alpha >= 1 && (
@@ -344,9 +353,9 @@ public class Sprite {
 		if (!isCompositeSprite) {
 			DrawWrappers.DrawTexture(
 				bitmap,
-				currentFrame.rect.x1,
+				currentFrame.rect.x1 - flippedExtraW,
 				currentFrame.rect.y1 - extraYOff,
-				currentFrame.rect.w(),
+				currentFrame.rect.w() + extraW,
 				currentFrame.rect.h() + extraY,
 				x, y, zIndex,
 				cx - frameOffsetX * xDirArg,

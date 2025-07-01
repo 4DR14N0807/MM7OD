@@ -78,13 +78,19 @@ public class GyroAttackProj : Projectile {
 			}
 		}
 	}
-	public override void onHitDamagable(IDamagable damagable) {
+	/* public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (damagable is Actor enemyActor && enemyActor.netId is not null and >= Level.firstNormalNetId) {
 			string keyName = getActorTypeName() + "_" + enemyActor.netId;
 			//i think it can be optimised if we separate fade sprite from hit sprite
 			new Anim(pos, "rock_buster_fade", xDir, netId, true, true);
 		}
+	} */
+
+	public override void onDamageEX() {
+		base.onDamageEX();
+		if (!ownedByLocalPlayer) return;
+		new Anim(pos, "rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true);
 	}
 	public override void onDestroy() {
 		base.onDestroy();

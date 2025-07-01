@@ -1873,6 +1873,30 @@ public partial class Actor : GameObject {
 		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
 	}
 
+	public void drawFuelMeterEXV(int length, int maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
+		Point bp = barPos.substractxy(Global.level.camX, Global.level.camY);
+		for (int i = 0; i < maxLength; i++) {
+			if (i < length) {
+				Global.sprites["hud_bar_small_v"].drawToHUD(colorIndex, bp.x, bp.y);
+			} else if (drawFullBar) {
+				Global.sprites["hud_bar_small_v"].drawToHUD(0, bp.x, bp.y);
+			}
+			bp.y -= 2;
+		}
+	}
+
+	public void drawFuelMeterEXH(int length, int maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
+		Point bp = barPos.substractxy(Global.level.camX, Global.level.camY);
+		for (int i = 0; i < maxLength; i++) {
+			if (i < length) {
+				Global.sprites["hud_bar_small_h"].drawToHUD(colorIndex, bp.x, bp.y);
+			} else if (drawFullBar) {
+				Global.sprites["hud_bar_small_h"].drawToHUD(0, bp.x, bp.y);
+			}
+			bp.x += 2;
+		}
+	}
+
 	public CollideData? getHitWall(float x, float y) {
 		return Global.level.checkTerrainCollisionOnce(this, x, y, checkPlatforms: true);
 	}

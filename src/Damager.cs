@@ -195,11 +195,14 @@ public class Damager {
 					damagerMessage = onDWrapDamage(damagable, owner);
 					break;
 				case (int)BassProjIds.RemoteMine:
+				case (int)BassProjIds.RemoteMineLand:
 					damagerMessage = onRMineDamage(damagable, owner, proj);
 					break;
 			}
 			if (damagerMessage?.flinch != null) flinch = damagerMessage.flinch.Value;
 			if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
+
+			proj.onDamageEX();
 		}
 
 		// Character section
@@ -325,8 +328,6 @@ public class Damager {
 				victim?.addRenderEffect(RenderEffectType.Hit, 3, 5);
 			}
 		}
-
-		if (damagingActor is JunkShieldProj jsp) jsp.destroySelf();
 		 
 		float finalDamage = damage;
 		if (weakness && damage > 0) {
@@ -350,6 +351,8 @@ public class Damager {
 			(int)BluesProjIds.ProtoStrike => true,
 			(int)BluesProjIds.ProtoStrikePush => true,
 			(int)BluesProjIds.GravityHoldCrash => true,
+			(int)BluesProjIds.ProtoStrike => true,
+			(int)BluesProjIds.ProtoStrikePush => true,
 			(int)BluesProjIds.BigBangStrike => true,
 			(int)BluesProjIds.BigBangStrikeExplosion => true,
 			(int)ProjIds.TenguBladeDash => true,

@@ -141,13 +141,17 @@ public class RPCUpdateActor : RPC {
 			}
 			Program.exceptionExtraData = (
 				"Index out of bounds.\n" + 
-				$"Actor type: {actor.getActorTypeName()}, " +
+				$"actor type: {actor.getActorTypeName()}, " +
 				$"player: {playerName}, " +
 				$"args len: {arguments.Length}, " +
-				$"extra args pos: {i}, " + 
+				$"extraArgs pos/len: {i} {arguments.Length - i}, " + 
 				$"netId: {netId}, " +
 				$"maskBool: {Convert.ToString(maskByte, 2).PadLeft(8, '0')}"
 			);
+			if (actor is Character) {
+				Program.exceptionExtraData += $", playerData len {arguments[i]}";
+				Program.exceptionExtraData += $", exData len {arguments.Length - i - arguments[i]}";
+			}
 
 			throw;
 		}

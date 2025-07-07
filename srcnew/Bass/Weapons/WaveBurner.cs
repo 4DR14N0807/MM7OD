@@ -154,7 +154,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 			if (rand % 2 == 0) {
 				bubble1 = new BubbleAnim(
 					pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)),
-					"wave_burner_underwater_bubble", damager.owner.getNextActorNetId(), true
+					"wave_burner_underwater_bubble", damager.owner.getNextActorNetId()
 				);
 					bubble1.xDir = xDir;
 					bubble1.vel = bubble1Spd;
@@ -164,7 +164,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 			if (rand > 2) {
 				bubble2 = new BubbleAnim(
 					pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)),
-					"wave_burner_underwater_bubble", damager.owner.getNextActorNetId(), true
+					"wave_burner_underwater_bubble", damager.owner.getNextActorNetId()
 				);
 			
 				bubble2.xDir = xDir;

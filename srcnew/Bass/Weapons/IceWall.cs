@@ -44,7 +44,6 @@ public class IceWallProj : Projectile, IDamagable {
 	public bool isFalling;
 	public float health = 2;
 	float maxSpeed = 3f * 60;
-	public Projectile? mine;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
@@ -153,8 +152,6 @@ public class IceWallProj : Projectile, IDamagable {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
-		if (mine is RemoteMineProj rm) rm.explode();
-		else if (mine is RemoteMineLandProj rml) rml.explode();
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {

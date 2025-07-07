@@ -27,7 +27,7 @@ public class Options {
 	public bool killOnCharChange = true;
 	public float networkTimeoutSeconds = 3;
 	public bool autoCreateDocFolderPromptShown = false;
-	public bool enableHyperMusic;
+	public bool enableHyperMusic = true;
 
 	public int getNetworkTimeoutMs() {
 		networkTimeoutSeconds = Helpers.clamp(networkTimeoutSeconds, 1, 5);

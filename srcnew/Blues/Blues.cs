@@ -371,7 +371,7 @@ public class Blues : Character {
 		}
 	}
 
-	public override bool changeState(CharState newState, bool forceChange = false) {
+	public override bool changeState(CharState newState, bool forceChange = true) {
 		bool? oldScs = shieldCustomState;
 		shieldCustomState = null;
 		bool changedState = base.changeState(newState, forceChange);

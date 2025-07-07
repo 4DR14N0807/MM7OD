@@ -1308,7 +1308,9 @@ public partial class Character : Actor, IDamagable {
 
 		// For G. Well damage.
 		// This is calculated after the base update to prevent acidental double damage.
-		if (vel.y < 0 && Global.level.checkTerrainCollisionOnce(this, 0, -1) != null) {
+		if (vel.y < 0 &&
+			Global.level.checkTerrainCollisionOnce(this, 0, -1, checkPlatforms: true, checkQuicksand: true) != null
+		) {
 			if (gravityWellModifier < 0 && vel.y < -300) {
 				Damager.applyDamage(
 					lastGravityWellDamager,
@@ -2182,7 +2184,7 @@ public partial class Character : Actor, IDamagable {
 		changeState(idleState, true);
 	}
 
-	public virtual bool changeState(CharState newState, bool forceChange = false) {
+	public virtual bool changeState(CharState newState, bool forceChange = true) {
 		// Set the character as soon as posible.
 		newState.character = this;
 		newState.altCtrls = new bool[altCtrlsLength];

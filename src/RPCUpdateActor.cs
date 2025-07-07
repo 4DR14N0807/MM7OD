@@ -148,10 +148,13 @@ public class RPCUpdateActor : RPC {
 				$"netId: {netId}, " +
 				$"maskBool: {Convert.ToString(maskByte, 2).PadLeft(8, '0')}"
 			);
-			if (actor is Character) {
+			if (actor is Character chara) {
 				Program.exceptionExtraData += $", playerData len {arguments[i]}, " +
 					$"playerData len {arguments[i]}, " +
-					$"charId {(CharIds)arguments[i + 8]}";
+					$"charId {(CharIds)arguments[i + 8]}, " +
+					$"isMainChar {chara.player.character == chara}, " +
+					$"playerCharId {chara.player.charNum}"
+				;
 			}
 
 			throw;

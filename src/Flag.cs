@@ -123,14 +123,16 @@ public class Flag : Actor {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (!ownedByLocalPlayer) return;
-		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) return;
-		if (pickupCooldown > 0) return;
-
-		var chr = other.gameObject as Character;
-		if (this.chr != null) return;
-		if (chr != null && chr.player.alliance != alliance && chr.canPickupFlag()) {
-			pickupFlag(chr);
+		if (!ownedByLocalPlayer ||
+			other.otherCollider?.flag == (int)HitboxFlag.Hitbox ||
+			pickupCooldown > 0 ||
+			chr != null ||
+			other.gameObject is not Character colChar
+		) {
+			return;
+		}
+		if (colChar.player.alliance != alliance && colChar.canPickupFlag()) {
+			pickupFlag(colChar);
 		}
 	}
 
@@ -329,32 +331,30 @@ public class FlagPedestal : Actor {
 		if (!ownedByLocalPlayer) return;
 		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) return;
 
-		Character? chr = other.gameObject as Character;
-		if (chr != null && chr.flag != null && chr.player.alliance == alliance) {
-			chr.flag.returnFlag();
-			chr.flag = null;
-			if (chr.ai != null) {
-				chr.ai.changeState(new FindPlayer(chr));
+		if (other.gameObject is not Character chr || chr.flag == null || chr.player.alliance != alliance) {
+			return;
+		}
+		chr.flag.returnFlag();
+		chr.flag = null;
+		chr.ai?.changeState(new FindPlayer(chr));
+		chr.mastery.addMapExp(30 * 3, true);
+		foreach (Player player in Global.level.players) {
+			if (!player.isSpectator && chr.player.alliance == player.alliance) {
+				chr.mastery.addMapExp(30, true);
 			}
-			chr.mastery.addMapExp(30 * 3, true);
-			foreach (Player player in Global.level.players) {
-				if (!player.isSpectator && chr.player.alliance == player.alliance) {
-					chr.mastery.addMapExp(30, true);
-				}
-			}
-			// TEMP: Remove on re-enable of EXP.
-			chr.player.currency += 50;
-			RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
+		}
+		// TEMP: Remove on re-enable of EXP.
+		chr.player.currency += 50;
+		RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
 
-			var msg = chr.player.name + " scored";
-			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(msg, chr.player.alliance, chr.player), true);
-			var ctf = Global.level.gameMode as CTF;
-			if (Global.isHost) {
-				if (alliance != GameMode.neutralAlliance) {
-					Global.level.gameMode.teamPoints[alliance]++;
-				}
-				Global.level.gameMode.syncTeamScores();
+		var msg = chr.player.name + " scored";
+		Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(msg, chr.player.alliance, chr.player), true);
+		var ctf = Global.level.gameMode as CTF;
+		if (Global.isHost) {
+			if (alliance != GameMode.neutralAlliance) {
+				Global.level.gameMode.teamPoints[alliance]++;
 			}
+			Global.level.gameMode.syncTeamScores();
 		}
 	}
 }

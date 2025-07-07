@@ -3671,6 +3671,10 @@ public partial class Character : Actor, IDamagable {
 		customData.Add(0);
 		customData.Add(0);
 
+		// Crash report stuff.
+		customData.Add((byte)charId);
+
+		// Optional status effects.
 		if (acidTime > 0) {
 			customData.Add((byte)MathF.Ceiling(acidTime * 20));
 			boolMask[0] = true;
@@ -3747,8 +3751,12 @@ public partial class Character : Actor, IDamagable {
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[6]);
 		bool[] boolMaskB = Helpers.byteToBoolArray(data[7]);
-		int pos = 8;
 
+		// For crash reports.
+		//int netCharNum = data[8];
+		
+		// Set pointer to last.
+		int pos = 9;
 		// Status effects.
 		acidTime = 0;
 		if (boolMask[0]) {

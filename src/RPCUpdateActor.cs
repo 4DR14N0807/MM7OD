@@ -149,8 +149,9 @@ public class RPCUpdateActor : RPC {
 				$"maskBool: {Convert.ToString(maskByte, 2).PadLeft(8, '0')}"
 			);
 			if (actor is Character) {
-				Program.exceptionExtraData += $", playerData len {arguments[i]}";
-				Program.exceptionExtraData += $", exData len {arguments.Length - i - arguments[i]}";
+				Program.exceptionExtraData += $", playerData len {arguments[i]}, " +
+					$"playerData len {arguments[i]}, " +
+					$"charId {(CharIds)arguments[i + 8]}";
 			}
 
 			throw;

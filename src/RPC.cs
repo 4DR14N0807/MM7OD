@@ -278,7 +278,7 @@ public class RPCSpawnCharacter : RPC {
 			player.spawnCharAtPoint(
 				charNum, extraData,
 				new Point(x, y), xDir, charNetId, false,
-				forceSpawn: true, isWarpIn: false
+				forceSpawn: true
 			);
 		} else {
 			Global.level.backloggedSpawns.Add(

@@ -432,6 +432,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 	public float health = 3;
 	public float bubbleFrames;
 	public Anim? bomb;
+	public Player? attacker;
 
 	public DWrapBigBubble(
 		Point pos, Player victim,
@@ -517,7 +518,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 
 				//Temporal fix.
 				character?.applyDamage(
-					4, netOwner, character, (int)RockWeaponIds.DangerWrap, (int)RockProjIds.DangerWrapBubbleExplosion
+					4, attacker, character, (int)RockWeaponIds.DangerWrap, (int)RockProjIds.DangerWrapBubbleExplosion
 				);
 				character?.playSound("hurt", sendRpc: true);
 				character?.setHurt(-character?.xDir ?? xDir, Global.defFlinch, false);

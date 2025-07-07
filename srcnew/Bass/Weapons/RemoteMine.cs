@@ -94,15 +94,6 @@ public class RemoteMineProj : Projectile {
 
 		if (host != null) changePos(host.getCenterPos());
 
-		if (wallLanded) {
-			moveWithMovingPlatform();
-			if (cWall?.disabled == true) {
-				cWall = null!;
-				useGravity = true;
-				landed = false;
-				wallLanded = false;
-			}
-		}
 
 		if (!ownedByLocalPlayer) {
 			return;
@@ -164,9 +155,7 @@ public class RemoteMineProj : Projectile {
 			wallLanded = true;
 			useGravity = false;
 			destroySelf();
-			var newProj = new RemoteMineLandProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
-			if (other.gameObject is Wall or MovingPlatform) newProj.wall = other.gameObject as Wall;
-			else if (other.gameObject is IceWallProj iWall) iWall.mine = newProj;
+			playSound("remotemineStick", true);
 			return;
 		}
 		if (!landed && (characterLand || wallLanded)) {
@@ -185,7 +174,7 @@ public class RemoteMineProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || bass == null) {
 			return;
 		}
 
@@ -193,6 +182,7 @@ public class RemoteMineProj : Projectile {
 		if (bass != null) bass.rMine = null!;
 
 		if (time >= maxTime && !exploded && landed) explode();
+		if (wallLanded) bass.rMine = new RemoteMineLandProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
 	}
 
 	public void explode() {
@@ -221,7 +211,6 @@ public class RemoteMineLandProj : Projectile {
 	Bass bass = null!;
 	Anim? anim;
 	string animName = "remote_mine_anim";
-	public Wall? wall;
 	bool landed;
 	bool wallLanded;
 	bool characterLand;
@@ -270,10 +259,10 @@ public class RemoteMineLandProj : Projectile {
 
 		if (host != null) changePos(host.getCenterPos());
 		else {
-			if (wall?.disabled == true) {
-			destroySelf();
-			} else {
-				moveWithMovingPlatform();
+			moveWithMovingPlatform();
+			if (!isColliding()) {
+				explode();
+				return;
 			}
 		}
 
@@ -342,6 +331,22 @@ public class RemoteMineLandProj : Projectile {
 			playSound("remotemineExplode", true);
 		}
 		exploded = true;
+	}
+
+	bool isColliding() {
+		List<CollideData> collideDatas = Global.level.getTerrainTriggerList(this, new Point(0, 1));
+		foreach (CollideData collideData in collideDatas) {
+			if (collideData.gameObject is Wall or MovingPlatform) {
+				return true;
+			}
+			if (collideData.gameObject is Actor actor &&
+				(actor.isSolidWall || actor.isPlatform)
+			) {
+				return true;
+
+			}
+		}
+		return false;
 	}
 
 	public override List<byte> getCustomActorNetData() {

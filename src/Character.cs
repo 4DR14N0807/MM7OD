@@ -1331,7 +1331,7 @@ public partial class Character : Actor, IDamagable {
 				); */
 
 				//Temporal fix.
-				applyDamage(2, gHoldOwner, this, (int)BluesWeaponIds.GravityHold, (int)BluesProjIds.GravityHoldCrash);
+				applyDamage(3, gHoldOwner, this, (int)BluesWeaponIds.GravityHold, (int)BluesProjIds.GravityHoldCrash);
 				setHurt(-xDir, Global.defFlinch, false);
 				playSound("hurt", sendRpc: true);
 				gHolded = false;
@@ -3256,6 +3256,7 @@ public partial class Character : Actor, IDamagable {
 		dWrapDamager = damager;
 		bigBubble = new DWrapBigBubble(pos, player, xDir,
 		player.getNextActorNetId(), true, true);
+		bigBubble.attacker = attacker;
 		dwrapStart();
 		attacker.mastery.addSupportExp(2, true);
 	}

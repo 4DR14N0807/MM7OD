@@ -267,13 +267,12 @@ public class Flag : Actor {
 		timeDropped = data[4] / 8f;
 
 		bool wasActive = isPickedUpNet;
-
-		Character? chara = null;
 		if (chrNetId != ushort.MaxValue) {
-			chara = Global.level.getActorByNetId(chrNetId, true) as Character;
-
-			if (chara != null) {
-				if (chara.flag == null) {
+			if (Global.level.getActorByNetId(chrNetId) is Character chara) {
+				if (chara.flag != this) {
+					if (chara.flag != null) {
+						chara.dropFlag();
+					}
 					chara.onFlagPickup(this);
 				}
 				xDir = -chara.xDir;
@@ -281,14 +280,19 @@ public class Flag : Actor {
 			}
 		}
 		else if (wasActive) {
-			foreach (Player player in Global.level.players) {
-				if (player?.character != null && player.character.flag == this) {
-					player.character.flag = null;
+			if (chr == null) {
+				foreach (Player player in Global.level.players) {
+					if (player?.character != null && player.character.flag == this) {
+						player.character.dropFlag();
+						player.character.flag = null;
+					}
 				}
+			} else {
+				chr.dropFlag();
 			}
 			chr = null;
 		}
-		isPickedUpNet = (chara != null);
+		isPickedUpNet = chr != null;
 	}
 }
 
@@ -304,7 +308,11 @@ public class UpdraftParticle {
 
 public class FlagPedestal : Actor {
 	public int alliance = 0;
-	public FlagPedestal(int alliance, Point pos, ushort? netId, bool ownedByLocalPlayer) : base("flag_pedastal", pos, netId, ownedByLocalPlayer, false) {
+	public FlagPedestal(
+		int alliance, Point pos, ushort? netId, bool ownedByLocalPlayer
+	) : base(
+		"flag_pedastal", pos, netId, ownedByLocalPlayer, false
+	) {
 		this.alliance = alliance;
 		useGravity = false;
 		setzIndex(ZIndex.Character - 1);
@@ -313,6 +321,7 @@ public class FlagPedestal : Actor {
 		} else {
 			addRenderEffect(RenderEffectType.RedShadow);
 		}
+		canBeLocal = true;
 	}
 
 	public override void onCollision(CollideData other) {

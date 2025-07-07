@@ -7,7 +7,7 @@ namespace MMXOnline;
 public class Flag : Actor {
 	public int alliance = 0;
 	public Point pedestalPos;
-	public Character? chr;
+	public Character? linkedChar;
 	public float timeDropped = 0;
 	public bool pickedUpOnce;
 	public FlagPedestal pedestal = null!;
@@ -56,21 +56,21 @@ public class Flag : Actor {
 			alliance = 1;
 		}
 
-		if (chr != null) {
-			changePos(chr.pos);
-			xDir = -chr.xDir;
-			if (!Global.level.gameObjects.Contains(chr) ||
-				chr.isWarpOut() ||
-				chr.charState.invincible ||
-				chr.destroyed
+		if (linkedChar != null) {
+			changePos(linkedChar.pos);
+			xDir = -linkedChar.xDir;
+			if (!Global.level.gameObjects.Contains(linkedChar) ||
+				linkedChar.isWarpOut() ||
+				linkedChar.charState.invincible ||
+				linkedChar.destroyed
 			) {
 				dropFlag();
 			}
-		} else if (chr?.canKeepFlag() != true) {
+		} else if (linkedChar?.canKeepFlag() != true) {
 			dropFlag();
 		}
 
-		if (chr == null) {
+		if (linkedChar == null) {
 			if (Global.level.gameMode.isOvertime()) {
 				timeDropped += Global.spf * 5;
 			} else {
@@ -104,12 +104,18 @@ public class Flag : Actor {
 	}
 
 	public float? getUpdraftY() {
-		if (grounded) return null;
+		if (grounded || linkedChar != null) {
+			return null;
+		}
 		if (pos.y > Math.Min(Global.level.killY, Global.level.height)) {
 			return Global.level.killY - 250;
 		}
 		var hitKillZones = Global.level.getTerrainTriggerList(this, new Point(0, 0), typeof(KillZone));
-		if (hitKillZones.Count > 0 && hitKillZones[0].otherCollider != null && hitKillZones[0].gameObject is KillZone kz && kz.killInvuln) {
+		if (hitKillZones.Count > 0 &&
+			hitKillZones[0].otherCollider != null &&
+			hitKillZones[0].gameObject is KillZone kz &&
+			kz.killInvuln
+		) {
 			return hitKillZones[0].otherCollider.shape.minY - 250;
 		}
 		return null;
@@ -126,7 +132,7 @@ public class Flag : Actor {
 		if (!ownedByLocalPlayer ||
 			other.otherCollider?.flag == (int)HitboxFlag.Hitbox ||
 			pickupCooldown > 0 ||
-			chr != null ||
+			linkedChar != null ||
 			other.gameObject is not Character colChar
 		) {
 			return;
@@ -136,27 +142,32 @@ public class Flag : Actor {
 		}
 	}
 
-	public void pickupFlag(Character chr) {
+	public void pickupFlag(Character newChar) {
 		removeUpdraft();
-		chr.onFlagPickup(this);
+		newChar.onFlagPickup(this);
 		timeDropped = 0;
-		this.chr = chr;
+		linkedChar = newChar;
 		useGravity = false;
 		pickedUpOnce = true;
 		Global.level.gameMode.addKillFeedEntry(
-			new KillFeedEntry(chr.player.name + " took flag", chr.player.alliance, chr.player), true
+			new KillFeedEntry(
+				newChar.player.name + " took flag", newChar.player.alliance, newChar.player
+			)
 		);
-		if (chr.ai != null && chr.ai.aiState is FindPlayer) {
-			(chr.ai.aiState as FindPlayer)?.setDestNodePos();
+		if (!newChar.ownedByLocalPlayer) {
+			return;
+		}
+		if (newChar.ai != null && newChar.ai.aiState is FindPlayer) {
+			(newChar.ai.aiState as FindPlayer)?.setDestNodePos();
 		}
 	}
 
 	public void dropFlag() {
-		if (chr != null) {
+		if (linkedChar != null) {
 			removeUpdraft();
-			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(chr.player.name + " dropped flag", chr.player.alliance, chr.player), true);
+			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(linkedChar.player.name + " dropped flag", linkedChar.player.alliance, linkedChar.player), true);
 			useGravity = true;
-			chr = null;
+			linkedChar = null;
 		}
 	}
 
@@ -170,10 +181,10 @@ public class Flag : Actor {
 			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(team + "flag returned", alliance), true);
 		}
 		useGravity = true;
-		if (chr != null) {
-			chr.flag = null;
+		if (linkedChar != null) {
+			linkedChar.flag = null;
 		}
-		chr = null;
+		linkedChar = null;
 		changePos(pedestalPos);
 		if (alliance == GameMode.redAlliance) {
 			xDir = -1;
@@ -210,14 +221,14 @@ public class Flag : Actor {
 		}
 
 		// To avoid latency of flag not sticking to character in online
-		if (chr != null && !chr.destroyed) {
-			Point centerPos = chr.pos.addxy(-10 * chr.xDir, -10);
+		if (linkedChar != null && !linkedChar.destroyed) {
+			Point centerPos = linkedChar.pos.addxy(-10 * linkedChar.xDir, -10);
 			Point renderPos = new Point(centerPos.x - MathF.Round(pos.x), centerPos.y - MathF.Round(pos.y));
 			base.render(renderPos.x, renderPos.y);
 			return;
 		}
 
-		if (pickedUpOnce && timeDropped > 0 && chr == null) {
+		if (pickedUpOnce && timeDropped > 0 && linkedChar == null) {
 			drawSpinner(1 - (timeDropped / 30));
 		}
 
@@ -254,7 +265,7 @@ public class Flag : Actor {
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = new();
 
-		customData.AddRange(BitConverter.GetBytes(chr?.netId ?? ushort.MaxValue));
+		customData.AddRange(BitConverter.GetBytes(linkedChar?.netId ?? ushort.MaxValue));
 		customData.Add((byte)(hasUpdraft() ? 1 : 0));
 		customData.Add((byte)(pickedUpOnce ? 1 : 0));
 		customData.Add((byte)MathF.Floor(timeDropped * 8));
@@ -275,14 +286,14 @@ public class Flag : Actor {
 					if (chara.flag != null) {
 						chara.dropFlag();
 					}
-					chara.onFlagPickup(this);
+					pickupFlag(chara);
 				}
 				xDir = -chara.xDir;
-				chr = chara;
+				linkedChar = chara;
 			}
 		}
-		else if (wasActive) {
-			if (chr == null) {
+		else if (wasActive || linkedChar != null) {
+			if (linkedChar == null) {
 				foreach (Player player in Global.level.players) {
 					if (player?.character != null && player.character.flag == this) {
 						player.character.dropFlag();
@@ -290,11 +301,11 @@ public class Flag : Actor {
 					}
 				}
 			} else {
-				chr.dropFlag();
+				dropFlag();
 			}
-			chr = null;
+			linkedChar = null;
 		}
-		isPickedUpNet = chr != null;
+		isPickedUpNet = linkedChar != null;
 	}
 }
 

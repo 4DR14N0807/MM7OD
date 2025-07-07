@@ -18,16 +18,16 @@ public class CTF : GameMode {
 		bool isBlue = level.mainPlayer.alliance == GameMode.blueAlliance;
 		bool isRed = level.mainPlayer.alliance == GameMode.redAlliance;
 
-		if (isBlue && level.redFlag.chr == level.mainPlayer.character) {
+		if (isBlue && level.redFlag.linkedChar == level.mainPlayer.character) {
 			addMapNavpoint("Ped", level.blueFlag.pedestal.pos);
 		}
-		else if (level.redFlag.chr == null || Global.level.frameCount % 10 < 6) {
+		else if (level.redFlag.linkedChar == null || Global.level.frameCount % 10 < 6) {
 			addMapNavpoint("RFlag", level.redFlag.pos);
 		}
-		if (isRed && level.blueFlag.chr == level.mainPlayer.character) {
+		if (isRed && level.blueFlag.linkedChar == level.mainPlayer.character) {
 			addMapNavpoint("Ped", level.redFlag.pedestal.pos);
 		}
-		else if (level.blueFlag.chr == null || Global.level.frameCount % 10 < 6) {
+		else if (level.blueFlag.linkedChar == null || Global.level.frameCount % 10 < 6) {
 			addMapNavpoint("BFlag", level.blueFlag.pos);
 		}
 

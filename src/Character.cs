@@ -3749,7 +3749,7 @@ public partial class Character : Actor, IDamagable {
 		bool[] boolMaskB = Helpers.byteToBoolArray(data[7]);
 		int pos = 8;
 
-		// States.
+		// Status effects.
 		acidTime = 0;
 		if (boolMask[0]) {
 			acidTime = data[pos] / 30f;

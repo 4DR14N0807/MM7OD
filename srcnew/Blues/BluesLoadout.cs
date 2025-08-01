@@ -89,6 +89,14 @@ public class BluesWeaponMenu : IMainMenu {
 			Helpers.menuLeftRightInc(ref specialWeapon, 0, specialWeapons.Length - 1, true, playSound: true);
 		}
 
+		bool randomPressed = Global.input.isPressedMenu(Control.Special1);
+
+		if (randomPressed) {
+			Global.playSound("menu");
+
+			specialWeapon = Helpers.randomRange(0, specialWeapons.Length - 1);
+		}
+
 		if (okPressed || backPressed && !inGame) {
 			bool isChanged = false;
 

@@ -1060,7 +1060,7 @@ public partial class Player {
 			newChar = new Rock(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer,
-				rockLoadout: rockLoadout
+				loadout: rockLoadout
 			);
 		}
 		else if (charNum == (int)CharIds.Blues) {

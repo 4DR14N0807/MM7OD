@@ -200,22 +200,6 @@ public class Weapon {
 			};
 	}
 
-	public static List<Weapon> getAllRockWeapons() {
-		return new List<Weapon>() 
-		{
-				new RockBuster(),
-				new FreezeCracker(),
-				new ThunderBolt(),
-				new JunkShield(),
-				new ScorchWheel(),
-				new SlashClawWeapon(),
-				new NoiseCrush(),
-				new DangerWrap(),
-				new WildCoil(),
-				//new RushWeapon(),
-		};
-	}
-
 	public static List<Weapon> getAllMM7Weapons() {
 		return new List<Weapon>() 
 		{

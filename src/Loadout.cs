@@ -349,61 +349,6 @@ public class SigmaLoadout {
 }
 
 [ProtoContract]
-public class RockLoadout {
-	[ProtoMember(1)] public int weapon1;    //0 indexed
-	[ProtoMember(2)] public int weapon2;
-	[ProtoMember(3)] public int weapon3;
-	[ProtoMember(4)] public int rushLoadout;
-
-	public List<int> getRockWeaponIndices() {
-		return new List<int>() { weapon1, weapon2, weapon3, rushLoadout };
-	}
-
-	public void validate() {
-		if (weapon1 < 0 || weapon1 > 9) weapon1 = 0;
-		if (weapon2 < 0 || weapon2 > 9) weapon2 = 0;
-		if (weapon3 < 0 || weapon3 > 9) weapon3 = 0;
-
-		if ((weapon1 == weapon2 && weapon1 >= 0) ||
-			(weapon1 == weapon3 && weapon2 >= 0) ||
-			(weapon2 == weapon3 && weapon3 >= 0)) {
-			weapon1 = 0;
-			weapon2 = 1;
-			weapon3 = 2;
-
-			if (rushLoadout < 0 || rushLoadout > 2) rushLoadout = 0;
-		}
-	}
-
-	public List<Weapon> getWeaponsFromLoadout(Player player) {
-		var indices = new List<byte>();
-		indices.Add((byte)weapon1);
-		indices.Add((byte)weapon2);
-		indices.Add((byte)weapon3);
-
-		return indices.Select(index => {
-			return Weapon.getAllRockWeapons().Find(w => w.index == index).clone();
-		}).ToList();
-	}
-
-	public Weapon getRushFromLoadout(Player player) {
-		var indices = (byte)rushLoadout;
-		var rushW = Rock.getAllRushWeapons();
-		
-		return rushW[indices];
-	}
-
-	public static RockLoadout createRandom() {
-		var randomRockWeapons = Weapon.getRandomRockWeapons();
-		return new RockLoadout() {
-			weapon1 = randomRockWeapons[0],
-			weapon2 = randomRockWeapons[1],
-			weapon3 = randomRockWeapons[2],
-		};
-	}
-}
-
-[ProtoContract]
 public class LoadoutData {
 	[JsonIgnore] public int playerId;
 	[JsonIgnore] public XLoadout xLoadout = new XLoadout();

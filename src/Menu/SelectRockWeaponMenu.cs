@@ -263,7 +263,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 		else 
 		{
 			int wi = selectedWeaponIndices[selCursorIndex];
-			var weapon = Weapon.getAllRockWeapons()[wi];
+			var weapon = Rock.getAllWeapons()[wi];
 			int weakAgainstIndex = weapon.weaknessIndex;
 
 			Fonts.drawText(FontType.BlueMenu, "Slot " + (selCursorIndex + 1).ToString() + " weapon", Global.halfScreenW, 128, Alignment.Center);
@@ -272,7 +272,7 @@ public class SelectRockWeaponMenu : IMainMenu {
 
 			
 
-			var wep = Weapon.getAllRockWeapons()[wi];
+			var wep = Rock.getAllWeapons()[wi];
 
 			if (wep.description?.Length == 1) Fonts.drawText(FontType.WhiteSmall, wep.description[0], 30, wsy + 2);
 			else if (wep.description?.Length > 0) Fonts.drawText(FontType.WhiteSmall, wep.description[0], 30, wsy - 2);

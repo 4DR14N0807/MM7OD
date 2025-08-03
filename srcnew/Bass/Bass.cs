@@ -506,9 +506,13 @@ public class Bass : Character {
 
 	// Loadout Stuff
 	public List<Weapon> getLoadout() {
+		// Random Loadout.
+		if (Options.main.useRandomBassLoadout) return getRandomWeapons(loadout);
+		// 1v1/Training loadout.
 		if (Global.level.isTraining() && !Global.level.server.useLoadout || Global.level.is1v1()) {
 			return getAllWeapons();
 		}
+		// Regular Loadout.
 		return getWeaponsFromLoadout(loadout);
 	}
 
@@ -545,6 +549,34 @@ public class Bass : Character {
 			getWeaponById(loadout.weapon1),
 			getWeaponById(loadout.weapon2),
 			getWeaponById(loadout.weapon3)
+		];
+	}
+
+	public List<Weapon> getRandomWeapons(BassLoadout loadout) {
+		bool duplicatedWeapons = true;
+		int[] weapons = [
+			0,1,2
+		];
+
+		while (duplicatedWeapons) {
+			for (int i = 0; i < 3; i++) {
+				weapons[i] = Helpers.randomRange(0, 8);
+			}
+
+			if (weapons[0] == weapons[1] ||
+				weapons[1] == weapons[2] ||
+				weapons[0] == weapons[2]) {
+				duplicatedWeapons = true;
+			} else {
+				duplicatedWeapons = false;
+			}
+
+		}
+
+		return [
+			getWeaponById(weapons[0]),
+			getWeaponById(weapons[1]),
+			getWeaponById(weapons[2]),
 		];
 	}
 

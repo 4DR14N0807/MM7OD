@@ -464,7 +464,7 @@ public partial class Player {
 		indices.Add((byte)weaponIndexes[2]);
 
 		return indices.Select(index => {
-			return Weapon.getAllRockWeapons().Find(w => w.index == index).clone();
+			return Rock.getAllWeapons().Find(w => w.index == index).clone();
 		}).ToList();;
 	}
 }

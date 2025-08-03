@@ -6,6 +6,7 @@ using System.Linq;
 namespace MMXOnline;
 
 public class Rock : Character {
+	public RockLoadout loadout;
 	public float lemonTime;
 	public int lemons;
 	public float weaponCooldown;
@@ -40,19 +41,20 @@ public class Rock : Character {
 	public Rock(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
-		bool isWarpIn = true, RockLoadout? rockLoadout = null
+		bool isWarpIn = true, RockLoadout? loadout = null
 	) : base(
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
 		charId = CharIds.Rock;
-		if (rockLoadout == null) {
-			rockLoadout = new RockLoadout {
+		if (loadout == null) {
+			loadout = new RockLoadout {
 				weapon1 = player.loadout.rockLoadout.weapon1,
 				weapon2 = player.loadout.rockLoadout.weapon2,
 				weapon3 = player.loadout.rockLoadout.weapon3
 			};
 		}
-		weapons = RockLoadoutSetup.getLoadout(rockLoadout);
+		this.loadout = loadout;
+		weapons = getLoadout();
 
 		charge1Time = 40;
 		charge2Time = 105;
@@ -418,6 +420,88 @@ public class Rock : Character {
 		return base.isInvulnerable(ignoreRideArmorHide, factorHyperMode);
 	}
 
+	// Loadout Stuff
+	
+	public List<Weapon> getLoadout() {
+		// Random Loadout.
+		if (Options.main.useRandomRockLoadout) {
+			return getRandomWeapons(loadout);
+		}
+		// 1v1/Training loadout.
+		if (Global.level.isTraining() && !Global.level.server.useLoadout || Global.level.is1v1()) {
+			return getAllWeapons();
+		}
+		// Regular Loadout.
+		return getWeaponsFromLoadout(loadout);
+	}
+
+	public static List<Weapon> getAllWeapons() {
+		return new List<Weapon>()
+		{
+				new RockBuster(),
+				new FreezeCracker(),
+				new ThunderBolt(),
+				new JunkShield(),
+				new ScorchWheel(),
+				new SlashClawWeapon(),
+				new NoiseCrush(),
+				new DangerWrap(),
+				new WildCoil(),
+				//new RushWeapon(),
+		};
+	}
+
+	public static Weapon getWeaponById(int id) {
+		return id switch {
+			0 => new RockBuster(),
+			1 => new FreezeCracker(),
+			2 => new ThunderBolt(),
+			3 => new JunkShield(),
+			4 => new ScorchWheel(),
+			5 => new SlashClawWeapon(),
+			6 => new NoiseCrush(),
+			7 => new DangerWrap(),
+			8 => new WildCoil(),
+			_ => new RockBuster()
+		};
+	}
+	
+	public List<Weapon> getWeaponsFromLoadout(RockLoadout loadout) {
+		return [
+			getWeaponById(loadout.weapon1),
+			getWeaponById(loadout.weapon2),
+			getWeaponById(loadout.weapon3)
+		];
+	}
+
+	public static List<Weapon> getRandomWeapons(RockLoadout loadout) {
+		bool duplicatedWeapons = true;
+		int[] weapons = [
+			0,1,2
+		];
+
+		while (duplicatedWeapons) {
+			for (int i = 0; i < 3; i++) {
+				weapons[i] = Helpers.randomRange(0, 8);
+			}
+
+			if (weapons[0] == weapons[1] ||
+				weapons[1] == weapons[2] ||
+				weapons[0] == weapons[2]) {
+				duplicatedWeapons = true;
+			} else {
+				duplicatedWeapons = false;
+			}
+
+		}
+
+		return [
+			getWeaponById(weapons[0]),
+			getWeaponById(weapons[1]),
+			getWeaponById(weapons[2]),
+		];
+	}
+
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = new();
 		List<ShaderWrapper> baseShaders = base.getShaders();
@@ -434,7 +518,7 @@ public class Rock : Character {
 			shaders.Add(palette);
 		}
 		shaders.AddRange(baseShaders);
-		
+
 		return shaders;
 	}
 

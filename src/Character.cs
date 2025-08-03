@@ -28,8 +28,8 @@ public partial class Character : Actor, IDamagable {
 	// Health.
 	public decimal health;
 	public decimal maxHealth = 28;
-	public float maxHealthToAdd;
-	public float maxHealthAddTime;
+	public float spawnHealthToAdd;
+	public float spawnHealthAddTime;
 	
 	// Player linked data.
 	public Player player;
@@ -787,7 +787,9 @@ public partial class Character : Actor, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (other.myCollider?.flag == (int)HitboxFlag.Hitbox || other.myCollider?.flag == (int)HitboxFlag.None) return;
+		if (other.myCollider?.flag is HitboxFlag.Hitbox or HitboxFlag.None or null) {
+			return;
+		}
 
 		var killZone = other.gameObject as KillZone;
 		if (killZone != null && !isInvulnerable(true)) {

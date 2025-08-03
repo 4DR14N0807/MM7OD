@@ -1469,6 +1469,7 @@ public class Taunt : CharState {
 	}
 }
 
+
 public class Win : CharState {
 	public Win() : base("win") {
 		normalCtrl = false;

@@ -64,7 +64,7 @@ public partial class Actor : GameObject {
 			internal_xDir = value;
 		}
 	}
-	public int yDir	{
+	public int yDir {
 		get => internal_yDir;
 		set {
 			if (value == 0) {
@@ -158,7 +158,7 @@ public partial class Actor : GameObject {
 	public Point? targetNetPos;
 	public bool interplorateNetPos = true;
 
-	
+
 	public float? netXPos;
 	public float? netYPos;
 	public Point netIncPos;
@@ -432,7 +432,7 @@ public partial class Actor : GameObject {
 		}
 	}
 
-	
+
 	public float? angle {
 		get {
 			return _byteAngle * 1.40625f;
@@ -616,7 +616,7 @@ public partial class Actor : GameObject {
 			gHoldTime++;
 		}
 
-		
+
 
 		foreach (var key in netSounds.Keys.ToList()) {
 			if (!Global.sounds.Contains(netSounds[key])) {
@@ -1151,7 +1151,7 @@ public partial class Actor : GameObject {
 				}
 			}
 
-			
+
 			int spriteIndex = -1;
 			if (Global.spriteIndexByName.ContainsKey(sprite.name)) {
 				spriteIndex = Global.spriteIndexByName[sprite.name];
@@ -1620,7 +1620,7 @@ public partial class Actor : GameObject {
 			"freeze_cracker_sparkles", pos.Value, player, sendRpc: sendRpc,
 			pieceOverdive: 6, gibPattern: GibPattern.Random
 		);
- 
+
 		playSound("freezebreak2", sendRpc: sendRpc);
 	}
 
@@ -1695,7 +1695,7 @@ public partial class Actor : GameObject {
 		incPos(new Point(0, -5));
 		yDir = -1;
 		gHoldModifier = -1;
-		gHolded = true;	
+		gHolded = true;
 		reversedGravity = true;
 	}
 
@@ -1705,7 +1705,7 @@ public partial class Actor : GameObject {
 		gHoldModifier = 1;
 		reversedGravity = false;
 		gHoldTime = 0;
-		
+
 		if (shouldDestroy) destroyGHold();
 		else {
 			useGravity = false;

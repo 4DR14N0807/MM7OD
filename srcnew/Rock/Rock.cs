@@ -50,9 +50,11 @@ public class Rock : Character {
 			loadout = new RockLoadout {
 				weapon1 = player.loadout.rockLoadout.weapon1,
 				weapon2 = player.loadout.rockLoadout.weapon2,
-				weapon3 = player.loadout.rockLoadout.weapon3
+				weapon3 = player.loadout.rockLoadout.weapon3,	
 			};
+			
 		}
+		
 		this.loadout = loadout;
 		weapons = getLoadout();
 
@@ -422,15 +424,12 @@ public class Rock : Character {
 
 	// Loadout Stuff
 	
-	public List<Weapon> getLoadout() {
-		// Random Loadout.
-		if (Options.main.useRandomRockLoadout) {
-			return getRandomWeapons(loadout);
-		}
+	public List<Weapon> getLoadout() {	
 		// 1v1/Training loadout.
 		if (Global.level.isTraining() && !Global.level.server.useLoadout || Global.level.is1v1()) {
 			return getAllWeapons();
 		}
+		
 		// Regular Loadout.
 		return getWeaponsFromLoadout(loadout);
 	}
@@ -474,31 +473,11 @@ public class Rock : Character {
 		];
 	}
 
-	public static List<Weapon> getRandomWeapons(RockLoadout loadout) {
-		bool duplicatedWeapons = true;
-		int[] weapons = [
-			0,1,2
-		];
-
-		while (duplicatedWeapons) {
-			for (int i = 0; i < 3; i++) {
-				weapons[i] = Helpers.randomRange(0, 8);
-			}
-
-			if (weapons[0] == weapons[1] ||
-				weapons[1] == weapons[2] ||
-				weapons[0] == weapons[2]) {
-				duplicatedWeapons = true;
-			} else {
-				duplicatedWeapons = false;
-			}
-
-		}
-
+	public static List<Weapon> getRandomWeapons(Player player) {
 		return [
-			getWeaponById(weapons[0]),
-			getWeaponById(weapons[1]),
-			getWeaponById(weapons[2]),
+			getWeaponById(player.loadout.rockLoadout.weapon1),
+			getWeaponById(player.loadout.rockLoadout.weapon2),
+			getWeaponById(player.loadout.rockLoadout.weapon3),
 		];
 	}
 
@@ -697,9 +676,9 @@ public class Rock : Character {
 	}
 
 	public virtual float getSlideSpeed() {
-		if (flag != null) {
+		/* if (flag != null) {
 			return getRunSpeed();
-		}
+		} */
 		float dashSpeed = 3.5f * 60;
 		return dashSpeed * getRunDebuffs();
 	}

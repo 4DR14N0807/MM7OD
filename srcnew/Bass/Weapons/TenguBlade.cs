@@ -103,6 +103,7 @@ public class TenguBladeState : CharState {
 		airMove = true;
 		useDashJumpSpeed = true;
 		canStopJump = true;
+		canJump = true;
 	}
 
 	public override void update() {
@@ -116,7 +117,7 @@ public class TenguBladeState : CharState {
 			fired = true;
 		}
 
-		if (player.input.isPressed(Control.Jump, player) && checkJump()) {
+		/* if (player.input.isPressed(Control.Jump, player) && checkJump()) {
 				character.vel.y = -character.getJumpPower();
 				character.playSound("jump", true);
 				character.dashedInAir++;
@@ -127,7 +128,7 @@ public class TenguBladeState : CharState {
 						player.getNextActorNetId(), true, true
 					);
 				}
-			}
+			} */
 
 		if (character.isAnimOver()) character.changeToIdleOrFall();
 	}

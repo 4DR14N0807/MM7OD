@@ -23,11 +23,11 @@ public partial class Global {
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "821834B7DF36C1C64E63D6BA7A1CBCEF";
+	private const string assetChecksum = "4604964634281DD7AE5615FBDB571871";
 
 	// Use this to make sure the checksum varies.
 	public const string checksumPrefix = "[7OD]";
-	public const string checksumPrefix2 = "70D-R220-06-FINAL";
+	public const string checksumPrefix2 = "7OD-05-090825";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;
 	// For displaying the name of the mod in the version string.

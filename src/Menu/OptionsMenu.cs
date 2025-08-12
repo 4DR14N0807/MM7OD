@@ -858,6 +858,25 @@ public class OptionsMenu : IMainMenu {
 					},
 					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
 				),
+				new MenuOption(
+					30, startY,
+					() => {
+						Helpers.menuLeftRightBool(ref Options.main.useRandomBluesLoadout);
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText,
+							"USE RANDOM LOADOUT:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.useRandomBluesLoadout),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Generates a random loadout when respawning."
+				),
 				
 			};
 		} else if (charNum == (int)CharIds.Bass) {

@@ -882,7 +882,7 @@ public partial class Player {
 			Helpers.decrementFrames(ref evilEnergyTime);
 		} 
 		if (character != null && evilEnergyTime == 0 && evilEnergyStacks > 0) {
-			character.maxHealthToAdd += evilEnergyStacks * hpPerStack;
+			character.spawnHealthToAdd += evilEnergyStacks * hpPerStack;
 			evilEnergyTime = evilEnergyMaxTime;
 			evilEnergyStacks = 0;
 		}
@@ -991,6 +991,15 @@ public partial class Player {
 			syncLoadout();
 		}
 		if (charNum == (int)CharIds.Rock) {
+			if (isMainPlayer && ownedByLocalPlayer && Options.main.useRandomRockLoadout) {
+				RockLoadout randomLoadout = RockLoadout.createRandom();
+				return [
+					(byte)randomLoadout.weapon1,
+					(byte)randomLoadout.weapon2,
+					(byte)randomLoadout.weapon3,
+				];
+			}	
+
 			return [
 				(byte)loadout.rockLoadout.weapon1,
 				(byte)loadout.rockLoadout.weapon2,
@@ -998,15 +1007,30 @@ public partial class Player {
 			];
 		}
 		if (charNum == (int)CharIds.Blues) {
+			if (isMainPlayer && ownedByLocalPlayer && Options.main.useRandomBluesLoadout) {
+				int randomIndex = Helpers.randomRange(0, 7);
+				return [
+					(byte)randomIndex
+				];
+			}	
 			return [
 				(byte)loadout.bluesLoadout.specialWeapon,
 			];
 		}
 		if (charNum == (int)CharIds.Bass) {
+			if (isMainPlayer && ownedByLocalPlayer && Options.main.useRandomBassLoadout) {
+				BassLoadout randomLoadout = BassLoadout.createRandom();
+				return [
+					(byte)randomLoadout.weapon1,
+					(byte)randomLoadout.weapon2,
+					(byte)randomLoadout.weapon3,
+				];
+			}	
+
 			return [
 				(byte)loadout.bassLoadout.weapon1,
 				(byte)loadout.bassLoadout.weapon2,
-				(byte)loadout.bassLoadout.weapon3
+				(byte)loadout.bassLoadout.weapon3,
 			];
 		}
 		return [];
@@ -1052,7 +1076,7 @@ public partial class Player {
 			RockLoadout rockLoadout = new RockLoadout {
 				weapon1 = extraData[0],
 				weapon2 = extraData[1],
-				weapon3 = extraData[2]
+				weapon3 = extraData[2],
 			};
 			if (isMainChar) {
 				loadout.rockLoadout = rockLoadout;
@@ -1064,20 +1088,22 @@ public partial class Player {
 			);
 		}
 		else if (charNum == (int)CharIds.Blues) {
-			int specialWeapon = extraData[0];
+			BluesLoadout bluesLoadout = new BluesLoadout {
+				specialWeapon = extraData[0]
+			};
 			if (isMainChar) {
-				loadout.bluesLoadout.specialWeapon = extraData[0];
+				loadout.bluesLoadout = bluesLoadout;
 			}
 			newChar = new Blues(
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer,
-				specialWeaponIndex: specialWeapon
+				loadout: bluesLoadout
 			);
 		} else if (charNum == (int)CharIds.Bass) {
 			BassLoadout bassLoadout = new() {
 				weapon1 = extraData[0],
 				weapon2 = extraData[1],
-				weapon3 = extraData[2]
+				weapon3 = extraData[2],
 			};
 			if (isMainChar) {
 				loadout.bassLoadout = bassLoadout;
@@ -1092,7 +1118,9 @@ public partial class Player {
 		else {
 			throw new Exception("Error: Non-valid char ID: " + charNum);
 		}
+		
 		// Do this once char has spawned and is not null.
+	
 		if (isMainChar) {
 			//configureWeapons();
 			character = newChar;

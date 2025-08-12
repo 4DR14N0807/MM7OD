@@ -84,7 +84,7 @@ public class Blues : Character {
 	public Blues(
 		Player player, float x, float y, int xDir, bool isVisible,
 		ushort? netId, bool ownedByLocalPlayer, bool isWarpIn = true,
-		int? specialWeaponIndex = null
+		BluesLoadout? loadout = null
 	) : base(
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
@@ -97,10 +97,12 @@ public class Blues : Character {
 		charge3Time = 170;
 		charge4Time = 235;
 
-		if (specialWeaponIndex == null) {
-			specialWeaponIndex = player.loadout.bluesLoadout.specialWeapon;
+		if (loadout == null) {
+			loadout = new BluesLoadout {
+				specialWeapon = player.loadout.bluesLoadout.specialWeapon
+			};
 		}
-		this.specialWeaponIndex = specialWeaponIndex.Value;
+		this.specialWeaponIndex = loadout.specialWeapon;
 		specialWeapon = specialWeaponIndex switch {
 			0 => new NeedleCannon(),
 			1 => new HardKnuckle(),
@@ -190,9 +192,9 @@ public class Blues : Character {
 		float jumpSpeed = Physics.JumpSpeed;
 		if (overheating) {
 			if (shieldEquipped) {
-				jumpSpeed = 4.75f * 60;
-			} else {
 				jumpSpeed = 5f * 60;
+			} else {
+				jumpSpeed = 5.25f * 60;
 			}
 		}
 		else if (overdrive) {

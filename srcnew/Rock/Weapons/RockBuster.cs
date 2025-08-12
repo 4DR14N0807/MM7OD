@@ -48,7 +48,7 @@ public class RockBuster : Weapon {
 		int chargeLevel = args[0];
 
 		if (chargeLevel >= 2) {
-			if (rock.grounded) {
+			if (rock.grounded && rock.charState is not Run) {
 				rock.changeState(new RockChargeShotState(rock.grounded), true);
 			} else {
 				new RockBusterChargedProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);

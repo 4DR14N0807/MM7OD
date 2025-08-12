@@ -19,7 +19,7 @@ public class BassShoot : CharState {
 
 	public override void update() {
 		base.update();
-		if (player.dashPressed(out string dashControl) && character.grounded) {
+		if (player.dashPressed(out string dashControl) && character.grounded && character.canDash()) {
 			if (bass.canUseTBladeDash()) {
 				bass.changeState(new TenguBladeDash(), true);
 			} else {
@@ -101,7 +101,7 @@ public class BassShoot : CharState {
 
 	bool exitCondition() {
 		if (bass.currentWeapon?.isStream == true) {
-			return !player.input.isHeld(Control.Shoot, player);
+			return !player.input.isHeld(Control.Shoot, player) && stateFrames >= 10;
 		} 
 		return stateFrames >= 20;
 	}

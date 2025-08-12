@@ -272,7 +272,7 @@ public class StrikeAttackPushProj : Projectile {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= radius) {
 					damager.applyDamage(damagable, false, weapon, this, projId);
@@ -280,8 +280,11 @@ public class StrikeAttackPushProj : Projectile {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.stopMovingWeak();
 					actor.xPushVel = xDir * pushPower;
-					if (actor is Character chara) {
-						chara.setHurt(xDir, Global.defFlinch, false);
+					if (actor is Character chara && !chara.charState.superArmor) {
+						int key = (damager.owner.id * 10000) + projId;
+						if (!chara.flinchCooldown.ContainsKey(key) || chara.flinchCooldown[key] <= 0) {
+							chara.setHurt(xDir, flinchPower, false);
+						}
 					}
 				}
 			}

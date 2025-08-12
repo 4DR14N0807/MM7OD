@@ -24,6 +24,7 @@ public class Damager {
 		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
 		{ (int)BluesProjIds.LemonAngled, 60 * 2},
 		{ (int)BluesProjIds.SparkShock, 100},
+		{ (int)BluesProjIds.ProtoLandPush, 60 * 1},
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {

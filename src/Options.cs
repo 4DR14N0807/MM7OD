@@ -118,7 +118,7 @@ public class Options {
 	public bool reverseBluesDashInput;
 
 	// Bass
-	public BassLoadout bassLoadout = BassLoadout.createDefault();
+	public BassLoadout bassLoadout = new BassLoadout();
 	public int gridModeBass;
 	public bool useRandomBassLoadout;
 	

@@ -787,7 +787,7 @@ public partial class Character : Actor, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (other.myCollider?.flag is HitboxFlag.Hitbox or HitboxFlag.None or null) {
+		if (other.myCollider?.flag is (int)HitboxFlag.Hitbox or (int)HitboxFlag.None or null) {
 			return;
 		}
 
@@ -1286,11 +1286,11 @@ public partial class Character : Actor, IDamagable {
 			usedWtank = null;
 		}
 		//Max Health increase (Used for bass evil energy debuffs)
-		if (maxHealthToAdd > 0) {
-			maxHealthAddTime++;
-			if (maxHealthAddTime >= 3) {
-				maxHealthAddTime = 0;
-				maxHealthToAdd--;
+		if (spawnHealthToAdd > 0) {
+			spawnHealthAddTime++;
+			if (spawnHealthAddTime >= 3) {
+				spawnHealthAddTime = 0;
+				spawnHealthToAdd--;
 				maxHealth++;
 				if (player == Global.level.mainPlayer || playHealSound) {
 					playSound("heal", forcePlay: true, sendRpc: true);
@@ -3065,6 +3065,7 @@ public partial class Character : Actor, IDamagable {
 			genericStunState.activateFlinch(flinchFrames, dir);
 			return;
 		}
+
 		if (charState is Hurt hurtState) {
 			if (flinchFrames >= hurtState.flinchLeft) {
 				// You can probably add a check here that sets "hurtState.yStartPos" to null if you.

@@ -96,9 +96,9 @@ public class SlideEnd : CharState {
 	public override void update() {
 		base.update();
 
-		float inputXDir = player.input.getInputDir(player).x;
+		//groundCodeWithMove()
 
-		if (stateFrames >= 5 || inputXDir != 0) {
+		if (stateFrames >= 5 || player.input.getXDir(player) != 0) {
 			character.changeToIdleOrFall();
 			return;
 		}

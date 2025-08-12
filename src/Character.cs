@@ -772,7 +772,12 @@ public partial class Character : Actor, IDamagable {
 		changedStateInFrame = false;
 		pushedByTornadoInFrame = false;
 		debuffGfx();
-		if (!ownedByLocalPlayer) { return; }
+		// Other cooldowns.
+		Helpers.decrementTime(ref limboRACheckCooldown);
+		Helpers.decrementTime(ref dropFlagCooldown);
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		// Local only starts here.
 		updateAttackCooldowns();
 		debuffCooldowns();
@@ -1032,9 +1037,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void debuffCooldowns() {
-		Helpers.decrementTime(ref limboRACheckCooldown);
-		Helpers.decrementTime(ref dropFlagCooldown);
-
 		if (Global.level.mainPlayer.readyTextOver) {
 			Helpers.decrementTime(ref invulnTime);
 		}

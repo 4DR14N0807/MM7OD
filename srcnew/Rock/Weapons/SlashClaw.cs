@@ -8,6 +8,7 @@ public class SlashClawWeapon : Weapon {
 	public static SlashClawWeapon netWeapon = new();
 
 	public SlashClawWeapon() : base() {
+		displayName = "SLASH CLAW";
 		index = (int)RockWeaponIds.SlashClaw;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.SlashClaw;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -16,7 +17,9 @@ public class SlashClawWeapon : Weapon {
 		maxAmmo = 24;
 		ammo = maxAmmo;
 		fireRate = 45;
-		description = new string[] { "Fast melee attack, able to pierce shields.", "No tiene flinch." };
+		descriptionV2 = [
+			[ "Fast melee attack, able to pierce shields.\n" + "No tiene flinch." ]
+		];
 	}
 
 	public override void shootRock(Rock rock, params int[] args) {

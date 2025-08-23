@@ -18,6 +18,11 @@ public class RemoteMine : Weapon {
 		weaponBarIndex = index;
 		fireRate = 45;
 		switchCooldown = 30;
+		descriptionV2 = [
+			[ "Sticks on enemies and walls.\n" +
+			"Press UP or DOWN after shooting to aim.\n" +
+			"Press SHOOT button after sticking to detonate."]
+		];
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
@@ -174,7 +179,7 @@ public class RemoteMineProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer || bass == null) {
+		if (bass == null || !ownedByLocalPlayer) {
 			return;
 		}
 
@@ -182,7 +187,7 @@ public class RemoteMineProj : Projectile {
 		if (bass != null) bass.rMine = null!;
 
 		if (time >= maxTime && !exploded && landed) explode();
-		if (wallLanded) bass.rMine = new RemoteMineLandProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
+		if (wallLanded && bass != null) bass.rMine = new RemoteMineLandProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
 	}
 
 	public void explode() {

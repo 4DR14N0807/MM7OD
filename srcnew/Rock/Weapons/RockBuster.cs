@@ -9,6 +9,7 @@ public class RockBuster : Weapon {
 	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
 
 	public RockBuster() : base() {
+		displayName = "MEGA BUSTER";
 		index = (int)RockWeaponIds.MegaBuster;
 		killFeedIndex = 0;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.MegaBuster;
@@ -16,8 +17,11 @@ public class RockBuster : Weapon {
 		weaponSlotIndex = (int)RockWeaponSlotIds.MegaBuster;
 		//shootSounds = new List<string>() {"buster", "buster2", "buster3", ""};
 		fireRate = 9;
-		description = new string[] { "Rock's default weapon.", "Can be charged to deal more damage." };
 		drawAmmo = false;
+		descriptionV2 = [
+			[ "Rock's default weapon.\n" + "Can be charged to deal more damage." ]
+		];
+		
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

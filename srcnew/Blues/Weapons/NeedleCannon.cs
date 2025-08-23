@@ -13,7 +13,9 @@ public class NeedleCannon : Weapon {
 
 		// Display data.
 		displayName = "NEEDLE CANNON";
-		descriptionV2 = "Rapid fire cannon that deals fast damage\nbut has high heat generation.";
+		descriptionV2 = [
+			[ "Rapid fire cannon that deals fast damage\nbut has high heat generation." ],
+		];
 
 		// Auto-calculation for ammo per second text.
 		decimal ammoUseDec = Decimal.Parse(defaultAmmoUse.ToString());

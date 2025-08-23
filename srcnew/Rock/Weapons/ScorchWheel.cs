@@ -8,6 +8,7 @@ public class ScorchWheel : Weapon {
 	public float ogCooldown = 60;
 	public float uwCooldown = 45;
 	public ScorchWheel() : base() {
+		displayName = "SCORCH WHEEL";
 		index = (int)RockWeaponIds.ScorchWheel;
 		weaponSlotIndex = (int)RockWeaponSlotIds.ScorchWheel;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.ScorchWheel;
@@ -17,7 +18,9 @@ public class ScorchWheel : Weapon {
 		ammo = maxAmmo;
 		fireRate = ogCooldown;
 		switchCooldown = 45;
-		description = new string[] { "A weapon able to burn enemies.", "Hold SHOOT to keep the barrier for longer." };
+		descriptionV2 = [
+			[ "A weapon able to burn enemies.\n" + "Hold SHOOT to keep the barrier for longer." ]
+		];
 	}
 
 	public override void shootRock(Rock rock, params int[] args) {

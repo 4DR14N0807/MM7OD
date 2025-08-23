@@ -22,6 +22,10 @@ public class WaveBurner : Weapon {
 		ammoGainMultiplier = ammoDisplayScale;
 		drawCooldown = false;
 		soundTime = 6;
+		descriptionV2 = [
+			[ "Short range DPS weapon.\n" +
+			"Can be aimed in 8 directions."]
+		];
 	}
 
 	public override void shoot(Character character, params int[] args) {

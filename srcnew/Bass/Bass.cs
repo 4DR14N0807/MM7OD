@@ -147,7 +147,7 @@ public class Bass : Character {
 			}
 		}
 
-		if (showNumberTime > 0) drawCardNumber(lastCardNumber);
+		//if (showNumberTime > 0) drawCardNumber(lastCardNumber);
 
 		//Non-local players end here.
 		if (!ownedByLocalPlayer) return;
@@ -325,6 +325,7 @@ public class Bass : Character {
 
 	public override int getHitboxMeleeId(Collider hitbox) {
 		return (int)(sprite.name switch {
+			"bass_tblade" => MeleeIds.TenguBlade,
 			"bass_tblade_dash" => MeleeIds.TenguBladeDash,
 			"sbass_kick" => MeleeIds.Kick,
 			"sbass_soniccrusher" => MeleeIds.SonicCrusher,
@@ -335,6 +336,9 @@ public class Bass : Character {
 	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
 		Damager damager = sonicCrusherDamager();
 		return id switch {
+			(int)MeleeIds.TenguBlade => new TenguBladeProjMelee(
+				projPos, player, addToLevel: addToLevel
+			),
 			(int)MeleeIds.TenguBladeDash => new TenguBladeMelee(
 				projPos, player, addToLevel: addToLevel
 			),
@@ -352,6 +356,7 @@ public class Bass : Character {
 
 	public enum MeleeIds {
 		None = -1,
+		TenguBlade,
 		TenguBladeDash,
 		Kick,
 		SonicCrusher,
@@ -712,6 +717,23 @@ public class Bass : Character {
 		shaders.AddRange(baseShaders);
 		
 		return shaders;
+	}
+
+	void removeLastingProjs() {
+		if (rMine != null) {
+			if (rMine is RemoteMineProj m) m.explode();
+			else if (rMine is RemoteMineLandProj lm) lm.explode();
+		}
+	}
+
+	public override void destroySelf(
+		string spriteName = "", string fadeSound = "",
+		bool disableRpc = false, bool doRpcEvenIfNotOwned = false,
+		bool favorDefenderProjDestroy = false
+	) {
+		removeLastingProjs();
+
+		base.destroySelf(spriteName, fadeSound, disableRpc, doRpcEvenIfNotOwned, favorDefenderProjDestroy);
 	}
 
 	public override List<byte> getCustomActorNetData() {

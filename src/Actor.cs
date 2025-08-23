@@ -81,6 +81,7 @@ public partial class Actor : GameObject {
 	public float xPushVel;
 	public float xIceVel;
 	public float xSwingVel;
+	public float xTenguPushVel;
 	public float landingVelY;
 	public bool immuneToKnockback;
 	public bool isPlatform;
@@ -781,6 +782,18 @@ public partial class Actor : GameObject {
 			yPushVel = 0f;
 		}
 
+		if (xTenguPushVel != 0 && Math.Sign(xTenguPushVel) != xDir) xTenguPushVel = 0;
+		if (Math.Abs(xTenguPushVel) > 5) {
+			xTenguPushVel = Helpers.lerp(xTenguPushVel, 0, Global.spf * 7);
+
+			var wall = Global.level.checkTerrainCollisionOnce(this, xTenguPushVel * Global.spf, 0);
+			if (wall != null && wall.gameObject is Wall) {
+				xTenguPushVel = 0;
+			}
+		} else if (xTenguPushVel != 0) {
+			xTenguPushVel = 0;
+		}
+
 		if (Math.Abs(xSwingVel) > 0) {
 			if (chr != null) {
 				if (chr.player.isX) {
@@ -841,12 +854,12 @@ public partial class Actor : GameObject {
 		}
 
 		if (this is Character) {
-			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel, 0), true, true, false);
+			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel + xTenguPushVel, 0), true, true, false);
 			if (yPushVel != 0) {
 				move(new Point(0, yPushVel), true, false, false);
 			}
 		} else if (!isStatic) {
-			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel, 0), true, true, false);
+			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel + xTenguPushVel, 0), true, true, false);
 			if (yPushVel != 0) {
 				move(new Point(0, yPushVel), true, false, false);
 			}
@@ -1676,6 +1689,7 @@ public partial class Actor : GameObject {
 		xIceVel = 0;
 		xPushVel = 0;
 		xSwingVel = 0;
+		xTenguPushVel = 0;
 		vel.x = 0;
 		vel.y = 0;
 	}
@@ -1837,12 +1851,17 @@ public partial class Actor : GameObject {
 				break;
 			}
 			if (collideData.gameObject is Actor actor &&
-				(actor.isSolidWall || actor.isPlatform)
+				(actor.isSolidWall || actor.isPlatform) &&
+				canBePlatform(this)
 			) {
 				move(actor.deltaPos, useDeltaTime: false);
 				break;
 			}
 		}
+	}
+
+	public virtual bool canBePlatform(GameObject other) {
+		return true;
 	}
 
 	public const int labelCursorOffY = 5;

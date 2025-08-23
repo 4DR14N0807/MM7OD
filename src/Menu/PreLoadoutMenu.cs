@@ -59,7 +59,7 @@ public class PreLoadoutMenu : IMainMenu {
 			}
 			*/
 			if (selectY == 0) {
-				Menu.change(new SelectRockWeaponMenu(this, false));
+				Menu.change(new RockWeaponMenu(this, false));
 			}
 			if (selectY == 1) {
 				Menu.change(new BluesWeaponMenu(this, false));

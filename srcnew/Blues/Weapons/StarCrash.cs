@@ -9,7 +9,9 @@ public class StarCrash : Weapon {
 
 	public StarCrash() : base() {
 		displayName = "STAR CRASH";
-		descriptionV2 = "Creates a star-shaped energy barrier\nthat reduces gravity.";
+		descriptionV2 = [
+			[ "Creates a star-shaped energy barrier\nthat reduces gravity." ],
+		];
 		ammoUseText = "4";
 
 		index = (int)BluesWeaponIds.StarCrash;

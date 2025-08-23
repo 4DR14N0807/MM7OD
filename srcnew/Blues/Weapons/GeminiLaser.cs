@@ -6,7 +6,7 @@ namespace MMXOnline;
 public class GeminiLaser : Weapon {
     public GeminiLaser() : base() {
 		displayName = "Gemini Laser";
-		descriptionV2 = "Temp.";
+		//descriptionV2 = "Temp.";
 		defaultAmmoUse = 3;
 
         //index = (int)RockWeaponIds.GeminiLaser;

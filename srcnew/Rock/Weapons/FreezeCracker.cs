@@ -7,6 +7,7 @@ public class FreezeCracker : Weapon {
 	public static FreezeCracker netWeapon = new();
 
 	public FreezeCracker() : base() {
+		displayName = "FREEZE CRACKER";
 		index = (int)RockWeaponIds.FreezeCracker;
 		killFeedIndex = 0;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.FreezeCracker;
@@ -15,7 +16,9 @@ public class FreezeCracker : Weapon {
 		fireRate = 45;
 		maxAmmo = 20;
 		ammo = maxAmmo;
-		description = new string[] { "Splits in 6 pieces when hitting a wall.", "Can be aimed up or down." };
+		descriptionV2 = [
+			[ "Splits in 6 pieces when hitting a wall.\n" + "Can be aimed up or down." ]
+		];
 	}
 
 	public override void shootRock(Rock rock, params int[] args) {

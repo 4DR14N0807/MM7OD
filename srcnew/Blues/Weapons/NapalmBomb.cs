@@ -9,7 +9,7 @@ public class NapalmBomb : Weapon {
 
 	public NapalmBomb() : base() {
 		displayName = "NAPALM BOMB";
-		descriptionV2 = "";
+		//descriptionV2 = "";
 		defaultAmmoUse = 3;
 
 		//index = (int)RockWeaponIds.NapalmBomb;

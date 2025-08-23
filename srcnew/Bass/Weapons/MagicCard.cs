@@ -8,6 +8,20 @@ public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
 	public int cardCount = 7;
+	string[] effectsText = new[] {
+		"",
+		"FLIP!",
+		"AMMO REFILL!",
+		"DOUBLE SHOT!",
+		"MULTU-SHOT!!!",
+	};
+	string[] effectsSounds = new[] {
+		"",
+		"upgrade",
+		"upgrade",
+		"upgrade",
+		"magiccard4"
+	};
 
 	public MagicCard() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -20,6 +34,22 @@ public class MagicCard : Weapon {
 		ammoDisplayScale = 2;
 		isStream = true;
 		drawCooldown = false;
+		descriptionV2 = [
+			[ 
+				"Can take health and ammo capsules.\n" + 
+				"Shoots a projectile with a random effect\n" +
+				"each 7 shots." 
+			], 
+			[
+				"(1): Changes enemy direction on hit.\n" +
+				"(2): Ammo refill\n" +
+				"(The more hits, the more ammo you will get)." 
+			],
+			[
+				"(3): Homing Double shot.\n" +
+				"(4): Homing Multi-shot.\n" 
+			],
+		];
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -48,7 +78,6 @@ public class MagicCard : Weapon {
 
 		if (cardCount <= 0) {
 			cardCount += 7;
-			bass.playSound("upgrade");
 			int[] effectChances = [
 				1, 1, 1, 1,
 				2, 2, 2, 2,
@@ -67,6 +96,8 @@ public class MagicCard : Weapon {
 			}
 			bass.showNumberTime = 60;
 			bass.lastCardNumber = effect;
+			bass.playSound(effectsSounds[effect], true);
+			Global.level.gameMode.setHUDErrorMessage(player, effectsText[effect], false, overrideFont: FontType.WhiteSmall);
 		}
 		if (effect >= (int)MagicCardEffects.MultiShot) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
@@ -112,7 +143,7 @@ public class MagicCardProj : Projectile {
 		pos, xDir, owner, "magic_card_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.MagicCard;
-		maxTime = 3f;
+		maxTime = 5f;
 		maxReverseTime = 0.45f;
 
 		this.byteAngle = byteAngle;
@@ -127,6 +158,7 @@ public class MagicCardProj : Projectile {
 			}
 		}
 		destroyOnHit = effect != (int)MagicCardEffects.Refill;
+		if (effect >= 1) changeSprite(sprite.name + effect.ToString(), true);
 
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
 		damager.damage = 1;
@@ -222,7 +254,7 @@ public class MagicCardProj : Projectile {
 				destroySelf();
 			}
 			new MagicCardSpecialProj(
-				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
+				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, effect, true
 			);
 			playSound("magiccard", true);
 			duplicated = true;
@@ -239,9 +271,12 @@ public class MagicCardProj : Projectile {
 				if (damagable is not Character chr) return;
 				else {
 					hits++;
-					if (hits >= 4) {
-						updateDamager(0);
+					if (effect == (int)MagicCardEffects.Refill) {
+						playSound("magiccard2", true);
 					}
+					/* if (hits >= 4) {
+						updateDamager(0);
+					} */
 				}
 			}
 		}
@@ -256,9 +291,9 @@ public class MagicCardProj : Projectile {
 			}
 		}
 		if (!ownedByLocalPlayer) { return; }
-		if (effect == 2 && !duplicated) {
+		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
 			new MagicCardSpecialProj(
-				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, -1, true
+				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, effect, true
 			);
 			playSound("magiccard", true);
 		}
@@ -267,6 +302,7 @@ public class MagicCardProj : Projectile {
 	float getAmmo() {
 		// Refund the ammo use and 1 for each extra hit.
 		if (effect == (int)MagicCardEffects.Refill) {
+			playSound("magiccard2", true);
 			return 2 + hits;
 		}
 		// Refund only the ammo use.
@@ -325,7 +361,7 @@ public class MagicCardSpecialSpawn : Projectile {
 			}
 
 			new MagicCardSpecialProj(ownChr, pos, xDir,  
-				damager.owner.getNextActorNetId(), startAngle, (int)t, true);
+				damager.owner.getNextActorNetId(), startAngle, (int)MagicCardEffects.MultiShot, true);
 			playSound("magiccard", true);
 			count++;
 			cooldown = 9;
@@ -347,11 +383,16 @@ public class MagicCardSpecialProj : Projectile {
 	) {
 		projId = (int)BassProjIds.MagicCardS;
 		maxTime = 3;
+
 		this.type = type;
+		changeSprite(sprite.name + type.ToString(), true);
+
 		base.byteAngle = (type * 10 ) + startAngle;
 		if (xDir < 0 && startAngle != 128) byteAngle = -byteAngle + 128;
 		vel = Point.createFromByteAngle(byteAngle).times(speed);
+
 		damager.damage = 1;
+
 		canBeLocal = false;
 
 		if (rpc) {

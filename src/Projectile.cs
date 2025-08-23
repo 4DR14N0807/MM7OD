@@ -605,7 +605,7 @@ public class Projectile : Actor {
 		return null;
 	}
 
-	public virtual void onDamageEX() {}
+	public virtual void onDamageEX(IDamagable damagable) {}
 
 	// Updates damager values and sends them over the network.
 	public void updateDamager(float? damage = null, int? flinch = null) {

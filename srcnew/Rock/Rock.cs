@@ -683,16 +683,33 @@ public class Rock : Character {
 		return dashSpeed * getRunDebuffs();
 	}
 
-	public void removeBusterProjs() {
-		sWell = null;
+	public void removeLastingProjs() {
+		sWellSpawn?.destroySelf();
+		sWell?.destroySelf();
+		sWellU?.destroySelf();
+		foreach (Weapon w in weapons) {
+			if (w is DangerWrap dw) {
+				foreach (Projectile mine in dw.dangerMines) {
+					if (mine is DangerWrapLandProj lProj) {
+						lProj.health = 0;
+						lProj.destroySelf();
+					}
+					else {
+						mine.destroySelf();
+					}
+				}
+			}
+		}
 	}
+
 	public override void destroySelf(
 		string spriteName = "", string fadeSound = "",
 		bool disableRpc = false, bool doRpcEvenIfNotOwned = false,
 		bool favorDefenderProjDestroy = false
 	) {
+		removeLastingProjs();
+
 		base.destroySelf(spriteName, fadeSound, disableRpc, doRpcEvenIfNotOwned, favorDefenderProjDestroy);
-		//if (rush != null) rush.destroySelf();
 	}
 
 	public override void aiAttack(Actor? target) {

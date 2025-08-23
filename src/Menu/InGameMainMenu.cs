@@ -37,7 +37,7 @@ public class InGameMainMenu : IMainMenu {
 				}
 				if (isSelWepDisabled()) return;
 				if (selectedCharNum == (int)CharIds.Rock) {
-					Menu.change(new SelectRockWeaponMenu(this, true));
+					Menu.change(new RockWeaponMenu(this, true));
 				}  else if (selectedCharNum == (int)CharIds.Blues) {
 					Menu.change(new BluesWeaponMenu(this, true));
 				} else if (selectedCharNum == (int)CharIds.Bass) {

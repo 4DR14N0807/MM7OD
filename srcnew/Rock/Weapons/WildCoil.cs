@@ -7,6 +7,7 @@ public class WildCoil : Weapon {
 	public static WildCoil netWeapon = new();
 
 	public WildCoil() : base() {
+		displayName = "WILD COIL";
 		index = (int)RockWeaponIds.WildCoil;
 		weaponSlotIndex = (int)RockWeaponSlotIds.WildCoil;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.WildCoil;
@@ -16,7 +17,11 @@ public class WildCoil : Weapon {
 		ammo = maxAmmo;
 		fireRate = 60;
 		switchCooldown = 45;
-		description = new string[] { "Throws coils in both sides that", "can be charged to reach more height.", "Use Up/Down to change bounce patterns." };
+		descriptionV2 = [
+			[ "Throws coils in both sides that\n" + 
+			"can be charged to reach more height.\n" + 
+			"Use Up/Down to change bounce patterns." ]
+		];
 	}
 
 	public override void shootRock(Rock rock, params int[] args) {

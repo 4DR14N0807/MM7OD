@@ -7,6 +7,7 @@ public class ThunderBolt : Weapon {
 	public static ThunderBolt netWeapon = new();
 
 	public ThunderBolt() : base() {
+		displayName = "THUNDER BOLT";
 		index = (int)RockWeaponIds.ThunderBolt;
 		fireRate = 40;
 		weaponSlotIndex = (int)RockWeaponSlotIds.ThunderBolt;
@@ -15,7 +16,9 @@ public class ThunderBolt : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 24;
 		ammo = maxAmmo;
-		description = new string[] { "Powerful DPS weapon.", "Divides in 2 when hitting an enemy." };
+		descriptionV2 = [
+			[ "Powerful DPS weapon.\n" + "Divides in 2 when hitting an enemy." ]
+		];
 	}
 
 	public override void shootRock(Rock rock, params int[] args) {

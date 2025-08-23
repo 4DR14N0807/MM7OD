@@ -19,6 +19,11 @@ public class IceWall : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 30;
+		descriptionV2 = [
+			[ "Pushes enemies away.\n" +
+			"Can be used as a platform and transport\n" +
+			"both you and your teammates." ]
+		];
 	}
 
 	public override bool canShoot(int chargeLevel, Character character) {
@@ -119,6 +124,16 @@ public class IceWallProj : Projectile, IDamagable {
 			return true;
 		}
 		return false;
+	}
+
+	public override bool canBePlatform(GameObject other) {
+		if (other is RemoteMineProj or RemoteMineLandProj) return true;
+
+		return (
+			other is Character chara &&
+			chara.player.alliance == damager.owner.alliance &&
+			chara.pos.y <= getTopY() + 16
+		); 
 	}
 
 	public override void onCollision(CollideData other) {

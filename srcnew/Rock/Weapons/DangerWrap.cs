@@ -9,17 +9,21 @@ public class DangerWrap : Weapon {
 	public List<Projectile> dangerMines = new();
 
 	public DangerWrap() : base() {
+		displayName = "DANGER WRAP";
 		index = (int)RockWeaponIds.DangerWrap;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.DangerWrap;
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.DangerWrap;
-		//shootSounds = new List<string>() {"buster2", "buster2", "buster2", ""};
 		killFeedIndex = 0;
 		fireRate = 75;
 		switchCooldown = 45;
 		maxAmmo = 10;
 		ammo = maxAmmo;
-		description = new string[] { "Complex weapon able to catch foes.", "Press UP/LEFT/RIGHT to change direction", "or press DOWN to leave a mine." };
+		descriptionV2 = [
+			[ "Complex weapon able to catch foes.\n" +
+			"Press UP/LEFT/RIGHT to change direction\n" + 
+			"or press DOWN to leave a mine." ]
+		];
 	}
 
 	public override void update() {

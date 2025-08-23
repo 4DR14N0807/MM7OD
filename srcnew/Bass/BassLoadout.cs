@@ -104,6 +104,9 @@ public class BassWeaponMenu : IMainMenu {
 		new TenguBlade(),
 		new MagicCard(),
 	];
+	int latestIndex = 0;
+	int latestRow;
+	int descIndex = 0;
 
 	public BassWeaponMenu(IMainMenu prevMenu, bool inGame) {
 		this.prevMenu = prevMenu;
@@ -112,14 +115,21 @@ public class BassWeaponMenu : IMainMenu {
 		sWeapons[0] = targetLoadout.weapon1;
 		sWeapons[1] = targetLoadout.weapon2;
 		sWeapons[2] = targetLoadout.weapon3;
+		latestIndex = sWeapons[cursorRow];
+		latestRow = cursorRow;
 	}
 
 	public void update() {
 		bool okPressed = Global.input.isPressedMenu(Control.MenuConfirm);
 		bool backPressed = Global.input.isPressedMenu(Control.MenuBack);
-		Helpers.menuUpDown(ref cursorRow, 0, 2);
+		bool commandPressed = Global.input.isPressedMenu(Control.Special2);
 
-		
+		if (commandPressed) {
+			descIndex++;
+			Global.playSound("menu");
+		} 
+
+		Helpers.menuUpDown(ref cursorRow, 0, 2);
 		Helpers.menuLeftRightInc(ref sWeapons[cursorRow], 0, specialWeapons.Length - 1, true, playSound: true);
 
 		// Random loadout
@@ -140,6 +150,12 @@ public class BassWeaponMenu : IMainMenu {
 
 				if (!duplicateWeapons()) duplicatedWeapons = false;
 			}
+		}
+
+		if (latestIndex != sWeapons[cursorRow] || latestRow != cursorRow) {
+			latestIndex = sWeapons[cursorRow];
+			latestRow = cursorRow;
+			descIndex = 0;
 		}
 
 		if (okPressed || backPressed && !inGame) {
@@ -195,6 +211,7 @@ public class BassWeaponMenu : IMainMenu {
 		int wepH = 20;
 		float rightArrowPos = Global.screenW - 106;
 		float leftArrowPos = startX2 - 15;
+
 		Global.sprites["cursor"].drawToHUD(0, startX, startY - 1 + cursorRow * wepH);
 
 		for (int i = 0; i < 3; i++) {
@@ -239,10 +256,14 @@ public class BassWeaponMenu : IMainMenu {
 			currentWeapon = specialWeapons[sWeapons[cursorRow]];
 			menuTitle = "Special Weapon";
 			weaponTitle = currentWeapon.displayName;;
-			weaponDescription = currentWeapon.descriptionV2;;
+			int di = 0;
+			if (currentWeapon.descriptionV2.Length > 0) {
+				di = descIndex % currentWeapon.descriptionV2.Length;
+			}
+			weaponDescription = currentWeapon.descriptionV2[di][0];
 		
 		// Draw rectangle.
-		int wsy = 127;
+		int wsy = 108;
 		DrawWrappers.DrawRect(
 			25, wsy, Global.screenW - 25, wsy + 18, true, new Color(0, 0, 0, 100), 1,
 			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
@@ -264,9 +285,23 @@ public class BassWeaponMenu : IMainMenu {
 			FontType.Purple, weaponTitle,
 			Global.halfScreenW, titleY2, Alignment.Center
 		);
-		/* Fonts.drawText(
+		Fonts.drawText(
 			FontType.WhiteSmall, weaponDescription,
 			Global.halfScreenW, row1Y, Alignment.Center
-		); */
+		);
+
+		//Switch info page section.
+		for (int i = 0; i < currentWeapon.descriptionV2.Length; i++) {
+			int fi = currentWeapon.descriptionV2.Length - 1 - i == descIndex % currentWeapon.descriptionV2.Length ? 2 : 0;
+
+			Global.sprites["cursor"].drawToHUD(
+				fi, Global.screenW - 31 - (i  * 10), row2Y + 6
+			);
+		}
+
+		Fonts.drawTextEX(
+			FontType.White, "[SPC]: Random, [CMD]: More weapon info",
+			Global.screenW / 2, row2Y + 19, Alignment.Center
+		);
 	}
 }

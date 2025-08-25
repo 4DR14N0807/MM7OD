@@ -103,6 +103,7 @@ public class GameMode {
 
 	public float hudErrorMsgTime;
 	string hudErrorMsg = "";
+	FontType? hudErrorOverrideFont;
 
 	public Player? hudTopLeftPlayer;
 	public Player? hudTopRightPlayer;
@@ -635,7 +636,7 @@ public class GameMode {
 			);
 		} else if (hudErrorMsgTime > 0) {
 			Fonts.drawText(
-				FontType.BlueSmall, hudErrorMsg,
+				hudErrorOverrideFont ?? FontType.BlueSmall, hudErrorMsg,
 				Global.halfScreenW, 50, Alignment.Center
 			);
 		}
@@ -702,21 +703,23 @@ public class GameMode {
 		}
 	}
 
-	public void setHUDErrorMessage(Player player, string message, bool playSound = true, bool resetCooldown = false) {
+	public void setHUDErrorMessage(Player player, string message, bool playSound = true, bool resetCooldown = false, FontType? overrideFont = null) {
 		if (player != level.mainPlayer) return;
 		if (resetCooldown) hudErrorMsgTime = 0;
 		if (hudErrorMsgTime == 0) {
 			hudErrorMsg = message;
 			hudErrorMsgTime = 2;
+			hudErrorOverrideFont = overrideFont;
 			if (playSound) {
 				Global.playSound("error");
 			}
 		}
 	}
 
-	public void setHUDDebugWarning(string message) {
+	public void setHUDDebugWarning(string message, FontType? overrideFont = null) {
 		hudErrorMsg = message;
 		hudErrorMsgTime = 2;
+		hudErrorOverrideFont = overrideFont;
 	}
 
 	public bool shouldDrawRadar() {

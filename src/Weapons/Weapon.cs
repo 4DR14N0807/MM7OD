@@ -16,7 +16,7 @@ public class Weapon {
 	public bool isStream = false;
 	public string displayName = "";
 	public string[] description = {""};
-	public string descriptionV2 = "";
+	public string[][] descriptionV2 = [ [""], [""] ];
 	public float defaultAmmoUse = 0;
 	public string ammoUseText = "";
 

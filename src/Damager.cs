@@ -204,7 +204,7 @@ public class Damager {
 			if (damagerMessage?.flinch != null) flinch = damagerMessage.flinch.Value;
 			if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
 
-			proj.onDamageEX();
+			proj.onDamageEX(damagable);
 		}
 
 		// Character section
@@ -253,8 +253,8 @@ public class Damager {
 					character.xDir *= -1;
 					break;
 				case (int)BassProjIds.SpreadDrillMid:
-					character.vel = Point.lerp(character.vel, Point.zero, Global.speedMul);
-					character.slowdownTime = MathF.Max(character.slowdownTime, 15);
+					character.vel = character.vel.times(0.5f);
+					character.slowdownTime = MathF.Max(character.slowdownTime, 20);
 					break;
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor != null) {

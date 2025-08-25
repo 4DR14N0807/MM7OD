@@ -20,6 +20,11 @@ public class LightningBolt : Weapon {
 		fireRate = 60;
 		switchCooldown = 45;
 		hasCustomAnim = true;
+		descriptionV2 = [
+			[ "Powerfull attack able to pierce defenses.\n" + 
+			"Press LEFT or RIGTH to aim.\n" + 
+			"Press SHOOT again for a faster but weaker attack."],
+		];
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -202,20 +207,23 @@ public class LightningBoltState : CharState {
 
 public class LightningBoltProj : Projectile {
 	float spawnPosY;
+	float mainProjHeight;
 	float bodySpriteHeight;
-	string bodySprite = "lightning_bolt_body";
+	Sprite bodySprite = new("lightning_bolt_body");
 	int timeInFrames;
+	bool once;
 
 	public LightningBoltProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		float? overrideDamage = 0, bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "lightning_bolt_proj", netProjId, altPlayer
+		pos, xDir, owner, "lightning_bolt_bottom", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.LightningBolt;
 		maxTime = 0.5f;
 		setIndestructableProperties();
-		bodySpriteHeight = new Sprite(bodySprite).animData.frames[0].rect.h();
+		bodySpriteHeight = bodySprite.animData.hitboxes[0].shape.getRect().h();
+		mainProjHeight = sprite.animData.frames[0].hitboxes[0].shape.getRect().h();
 
 		damager.damage = overrideDamage ?? 2;
 		damager.flinch = Global.halfFlinch;
@@ -245,14 +253,22 @@ public class LightningBoltProj : Projectile {
 		if (isAnimOver()) destroySelf();
 		
 		timeInFrames++;
-		
+
+		if (frameIndex > 0 && !once) {
+			releaseSparks();
+			once = true;
+		}
 
 		if (collider == null) return;
 		
-		Rect rect = collider._shape.getRect();
-		rect.y1 = -bodySpriteHeight;
-		rect.y2 = getPiecesAmount() * bodySpriteHeight;
-		collider._shape = rect.getShape();
+		List<Point> points = new() {
+			new Point(collider.shape.getRect().x1, pos.y - getHeight()),
+			new Point(collider.shape.getRect().x2, pos.y - getHeight()),
+			new Point(collider.shape.getRect().x2, pos.y),
+			new Point(collider.shape.getRect().x1, pos.y),
+			
+		};
+		globalCollider = new Collider(points, true, null!, false, false, 0, Point.zero);
 	}
 
 	public override void render(float x, float y) {
@@ -264,8 +280,8 @@ public class LightningBoltProj : Projectile {
 			int dirX = i % 2 != 0 ? xDir * -1 : xDir;
 			float offset = dirX != xDir ? -2 * xDir : 0;
 
-			Global.sprites[bodySprite].draw(
-				frameIndex, pos.x + offset, pos.y - (i * bodySpriteHeight),
+			bodySprite.draw(
+				frameIndex, pos.x + offset, pos.y - (i * bodySpriteHeight) - mainProjHeight,
 				dirX, 1, null, 1, 1, 1, zIndex
 			);
 		}
@@ -277,5 +293,33 @@ public class LightningBoltProj : Projectile {
 		int pieces = MathInt.Floor(yDistFromOrigin / bodySpriteHeight);
 		if (pieces > 6) pieces = 6;
 		return pieces;
+	}
+
+	private float getHeight() {
+		return (
+			(getPiecesAmount() * bodySpriteHeight) + mainProjHeight
+		);
+	}
+
+	void releaseSparks() {
+		int sparks = Helpers.randomRange(4, 8);
+		for (int i = 0; i < sparks; i++) {
+			int leftOrRight = i % 2 == 0 ? -1 : 1;
+			float space = getHeight() / sparks;
+			int[] possiblePositions = new int[] {8, 16, 32};
+			int position = Helpers.randomRange(0, possiblePositions.Length - 1);
+
+			float sPosX = possiblePositions[position] * leftOrRight;
+			float sPosY = (space * i) + (space / 2);
+			Point sparkPos = pos.addxy(sPosX, -sPosY);
+
+			float sVelX = Helpers.randomRange(60, 90) * leftOrRight;
+			if (position == 2) sVelX *= -1;
+			float sVelY = Helpers.randomRange(60, 90);
+			if (i % 2 == 0) sVelY *= -1;
+
+			new Anim(sparkPos, "lightning_bolt_spark", Math.Sign(sVelX), null!, true) 
+			{ xPushVel = sVelX, yPushVel = sVelY };
+		}
 	}
 }

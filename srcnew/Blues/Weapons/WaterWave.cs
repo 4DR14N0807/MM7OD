@@ -6,7 +6,7 @@ public class WaterWave : Weapon {
 
 	public WaterWave() : base() {
 		displayName = "WATER WAVE";
-		descriptionV2 = "A weapon that uses high pressure to\ninject compressed water in one direction.";
+		//descriptionV2 = "A weapon that uses high pressure to\ninject compressed water in one direction.";
 		defaultAmmoUse = 4;
 
 		//index = (int)RockWeaponIds.WaterWave;

@@ -8,8 +8,10 @@ public class SparkShock : Weapon {
 
 	public SparkShock() : base() {
 		displayName = "SPARK SHOCK";
-		descriptionV2 = "Generates an energy ball that can" + "\n" +
-						"temporarily paralyze enemies.";
+		descriptionV2 = [
+			[ "Generates an energy ball that can" + "\n" +
+						"temporarily paralyze enemies." ],
+		];
 		defaultAmmoUse = 3;
 
 		index = (int)BluesWeaponIds.SparkShock;

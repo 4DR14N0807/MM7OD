@@ -8,7 +8,9 @@ public class PowerStone : Weapon {
 
 	public PowerStone() : base() {
 		displayName = "POWER STONE";
-		descriptionV2 = "Summons three stones that spiral around.\nCan be used behind the shield.";
+		descriptionV2 = [
+			[ "Summons three stones that spiral around.\nCan be used behind the shield." ],
+		];
 		defaultAmmoUse = 4;
 
 		index = (int)BluesWeaponIds.PowerStone;

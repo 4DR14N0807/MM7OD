@@ -19,6 +19,10 @@ public class TenguBlade : Weapon {
 		switchCooldown = 30;
 		hasCustomAnim = true;
 		ammoDisplayScale = 4;
+		descriptionV2 = [
+			[ "Throws a projectile that bounces on walls.\n" +
+			"Press DASH + SHOOT to do a dash attack." ]
+		];
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -202,6 +206,16 @@ public class TenguBladeProj : Projectile {
 }
 
 
+public class TenguBladeProjMelee : GenericMeleeProj {
+	public TenguBladeProjMelee(Point pos, Player player, bool addToLevel) : base(
+		TenguBlade.netWeapon, pos, ProjIds.TenguBladeProjMelee,
+		player, 2, 0, 0.375f * 60, addToLevel: addToLevel
+	) {
+		projId = (int)BassProjIds.TenguBladeProj;
+	}
+}
+
+
 public class TenguBladeMelee : GenericMeleeProj {
 	
 	public TenguBladeMelee(Point pos, Player player, bool addToLevel) : base(
@@ -209,17 +223,6 @@ public class TenguBladeMelee : GenericMeleeProj {
 		player, 2, 0, 0.375f * 60, addToLevel: addToLevel
 	) {
 	}
-
-	/* public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
-			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
-				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
-			) {
-				if (damagable is Character chr && chr != null) chr.xPushVel = xDir * 180;	
-			}
-		}
-	} */
 }
 
 public class TenguBladeDash : CharState {
@@ -230,6 +233,7 @@ public class TenguBladeDash : CharState {
 	public TenguBladeDash() : base("tblade_dash") {
 		normalCtrl = true;
 		attackCtrl = false;
+		useDashJumpSpeed = true;
 		enterSound = "slide";
 	}
 
@@ -250,7 +254,6 @@ public class TenguBladeDash : CharState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		character.isDashing = false;
 		bass.tBladeDashCooldown = 10;
 	}
 
@@ -269,9 +272,14 @@ public class TenguBladeDash : CharState {
 		}
 
 		if (inputXDir != startXDir && inputXDir != 0) character.changeToIdleOrFall(); 
-		else if (stateFrames >= 16) character.changeState(new TenguBladeDashEnd(), true);
+		else if (stateFrames >= 16) {
+			character.changeState(new TenguBladeDashEnd(), true);
+			character.xTenguPushVel = 240 * character.xDir;
+			return;
+		} 
+
 		Point move = new Point();
-		move.x = character.xDir * character.getDashSpeed();
+		move.x = character.xDir * character.getDashSpeed() * 1.5f;
 		character.move(move);
 	}
 }

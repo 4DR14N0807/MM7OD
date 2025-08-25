@@ -848,6 +848,7 @@ public enum ProjIds {
 	LegBreaker,
 	ProtoStrike,
 	ProtoStrikeLvl2,
+	TenguBladeProjMelee,
 	TenguBladeDash,
 	BassKick,
 	SonicCrusher,

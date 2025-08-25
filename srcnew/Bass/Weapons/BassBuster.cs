@@ -16,6 +16,11 @@ public class BassBuster : Weapon {
 		isStream = true;
 		drawAmmo = false;
 		drawCooldown = false;
+		descriptionV2 = [
+			[ "Bass' default weapon.\n" + 
+			"Can be aimed in 7 directions\n" + 
+			"but can't go through walls." ]
+		];
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

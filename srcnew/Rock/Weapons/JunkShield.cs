@@ -11,6 +11,7 @@ public class JunkShield : Weapon {
 	public static float cooldown = 60;
 
 	public JunkShield() : base() {
+		displayName = "JUNK SHIELD";
 		shootSounds = new string[] { "", "", "", "" };
 		fireRate = cooldown;
 		switchCooldown = 45;
@@ -21,7 +22,11 @@ public class JunkShield : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 10;
 		ammo = maxAmmo;
-		description = new string[] { "Defenseless barrier that gets", "damaged after rough use.", "Can be fired in up to 3 directions." };
+		descriptionV2 = [
+			[ "Defenseless barrier that gets\n" + 
+			"damaged after rough use.\n" + 
+			"Can be fired in up to 3 directions." ]
+		];
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
@@ -259,8 +264,8 @@ public class JunkShieldProj : Projectile {
 		}
 	}
 
-	public override void onDamageEX() {
-		base.onDamageEX();
+	public override void onDamageEX(IDamagable damagable) {
+		base.onDamageEX(damagable);
 		if (!ownedByLocalPlayer) return;
 		destroySelf();
 	}

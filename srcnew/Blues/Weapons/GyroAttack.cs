@@ -8,7 +8,9 @@ public class GyroAttack : Weapon {
 
 	public GyroAttack() : base() {
 		displayName = "GYRO ATTACK";
-		descriptionV2 = "A propeller weapon that can\nbe aimed in 2 diferent directions.";
+		descriptionV2 = [
+			[ "A propeller weapon that can\nbe aimed in 2 diferent directions." ],
+		];
 		defaultAmmoUse = 2;
 
 		index = (int)BluesWeaponIds.GyroAttack;
@@ -78,17 +80,9 @@ public class GyroAttackProj : Projectile {
 			}
 		}
 	}
-	/* public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-		if (damagable is Actor enemyActor && enemyActor.netId is not null and >= Level.firstNormalNetId) {
-			string keyName = getActorTypeName() + "_" + enemyActor.netId;
-			//i think it can be optimised if we separate fade sprite from hit sprite
-			new Anim(pos, "rock_buster_fade", xDir, netId, true, true);
-		}
-	} */
 
-	public override void onDamageEX() {
-		base.onDamageEX();
+	public override void onDamageEX(IDamagable damagable) {
+		base.onDamageEX(damagable);
 		if (!ownedByLocalPlayer) return;
 		new Anim(pos, "rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true);
 	}

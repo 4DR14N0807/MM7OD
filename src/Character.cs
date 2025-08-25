@@ -1147,6 +1147,8 @@ public partial class Character : Actor, IDamagable {
 			linkedRideArmor = null;
 		}
 
+		moveWithMovingPlatform();
+
 		// Cutoff point for things that run but aren't owned by the player
 		if (!ownedByLocalPlayer) {
 			if (isCharging()) {

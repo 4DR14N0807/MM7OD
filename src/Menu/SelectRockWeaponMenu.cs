@@ -7,290 +7,238 @@ using static SFML.Window.Keyboard;
 
 namespace MMXOnline;
 
-public class RockWeaponCursor {
-	public int index;
-
-	public RockWeaponCursor(int index) {
-		this.index = index;
-	}
-
-	public int startOffset() {
-		return 0;
-	}
-
-	public int numWeapons() {
-		return 9;
-	}
-
-	/*public void cycleLeft() {
-		if (index < 9) index = 9;
-	}
-
-	public void cycleRight() {
-		if (index > 9) index = 0;
-	}*/
-}
-
-public class SelectRockWeaponMenu : IMainMenu {
-	public bool inGame;
-	public List<RockWeaponCursor> cursors;
-	public int selCursorIndex;
-	public List<Point> weaponPositions = new List<Point>();
-	public string error = "";
-	public int maxRows = 1;
-	public int maxCols = 9;
-	public static List<string> weaponNames = new List<string>()
-	{
-			"ROCK BUSTER",
-			"FREEZE CRACKER",
-			"THUNDER BOLT",
-			"JUNK SHIELD",
-			"SCORCH WHEEL",
-			"SLASH CLAW",
-			"NOISE CRUSH",
-			"DANGER WRAP",
-			"WILD COIL",
-		};
-
-	public List<int> selectedWeaponIndices;
+public class RockWeaponMenu : IMainMenu {
+	// Menu controls.
 	public IMainMenu prevMenu;
+	public int cursorRow;
+	bool inGame;
+	public RockLoadout targetLoadout;
 
-	public SelectRockWeaponMenu(IMainMenu prevMenu, bool inGame) {
+	// Loadout items.
+
+	public int[] sWeapons = [
+		0,1,2
+	];
+
+	public int[][] weaponIcons = [
+		[0, 1, 2, 3, 4, 5, 6, 7, 8],
+		[0, 1, 2, 3, 4, 5, 6, 7, 8],
+		[0, 1, 2, 3, 4, 5, 6, 7, 8]
+	];
+	public string[] categoryNames = [
+		"Slot 1", "Slot 2", "Slot 3"
+	];
+
+	public Weapon[] specialWeapons = [
+		new RockBuster(),
+		new FreezeCracker(),
+		new ThunderBolt(),
+		new JunkShield(),
+		new ScorchWheel(),
+		new SlashClawWeapon(),
+		new NoiseCrush(),
+		new DangerWrap(),
+		new WildCoil(),
+	];
+
+	int latestIndex = 0;
+	int latestRow;
+	int descIndex = 0;
+
+	public RockWeaponMenu(IMainMenu prevMenu, bool inGame) {
 		this.prevMenu = prevMenu;
-		for (int i = 0; i < 9; i++) {
-			weaponPositions.Add(new Point(80, 42 + (i * 18)));
-		}
-
-		selectedWeaponIndices = Options.main.rockLoadout.getRockWeaponIndices();
 		this.inGame = inGame;
-
-		cursors = new List<RockWeaponCursor>();
-		foreach (var selectedWeaponIndex in selectedWeaponIndices) {
-			cursors.Add(new RockWeaponCursor(selectedWeaponIndex));
-		}
-	}
-
-	public bool duplicateWeapons() {
-		return selectedWeaponIndices[0] == selectedWeaponIndices[1] || selectedWeaponIndices[1] == selectedWeaponIndices[2] || selectedWeaponIndices[0] == selectedWeaponIndices[2];
-	}
-
-	public bool duplicateIndices() {
-		return
-		cursors[0].index == cursors[1].index ||
-		cursors[0].index == cursors[2].index ||
-		cursors[1].index == cursors[2].index;
-	}
-
-	public bool areWeaponArrSame(List<int> wepArr1, List<int> wepArr2) {
-		for (int i = 0; i < wepArr1.Count; i++) {
-			if (wepArr1[i] != wepArr2[i]) return false;
-		}
-
-		return true;
+		targetLoadout = Options.main.rockLoadout;
+		sWeapons[0] = targetLoadout.weapon1;
+		sWeapons[1] = targetLoadout.weapon2;
+		sWeapons[2] = targetLoadout.weapon3;
+		latestIndex = sWeapons[cursorRow];
+		latestRow = cursorRow;
 	}
 
 	public void update() {
-		if (!string.IsNullOrEmpty(error)) {
-			if (Global.input.isPressedMenu(Control.MenuConfirm)) {
-				error = null!;
-			}
-			return;
-		}
+		bool okPressed = Global.input.isPressedMenu(Control.MenuConfirm);
+		bool backPressed = Global.input.isPressedMenu(Control.MenuBack);
+		bool commandPressed = Global.input.isPressedMenu(Control.Special2);
 
-		if (selCursorIndex < 3) {
-			if (Global.input.isPressedMenu(Control.MenuLeft)) {
-				cursors[selCursorIndex].index--;
-				if (cursors[selCursorIndex].index == -1) cursors[selCursorIndex].index = 8; //8;
-				Global.playSound("menu");
-			} else if (Global.input.isPressedMenu(Control.MenuRight)) {
-				cursors[selCursorIndex].index++;
-				if (cursors[selCursorIndex].index == 9) cursors[selCursorIndex].index = 0; //0;
-				Global.playSound("menu");
-			}
-		} else {
-			Helpers.menuLeftRightInc(ref cursors[selCursorIndex].index, 0, 2, playSound: true);
-		}
+		if (commandPressed) {
+			descIndex++;
+			Global.playSound("menu");
+		} 
 
-		Helpers.menuUpDown(ref selCursorIndex, 0, 2);
+		Helpers.menuUpDown(ref cursorRow, 0, 2);
+		Helpers.menuLeftRightInc(ref sWeapons[cursorRow], 0, specialWeapons.Length - 1, true, playSound: true);
 
-		//Adrián: Random Loadout feature (via Loadout menu)
-		
+		// Random loadout
 		bool randomPressed = Global.input.isPressedMenu(Control.Special1);
 
 		if (randomPressed) {
 			bool duplicatedWeapons = true;
 
-			for (int i = 0; i < 4; i++) {
-				int maxRange = i < 3 ? 8 : 2;
-				if (i != selCursorIndex) cursors[i].index = Helpers.randomRange(0, maxRange);
+			for (int i = 0; i < 3; i++) {
+				if (i != cursorRow) sWeapons[i] = Helpers.randomRange(0, 8);
 			}
 			Global.playSound("menu");
 			
 			while (duplicatedWeapons) {
-				for (int i = 0; i < 4; i++) {
-					int maxRange = i < 3 ? 8 : 2;
-					if (i != selCursorIndex) cursors[i].index = Helpers.randomRange(0, maxRange);
+				for (int i = 0; i < 3; i++) {
+					if (i != cursorRow) sWeapons[i] = Helpers.randomRange(0, 8);
 				}
 
-				if (!duplicateIndices()) duplicatedWeapons = false;
+				if (!duplicateWeapons()) duplicatedWeapons = false;
 			}
 		}
 
-		for (int i = 0; i < 4; i++) {
-			selectedWeaponIndices[i] = cursors[i].index;
+		if (latestIndex != sWeapons[cursorRow] || latestRow != cursorRow) {
+			latestIndex = sWeapons[cursorRow];
+			latestRow = cursorRow;
+			descIndex = 0;
 		}
 
-		bool backPressed = Global.input.isPressedMenu(Control.MenuBack);
-		bool selectPressed = Global.input.isPressedMenu(Control.MenuConfirm) || (backPressed && !inGame);
-		if (selectPressed) {
-			if (duplicateWeapons()) {
-				error = "Cannot select same weapon more than once!";
-				return;
+		if (okPressed || backPressed && !inGame) {
+			bool isChanged = false;
+			if (!duplicateWeapons()) {
+				targetLoadout.weapon1 = sWeapons[0];
+				targetLoadout.weapon2 = sWeapons[1];
+				targetLoadout.weapon3 = sWeapons[2];
+				isChanged = true;
 			}
-
-			bool shouldSave = false; 	
-
-			if (!areWeaponArrSame(selectedWeaponIndices, Options.main.rockLoadout.getRockWeaponIndices())) {
-				Options.main.rockLoadout.weapon1 = selectedWeaponIndices[0];
-				Options.main.rockLoadout.weapon2 = selectedWeaponIndices[1];
-				Options.main.rockLoadout.weapon3 = selectedWeaponIndices[2];
-				Options.main.rockLoadout.rushLoadout = selectedWeaponIndices[3];
-				shouldSave = true;
-				if (inGame) {
+			if (isChanged) {
+				if (inGame && Global.level != null) {
 					if (Options.main.killOnLoadoutChange) {
 						Global.level.mainPlayer.forceKill();
-					} else if (!Global.level.mainPlayer.isDead) {
-						Global.level.gameMode.setHUDErrorMessage(Global.level.mainPlayer, "Change will apply on next death", playSound: false);
+					} else {
+						Global.level.gameMode.setHUDErrorMessage(
+							Global.level.mainPlayer,
+							"Loadout change will apply on the next respawn",
+							playSound: false
+						);
 					}
 				}
-			}
-
-			if (shouldSave) {
 				Options.main.saveToFile();
 			}
-
+			
 			if (inGame) Menu.exit();
 			else Menu.change(prevMenu);
-		} else if (backPressed) {
+			return;
+		}
+		if (backPressed) {
 			Menu.change(prevMenu);
 		}
+	}
+
+	public bool duplicateWeapons() {
+		return sWeapons[0] == sWeapons[1] || 
+		sWeapons[1] == sWeapons[2] || 
+		sWeapons[0] == sWeapons[2];
 	}
 
 	public void render() {
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["loadoutbackground"], 0, 0);
 		} else {
-			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, Helpers.MenuBgColor, 0, ZIndex.HUD + 200, false);
+			DrawWrappers.DrawTextureHUD(Global.textures["pausemenuload"], 0, 0);
 		}
+		Fonts.drawText(FontType.BlueMenu, "Rock Loadout", Global.screenW * 0.5f, 24, Alignment.Center);
 
-		Fonts.drawText(FontType.BlueMenu, "Rockman Loadout", Global.screenW * 0.5f, 22, Alignment.Center);
-		var outlineColor = inGame ? Color.White : Helpers.LoadoutBorderColor;
-		float botOffY = inGame ? 0 : -1;
-
-		int startY = 54;
+		int startY = 55;
 		int startX = 30;
 		int startX2 = 120;
 		int wepW = 18;
 		int wepH = 20;
-
 		float rightArrowPos = Global.screenW - 106;
 		float leftArrowPos = startX2 - 15;
 
-		Global.sprites["cursor"].drawToHUD(0, startX, startY + (selCursorIndex * wepH));
-		for (int i = 0; i < 3; i++) {
-			float yPos = startY - 6 + (i * wepH);
+		Global.sprites["cursor"].drawToHUD(0, startX, startY - 1 + cursorRow * wepH);
 
+		for (int i = 0; i < 3; i++) {
+			// Position.
+			float yPos = startY - 6 + (i * wepH);
+			// Current variable.
+			int selectVar = i switch {
+				_ => sWeapons[i]
+			};
+			// Category name.
+			Fonts.drawText(FontType.BlueMenu, categoryNames[i], 40, yPos - 1, selected: i == cursorRow);
 			if (Global.frameCount % 60 < 30) {
 				Fonts.drawText(
 					FontType.BlueMenu, ">", i < 3 ? rightArrowPos : rightArrowPos - 108, yPos - 1,
-					Alignment.Center, selected: selCursorIndex == i
+					Alignment.Center, selected: cursorRow == i
 				);
 				Fonts.drawText(
-					FontType.BlueMenu, "<", leftArrowPos, yPos - 1 , Alignment.Center, selected: selCursorIndex == i
+					FontType.BlueMenu, "<", leftArrowPos, yPos - 1 , Alignment.Center, selected: cursorRow == i
 				);
 			}
-
-			/* if (i == 3) {
-				Fonts.drawText(FontType.BlueMenu, "RUSH ", 40, yPos, selected: selCursorIndex == i);
-
-				for (int j = 0; j < 3; j++) {
-					
-					Global.sprites["hud_weapon_icon"].drawToHUD(j + 9, startX2 + (j * wepW), startY + (i * wepH));
-				
-					if (cursors[3].index != j) {
-						DrawWrappers.DrawRectWH(
-							startX2 + (j * wepW) - 7, startY + (i * wepH) - 7, 14, 14,
-							true, Helpers.FadedIconColor, 1, ZIndex.HUD, false
-						);
-					}
-				}
-				break;
-			} */
-
-			Fonts.drawText(FontType.BlueMenu,"Slot " + (i + 1).ToString(), 40, yPos, selected: selCursorIndex == i);
-
-
-			for (int j = 0; j < cursors[i].numWeapons(); j++) {
-				int jIndex = j + cursors[i].startOffset();
-				Global.sprites["hud_rock_weapon_icon"].drawToHUD(jIndex, startX2 + (j * wepW), startY + (i * wepH));
-				//Helpers.drawTextStd((j + 1).ToString(), startX2 + (j * wepW), startY + (i * wepH) + 10, Alignment.Center, fontSize: 12);
-				if (selectedWeaponIndices[i] == jIndex) {
-					DrawWrappers.DrawRectWH(startX2 + (j * wepW) - 7, startY + (i * wepH) - 7, 14, 14, false, Helpers.DarkGreen, 1, ZIndex.HUD, false);
-				} else {
-					DrawWrappers.DrawRectWH(startX2 + (j * wepW) - 7, startY + (i * wepH) - 7, 14, 14, true, Helpers.FadedIconColor, 1, ZIndex.HUD, false);
+			// Icons.
+			for (int j = 0; j < weaponIcons[i].Length; j++) {
+				// Draw icon sprite.
+				Global.sprites["hud_weapon_icon"].drawToHUD(
+					weaponIcons[i][j], startX2 + (j * wepW), startY + (i * wepH)
+				);
+				// Darken non-selected icons.
+				if (selectVar != j) {
+					DrawWrappers.DrawRectWH(
+						startX2 + (j * wepW) - 7, startY + (i * wepH) - 7,
+						14, 14, true, Helpers.FadedIconColor, 1, ZIndex.HUD, false
+					);
 				}
 			}
 		}
+		// Weapon and data.
+		string menuTitle = "";
+		string weaponTitle = "";
+		string weaponDescription = "";
+		Weapon currentWeapon = new();
+		
+			currentWeapon = specialWeapons[sWeapons[cursorRow]];
+			menuTitle = "Special Weapon";
+			weaponTitle = currentWeapon.displayName;;
+			int di = 0;
+			if (currentWeapon.descriptionV2.Length > 0) {
+				di = descIndex % currentWeapon.descriptionV2.Length;
+			}
+			weaponDescription = currentWeapon.descriptionV2[di][0];
+		
+		// Draw rectangle.
+		int wsy = 108;
+		DrawWrappers.DrawRect(
+			25, wsy, Global.screenW - 25, wsy + 18, true, new Color(0, 0, 0, 100), 1,
+			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
+		);
+		DrawWrappers.DrawRect(
+			25, wsy, Global.screenW - 25, wsy + 72, true, new Color(0, 0, 0, 100), 1,
+			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
+		);
+		// Draw descriptions.
+		float titleY1 = wsy + 3;
+		float titleY2 = titleY1 + 19;
+		float row1Y = titleY2 + 13;
+		float row2Y = row1Y + 25;
+		Fonts.drawText(
+			FontType.BlueMenu, menuTitle,
+			Global.halfScreenW, titleY1, Alignment.Center
+		);
+		Fonts.drawText(
+			FontType.Blue, weaponTitle,
+			Global.halfScreenW, titleY2, Alignment.Center
+		);
+		Fonts.drawText(
+			FontType.WhiteSmall, weaponDescription,
+			Global.halfScreenW, row1Y, Alignment.Center
+		); 
 
-		int wsy = 167;
+		//Switch info page section.
+		for (int i = 0; i < currentWeapon.descriptionV2.Length; i++) {
+			int fi = currentWeapon.descriptionV2.Length - 1 - i == descIndex % currentWeapon.descriptionV2.Length ? 2 : 0;
 
-
-		DrawWrappers.DrawRect(25, wsy - 41, Global.screenW - 25, wsy + 30, true, new Color(0, 0, 0, 100), 0.5f, ZIndex.HUD, false, outlineColor: outlineColor);
-		DrawWrappers.DrawRect(25, wsy - 41, Global.screenW - 25, wsy - 24, true, new Color(0, 0, 0, 100), 0.5f, ZIndex.HUD, false, outlineColor: outlineColor);
-
-		if (selCursorIndex >= 3) {
-			int wi = selectedWeaponIndices[selCursorIndex];
-			var rush = Rock.getAllRushWeapons()[wi];
-
-			Fonts.drawText(FontType.BlueMenu, "Rush Adaptor", Global.halfScreenW, 128, Alignment.Center);
-			Fonts.drawText(FontType.Blue, rush.displayName, Global.halfScreenW, 149, Alignment.Center);
-
-			if (rush.description?.Length == 1) Fonts.drawText(FontType.WhiteSmall, rush.description[0], 30, wsy + 2);
-			else if (rush.description?.Length > 0) Fonts.drawText(FontType.WhiteSmall, rush.description[0], 30, wsy - 2);
-			if (rush.description?.Length > 1) Fonts.drawText(FontType.WhiteSmall, rush.description[1], 30, wsy + 7);
-			if (rush.description?.Length > 2) Fonts.drawText(FontType.WhiteSmall, rush.description[2], 30, wsy + 16);
-		} 
-		else 
-		{
-			int wi = selectedWeaponIndices[selCursorIndex];
-			var weapon = Rock.getAllWeapons()[wi];
-			int weakAgainstIndex = weapon.weaknessIndex;
-
-			Fonts.drawText(FontType.BlueMenu, "Slot " + (selCursorIndex + 1).ToString() + " weapon", Global.halfScreenW, 128, Alignment.Center);
-			Fonts.drawText(FontType.Blue, weaponNames[selectedWeaponIndices[selCursorIndex]], Global.halfScreenW, 149, Alignment.Center);
-			//Global.sprites["hud_weapon_icon"].drawToHUD(weapon.weaponSlotIndex, Global.halfScreenW + 75, 148);
-
-			
-
-			var wep = Rock.getAllWeapons()[wi];
-
-			if (wep.description?.Length == 1) Fonts.drawText(FontType.WhiteSmall, wep.description[0], 30, wsy + 2);
-			else if (wep.description?.Length > 0) Fonts.drawText(FontType.WhiteSmall, wep.description[0], 30, wsy - 2);
-			if (wep.description?.Length > 1) Fonts.drawText(FontType.WhiteSmall, wep.description[1], 30, wsy + 7);
-			if (wep.description?.Length > 2) Fonts.drawText(FontType.WhiteSmall, wep.description[2], 30, wsy + 16);
+			Global.sprites["cursor"].drawToHUD(
+				fi, Global.screenW - 31 - (i  * 10), row2Y + 6
+			);
 		}
 
-		//Helpers.drawTextStd(Helpers.menuControlText("Left/Right: Change Weapon"), Global.screenW * 0.5f, 200 + botOffY, Alignment.Center, fontSize: 16);
-		//Helpers.drawTextStd(Helpers.menuControlText("Up/Down: Change Slot"), Global.screenW * 0.5f, 205 + botOffY, Alignment.Center, fontSize: 16);
-		//Helpers.drawTextStd(Helpers.menuControlText("WeaponL/WeaponR: Quick cycle X1/X2/X3 weapons"), Global.screenW * 0.5f, 205 + botOffY, Alignment.Center, fontSize: 16);
-		string helpText = Helpers.menuControlText("[Z]: Back, [X]: Confirm");
-		if (!inGame) helpText = Helpers.menuControlText("[Z]: Save and back");
-		//Helpers.drawTextStd(helpText, Global.screenW * 0.5f, 210 + botOffY, Alignment.Center, fontSize: 16);
-		if (!string.IsNullOrEmpty(error)) {
-			float top = Global.screenH * 0.4f;
-			DrawWrappers.DrawRect(5, 5, Global.screenW - 5, Global.screenH - 5, true, new Color(0, 0, 0, 224), 0, ZIndex.HUD, false);
-			Fonts.drawText(FontType.Grey, error, Global.screenW / 2, top, Alignment.Center);
-			//Helpers.drawTextStd(Helpers.controlText("Press [X] to continue"), Global.screenW / 2, 20 + top, alignment: Alignment.Center, fontSize: 24);
-		}
+		Fonts.drawTextEX(
+			FontType.White, "[SPC]: Random, [CMD]: More weapon info",
+			Global.screenW / 2, row2Y + 19, Alignment.Center
+		);
 	}
 }

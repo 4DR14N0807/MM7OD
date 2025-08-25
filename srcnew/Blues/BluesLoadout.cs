@@ -52,6 +52,8 @@ public class BluesWeaponMenu : IMainMenu {
 	public int cursorRow;
 	bool inGame;
 	public BluesLoadout targetLoadout;
+	int latestIndex = 0;
+	int descIndex = 0;
 
 	// Loadout items.
 	public int specialWeapon;
@@ -78,12 +80,18 @@ public class BluesWeaponMenu : IMainMenu {
 		this.inGame = inGame;
 		targetLoadout = Options.main.bluesLoadout;
 		specialWeapon = targetLoadout.specialWeapon;
+		latestIndex = specialWeapon;
 	}
 
 	public void update() {
 		bool okPressed = Global.input.isPressedMenu(Control.MenuConfirm);
 		bool backPressed = Global.input.isPressedMenu(Control.MenuBack);
-		//Helpers.menuUpDown(ref cursorRow, 0, 1);
+		bool commandPressed = Global.input.isPressedMenu(Control.Special2);
+
+		if (commandPressed) {
+			descIndex++;
+			Global.playSound("menu");
+		} 
 
 		if (cursorRow == 0) {
 			Helpers.menuLeftRightInc(ref specialWeapon, 0, specialWeapons.Length - 1, true, playSound: true);
@@ -95,6 +103,11 @@ public class BluesWeaponMenu : IMainMenu {
 			Global.playSound("menu");
 
 			specialWeapon = Helpers.randomRange(0, specialWeapons.Length - 1);
+		}
+
+		if (latestIndex != specialWeapon) {
+			latestIndex = specialWeapon;
+			descIndex = 0;
 		}
 
 		if (okPressed || backPressed && !inGame) {
@@ -190,8 +203,13 @@ public class BluesWeaponMenu : IMainMenu {
 		if (cursorRow == 0) {
 			currentWeapon = specialWeapons[specialWeapon];
 			menuTitle = "Special Weapon";
-			weaponTitle = currentWeapon.displayName;;
-			weaponDescription = currentWeapon.descriptionV2;;
+			weaponTitle = currentWeapon.displayName;
+
+			int di = 0;
+			if (currentWeapon.descriptionV2.Length > 0) {
+				di = descIndex % currentWeapon.descriptionV2.Length;
+			}
+			weaponDescription = currentWeapon.descriptionV2[di][0];
 			if (currentWeapon.ammoUseText != "") {
 				weaponSubDescription = $"Heat generation: {currentWeapon.ammoUseText}";
 			} else {
@@ -200,7 +218,7 @@ public class BluesWeaponMenu : IMainMenu {
 			coreAmmo = currentWeapon.defaultAmmoUse;
 		}
 		// Draw rectangle.
-		int wsy = 127;
+		int wsy = 108;
 		DrawWrappers.DrawRect(
 			25, wsy, Global.screenW - 25, wsy + 18, true, new Color(0, 0, 0, 100), 1,
 			ZIndex.HUD, false, outlineColor: Helpers.LoadoutBorderColor
@@ -229,6 +247,20 @@ public class BluesWeaponMenu : IMainMenu {
 		Fonts.drawText(
 			getCoreFont(currentWeapon, coreAmmo), weaponSubDescription,
 			Global.halfScreenW, row2Y, Alignment.Center
+		);
+
+		//Switch info page section.
+		for (int i = 0; i < currentWeapon.descriptionV2.Length; i++) {
+			int fi = currentWeapon.descriptionV2.Length - 1 - i == descIndex % currentWeapon.descriptionV2.Length ? 2 : 0;
+
+			Global.sprites["cursor"].drawToHUD(
+				fi, Global.screenW - 31 - (i  * 10), row2Y + 6
+			);
+		}
+
+		Fonts.drawTextEX(
+			FontType.White, "[SPC]: Random, [CMD]: More weapon info",
+			Global.screenW / 2, row2Y + 19, Alignment.Center
 		);
 	}
 

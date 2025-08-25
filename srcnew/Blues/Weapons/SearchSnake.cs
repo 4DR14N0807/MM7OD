@@ -8,7 +8,9 @@ public class SearchSnake : Weapon {
 
 	public SearchSnake() : base() {
 		displayName = "SEARCH SNAKE";
-		descriptionV2 = "Releases snake-like missiles\nthat crawl across surfaces.";
+		descriptionV2 = [
+			[ "Releases snake-like missiles\nthat crawl across surfaces." ],
+		];
 		defaultAmmoUse = 2;
 
 		index = (int)BluesWeaponIds.SearchSnake;

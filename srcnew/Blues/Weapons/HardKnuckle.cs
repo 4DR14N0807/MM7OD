@@ -8,7 +8,9 @@ public class HardKnuckle : Weapon {
 
 	public HardKnuckle() : base() {
 		displayName = "HARD KNUCKLE";
-		descriptionV2 = "Fires out a large missile shaped like a fist,\ncan damage more than one target.";
+		descriptionV2 = [
+			[ "Fires out a large missile shaped like a fist,\n can damage more than one target." ],
+		];
 		defaultAmmoUse = 4;
 
 		index = (int)BluesWeaponIds.HardKnuckle;

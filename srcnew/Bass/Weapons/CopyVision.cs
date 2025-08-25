@@ -23,10 +23,15 @@ public class CopyVision : Weapon {
 		fireRate = 9;
 		drawCooldown = false;
 
-		descriptionV2 = (
-			"Creates a clone that attack automatically." + "\n" +
-			"Can only have one clone at once."
-		);
+		//descriptionV2 = (
+		//	"Creates a clone that attack automatically." + "\n" +
+		//	"Can only have one clone at once."
+		//);
+
+		descriptionV2 = [
+			[ "Creates a clone that attacks automatically." + "\n" +
+			"Can only have one clone at once." ],
+		];
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {

@@ -9,9 +9,10 @@ public class GravityHold : Weapon {
 
 	public GravityHold() : base() {
 		displayName = "GRAVITY HOLD";
-		descriptionV2 = "";
 		defaultAmmoUse = 5;
-		descriptionV2 = "manipulates airborne enemies gravity\nslamming them into the ground";
+		descriptionV2 = [
+			[ "manipulates airborne enemies gravity\nslamming them into the ground" ],
+		];
 
 		index = (int)BluesWeaponIds.GravityHold;
 		fireRate = 55;

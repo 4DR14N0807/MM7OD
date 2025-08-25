@@ -7,6 +7,7 @@ public class NoiseCrush : Weapon {
 	public static NoiseCrush netWeapon = new();
 
 	public NoiseCrush() : base() {
+		displayName = "NOISE CRUSH";
 		index = (int)RockWeaponIds.NoiseCrush;
 		weaponSlotIndex = (int)RockWeaponSlotIds.NoiseCrush;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.NoiseCrush;
@@ -15,7 +16,9 @@ public class NoiseCrush : Weapon {
 		maxAmmo = 14;
 		ammo = maxAmmo;
 		fireRate = 30;
-		description = new string[] { "Weak projectile that bounces on walls.", "Catch it to get a stronger shot." };
+		descriptionV2 = [
+			[ "Weak projectile that bounces on walls.\n" + "Catch it to get a stronger shot." ]
+		];
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {

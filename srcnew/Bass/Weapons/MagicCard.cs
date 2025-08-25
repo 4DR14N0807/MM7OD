@@ -17,9 +17,9 @@ public class MagicCard : Weapon {
 	};
 	string[] effectsSounds = new[] {
 		"",
+		"magiccard1",
 		"upgrade",
-		"upgrade",
-		"upgrade",
+		"magiccard3",
 		"magiccard4"
 	};
 

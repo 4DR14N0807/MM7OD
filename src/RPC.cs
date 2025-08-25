@@ -13,6 +13,7 @@ public class RPC {
 	public bool toHostOnly;
 	public bool isServerMessage;
 	public bool isPreUpdate;
+	public bool allowBreakMtuLimit;
 	public bool isCollision;
 	public bool levelless;
 	public int index;
@@ -1010,6 +1011,7 @@ public class RPCJoinLateResponse : RPC {
 	public RPCJoinLateResponse() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
 		levelless = true;
+		allowBreakMtuLimit = true;
 	}
 
 	public override void invoke(params byte[] arguments) {

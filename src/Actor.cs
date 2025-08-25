@@ -755,6 +755,12 @@ public partial class Actor : GameObject {
 					vel.y = -terminalVelUp;
 				}
 			}
+			int gravDir = MathF.Sign(grav);
+			if (gravDir != 0  &&
+				Global.level.checkTerrainCollisionOnce(this, 0, -gravDir, checkPlatforms: true, checkQuicksand: true) != null
+			) {
+				vel.y = 0;
+			}
 		}
 
 		if (Math.Abs(xPushVel) > 5) {

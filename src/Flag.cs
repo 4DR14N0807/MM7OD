@@ -152,7 +152,7 @@ public class Flag : Actor {
 		Global.level.gameMode.addKillFeedEntry(
 			new KillFeedEntry(
 				newChar.player.name + " took flag", newChar.player.alliance, newChar.player
-			)
+			), true
 		);
 		if (!newChar.ownedByLocalPlayer) {
 			return;
@@ -165,7 +165,7 @@ public class Flag : Actor {
 	public void dropFlag() {
 		if (linkedChar != null) {
 			removeUpdraft();
-			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(linkedChar.player.name + " dropped flag", linkedChar.player.alliance, linkedChar.player), true);
+			Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(linkedChar.player.name + " dropped flag", linkedChar.player.alliance, linkedChar.player), false);
 			useGravity = true;
 			linkedChar = null;
 		}

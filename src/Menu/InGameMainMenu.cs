@@ -150,7 +150,6 @@ public class InGameMainMenu : IMainMenu {
 		Color outline = new Color(41, 41, 41);
 		MasteryTracker mastery = Global.level.mainPlayer.mastery;
 
-		return;
 		drawLevelBar(
 			$"ATK", Global.screenW - 76, 8,
 			FontType.RedSmall, new Color(255, 115, 127),

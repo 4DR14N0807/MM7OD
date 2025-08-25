@@ -2929,9 +2929,6 @@ public partial class Character : Actor, IDamagable {
 						}
 					}
 				}
-				// TEMP: Remove on re-enable of EXP.
-				killer.awardCurrency();
-
 				killer.awardKillExp();
 				killer.onKillEffects(false);
 				//killer.currency += 10;
@@ -2949,9 +2946,6 @@ public partial class Character : Actor, IDamagable {
 
 				assister.awardKillExp(false);
 				assister.onKillEffects(true);
-
-				// TEMP: Remove on re-enable of EXP.
-				assister.awardCurrency(false);
 			}
 			player.addDeath();
 

@@ -35,7 +35,6 @@ public class MasteryTracker {
 	}
 
 	public void addDamageExp(float value, bool sendRpc = false) {
-		return;
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 0, value);	
 		}
@@ -48,7 +47,6 @@ public class MasteryTracker {
 		}
 	}
 	public void addDefenseExp(float value, bool sendRpc = false) {
-		return;
 		value = roundedShortExp(value);
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 1, value);	
@@ -61,7 +59,6 @@ public class MasteryTracker {
 		}
 	}
 	public void addSupportExp(float value, bool sendRpc = false) {
-		return;
 		value = roundedShortExp(value);
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 2, value);
@@ -73,8 +70,8 @@ public class MasteryTracker {
 			grantSupportLevel();
 		}
 	}
+
 	public void addMapExp(float value, bool sendRpc = false) {
-		return;
 		value = roundedShortExp(value);
 		if (sendRpc) {
 			RPC.creditExp.sendRpc(player, charId, 3, value);
@@ -93,12 +90,12 @@ public class MasteryTracker {
 			damageLevel++;
 			damageLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"ATK L{damageLevel}!", (int)FontType.RedSmall);
+				player.character?.addDamageText($"ATK L{damageLevel}!", (int)FontType.RedSmall);
 			}
 		}
 		player.awardCurrency(charId, 10);
 		if (mainCharActive) {
-			Point spawnPos = player.character.getCenterPos();
+			Point spawnPos = player.character?.getCenterPos() ?? Point.zero;
 			if (player.lastDamagedCharacter != null) {
 				spawnPos = player.lastDamagedCharacter.getCenterPos();
 			}
@@ -112,12 +109,12 @@ public class MasteryTracker {
 			defenseLevel++;
 			defenseLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"DEF L{defenseLevel}!", (int)FontType.BlueSmall);
+				player.character?.addDamageText($"DEF L{defenseLevel}!", (int)FontType.BlueSmall);
 			}
 		}
 		player.awardCurrency(charId, 4);
 		if (mainCharActive) {
-			createBoltsAtPos(player.character.getCenterPos(), 2);
+			createBoltsAtPos(player.character?.getCenterPos() ?? Point.zero, 2);
 		}
 	}
 	public void grantSupportLevel() {
@@ -126,12 +123,12 @@ public class MasteryTracker {
 			supportLevel++;
 			supportLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"SP L{supportLevel}!", (int)FontType.GreenSmall);
+				player.character?.addDamageText($"SP L{supportLevel}!", (int)FontType.GreenSmall);
 			}
 		}
 		player.awardCurrency(charId, 6);
 		if (mainCharActive) {
-			createBoltsAtPos(player.character.getCenterPos(), 3);
+			createBoltsAtPos(player.character?.getCenterPos() ?? Point.zero, 3);
 		}
 	}
 	public void grantMapLevel() {
@@ -140,12 +137,12 @@ public class MasteryTracker {
 			mapLevel++;
 			mapLevelStacks = 0;
 			if (mainCharActive) {
-				player.character.addDamageText($"MAP L{mapLevel}!", (int)FontType.PurpleSmall);
+				player.character?.addDamageText($"MAP L{mapLevel}!", (int)FontType.PurpleSmall);
 			}
 		}
 		player.awardCurrency(charId, 2);
 		if (mainCharActive) {
-			createBoltsAtPos(player.character.getCenterPos(), 1);
+			createBoltsAtPos(player.character?.getCenterPos() ?? Point.zero, 1);
 		}
 	}
 	
@@ -179,8 +176,10 @@ public class ExpBolts : Actor {
 		this.target = target;
 		useGravity = true;
 		zIndex = ZIndex.Actor;
-		collider.wallOnly = true;
-		collider.isTrigger = false;
+		if (collider != null) {
+			collider.wallOnly = true;
+			collider.isTrigger = false;
+		}
 	}
 
 	public override void preUpdate() {
@@ -197,8 +196,10 @@ public class ExpBolts : Actor {
 			hommingOnActor = true;
 			useGravity = false;
 			vel = Point.zero;
-			collider.wallOnly = false;
-			collider.isTrigger = true;
+			if (collider != null) {
+				collider.wallOnly = false;
+				collider.isTrigger = true;
+			}
 		}
 		if (hommingOnActor) {
 			float distX = target.getCenterPos().x - pos.x; 

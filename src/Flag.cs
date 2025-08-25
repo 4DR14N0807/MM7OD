@@ -354,10 +354,6 @@ public class FlagPedestal : Actor {
 				chr.mastery.addMapExp(30, true);
 			}
 		}
-		// TEMP: Remove on re-enable of EXP.
-		chr.player.currency += 50;
-		RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
-
 		var msg = chr.player.name + " scored";
 		Global.level.gameMode.addKillFeedEntry(new KillFeedEntry(msg, chr.player.alliance, chr.player), true);
 		var ctf = Global.level.gameMode as CTF;

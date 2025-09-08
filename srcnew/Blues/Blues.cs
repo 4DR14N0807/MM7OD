@@ -835,7 +835,7 @@ public class Blues : Character {
 			}
 		}
 		// Proto-strike.
-		else if (chargeLevel >= 3 && player.input.isHeld(Control.Up, player)) {
+		else if (chargeLevel >= 3 && player.input.isHeld(Control.Up, player) && charState is not LadderClimb) {
 			addCoreAmmo(overdrive ? 6 : 4);
 			changeState(new ProtoStrike(), true);
 		}

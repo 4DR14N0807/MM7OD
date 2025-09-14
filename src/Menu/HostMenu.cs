@@ -35,13 +35,11 @@ public class HostMenu : IMainMenu {
 	public List<MenuOption> menuOptions;
 	public int selectArrowPosY;
 	public static int startX = 20;
-	public static int startY = 40;
+	public static int startY = 34;
 	public static int lineH = 10;
-
-	public MainMenu previous;
+	public IMainMenu previous;
 	public bool listenForKey = false;
 	public Point mapPos = new Point(178, 43);
-
 	public string serverName;
 	public bool isOffline;
 	public bool isLAN;
@@ -66,7 +64,7 @@ public class HostMenu : IMainMenu {
 	}
 	public int mapIndex {
 		get {
-			return savedMatchSettings.hostMenuSettings.mapIndex.Value;
+			return savedMatchSettings.hostMenuSettings.mapIndex ?? 0;
 		}
 		set {
 			savedMatchSettings.hostMenuSettings.mapIndex = value;
@@ -235,7 +233,7 @@ public class HostMenu : IMainMenu {
 	private FontType fontOption = FontType.Blue;
 
 	public HostMenu(
-		MainMenu mainMenu, Server inGameServer,
+		IMainMenu mainMenu, Server inGameServer,
 		bool isOffline, bool isLAN, bool isP2P = false
 	) {
 		inGame = (inGameServer != null);
@@ -460,21 +458,31 @@ public class HostMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						fontOption, "MAP: " + (isMapSelected ? selectedLevel.displayName : "[Select]"),
+						FontType.Blue, "Stage: " + (isMapSelected ? selectedLevel.displayName : "[Select]"),
 						pos.x, pos.y, selected: index == selectArrowPosY
 					);
 				},
 				"Random Map"
 			)
 		);
-		if (isTraining) {
+		if (selectedLevel.twoDisplayNames) {
 			menuOptions.Add(
 				new MenuOption(startX, startY,
 					() => {
+						if (currentMapSizePool.Count == 0) {
+							return;
+						}
 						if (Global.input.isPressedMenu(Control.MenuLeft)) {
-							useLoadout = false;
+							mapIndex--;
+							if (mapIndex < 0) mapIndex = currentMapSizePool.Count - 1;
+							onMapChange();
 						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
-							useLoadout = true;
+							mapIndex++;
+							if (mapIndex >= currentMapSizePool.Count) mapIndex = 0;
+							onMapChange();
+						} else if (Global.input.isPressedMenu(Control.MenuAlt)) {
+							mapIndex = Helpers.randomRange(0, currentMapSizePool.Count - 1);
+							onMapChange();
 						}
 					},
 					(Point pos, int index) => {
@@ -486,8 +494,26 @@ public class HostMenu : IMainMenu {
 				)
 			);
 		}
+		if (isTraining) {
+				menuOptions.Add(
+					new MenuOption(startX, startY,
+						() => {
+							if (Global.input.isPressedMenu(Control.MenuLeft)) {
+								useLoadout = false;
+							} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+								useLoadout = true;
+							}
+						},
+						(Point pos, int index) => {
+							Fonts.drawText(
+								FontType.Blue, "Use loadout: " + Helpers.boolYesNo(useLoadout),
+								pos.x, pos.y, selected: index == selectArrowPosY
+							);
+						}
+					)
+				);
+			}
 		// Mode
-		if (!isTraining) {
 			menuOptions.Add(
 				new MenuOption(startX, startY,
 					() => {
@@ -510,7 +536,6 @@ public class HostMenu : IMainMenu {
 					}
 				)
 			);
-		}
 		// Team number.
 		if (GameMode.isStringTeamMode(selectedGameMode)) {
 			menuOptions.Add(
@@ -617,7 +642,7 @@ public class HostMenu : IMainMenu {
 			)
 		);
 		// Time limit
-		if (!isTraining && !isRace) {
+		if (!isRace) {
 			menuOptions.Add(
 				new MenuOption(startX, startY,
 					() => {
@@ -732,6 +757,7 @@ public class HostMenu : IMainMenu {
 				)
 			);
 		}
+		
 		// Private match
 		if (!isOffline && !isLAN) {
 			menuOptions.Add(
@@ -756,6 +782,7 @@ public class HostMenu : IMainMenu {
 				)
 			);
 		}
+		
 		// Netcode model
 		if (!isOffline) {
 			menuOptions.Add(
@@ -868,7 +895,6 @@ public class HostMenu : IMainMenu {
 		return "match" + Helpers.randomRange(1, 999).ToString();
 	}
 	public void update() {
-		TimeUpdate();
 		if (Global.leaveMatchSignal != null) return;
 
 		if (inGame) {
@@ -917,19 +943,15 @@ public class HostMenu : IMainMenu {
 
 		if (string.IsNullOrEmpty(errorMessage)) {
 			menuOptions[selectArrowPosY].update();
+			if (Global.input.isPressedMenu(Control.MenuBack) && !inGame) {
+				Menu.change(previous);
+				Global.serverClient = null;
+			}
 			/*
 			if (Global.input.isPressedMenu(Control.MenuBack) && !inGame) {
 				Global.serverClient = null;
 				Menu.change(previous);
 			} */
-			if (Time2 >= 1 && !inGame) {
-				Menu.change(previous);
-				Global.serverClient = null;
-				previous.Time = 0;
-				previous.Time2 = 1;
-				previous.Confirm = false;
-				previous.Confirm2 = false;
-			}
 			/*
 			else if (Global.input.isPressedMenu(Control.MenuEnter) && inGame)
 			{
@@ -1051,8 +1073,8 @@ public class HostMenu : IMainMenu {
 
 		string gameMode = selectedGameMode;
 		if (selectedLevel.isTraining()) {
-			playTo = 9999;
-			gameMode = GameMode.Deathmatch;
+			//playTo = 9999;
+			//gameMode = GameMode.Deathmatch;
 		}
 
 		var localServer = new Server(
@@ -1080,8 +1102,8 @@ public class HostMenu : IMainMenu {
 		}
 		string gameMode = selectedGameMode;
 		if (selectedLevel.isTraining()) {
-			playTo = 9999;
-			gameMode = GameMode.Deathmatch;
+			//playTo = 9999;
+			//gameMode = GameMode.Deathmatch;
 		}
 		if (Global.localServer != null && Global.localServer.s_server.Status == NetPeerStatus.Running) {
 			Global.localServer.shutdown("Host left the match.");
@@ -1348,7 +1370,7 @@ public class HostMenu : IMainMenu {
 	}
 
 	bool playToSupported() {
-		return selectedGameMode != GameMode.ControlPoint && selectedGameMode != GameMode.KingOfTheHill && !isTraining && !isRace;
+		return selectedGameMode != GameMode.ControlPoint && selectedGameMode != GameMode.KingOfTheHill && !isRace;
 	}
 
 	public void render() {

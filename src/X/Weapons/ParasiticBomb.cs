@@ -9,7 +9,8 @@ public class ParasiticBomb : Weapon {
 	public static float beeRange = 120;
 
 	public ParasiticBomb() : base() {
-		//shootSounds = new string[] { "", "", "", "" };
+		displayName = "Parasitic Bomb";
+		shootSounds = new string[] { "", "", "", "" };
 		fireRate = 60;
 		switchCooldown = 45;
 		index = (int)WeaponIds.ParasiticBomb;
@@ -19,10 +20,10 @@ public class ParasiticBomb : Weapon {
 		killFeedIndex = 41;
 		weaknessIndex = (int)WeaponIds.GravityWell;
 		damage = "4/4";
-		effect = "Slows enemies and slams them if detonated \nunless mashed off. Homing bees.";
-		hitcooldown = "0/0.5";
-		Flinch = "26-CarryT/26";
-		FlinchCD = "iwish";
+		effect = "U:Slows down enemies and slams them\nif detonated unless mashed off.\nC:Homing bees.";
+		hitcooldown = "0";
+		flinch = "26/26";
+		flinchCD = "0";
 		maxAmmo = 16;
 		ammo = maxAmmo;
 	}
@@ -85,7 +86,7 @@ public class ParasiticBombProj : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		Global.sprites["parasitebomb_light"].draw(MathInt.Round(Global.frameCount * 0.25f) % 4, pos.x + x, pos.y + y, 1, 1, null, 1, 1, 1, zIndex);
+		Global.sprites["parasitebomb_light"].draw(MathInt.Round(Global.flFrameCount * 0.25f) % 4, pos.x + x, pos.y + y, 1, 1, null, 1, 1, 1, zIndex);
 	}
 }
 

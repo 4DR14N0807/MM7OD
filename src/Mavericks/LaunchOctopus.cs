@@ -9,13 +9,18 @@ public class LaunchOctopus : Maverick {
 	public LaunchOHomingTorpedoWeapon homingTorpedoWeapon = new();
 	public bool lastFrameWasUnderwater;
 
-	public LaunchOctopus(Player player, Point pos, Point destPos, int xDir, ushort? netId, bool ownedByLocalPlayer, bool sendRpc = false) :
-		base(player, pos, destPos, xDir, netId, ownedByLocalPlayer) {
-
-		stateCooldowns.Add(typeof(MShoot), new MaverickStateCooldown(false, true, 1f));
-		stateCooldowns.Add(typeof(LaunchOShoot), new MaverickStateCooldown(false, true, 0.325f));
-		stateCooldowns.Add(typeof(LaunchOHomingTorpedoState), new MaverickStateCooldown(false, true, 1.5f));
-		stateCooldowns.Add(typeof(LaunchOWhirlpoolState), new MaverickStateCooldown(false, false, 2));
+	public LaunchOctopus(
+		Player player, Point pos, Point destPos, int xDir,
+		ushort? netId, bool ownedByLocalPlayer, bool sendRpc = false
+	) : base(
+		player, pos, destPos, xDir, netId, ownedByLocalPlayer
+	) {
+		stateCooldowns = new() {
+			{ typeof(MShoot), new(60, true) },
+			{ typeof(LaunchOShoot), new(20, true) },
+			{ typeof(LaunchOHomingTorpedoState), new(90, true) },
+			{ typeof(LaunchOWhirlpoolState), new(2 * 60) }
+		};
 
 		weapon = new Weapon(WeaponIds.LaunchOGeneric, 96);
 
@@ -35,12 +40,13 @@ public class LaunchOctopus : Maverick {
 		maxAmmo = 32;
 		grayAmmoLevel = 8;
 		barIndexes = (71, 60);
+		height = 46;
 	}
 
 	float timeBeforeRecharge;
 	public override void update() {
 		base.update();
-
+		subtractTargetDistance = 50;
 		if (state is not LaunchOShoot) {
 			Helpers.decrementTime(ref timeBeforeRecharge);
 			if (timeBeforeRecharge == 0) {
@@ -64,7 +70,7 @@ public class LaunchOctopus : Maverick {
 					if (ammo > 0) {
 						changeState(new LaunchOShoot(grounded));
 					}
-				} else if (input.isPressed(Control.Dash, player) && getDistFromGround() > 75) {
+				} else if (input.isPressed(Control.Dash, player)) {
 					changeState(new LaunchOWhirlpoolState());
 				}
 			}
@@ -89,23 +95,30 @@ public class LaunchOctopus : Maverick {
 		return "launcho";
 	}
 
-	public override MaverickState[] aiAttackStates() {
-		return new MaverickState[]
-		{
-				new LaunchOShoot(grounded),
-				new LaunchOHomingTorpedoState(),
-				new LaunchOWhirlpoolState(),
-		};
+	public override MaverickState[] strikerStates() {
+		return [
+			new LaunchOShoot(grounded),
+			new LaunchOHomingTorpedoState(),
+			new LaunchOWhirlpoolState(),
+		];
 	}
 
-	public override MaverickState getRandomAttackState() {
-		var attacks = new MaverickState[]
-		{
+	public override MaverickState[] aiAttackStates() {
+		float enemyDist = 300;
+		if (target != null) {
+			enemyDist = MathF.Abs(target.pos.x - pos.x);
+		}
+		if (enemyDist <= 70) {
+			return [
 				new LaunchOShoot(grounded),
-				new LaunchOWhirlpoolState(),
 				new LaunchOHomingTorpedoState(),
-		};
-		return attacks.GetRandomItem();
+			];
+		}
+		return [
+			new LaunchOShoot(grounded),
+			new LaunchOHomingTorpedoState(),
+			new LaunchOWhirlpoolState(),
+		];
 	}
 
 	// Melee IDs for attacks.
@@ -322,7 +335,7 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 		customAngleRendering = true;
 		this.angle = this.xDir == -1 ? 180 : 0;
 		if (angle != null) {
-			this.angle = angle + (this.xDir == -1 ? 180 : 0);
+			this.angle = angle.Value + (this.xDir == -1 ? 180 : 0);
 		}
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -356,7 +369,7 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 					var dTo = pos.directionTo(target.getCenterPos()).normalize();
 					var destAngle = MathF.Atan2(dTo.y, dTo.x) * 180 / MathF.PI;
 					destAngle = Helpers.to360(destAngle);
-					if (angle != null) angle = Helpers.lerpAngle((float)angle, destAngle, Global.spf * 3);
+					angle = Helpers.lerpAngle(angle, destAngle, Global.spf * 3);
 				}
 			}
 			if (time >= 0.15) {
@@ -364,10 +377,8 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 			} else if (time < 0.15) {
 				//this.vel.x += this.xDir * Global.spf * 300;
 			}
-			if (angle != null) {
-				vel.x = Helpers.cosd((float)angle) * maxSpeed;
-				vel.y = Helpers.sind((float)angle) * maxSpeed;
-			}
+			vel.x = Helpers.cosd(angle) * maxSpeed;
+			vel.y = Helpers.sind(angle) * maxSpeed;
 		}
 		smokeTime += Global.spf;
 		if (smokeTime > 0.2) {
@@ -384,20 +395,20 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 		if (angle < 90) {
 			xDir = 1;
 			yDir = -1;
-			normAngle = (float)angle;
+			normAngle = angle;
 		}
 		if (angle >= 90 && angle < 180) {
 			xDir = -1;
 			yDir = -1;
-			normAngle = 180 - (float)angle;
+			normAngle = 180 - angle;
 		} else if (angle >= 180 && angle < 270) {
 			xDir = -1;
 			yDir = 1;
-			normAngle = (float)angle - 180;
+			normAngle = angle - 180;
 		} else if (angle >= 270 && angle < 360) {
 			xDir = 1;
 			yDir = 1;
-			normAngle = 360 - (float)angle;
+			normAngle = 360 - angle;
 		}
 
 		if (normAngle < 18) frameIndex = 0;
@@ -431,13 +442,29 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 #endregion
 
 #region states
-public class LaunchOShoot : MaverickState {
+public class OctopusMState : MaverickState {
+	public LaunchOctopus LauncherOctopuld = null!;
+	public OctopusMState(
+		string sprite, string transitionSprite = ""
+	) : base(
+		sprite, transitionSprite
+	) {
+	}
+
+	public override void onEnter(MaverickState oldState) {
+		base.onEnter(oldState);
+		LauncherOctopuld = maverick as LaunchOctopus ?? throw new NullReferenceException();
+	}
+}
+public class LaunchOShoot : OctopusMState {
 	int shootState;
 	bool isGrounded;
 	float afterShootTime;
-	public LaunchOctopus LauncherOctopuld= null!;
 	public LaunchOShoot(bool isGrounded) : base(isGrounded ? "shoot" : "air_shoot") {
 		this.isGrounded = isGrounded;
+		airMove = true;
+		canJump = true;
+		canStopJump = true;
 	}
 
 	public override void update() {
@@ -451,10 +478,6 @@ public class LaunchOShoot : MaverickState {
 		} else if (!isGrounded && maverick.grounded) {
 			maverick.changeState(new MIdle());
 			return;
-		}
-
-		if (!isGrounded) {
-			airCode();
 		}
 
 		Point? shootPos = LauncherOctopuld.getFirstPOI();
@@ -515,30 +538,14 @@ public class LaunchOShoot : MaverickState {
 			else LauncherOctopuld.changeState(new MFall());
 		}
 	}
-
-	public override void onEnter(MaverickState oldState) {
-		base.onEnter(oldState);
-		LauncherOctopuld = maverick as LaunchOctopus ?? throw new NullReferenceException();
-	}
-
-	public override void onExit(MaverickState newState) {
-		base.onExit(newState);
-	}
 }
 
-public class LaunchOHomingTorpedoState : MaverickState {
+public class LaunchOHomingTorpedoState : OctopusMState {
 	public bool shootOnce;
-	public LaunchOctopus LauncherOctopuld= null!;
 	public LaunchOHomingTorpedoState() : base("ht") {
 	}
-
-	public override bool canEnter(Maverick maverick) {
-		return base.canEnter(maverick);
-	}
-
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		LauncherOctopuld = maverick as LaunchOctopus ?? throw new NullReferenceException();
 		maverick.stopMoving();
 	}
 
@@ -574,24 +581,18 @@ public class LaunchOHomingTorpedoState : MaverickState {
 	}
 }
 
-public class LaunchOWhirlpoolState : MaverickState {
+public class LaunchOWhirlpoolState : OctopusMState {
 	public bool shootOnce;
 	LaunchOWhirlpoolProj? whirlpool;
-	public LaunchOctopus LauncherOctopuld= null!;
 	float whirlpoolSoundTime;
 	int initYDir = 1;
 	public LaunchOWhirlpoolState() : base("spin") {
-	}
-
-	public override bool canEnter(Maverick maverick) {
-		return base.canEnter(maverick);
 	}
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
 		maverick.stopMoving();
 		maverick.useGravity = false;
-		LauncherOctopuld = maverick as LaunchOctopus ?? throw new NullReferenceException();
 		whirlpool = new LaunchOWhirlpoolProj(
 			maverick.pos.addxy(0, isAI ? -100 : 25), 1,
 			LauncherOctopuld ,player, player.getNextActorNetId(), rpc: true
@@ -602,8 +603,7 @@ public class LaunchOWhirlpoolState : MaverickState {
 	public override void update() {
 		base.update();
 		if (LauncherOctopuld == null) return;
-
-		if (!maverick.tryMove(new Point(0, 100 * initYDir), out CollideData hit)) {
+		if (!maverick.tryMove(new Point(0, 100 * initYDir), out _)) {
 			if (initYDir == 1) {
 				maverick.unstickFromGround();
 			}
@@ -633,7 +633,7 @@ public class LaunchOWhirlpoolState : MaverickState {
 	}
 }
 
-public class LaunchODrainState : MaverickState {
+public class LaunchODrainState : OctopusMState {
 	Character victim;
 	float soundTime = 1;
 	float leechTime = 0.5f;
@@ -687,11 +687,6 @@ public class LaunchODrainState : MaverickState {
 			maverick.changeState(new MFall());
 		}
 	}
-
-	public override bool canEnter(Maverick maverick) {
-		return base.canEnter(maverick);
-	}
-
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
 		maverick.stopMoving();

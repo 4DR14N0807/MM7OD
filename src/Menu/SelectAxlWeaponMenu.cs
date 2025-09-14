@@ -328,8 +328,9 @@ public class SelectAxlWeaponMenu : IMainMenu {
 				float oldAmmo = mainPlayer.weapons[0].ammo;
 
 				mainPlayer.weapons[0] = mainPlayer.getAxlBulletWeapon(selectedWeaponIndices[0]);
-				if (mainPlayer.oldWeapons.Count > 0) mainPlayer.oldWeapons[0] = mainPlayer.getAxlBulletWeapon(selectedWeaponIndices[0]);
-
+				if (mainPlayer.oldWeapons.Count > 0) {
+					mainPlayer.oldWeapons[0] = mainPlayer.getAxlBulletWeapon(selectedWeaponIndices[0]);
+				}
 				//mainPlayer.weapons[0].ammo = oldAmmo;
 				mainPlayer.weapons[0].ammo = mainPlayer.axlBulletTypeLastAmmo[mainPlayer.weapons[0].type];
 			}
@@ -517,7 +518,7 @@ public class SelectAxlWeaponMenu : IMainMenu {
 			Fonts.drawText(FontType.Orange, weaponNames[friendlyWi], Global.halfScreenW, titleY2, Alignment.Center);
 
 			if (friendlyWi == 1) description = (
-				"Eapid-fire energy weapon with long range."
+				"Rapid-fire energy weapon with long range."
 			);
 			if (friendlyWi == 2) description = (
 				"Pump-action grenade launcher with AOE\nand blast knockback."

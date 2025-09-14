@@ -7,7 +7,8 @@ public class AcidBurst : Weapon {
 	public static AcidBurst netWeapon = new();
 
 	public AcidBurst() : base() {
-		//shootSounds = new string[] { "acidBurst", "acidBurst", "acidBurst", "acidBurst" };
+		displayName = "Acid Burst";
+		shootSounds = new string[] { "acidBurst", "acidBurst", "acidBurst", "acidBurst" };
 		fireRate = 30;
 		index = (int)WeaponIds.AcidBurst;
 		weaponBarBaseIndex = 17;
@@ -16,7 +17,7 @@ public class AcidBurst : Weapon {
 		killFeedIndex = 40;
 		weaknessIndex = (int)WeaponIds.FrostShield;
 		damage = "1/1";
-		effect = "DOT: 2+1/3+1. Reduces Enemy Defense. Acid DMG \nstops when cured or immersed in water. Doesn't Assists.";
+		effect = "Both:Reduces Enemy Defense. Poison stops when healed,\nvaccinated or immersed in water.\nPoison wont't give assists. DOT: 2+1/3+1 seconds. ";
 	}
 
 	public override void shoot(Character character, int[] args) {

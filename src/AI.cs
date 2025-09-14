@@ -30,6 +30,9 @@ public class AI {
 		set { _trainingBehavior = value; }
 		get => Global.level.isTraining() ? _trainingBehavior : AITrainingBehavior.Default; 
 	}
+	public AITrainingBehavior localTrainBehavior => (
+		Global.level.mainPlayer != character.player ? trainingBehavior : AITrainingBehavior.Default
+	);
 	public int axlAccuracy;
 	public int mashType; //0=no mash, 1 = light, 2 = heavy
 
@@ -195,25 +198,25 @@ public class AI {
 	//End of Ride Chaser AI
 	public virtual void preUpdate() {
 		if (Global.level.isTraining()) {
-			if (trainingBehavior == AITrainingBehavior.Idle) {
+			if (localTrainBehavior == AITrainingBehavior.Idle) {
 				player.release(Control.Shoot);
 				player.release(Control.Jump);
 				return;
 			}
-			if (trainingBehavior == AITrainingBehavior.Attack) {
+			if (localTrainBehavior == AITrainingBehavior.Attack) {
 				player.release(Control.Jump);
 				player.release(Control.Shoot);
-				if (Global.frameCount % 4 == 0) {
+				if (Global.flFrameCount % 4 < 1) {
 					player.press(Control.Shoot);
 				}
 				return;
 			}
-			if (trainingBehavior == AITrainingBehavior.Jump) {
+			if (localTrainBehavior == AITrainingBehavior.Jump) {
 				player.release(Control.Shoot);
 				player.press(Control.Jump);
 				return;
 			}
-			if (trainingBehavior == AITrainingBehavior.Guard) {
+			if (localTrainBehavior == AITrainingBehavior.Guard) {
 				if (character is BaseSigma) {
 					player.press(Control.Down);
 				} else if (character is Zero) {
@@ -221,7 +224,7 @@ public class AI {
 				}
 				return;
 			}
-			if (trainingBehavior == AITrainingBehavior.Crouch) {
+			if (localTrainBehavior == AITrainingBehavior.Crouch) {
 				player.press(Control.Down);
 				return;
 			}
@@ -233,7 +236,7 @@ public class AI {
 			raceChaserAI();
 			return;
 		}
-		if (Global.level.isTraining() && trainingBehavior != AITrainingBehavior.Default) {
+		if (Global.level.isTraining() && localTrainBehavior != AITrainingBehavior.Default) {
 			return;
 		}
 		if (Global.level.gameMode.isOver) {
@@ -242,7 +245,7 @@ public class AI {
 		if (target != null && target.destroyed) {
 			target = null;
 		}
-		if (Global.level.frameCount % 60 == targetUpdateFrame) {
+		if (Global.flFrameCount % 60 == targetUpdateFrame) {
 			if (target != null && (
 					target.destroyed ||
 					character.pos.distanceTo(target.pos) > 400 ||
@@ -402,12 +405,12 @@ public class AI {
 		var maxDist = Global.screenW / 4;
 		int? raNum = player.character?.rideArmor?.raNum;
 		if (raNum != null && raNum != 2) maxDist = 60;
-		if (character is Zero || player.isSigma || character is PunchyZero) return 80;
+		if (character is Zero or BaseSigma or PunchyZero) return 60;
 		return maxDist;
 	}
 
 	public void buySection() {
-		
+
 	}
 
 	public void randomlyChangeStuff() {
@@ -433,7 +436,7 @@ public class AI {
 		}
 
 		if (aiState.randomlyChangeWeapon &&
-            (player.isX || player.isAxl) &&
+            character is MegamanX or Axl &&
             !player.lockWeapon && player.character?.isStealthy(-1) != null &&
             (character as MegamanX)?.chargedRollingShieldProj == null
         ) {
@@ -790,10 +793,8 @@ public class InJumpZone : AIState {
 		}
 
 		//Check if out of zone
-		if (character != null && character.abstractedActor().collider != null ||
-			ai.jumpZoneTime >= 0.1 && character?.grounded == true
-		) {
-			if (character.abstractedActor().collider?.isCollidingWith(jumpZone.collider) == false) {
+		if (character != null && character.abstractedActor().collider != null) {
+			if (!character.abstractedActor().collider.isCollidingWith(jumpZone.collider)) {
 				ai.changeState(new FindPlayer(character));
 			}
 		}

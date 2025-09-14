@@ -97,7 +97,7 @@ public class SmallHealthPickup : Pickup {
 		owner, pos, "pickup_health_small", netId, ownedByLocalPlayer,
 		NetActorCreateId.SmallHealth, sendRpc: sendRpc
 	) {
-		healAmount = 4;
+		healAmount = Global.level?.server?.customMatchSettings?.smallHealthPickup ?? 4;
 		pickupType = PickupType.Health;
 	}
 }

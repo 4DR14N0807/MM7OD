@@ -67,6 +67,12 @@ public class UpgradeMenu : IMainMenu {
 		}*/
 		return 2;
 	}
+	public static int getSubTankCost() {
+		if (Global.level.server?.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.subTankCost;
+		}
+		return 4;
+	}
 
 	public static int getMaxHeartTanks() {
 		return Global.level.server?.customMatchSettings?.maxHeartTanks ?? 8;
@@ -132,9 +138,9 @@ public class UpgradeMenu : IMainMenu {
 			if (wTankTargetIndex < 0 ) wTankTargetIndex = wTankTargets.Count - 1;
 
 			if (mainPlayer.realCharNum == 0) {
-				if (mainPlayer.canUpgradeXArmor()) {
-					UpgradeArmorMenu.xGame = 3;
-					Menu.change(new UpgradeArmorMenu(prevMenu));
+				if (mainPlayer.canUpgradeXArmor()) {		
+					UpgradeArmorMenuEX.xGame = 1;
+					Menu.change(new UpgradeArmorMenuEX(this));
 					onUpgradeMenu = false;
 					return;
 				}
@@ -150,8 +156,8 @@ public class UpgradeMenu : IMainMenu {
 
 			if (mainPlayer.realCharNum == 0) {
 				if (mainPlayer.canUpgradeXArmor()) {
-					UpgradeArmorMenu.xGame = 1;
-					Menu.change(new UpgradeArmorMenu(prevMenu));
+					UpgradeArmorMenuEX.xGame = 1;
+					Menu.change(new UpgradeArmorMenuEX(this));
 					onUpgradeMenu = false;
 					return;
 				}

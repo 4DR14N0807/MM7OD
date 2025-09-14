@@ -9,8 +9,9 @@ public class RaySplasher : Weapon {
 	public static RaySplasher netWeapon = new RaySplasher();
 
 	public RaySplasher() : base() {
-		//shootSounds = new string[] { "raySplasher", "raySplasher", "raySplasher", "warpIn" };
-		fireRate = 60;
+		displayName = "Ray Splasher";
+		shootSounds = ["raySplasher", "raySplasher", "raySplasher", "warpIn"];
+		fireRate = 80;
 		index = (int)WeaponIds.RaySplasher;
 		weaponBarBaseIndex = 21;
 		weaponBarIndex = weaponBarBaseIndex;
@@ -18,8 +19,8 @@ public class RaySplasher : Weapon {
 		killFeedIndex = 44;
 		weaknessIndex = (int)WeaponIds.SpinningBlade;
 		damage = "1/1";
-		effect = "Charged: Grants Super Armor.";
-		hitcooldown = "0.075";
+		effect = "C:Grants Flinch Immunity.";
+		hitcooldown = "5";
 		hasCustomChargeAnim = true;
 	}
 
@@ -37,6 +38,39 @@ public class RaySplasher : Weapon {
 	}
 
 	public void burstLogic(MegamanX mmx) {
+		if (mmx.currentWeapon is RaySplasher && mmx.invulnTime <= 0 && mmx.charState is not WarpIn) {
+			if (mmx.shootingRaySplasher != null) {
+				mmx.raySplasherCooldown += Global.speedMul;
+				if (mmx.raySplasherCooldown > 1) {
+					//Stop when invincible
+					if (mmx.charState.invincible) return;
+					if (mmx.invulnTime > 0) return;
+					if (!mmx.charState.attackCtrl) return;
+					if (mmx.raySplasherCooldown >= 4) {
+						addAmmo(-0.15f, mmx.player);
+						mmx.raySplasherCooldown = 1;
+						new RaySplasherProj(
+							mmx.getShootPos(), mmx.getShootXDir(), mmx.raySplasherFrameIndex % 3,
+							 (mmx.raySplasherFrameIndex / 5) % 5, mmx,
+							mmx.player, mmx.player.getNextActorNetId(), true
+						);
+						mmx.raySplasherFrameIndex++;
+					}
+					mmx.shootAnimTime = 10;
+					mmx.raySplasherCooldown2 += Global.speedMul;
+				}
+				if (mmx.raySplasherCooldown2 >= 66) {
+					mmx.shootingRaySplasher = null;
+					mmx.raySplasherCooldown2 = 0;
+				}
+			}
+		} else {
+			mmx.shootingRaySplasher = null;
+			mmx.raySplasherFrameIndex = 0;
+		}
+		if (mmx.shootingRaySplasher == null) {
+			mmx.raySplasherFrameIndex = 0;
+		}
 	}
 }
 
@@ -49,7 +83,7 @@ public class RaySplasherProj : Projectile {
 	) {
 		weapon = RaySplasher.netWeapon;
 		damager.damage = 1;
-		damager.hitCooldown = 5;
+		damager.hitCooldown = 6;
 		vel = new Point(600 * xDir, 0);
 		maxTime = 0.25f;
 		projId = (int)ProjIds.RaySplasher;
@@ -66,6 +100,12 @@ public class RaySplasherProj : Projectile {
 		}
 		if (dirType == 2) {
 			vel = new Point(600 * xDir, 0);
+		}
+		if (dirType == 3) {
+			vel = new Point(600 * xDir, -250);
+		}
+		if (dirType == 4) {
+			vel = new Point(600 * xDir, 250);
 		}
 
 		if (rpc) {
@@ -337,15 +377,15 @@ public class RaySplasherChargedState : CharState {
 	bool fired = false;
 	public RaySplasherChargedState() : base("point_up") {
 		superArmor = true;
-
 		landSprite = "point_up";
 		airSprite = "point_up_air";
+		useDashJumpSpeed = true;
 	}
 
 	public override void update() {
 		base.update();
 
-		if (character.frameIndex >= 4 && !fired) {
+		if (character.frameIndex >= 5 && !fired) {
 			fired = true;
 			var turret = new RaySplasherTurret(
 				character.getShootPos(), player, character.xDir, 

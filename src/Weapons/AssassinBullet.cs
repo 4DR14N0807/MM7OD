@@ -163,7 +163,9 @@ public class AssassinBulletChar : Weapon {
 		weaponBarIndex = 26;
 		weaponSlotIndex = 47;
 		killFeedIndex = 61;
-		drawAmmo = true;
+
+		drawAmmo = false;
+		drawCooldown = false;
 	}
 	public override bool canShoot(int chargeLevel, Player player) {
 		if (!base.canShoot(chargeLevel, player)) return false;
@@ -175,6 +177,7 @@ public class AssassinBulletChar : Weapon {
 }
 public class AssassinationProj : Projectile {
 	bool once;
+	float time1;
 	public AssassinationProj(
 		Point pos, int xDir, Actor owner, Player player, ushort? netId, bool rpc = false
 	) : base(
@@ -183,9 +186,10 @@ public class AssassinationProj : Projectile {
 		weapon = AssassinBulletChar.netWeapon;
 		damager.damage = 8;
 		damager.hitCooldown = 0;
-		damager.flinch = 0;		
-		vel = new Point(800 * xDir, 0);
+		damager.flinch = 0;
+		vel = new Point(600 * xDir, 0);
 		fadeSprite = "axl_bullet_fade";
+		fadeOnAutoDestroy = true;		
 		reflectable = true;
 		maxTime = 0.5f;
 		projId = (int)ProjIds.AssassinBulletEX;
@@ -205,11 +209,12 @@ public class AssassinationProj : Projectile {
 		destroySelf();
 	}
 	public override void update() {
+		time1 += Global.spf;
 		if (ownedByLocalPlayer && getHeadshotVictim(owner, out IDamagable? victim, out Point? hitPoint)) {
 			if (hitPoint != null) changePos(hitPoint.Value);
-			if (maxTime >= 0.35f) {
+			if (time1 >= 0.35f) {
 				damager.applyDamage(victim, false, weapon, this, projId, 16, Global.defFlinch);
-			} else damager.applyDamage(victim, false, weapon, this, projId, overrideDamage: Damager.ohkoDamage);
+			} else if (time1 < 0.35f) damager.applyDamage(victim, false, weapon, this, projId, overrideDamage: Damager.ohkoDamage);
 			damager.damage = 0;
 			playSound("hurt");
 			destroySelf();
@@ -217,7 +222,7 @@ public class AssassinationProj : Projectile {
 		}
 		if (!once) {
 			once = true;
-			playSound("assassinate");
+			playSound("assassinate", false, true);
 		}
 		base.update();
 	}
@@ -234,10 +239,12 @@ public class AssassinateChar : CharState {
 		if (!fired) {
 			int xDir = character.xDir;
 			fired = true;
-			new AssassinationProj(
-				character.getCenterPos().addxy(10 * xDir,-10), xDir,
-				character, player, player.getNextActorNetId(), true
-			);
+			Global.level.delayedActions.Add(new DelayedAction(() => {
+				new AssassinationProj(
+					character.getCenterPos().addxy(16 * xDir, -5), xDir,
+					character, player, player.getNextActorNetId(), true
+				);
+			}, 0.55f));
 		}
 		if (stateTime >= 0.75f) {
 			character.changeToIdleOrFall();

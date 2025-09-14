@@ -110,7 +110,6 @@ public class SigmaElectricBallProj : Projectile {
 		weapon = SigmaElectricBallWeapon.netWeapon;
 		damager.damage = 3;
 		damager.hitCooldown = 12;
-		damager.flinch = Global.miniFlinch;
 		projId = (int)ProjIds.Sigma2Ball;
 		destroyOnHit = false;
 		maxTime = 0.5f;
@@ -157,15 +156,29 @@ public class SigmaElectricBallState : CharState {
 	}
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		character.clenaseDmgDebuffs();
 		neoSigma = character as NeoSigma ?? throw new NullReferenceException();
 	}
 }
 
-public class SigmaElectricBall2Weapon : Weapon {
-	public static SigmaElectricBall2Weapon netWeapon = new();
-	public SigmaElectricBall2Weapon() : base() {
+public class NeoSigmaGigaAttackWeapon : Weapon {
+	public static NeoSigmaGigaAttackWeapon netWeapon = new();
+	public NeoSigmaGigaAttackWeapon() : base() {
 		index = (int)WeaponIds.Sigma2Ball2;
+		weaponBarBaseIndex = 51;
+		weaponBarIndex = 40;
 		killFeedIndex = 135;
+
+		allowSmallBar = false;
+		drawGrayOnLowAmmo = true;
+		drawRoundedDown = true;
+
+		maxAmmo = 28;
+		ammo = 0;
+	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 28;
 	}
 }
 
@@ -175,7 +188,7 @@ public class SigmaElectricBall2Proj : Projectile {
 	) : base(
 		pos, xDir, owner, "sigma2_ball2", netId, player
 	) {
-		weapon = SigmaElectricBall2Weapon.netWeapon;
+		weapon = NeoSigmaGigaAttackWeapon.netWeapon;
 		damager.damage = 6;
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 12;
@@ -223,6 +236,7 @@ public class SigmaElectricBall2StateEX : CharState {
 	}
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		character.clenaseAllDebuffs();
 		neoSigma = character as NeoSigma ?? throw new NullReferenceException();
 	}
 }
@@ -275,8 +289,7 @@ public class SigmaUpDownSlashState : CharState {
 	bool isUp;
 	public SigmaUpDownSlashState(bool isUp) : base(isUp ? "upslash" : "downslash") {
 		this.isUp = isUp;
-		enterSound = "";
-		exitOnLanding = true;
+		enterSound = "sigma2slash";
 	}
 
 	public override void update() {

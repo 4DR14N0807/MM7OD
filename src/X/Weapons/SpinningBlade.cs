@@ -9,7 +9,8 @@ public class SpinningBlade : Weapon {
 	public static SpinningBlade netWeapon = new();
 
 	public SpinningBlade() : base() {
-		//shootSounds = new string[] { "", "", "", "spinningBladeCharged" };
+		displayName = "Spinning Blade";
+		shootSounds = new string[] { "", "", "", "spinningBladeCharged" };
 		fireRate = 75;
 		switchCooldown = 45;
 		index = (int)WeaponIds.SpinningBlade;
@@ -19,10 +20,10 @@ public class SpinningBlade : Weapon {
 		killFeedIndex = 43;
 		weaknessIndex = (int)WeaponIds.TriadThunder;
 		damage = "2/2";
-		effect = "Goes back after some time on screen.";
-		hitcooldown = "0/0.5";
-		Flinch = "0/26";
-		FlinchCD = "0/1";
+		effect = "U:Goes back after some time on screen.\nC:Projectile won't destroy on hit.";
+		hitcooldown = "0/30";
+		flinch = "0/26";
+		flinchCD = "0/1";
 		maxAmmo = 16;
 		ammo = maxAmmo;
 	}
@@ -134,7 +135,7 @@ public class SpinningBladeProj : Projectile {
 }
 
 public class SpinningBladeProjCharged : Projectile {
-	public MegamanX mmx = null!;
+	public MegamanX? mmx = null;
 	public float xDist;
 	const float maxXDist = 90;
 	public float spinAngle;
@@ -153,7 +154,7 @@ public class SpinningBladeProjCharged : Projectile {
 		projId = (int)ProjIds.SpinningBladeCharged;
 		shouldShieldBlock = false;
 		destroyOnHit = false;
-		mmx = player.character as MegamanX ?? throw new NullReferenceException();
+		mmx = player.character as MegamanX;
 		shouldVortexSuck = false;
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -213,7 +214,7 @@ public class SpinningBladeProjCharged : Projectile {
 		float yOff = Helpers.sind(spinAngle) * xDist;
 		changePos(mmx.getShootPos().addxy(xDir * xOff, yOff));
 
-		if (mmx.charState.attackCtrl && !mmx.stockedBuster &&
+		if (mmx.charState.attackCtrl && mmx.stockedBusterLv == 0 &&
 			mmx.player.input.isPressed(Control.Shoot, mmx.player) && xDist >= maxXDist
 		) {
 			retracted = true;
@@ -231,16 +232,16 @@ public class SpinningBladeProjCharged : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		Point sPos = mmx.getShootPos();
+		Point sPos = mmx?.getShootPos() ?? pos;
 		DrawWrappers.DrawLine(sPos.x, sPos.y, pos.x, pos.y, new Color(0, 224, 0), 3, zIndex - 100);
 		DrawWrappers.DrawLine(sPos.x, sPos.y, pos.x, pos.y, new Color(224, 224, 96), 1, zIndex - 100);
-		Global.sprites["spinningblade_base"].draw(MathInt.Round(Global.frameCount * 0.25f) % 3, sPos.x, sPos.y, 1, 1, null, 1, 1, 1, zIndex);
+		Global.sprites["spinningblade_base"].draw(MathInt.Round(Global.flFrameCount * 0.25f) % 3, sPos.x, sPos.y, 1, 1, null, 1, 1, 1, zIndex);
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
-		if (mmx.chargedSpinningBlade == this) {
+		if (mmx?.chargedSpinningBlade == this) {
 			mmx.chargedSpinningBlade = null;
 		}
 	}

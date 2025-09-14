@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MMXOnline;
 
@@ -11,7 +12,9 @@ public class Velguarder : Maverick {
 	) : base(
 		player, pos, destPos, xDir, netId, ownedByLocalPlayer
 	) {
-		stateCooldowns.Add(typeof(MShoot), new MaverickStateCooldown(false, true, 0.75f));
+		stateCooldowns = new() {
+			{ typeof(MShoot), new(45, true) }
+		};
 		canClimbWall = true;
 
 		awardWeaponId = WeaponIds.Buster;
@@ -27,6 +30,7 @@ public class Velguarder : Maverick {
 		}
 
 		armorClass = ArmorClass.Light;
+		height = 24;
 	}
 
 	public override void update() {
@@ -50,7 +54,7 @@ public class Velguarder : Maverick {
 	}
 
 	public override float getRunSpeed() {
-		return 135f;
+		return 135f * getRunDebuffs();
 	}
 
 	public MaverickState getShootState() {
@@ -61,23 +65,27 @@ public class Velguarder : Maverick {
 		return new VelGShootIceState();
 	}
 
-	public override MaverickState[] aiAttackStates() {
-		return new MaverickState[]
-		{
-				new VelGShootFireState(),
-				new VelGShootIceState(),
-				new VelGPounceStartState(),
-		};
+	public override MaverickState[] strikerStates() {
+		return [
+			new VelGShootFireState(),
+			new VelGShootIceState(),
+			new VelGPounceStartState(),
+		];
 	}
 
-	public override MaverickState getRandomAttackState() {
-		var attacks = new MaverickState[]
-		{
-				new VelGShootFireState(),
-				new VelGShootIceState(),
-				new VelGPounceStartState(),
-		};
-		return attacks.GetRandomItem();
+	public override MaverickState[] aiAttackStates() {
+		float enemyDist = 300;
+		if (target != null) {
+			enemyDist = MathF.Abs(target.pos.x - pos.x);
+		}
+		if (enemyDist > 50) {
+			return [new VelGPounceStartState()];
+		}
+		return [
+			getShootState2(),
+			getShootState(),
+			new VelGPounceStartState()
+		];
 	}
 
 	// Melee IDs for attacks.
@@ -200,15 +208,24 @@ public class VelGIceProj : Projectile {
 #endregion
 
 #region states
-public class VelGShootFireState : MaverickState {
-	float shootTime;
+public class VelguarderMState : MaverickState {
 	public Velguarder Velguader = null!;
-	public VelGShootFireState() : base("shoot2") {
-
+	public VelguarderMState(
+		string sprite, string transitionSprite = ""
+	) : base(
+		sprite, transitionSprite
+	) {
 	}
+
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
 		Velguader = maverick as Velguarder ?? throw new NullReferenceException();
+	}
+}
+public class VelGShootFireState : VelguarderMState {
+	float shootTime;
+	public VelGShootFireState() : base("shoot2") {
+
 	}
 
 	public override void update() {
@@ -234,17 +251,11 @@ public class VelGShootFireState : MaverickState {
 	}
 }
 
-public class VelGShootIceState : MaverickState {
+public class VelGShootIceState : VelguarderMState {
 	bool shot;
 	int index = 0;
-	public Velguarder Velguader = null!;
 	public VelGShootIceState() : base("shoot") {
 	}
-	public override void onEnter(MaverickState oldState) {
-		base.onEnter(oldState);
-		Velguader = maverick as Velguarder ?? throw new NullReferenceException();
-	}
-
 	public override void update() {
 		base.update();
 		if (Velguader == null) return;

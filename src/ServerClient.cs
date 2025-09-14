@@ -379,8 +379,15 @@ public class ServerClient {
 		if (rpcIndex == -1) {
 			throw new Exception("RPC index not found!");
 		}
-		if (!rpcTemplate.isString && arguments.Length > 1480) {
-			throw new Exception("Error, RPC exceeds the MTU.");
+		if (!rpcTemplate.isString && arguments.Length > 1400 && (
+			!rpcTemplate.allowBreakMtuLimit ||
+			rpcTemplate.netDeliveryMethod == NetDeliveryMethod.Unreliable
+		)) {
+			string rcpName = rpcTemplate.GetType().ToString().RemovePrefix("MMXOnline.");
+			throw new Exception(
+				$"Error, RPC of type {rcpName} exceeds the MTU.\n" +
+				$"RPC length = {arguments.Length}"
+			);
 		}
 		byte rpcIndexByte = (byte)rpcIndex;
 		NetOutgoingMessage om = client.CreateMessage();

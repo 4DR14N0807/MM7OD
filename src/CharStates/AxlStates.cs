@@ -10,12 +10,13 @@ public class HyperAxlStart : CharState {
 
 	public HyperAxlStart(bool isGrounded) : base(isGrounded ? "hyper_start" : "hyper_start_air") {
 		invincible = true;
+		statusEffectImmune = true;
 	}
 
 	public override void update() {
 		base.update();
 
-		foreach (var weapon in player.weapons) {
+		foreach (var weapon in character.weapons) {
 			for (int i = 0; i < 10; i++) weapon.rechargeAmmo(0.1f);
 		}
 
@@ -33,7 +34,8 @@ public class HyperAxlStart : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		axl = character as Axl ?? throw new NullReferenceException() ;
+		character.clenaseAllDebuffs();
+		axl = character as Axl ?? throw new NullReferenceException();
 		if (!axl.hyperAxlUsed) {
 			axl.hyperAxlUsed = true;
 			axl.player.currency -= 10;
@@ -146,7 +148,6 @@ public class DodgeRoll : CharState {
 		if (character.burnTime < 0) {
 			character.burnTime = 0;
 		}
-
 		initialDashDir = character.xDir;
 		if (player.input.isHeld(Control.Left, player)) initialDashDir = -1;
 		else if (player.input.isHeld(Control.Right, player)) initialDashDir = 1;
@@ -154,11 +155,12 @@ public class DodgeRoll : CharState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		axl.dodgeRollCooldown = Axl.maxDodgeRollCooldown;
+		axl.dodgeRollCooldown = Global.customSettings?.axlDodgerollCooldown ?? Axl.maxDodgeRollCooldown;
 	}
 
 	public override void update() {
 		base.update();
+		axl.dodgeRollCooldown = Global.customSettings?.axlDodgerollCooldown ?? Axl.maxDodgeRollCooldown;
 
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();
@@ -205,4 +207,18 @@ public class SniperAimAxl : CharState {
 		}
 	}
 }
+public class AxlTaunt : CharState {
+	public AxlTaunt() : base("win") {
 
+	}
+	public override void update() {
+		base.update();
+		if (character.isAnimOver() && !Global.level.gameMode.playerWon(player)) {
+			character.changeToIdleOrFall();
+		}
+		if (!once) {
+			once = true;
+			character.playSound("ching", sendRpc: true);
+		}
+	}
+}

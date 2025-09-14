@@ -118,8 +118,11 @@ public class MusicWrapper {
 	}
 
 	public void updateMusicSourceVolume(Point listenerPos) {
-		float dist = (listenerPos.distanceTo(musicSourcePos.Value) - 75) / (Global.screenW - 75);
-		dist = Helpers.clamp01(dist);
+		float dist = 1;
+		if (musicSourcePos != null) {
+			dist = (listenerPos.distanceTo(musicSourcePos.Value) - 75) / (Global.screenW - 75);
+			dist = Helpers.clamp01(dist);
+		}
 		volume = (1 - MathF.Pow(dist, 2)) * 100;
 	}
 

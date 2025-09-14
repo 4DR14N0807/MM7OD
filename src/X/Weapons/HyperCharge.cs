@@ -53,7 +53,7 @@ public class HyperCharge : Weapon {
 	}
 
 	public override bool canShoot(int chargeLevel, MegamanX mmx) {
-		if (mmx.stockedMaxBuster) {
+		if (mmx.stockedMaxBusterLv >= 1) {
 			return false;
 		}
 		return (
@@ -83,7 +83,7 @@ public class HyperCharge : Weapon {
 	public override void shoot(Character character, int[] args) {
 		Player player = character.player;
 		MegamanX mmx = character as MegamanX ?? throw new NullReferenceException();
-		Weapon wep = player.weapons[player.hyperChargeSlot];
+		Weapon wep = character.weapons[player.hyperChargeSlot];
 
 		if (wep is XBuster) {
 			character.changeState(new X3ChargeShot(this), true);
@@ -91,7 +91,7 @@ public class HyperCharge : Weapon {
 			character.playSound("buster3X3");
 		} else {
 			if (changeToWeaponSlot(wep)) player.changeWeaponSlot(player.hyperChargeSlot);
-			wep.shootHypercharge(character, new int[] {3});
+			wep.shoot(character, [3]);
 			wep.addAmmo(-wep.getAmmoUsage(3), player);
 			if (!string.IsNullOrEmpty(wep.shootSounds[3])) {
 				character.playSound(wep.shootSounds[3]);

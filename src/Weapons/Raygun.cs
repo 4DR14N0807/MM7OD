@@ -18,10 +18,11 @@ public class RayGun : AxlWeapon {
 		weaponSlotIndex = 34;
 		killFeedIndex = 33;
 		fireRate = 6;
-
-		/*if (altFire == 1) {
+		rechargeAmmoCooldown = 120;
+		altRechargeAmmoCooldown = 120;
+		if (altFire == 1) {
 			shootSounds[3] = "";
-		}*/
+		}
 	}
 
 	public override float whiteAxlFireRateMod() {

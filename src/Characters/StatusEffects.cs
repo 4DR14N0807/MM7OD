@@ -48,7 +48,7 @@ public class Hurt : CharState {
 				character.changeSpriteFromName("hurt2", true);
 			}
 		}
-		if (!spiked) {
+		if (!spiked && character is not BaseSigma && !character.isToughGuyHyperMode()) {
 			float flichLimitusTime = flinchTime <= 30 ? flinchTime : 30;
 
 			character.vel.y = (-0.125f * (flichLimitusTime - 1)) * 60f;
@@ -67,7 +67,8 @@ public class Hurt : CharState {
 		base.update();
 		if (hurtSpeed != 0 && character.rootTime <= 0) {
 			hurtSpeed = Helpers.toZero(hurtSpeed, 1.6f / flinchTime * Global.speedMul, hurtDir);
-			character.move(new Point(hurtSpeed * 60f, 0));
+			if (character is not BaseSigma && !character.isToughGuyHyperMode()) //Tough guy
+				character.move(new Point(hurtSpeed * 60f, 0));
 		}
 		if (character is Axl axl) {
 			axl.stealthRevealTime = Axl.maxStealthRevealTime;
@@ -75,7 +76,7 @@ public class Hurt : CharState {
 
 		if (isMiniFlinch()) {
 			character.frameSpeed = 0;
-			if (Global.frameCount % 2 == 0) {
+			if (Global.floorFrameCount % 2 == 0) {
 				if (player.charNum == 0) character.frameIndex = 3;
 				if (player.charNum == 1) character.frameIndex = 3;
 				if (player.charNum == 2) character.frameIndex = 0;
@@ -92,11 +93,12 @@ public class Hurt : CharState {
 			character.changeToLandingOrFall(false);
 		}
 	}
-
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		//Intended. Do not remove.
-		//character.dashedInAir = 0;
+		//Came back from the death as Custom Setting
+		if (Global.level.server?.customMatchSettings?.flinchairDashReset == true) {
+			character.dashedInAir = 0;
+		}
 	}
 }
 
@@ -215,7 +217,7 @@ public class GenericStun : CharState {
 
 	public void activateFlinch(int flinchFrames, int xDir) {
 		hurtDir = xDir;
-		if (player.isX && player.hasBodyArmor(1)) {
+		if (character is MegamanX mmx && mmx.chestArmor == ArmorId.Light) {
 			flinchFrames = MathInt.Floor(flinchFrames * 0.75f);
 		}
 		if (flinchTime > flinchFrames) {
@@ -227,7 +229,7 @@ public class GenericStun : CharState {
 			flinchYPos = character.pos.y;
 		}
 		if (flinchFrames >= 2) {
-			character.vel.y = (-0.125f * (flinchFrames - 1)) * 60f;
+			character.vel.y = -0.125f * (flinchFrames - 1) * 60f;
 			if (isCombo && character.pos.y < flinchYPos) {
 				character.vel.y = (0.002f * flinchTime - 0.076f) * (flinchYPos - character.pos.y) + 1;
 			}
@@ -238,7 +240,7 @@ public class GenericStun : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.stopMovingWeak();
+		character.stopMoving();
 		hurtDir = -character.xDir;
 		// To continue the flinch if was flinched before the stun.
 		if (oldState is Hurt hurtState) {

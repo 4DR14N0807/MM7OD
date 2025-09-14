@@ -9,14 +9,18 @@ public class Doppma : BaseSigma {
 	public float maxFireballCooldown = 0.39f;
 	public float shieldCooldown;
 	public float maxShieldCooldown = 1.125f;
+	public bool shootOnce;
 
 	public Doppma(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId,
-		bool ownedByLocalPlayer, bool isWarpIn = true
+		bool ownedByLocalPlayer, bool isWarpIn = true,
+		SigmaLoadout? loadout = null,
+		int? heartTanks = null, bool isATrans = false
 	) : base(
 		player, x, y, xDir, isVisible,
-		netId, ownedByLocalPlayer, isWarpIn
+		netId, ownedByLocalPlayer, isWarpIn,
+		loadout, heartTanks, isATrans
 	) {
 		sigmaSaberMaxCooldown = 0.5f;
 		altSoundId = AltSoundIds.X3;
@@ -31,6 +35,9 @@ public class Doppma : BaseSigma {
 		Helpers.decrementTime(ref fireballCooldown);
 		Helpers.decrementTime(ref shieldCooldown);
 		Helpers.decrementFrames(ref aiAttackCooldown);
+		if (sprite.name.EndsWith(charState.shootSpriteEx) == false) {
+			shootOnce = false;
+		}
 		// For ladder and slide shoot.
 		if (charState is WallSlide or LadderClimb &&
 			charState.shootSpriteEx != "" &&
@@ -53,11 +60,14 @@ public class Doppma : BaseSigma {
 					if (ang != 0 && ang != 180) {
 						upDownDir = 0;
 					}
-					//playSound("sigma3shoot", sendRpc: true);
-					new Sigma3FireProj(
-						shootPOI.Value, ang, upDownDir,
-						player, player.getNextActorNetId(), sendRpc: true
-					);
+					if (!shootOnce) {
+						playSound("sigma3shoot", sendRpc: true);
+						new Sigma3FireProj(
+							shootPOI.Value, ang, upDownDir,
+							player, player.getNextActorNetId(), sendRpc: true
+						);
+						shootOnce = true;
+					}
 				}
 			}
 		}
@@ -76,10 +86,10 @@ public class Doppma : BaseSigma {
 		if (player.weapon is not AssassinBulletChar) {
 			if (player.input.isPressed(Control.Shoot, player)) {
 				attackPressed = true;
-				//lastAttackFrame = Global.level.frameCount;
+				lastAttackFrame = Global.floorFrameCount;
 			}
 		}
-		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);
+		framesSinceLastAttack = Global.floorFrameCount - lastAttackFrame;
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		// Shoot button attacks.
@@ -210,13 +220,13 @@ public class Doppma : BaseSigma {
 		base.aiAttack(target);
 	}
 	public override void aiUpdate(Actor? target) {
-		base.aiUpdate(target);
 		if (charState is Die) {
 			foreach (Weapon weapon in weapons) {
 				if (weapon is MaverickWeapon mw && mw.maverick != null) {
 					mw.maverick.changeState(new MExit(mw.maverick.pos, true), true);
 				}
-			}	
+			}
 		}
+		base.aiUpdate(target);
 	}
 }

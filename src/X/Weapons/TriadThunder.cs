@@ -7,7 +7,8 @@ public class TriadThunder : Weapon {
 	public static TriadThunder netWeapon = new TriadThunder();
 
 	public TriadThunder() : base() {
-		//shootSounds = new string[] { "triadThunder", "triadThunder", "triadThunder", "" };
+		displayName = "Triad sThunder";
+		shootSounds = new string[] { "triadThunder", "triadThunder", "triadThunder", "" };
 		fireRate = 135;
 		switchCooldown = 60;
 		index = (int)WeaponIds.TriadThunder;
@@ -17,10 +18,10 @@ public class TriadThunder : Weapon {
 		killFeedIndex = 42;
 		weaknessIndex = (int)WeaponIds.TornadoFang;
 		damage = "2/4+3";
-		effect = "Charged: Grants Super Armor.\nUncharged won't give assists.";
-		hitcooldown = "0.5/0.5-1";
-		Flinch = "6/26";
-		FlinchCD = "2.25/0";
+		effect = "U:Projectile won't destroy on hit nor give assists.\nC:Grants Flinch Immunity.";
+		hitcooldown = "30";
+		flinch = "6/26";
+		flinchCD = "2.25/0";
 		maxAmmo = 10;
 		ammo = maxAmmo;
 		hasCustomChargeAnim = true;

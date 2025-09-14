@@ -15,6 +15,15 @@ public class Sprite {
 	public Collider[][] frameHitboxes;
 	public float time;
 	public int frameIndex;
+	public int frameIndexSafe {
+		get => frameIndex;
+		set {
+			if (value >= totalFrameNum) {
+				throw new Exception("Error: Frameindex is longer than anim size.");
+			}
+			frameIndex = value;
+		}
+	}
 	public float frameSpeed = 1;
 	public int loopStartFrame;
 	public bool doesLoop;
@@ -173,9 +182,8 @@ public class Sprite {
 		Texture bitmap = overrideTexture ?? animData.bitmap;
 
 		// Character-specific draw section
-		Character? character = actor as Character;
 		bool isSA = false;
-		if (character != null) {
+		if (actor is Character character) {
 			if (character.flattenedTime > 0) {
 				scaleY = 0.5f;
 			}
@@ -187,7 +195,6 @@ public class Sprite {
 				bitmap = Sprite.breakManBitmap;
 			}
 		}
-
 		Frame currentFrame = getCurrentFrame(frameIndex);
 		if (currentFrame == null) return;
 
@@ -264,8 +271,6 @@ public class Sprite {
 		float xDirArg = flipX * scaleX;
 		float yDirArg = flipY * scaleY;
 
-		//Texture bitmap = animData.bitmap;
-
 		bool isCompositeSprite = false;
 		List<Texture> compositeBitmaps = new();
 		float extraY = 0;
@@ -281,7 +286,11 @@ public class Sprite {
 			extraW = flippedExtraW;
 		}
 
-		if (renderEffects != null && !renderEffects.Contains(RenderEffectType.Invisible)) {
+		if (!Options.main.disableShaders &&
+			!Options.main.fastShaders &&
+			renderEffects != null &&
+			!renderEffects.Contains(RenderEffectType.Invisible)
+		) {
 			if (!Options.main.fastShaders &&
 				alpha >= 1 && (
 				renderEffects.Contains(RenderEffectType.BlueShadow) ||
@@ -322,7 +331,6 @@ public class Sprite {
 					);
 				}
 			}
-
 			if (renderEffects.Contains(RenderEffectType.Trail)) {
 				for (int i = lastFiveTrailDraws.Count - 1; i >= 0; i--) {
 					var trail = lastFiveTrailDraws[i];
@@ -334,8 +342,9 @@ public class Sprite {
 				if (Global.shaderWrappers.ContainsKey("trail")) shaderList.Add(Global.shaderWrappers["trail"]);
 
 				if (lastFiveTrailDraws.Count > 5) lastFiveTrailDraws.PopFirst();
-				lastFiveTrailDraws.Add(new Trail() {
-					action = (float time) => {
+				lastFiveTrailDraws.Add(new Trail(
+					0.25f,
+					(float time) => {
 						DrawWrappers.DrawTexture(
 							bitmap,
 							currentFrame.rect.x1, currentFrame.rect.y1,
@@ -345,9 +354,43 @@ public class Sprite {
 							cy - frameOffsetY * yDirArg,
 							xDirArg, yDirArg, angle, alpha, shaderList, true
 						);
-					},
-					time = 0.25f
-				});
+					}
+				));
+			}
+			if (renderEffects.Contains(RenderEffectType.SpeedDevilTrail) &&
+				Global.shaderWrappers.ContainsKey("speedDevilTrail") &&
+				actor is Character chara
+			) {
+				for (int i = chara.lastFiveTrailDraws.Count - 1; i >= 0; i--) {
+					Trail trail = chara.lastFiveTrailDraws[i];
+					trail.action.Invoke(trail.time);
+					trail.time -= Global.spf;
+					if (trail.time <= 0) chara.lastFiveTrailDraws.RemoveAt(i);
+				}
+
+				var shaderList = new List<ShaderWrapper>();
+
+				var speedDevilShader = chara.player.speedDevilShader;
+				shaderList.Add(speedDevilShader);
+
+				if (chara.lastFiveTrailDraws.Count > 1) {
+					chara.lastFiveTrailDraws.PopFirst();
+				}
+				chara.lastFiveTrailDraws.Add(new Trail(
+					0.125f,
+					(float time) => {
+						speedDevilShader?.SetUniform("alpha", time * 2);
+						DrawWrappers.DrawTexture(
+							bitmap,
+							currentFrame.rect.x1, currentFrame.rect.y1,
+							currentFrame.rect.w(), currentFrame.rect.h(),
+							x, y, zIndex,
+							cx - frameOffsetX * xDirArg,
+							cy - frameOffsetY * yDirArg,
+							xDirArg, yDirArg, angle, alpha, shaderList, true
+						);
+					}
+				));
 			}
 		}
 		if (!isCompositeSprite) {
@@ -515,6 +558,11 @@ public class Sprite {
 public class Trail {
 	public Action<float> action;
 	public float time;
+
+	public Trail(float time, Action<float> action) {
+		this.time = time;
+		this.action = action;
+	}
 }
 
 public class AnimData {
@@ -636,22 +684,24 @@ public class AnimData {
 				new Point(offsetX, offsetY)
 			);
 
-			int encodeKey = (sprWidth * 397) ^ sprHeight;
-			if (Global.isLoading) {
-				if (!Global.renderTextureQueueKeys.Contains(encodeKey)) {
-					lock (Global.renderTextureQueueKeys) {
-						Global.renderTextureQueueKeys.Add(encodeKey);
+			// Rendertexture creation.
+			if (!Options.main.fastShaders && !Options.main.disableShaders) {
+				int encodeKey = (sprWidth * 397) ^ sprHeight;
+				if (Global.isLoading) {
+					if (!Global.renderTextureQueueKeys.Contains(encodeKey)) {
+						lock (Global.renderTextureQueueKeys) {
+							Global.renderTextureQueueKeys.Add(encodeKey);
+						}
+						lock (Global.renderTextureQueue) {
+							Global.renderTextureQueue.Add(((uint)sprWidth, (uint)sprHeight));
+						}
 					}
-					lock (Global.renderTextureQueue) {
-						Global.renderTextureQueue.Add(((uint)sprWidth, (uint)sprHeight));
-					}
+				} else if (!Global.renderTextures.ContainsKey(encodeKey)) {
+					Global.renderTextures[encodeKey] = (
+						new RenderTexture((uint)sprWidth, (uint)sprHeight),
+						new RenderTexture((uint)sprWidth, (uint)sprHeight)
+					);
 				}
-			}
-			else if (!Global.renderTextures.ContainsKey(encodeKey)) {
-				Global.renderTextures[encodeKey] = (
-					new RenderTexture((uint)sprWidth, (uint)sprHeight),
-					new RenderTexture((uint)sprWidth, (uint)sprHeight)
-				);
 			}
 			if (frameJson["POIs"] != null) {
 				List<Point> framePOIs = new();

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class CmdSigma : BaseSigma {
+	public Weapon ballWeapon;
 	public float saberCooldown;
 	public float leapSlashCooldown;
 	public float sigmaAmmoRechargeCooldown = 0;
@@ -16,13 +17,17 @@ public class CmdSigma : BaseSigma {
 	public CmdSigma(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId,
-		bool ownedByLocalPlayer, bool isWarpIn = true
+		bool ownedByLocalPlayer, bool isWarpIn = true,
+		SigmaLoadout? loadout = null,
+		int? heartTanks = null, bool isATrans = false
 	) : base(
 		player, x, y, xDir, isVisible,
-		netId, ownedByLocalPlayer, isWarpIn
+		netId, ownedByLocalPlayer, isWarpIn,
+		loadout, heartTanks, isATrans
 	) {
 		sigmaSaberMaxCooldown = 1;
 		altSoundId = AltSoundIds.X1;
+		ballWeapon = new SigmaBallWeapon();
 	}
 
 	public override void update() {
@@ -37,11 +42,13 @@ public class CmdSigma : BaseSigma {
 		Helpers.decrementTime(ref leapSlashCooldown);
 		Helpers.decrementFrames(ref sigmaAmmoRechargeCooldown);
 		Helpers.decrementFrames(ref aiAttackCooldown);
+		ballWeapon.update();
+		ballWeapon.charLinkedUpdate(this, true);
 		// Ammo reload.
 		if (sigmaAmmoRechargeCooldown == 0) {
 			Helpers.decrementFrames(ref sigmaAmmoRechargeTime);
 			if (sigmaAmmoRechargeTime == 0) {
-				player.sigmaAmmo = Helpers.clampMax(player.sigmaAmmo + 1, player.sigmaMaxAmmo);
+				ballWeapon.addAmmo(1, player);
 				sigmaAmmoRechargeTime = sigmaHeadBeamRechargePeriod;
 			}
 		} else {
@@ -70,10 +77,10 @@ public class CmdSigma : BaseSigma {
 		if (player.weapon is not AssassinBulletChar) {
 			if (player.input.isPressed(Control.Shoot, player)) {
 				attackPressed = true;
-				//lastAttackFrame = Global.level.frameCount;
+				lastAttackFrame = Global.floorFrameCount;
 			}
 		}
-		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);
+		framesSinceLastAttack = Global.floorFrameCount - lastAttackFrame;
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		if (charState is Dash dashState) {
@@ -112,9 +119,9 @@ public class CmdSigma : BaseSigma {
 			return true;
 		}
 		if (grounded && charState is Idle || charState is Run || charState is Crouch) {
-			if (player.input.isHeld(Control.Special1, player) && player.sigmaAmmo > 0) {
+			if (player.input.isHeld(Control.Special1, player) && ballWeapon.ammo > 0) {
 				sigmaAmmoRechargeCooldown = 0.5f;
-				changeState(new SigmaBallShootEX(), true);
+				changeState(new SigmaBallShoot(), true);
 				return true;
 			}
 		}
@@ -172,19 +179,21 @@ public class CmdSigma : BaseSigma {
 
 	public override void addAmmo(float amount) {
 		weaponHealAmount += amount;
+		ballWeapon.addAmmoHeal(amount);
 	}
 
 	public override void addPercentAmmo(float amount) {
 		weaponHealAmount += amount * 0.32f;
+		ballWeapon.addAmmoPercentHeal(amount);
 	}
 
 	public override bool canAddAmmo() {
-		return (player.sigmaAmmo < player.sigmaMaxAmmo);
+		return ballWeapon.ammo < ballWeapon.maxAmmo;
 	}
 
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = base.getCustomActorNetData();
-		customData.Add((byte)MathF.Ceiling(player.sigmaAmmo));
+		customData.Add((byte)MathF.Ceiling(ballWeapon.ammo));
 
 		return customData;
 	}
@@ -195,7 +204,7 @@ public class CmdSigma : BaseSigma {
 		data = data[data[0]..];
 
 		// Per-player data.
-		player.sigmaAmmo = data[0];
+		ballWeapon.ammo = data[0];
 	}
 
 	public override void aiAttack(Actor? target) {
@@ -221,7 +230,7 @@ public class CmdSigma : BaseSigma {
 						changeState(new SigmaSlashStateGround(), true);
 						break;
 					case 1 when isTargetInAir:
-						changeState(new SigmaBallShootEX(), true);
+						changeState(new SigmaBallShoot(), true);
 						break;
 					case 2 when charState is Dash && grounded:
 						changeState(new SigmaWallDashState(xDir, true), true);
@@ -252,13 +261,13 @@ public class CmdSigma : BaseSigma {
 		base.aiDodge(target);
 	}
 	public override void aiUpdate(Actor? target) {
-		base.aiUpdate(target);
 		if (charState is Die) {
 			foreach (Weapon weapon in weapons) {
 				if (weapon is MaverickWeapon mw && mw.maverick != null) {
 					mw.maverick.changeState(new MExit(mw.maverick.pos, true), true);
 				}
-			}	
+			}
 		}
+		base.aiUpdate(target);
 	}
 }

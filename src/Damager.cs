@@ -37,7 +37,7 @@ public class Damager {
 		this.owner = owner;
 		this.damage = damage;
 		this.flinch = flinch;
-		hitCooldownSeconds = hitCooldown;
+		this.hitCooldownSeconds = hitCooldown;
 		this.knockback = knockback;
 	}
 
@@ -94,6 +94,13 @@ public class Damager {
 				}
 			}
 		}
+
+		if (victim is not IDamagable damagable) {
+			return false;
+		}
+		Character? preCharacter = victim as Character;
+		CharState? charState = preCharacter?.charState;
+
 		if (!damagable.projectileCooldown.ContainsKey(key)) {
 			damagable.projectileCooldown[key] = 0;
 		}
@@ -106,6 +113,7 @@ public class Damager {
 		} else {
 			damagable.projectileCooldown[key] = hitCooldown;
 		}
+		damagable.projectileCooldown[key] = hitCooldown;
 
 		// Run the RPC on all clients first, before it can modify the parameters, so clients can act accordingly
 		if (sendRpc && victim.netId != null && Global.serverClient?.isLagging() == false) {
@@ -160,11 +168,23 @@ public class Damager {
 			return true;
 		}
 
-		// Would only get reached due to lag. Otherwise, the owner that initiates the applyDamage.
-		// call would have already considered it and avoided entering the method
+		// Would only get reached due to lag.
+		// Otherwise, the owner that initiates the applyDamage call
+		// would have already considered it and avoided entering the method
 		// This allows dodge abilities to "favor the defender"
 		if (!damagable.canBeDamaged(owner.alliance, owner.id, projId)) {
 			return true;
+		}
+
+		if (damagable != null && damagable is not CrackedWall && owner.ownedByLocalPlayer && !isDot(projId)) {
+			if (owner.isMainPlayer) {
+				owner.delaySubtank();
+			}
+			if (damagingActor is Projectile proj && proj.owningActor is Character chara) {
+				chara.enterCombat();
+			} else {
+				owner.character?.enterCombat();
+			}
 		}
 
 		if (damagable is CrackedWall cw) {
@@ -179,8 +199,7 @@ public class Damager {
 		if (damagable != null) {
 			DamagerMessage? damagerMessage = null;
 
-			var proj = damagingActor as Projectile;
-			if (proj != null) {
+			if (damagingActor is Projectile proj) {
 				damagerMessage = proj.onDamage(damagable, owner);
 				if (damagerMessage?.flinch != null) flinch = damagerMessage.flinch.Value;
 				if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
@@ -274,7 +293,7 @@ public class Damager {
 			}
 			// Flinch cooldown.
 			if (flinchCooldown > 0 && flinch > 0) {
-				int flinchKey = getFlinchKeyFromProjId(projId, owner.id);
+				string flinchKey = $"{getFlinchKeyFromProjId(projId)}_{owner.id}";
 				if (!character.flinchCooldown.ContainsKey(flinchKey)) {
 					character.flinchCooldown[flinchKey] = 0;
 				}
@@ -367,10 +386,14 @@ public class Damager {
 	}
 
 	public static bool isDot(int? projId) {
-		if (projId == null) return false;
-		return projId switch {
-			(int)ProjIds.AcidBurstPoison => true,
-			(int)ProjIds.Burn => true,
+		if (projId == null) {
+			return false;
+		}
+		return (ProjIds)projId switch {
+			ProjIds.Burn => true,
+			ProjIds.AcidBurstPoison => true,
+			ProjIds.FlameRoundFlameProj => true,
+			ProjIds.SelfDmg => true,
 			_ => false
 		};
 	}
@@ -537,19 +560,6 @@ public class Damager {
 			_ => false
 		};
 	}
-	public static bool lowTimeAssist(int? projId) {
-		if (projId == null) {
-			return false;
-		}
-		// The GM19 list now only counts for FFA mode.
-		if (Global.level.gameMode is not FFADeathMatch) {
-			return false;
-		}
-		return projId switch {
-
-			_ => false
-		};
-	}
 
 	public static bool unassistable(int? projId) {
 		if (projId == null) {
@@ -557,11 +567,12 @@ public class Damager {
 		}
 		// Never assist in any mode as they are DOT or self-damage. (Also Volt Tornado)
 		bool alwaysNotAssist = (ProjIds)projId switch {
+			// DOT stuff.
 			ProjIds.Burn => true,
 			ProjIds.AcidBurstPoison => true,
-			ProjIds.SelfDmg => true,
 			ProjIds.FlameRoundFlameProj => true,
-			ProjIds.BoundBlasterRadar => true, 
+			ProjIds.SelfDmg => true,
+			// Per-frame damage stuff.
 			ProjIds.RayGunChargeBeam => true,
 			ProjIds.PlasmaGunBeamProj => true,
 			ProjIds.PlasmaGunBeamProjHyper => true,
@@ -578,23 +589,28 @@ public class Damager {
 		if (Global.level.gameMode is not FFADeathMatch) {
 			return false;
 		}
-		return projId switch {
-			(int)ProjIds.Tornado => true,
-			(int)ProjIds.BoomerangCharged => true,
-			(int)ProjIds.TornadoFang => true,
-			(int)ProjIds.TornadoFang2 => true,
-			(int)ProjIds.GravityWell => true,
-			(int)ProjIds.SpinWheel => true,
-			(int)ProjIds.TriadThunder => true,
-			(int)ProjIds.TriadThunderBeam => true,
-			(int)ProjIds.DistanceNeedler => true,
-			(int)ProjIds.RumblingBangProj => true,
-			(int)ProjIds.FlameRoundWallProj => true,
-			(int)ProjIds.SplashHitProj => true,
-			(int)ProjIds.CircleBlaze => true,
-			(int)ProjIds.CircleBlazeExplosion => true,
-			(int)ProjIds.BlastLauncherGrenadeSplash => true,
-			(int)ProjIds.BlastLauncherMineGrenadeProj => true, 
+		// Can also be overdrive by custom setting.
+		if (Global.level.server?.customMatchSettings?.assistBanlist == false) {
+			return false;		
+		}
+		return (ProjIds)projId switch {
+			ProjIds.Tornado => true,
+			ProjIds.BoomerangCharged => true,
+			ProjIds.TornadoFang => true,
+			ProjIds.TornadoFang2 => true,
+			ProjIds.GravityWell => true,
+			ProjIds.SpinWheel => true,
+			ProjIds.TriadThunder => true,
+			ProjIds.TriadThunderBeam => true,
+			ProjIds.DistanceNeedler => true,
+			ProjIds.RumblingBangProj => true,
+			ProjIds.FlameRoundWallProj => true,
+			ProjIds.SplashHitProj => true,
+			ProjIds.CircleBlaze => true,
+			ProjIds.CircleBlazeExplosion => true,
+			ProjIds.BlastLauncherGrenadeSplash => true,
+			ProjIds.BlastLauncherMineGrenadeProj => true,
+			ProjIds.BoundBlasterRadar => true,
 			_ => false
 		};
 	}
@@ -612,6 +628,9 @@ public class Damager {
 
 	public static bool canDamageFrostShield(int projId) {
 		if (CrackedWall.canDamageCrackedWall(1, null) != 0) {
+			return true;
+		}
+		if (Global.level.server.customMatchSettings?.frostShieldNerf != false) {
 			return true;
 		}
 		return projId switch {

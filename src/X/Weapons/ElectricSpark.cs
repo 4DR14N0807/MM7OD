@@ -7,6 +7,7 @@ public class ElectricSpark : Weapon {
 	public static ElectricSpark netWeapon = new();
 
 	public ElectricSpark() : base() {
+		displayName = "Electric Spark";
 		index = (int)WeaponIds.ElectricSpark;
 		killFeedIndex = 6;
 		weaponBarBaseIndex = 6;
@@ -16,10 +17,10 @@ public class ElectricSpark : Weapon {
 		//shootSounds = new string[] { "electricSpark", "electricSpark", "electricSpark", "electricSpark" };
 		fireRate = 30;
 		damage = "2/4";
-		effect =  "Can Split. Charged: Doesn't destroy on hit.";
+		effect =  "U:Splits on contact on enemies or walls.\nC:Projectile won't destroy on hit.";
 		hitcooldown = "0/0.5";
-		Flinch = "6/26";
-		FlinchCD = "1/0";
+		flinch = "6/26";
+		flinchCD = "1/0";
 	}
 
 	public override void shoot(Character character, int[] args) {
@@ -111,11 +112,11 @@ public class ElectricSparkProj : Projectile {
             normal2.multiply(150 * 3);
 
 			new ElectricSparkProj(
-				pos.clone(), xDir, this , damager.owner, 1,
+				pos, xDir, this , damager.owner, 1,
 				Global.level.mainPlayer.getNextActorNetId(), ((int)normal2.x, (int)normal2.y), true
 			);
 			new ElectricSparkProj(
-				pos.clone(), xDir, this, damager.owner, 2,
+				pos, xDir, this, damager.owner, 2,
 				Global.level.mainPlayer.getNextActorNetId(), ((int)normal2.x * -1, (int)normal2.y * -1), rpc: true
 			);
 		}
@@ -131,17 +132,20 @@ public class ElectricSparkProjChargedStart : Projectile {
 	public ElectricSparkProjChargedStart(
 		Point pos, int xDir, Actor owner, Player player, ushort? netId, bool rpc = false
 	) : base(
-		pos, xDir, owner, "electric_spark_charge_start", netId, player	
+		pos, xDir, owner, "electric_spark_charge_start", netId, player
 	) {
 		weapon = ElectricSpark.netWeapon;
 		vel = new Point(0 * xDir, 0);
 		projId = (int)ProjIds.ElectricSparkChargedStart;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
-
+		damager.damage = 4;
+		damager.flinch = Global.defFlinch;
+		damager.hitCooldown = 30;
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+		projId = (int)ProjIds.ElectricSparkCharged;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
@@ -156,11 +160,11 @@ public class ElectricSparkProjChargedStart : Projectile {
 			destroySelf();
 			if (ownedByLocalPlayer) {
 				new ElectricSparkProjCharged(
-					pos.addxy(-1, 0), -1, this, damager.owner,
+					pos.addxy(-1 * xDir, 0), -1 * xDir, this, damager.owner,
 					damager.owner.getNextActorNetId(true), rpc: true
 				);
 				new ElectricSparkProjCharged(
-					pos.addxy(1, 0), 1, this, damager.owner,
+					pos.addxy(1 * xDir, 0), 1 * xDir, this, damager.owner,
 					damager.owner.getNextActorNetId(true), rpc: true
 				);
 			}
@@ -172,7 +176,7 @@ public class ElectricSparkProjCharged : Projectile {
 	public ElectricSparkProjCharged(
 		Point pos, int xDir, Actor owner, Player player, ushort? netId, bool rpc = false
 	) : base(
-		pos, xDir, owner, "electric_spark_charge_start", netId, player	
+		pos, xDir, owner, "electric_spark_charge", netId, player	
 	) {
 		weapon = ElectricSpark.netWeapon;
 		damager.damage = 4;

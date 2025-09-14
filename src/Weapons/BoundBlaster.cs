@@ -12,14 +12,16 @@ public class BoundBlaster : AxlWeapon {
 		weaponBarBaseIndex = 35;
 		weaponSlotIndex = 55;
 		killFeedIndex = 70;
-
+		rechargeAmmoCooldown = 120;
+		altRechargeAmmoCooldown = 200;
 		sprite = "axl_arm_boundblaster";
 		flashSprite = "axl_pistol_flash";
 		chargedFlashSprite = "axl_pistol_flash_charged";
 		altFireCooldown = 120;
 
 		if (altFire == 1) {
-			shootSounds[3] = "";
+			altRechargeAmmoCooldown = 120;
+			shootSounds[3] = "boundBlaster";
 		}
 	}
 
@@ -126,13 +128,13 @@ public class BoundBlasterProj : Projectile {
 				return;
 			}
 
-			vel.x = Helpers.cosd(angle.Value);
-			vel.y = Helpers.sind(angle.Value);
-			if (angle.Value != lastAngle) {
+			vel.x = Helpers.cosd(angle);
+			vel.y = Helpers.sind(angle);
+			if (angle != lastAngle) {
 				len = 0;
 				lenDelay = 0;
 			}
-			lastAngle = angle.Value;
+			lastAngle = angle;
 		}
 
 		if (lenDelay > 0.01f) {

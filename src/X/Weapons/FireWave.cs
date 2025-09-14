@@ -7,6 +7,7 @@ public class FireWave : Weapon {
 	public static FireWave netWeapon = new();
 	
 	public FireWave() : base() {
+		displayName = "Fire Wave";
 		index = (int)WeaponIds.FireWave;
 		killFeedIndex = 4;
 		weaponBarBaseIndex = 4;
@@ -18,18 +19,19 @@ public class FireWave : Weapon {
 		isStream = true;
 		switchCooldown = 15;
 		damage = "1/1";
-		ammousage = 0.5;
-		effect = "Inflicts burn to enemies. DOT: 0.5/2 seconds.\nBurn won't give assists.";
-		hitcooldown = "0.2/0.33";
-		maxAmmo = 28;
+		effect = "Both:Inflicts burn to enemies.\nBurn won't give assists.\nDOT: 0.5/2 seconds.";
+		hitcooldown = "12/20";
+
+		ammoDisplayScale = 7;
+		maxAmmo = 196;
 		ammo = maxAmmo;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
 		if (chargeLevel >= 3) {
-			return 7;
+			return 49;
 		}
-		return 0.15f;
+		return 1;
 	}
 
 	public override void shoot(Character character, int[] args) {
@@ -165,7 +167,7 @@ public class FireWaveProjCharged : Projectile {
 		destroyOnHit = false;
 		shouldShieldBlock = false;
 		this.timesReversed = timesReversed;
-		new Anim(this.pos.clone(), "fire_wave_charge_flash", 1, null, true);
+		new Anim(this.pos, "fire_wave_charge_flash", 1, null, true);
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);

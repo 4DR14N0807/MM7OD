@@ -12,7 +12,8 @@ public class BubbleSplash : Weapon {
 	public bool freeAmmoNextCharge;
 
 	public BubbleSplash() : base() {
-		//shootSounds = new string[] { "bubbleSplash", "bubbleSplash", "bubbleSplash", "bubbleSplashCharged" };
+		displayName = "Bubble Splash";
+		shootSounds = new string[] { "bubbleSplash", "bubbleSplash", "bubbleSplash", "bubbleSplashCharged" };
 		fireRate = 6;
 		isStream = true;
 		index = (int)WeaponIds.BubbleSplash;
@@ -24,8 +25,7 @@ public class BubbleSplash : Weapon {
 		switchCooldown = 15;
 		damage = "1/1*6";
 		ammousage = 0.5;
-		//effect = "Shoot a Stream up to 7 bubbles. C:Jump Boost.";
-		effect = "Charged: Grants Jump Boost.";
+		effect = "U:Bubbles have less gravity underwater.\nC:Grants Jump boost.\nBoth:Will destroy Speed Burner uncharged on contact.";
 		maxAmmo = 28;
 		ammo = maxAmmo;
 	}
@@ -100,8 +100,8 @@ public class BubbleSplash : Weapon {
 				for (int i = 0; i < 6; i++) {
 					var bubble = new BubbleSplashProjCharged(
 						pos, xDir, mmx, player, i, 
-						player.getNextActorNetId(true), true);
-
+						player.getNextActorNetId(true), true
+					);
 					mmx.chargedBubbles?.Add(bubble);	
 				}
 			}
@@ -198,7 +198,7 @@ public class BubbleSplashProjCharged : Projectile {
 		if (randColor == 0) changeSprite("bubblesplash_proj2", true);
 		if (randColor == 1) changeSprite("bubblesplash_proj3", true);
 		mmx = player.character as MegamanX ?? throw new NullReferenceException();
-		this.time = type * 0.2f;
+		this.time = type * 0.2f + 1;
 		sprite.doesLoop = true;
 		projId = (int)ProjIds.BubbleSplashCharged;
 
@@ -229,12 +229,18 @@ public class BubbleSplashProjCharged : Projectile {
 			return;
 		}
 		time += Global.spf;
-		if (time > 2) time = 0;
+		if (time > 2f) time = 0;
 
-		float x = 20 * MathF.Sin(time * 5);
+		float x = 20 * MathF.Sin((time - 0.1f) * 5) * xDir;
 		yPos = -15 * time;
-		Point newPos = mmx.pos.addxy(x, yPos);
+		Point newPos = mmx.pos.addxy(x + (2 * mmx.xDir), yPos);
 		changePos(newPos);
+
+		if (time % 1 > 0.5) {
+			zIndex = ZIndex.Background;
+		} else {
+			zIndex = ZIndex.Actor;
+		}
 	}
 
 	public override void onDestroy() {

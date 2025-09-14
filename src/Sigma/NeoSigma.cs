@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
 
 public class NeoSigma : BaseSigma {
+	public Weapon gigaAttack;
 	public float normalAttackCooldown;
 	public float sigmaUpSlashCooldown;
 	public float sigmaDownSlashCooldown;
@@ -11,13 +12,17 @@ public class NeoSigma : BaseSigma {
 	public NeoSigma(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId,
-		bool ownedByLocalPlayer, bool isWarpIn = true
+		bool ownedByLocalPlayer, bool isWarpIn = true,
+		SigmaLoadout? loadout = null,
+		int? heartTanks = null, bool isATrans = false
 	) : base(
 		player, x, y, xDir, isVisible,
-		netId, ownedByLocalPlayer, isWarpIn
+		netId, ownedByLocalPlayer, isWarpIn,
+		loadout, heartTanks, isATrans
 	) {
 		sigmaSaberMaxCooldown = 0.5f;
 		altSoundId = AltSoundIds.X2;
+		gigaAttack = new NeoSigmaGigaAttackWeapon();
 	}
 
 	public override void update() {
@@ -31,6 +36,8 @@ public class NeoSigma : BaseSigma {
 		Helpers.decrementTime(ref sigmaUpSlashCooldown);
 		Helpers.decrementTime(ref sigmaDownSlashCooldown);
 		Helpers.decrementFrames(ref aiAttackCooldown);
+		gigaAttack.update();
+		gigaAttack.charLinkedUpdate(this, true);
 		// For ladder and slide attacks.
 		if (isAttacking() && charState is WallSlide or LadderClimb) {
 			if (isAnimOver() && charState != null && charState is not SigmaClawState) {
@@ -55,10 +62,10 @@ public class NeoSigma : BaseSigma {
 		if (player.weapon is not AssassinBulletChar) {
 			if (player.input.isPressed(Control.Shoot, player)) {
 				attackPressed = true;
-				lastAttackFrame = (int)(Global.level.frameCount);
+				lastAttackFrame = Global.floorFrameCount;
 			}
 		}
-		framesSinceLastAttack = (int)(Global.level.frameCount - lastAttackFrame);
+		framesSinceLastAttack = Global.floorFrameCount - lastAttackFrame;
 		bool lenientAttackPressed = (attackPressed || framesSinceLastAttack < 5);
 
 		// Shoot button attacks.
@@ -69,7 +76,7 @@ public class NeoSigma : BaseSigma {
 					changeState(new SigmaUpDownSlashState(true), true);
 				}
 				return true;
-			} else if (player.input.isHeld(Control.Down, player) && !grounded && getDistFromGround() > 25) {
+			} else if (player.input.isHeld(Control.Down, player)) {
 				if (sigmaDownSlashCooldown == 0) {
 					sigmaUpSlashCooldown += 0.5f;
 					sigmaDownSlashCooldown = 1f;
@@ -94,14 +101,14 @@ public class NeoSigma : BaseSigma {
 			return true;
 		}
 		if (grounded && player.input.isPressed(Control.Special1, player) &&
-			flag == null && player.sigmaAmmo >= 14
+			flag == null && gigaAttack.ammo >= 14
 		) {
-			if (player.sigmaAmmo < 28) {
-				player.sigmaAmmo -= 14;
+			if (gigaAttack.ammo < 28) {
+				gigaAttack.ammo -= 14;
 				changeState(new SigmaElectricBallState(), true);
 				return true;
 			} else {
-				player.sigmaAmmo = 0;
+				gigaAttack.ammo = 0;
 				changeState(new SigmaElectricBall2StateEX(), true);
 				return true;
 			}
@@ -172,7 +179,7 @@ public class NeoSigma : BaseSigma {
 				3, 0, 15, addToLevel: addToLevel
 			),
 			MeleeIds.GigaAttackSlash => new GenericMeleeProj(
-				new SigmaElectricBall2Weapon(), pos, ProjIds.Sigma2Ball2, player,
+				new NeoSigmaGigaAttackWeapon(), pos, ProjIds.Sigma2Ball2, player,
 				6, Global.defFlinch, 15, addToLevel: addToLevel
 			),
 			_ => null
@@ -180,20 +187,20 @@ public class NeoSigma : BaseSigma {
 	}
 
 	public override void addAmmo(float amount) {
-		weaponHealAmount += amount;
+		gigaAttack.addAmmoHeal(amount);
 	}
 
 	public override void addPercentAmmo(float amount) {
-		weaponHealAmount += amount * 0.32f;
+		gigaAttack.addAmmoPercentHeal(amount);
 	}
 
 	public override bool canAddAmmo() {
-		return (player.sigmaAmmo < 28);
+		return gigaAttack.ammo < gigaAttack.maxAmmo;
 	}
 
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = base.getCustomActorNetData();
-		customData.Add((byte)MathF.Floor(player.sigmaAmmo));
+		customData.Add((byte)MathF.Floor(gigaAttack.ammo));
 
 		return customData;
 	}
@@ -204,7 +211,7 @@ public class NeoSigma : BaseSigma {
 		data = data[data[0]..];
 
 		// Per-player data.
-		player.sigmaAmmo = data[0];
+		gigaAttack.ammo = data[0];
 	}
 	public float aiAttackCooldown;
 	public override void aiAttack(Actor? target) {
@@ -255,11 +262,11 @@ public class NeoSigma : BaseSigma {
 	public override void aiDodge(Actor? target) {
 		foreach (GameObject gameObject in getCloseActors(32, true, false, false)) {
 			if (gameObject is Projectile proj && proj.damager.owner.alliance != player.alliance) {
-				if (player.sigmaAmmo >= 16 && player.sigmaAmmo <= 24) {
-					player.sigmaAmmo -= 16;
+				if (gigaAttack.ammo >= 16 && gigaAttack.ammo <= 24) {
+					gigaAttack.ammo -= 16;
 					changeState(new SigmaElectricBallState(), true);
-				} else if (player.sigmaAmmo >= 28) {
-					player.sigmaAmmo = 0;
+				} else if (gigaAttack.ammo >= 28) {
+					gigaAttack.ammo = 0;
 					changeState(new SigmaElectricBall2StateEX(), true);
 				}
 			}
@@ -267,13 +274,13 @@ public class NeoSigma : BaseSigma {
 		base.aiDodge(target);
 	}
 	public override void aiUpdate(Actor? target) {
-		base.aiUpdate(target);
 		if (charState is Die) {
 			foreach (Weapon weapon in weapons) {
 				if (weapon is MaverickWeapon mw && mw.maverick != null) {
 					mw.maverick.changeState(new MExit(mw.maverick.pos, true), true);
 				}
-			}	
+			}
 		}
+		base.aiUpdate(target);
 	}
 }

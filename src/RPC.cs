@@ -16,6 +16,7 @@ public class RPC {
 	public bool allowBreakMtuLimit;
 	public bool isCollision;
 	public bool levelless;
+	public bool allowBreakMtuLimit;
 	public int index;
 
 	// Need templates? Use these:
@@ -239,7 +240,6 @@ public class BackloggedSpawns {
 		this.charNetId = charNetId;
 		time = 0;
 	}
-
 	public bool trySpawnPlayer() {
 		var player = Global.level.getPlayerById(playerId);
 		// Player could not exist yet if late joiner.
@@ -279,7 +279,7 @@ public class RPCSpawnCharacter : RPC {
 			player.spawnCharAtPoint(
 				charNum, extraData,
 				new Point(x, y), xDir, charNetId, false,
-				forceSpawn: true
+				forceSpawn: true, isWarpIn: false
 			);
 		} else {
 			Global.level.backloggedSpawns.Add(
@@ -308,7 +308,7 @@ public class RPCSpawnCharacter : RPC {
 	}
 }
 
-public class FailedSpawn {
+/*public class FailedSpawn {
 	public Point spawnPos;
 	public int xDir;
 	public ushort netId;
@@ -318,7 +318,7 @@ public class FailedSpawn {
 		this.xDir = xDir;
 		this.netId = netId;
 	}
-}
+}*/
 
 public class RPCApplyDamage : RPC {
 	public RPCApplyDamage() {
@@ -548,11 +548,12 @@ public class RPCDestroyCharacter : RPC {
 		if (Global.serverClient == null || character?.netId == null) {
 			return;
 		}
-		List<byte> args = new();
-		args.Add((byte)player.id);
-		args.AddRange(BitConverter.GetBytes(character.netId.Value));
+		byte[] args = [
+			(byte)player.id,
+			.. BitConverter.GetBytes(character.netId.Value)
+		];
 
-		Global.serverClient?.rpc(RPC.destroyCharacter, args.ToArray());
+		Global.serverClient.rpc(RPC.destroyCharacter, args);
 	}
 }
 
@@ -607,15 +608,15 @@ public class RPCPlayerToggle : RPC {
 			(player?.character as MegamanX)?.strikeChainProj?.reverseDir();
 		} else if (toggleId == RPCToggleType.StrikeChainChargedReversed) {
 			(player?.character as MegamanX)?.strikeChainChargedProj?.reverseDir();
-		} */ else if (toggleId == RPCToggleType.StockCharge) {
+		}  else if (toggleId == RPCToggleType.StockCharge) {
 			if (player?.character is MegamanX mmx) {
-				mmx.stockedBuster = true;
+				mmx.stockedBusterLv = true;
 			}
 		} else if (toggleId == RPCToggleType.UnstockCharge) {
 			if (player?.character is MegamanX mmx) {
-				mmx.stockedBuster = false;
+				mmx.stockedBusterLv = false;
 			}
-		} else if (toggleId == RPCToggleType.StartBarrier) {
+		} */ else if (toggleId == RPCToggleType.StartBarrier) {
 			if (player.character is MegamanX mmx) {
 				mmx.barrierActiveTime = 90;
 			}
@@ -947,16 +948,18 @@ public class RPCJoinLateRequest : RPC {
 
 		Global.level.addPlayer(serverPlayer, true);
 
+		/*
 		foreach (var player in Global.level.players) {
 			player.charNetId = null;
 			if (player.character != null) {
-				player.charNetId = player.character.netId;
+				//player.charNetId = player.character.netId;
 				player.charXPos = player.character.pos.x;
 				player.charYPos = player.character.pos.y;
 				player.charXDir = player.character.xDir;
-				player.charRollingShieldNetId = (player?.character as MegamanX)?.chargedRollingShieldProj?.netId;
+				//player.charRollingShieldNetId = player.character.chargedRollingShieldProj?.netId;
 			}
 		}
+		*/
 
 		var controlPoints = new List<ControlPointResponseModel>();
 		foreach (var cp in Global.level.controlPoints) {
@@ -1015,7 +1018,7 @@ public class RPCJoinLateResponse : RPC {
 	}
 
 	public override void invoke(params byte[] arguments) {
-		JoinLateResponseModel joinLateResponseModel = null;
+		JoinLateResponseModel? joinLateResponseModel = null;
 		try {
 			joinLateResponseModel = Helpers.deserialize<JoinLateResponseModel>(arguments);
 		} catch {
@@ -1152,7 +1155,10 @@ public class RPCSendKillFeedEntry : RPC {
 
 	public override void invoke(string message) {
 		var response = JsonConvert.DeserializeObject<RPCKillFeedEntryResponse>(message);
-		Player player = null;
+		if (response == null) {
+			return;
+		}
+		Player? player = null;
 		if (response.playerId != null) {
 			player = Global.level.getPlayerById(response.playerId.Value);
 		}
@@ -1417,7 +1423,7 @@ public class RPCPeriodicHostSync : RPC {
 
 public class RPCUpdatePlayer : RPC {
 	public RPCUpdatePlayer() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		netDeliveryMethod = NetDeliveryMethod.Unreliable;
 		isServerMessage = true;
 	}
 

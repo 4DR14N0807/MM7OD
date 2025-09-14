@@ -72,10 +72,14 @@ public class DevConsole {
 	}
 
 	public static void setHealth(string[] args) {
-		if (Global.level.mainPlayer.currentMaverick != null) {
-			Global.level.mainPlayer.currentMaverick.health = int.Parse(args[0]);
+		if (Global.level.mainPlayer.character?.currentMaverick != null) {
+			Global.level.mainPlayer.character.currentMaverick.health = int.Parse(args[0]);
 		}
 		Global.level.mainPlayer.health = int.Parse(args[0]);
+	}
+	public static void selfDMG(string[] args) {
+		Global.level.mainPlayer?.character?.applyDamage
+		(float.Parse(args[0]), Global.level.mainPlayer, null, null, (int)ProjIds.SelfDmg);
 	}
 
 	public static void setMusicNearEnd() {
@@ -96,7 +100,7 @@ public class DevConsole {
 		for (int i = 0; i < count; i++) {
 			Character? chr = Global.level.players.FirstOrDefault(p => p != Global.level.mainPlayer)?.character;
 			if (chr != null) {
-				Global.level.mainPlayer.weapons.Add(new DNACore(chr));
+				Global.level.mainPlayer.weapons.Add(new DNACore(chr, Global.level.mainPlayer));
 			}
 		}
 	}
@@ -245,7 +249,8 @@ public class DevConsole {
 			}
 		}),
 		new Command("hp", (args) => setHealth(args)),
-		//new Command("freeze", (args) => Global.level.mainPlayer.character.freeze()),
+		new Command("dmg", (args) => selfDMG(args)),
+		new Command("freeze", (args) => Global.level.mainPlayer.character.freeze()),
 		new Command("hurt", (args) => Global.level.mainPlayer.character.setHurt(-1, Global.defFlinch, false)),
 		new Command("trhealth", (args) => Global.spawnTrainingHealth = !Global.spawnTrainingHealth),
 		new Command("checksum", (args) => printChecksum(), false),

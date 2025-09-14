@@ -118,16 +118,18 @@ public class Projectile : Actor {
 	) : base(
 		sprite, pos, netId,
 		ownedByLocalPlayer ?? player?.ownedByLocalPlayer ?? owner?.ownedByLocalPlayer ??
-		(netId != null ? Global.level.getPlayerById(netId.Value).ownedByLocalPlayer : true),
+		(netId == null || Global.level.getPlayerByIdSafe(netId.Value).ownedByLocalPlayer),
 		!addToLevel
 	) {
 		weapon = Weapon.baseNetWeapon;
 		useGravity = false;
-		ownerPlayer = player ?? owner?.netOwner ?? Global.level.getPlayerById(netId!.Value);
+		ownerPlayer = (
+			player ?? owner?.netOwner ?? Global.level.getPlayerByIdSafe(netId)
+		);
 		ownerActor = owner;
 		damager = new Damager(ownerPlayer, 0, 0, 0);
 		this.xDir = xDir;
-		if ((Global.level.gameMode.isTeamMode && Global.level.mainPlayer != ownerPlayer) &&
+		if (Global.level.gameMode.isTeamMode && Global.level.mainPlayer != ownerPlayer &&
 			this is not NapalmPartProj or FlameBurnerProj
 		) {
 			RenderEffectType? allianceEffect = ownerPlayer.alliance switch {
@@ -271,11 +273,11 @@ public class Projectile : Actor {
 		float velAngle = vel.angle;
 		if ((velAngle > 45 && velAngle < 135) || (velAngle > 225 && velAngle < 315)) {
 			angle = Helpers.to360(velAngle + Helpers.SignOr1(vel.x) * 135);
-			vel = Point.createFromAngle(angle.Value).times(vel.magnitude);
+			vel = Point.createFromAngle(angle).times(vel.magnitude);
 			xDir = 1;
 		} else {
 			angle = Helpers.to360(velAngle - Helpers.SignOr1(vel.x) * 135);
-			vel = Point.createFromAngle(angle.Value).times(vel.magnitude);
+			vel = Point.createFromAngle(angle).times(vel.magnitude);
 			xDir = 1;
 		}
 		time = 0;
@@ -498,7 +500,7 @@ public class Projectile : Actor {
 				if (hitPos != null && destroyOnHit) changePos(hitPos.Value);
 
 				bool weakness = false;
-				if (character != null && character.player.isX) {
+				if (character is MegamanX) {
 					int wi = character.player.weapon.weaknessIndex;
 					if (wi > 0 && wi == weapon.index) weakness = true;
 				}

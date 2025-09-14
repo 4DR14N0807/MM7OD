@@ -50,18 +50,18 @@ public class ChargeEffect {
 		};
 
 		chargeParts = new List<ChargeParticle>() {
-			new ChargeParticle(point1.clone(), 0, null),
-			new ChargeParticle(point2.clone(), 3, null),
-			new ChargeParticle(point3.clone(), 0, null),
-			new ChargeParticle(point4.clone(), 1.5f, null),
-			new ChargeParticle(point5.clone(), -1.5f, null),
-			new ChargeParticle(point6.clone(), -3, null),
-			new ChargeParticle(point7.clone(), -1.5f, null),
-			new ChargeParticle(point8.clone(), -1.5f, null),
-			new ChargeParticle(point9.clone(), 0, null),
-			new ChargeParticle(point10.clone(), -1.5f, null),
-			new ChargeParticle(point11.clone(), 0, null),
-			new ChargeParticle(point12.clone(), -1f, null)
+			new ChargeParticle(point1, 0, null),
+			new ChargeParticle(point2, 3, null),
+			new ChargeParticle(point3, 0, null),
+			new ChargeParticle(point4, 1.5f, null),
+			new ChargeParticle(point5, -1.5f, null),
+			new ChargeParticle(point6, -3, null),
+			new ChargeParticle(point7, -1.5f, null),
+			new ChargeParticle(point8, -1.5f, null),
+			new ChargeParticle(point9, 0, null),
+			new ChargeParticle(point10, -1.5f, null),
+			new ChargeParticle(point11, 0, null),
+			new ChargeParticle(point12, -1f, null)
 
 		};
 	}

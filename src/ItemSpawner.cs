@@ -28,7 +28,7 @@ public class ItemSpawner {
 		if (!Global.isHost) return;
 
 		// Check if the vehicle still exists
-		RideArmor myRideArmor = null;
+		RideArmor? myRideArmor = null;
 		foreach (var actor in Global.level.gameObjects) {
 			if (actor is RideArmor ra2 && ra2.neutralId == id) {
 				myRideArmor = ra2;
@@ -53,7 +53,7 @@ public class ItemSpawner {
 		if (!Global.isHost) return;
 
 		// Check if the vehicle still exists
-		RideChaser myRideChaser = null;
+		RideChaser? myRideChaser = null;
 		foreach (var actor in Global.level.gameObjects) {
 			if (actor is RideChaser rc && rc.neutralId == id) {
 				myRideChaser = rc;
@@ -112,13 +112,13 @@ public class ItemSpawner {
 		if (time > respawnTime) {
 			time = 0;
 			if (itemType == typeof(LargeAmmoPickup)) {
-				currentItem = new LargeAmmoPickup(Global.level.mainPlayer, pos.clone(), Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+				currentItem = new LargeAmmoPickup(Global.level.mainPlayer, pos, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
 			} else if (itemType == typeof(SmallAmmoPickup)) {
-				currentItem = new SmallAmmoPickup(Global.level.mainPlayer, pos.clone(), Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+				currentItem = new SmallAmmoPickup(Global.level.mainPlayer, pos, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
 			} else if (itemType == typeof(LargeHealthPickup)) {
-				currentItem = new LargeHealthPickup(Global.level.mainPlayer, pos.clone(), Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+				currentItem = new LargeHealthPickup(Global.level.mainPlayer, pos, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
 			} else if (itemType == typeof(SmallHealthPickup)) {
-				currentItem = new SmallHealthPickup(Global.level.mainPlayer, pos.clone(), Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+				currentItem = new SmallHealthPickup(Global.level.mainPlayer, pos, Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
 			}
 		}
 	}

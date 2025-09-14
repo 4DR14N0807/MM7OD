@@ -50,7 +50,7 @@ public class VileCannon : Weapon {
 		} else if (vileCannonType == VileCannonType.FatBoy) {
 			fireRate = 45;
 			damage = "4";
-			Flinch = "26";
+			flinch = "26";
 			vileAmmoUsage = 24;
 			ammousage = vileAmmoUsage;
 			displayName = "Fat Boy";
@@ -92,8 +92,7 @@ public class VileCannon : Weapon {
 		if (isLongshotGizmo && vile.longshotGizmoCount > 0) {
 			vile.usedAmmoLastFrame = true;
 			if (vile.weaponHealAmount == 0) {
-				player.vileAmmo -= vileAmmoUsage;
-				if (player.vileAmmo < 0) player.vileAmmo = 0;
+				vile.addAmmo(-vileAmmoUsage);
 			}
 		} else if (!vile.tryUseVileAmmo(overrideAmmoUsage)) return;
 
@@ -131,7 +130,7 @@ public class VileCannon : Weapon {
 
 		if (isLongshotGizmo) {
 			vile.longshotGizmoCount++;
-			if (vile.longshotGizmoCount >= 5 || player.vileAmmo <= 3) {
+			if (vile.longshotGizmoCount >= 5 || vile.energy.ammo <= 3) {
 				vile.longshotGizmoCount = 0;
 				vile.isShootingLongshotGizmo = false;
 			}
@@ -201,7 +200,7 @@ public class VileCannonProj : Projectile {
 
 public class CannonAttack : CharState {
 	bool isGizmo;
-	private Vile vile = null!;
+	public Vile vile = null!;
 	public CannonAttack(bool isGizmo, bool grounded) : base(getSprite(isGizmo, grounded)) {
 		useDashJumpSpeed = true;
 		this.isGizmo = isGizmo;
@@ -221,7 +220,7 @@ public class CannonAttack : CharState {
 			if (vile.cannonWeapon.shootCooldown == 0) {
 				vile.cannonWeapon.vileShoot(0, vile);
 			}
-			if (player.vileAmmo <= 0) {
+			if (vile.energy.ammo <= 0) {
 				vile.isShootingLongshotGizmo = false;
 			}
 			return;
@@ -282,20 +281,11 @@ public class CannonAttack : CharState {
 		base.onEnter(oldState);
 		vile = character as Vile ?? throw new NullReferenceException();
 		shootLogic(vile);
-		if (!isGizmo && (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player))) {
-			exitOnAirborne = true;
-		} else {
-			exitOnAirborne = false;
-			character.useGravity = false;
-			character.stopMoving();
-		}
-		
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		vile.isShootingLongshotGizmo = false;
-		character.useGravity = true;
 		if (isGizmo) {
 			vile.gizmoCooldown = 0.5f;
 		}

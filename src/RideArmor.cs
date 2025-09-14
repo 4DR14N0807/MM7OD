@@ -76,6 +76,7 @@ public class RideArmor : Actor, IDamagable {
 			setColorShaders();
 		}
 
+		slideOnIce = true;
 		useFrameProjs = true;
 		splashable = true;
 		Global.level.addGameObject(this);
@@ -124,11 +125,19 @@ public class RideArmor : Actor, IDamagable {
 	}
 
 	public void setMaxHealth() {
-		if (raNum == 2) maxHealth = 24; // + Helpers.clampMax(netOwner.heartTanks * netOwner.getHeartTankModifier(), 8);
-		else if (raNum == 3) maxHealth = 24; // + Helpers.clampMax(netOwner.heartTanks * netOwner.getHeartTankModifier(), 8);
-		else maxHealth = 32;
-		if (raNum == 4) goliathHealth = 32;
-		maxHealth = Player.getModifiedHealth(maxHealth);
+		if (raNum == 2) {
+			maxHealth = 24;
+			// + Helpers.clampMax(netOwner.heartTanks * netOwner.getHeartTankModifier(), 8);
+		} else if (raNum == 3) {
+			maxHealth = 24;
+			// + Helpers.clampMax(netOwner.heartTanks * netOwner.getHeartTankModifier(), 8);
+		} else {
+			maxHealth = 32;
+		}
+		if (raNum == 4) {
+			goliathHealth = MathF.Ceiling(32 * Player.getHpMod());
+		}
+		maxHealth = MathF.Ceiling(Player.getModifiedHealth(maxHealth) * Player.getHpMod());
 	}
 
 	public void setRaNum(int raNum) {
@@ -261,6 +270,14 @@ public class RideArmor : Actor, IDamagable {
 				character = mk5Rider;
 			}
 		}
+		if (character is Vile vile) {
+			if (vile.chargeButtonHeld()) {
+				vile.increaseCharge();
+			}
+			if (vile.getChargeLevel() >= 3 && !vile.chargeButtonHeld()) {
+				vile.laserWeapon.vileShoot(WeaponIds.VileLaser, vile);
+			}
+		}
 	}
 
 	public Point getMK5Pos() {
@@ -299,7 +316,7 @@ public class RideArmor : Actor, IDamagable {
 			else if (selfDestructTime >= 6 && selfDestructTime < 8) flashFrequency = 15;
 			else if (selfDestructTime >= 8) flashFrequency = 5;
 
-			if (Global.frameCount % flashFrequency == 0) {
+			if (Global.floorFrameCount % flashFrequency == 0) {
 				addRenderEffect(RenderEffectType.Hit);
 			} else {
 				removeRenderEffect(RenderEffectType.Hit);
@@ -1421,7 +1438,7 @@ public class RAIdle : RideArmorState {
 		if (rideArmor.isAttacking()) shootHeldTime = 0;
 
 		if (character.flag == null) {
-			if (player != null && player.isVile && player.input.isHeld(Control.Down, player)) {
+			if (character is Vile && player.input.isHeld(Control.Down, player)) {
 				(character.charState as InRideArmor)?.setHiding(true);
 				if (!rideArmor.isAttacking()) {
 					if (player.input.isHeld(Control.Left, player)) rideArmor.xDir = -1;
@@ -1446,16 +1463,16 @@ public class RAIdle : RideArmorState {
 				float modifier = 1;
 				if (rideArmor.consecutiveJump == 1) {
 					sound = "frogjump2X3";
-					modifier = 1.25f;
+					modifier = 1.75f;
 				} else if (rideArmor.consecutiveJump == 2) {
 					sound = "frogjump3X3";
-					modifier = 1.5f;
+					modifier = 2.1f;
 				}
 
 				if (dashHeld) modifier *= 0.75f;
 
 				rideArmor.playSound(sound, forcePlay: true, sendRpc: true);
-				rideArmor.vel.y = -rideArmor.getJumpPower() * 1.5f * modifier;
+				rideArmor.vel.y = -rideArmor.getJumpPower() * modifier;
 				rideArmor.changeState(new RAJump(isDash: dashHeld));
 				return;
 			}
@@ -1483,7 +1500,7 @@ public class RAIdle : RideArmorState {
 
 			if (Global.level.gameMode.isOver && player != null && character != null) {
 				if (Global.level.gameMode.playerWon(player)) {
-					if (player.isVile && character.rideArmor != null) {
+					if (character is Vile && character.rideArmor != null) {
 						var inRideArmor = character.charState as InRideArmor;
 						if (inRideArmor != null) inRideArmor.setHiding(false);
 						rideArmor.changeState(new RATaunt());
@@ -1705,12 +1722,13 @@ public class RAFall : RideArmorState {
 			if (!rideArmor.sprite.name.Contains("swim") && !rideArmor.sprite.name.Contains("attack")) {
 				rideArmor.changeSprite("frog_swim", true);
 			}
-
+			rideArmor.vel.x = 120 * character.xDir;
 			rideArmor.vel.y = -106;
 		} else {
 			if (rideArmor.raNum == 3 && rideArmor.sprite.name.Contains("swim") && swimTime == 0) {
 				rideArmor.changeSprite("frog_fall", true);
 			}
+			rideArmor.vel.x = 0;
 		}
 
 		if (!rideArmor.isUnderwater() && player != null) {
@@ -2182,7 +2200,7 @@ public class InRideArmor : CharState {
 
 		Helpers.decrementTime(ref innerCooldown);
 
-		float healthPercent = player.health / player.maxHealth;
+		float healthPercent = (float)(character.health / character.maxHealth);
 		if (frozenTime > 0) {
 			if (freezeAnim == null) freezeAnim = new Anim(character.pos, "frozen_block_head", character.xDir, character.player.getNextActorNetId(), false, sendRpc: true);
 			freezeAnim.pos = character.pos;
@@ -2326,9 +2344,6 @@ public class InRideArmor : CharState {
 		character.setGlobalColliderTrigger(true);
 		var mechWeapon = player.weapons.FirstOrDefault(m => m is MechMenuWeapon) as MechMenuWeapon;
 		if (mechWeapon != null) mechWeapon.isMenuOpened = false;
-		if (character.isCharging() && !player.isVile) {
-			character.stopCharge();
-		}
 	}
 
 	public override void onExit(CharState? newState) {

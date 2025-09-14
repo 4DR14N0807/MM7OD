@@ -8,6 +8,7 @@ public class ShotgunIce : Weapon {
 	public static ShotgunIce netWeapon = new ShotgunIce();
 
 	public ShotgunIce() : base() {
+		displayName = "Shotgun Ice";
 		index = (int)WeaponIds.ShotgunIce;
 		killFeedIndex = 8;
 		weaponBarBaseIndex = 8;
@@ -17,9 +18,9 @@ public class ShotgunIce : Weapon {
 		//shootSounds = new string[] { "shotgunIce", "shotgunIce", "shotgunIce", "icyWind" };
 		fireRate = 30;
 		damage = "2/1-2";
-		effect = "U:Can Split.\nC: Insta Freeze enemies. Ice sled up to 12 DMG.";
-		hitcooldown = "0.01/0.5";
-		Flinch = "0";
+		effect = "U:Splits on contact on enemies or walls.\nC:Insta Freeze enemies. Ice sled up to 12 DMG.";
+		hitcooldown = "0/30";
+		flinch = "0";
 		hasCustomChargeAnim = true;
 	}
 
@@ -108,23 +109,23 @@ public class ShotgunIceProj : Projectile {
 			destroySelf(disableRpc: true);
 			Character? chr = null;
 			new ShotgunIceProj(
-				pos.clone(), xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
+				pos, xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
 				((-1 * xDir), -2), chr, rpc: true
 			);
 			new ShotgunIceProj(
-				pos.clone(), xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
+				pos, xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
 				((-1 * xDir), -1), chr, rpc: true
 			);
 			new ShotgunIceProj(
-				pos.clone(), xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
+				pos, xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
 				((-1 * xDir), 0), chr, rpc: true
 			);
 			new ShotgunIceProj(
-				pos.clone(), xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
+				pos, xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
 				((-1 * xDir), 1), chr, rpc: true
 			);
 			new ShotgunIceProj(
-				pos.clone(), xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
+				pos, xDir, this, damager.owner, 1, Global.level.mainPlayer.getNextActorNetId(),
 				((-1 * xDir), 2), chr, rpc: true
 			);
 		}

@@ -7,7 +7,8 @@ public class FrostShield : Weapon {
 	public static FrostShield netWeapon = new();
 
 	public FrostShield() : base() {
-		//shootSounds = new string[] { "frostShield", "frostShield", "frostShield", "frostShieldCharged" };
+		displayName = "Frost Shield";
+		shootSounds = ["frostShield", "frostShield", "frostShield", "frostShieldCharged"];
 		fireRate = 60;
 		switchCooldown = 45;
 		index = (int)WeaponIds.FrostShield;
@@ -17,10 +18,11 @@ public class FrostShield : Weapon {
 		killFeedIndex = 46;
 		weaknessIndex = (int)WeaponIds.ParasiticBomb;
 		damage = "2+2/3+3";
-		hitcooldown = "0-0.5/1";
-		Flinch = "0/26-26";
+		hitcooldown = "0/60";
+		flinch = "0/26-26";
 		maxAmmo = 16;
 		ammo = maxAmmo;
+		effect = "Both:Only Fire type weapons can damage it.\nBlocks projectiles, Clangs Zero, Leaves spikes.\nC:Tackle or Shoot it.";
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -69,7 +71,10 @@ public class FrostShieldProj : Projectile {
 		projId = (int)ProjIds.FrostShield;
 		destroyOnHit = true;
 		exhaust = new Anim(pos, "frostshield_exhaust", xDir, null, false);
-		isShield = true;
+		if (Global.level.server?.customMatchSettings?.frostShieldNerf == false) {
+			isShield = true;
+		}
+
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
@@ -173,8 +178,10 @@ public class FrostShieldProjGround : Projectile, IDamagable {
 		maxTime = 5;
 		projId = (int)ProjIds.FrostShieldGround;
 		destroyOnHit = true;
-		isShield = true;
-		//playSound("frostShield");
+		if (Global.level.server?.customMatchSettings?.frostShieldNerf == false) {
+			isShield = true;
+		}
+		playSound("frostShield");
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
@@ -215,7 +222,9 @@ public class FrostShieldProjGround : Projectile, IDamagable {
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
-		if (projId == null) return true;
+		if (projId == null) {
+			return true;
+		}
 		return !Damager.canDamageFrostShield(projId.Value);
 	}
 
@@ -246,7 +255,11 @@ public class FrostShieldProjCharged : Projectile {
 		destroyOnHit = false;
 		shouldVortexSuck = false;
 		character = player.character;
-		isShield = true;
+		if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == false) {
+			isShield = true;	
+		} else if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == true) {
+			isShield = false;
+		}
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
@@ -322,7 +335,11 @@ public class FrostShieldProjChargedGround : Projectile {
 		shouldVortexSuck = false;
 		character = player.character;
 		useGravity = true;
-		isShield = true;
+		if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == false) {
+			isShield = true;	
+		} else if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == true) {
+			isShield = false;
+		}
 		vel = new Point(xDir * 150, -100);
 		if (collider != null) { collider.wallOnly = true; }
 		slideAnim = new Anim(pos, "frostshield_charged_slide", xDir, null, false);

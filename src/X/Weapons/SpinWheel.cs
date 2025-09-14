@@ -7,7 +7,8 @@ public class SpinWheel : Weapon {
 	public static SpinWheel netWeapon = new();
 
 	public SpinWheel() : base() {
-		//shootSounds = new string[] { "spinWheel", "spinWheel", "spinWheel", "spinWheelCharged" };
+		displayName = "Spin Wheel";
+		shootSounds = new string[] { "spinWheel", "spinWheel", "spinWheel", "spinWheelCharged" };
 		fireRate = 60;
 		switchCooldown = 45;
 		index = (int)WeaponIds.SpinWheel;
@@ -17,9 +18,9 @@ public class SpinWheel : Weapon {
 		killFeedIndex = 20 + (index - 9);
 		weaknessIndex = (int)WeaponIds.StrikeChain;
 		damage = "1/1*8";
-		effect = "Inflicts Slowdown. Doesn't destroy on hit.\nUncharged won't give assists.";
-		hitcooldown = "0.2/0";
-		Flinch = "0/26";
+		effect = "U:Inflicts Slowdown on contact. Bounces on walls.\nProjectile won't destroy on hit nor give assists.";
+		hitcooldown = "12/0";
+		flinch = "0/26";
 		maxAmmo = 16;
 		ammo = maxAmmo;
 	}

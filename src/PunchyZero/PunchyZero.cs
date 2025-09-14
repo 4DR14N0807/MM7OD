@@ -30,6 +30,7 @@ public class PunchyZero : Character {
 	public AwakenedAura awakenedAuraWeapon = new();
 	public ZSaber saberSwingWeapon = new();
 	public ZeroBuster busterWeapon = new();
+	public PZeroLoadout loadout;
 	public int gigaAttackSelected;
 	
 	// Inputs.
@@ -45,6 +46,7 @@ public class PunchyZero : Character {
 	public float parryCooldown;
 	public float hadangekiCooldown;
 	public float genmureiCooldown;
+	public float tauntCooldown;
 
 	// Hypermode stuff.
 	public float donutTimer = 0;
@@ -54,21 +56,26 @@ public class PunchyZero : Character {
 	// Creation code.
 	public PunchyZero(
 		Player player, float x, float y, int xDir,
-		bool isVisible, ushort? netId, bool ownedByLocalPlayer, bool isWarpIn = true
-	) : base(
-		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
+		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
+		bool isWarpIn = true, PZeroLoadout? loadout = null,
+		int? heartTanks = null, bool isATrans = false
+	) : base( 
+		player, x, y, xDir, isVisible,
+		netId, ownedByLocalPlayer,
+		isWarpIn, heartTanks, isATrans
 	) {
 		charId = CharIds.PunchyZero;
 		// Loadout stuff.
-		PZeroLoadout pzeroLoadout = player.loadout.pzeroLoadout;
+		loadout ??= player.loadout.pzeroLoadout.clone();
+		this.loadout = loadout;
 
-		gigaAttackSelected = pzeroLoadout.gigaAttack;
-		gigaAttack = pzeroLoadout.gigaAttack switch {
+		gigaAttackSelected = loadout.gigaAttack;
+		gigaAttack = loadout.gigaAttack switch {
 			1 => new Messenkou(),
 			2 => new RekkohaWeapon(),
 			_ => new RakuhouhaWeapon(),
 		};
-		hyperMode = pzeroLoadout.hyperMode;
+		hyperMode = loadout.hyperMode;
 		altSoundId = AltSoundIds.X3;
 	}
 
@@ -79,6 +86,12 @@ public class PunchyZero : Character {
 		}
 		return new Jump();
 	}
+	public override CharState getTauntState() {
+		if (isAwakened && tauntCooldown <= 0) {
+			return new PAwakenedTaunt();
+		}
+		return new PZeroTaunt();
+	}
 
 	public override void update() {
 		if (isAwakened) {
@@ -87,7 +100,7 @@ public class PunchyZero : Character {
 		if (!Global.level.isHyper1v1()) {
 			if (isBlack) {
 				if (musicSource == null) {
-					addMusicSource("zero_X1", getCenterPos(), true);
+					addMusicSource("themeOfZeroMMZ_OldGsU", getCenterPos(), true);
 				}
 			} else if (isAwakened) {
 				if (musicSource == null) {
@@ -114,7 +127,9 @@ public class PunchyZero : Character {
 		Helpers.decrementFrames(ref dashAttackCooldown);
 		Helpers.decrementFrames(ref diveKickCooldown);
 		Helpers.decrementFrames(ref uppercutCooldown);
+		Helpers.decrementFrames(ref genmureiCooldown);
 		Helpers.decrementFrames(ref aiAttackCooldown);
+		Helpers.decrementFrames(ref tauntCooldown);
 		gigaAttack.update();
 		gigaAttack.charLinkedUpdate(this, true);
 		base.update();
@@ -193,6 +208,8 @@ public class PunchyZero : Character {
 	}
 
 	public override bool chargeButtonHeld() {
+		if (charState.normalCtrl && player.currency > 0 && !player.isMainPlayer &&
+		ai?.aiState.randomlyChargeWeapon == true && getChargeLevel() <= getMaxChargeLevel()) return true;
 		return player.input.isHeld(Control.Shoot, player);
 	}
 
@@ -539,14 +556,17 @@ public class PunchyZero : Character {
 				case 2:
 					palette = Player.ZeroBlueC;
 					break;
-				case >=3:
+				case 3:
 					palette = Player.ZeroPinkC;
+					break;
+				case 4:
+					palette = Player.ZeroGreenC;
 					break;
 			}
 		}
 		if (palette != null && hypermodeBlink > 0) {
 			float blinkRate = MathInt.Ceiling(hypermodeBlink / 30f);
-			palette = ((Global.frameCount % (blinkRate * 2) >= blinkRate) ? null : palette);
+			palette = ((Global.floorFrameCount % (blinkRate * 2) >= blinkRate) ? null : palette);
 		}
 		if (palette != null) {
 			shaders.Add(palette);
@@ -637,7 +657,6 @@ public class PunchyZero : Character {
 			Dictionary<int, Func<Projectile>> retProjs = new() {
 				[(int)ProjIds.AwakenedAura] = () => {
 					playSound("awakenedaura", forcePlay: true, sendRpc: true); 
-					Point centerPoint = globalCollider.shape.getRect().center();
 					float damage = 2;
 					int flinch = 0;
 					if (isGenmuZero) {
@@ -645,11 +664,17 @@ public class PunchyZero : Character {
 						flinch = Global.defFlinch;
 					}
 					Projectile proj = new GenericMeleeProj(
-						awakenedAuraWeapon, centerPoint,
-						ProjIds.AwakenedAura, player, damage, flinch
+						awakenedAuraWeapon, pos,
+						ProjIds.AwakenedAura, player, damage, flinch, 30,
+						addToLevel: true
 					) {
-						globalCollider = globalCollider.clone(),
-						meleeId = (int)MeleeIds.AwakenedAura
+						globalCollider = new Collider(
+							new Rect(0f, 0f, 30, 40).getPoints(),
+							false, this, false, false,
+							HitboxFlag.Hitbox, Point.zero
+						),
+						meleeId = (int)MeleeIds.AwakenedAura,
+						owningActor = this
 					};
 					return proj;
 				}
@@ -734,7 +759,7 @@ public class PunchyZero : Character {
 		float auraAlpha = 1;
 		if (isAwakened && visible && hypermodeBlink > 0) {
 			float blinkRate = MathInt.Ceiling(hypermodeBlink / 2f);
-			bool blinkActive = Global.frameCount % (blinkRate * 2) >= blinkRate;
+			bool blinkActive = Global.floorFrameCount % (blinkRate * 2) >= blinkRate;
 			if (!blinkActive) {
 				auraAlpha = 0.5f;
 			}
@@ -751,7 +776,7 @@ public class PunchyZero : Character {
 			}
 			var shaders = new List<ShaderWrapper>();
 			if (isGenmuZero &&
-				Global.frameCount % Global.normalizeFrames(6) > Global.normalizeFrames(3) &&
+				Global.flFrameCount % 6 > 3 &&
 				Global.shaderWrappers.ContainsKey("awakened")
 			) {
 				shaders.Add(Global.shaderWrappers["awakened"]);
@@ -804,55 +829,47 @@ public class PunchyZero : Character {
 	
 	public float aiAttackCooldown;
 	public override void aiAttack(Actor? target) {
-		bool isTargetInAir = pos.y < target?.pos.y - 20;
-		bool isTargetClose = pos.x < target?.pos.x - 10;
-		bool canHitMaxCharge = (!isTargetInAir && getChargeLevel() >= 4);
+		float enemyDist = 300;
+		float enemyDistY = 30;
+		if (target != null) {
+			enemyDist = MathF.Abs(target.pos.x - pos.x);
+			enemyDistY = MathF.Abs(target.pos.y - pos.y);
+		}
+		bool isTargetClose = enemyDist <= 50;
+		bool isTargetDistant = enemyDist <= 90;
+		bool isTargetInAir = enemyDistY >= 20;
 		bool isFacingTarget = (pos.x < target?.pos.x && xDir == 1) || (pos.x >= target?.pos.x && xDir == -1);
 		if (player.currency >= Player.zeroHyperCost && !isInvulnerable() &&
 		   charState is not (HyperPunchyZeroStart or LadderClimb) && !hypermodeActive() && !player.isMainPlayer
 		) {
 			changeState(new HyperPunchyZeroStart(), true);
 		}
+		if (isAwakened) hyperOvertimeActive = true;
+		if (grounded && isTargetInAir && charState.attackCtrl && isTargetClose && !isInvulnerable()) {
+			changeState(new PZeroShoryuken(), true);
+		}
 		int ZKattack = Helpers.randomRange(0, 6);
 		if (!isInvulnerable() && charState is not LadderClimb && aiAttackCooldown <= 0 && charState.attackCtrl) {
 			switch (ZKattack) {
-				case 0 when grounded && isFacingTarget:
+				case 0 when grounded && isFacingTarget && isTargetClose:
 					changeState(new PZeroPunch1(), true);
 					break;
-				case 1 when grounded && isFacingTarget:
+				case 1 when grounded && isFacingTarget && isTargetInAir:
 					changeState(new PZeroShoryuken(), true);
 					break;
-				case 2 when charState is Dash:
+				case 2 when charState is Dash && isTargetDistant:
 					changeState(new PZeroSpinKick(), true);
 					break;
 				case 3 when grounded && gigaAttack.shootCooldown <= 0 && gigaAttack.ammo >= gigaAttack.getAmmoUsage(0):
-					if (gigaAttack is RekkohaWeapon) {
-						gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-						changeState(new PunchyZeroRekkohaState(gigaAttack), true);
-					} else if (gigaAttack is RakuhouhaWeapon) {
-						gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-						changeState(new PunchyZeroRakuhouhaState(gigaAttack), true);
-					}
-					else if (gigaAttack is Messenkou) {
-						gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-						changeState(new PunchyZeroCFlasherState(gigaAttack), true);
-					}
-					else if (gigaAttack is ShinMessenkou) {
-						gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-						changeState(new PunchyZeroShinMessenkouState(gigaAttack), true);
-					}
-					else if (gigaAttack is DarkHoldWeapon) {
-						gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-						changeState(new PunchyZeroDarkHoldShootState(gigaAttack), true);
-					}
+					gigaAttack.shoot(this, []);
 					break;
-				case 4 when grounded && isFacingTarget:
+				case 4 when grounded && isFacingTarget && isTargetClose:
 					changeState(new PZeroYoudantotsu(), true);
 					break;
 				case 5 when charState is Fall:
 					changeState(new PZeroDiveKickState(), true);
 					break;
-				case 6 when charState is Jump or Fall:
+				case 6 when charState is Jump or Fall && isTargetClose:
 					changeState(new PZeroKick(), true);
 					break;
 			}
@@ -860,41 +877,29 @@ public class PunchyZero : Character {
 		}
 		base.aiAttack(target);
 	}
+	public override void aiUpdate(Actor? target) {
+		base.aiUpdate(target);
+		if (sprite.name == "zero_fall_shoot" && grounded) {
+			changeToIdleOrFall();
+		}
+		if (target != null && charState is not PZeroShoryuken && !charState.normalCtrl)
+			turnToPos(target.getCenterPos());
+	}
 	public override void aiDodge(Actor? target) {
 		foreach (GameObject gameObject in getCloseActors(48, true, false, false)) {
-			if (gameObject is Projectile proj&& proj.damager.owner.alliance != player.alliance && charState.attackCtrl) {
+			if (gameObject is Projectile proj && proj.damager.owner.alliance != player.alliance && charState.attackCtrl) {
 				//Projectile is not 
 				if (!(proj.projId == (int)ProjIds.RollingShieldCharged || proj.projId == (int)ProjIds.RollingShield
 					|| proj.projId == (int)ProjIds.MagnetMine || proj.projId == (int)ProjIds.FrostShield || proj.projId == (int)ProjIds.FrostShieldCharged
 					|| proj.projId == (int)ProjIds.FrostShieldAir || proj.projId == (int)ProjIds.FrostShieldChargedPlatform || proj.projId == (int)ProjIds.FrostShieldPlatform)
 				) {
-					if (gigaAttack.shootCooldown <= 0 && grounded) {
-						switch (gigaAttack) {
-							case RekkohaWeapon when gigaAttack.ammo >= 28:
-								gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-								changeState(new PunchyZeroRekkohaState(gigaAttack), true);
-								break;
-							case Messenkou when gigaAttack.ammo >= 7:
-								gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-								changeState(new PunchyZeroCFlasherState(gigaAttack), true);
-								break;
-							case RakuhouhaWeapon when gigaAttack.ammo >= 14:
-								gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-								changeState(new PunchyZeroRakuhouhaState(gigaAttack), true);
-								break;
-							case DarkHoldWeapon when gigaAttack.ammo >= 14 && isViral:
-								gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-								changeState(new PunchyZeroDarkHoldShootState(gigaAttack), true);
-								break;
-							case ShinMessenkou when gigaAttack.ammo >= 14 && isAwakened:
-								gigaAttack.addAmmo(-gigaAttack.getAmmoUsage(0), player);
-								changeState(new PunchyZeroShinMessenkouState(gigaAttack), true);
-								break;
-						}
+					if (gigaAttack.shootCooldown <= 0 && grounded && gigaAttack.ammo >= gigaAttack.getAmmoUsage(0)) {
+						gigaAttack.shoot(this, []);
 					} else if (!(proj.projId == (int)ProjIds.SwordBlock) && grounded) {
-					turnToInput(player.input, player);
-					changeState(new PZeroParry(), true);
-				}
+						if (target != null)
+							turnToPos(target.getCenterPos());
+						changeState(new PZeroParry(), true);
+					}
 				}
 			}
 		}

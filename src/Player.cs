@@ -10,12 +10,33 @@ using static SFML.Window.Keyboard;
 namespace MMXOnline;
 
 public partial class Player {
+	public static Player stagePlayer = new Player(
+		"Stage", 255, -1,
+		new PlayerCharData() { charNum = -1 },
+		false, true, GameMode.stageAlliance,
+		new Input(false),
+		new ServerPlayer(
+			"Stage", 255, false,
+			-1, GameMode.stageAlliance, "NULL", null, 0
+		)
+	);
+	public static Player errorPlayer = new Player(
+		"Error", 255, -1,
+		new PlayerCharData() { charNum = -1 },
+		false, false, GameMode.neutralAlliance,
+		new Input(false),
+		new ServerPlayer(
+			"Error", 255, false,
+			-1, GameMode.neutralAlliance, "NULL", null, 0
+		)
+	);
+	
+	
 	public SpawnPoint? firstSpawn;
 	public Input input;
 	public Character? character;
 	public Character lastCharacter;
 	public bool ownedByLocalPlayer;
-	public int? awakenedCurrencyEnd;
 	public float hadoukenAmmo = 1920;
 	public float shoryukenAmmo = 1920;
 	public float fgMoveMaxAmmo = 1920;
@@ -63,19 +84,15 @@ public partial class Player {
 		return ping.Value;
 	}
 
-	public Character preTransformedAxl;
-	public bool isDisguisedAxl {
-		get {
-			return disguise != null;
-		}
-	}
+	public Character? preTransformedChar;
+	public bool isDisguisedAxl => character?.isATrans == true;
 	public List<Weapon> savedDNACoreWeapons = new List<Weapon>();
 	public int axlBulletType;
 	public List<bool> axlBulletTypeBought = new List<bool>() { true, false, false, false, false, false, false };
 	public List<float> axlBulletTypeAmmo = new List<float>() { 0, 0, 0, 0, 0, 0, 0 };
 	public List<float> axlBulletTypeLastAmmo = new List<float>() { 32, 32, 32, 32, 32, 32, 32 };
 	public int lastDNACoreIndex = 4;
-	public DNACore lastDNACore;
+	public DNACore? lastDNACore;
 	
 	public float zoomRange {
 		get {
@@ -83,7 +100,7 @@ public partial class Player {
 			return Global.viewScreenW * 2.5f;
 		}
 	}
-	public RaycastHitData assassinHitPos;
+	public RaycastHitData? assassinHitPos;
 
 	public bool canUpgradeXArmor() {
 		return (realCharNum == 0);
@@ -116,7 +133,6 @@ public partial class Player {
 	public bool lastDeathWasVileMK2;
 	public bool lastDeathWasVileV;
 	public bool lastDeathWasSigmaHyper;
-	public bool lastDeathWasXHyper;
 	public const int zeroHyperCost = 10;
 	public const int zBusterZeroHyperCost = 8;
 	public const int AxlHyperCost = 10;
@@ -136,16 +152,12 @@ public partial class Player {
 	public MaverickAIBehavior currentMaverickCommand;
 
 	public bool isX { get { return charNum == (int)CharIds.X; } }
-	public bool isZero { get { return charNum == (int)CharIds.Zero; } }
-	public bool isVile { get { return charNum == (int)CharIds.Vile; } }
 	public bool isAxl { get { return charNum == (int)CharIds.Axl; } }
 	public bool isSigma { get { return charNum == (int)CharIds.Sigma; } }
 	public bool isRock { get { return charNum == (int)CharIds.Rock; } }
 	public bool isBlues { get { return charNum == (int)CharIds.Blues; } }
 	public bool isBass { get { return charNum == (int)CharIds.Bass; } }
 
-
-	public float healthBackup;
 
 	public float health {
 		get => (float)(character?.health ?? 0);
@@ -173,7 +185,7 @@ public partial class Player {
 
 	public bool isDead {
 		get {
-			if (isSigma && currentMaverick != null) {
+			if (currentMaverick != null) {
 				return false;
 			}
 			if (character == null) return true;
@@ -224,63 +236,36 @@ public partial class Player {
 
 	public bool isMuted;
 
-	// ETanks
-	private Dictionary<int, List<ETank>> charETanks = new Dictionary<int, List<ETank>>() {
-		{ (int)CharIds.Rock, new List<ETank>() },
-		{ (int)CharIds.Blues, new List<ETank>() },
-		{ (int)CharIds.Bass, new List<ETank>() },
-	};
-
-	// WTanks
-	public Dictionary<int, List<WTank>> charWTanks = new Dictionary<int, List<WTank>>() {
-		{ (int)CharIds.Rock, new List<WTank>() },
-		{ (int)CharIds.Blues, new List<WTank>() },
-		{ (int)CharIds.Bass, new List<WTank>()},
-	};
-
-	// Blues exclusive tanks (L and M)
-	public Dictionary<int, List<LTank>> charLTanks = new Dictionary<int, List<LTank>>() {
-		{ (int)CharIds.Blues, new List<LTank>() },
-	};
-
-	public Dictionary<int, List<MTank>> charMTanks = new Dictionary<int, List<MTank>>() {
-		{ (int)CharIds.Blues, new List<MTank>() },
-	};
-
-	// Heart tanks
-	private Dictionary<int, ProtectedInt> charHeartTanks = new Dictionary<int, ProtectedInt>() {
-		{ (int)CharIds.Rock, new() },
-		{ (int)CharIds.Blues, new() },
-		{ (int)CharIds.Bass, new()}
-	};
+	// Subtanks and heart tanks internal lists.
+	private ProtectedIntMap<int> heartTanksMap = [];
+	public Dictionary<int, List<ETank>> eTanksMap = [];
+	public Dictionary<int, List<WTank>> wTanksMap = [];
+	public Dictionary<int, List<LTank>> lTanksMap = [];
 
 	// Getter functions.
-	public List<ETank> ETanks {
-		get { return charETanks[charNum]; }
-		set { charETanks[charNum] = value; }
+	public List<ETank> etank {
+		get { return subTanksMap[charNum]; }
+		set { subTanksMap[charNum] = value; }
 	}
-	public List<WTank> wtanks {
-		get { return charWTanks[charNum];}
-		set { charWTanks[charNum] = value;}
+	public List<WTank> wtank {
+		get { return subTanksMap[charNum]; }
+		set { subTanksMap[charNum] = value; }
 	}
-	public List<LTank> ltanks {
-		get { return charLTanks[charNum]; }
-		set { charLTanks[charNum] = value;}
+	public List<MTank> mtank {
+		get { return subTanksMap[charNum]; }
+		set { subTanksMap[charNum] = value; }
 	}
-	public List<MTank> mtanks {
-		get { return charMTanks[charNum]; }
-		set { charMTanks[charNum] = value;}
+
+	public int getHeartTanks(int charId) {
+		if (Global.level.mainPlayer != this || Global.serverClient == null) {
+			return heartTanksMap.quickVal(charId);
+		}
+		return heartTanksMap[charId];
 	}
+
 	public int heartTanks {
-		get {
-			if (!ownedByLocalPlayer) {
-				return charHeartTanks[charNum].unsafeVal;
-			}
-			return charHeartTanks[charNum].value;
-		}
-		set {
-			charHeartTanks[charNum].value = value;
-		}
+		get => getHeartTanks(charNum);
+		set => heartTanksMap[charNum] = value;
 	}
 
 	// Currency
@@ -291,11 +276,11 @@ public partial class Player {
 	public Dictionary<int, MasteryTracker> masteryLevels;
 	public MasteryTracker mastery => masteryLevels[(int?)character?.charId ?? charNum];
 
-	public ProtectedArrayInt charCurrency = new ProtectedArrayInt(maxCharCurrencyId);
+	public ProtectedIntMap<int> charCurrency = [];
 	public int currency {
 		get {
-			if (!ownedByLocalPlayer) {
-				return charCurrency.unsafeVal(charNum);
+			if (Global.level.mainPlayer != this || Global.serverClient == null) {
+				return charCurrency.quickVal(charNum);
 			}
 			return charCurrency[charNum];
 		}
@@ -369,7 +354,6 @@ public partial class Player {
 	public bool loadoutSet;
 	public LoadoutData previousLoadout;
 	public LoadoutData? atransLoadout;
-	public AxlLoadout axlLoadout { get { return loadout.axlLoadout; } }
 
 	public bool frozenCastlePurchased;
 	public bool speedDevilPurchased;
@@ -380,18 +364,23 @@ public partial class Player {
 	public bool speedDevil;
 
 	public Disguise? disguise;
-
-	public int newAlliance;     // Not sure what this is useful for, seems like a pointless clone of alliance that needs to be kept in sync
+	
+	// Not sure what this is useful for,
+	// seems like a pointless clone of alliance that needs to be kept in sync.
+	public int newAlliance;
 
 	// Things that ServerPlayer already has
 	public string name;
 	public int id;
-	public int alliance;    // Only set on spawn with data read from ServerPlayer alliance. The ServerPlayer alliance changes earlier on team change/autobalance
 	public int charNum = 10;
+	// Only set on spawn with data read from ServerPlayer alliance.
+	// The ServerPlayer alliance changes earlier on team change/autobalance.
+	public int alliance;
 
 	public int newCharNum;
 	public int? delayedNewCharNum;
 	public int? ping;
+
 	public void syncFromServerPlayer(ServerPlayer serverPlayer) {
 		if (!this.serverPlayer.isHost && serverPlayer.isHost) {
 			promoteToHost();
@@ -410,10 +399,14 @@ public partial class Player {
 				new ChatEntry(
 					name + " was autobalanced to " +
 					GameMode.getTeamName(serverPlayer.autobalanceAlliance.Value), "", null, true
-				), true);
+				), true
+			);
 			forceKill();
-			currency += 5;
-			Global.serverClient?.rpc(RPC.switchTeam, RPCSwitchTeam.getSendMessage(id, serverPlayer.autobalanceAlliance.Value));
+			currency += 5 * Global.customSettings?.currencyGain ?? 1;
+			Global.serverClient?.rpc(
+				RPC.switchTeam,
+				RPCSwitchTeam.getSendMessage(id, serverPlayer.autobalanceAlliance.Value)
+			);
 			newAlliance = serverPlayer.autobalanceAlliance.Value;
 		}
 	}
@@ -472,20 +465,16 @@ public partial class Player {
 	public ShaderWrapper bassPaletteShader = Helpers.cloneGenericPaletteShader("bass_palette_texture");
 
 	// Character specific data populated on RPC request
-	public ushort? charNetId;
-	public ushort? charRollingShieldNetId;
-	public float charXPos;
-	public float charYPos;
-	public int charXDir;
+	//public ushort? charNetId;
+	//public ushort? charRollingShieldNetId;
+	//public float charXPos;
+	//public float charYPos;
+	//public int charXDir;
 	public Dictionary<int, int> charNumToKills = new Dictionary<int, int>() {
 	};
 
 	public int hyperChargeSlot;
 	public int xArmor1v1;
-	public float vileAmmo = 32;
-	public float vileMaxAmmo = 32;
-	public float sigmaAmmo = 32;
-	public float sigmaMaxAmmo = 32;
 	public int? maverick1v1;
 	public bool maverick1v1Spawned;
 
@@ -507,7 +496,6 @@ public partial class Player {
 	public ExplodeDieEffect? explodeDieEffect;
 	public bool suicided;
 
-	ushort savedArmorFlag;
 	public bool[] headArmorsPurchased = new bool[] { false, false, false };
 	public bool[] bodyArmorsPurchased = new bool[] { false, false, false };
 	public bool[] armArmorsPurchased = new bool[] { false, false, false };
@@ -515,10 +503,6 @@ public partial class Player {
 
 	public float lastMashAmount;
 	public int lastMashAmountSetFrame;
-
-	public bool isNon1v1MaverickSigma() {
-		return isSigma && maverick1v1 == null;
-	}
 
 	public bool is1v1MaverickX1() {
 		return maverick1v1 <= 8;
@@ -613,39 +597,44 @@ public partial class Player {
 		this.alliance = alliance;
 		newAlliance = alliance;
 		this.isAI = isAI;
+
+		// Iterate over each charID and populate.
+		foreach (int i in Enum.GetValues(typeof(CharIds)).Cast<int>()) {
+			heartTanksMap[i] = 0;
+			charCurrency[i] = 0;
+			subTanksMap[i] = [];
+		}
 		this.charNum = charNum;
 		newCharNum = charNum;
 		this.input = input;
 		this.ownedByLocalPlayer = ownedByLocalPlayer;
 
-		for (int i = 0; i < charCurrency.Length; i++) {
-			charCurrency[i] = getStartCurrency();
+		xArmor1v1 = playerData?.armorSet ?? 1;
+		if (Global.level.is1v1() && charNum == (int)CharIds.X) {
+			legArmorNum = xArmor1v1;
+			bodyArmorNum = xArmor1v1;
+			helmetArmorNum = xArmor1v1;
+			armArmorNum = xArmor1v1;
 		}
-		foreach (var key in charETanks.Keys) {
-			int stCount = key == charNum ? getStartETanksForChar() : getStartETanks();
+
+		foreach (int key in charCurrency.Keys) {
+			charCurrency[key] = getStartCurrency();
+		}
+		foreach (int key in heartTanksMap.Keys) {
+			int htCount = getStartHeartTanksForChar();
+			int altHtCount = getStartHeartTanks();
+			if (altHtCount > htCount) {
+				htCount = altHtCount;
+			}
+			heartTanksMap[key] = htCount;
+		}
+		foreach (int key in subTanksMap.Keys) {
+			int stCount = key == charNum ? getStartSubTanksForChar() : getStartSubTanks();
 			for (int i = 0; i < stCount; i++) {
-				charETanks[key].Add(new ETank());
+				subTanksMap[key].Add(new SubTank());
 			}
 		}
-		foreach (var key in charLTanks.Keys) {
-			int stCount = key == charNum ? getStartETanksForChar() : getStartETanks();
-			for (int i = 0; i < stCount; i++) {
-				charLTanks[key].Add(new LTank());
-			}
-		}
-		foreach (var key in charWTanks.Keys) {
-			int wtCount = getStartWTanks();
-			for (int i=0; i < wtCount; i++) {
-				charWTanks[key].Add(new WTank());
-			}
-		}
-		masteryLevels = new Dictionary<int, MasteryTracker>() {
-			{ (int)CharIds.Rock, new(this, CharIds.Rock) },
-			{ (int)CharIds.Blues, new(this, CharIds.Blues) },
-			{ (int)CharIds.Bass, new(this, CharIds.Bass) },
-		};
-		maxHealth = getMaxHealth();
-		health = maxHealth;
+		_maxHealth = getMaxHealth();
 
 		this.serverPlayer = serverPlayer;
 
@@ -660,27 +649,42 @@ public partial class Player {
 		}
 
 		is1v1Combatant = !isSpectator;
-		maxHealth = getMaxHealth();
 	}
 
-	public int getHeartTankModifier() {
+	public static int getHeartTankModifier() {
 		return Global.level.server?.customMatchSettings?.heartTankHp ?? 1;
 	}
 
-	public float getMaverickMaxHp() {
-		if (!Global.level.is1v1() && isTagTeam()) {
-			return getModifiedHealth(20) + (heartTanks * getHeartTankModifier());
+	public float getMaverickMaxHp(MaverickModeId controlMode) {
+		if (!Global.level.is1v1() && controlMode == MaverickModeId.TagTeam) {
+			return MathF.Ceiling(
+				(getModifiedHealth(20) + heartTanks * getHeartTankModifier()) * getHpMod()
+			);
 		}
-		return MathF.Ceiling(getModifiedHealth(24));
+		return MathF.Ceiling(getModifiedHealth(24) * getHpMod());
 	}
 
 	public bool hasAllItems() {
 		return false;
 	}
 
-	public static float getBaseHealth() {
+	public static float getHpMod() {
 		if (Global.level.server.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.healthModifier;
+		}
+		return 1;
+	}
+
+	public static decimal getHpDMod() {
+		if (Global.level.server.customMatchSettings != null) {
+			return (decimal)Global.level.server.customMatchSettings.healthModifier;
+		}
+		return 1;
+	}
+
+	public static float getBaseHp() {
+		if (Global.level.server.customMatchSettings != null) {
+			return Global.level.server.customMatchSettings.baseHp;
 		}
 		return 16;
 	}
@@ -703,18 +707,12 @@ public partial class Player {
 			if (retHp < 1) {
 				retHp = 1;
 			}
-			return retHp;
+			return MathInt.Ceiling(retHp);
 		}
-		return health;
+		return MathInt.Ceiling(health);
 	}
 
 	public float getDamageModifier() {
-		if (Global.level.server.customMatchSettings != null) {
-			/*if (Global.level.gameMode.isTeamMode && alliance == GameMode.redAlliance) {
-				return Global.level.server.customMatchSettings.redDamageModifier;
-			}*/
-			return Global.level.server.customMatchSettings.damageModifier;
-		}
 		return 1;
 	}
 
@@ -909,7 +907,7 @@ public partial class Player {
 
 				if (Global.level.gameMode is TeamDeathMatch or TeamElimination && warpedInOnce) {
 					List<Player> spawnPoints = Global.level.players.FindAll(
-						p => p.teamAlliance == teamAlliance && p.health > 0 && p.character != null
+						p => p.teamAlliance == teamAlliance && p.character?.alive == true
 					);
 					if (spawnPoints.Count != 0) {
 						Character randomChar = spawnPoints[Helpers.randomRange(0, spawnPoints.Count - 1)].character!;
@@ -1039,7 +1037,7 @@ public partial class Player {
 	public Character? spawnCharAtPoint(
 		int spawnCharNum, byte[] extraData,
 		Point pos, int xDir, ushort charNetId, bool sendRpc,
-		bool isMainChar = true, bool forceSpawn = false
+		bool isMainChar = true, bool forceSpawn = false, bool isWarpIn = true
 	) {
 		if (sendRpc) {
 			RPC.spawnCharacter.sendRpc(spawnCharNum, extraData, pos, xDir, id, charNetId);
@@ -1048,7 +1046,9 @@ public partial class Player {
 			alliance = newAlliance;
 		}
 
-		if (isMainChar && character != null && charNetId == character.netId && !forceSpawn) {
+		// Skip if a is a main character and it already exists.
+		// Or if we are creating a character with the same netId as the current one.
+		if (!forceSpawn && isMainChar && character != null || charNetId == character?.netId) {
 			return null;
 		}
 		// ONRESPAWN, SPAWN, RESPAWN, ON RESPAWN, ON SPAWN LOGIC, SPAWNLOGIC
@@ -1116,7 +1116,7 @@ public partial class Player {
 		}
 		// Error out if invalid id.
 		else {
-			throw new Exception("Error: Non-valid char ID: " + charNum);
+			throw new Exception("Error: Non-valid char ID: " + spawnCharNum);
 		}
 		
 		// Do this once char has spawned and is not null.
@@ -1127,6 +1127,18 @@ public partial class Player {
 			lastCharacter = newChar;
 			if (!ownedByLocalPlayer) {
 				warpedInOnce = true;
+			}
+			if (newChar is PunchyZero pzero) {
+				if (pzero.loadout.hyperMode == 0) {
+					pzero.isBlack = true;
+				} else if (pzero.loadout.hyperMode == 1) {
+					pzero.awakenedPhase = 1;
+				} else {
+					pzero.isViral = true;
+				}
+			}
+			if (newChar is BusterZero bzero) {
+				bzero.isBlackZero = true;
 			}
 		}
 		if (isAI) {
@@ -1320,7 +1332,7 @@ public partial class Player {
 				return false;
 			}
 			if (character != null && currentMaverick == null) {
-				InRideArmor inRideArmor = character.charState as InRideArmor;
+				InRideArmor? inRideArmor = character.charState as InRideArmor;
 				if (inRideArmor != null &&
 					(inRideArmor.frozenTime > 0 || inRideArmor.stunTime > 0 || inRideArmor.crystalizeTime > 0)
 				) {
@@ -1343,31 +1355,11 @@ public partial class Player {
 				return false;
 			}
 			/*
-			if (character?.charState?.isGrabbedState == true)
-			{
+			if (character?.charState?.isGrabbedState == true) {
 				return false;
 			}
 			*/
 			return true;
-		}
-	}
-
-	public void awardCurrency(bool isKiller = true) {
-		if (axlBulletType == (int)AxlBulletWeaponType.AncientGun && isAxl) return;
-
-		// Check for stuff that cannot gain scraps.
-		if (character is RagingChargeX or KaiserSigma or ViralSigma or WolfSigma) return;
-		if (character?.rideArmor?.raNum == 4 && character.charState is InRideArmor) return;
-		if (character is MegamanX mmx && mmx.hasUltimateArmor) {
-			return;
-		}
-
-		int toAdd = isKiller ? 10 : 5;
-		
-		if (Global.level?.server?.customMatchSettings != null) {
-			currency += MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain / 8f) * toAdd);
-		} else {
-			currency += toAdd;
 		}
 	}
 
@@ -1421,7 +1413,7 @@ public partial class Player {
 
 	public int getRespawnTime() {
 		if (Global.level == null) {
-			return 5;
+			return 8;
 		}
 		if (Global.level.server?.customMatchSettings != null &&
 			Global.level.server.customMatchSettings.respawnTime > 0
@@ -1434,66 +1426,19 @@ public partial class Player {
 		if (Global.level.gameMode is FFADeathMatch) {
 			return 5;
 		}
-		/*if (Global.level?.gameMode is ControlPoints) {
-			return 8;
-		}
-		if (Global.level?.gameMode is KingOfTheHill) {
-			return 8;
-		}*/
 		return 8;
 	}
 
 	public bool canReviveVile() {
-		if (Global.level.isElimination() ||
-			!lastDeathCanRevive ||
-			newCharNum != (int)CharIds.Vile ||
-			currency < reviveVileCost
-		) {
-			return false;
-		}
-		if (character?.charState is not Die) {
-			return false;
-		}
-		if (character is not Vile vile || vile.summonedGoliath) {
-			return false;
-		}
-		return true;
+		return false;
 	}
 
 	public bool canReviveSigma(out Point spawnPoint, int sigmaHypermode) {
-		spawnPoint = Point.zero;
-		if (character?.charState is not Die) {
-			return false;
-		}
-		spawnPoint = character.pos;
-		if (Global.level.isHyper1v1() &&
-			!lastDeathWasSigmaHyper &&
-			character is BaseSigma &&
-			newCharNum == (int)CharIds.Sigma
-		) {
-			return true;
-		}
-		if (character == null ||
-			!lastDeathCanRevive ||
-			!isSigma ||
-			newCharNum != (int)CharIds.Sigma ||
-			currency < reviveSigmaCost ||
-			lastDeathWasSigmaHyper
-		) {
-			return false;
-		}
-		return true;
+		return false;
 	}
 
 	public bool canReviveX() {
-		return (
-			character is MegamanX mmx &&
-			!mmx.hasAnyArmor &&
-			mmx.charState is Die &&
-			lastDeathCanRevive &&
-			newCharNum == 0 &&
-			currency >= reviveXCost
-		);
+		return false;
 	}
 
 	public bool canReviveBlues() {
@@ -1703,7 +1648,7 @@ public partial class Player {
 			return;
 		}
 
-		if (currentMaverick != null && isTagTeam()) {
+		if (currentMaverick != null && currentMaverick.controlMode == MaverickModeId.TagTeam) {
 			destroyCharacter(true);
 		} else {
 			character?.applyDamage(Damager.forceKillDamage, this, character, null, null);
@@ -1968,66 +1913,27 @@ public partial class Player {
 		float healthPercent = 0.3333f + ((health / maxHealth) * 0.6666f);
 		float mashAmount = (healthPercent * mashCount * 0.25f);
 
-		if (Global.frameCount - lastMashAmountSetFrame > 10) {
+		if (Global.floorFrameCount - lastMashAmountSetFrame > 10) {
 			lastMashAmount = 0;
 		}
 
 		float prevLastMashAmount = lastMashAmount;
 		lastMashAmount += mashAmount;
 		if (mashAmount > 0 && prevLastMashAmount == 0) {
-			lastMashAmountSetFrame = Global.frameCount;
+			lastMashAmountSetFrame = Global.floorFrameCount;
 		}
 
 		return (Global.spf + mashAmount);
 	}
 
-	// Sigma helper functions
-	public bool isSigma2() {
-		return loadout?.sigmaLoadout?.sigmaForm == 1;
-	}
-
-	public bool isSigma3() {
-		return loadout?.sigmaLoadout?.sigmaForm == 2;
-	}
-
-	public bool isKaiserSigma() {
-		return character is KaiserSigma;
-	}
-
-	public bool isKaiserViralSigma() {
-		return character != null && character.sprite.name.StartsWith("kaisersigma_virus");
-	}
-
-	public bool isKaiserNonViralSigma() {
-		return isKaiserSigma() && !isKaiserViralSigma();
-	}
-
-	public bool isSummoner() {
-		return isAI || loadout?.sigmaLoadout != null && loadout.sigmaLoadout.commandMode == 0;
-	}
-
-	public bool isPuppeteer() {
-		return !isAI && loadout?.sigmaLoadout != null && loadout.sigmaLoadout.commandMode == 1;
-	}
-
-	public bool isStriker() {
-		return !isAI && loadout?.sigmaLoadout != null && loadout.sigmaLoadout.commandMode == 2;
-	}
-
-	public bool isTagTeam() {
-		return !isAI && loadout?.sigmaLoadout != null && loadout.sigmaLoadout.commandMode == 3;
-	}
-
-	public bool isRefundableMode() {
-		return isSummoner() || isPuppeteer() || isTagTeam();
-	}
-
 	public bool isAlivePuppeteer() {
-		return isPuppeteer() && health > 0;
-	}
-
-	public bool isControllingPuppet() {
-		return isSigma && isPuppeteer() && currentMaverick != null && weapon is MaverickWeapon;
+		return (
+			!isAI &&
+			character is BaseSigma {
+				loadout.commandMode: (int)MaverickModeId.Puppeteer,
+				alive: true
+			}
+		);
 	}
 
 	public bool canUseEtank(ETank etank) {

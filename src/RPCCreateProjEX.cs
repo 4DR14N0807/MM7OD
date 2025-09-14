@@ -139,7 +139,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.Vulcan, VulcanCherryBlast.rpcInvoke },
 		{ (int)ProjIds.DistanceNeedler, VulcanDistanceNeedler.rpcInvoke },
 		{ (int)ProjIds.BuckshotDance, VulcanBuckshotDance.rpcInvoke },
-
+		{ (int)ProjIds.HexaInvolute, HexaInvoluteProj.rpcInvoke },
 
 		// Zero
 		{ (int)ProjIds.SuiretsusanProj, SuiretsusenProj.rpcInvoke },
@@ -158,6 +158,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.DarkHold, DarkHoldProj.rpcInvoke },
 		{ (int)ProjIds.QuakeBlazer, DanchienExplosionProj.rpcInvoke },
 		{ (int)ProjIds.QuakeBlazerFlame, QuakeBlazerFlamePart.rpcInvoke },
+		{ (int)ProjIds.HyorogaProj, HyorogaProj.rpcInvoke },
 
 		//Punchy Zero
 		{ (int)ProjIds.PZeroHadangeki, PZeroHadangeki.rpcInvoke },
@@ -208,6 +209,8 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.WSpongeUpChain, WSpongeUpChainProj.rpcInvoke },
 		{ (int)ProjIds.WSpongeChainSpin, WSpongeChainSpinProj.rpcInvoke },
 		{ (int)ProjIds.WSpongeSeed, WSpongeSeedProj.rpcInvoke },
+		{ (int)ProjIds.WSpongeSeedAI, WSpongeSeedProjAI.rpcInvoke },
+		{ (int)ProjIds.WSpongeSeedAIStriker, WSpongeSeedProjAIStriker.rpcInvoke },
 		{ (int)ProjIds.WSpongeSpike, WSpongeSpike.rpcInvoke },
 		{ (int)ProjIds.WheelGSpinWheel, WheelGSpinWheelProj.rpcInvoke },
 		{ (int)ProjIds.WheelGSpit, WheelGSpitProj.rpcInvoke },
@@ -225,7 +228,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.OverdriveOSonicSlicer, OverdriveOSonicSlicerProj.rpcInvoke },
 		{ (int)ProjIds.OverdriveOSonicSlicerUp, OverdriveOSonicSlicerUpProj.rpcInvoke },
 		{ (int)ProjIds.FakeZeroBuster, FakeZeroBusterProj.rpcInvoke },
-		{ (int)ProjIds.FakeZeroBuster2, FakeZeroBusterProj2.rpcInvoke },
+		{ (int)ProjIds.FakeZeroBuster2, FakeZeroBuster2Proj.rpcInvoke },
 		{ (int)ProjIds.FakeZeroBuster3, FakeZeroBusterProj3.rpcInvoke },
 		{ (int)ProjIds.FakeZeroSwordBeam, FakeZeroSwordBeamProj.rpcInvoke },
 		{ (int)ProjIds.FakeZeroMelee, FakeZeroMeleeProj.rpcInvoke },
@@ -258,6 +261,9 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.BBuffaloIceProjGround, BBuffaloIceProjGround.rpcInvoke },
 		{ (int)ProjIds.BBuffaloBeam, BBuffaloBeamProj.rpcInvoke },
 		{ (int)ProjIds.BBuffaloCrash, BBuffaloCrashProj.rpcInvoke },
+		{ (int)ProjIds.BBuffaloIceProjAI, BBuffaloIceProjAI.rpcInvoke },
+		{ (int)ProjIds.BBuffaloIceProjAIStriker, BBuffaloIceProjAIStriker.rpcInvoke },
+
 
 		// Axl
 		{ (int)ProjIds.BlackArrowGround, BlackArrowGrounded.rpcInvoke },

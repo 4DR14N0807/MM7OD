@@ -7,6 +7,7 @@ public class BoomerangCutter : Weapon {
 	public static BoomerangCutter netWeapon = new BoomerangCutter();
 
 	public BoomerangCutter() : base() {
+		displayName = "Boomerang Cutter";
 		index = (int)WeaponIds.BoomerangCutter;
 		killFeedIndex = 7;
 		weaponBarBaseIndex = 7;
@@ -16,9 +17,9 @@ public class BoomerangCutter : Weapon {
 		//shootSounds = new string[] { "boomerang", "boomerang", "boomerang", "buster3" };
 		fireRate = 30;
 		damage = "2/2";
-		effect = "Charged: Doesn't destroy on hit.\nCharged won't give assists.";
+		effect = "U:Your ammo refills when you retrieve the projectile.\nC:Projectile won't destroy on hit nor give assists.";
 		hitcooldown = "0/0.5";
-		Flinch = "0/26";
+		flinch = "0/26";
 	}
 	public override void shoot(Character character, int[] args) {
 		MegamanX mmx = character as MegamanX ?? throw new NullReferenceException();
@@ -41,7 +42,7 @@ public class BoomerangCutter : Weapon {
 			var twin2 = new BoomerangProjCharged(pos.addxy(5, 0), null, xDir, mmx, player, 0, 1, player.getNextActorNetId(true), null, true);
 			var twin3 = new BoomerangProjCharged(pos.addxy(0, -5), null, xDir, mmx, player, -90, 1, player.getNextActorNetId(true), null, true);
 			var twin4 = new BoomerangProjCharged(pos.addxy(-5, 0), null, xDir, mmx, player, -180, 1, player.getNextActorNetId(true), null, true);
-
+			
 			var a = new BoomerangProjCharged(pos.addxy(0, 5), pos.addxy(0, 35), xDir, mmx, player, 90, 0, player.getNextActorNetId(true), twin1, true);
 			var b = new BoomerangProjCharged(pos.addxy(5, 0), pos.addxy(35, 0), xDir, mmx, player, 0, 0, player.getNextActorNetId(true), twin2, true);
 			var c = new BoomerangProjCharged(pos.addxy(0, -5), pos.addxy(0, -35), xDir, mmx, player, -90, 0, player.getNextActorNetId(true), twin3, true);
@@ -141,15 +142,15 @@ public class BoomerangProj : Projectile {
 				var angInc = (-xDir * turnDir) * Global.spf * 300;
 				angle += angInc;
 				angleDist += MathF.Abs(angInc);
-				vel.x = Helpers.cosd((float)angle!) * maxSpeed;
-				vel.y = Helpers.sind((float)angle) * maxSpeed;
+				vel.x = Helpers.cosd(angle!) * maxSpeed;
+				vel.y = Helpers.sind(angle) * maxSpeed;
 			} else if (damager.owner.character != null) {
 				var dTo = pos.directionTo(damager.owner.character.getCenterPos()).normalize();
 				var destAngle = MathF.Atan2(dTo.y, dTo.x) * 180 / MathF.PI;
 				destAngle = Helpers.to360(destAngle);
-				angle = Helpers.lerpAngle((float)angle!, destAngle, Global.spf * 10);
-				vel.x = Helpers.cosd((float)angle) * maxSpeed;
-				vel.y = Helpers.sind((float)angle) * maxSpeed;
+				angle = Helpers.lerpAngle(angle!, destAngle, Global.spf * 10);
+				vel.x = Helpers.cosd(angle) * maxSpeed;
+				vel.y = Helpers.sind(angle) * maxSpeed;
 			} else {
 				destroySelf();
 			}
@@ -221,8 +222,8 @@ public class BoomerangProjCharged : Projectile {
 			incPos(lerpOffset.times(Global.spf * 15));
 			lerpTime += Global.spf * 15;
 		}
-		vel.x = Helpers.cosd((float)angle!) * maxSpeed;
-		vel.y = Helpers.sind((float)angle) * maxSpeed;
+		vel.x = Helpers.cosd(angle!) * maxSpeed;
+		vel.y = Helpers.sind(angle) * maxSpeed;
 		if (type == 0) {
 			if (time > 0.1 && time < 0.72) {
 				angle += Global.spf * 500;

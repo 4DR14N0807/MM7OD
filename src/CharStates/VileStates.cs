@@ -3,10 +3,26 @@ using SFML.Graphics;
 
 namespace MMXOnline;
 
-public class CallDownMech : CharState {
-	Vile vile = null!;
-	RideArmor rideArmor;
-	bool isNew;
+public class VileState : CharState {
+	public Vile vile = null!;
+
+	public VileState(
+		string sprite, string shootSprite = "", string attackSprite = "",
+		string transitionSprite = "", string transShootSprite = ""
+	) : base(
+		sprite, shootSprite, attackSprite, transitionSprite, transShootSprite
+	) {
+	}
+	
+	public override void onEnter(CharState oldState) {
+		vile = character as Vile ?? throw new NullReferenceException();
+		base.onEnter(oldState);
+	}
+}
+
+public class CallDownMech : VileState {
+	public RideArmor rideArmor;
+	public bool isNew;
 
 	public CallDownMech(RideArmor rideArmor, bool isNew, string transitionSprite = "") : base("call_down_mech", "", "", transitionSprite) {
 		this.rideArmor = rideArmor;
@@ -45,18 +61,17 @@ public class CallDownMech : CharState {
 		base.onEnter(oldState);
 		rideArmor.changeState(new RACalldown(character.pos, isNew), true);
 		rideArmor.xDir = character.xDir;
-		vile = character as Vile ?? throw new NullReferenceException();
 	}
 }
 
-public class VileRevive : CharState {
+public class VileRevive : VileState {
 	public float radius = 200;
-	Anim? drDopplerAnim;
-	bool isMK5;
-	public Vile vile = null!;
+	public Anim? drDopplerAnim;
+	public bool isMK5;
 
 	public VileRevive(bool isMK5) : base(isMK5 ? "revive_to5" : "revive") {
 		invincible = true;
+		statusEffectImmune = true;
 		this.isMK5 = isMK5;
 	}
 
@@ -66,7 +81,7 @@ public class VileRevive : CharState {
 			radius -= Global.spf * 150;
 		}
 		if (character.frameIndex < 2) {
-			if (Global.frameCount % 4 < 2) {
+			if (Global.flFrameCount % 4 < 2) {
 				character.addRenderEffect(RenderEffectType.Flash);
 			} else {
 				character.removeRenderEffect(RenderEffectType.Flash);
@@ -75,9 +90,9 @@ public class VileRevive : CharState {
 			character.removeRenderEffect(RenderEffectType.Flash);
 		}
 		if (character.frameIndex == 7 && !once) {
-			//character.playSound("ching");
-			player.health = 1;
-			character.addHealth(player.maxHealth);
+			character.playSound("ching");
+			character.health = 1;
+			character.addHealth(character.maxHealth);
 			once = true;
 		}
 		if (character.ownedByLocalPlayer) {
@@ -103,9 +118,11 @@ public class VileRevive : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		vile = character as Vile ?? throw new NullReferenceException();
 		//character.setzIndex(ZIndex.Foreground);
-		//character.addMusicSource("drdoppler", character.getCenterPos(), false);
+		character.clenaseAllDebuffs();
+		character.alive = true;
+		character.playSound("revive");
+		character.addMusicSource("demo_X3", character.getCenterPos(), false, loop: false);
 		if (!isMK5) {
 			drDopplerAnim = new Anim(character.pos.addxy(30 * character.xDir, -15), "drdoppler", -character.xDir, null, false);
 			drDopplerAnim.blink = true;
@@ -141,13 +158,12 @@ public class VileRevive : CharState {
 	}
 }
 
-public class VileHover : CharState {
+public class VileHover : VileState {
 	public SoundWrapper? soundh;
 	public Point flyVel;
 	float flyVelAcc = 500;
 	float flyVelMaxSpeed = 200;
 	public float fallY;
-	Vile vile = null!;
 
 	public VileHover(string transitionSprite = "") : base("hover", "hover_shoot", transitionSprite) {
 		exitOnLanding = true;
@@ -247,7 +263,6 @@ public class VileHover : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		vile = character as Vile ?? throw new NullReferenceException();
 		character.useGravity = false;
 		if (vile.hasSpeedDevil) {
 			flyVelMaxSpeed *= 1.1f;
@@ -256,7 +271,7 @@ public class VileHover : CharState {
 
 		float flyVelX = 0;
 		if (character.deltaPos.x != 0) {
-			flyVelX = character.xDir * character.getDashOrRunSpeed() * 0.5f;
+			flyVelX = character.xDir * character.getDashOrRunSpeed() * 0.5f * 60;
 		}
 
 		float flyVelY = 0;

@@ -24,12 +24,12 @@ public class ViralSigmaIdle : CharState {
 	public ViralSigma sigma;
 
 	public ViralSigmaIdle() : base("viral_idle") {
-		immuneToWind = true;
+		pushImmune = true;
 	}
 
 	public override void update() {
 		stateTime += Global.spf;
-		character.stopMoving();
+		character.stopMovingS();
 
 		var inputDir = player.input.getInputDir(player);
 		var moveAmount = inputDir.times(125);
@@ -49,7 +49,7 @@ public class ViralSigmaIdle : CharState {
 				return;
 			}
 
-			if (player.input.isPressed(Control.Shoot, player) && player.sigmaAmmo >= player.weapon.getAmmoUsage(0)) {
+			if (player.input.isPressed(Control.Shoot, player) && sigma.mainWeapon.ammo >= player.weapon.getAmmoUsage(0)) {
 				character.changeState(new ViralSigmaShoot(inputDir.x != 0 ? inputDir.x : sigma.lastViralXDir), true);
 				return;
 			}
@@ -80,7 +80,7 @@ public class ViralSigmaTaunt : CharState {
 	float lastFrameTime;
 	bool isWin;
 	public ViralSigmaTaunt(bool isWin) : base("viral_taunt") {
-		immuneToWind = true;
+		pushImmune = true;
 		this.isWin = isWin;
 	}
 
@@ -104,7 +104,7 @@ public class ViralSigmaPossessStart : CharState {
 	public ViralSigma sigma;
 
 	public ViralSigmaPossessStart(Character target) : base("viral_possess") {
-		immuneToWind = true;
+		pushImmune = true;
 		this.target = target;
 	}
 
@@ -120,8 +120,8 @@ public class ViralSigmaPossessStart : CharState {
 			sigma.possessEnemyTime = 0;
 			sigma.numPossesses++;
 			float ammoToRefill = 32; //character.player.health
-			player.sigmaAmmo += ammoToRefill;
-			if (player.sigmaAmmo > player.sigmaMaxAmmo) player.sigmaAmmo = player.sigmaMaxAmmo;
+			sigma.mainWeapon.ammo += ammoToRefill;
+			if (sigma.mainWeapon.ammo > sigma.mainWeapon.maxAmmo) sigma.mainWeapon.ammo = sigma.mainWeapon.maxAmmo;
 			target.player.startPossess(player, sendRpc: true);
 			character.changeState(new ViralSigmaPossess(target), true);
 			return;
@@ -145,7 +145,7 @@ public class ViralSigmaPossess : CharState {
 	public ViralSigma sigma;
 
 	public ViralSigmaPossess(Character target) : base("viral_exit") {
-		immuneToWind = true;
+		pushImmune = true;
 		this.target = target;
 	}
 
@@ -192,10 +192,12 @@ public class ViralSigmaPossess : CharState {
 }
 
 public class ViralSigmaShoot : CharState {
+	public ViralSigma sigma;
 	int xDir;
 	ViralSigmaShootProj proj;
+
 	public ViralSigmaShoot(float xDir) : base("viral_spit") {
-		immuneToWind = true;
+		pushImmune = true;
 		this.xDir = MathF.Sign(xDir);
 		if (this.xDir == 0) this.xDir = 1;
 	}
@@ -206,7 +208,7 @@ public class ViralSigmaShoot : CharState {
 		var mechaniloidWeapon = player.weapon as MechaniloidWeapon;
 		var poi = character.getFirstPOI();
 		if (poi != null && !once) {
-			player.sigmaAmmo -= mechaniloidWeapon.getAmmoUsage(0);
+			sigma.mainWeapon.ammo -= mechaniloidWeapon.getAmmoUsage(0);
 			once = true;
 			//character.playSound("viralSigmaShoot", sendRpc: true);
 			proj = new ViralSigmaShootProj(mechaniloidWeapon, poi.Value, xDir, player, player.getNextActorNetId(), rpc: true);
@@ -222,9 +224,10 @@ public class ViralSigmaShoot : CharState {
 	}
 
 	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
+		base.onEnter(oldState);		
+		sigma = character as ViralSigma;
 		character.xDir = xDir;
-		character.angle = null;
+		character.angle = 0;
 	}
 
 	public override void onExit(CharState? newState) {
@@ -280,7 +283,7 @@ public class ViralSigmaTackle : CharState {
 	public ViralSigma sigma;
 
 	public ViralSigmaTackle(Point tackleDir) : base("viral_tackle") {
-		immuneToWind = true;
+		pushImmune = true;
 		this.tackleDir = tackleDir;
 	}
 
@@ -318,7 +321,7 @@ public class ViralSigmaBeamState : CharState {
 	public ViralSigma sigma;
 
 	public ViralSigmaBeamState() : base("viral_shoot") {
-		immuneToWind = true;
+		pushImmune = true;
 	}
 
 	public override void update() {
@@ -489,25 +492,25 @@ public class ViralSigmaRevive : CharState {
 			}
 		} else if (state == 2) {
 			if (stateTime > 0f) {
-				player.health = 1;
-				character.addHealth(player.maxHealth);
+				character.health = 1;
+				character.addHealth(character.maxHealth);
 				state = 3;
 			}
 		} else if (state == 3) {
 			if (Global.debug && player.input.isPressed(Control.Special1, player)) {
-				player.health = player.maxHealth;
+				character.health = character.maxHealth;
 			}
 
-			if (player.health >= player.maxHealth) {
-				player.weapons.Add(new MechaniloidWeapon(player, MechaniloidType.Tank));
-				player.weapons.Add(new MechaniloidWeapon(player, MechaniloidType.Hopper));
-				player.weapons.Add(new MechaniloidWeapon(player, MechaniloidType.Bird));
+			if (character.health >= character.maxHealth) {
+				character.weapons.Add(new MechaniloidWeapon(player, MechaniloidType.Tank));
+				character.weapons.Add(new MechaniloidWeapon(player, MechaniloidType.Hopper));
+				character.weapons.Add(new MechaniloidWeapon(player, MechaniloidType.Bird));
 				character.frameSpeed = 1;
 
 				character.invulnTime = 0.5f;
 				character.useGravity = false;
 				character.angle = 0;
-				character.stopMoving();
+				character.stopMovingS();
 				character.grounded = false;
 				character.canBeGrounded = false;
 
@@ -526,6 +529,6 @@ public class ViralSigmaRevive : CharState {
 		character.yScale = 0;
 		character.incPos(new Point(0, -33));
 		character.immuneToKnockback = true;
-		player.sigmaAmmo = player.sigmaMaxAmmo;
+		sigma.mainWeapon.ammo = sigma.mainWeapon.maxAmmo;
 	}
 }

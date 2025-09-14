@@ -9,7 +9,8 @@ public class MagnetMine : Weapon {
 	public const int maxMinesPerPlayer = 10;
 
 	public MagnetMine() : base() {
-		//shootSounds = new string[] { "magnetMine", "magnetMine", "magnetMine", "magnetMineCharged" };
+		displayName = "Magnet Mine";
+		shootSounds = new string[] { "magnetMine", "magnetMine", "magnetMine", "magnetMineCharged" };
 		fireRate = 45;
 		index = (int)WeaponIds.MagnetMine;
 		weaponBarBaseIndex = 15;
@@ -17,11 +18,11 @@ public class MagnetMine : Weapon {
 		weaponSlotIndex = 15;
 		killFeedIndex = 20 + (index - 9);
 		weaknessIndex = (int)WeaponIds.SilkShot;
-		effect = "C: Can absorb projectiles and grow it's size.\nSize growth depends on the damage of the projectile.";
-		hitcooldown = "0/0.2";
-		damage = "2-4/1-2-4";
-		Flinch = "0/26";
-		FlinchCD = "0/1";
+		effect = "U:Planted mines have a limit of 10.\nC:Can absorb projectiles and grow its size.\nGrowth depends on the damage absorbed.";
+		hitcooldown = "0/12";
+		damage = "2,4/1,2,4";
+		flinch = "0/26";
+		flinchCD = "0/1";
 	}
 
 	public override void shoot(Character character, int[] args) {

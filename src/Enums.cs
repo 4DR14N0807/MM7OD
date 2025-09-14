@@ -50,6 +50,7 @@ public enum TCat {
 public enum WeaponIds {
 	// DO NOT change the order of these X weapons
 	Buster = 500,
+	// X1 Weapons.
 	HomingTorpedo,
 	ChameleonSting,
 	RollingShield,
@@ -58,7 +59,7 @@ public enum WeaponIds {
 	ElectricSpark,
 	BoomerangCutter,
 	ShotgunIce,
-
+	// X2 Weapons.
 	CrystalHunter,
 	BubbleSplash,
 	SilkShot,
@@ -67,6 +68,7 @@ public enum WeaponIds {
 	StrikeChain,
 	MagnetMine,
 	SpeedBurner,
+	// X3 Weapons.
 	AcidBurst,
 	ParasiticBomb,
 	TriadThunder,
@@ -76,6 +78,7 @@ public enum WeaponIds {
 	FrostShield,
 	TornadoFang,
 	ShotgunIceAlt,
+	// Other stuff whose order does not matter.
 	GigaCrush,
 	ItemTracer,
 	XSaber,
@@ -94,34 +97,39 @@ public enum WeaponIds {
 	// Adrian: estoy arreglando tu chingadera mamawebo
 	// edit: gud ending si lo arreglé
 	Sigma,
-	ChillPenguin,
-	SparkMandrill,
-	ArmoredArmadillo,
+	// X1 Summons.
 	LaunchOctopus,
-	BoomerangKuwanger,
 	StingChameleon,
-	StormEagle,
+	ArmoredArmadillo,
 	FlameMammoth,
+	StormEagle,
+	SparkMandrill,
+	BoomerangKuwanger,
+	ChillPenguin,
 	Velguarder,
-	WireSponge,
-	WheelGator,
-	BubbleCrab,
-	FlameStag,
-	MorphMoth,
-	MagnaCentipede,
+	// X2 Summons.
 	CrystalSnail,
+	BubbleCrab,
+	MorphMoth,
+	WheelGator,
 	OverdriveOstrich,
+	WireSponge,
+	MagnaCentipede,
+	FlameStag,
 	FakeZero,
-	BlizzardBuffalo,
+	// X3 Summons.
 	ToxicSeahorse,
-	TunnelRhino,
+	BlastHornet,
 	VoltCatfish,
 	CrushCrawfish,
 	NeonTiger,
 	GravityBeetle,
-	BlastHornet,
+	BlizzardBuffalo,
+	TunnelRhino,
 	DrDoppler,
-
+	// Sigma summons end here.
+	
+	// Zero stuff.
 	ZSaber,
 	ZSaberProjSwing,
 	PunchyZSaberProjSwing,
@@ -708,6 +716,8 @@ public enum ProjIds {
 	Sigma2HopperDrill,
 	Sigma2ViralPossess,
 	WSpongeSeed,
+	WSpongeSeedAI,
+	WSpongeSeedAIStriker,
 	WSpongeSpike,
 	WSpongeChainSpin,
 	WSpongeChain,
@@ -756,6 +766,9 @@ public enum ProjIds {
 	FakeZeroSwordBeam,
 	FakeZeroGroundPunch,
 	BBuffaloIceProj,
+	BBuffaloIceProjAI,
+	BBuffaloIceProjAIStriker,
+
 	BBuffaloIceProjGround,
 	BBuffaloBeam,
 	BBuffaloDrag,
@@ -858,6 +871,7 @@ public enum ProjIds {
 
 	// Special damage types.
 	SelfDmg = 30000,
+	SelfTrueDmg,
 
 	// Enviroment effect shenanigans.
 	KillZone = 32000,

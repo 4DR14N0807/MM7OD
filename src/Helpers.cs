@@ -330,13 +330,13 @@ public class Helpers {
 	}
 
 	public static float to360(float angle) {
-		if (angle < 0) angle += 360;
-		if (angle > 360) angle -= 360;
+		angle %= 360;
+		if (angle < 0) { angle += 360; }
 		return angle;
 	}
 	public static float to256(float angle) {
-		if (angle < 0) angle += 256;
-		if (angle > 256) angle -= 256;
+		angle %= 256;
+		if (angle < 0) { angle += 256; }
 		return angle;
 	}
 
@@ -524,12 +524,34 @@ public class Helpers {
 			}
 		}
 	}
+	public static void menuLeftRightIncFloat(ref float val, float min, float max, bool wrap = false, bool playSound = false) {
+		if (min == max) return;
+		if (Global.input.isPressedMenu(Control.MenuLeft)) {
+			val -= 0.25f;
+			if (val < min) {
+				val = wrap ? max : min;
+				if (wrap && playSound) Global.playSound("menuX2");
+			} else {
+				if (playSound) Global.playSound("menuX2");
+			}
+		} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+			val += 0.25f;
+			if (val > max) {
+				val = wrap ? min : max;
+				if (wrap && playSound) Global.playSound("menuX2");
+			} else {
+				if (playSound) Global.playSound("menuX2");
+			}
+		}
+	}
 
-	public static void menuLeftRightBool(ref bool val) {
+	public static void menuLeftRightBool(ref bool val, bool playSound = false) {
 		if (Global.input.isPressedMenu(Control.MenuLeft)) {
 			val = false;
+			if (playSound) Global.playSound("menuX2");
 		} else if (Global.input.isPressedMenu(Control.MenuRight)) {
 			val = true;
+			if (playSound) Global.playSound("menuX2");
 		}
 	}
 

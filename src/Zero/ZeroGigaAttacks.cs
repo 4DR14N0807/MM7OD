@@ -33,7 +33,7 @@ public class RakuhouhaWeapon : Weapon {
 		allowSmallBar = false;
 		damage = "4";
 		hitcooldown = "1";
-		Flinch = "26";
+		flinch = "26";
 		effect = "42 Frames of Invincibility.";
 	}
 
@@ -77,7 +77,7 @@ public class RekkohaWeapon : Weapon {
 		allowSmallBar = false;
 		damage = "3";
 		hitcooldown = "0.5";
-		Flinch = "26";
+		flinch = "26";
 		effect = "79 Frames of Invincibility.";
 	}
 
@@ -112,7 +112,7 @@ public class Messenkou : Weapon {
 		allowSmallBar = false;
 		damage = "2";
 		hitcooldown = "0.5";
-		Flinch = "0";
+		flinch = "0";
 		effect = "42 Frames of Invincibility. Ignores Defense.";
 	}
 
@@ -144,7 +144,7 @@ public class ShinMessenkou : Weapon {
 		allowSmallBar = false;
 		damage = "4";
 		hitcooldown = "1";
-		Flinch = "26";
+		flinch = "26";
 		effect = "42 Frames of Invincibility";
 	}
 
@@ -574,7 +574,6 @@ public abstract class ZeroGigaAttack : CharState {
 	public string effectName = "";
 	public Action? onShoot;
 	public Weapon weapon;
-	public Zero zero = null!;
 	public int attackMaxTime = 38;
 	public int effectFrame = 9;
 	public int shootFrame = 8;
@@ -585,7 +584,7 @@ public abstract class ZeroGigaAttack : CharState {
 
 	public ZeroGigaAttack(string sprite, Weapon weapon) : base(sprite) {
 		invincible = true;
-		stunResistant = true;
+		stunImmune = true;
 		this.weapon = weapon;
 	}
 
@@ -622,11 +621,11 @@ public abstract class ZeroGigaAttack : CharState {
 	}
 	
 	public override void onEnter(CharState oldState) {
+		character.clenaseDmgDebuffs();
 		base.onEnter(oldState);
-		zero = character as Zero ?? throw new NullReferenceException();
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		weapon.shootCooldown = weapon.fireRate;
 		base.onExit(newState);
 	}
@@ -643,7 +642,7 @@ public class RakuhouhaState : ZeroGigaAttack {
 		Point shootPos = character.pos.addxy(4 * xDir, 0);
 		for (int i = 256; i >= 128; i -= 16) {
 			new RakuhouhaProj(
-				shootPos, false, i, 1, zero,
+				shootPos, false, i, 1, character,
 				player, player.getNextActorNetId(), rpc: true
 			);
 		}
@@ -664,7 +663,7 @@ public class MessenkouState : ZeroGigaAttack {
 		Point shootPos = character.pos.addxy(4 * xDir, 0);
 		for (int i = 256; i >= 128; i -= 16) {
 			new RakuhouhaProj(
-				shootPos, true, i, 1, zero,
+				shootPos, true, i, 1, character,
 				player, player.getNextActorNetId(), rpc: true
 			);
 		}
@@ -691,8 +690,8 @@ public class RekkohaState : CharState {
 	public RekkohaState(Weapon weapon) : base("rekkoha") {
 		this.weapon = weapon;
 		invincible = true;
-		stunResistant = true;
-		immuneToWind = true;
+		stunImmune = true;
+		pushImmune = true;
 	}
 
 	public override void update() {
@@ -753,6 +752,7 @@ public class RekkohaState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		character.clenaseAllDebuffs();
 		if (player.isMainPlayer) {
 			effect = new RekkohaEffect();
 		}
@@ -786,11 +786,11 @@ public class ShinMessenkouState : ZeroGigaAttack {
 		Point shootPos = character.pos.addxy(4 * character.xDir, 0);
 		new ShinMessenkouProj(
 			shootPos.addxy(shotDistance * i * character.xDir, 0),
-			1, zero, player, player.getNextActorNetId(), rpc: true
+			1, character, player, player.getNextActorNetId(), rpc: true
 		);
 		new ShinMessenkouProj(
 			shootPos.addxy(shotDistance * i * -character.xDir, 0),
-			-1, zero, player, player.getNextActorNetId(), rpc: true
+			-1, character, player, player.getNextActorNetId(), rpc: true
 		);
 		character.playSound("zeroshinmessenkoubullet");
 	}
@@ -802,7 +802,7 @@ public class DarkHoldShootState : CharState {
 
 	public DarkHoldShootState(Weapon gigaAttack) : base("darkhold") {
 		invincible = true;
-		stunResistant = true;
+		stunImmune = true;
 		this.gigaAttack = gigaAttack;
 	}
 
@@ -818,8 +818,14 @@ public class DarkHoldShootState : CharState {
 		}
 
 		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
 			return;
 		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.clenaseDmgDebuffs();
 	}
 
 	public override void onExit(CharState? newState) {
@@ -836,7 +842,7 @@ public class DarkHoldState : CharState {
 	public float lastArmAngle = 0;
 
 	public DarkHoldState(Character character, float time) : base(character.sprite.name) {
-		immuneToWind = true;
+		pushImmune = true;
 		stunTime = time;
 
 		this.frameIndex = character?.frameIndex ?? 0;
@@ -848,13 +854,13 @@ public class DarkHoldState : CharState {
 
 	public override void update() {
 		base.update();
-		character.stopMoving();
+		character.stopMovingS();
 		if (stunTime <= 0) {
 			stunTime = 0;
 			character.changeToIdleOrFall();
 		}
 		// Does not stack with other time stops.
-		stunTime -= 1;
+		stunTime -= player.mashValue() * 60f;
 	}
 
 	public override bool canEnter(Character character) {
@@ -869,13 +875,13 @@ public class DarkHoldState : CharState {
 		character.useGravity = false;
 		character.frameSpeed = 0;
 		character.frameIndex = frameIndex;
-		character.stopMoving();
+		character.stopMovingS();
 		character.isDarkHoldState = true;
 		invincible = oldState.invincible;
 		specialId = oldState.specialId;
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
 		character.frameSpeed = 1;

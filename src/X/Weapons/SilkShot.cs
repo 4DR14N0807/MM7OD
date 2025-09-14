@@ -7,7 +7,8 @@ public class SilkShot : Weapon {
 	public static SilkShot netWeapon = new();
 
 	public SilkShot() : base() {
-		//shootSounds = new string[] { "silkShot", "silkShot", "silkShot", "silkShotCharged" };
+		displayName = "Silk Shot";
+		shootSounds = new string[] { "silkShot", "silkShot", "silkShot", "silkShotCharged" };
 		fireRate = 45;
 		index = (int)WeaponIds.SilkShot;
 		weaponBarBaseIndex = 11;
@@ -16,8 +17,8 @@ public class SilkShot : Weapon {
 		killFeedIndex = 20 + (index - 9);
 		weaknessIndex = (int)WeaponIds.SpeedBurner;
 		damage = "2+1/4+1";
-		effect = "Able to heal allies.\nRewards one metal by healing 16 HP.";
-		Flinch = "0/26";
+		effect = "Both:Able to heal allies.\nRewards one metal by healing 16 HP.";
+		flinch = "0/26";
 	}
 
 	public override void shoot(Character character, int[] args) {
@@ -30,16 +31,18 @@ public class SilkShot : Weapon {
 
 		if (chargeLevel >= 3) {
 			new SilkShotProjCharged(pos, xDir, mmx, player, player.getNextActorNetId(), true);
-		// } else if (chargeLevel >= 2) {
-		//		new SilkShotProjLv2(pos, xDir, mmx, player, player.getNextActorNetId(), true);
-		} else if (chargeLevel < 3) {
+		}
+		/*else if (chargeLevel >= 2) {
+			new SilkShotProjLv2(pos, xDir, mmx, player, player.getNextActorNetId(), true);
+		}*/
+		else {
 			new SilkShotProj(pos, xDir, mmx, player, player.getNextActorNetId(), true);
 		}
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
 		if (chargeLevel >= 3) return 8;
-		if (chargeLevel >= 2) return 4;
+		//if (chargeLevel >= 2) return 4;
 		else return 1;
 	}
 }

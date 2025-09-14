@@ -184,8 +184,8 @@ public class ControlMenu : IMainMenu {
 	}
 
 	public void render() {
-		var topLeft = new Point(startX + 10, 28);
-		int startYOff = 10;
+		var topLeft = new Point(startX + 86, 34);
+		int startYOff = 8;
 		int cursorYOff = 6;
 
 		if (!inGame) {
@@ -199,9 +199,7 @@ public class ControlMenu : IMainMenu {
 			);
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-			Global.sprites["cursor"].drawToHUD(
-				0, startX, topLeft.y + startYOff + (selectArrowPosY * 8) + cursorYOff + 5
-			);
+			//Global.sprites["cursor"].drawToHUD(0, startX, topLeft.y + startYOff + (selectArrowPosY * 8) + cursorYOff + 5);
 		}
 
 		string subtitle = charNum switch {
@@ -284,6 +282,41 @@ public class ControlMenu : IMainMenu {
 				font, Helpers.controlText("Press [OK] to continue"),
 				Global.screenW / 2, 20 + top, alignment: Alignment.Center
 			);
+		}
+		if (charNum != 3) { //Not Axl
+			for (int i = 0; i < 40; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(1, Global.halfScreenW - 80, Global.halfScreenH - 64 + i * 3);
+			for (int i = 0; i < 40; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(1, Global.halfScreenW + 80, Global.halfScreenH - 64 + i * 3);
+			for (int i = 0; i < 51; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(0, Global.halfScreenW - 75 + i * 3, Global.halfScreenH + 58);
+			for (int i = 0; i < 11; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(0, Global.halfScreenW - 75 + i * 3, Global.halfScreenH - 69);
+			for (int i = 0; i < 11; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(0, Global.halfScreenW + 45 + i * 3, Global.halfScreenH - 69);
+			Global.sprites["optionMode_tubes"].drawToHUD(5, Global.halfScreenW - 79, Global.halfScreenH + 58);
+			Global.sprites["optionMode_tubes"].drawToHUD(4, Global.halfScreenW + 80, Global.halfScreenH + 58);
+			Global.sprites["optionMode_tubes"].drawToHUD(7, Global.halfScreenW - 79, Global.halfScreenH - 68);
+			Global.sprites["optionMode_tubes"].drawToHUD(6, Global.halfScreenW + 80, Global.halfScreenH - 68);
+			Global.sprites["optionMode_tubes"].drawToHUD(2, Global.halfScreenW + 42, Global.halfScreenH - 69);
+			Global.sprites["optionMode_tubes"].drawToHUD(3, Global.halfScreenW - 42, Global.halfScreenH - 69);
+		} else { //Axl
+			for (int i = 0; i < 56; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(1, Global.halfScreenW - 80, Global.halfScreenH - 88 + i * 3);
+			for (int i = 0; i < 56; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(1, Global.halfScreenW + 80, Global.halfScreenH - 88 + i * 3);
+			for (int i = 0; i < 51; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(0, Global.halfScreenW - 75 + i * 3, Global.halfScreenH + 80);
+			for (int i = 0; i < 11; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(0, Global.halfScreenW - 75 + i * 3, Global.halfScreenH - 94);
+			for (int i = 0; i < 11; i++)
+				Global.sprites["optionMode_tubes"].drawToHUD(0, Global.halfScreenW + 45 + i * 3, Global.halfScreenH - 93);
+			Global.sprites["optionMode_tubes"].drawToHUD(5, Global.halfScreenW - 79, Global.halfScreenH + 80);
+			Global.sprites["optionMode_tubes"].drawToHUD(4, Global.halfScreenW + 80, Global.halfScreenH + 80);
+			Global.sprites["optionMode_tubes"].drawToHUD(7, Global.halfScreenW - 79, Global.halfScreenH - 92);
+			Global.sprites["optionMode_tubes"].drawToHUD(6, Global.halfScreenW + 80, Global.halfScreenH - 92);
+			Global.sprites["optionMode_tubes"].drawToHUD(2, Global.halfScreenW + 42, Global.halfScreenH - 93);
+			Global.sprites["optionMode_tubes"].drawToHUD(3, Global.halfScreenW - 42, Global.halfScreenH - 94);
 		}
 	}
 }

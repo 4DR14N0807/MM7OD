@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SFML.Graphics;
@@ -6,8 +6,9 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class ViralSigma : Character {
-	long originalZIndex;
-	bool viralOnce;
+	public Weapon mainWeapon = new ViralSigmaWeapon();
+	public long originalZIndex;
+	public bool viralOnce;
 
 	public float viralSigmaTackleCooldown;
 	public float viralSigmaTackleMaxCooldown = 1;
@@ -65,7 +66,7 @@ public class ViralSigma : Character {
 		if (charState is not Die) {
 			lastViralSprite = sprite.name;
 			lastViralFrameIndex = frameIndex;
-			lastViralAngle = angle ?? 0;
+			lastViralAngle = angle;
 
 			var inputDir = player.input.getInputDir(player);
 			if (inputDir.x != 0) lastViralXDir = MathF.Sign(inputDir.x);
@@ -76,7 +77,7 @@ public class ViralSigma : Character {
 			}
 
 			if (charState is not ViralSigmaRevive) {
-				angle = Helpers.moveAngle(angle ?? 0, viralAngle, Global.spf * 500, snap: true);
+				angle = Helpers.moveAngle(angle, viralAngle, Global.spf * 500, snap: true);
 			}
 			if (player.weapons.Count >= 3) {
 				if (isWading()) {
@@ -131,7 +132,9 @@ public class ViralSigma : Character {
 				var damageCollider = getAllColliders().FirstOrDefault(c => c.isAttack());
 				Point centerPoint = damageCollider.shape.getRect().center();
 				Projectile proj = new GenericMeleeProj(
-					new ViralSigmaTackleWeapon(player), centerPoint, ProjIds.Sigma2ViralTackle, player
+					new ViralSigmaTackleWeapon(player), centerPoint,
+					ProjIds.Sigma2ViralTackle, player,
+					addToLevel: true
 				);
 				proj.globalCollider = damageCollider.clone();
 				return proj;
@@ -156,7 +159,7 @@ public class ViralSigma : Character {
 		List<ShaderWrapper> shaders = base.getShaders();
 		ShaderWrapper? palette = null;
 
-		int paletteNum = 6 - MathInt.Ceiling((player.health / player.maxHealth) * 6);
+		int paletteNum = 6 - MathInt.Ceiling(health / maxHealth * 6);
 		if (sprite.name.Contains("_enter")) {
 			paletteNum = 0;
 		}
@@ -221,4 +224,16 @@ public class ViralSigma : Character {
 		Global.level.addEffect(ede);
 	}
 	*/
+}
+
+public class ViralSigmaWeapon : Weapon {
+	public ViralSigmaWeapon() {
+		index = (int)WeaponIds.Sigma2Ball2;
+		weaponBarBaseIndex = 61;
+		weaponBarIndex = 50;
+		allowSmallBar = false;
+
+		maxAmmo = 28;
+		ammo = maxAmmo;
+	}
 }

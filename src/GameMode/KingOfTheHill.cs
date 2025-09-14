@@ -28,7 +28,7 @@ public class KingOfTheHill : GameMode {
 		int hudcpX = (int)Global.screenW - 111;
 		if (!shouldDrawRadar()) hudcpX += 48;
 
-		ControlPoint hill = level?.hill;
+		ControlPoint? hill = level?.hill;
 		if (hill == null) return;
 
 		string hillText;

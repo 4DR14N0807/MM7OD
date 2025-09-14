@@ -76,6 +76,8 @@ public partial class Actor : GameObject {
 	public Point pos; //Current location
 	public Point prevPos;
 	public Point deltaPos;
+	public Point stackedMoveDelta;
+	public Point moveDelta;
 	public Point vel;
 	public Point lastGroundedPos;
 	public float xPushVel;
@@ -87,6 +89,7 @@ public partial class Actor : GameObject {
 	public bool isPlatform;
 	public bool isSolidWall;
 	public Func<GameObject, bool>? selectiveSolididyFunc;
+	public bool slideOnIce;
 	public bool cachedUndewater;
 	public Point cachedUndewaterPos = new Point(float.MinValue, float.MinValue);
 
@@ -100,7 +103,7 @@ public partial class Actor : GameObject {
 	public bool startMethodCalled;
 	// Angle stuff.
 	// We a 256 for a full turn to make easier to send over netcode.
-	public float? _byteAngle;
+	public float _byteAngle;
 	public bool customAngleRendering;
 	public bool useGravity;
 	public bool? gravityOverride;
@@ -198,6 +201,7 @@ public partial class Actor : GameObject {
 	public float timeStopTime;
 	public bool highPiority;
 	public bool lowPiority;
+	public bool movedUpOnFrame;
 
 	public Actor(
 		string spriteName, Point pos, ushort? netId, bool ownedByLocalPlayer, bool addToLevel
@@ -433,28 +437,30 @@ public partial class Actor : GameObject {
 		}
 	}
 
-
-	public float? angle {
+	public float angle {
 		get {
 			return _byteAngle * 1.40625f;
 		}
 		set {
-			if (value == null) {
-				return;
-			}
 			angleSet = true;
 			_byteAngle = (value / 1.40625f) % 256;
+			if (_byteAngle < 0) {
+				_byteAngle += 256;
+			}
 		}
 	}
 
 	public bool angleSet;
 	public float byteAngle {
 		get {
-			return _byteAngle ?? 0;
+			return _byteAngle;
 		}
 		set {
 			angleSet = true;
 			_byteAngle = value % 256;
+			if (_byteAngle < 0) {
+				_byteAngle += 256;
+			}
 		}
 	}
 
@@ -484,6 +490,7 @@ public partial class Actor : GameObject {
 	public virtual void preUpdate() {
 		collidedInFrame.Clear();
 		deltaPos = pos.subtract(prevPos);
+		moveDelta = stackedMoveDelta;
 		prevPos = pos;
 
 		if (locallyControlled && sprite.name != "null") {
@@ -560,7 +567,7 @@ public partial class Actor : GameObject {
 		}
 
 		// Get misc. projectiles based on conditions (i.e. headbutt, awakened zero aura)
-		var projToCreateDict = getGlobalProjs();
+		Dictionary<int, Func<Projectile>> projToCreateDict = getGlobalProjs();
 
 		// If the projectile id wasn't returned, remove it from current globalProj list.
 		for (int i = globalProjs.Count - 1; i >= 0; i--) {
@@ -569,14 +576,17 @@ public partial class Actor : GameObject {
 				globalProjs[i].destroySelf();
 				globalProjs.RemoveAt(i);
 			}
+			else if (globalProjs[i].destroyed) {
+				globalProjs.RemoveAt(i);
+			}
 		}
 
 		// For all projectiles to create, add to the global proj list ONLY if the proj id doesn't already exist
 		foreach (var kvp in projToCreateDict) {
-			var projIdToCreate = kvp.Key;
-			var projFunction = kvp.Value;
+			int projIdToCreate = kvp.Key;
+			Func<Projectile> projFunction = kvp.Value;
 			if (!globalProjs.Any(p => p.projId == projIdToCreate)) {
-				var newlyCreatedProj = projFunction();
+				Projectile newlyCreatedProj = projFunction();
 				globalProjs.Add(newlyCreatedProj);
 			}
 		}
@@ -597,7 +607,7 @@ public partial class Actor : GameObject {
 
 	public virtual void update() {
 		if (immuneToKnockback) {
-			stopMoving();
+			stopMovingS();
 		}
 
 		//G.Hold floating
@@ -709,7 +719,8 @@ public partial class Actor : GameObject {
 					if (bigBubbleTime <= 0) {
 						bigBubbleTime = 0.08f;
 						var points = globalCollider?.shape.points;
-						//if (points != null && points.Count >= 1) new BubbleAnim(new Point(pos.x, points[0].y), "bigbubble" + ((Global.frameCount % 3) + 1));
+						//if (points != null && points.Count >= 1) 
+						// new BubbleAnim(new Point(pos.x, points[0].y), "bigbubble" + ((Global.frameCount % 3) + 1));
 					}
 				}
 			} else {
@@ -739,35 +750,42 @@ public partial class Actor : GameObject {
 		float grav = getGravity();
 		float terminalVelUp = getFallSpeed(false);
 		float terminalVelDown = getFallSpeed();
-		//if (underwater) terminalVelDown = Physics.MaxUnderwaterFallSpeed;
 
 		if (gravityOverride ?? useGravity && !grounded) {
+			// Water slowing down the fall.
 			if (underwater) {
 				grav *= 0.5f;
 			}
+			// Apply gravity only if bellow terminal vel.
+			// This allows some attacks to go beyond it.
 			if (grav > 0 && vel.y < terminalVelDown) {
 				vel.y += grav * Global.speedMul;
 				if (vel.y > terminalVelDown) {
 					vel.y = terminalVelDown;
 				}
-			} else if (grav < 0) {
+			}
+			// Reverse gravity stuff.
+			else if (grav < 0 && vel.y > -terminalVelDown) {
 				vel.y += grav * Global.speedMul;
-				if (vel.y < -terminalVelUp) {
-					vel.y = -terminalVelUp;
+				if (vel.y < -terminalVelDown) {
+					vel.y = -terminalVelDown;
 				}
 			}
+			// Celling bump mechanic.
 			int gravDir = MathF.Sign(grav);
-			if (gravDir != 0  &&
-				Global.level.checkTerrainCollisionOnce(this, 0, -gravDir, checkPlatforms: true, checkQuicksand: true) != null
+			if (gravDir != 0 && vel.y * gravDir < 0 &&
+				Global.level.checkTerrainCollisionOnce(
+					this, 0, -gravDir, checkPlatforms: false
+				) != null
 			) {
 				vel.y = 0;
 			}
 		}
 
-		if (Math.Abs(xPushVel) > 5) {
+		if (Math.Abs(xPushVel) > 0.1f) {
 			xPushVel = Helpers.lerp(xPushVel, 0, Global.spf * 5);
 
-			var wall = Global.level.checkTerrainCollisionOnce(this, xPushVel * Global.spf, 0);
+			var wall = Global.level.checkTerrainCollisionOnce(this, xPushVel * speedMul, 0);
 			if (wall != null && wall.gameObject is Wall) {
 				xPushVel = 0;
 			}
@@ -776,19 +794,22 @@ public partial class Actor : GameObject {
 		}
 
 		// Heavy Flinch Push
-		if (Math.Abs(xFlinchPushVel) > 5) {
+		if (Math.Abs(xFlinchPushVel) > 0.1f) {
 			xFlinchPushVel = Helpers.lerp(xFlinchPushVel, 0f, Global.spf * 5);
 		} else if (xFlinchPushVel != 0f) {
 			xFlinchPushVel = 0f;
 		}
 
-		if (Math.Abs(yPushVel) > 5) {
+		if (Math.Abs(yPushVel) > 0.1f) {
 			yPushVel = Helpers.lerp(yPushVel, 0f, Global.spf * 5);
-		} else if (yPushVel != 0f) {
+		}
+		else if (yPushVel != 0f) {
 			yPushVel = 0f;
 		}
 
-		if (xTenguPushVel != 0 && Math.Sign(xTenguPushVel) != xDir) xTenguPushVel = 0;
+		if (xTenguPushVel != 0 && Math.Sign(xTenguPushVel) != xDir) {
+			xTenguPushVel = 0;
+		}
 		if (Math.Abs(xTenguPushVel) > 5) {
 			xTenguPushVel = Helpers.lerp(xTenguPushVel, 0, Global.spf * 7);
 
@@ -800,36 +821,14 @@ public partial class Actor : GameObject {
 			xTenguPushVel = 0;
 		}
 
-		if (Math.Abs(xSwingVel) > 0) {
-			if (chr != null) {
-				if (chr.player.isX) {
-					if (!chr.player.input.isHeld(Control.Dash, chr.player) || chr.flag != null) {
-						xSwingVel = Helpers.lerp(xSwingVel, 0, Global.spf * 5);
-						if (MathF.Abs(xSwingVel) < 20) xSwingVel = 0;
-					}
-				}
-
-				if (chr.player.input.isHeld(Control.Left, chr.player) && xSwingVel > 0) {
-					xSwingVel -= Global.spf * 1000;
-					if (xSwingVel < 0) xSwingVel = 0;
-				} else if (chr.player.input.isHeld(Control.Right, chr.player) && xSwingVel < 0) {
-					xSwingVel += Global.spf * 1000;
-					if (xSwingVel > 0) xSwingVel = 0;
-				}
+		if (Math.Abs(xSwingVel) > 0.1f) {
+			if (grounded ||
+				Global.level.checkTerrainCollisionOnce(this, xSwingVel * speedMul, 0)?.gameObject is Wall
+			) {
+				xSwingVel = 0;
 			}
-
-			var wall = Global.level.checkTerrainCollisionOnce(this, xSwingVel * Global.spf, 0);
-			if (wall != null && wall.gameObject is Wall) xSwingVel = 0;
-			if (grounded) xSwingVel = 0;
-			if (Math.Abs(xSwingVel) < 5) xSwingVel = 0;
-
-			if (chr != null) {
-				if (chr.charState is UpDash || chr.charState is Hover) xSwingVel = 0;
-				if (chr.charState is Dash || chr.charState is AirDash) {
-					//if (MathF.Sign(chr.xDir) != MathF.Sign(xSwingVel)) xSwingVel = 0;
-					xSwingVel = 0;
-				}
-			}
+		} else if (xSwingVel != 0f) {
+			xSwingVel = 0f;
 		}
 
 		if (!grounded) {
@@ -837,14 +836,14 @@ public partial class Actor : GameObject {
 		}
 		if (xIceVel != 0f) {
 			xIceVel = Helpers.lerp(xIceVel, 0f, Global.spf);
-			if (MathF.Abs(xIceVel) < 1f) {
+			if (MathF.Abs(xIceVel) < 1 / 32f) {
 				xIceVel = 0f;
 			} else {
 				// Gacel's notes:
 				// There must be a better way to do this, really.
 				Point oldPos = pos;
 				Point oldDeltaPos = deltaPos;
-				move(new Point(xIceVel, 0), useDeltaTime: true, useIce: false);
+				moveXY(xIceVel, 0, useIce: false);
 				if (oldPos.x == pos.x && oldPos.y == pos.y) {
 					xIceVel = 0f;
 				}
@@ -859,24 +858,20 @@ public partial class Actor : GameObject {
 			if (vel.y > 0) vel.y = 0;
 		}
 
-		if (this is Character) {
-			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel + xTenguPushVel, 0), true, true, false);
+		if (!isStatic) {
+			float xExtraSpeed = xFlinchPushVel + xIceVel + xPushVel + xSwingVel;
+			movePoint((vel / 60f).addxy(xExtraSpeed, 0), true, true, false);
 			if (yPushVel != 0) {
-				move(new Point(0, yPushVel), true, false, false);
-			}
-		} else if (!isStatic) {
-			move(vel.addxy(xFlinchPushVel + xIceVel + xPushVel + xSwingVel + xTenguPushVel, 0), true, true, false);
-			if (yPushVel != 0) {
-				move(new Point(0, yPushVel), true, false, false);
+				moveXY(0, yPushVel, true, false, false);
 			}
 		}
 		freeFromCollision();
 
 		float yMod = reversedGravity ? -1 : 1;
-		if (physicsCollider != null && !isStatic && (canBeGrounded || (gravityOverride ?? useGravity))) {
-			float yDist = 1;
-			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y && !movedUp) {
-				yDist = 4;
+		if (physicsCollider != null && !isStatic && (canBeGrounded || gravityOverride ?? useGravity)) {
+			float yDist = 1 * Global.gameSpeed;
+			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y && !movedUpOnFrame) {
+				yDist = 4 * Global.gameSpeed;
 			}
 			yDist *= yMod;
 			CollideData? collideData = Global.level.checkTerrainCollisionOnce(
@@ -918,16 +913,16 @@ public partial class Actor : GameObject {
 
 				Wall? hitWall = collideData.gameObject as Wall;
 				if (hitWall?.isMoving == true) {
-					move(hitWall.deltaMove, useDeltaTime: false);
+					movePoint(hitWall.deltaMove, useDeltaTime: false);
 				} else if (hitWall != null && hitWall.moveX != 0) {
 					if (this is RideChaser rc) {
-						rc.addXMomentum(hitWall.moveX);
+						rc.addXMomentum(hitWall.moveX * 60);
 					} else {
-						move(new Point(hitWall.moveX, 0));
+						moveXY(hitWall.moveX, 0);
 					}
 				}
 				if (isPlatform && hitActor != null) {
-					move(hitActor.deltaPos, useDeltaTime: false);
+					movePoint(hitActor.deltaPos, useDeltaTime: false);
 				}
 
 				groundedIce = false;
@@ -957,7 +952,7 @@ public partial class Actor : GameObject {
 		if (grounded) {
 			lastGroundedPos = pos;
 		}
-		movedUp = false;
+		movedUpOnFrame = false;
 	}
 
 	public float getTopY() {
@@ -1007,7 +1002,9 @@ public partial class Actor : GameObject {
 				killer = lastAttacker.attacker;
 				weaponIndex = lastAttacker.weapon;
 				// If a suicide or stage kill. Search for anyone else.
-				if (killer == Player.stagePlayer || killer == ownPlayer) continue;
+				if (killer == Player.stagePlayer || killer == ownPlayer) {
+					continue;
+				}
 				break;
 			}
 		}
@@ -1099,7 +1096,7 @@ public partial class Actor : GameObject {
 	}
 
 	public void netUpdate() {
-		if (netId == null) return;
+			if (netId == null) return;
 		if (destroyPosSet) {
 			destroyPosTime += Global.spf;
 			incPos(vel.times(Global.spf));
@@ -1122,7 +1119,7 @@ public partial class Actor : GameObject {
 				return;
 			}
 
-			float frameSmooth = Global.frameCount - lastNetFrame + 1;
+			float frameSmooth = Global.floorFrameCount - lastNetFrame + 1;
 			if (frameSmooth < 1) { frameSmooth = 1; }
 
 			if (frameSmooth > 1 && interplorateNetPos) {
@@ -1169,7 +1166,6 @@ public partial class Actor : GameObject {
 					changePos(netPos);
 				}
 			}
-
 
 			int spriteIndex = -1;
 			if (Global.spriteIndexByName.ContainsKey(sprite.name)) {
@@ -1250,7 +1246,7 @@ public partial class Actor : GameObject {
 			sprite.draw(
 				frameIndex, drawX, drawY, xDir, yDir,
 				getRenderEffectSet(), alpha, xScale, yScale, zIndex,
-				getShaders(), angle: angle ?? 0, actor: this, useFrameOffsets: true
+				getShaders(), angle: angle, actor: this, useFrameOffsets: true
 			);
 		}
 
@@ -1428,7 +1424,7 @@ public partial class Actor : GameObject {
 
 		if (!destroyed) {
 			destroyed = true;
-			destroyedOnFrame = Global.frameCount;
+			destroyedOnFrame = Global.floorFrameCount;
 			if (Global.serverClient != null &&
 				netId is not null &&
 				Global.level.actorsById.ContainsKey(netId.Value)
@@ -1446,7 +1442,9 @@ public partial class Actor : GameObject {
 		ushort spriteNameIndex = ushort.MaxValue;
 		if (!String.IsNullOrEmpty(spriteName)) {
 			var anim = new Anim(getCenterPos(), spriteName, xDir, null, true);
-			anim.byteAngle = byteAngle;
+			if (angleSet) {
+				anim.byteAngle = byteAngle;
+			}
 			anim.xScale = xScale;
 			anim.yScale = yScale;
 			spriteNameIndex = Global.spriteIndexByName[spriteName];
@@ -1480,8 +1478,8 @@ public partial class Actor : GameObject {
 			}
 		}
 
-		foreach (var proj in globalProjs) {
-			proj?.destroySelf();
+		foreach (Projectile proj in globalProjs) {
+			proj.destroySelf();
 		}
 
 		destroyMusicSource();
@@ -1490,9 +1488,9 @@ public partial class Actor : GameObject {
 	public void shakeCamera(bool sendRpc = false) {
 		Point originPoint = Global.level.getSoundListenerOrigin();
 		var dist = originPoint.distanceTo(pos);
-		float distFactor = ownedByLocalPlayer ? Global.screenW : Global.screenW * 0.25f;
+		float distFactor = ownedByLocalPlayer ? Global.screenW : Global.screenW * 0.5f;
 		var percent = Helpers.clamp01(1 - (dist / (distFactor)));
-		Global.level.shakeY = percent * 0.2f;
+		Global.level.shakeY = percent * 24f;
 		if (sendRpc) {
 			RPC.actorToggle.sendRpc(netId, RPCActorToggleType.ShakeCamera);
 		}
@@ -1644,18 +1642,22 @@ public partial class Actor : GameObject {
 	}
 
 	public void updateProjectileCooldown() {
-		foreach (var key in projectileCooldown.Keys.ToList()) {
-			string projName = key;
+		foreach (string key in projectileCooldown.Keys.ToList()) {
 			float cooldown = projectileCooldown[key];
 			if (cooldown > 0) {
-				projectileCooldown[projName] = Helpers.clampMin(cooldown - 1, 0);
+				projectileCooldown[key] = Helpers.clampMin(cooldown - Global.gameSpeed, 0);
 			}
 		}
-		foreach (var key in flinchCooldown.Keys.ToList()) {
-			int projName = key;
+		foreach (string key in flinchCooldown.Keys.ToList()) {
 			float cooldown = flinchCooldown[key];
 			if (cooldown > 0) {
-				flinchCooldown[projName] = Helpers.clampMin(cooldown - 1, 0);
+				flinchCooldown[key] = Helpers.clampMin(cooldown - Global.gameSpeed, 0);
+			}
+		}
+		foreach (int key in globalFlinchCooldown.Keys.ToList()) {
+			float cooldown = globalFlinchCooldown[key];
+			if (cooldown > 0) {
+				globalFlinchCooldown[key] = Helpers.clampMin(cooldown - Global.gameSpeed, 0);
 			}
 		}
 	}
@@ -1684,23 +1686,23 @@ public partial class Actor : GameObject {
 	}
 
 	public void turnToInput(Input input, Player player) {
-		if (input.isHeld(Control.Left, player)) {
-			xDir = -1;
-		} else if (input.isHeld(Control.Right, player)) {
-			xDir = 1;
+		int dir = input.getXDir(player);
+		if (dir != 0) {
+			xDir = dir;
 		}
 	}
 
-	public void stopMoving() {
+	public void stopMovingS() {
 		xIceVel = 0;
 		xPushVel = 0;
+		yPushVel = 0;
 		xSwingVel = 0;
 		xTenguPushVel = 0;
 		vel.x = 0;
 		vel.y = 0;
 	}
 
-	public void stopMovingWeak() {
+	public void stopMoving() {
 		vel.x = 0;
 		vel.y = 0;
 	}
@@ -1778,7 +1780,7 @@ public partial class Actor : GameObject {
 	}
 
 	public Point? getFirstPOI(int index = 0) {
-		if (sprite.getCurrentFrame().POIs.Length > 0) {
+		if (sprite.getCurrentFrame().POIs.Length > index) {
 			Point poi = sprite.getCurrentFrame().POIs[index];
 			return getPoiOrigin().addxy(poi.x * xDir * xScale, poi.y * yScale);
 		}
@@ -1866,6 +1868,20 @@ public partial class Actor : GameObject {
 		}
 	}
 
+	public void moveWithMovingPlatform() {
+		if (!Global.level.hasMovingPlatforms) isStatic = true;
+		var collideDatas = Global.level.getTerrainTriggerList(
+			this, new Point(0, 1), typeof(Wall), typeof(MovingPlatform)
+		);
+		foreach (var collideData in collideDatas) {
+			var hitWall = collideData?.gameObject as Wall;
+			if (hitWall != null && hitWall.isMoving) {
+				movePoint(hitWall.deltaMove, useDeltaTime: false);
+				break;
+			}
+		}
+	}
+
 	public virtual bool canBePlatform(GameObject other) {
 		return true;
 	}
@@ -1881,6 +1897,7 @@ public partial class Actor : GameObject {
 	public const int labelNameOffY = 10;
 
 	public float currentLabelY;
+
 	public void deductLabelY(float amount) {
 		currentLabelY -= amount;
 		// DrawWrappers.DrawLine(pos.x - 10, pos.y + currentLabelY, pos.x + 10, pos.y + currentLabelY, Color.Red, 1, ZIndex.HUD);

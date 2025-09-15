@@ -108,7 +108,7 @@ public class LightningBoltState : CharState {
 		else {
 			character.yPushVel = 2 * 60;
 		}
-		character.stopMovingWeak();
+		character.stopMoving();
 		character.frameSpeed = 0;
 		anim = new Anim(character.pos.add(animOffset), "lightning_bolt_anim", character.xDir,
 			character.player.getNextActorNetId(), true); 
@@ -179,7 +179,7 @@ public class LightningBoltState : CharState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		character.stopMovingWeak();
+		character.stopMoving();
 		character.useGravity = true;
 		aim?.destroySelf();
 		Weapon? bolt = bass.weapons.FirstOrDefault((Weapon w) => w is LightningBolt);

@@ -144,7 +144,7 @@ public class CharState {
 		}
 		if (!useGravity || character.isDWrapped) {
 			character.useGravity = false;
-			character.stopMovingWeak();
+			character.stopMoving();
 		}
 		if (this is not Run and not Idle and not Taunt) {
 			player.delayETank();
@@ -169,9 +169,6 @@ public class CharState {
 			if (this is not Die && this is not Hurt) {
 				return false;
 			}
-		}
-		if (character.charState is WarpOut && this is not WarpIn) {
-			return false;
 		}
 		return true;
 	}
@@ -554,69 +551,6 @@ public class WarpIdle : CharState {
 	}
 }
 
-public class WarpIdle : CharState {
-	public bool firstSpawn;
-	public bool fullHP;
-	public bool fullAlt;
-	float healTime = -4;
-
-	public WarpIdle(bool firstSpawn = false) : base("win") {
-		this.firstSpawn = firstSpawn;
-		invincible = true;
-		statusEffectImmune = true;
-	}
-
-	public override void update() {
-		base.update();
-		refillNormal();
-
-		if ((character.isAnimOver() || character.sprite.loopCount >= 1) && fullHP && fullAlt) {
-			character.changeToIdleOrFall();
-		}
-	}
-
-
-	public void refillNormal() {
-		fullAlt = true;
-		healTime += Global.gameSpeed;
-		if (fullHP || healTime < 3) {
-			return;
-		}
-		// Health.
-		if (character.health < character.maxHealth) {
-			decimal hpMod = Player.getHpDMod();
-			if (hpMod < 1) { hpMod = 1; }
-			character.health = Helpers.clampMax(
-				character.health + hpMod, character.maxHealth
-			);
-		} else {
-			fullHP = true;
-		}
-		if (Global.level.mainPlayer.character == character) {
-			character.playSound("heal", forcePlay: true);
-		}
-		healTime = 0;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.stopMovingS();
-		character.useGravity = false;
-		specialId = SpecialStateIds.WarpIdle;
-		character.invulnTime = firstSpawn ? 5 : 0;
-	}
-
-	public override void onExit(CharState? newState) {
-		base.onExit(newState);
-		character.visible = true;
-		character.useGravity = true;
-		character.splashable = true;
-		specialId = SpecialStateIds.None;
-		if (character.ownedByLocalPlayer) {
-			character.invulnTime = firstSpawn ? 1 : 0;
-		}
-	}
-}
 
 public class WarpOut : CharState {
 	public bool warpSoundPlayed;
@@ -640,7 +574,7 @@ public class WarpOut : CharState {
 
 		if (character.player == Global.level.mainPlayer && !warpSoundPlayed) {
 			warpSoundPlayed = true;
-			character.playSound("warpin");
+			character.playSound("warpOut", forcePlay: true, sendRpc: true);
 		}
 
 		warpAnim.pos.y -= Global.spf * 1000;
@@ -1397,13 +1331,6 @@ public class LadderClimb : CharState {
 				dropFromLadder();
 			}
 		}
-		if (character is Axl axl) {
-			if (axl.isAxlLadderShooting()) {
-				axl.changeSprite("axl_ladder_shoot", true);
-			} else if (character.sprite.name != "axl_ladder_end" && character.sprite.name != "axl_fall_start"){
-				axl.changeSprite("axl_ladder_climb", true);
-			}
-		}
 
 		if (character.grounded) {
 			character.changeToIdleOrFall();
@@ -1568,7 +1495,7 @@ public class BottomlessPitState : CharState {
 		useGravity = false;
 		invincible = true;
 		superArmor = true;
-		stunResistant = true;
+		stunImmune = true;
 	}
 
 	public override void update() {

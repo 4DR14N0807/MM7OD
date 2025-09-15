@@ -484,7 +484,7 @@ public class OverheatShutdownStart : CharState {
 
 	public OverheatShutdownStart() : base("hurt") {
 		superArmor = true;
-		stunResistant = true;
+		stunImmune = true;
 	}
 
 	public override void update() {
@@ -515,7 +515,7 @@ public class OverheatShutdown : CharState {
 
 	public OverheatShutdown() : base("shutdown") {
 		superArmor = true;
-		stunResistant = true;
+		stunImmune = true;
 	}
 
 	public override void update() {

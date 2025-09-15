@@ -95,9 +95,6 @@ public class Damager {
 			}
 		}
 
-		if (victim is not IDamagable damagable) {
-			return false;
-		}
 		Character? preCharacter = victim as Character;
 		CharState? charState = preCharacter?.charState;
 
@@ -178,9 +175,9 @@ public class Damager {
 
 		if (damagable != null && damagable is not CrackedWall && owner.ownedByLocalPlayer && !isDot(projId)) {
 			if (owner.isMainPlayer) {
-				owner.delaySubtank();
+				owner.delayETank();
 			}
-			if (damagingActor is Projectile proj && proj.owningActor is Character chara) {
+			if (damagingActor is Projectile proj && proj.ownerActor is Character chara) {
 				chara.enterCombat();
 			} else {
 				owner.character?.enterCombat();
@@ -198,14 +195,13 @@ public class Damager {
 
 		if (damagable != null) {
 			DamagerMessage? damagerMessage = null;
+			Projectile? proj = damagingActor as Projectile;
 
-			if (damagingActor is Projectile proj) {
+			if (proj != null) {
 				damagerMessage = proj.onDamage(damagable, owner);
 				if (damagerMessage?.flinch != null) flinch = damagerMessage.flinch.Value;
 				if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
 			}
-
-			if (proj == null) return false;
 
 			switch (projId) {
 				case (int)RockProjIds.ScorchWheel:
@@ -293,7 +289,7 @@ public class Damager {
 			}
 			// Flinch cooldown.
 			if (flinchCooldown > 0 && flinch > 0) {
-				string flinchKey = $"{getFlinchKeyFromProjId(projId)}_{owner.id}";
+				string flinchKey = getFlinchKey(projId, owner.id);
 				if (!character.flinchCooldown.ContainsKey(flinchKey)) {
 					character.flinchCooldown[flinchKey] = 0;
 				}
@@ -398,8 +394,8 @@ public class Damager {
 		};
 	}
 
-	private static int getFlinchKeyFromProjId(int projId, int playerId) {
-		return (playerId * 10000) + projId;
+	public static string getFlinchKey(int projId, int playerId) {
+		return $"{projId}_{playerId}";
 	}
 
 	public static bool hitFromBehind(Actor actor, Actor? damager, Player? projOwner, int projId) {
@@ -572,47 +568,12 @@ public class Damager {
 			ProjIds.AcidBurstPoison => true,
 			ProjIds.FlameRoundFlameProj => true,
 			ProjIds.SelfDmg => true,
-			// Per-frame damage stuff.
-			ProjIds.RayGunChargeBeam => true,
-			ProjIds.PlasmaGunBeamProj => true,
-			ProjIds.PlasmaGunBeamProjHyper => true,
-			ProjIds.VoltTornado => true,
-			ProjIds.VoltTornadoHyper => true,
-			ProjIds.FlameBurner => true,
-			ProjIds.FlameBurnerHyper => true,
 			_ => false
 		};
 		if (alwaysNotAssist) {
 			return true;
 		}
-		// The GM19 list now only counts for FFA mode.
-		if (Global.level.gameMode is not FFADeathMatch) {
-			return false;
-		}
-		// Can also be overdrive by custom setting.
-		if (Global.level.server?.customMatchSettings?.assistBanlist == false) {
-			return false;		
-		}
-		return (ProjIds)projId switch {
-			ProjIds.Tornado => true,
-			ProjIds.BoomerangCharged => true,
-			ProjIds.TornadoFang => true,
-			ProjIds.TornadoFang2 => true,
-			ProjIds.GravityWell => true,
-			ProjIds.SpinWheel => true,
-			ProjIds.TriadThunder => true,
-			ProjIds.TriadThunderBeam => true,
-			ProjIds.DistanceNeedler => true,
-			ProjIds.RumblingBangProj => true,
-			ProjIds.FlameRoundWallProj => true,
-			ProjIds.SplashHitProj => true,
-			ProjIds.CircleBlaze => true,
-			ProjIds.CircleBlazeExplosion => true,
-			ProjIds.BlastLauncherGrenadeSplash => true,
-			ProjIds.BlastLauncherMineGrenadeProj => true,
-			ProjIds.BoundBlasterRadar => true,
-			_ => false
-		};
+		return false;
 	}
 
 	public static DamagerMessage? onParasiticBombDamage(IDamagable damagable, Player attacker) {
@@ -630,33 +591,7 @@ public class Damager {
 		if (CrackedWall.canDamageCrackedWall(1, null) != 0) {
 			return true;
 		}
-		if (Global.level.server.customMatchSettings?.frostShieldNerf != false) {
-			return true;
-		}
-		return projId switch {
-			(int)ProjIds.FireWave => true,
-			(int)ProjIds.FireWaveCharged => true,
-			(int)ProjIds.SpeedBurner => true,
-			(int)ProjIds.SpeedBurnerCharged => true,
-			(int)ProjIds.FlameRoundProj => true,
-			(int)ProjIds.FlameRoundFlameProj => true,
-			(int)ProjIds.Ryuenjin => true,
-			(int)ProjIds.FlameBurner => true,
-			(int)ProjIds.FlameBurnerHyper => true,
-			(int)ProjIds.CircleBlazeExplosion => true,
-			(int)ProjIds.QuakeBlazer => true,
-			(int)ProjIds.QuakeBlazerFlame => true,
-			(int)ProjIds.FlameMFireball => true,
-			(int)ProjIds.FlameMOilFire => true,
-			(int)ProjIds.VelGFire => true,
-			(int)ProjIds.SigmaWolfHeadFlameProj => true,
-			(int)ProjIds.WildHorseKick => true,
-			(int)ProjIds.Sigma3Fire => true,
-			(int)ProjIds.FStagDashCharge => true,
-			(int)ProjIds.FStagDash => true,
-			(int)ProjIds.FStagFireball => true,
-			_ => false
-		};
+		return true;
 	}
 
 	public static bool isBoomerang(int? projId) {

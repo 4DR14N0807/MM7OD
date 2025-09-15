@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -175,7 +175,7 @@ public class HardKnuckleShoot : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
-		character.stopMovingWeak();
+		character.stopMoving();
 		if (!character.grounded) {
 			character.changeSpriteFromName(airSprite, true);
 			character.vel.y = -Physics.JumpSpeed * 0.6f;

@@ -248,7 +248,7 @@ public class MegamanX : Character {
 				currentWeapon.ammo = 0;
 				stingActiveTime = 0;
 			}
-			player.delaySubtank();
+			player.delayETank();
 			enterCombat();
 		}
 

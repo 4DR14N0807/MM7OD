@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using SFML.Graphics;
 
 namespace MMXOnline;
@@ -92,7 +92,7 @@ public class VileRevive : VileState {
 		if (character.frameIndex == 7 && !once) {
 			character.playSound("ching");
 			character.health = 1;
-			character.addHealth(character.maxHealth);
+			//character.addHealth(character.maxHealth);
 			once = true;
 		}
 		if (character.ownedByLocalPlayer) {

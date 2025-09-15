@@ -278,10 +278,10 @@ public class StrikeAttackPushProj : Projectile {
 					damager.applyDamage(damagable, false, weapon, this, projId);
 
 					float direction = MathF.Sign(pos.x - actor.pos.x);
-					actor.stopMovingWeak();
+					actor.stopMoving();
 					actor.xPushVel = xDir * pushPower;
 					if (actor is Character chara && !chara.charState.superArmor) {
-						int key = (damager.owner.id * 10000) + projId;
+						string key = Damager.getFlinchKey(projId, damager.owner.id);
 						if (!chara.flinchCooldown.ContainsKey(key) || chara.flinchCooldown[key] <= 0) {
 							chara.setHurt(xDir, flinchPower, false);
 						}
@@ -439,8 +439,8 @@ public class BigBangStrikeStart : CharState {
 
 	public BigBangStrikeStart() : base("idle_charge") {
 		superArmor = true;
-		stunResistant = true;
-		immuneToWind = true;
+		stunImmune = true;
+		pushImmune = true;
 	}
 
 	public override void update() {
@@ -474,7 +474,7 @@ public class BigBangStrikeStart : CharState {
 
 	public override void onEnter(CharState oldState) {
 		blues = character as Blues ?? throw new NullReferenceException();
-		character.stopMovingWeak();
+		character.stopMoving();
 		bgEffect = new BigBangStrikeBackwall(character.pos, character);
 	}
 

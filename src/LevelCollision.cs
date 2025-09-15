@@ -719,7 +719,6 @@ public partial class Level {
 					character.isATrans && gameMode.isTeamMode
 				) {
 					if (!isRequesterAI) continue;
-					else if (!character.disguiseCoverBlown) continue;
 				}
 				if (character.isStealthy(alliance)) continue;
 			}

@@ -134,7 +134,7 @@ public partial class MegamanXA : Character {
 			stingChargeTime = player.weapon.ammo;
 
 			if (stingChargeTime <= 0) {
-				player.delaySubtank();
+				player.delayETank();
 				stingChargeTime = 0;
 			}
 		}

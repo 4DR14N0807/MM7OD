@@ -136,8 +136,8 @@ public partial class Actor : GameObject {
 	public bool gHolded;
 	public int gHoldTime;
 
-	public Dictionary<string, float> projectileCooldown { get; set; } = new Dictionary<string, float>();
-	public Dictionary<int, float> flinchCooldown { get; set; } = new Dictionary<int, float>();
+	public Dictionary<string, float> projectileCooldown { get; set; } = new();
+	public Dictionary<string, float> flinchCooldown { get; set; } = new();
 	//Cooldowns. This can be used for characters special attacks 
 	// (like bass kick, proto strike, leg breaker, robot master movesets, etc).
 	public Dictionary<int, AttackCooldown> attacksCooldown = new();
@@ -868,7 +868,7 @@ public partial class Actor : GameObject {
 		freeFromCollision();
 
 		float yMod = reversedGravity ? -1 : 1;
-		if (physicsCollider != null && !isStatic && (canBeGrounded || gravityOverride ?? useGravity)) {
+		if (physicsCollider != null && !isStatic && (canBeGrounded || (gravityOverride ?? useGravity))) {
 			float yDist = 1 * Global.gameSpeed;
 			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y && !movedUpOnFrame) {
 				yDist = 4 * Global.gameSpeed;
@@ -1022,7 +1022,6 @@ public partial class Actor : GameObject {
 				// Non-suicide case: prevent assists aggressively
 				if (secondLastAttacker.envKillOnly && weaponIndex != null ||
 					Global.time - secondLastAttacker.time > 4 ||
-					Global.time - secondLastAttacker.time > 0.5f && Damager.lowTimeAssist(secondLastAttacker.projId) ||
 					Damager.unassistable(secondLastAttacker.projId)
 				) {
 					continue;
@@ -1654,12 +1653,6 @@ public partial class Actor : GameObject {
 				flinchCooldown[key] = Helpers.clampMin(cooldown - Global.gameSpeed, 0);
 			}
 		}
-		foreach (int key in globalFlinchCooldown.Keys.ToList()) {
-			float cooldown = globalFlinchCooldown[key];
-			if (cooldown > 0) {
-				globalFlinchCooldown[key] = Helpers.clampMin(cooldown - Global.gameSpeed, 0);
-			}
-		}
 	}
 
 	public virtual void updateAttackCooldowns() {
@@ -1848,6 +1841,9 @@ public partial class Actor : GameObject {
 	}
 
 	public void moveWithMovingPlatform() {
+		if (!Global.level.hasMovingPlatforms) {
+			return;
+		}
 		List<CollideData> collideDatas = Global.level.getTerrainTriggerList(this, new Point(0, 1));
 		foreach (CollideData collideData in collideDatas) {
 			if (collideData.gameObject is Wall wall && wall.deltaMove != Point.zero) {
@@ -1863,20 +1859,6 @@ public partial class Actor : GameObject {
 				canBePlatform(this)
 			) {
 				move(actor.deltaPos, useDeltaTime: false);
-				break;
-			}
-		}
-	}
-
-	public void moveWithMovingPlatform() {
-		if (!Global.level.hasMovingPlatforms) isStatic = true;
-		var collideDatas = Global.level.getTerrainTriggerList(
-			this, new Point(0, 1), typeof(Wall), typeof(MovingPlatform)
-		);
-		foreach (var collideData in collideDatas) {
-			var hitWall = collideData?.gameObject as Wall;
-			if (hitWall != null && hitWall.isMoving) {
-				movePoint(hitWall.deltaMove, useDeltaTime: false);
 				break;
 			}
 		}

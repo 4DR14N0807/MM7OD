@@ -1023,7 +1023,7 @@ public partial class Level {
 			player.curMaxNetId = hostPlayer.curMaxNetId;
 			player.warpedInOnce = hostPlayer.warpedIn;
 			player.readyTime = hostPlayer.readyTime;
-			player.readyTextOver = hostPlayer.readyTextOver;
+			player.readyTextOver = true;
 			player.loadout = hostPlayer.loadoutData;
 
 			if (hostPlayer.currentCharNum != null && hostPlayer.charNetId != null &&

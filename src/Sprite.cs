@@ -286,8 +286,7 @@ public class Sprite {
 			extraW = flippedExtraW;
 		}
 
-		if (!Options.main.disableShaders &&
-			!Options.main.fastShaders &&
+		if (!Options.main.fastShaders &&
 			renderEffects != null &&
 			!renderEffects.Contains(RenderEffectType.Invisible)
 		) {
@@ -357,6 +356,7 @@ public class Sprite {
 					}
 				));
 			}
+			/*
 			if (renderEffects.Contains(RenderEffectType.SpeedDevilTrail) &&
 				Global.shaderWrappers.ContainsKey("speedDevilTrail") &&
 				actor is Character chara
@@ -392,6 +392,7 @@ public class Sprite {
 					}
 				));
 			}
+			*/
 		}
 		if (!isCompositeSprite) {
 			DrawWrappers.DrawTexture(
@@ -685,7 +686,7 @@ public class AnimData {
 			);
 
 			// Rendertexture creation.
-			if (!Options.main.fastShaders && !Options.main.disableShaders) {
+			if (!Options.main.fastShaders) {
 				int encodeKey = (sprWidth * 397) ^ sprHeight;
 				if (Global.isLoading) {
 					if (!Global.renderTextureQueueKeys.Contains(encodeKey)) {

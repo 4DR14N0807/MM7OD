@@ -1244,7 +1244,7 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Choose the order in which Vile's weapons are arranged."
 					
-				),*/
+				),
 				// MK5 Ride control
 				new MenuOption(
 					30, startY,
@@ -1597,7 +1597,6 @@ public class OptionsMenu : IMainMenu {
 	}
 
 	public static void setPresetQuality(int graphicsPreset) {
-		Options.main.detectedGraphicsPreset = graphicsPreset;
 		Options.main.particleQuality = graphicsPreset;
 		Options.main.fastShaders = graphicsPreset == 0;
 		Options.main.enableMapSprites = graphicsPreset != 0;
@@ -1731,9 +1730,7 @@ public class OptionsMenu : IMainMenu {
 				oldFastShaders != Options.main.fastShaders ||
 				//oldWindowScale != Options.main.windowScale ||
 				//oldMaxFPS != Options.main.maxFPS ||
-				oldDisableShaders != Options.main.disableShaders ||
 				oldEnablePostprocessing != Options.main.enablePostProcessing ||
-				oldUseOptimizedAssets != Options.main.useOptimizedAssets ||
 				oldParticleQuality != Options.main.particleQuality ||
 				//oldIntegerFullscreen != Options.main.integerFullscreen ||
 				oldVsync != Options.main.vsync ||

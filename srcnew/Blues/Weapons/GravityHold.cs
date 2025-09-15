@@ -258,7 +258,7 @@ public class BluesGravityHold : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
-		blues.stopMovingWeak();
+		blues.stopMoving();
 		if (!blues.grounded || blues.vel.y < 0) {
 			blues.changeSpriteFromName(airSprite, true);
 		}

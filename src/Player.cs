@@ -115,20 +115,6 @@ public partial class Player {
 		return overrideLoadoutWeight.Value;
 	}
 
-	public static Player stagePlayer = createStagePlayer();
-	public static Player createStagePlayer() {
-		return new Player(
-			"Stage", 255, -1,
-			new PlayerCharData() { charNum = -1 },
-			false, true, GameMode.neutralAlliance,
-			new Input(false),
-			new ServerPlayer(
-				"Stage", 255, false,
-				-1, GameMode.neutralAlliance, "NULL", null, 0
-			)
-		);
-	}
-
 	public Point? lastDeathPos;
 	public bool lastDeathWasVileMK2;
 	public bool lastDeathWasVileV;
@@ -243,17 +229,17 @@ public partial class Player {
 	public Dictionary<int, List<LTank>> lTanksMap = [];
 
 	// Getter functions.
-	public List<ETank> etank {
-		get { return subTanksMap[charNum]; }
-		set { subTanksMap[charNum] = value; }
+	public List<ETank> ETanks {
+		get { return eTanksMap[charNum]; }
+		set { eTanksMap[charNum] = value; }
 	}
-	public List<WTank> wtank {
-		get { return subTanksMap[charNum]; }
-		set { subTanksMap[charNum] = value; }
+	public List<WTank> wtanks {
+		get { return wTanksMap[charNum]; }
+		set { wTanksMap[charNum] = value; }
 	}
-	public List<MTank> mtank {
-		get { return subTanksMap[charNum]; }
-		set { subTanksMap[charNum] = value; }
+	public List<LTank> ltanks {
+		get { return lTanksMap[charNum]; }
+		set { lTanksMap[charNum] = value; }
 	}
 
 	public int getHeartTanks(int charId) {
@@ -602,7 +588,9 @@ public partial class Player {
 		foreach (int i in Enum.GetValues(typeof(CharIds)).Cast<int>()) {
 			heartTanksMap[i] = 0;
 			charCurrency[i] = 0;
-			subTanksMap[i] = [];
+			eTanksMap[i] = [];
+			wTanksMap[i] = [];
+			lTanksMap[i] = [];
 		}
 		this.charNum = charNum;
 		newCharNum = charNum;
@@ -628,10 +616,21 @@ public partial class Player {
 			}
 			heartTanksMap[key] = htCount;
 		}
-		foreach (int key in subTanksMap.Keys) {
-			int stCount = key == charNum ? getStartSubTanksForChar() : getStartSubTanks();
-			for (int i = 0; i < stCount; i++) {
-				subTanksMap[key].Add(new SubTank());
+		foreach (int key in eTanksMap.Keys) {
+			int etCount = getStartETanksForChar();
+			int altEtCount = getStartETanks();
+			if (altEtCount > etCount) {
+				etCount = altEtCount;
+			}
+			for (int i = 0; i < etCount; i++) {
+				eTanksMap[key].Add(new ETank());
+				lTanksMap[key].Add(new LTank());
+			}
+		}
+		foreach (int key in wTanksMap.Keys) {
+			int wtCount = getStartWTanks();
+			for (int i = 0; i < wtCount; i++) {
+				wTanksMap[key].Add(new WTank());
 			}
 		}
 		_maxHealth = getMaxHealth();
@@ -680,13 +679,6 @@ public partial class Player {
 			return (decimal)Global.level.server.customMatchSettings.healthModifier;
 		}
 		return 1;
-	}
-
-	public static float getBaseHp() {
-		if (Global.level.server.customMatchSettings != null) {
-			return Global.level.server.customMatchSettings.baseHp;
-		}
-		return 16;
 	}
 
 	public static float getHealthModifier() {
@@ -880,7 +872,7 @@ public partial class Player {
 			Helpers.decrementFrames(ref evilEnergyTime);
 		} 
 		if (character != null && evilEnergyTime == 0 && evilEnergyStacks > 0) {
-			character.spawnHealthToAdd += evilEnergyStacks * hpPerStack;
+			character.spawnHealthToAdd += MathInt.Ceiling(evilEnergyStacks * hpPerStack);
 			evilEnergyTime = evilEnergyMaxTime;
 			evilEnergyStacks = 0;
 		}
@@ -981,13 +973,14 @@ public partial class Player {
 		);
 	}
 
-	public byte[] getCharSpawnData(int charNum) {
-		if (ownedByLocalPlayer) {
-			if (!isAI) {
-				applyLoadoutChange();
-			}
+	public byte[] getCharSpawnData(int charNum, bool sendData = true, LoadoutData? loadout = null) {
+		if (ownedByLocalPlayer && sendData) {
+			applyLoadoutChange();
 			syncLoadout();
 		}
+		// Loadout null check.
+		loadout ??= this.loadout;
+		// Get data.
 		if (charNum == (int)CharIds.Rock) {
 			if (isMainPlayer && ownedByLocalPlayer && Options.main.useRandomRockLoadout) {
 				RockLoadout randomLoadout = RockLoadout.createRandom();
@@ -1363,6 +1356,16 @@ public partial class Player {
 		}
 	}
 
+	public void awardCurrency() {
+		if (Global.level?.server?.customMatchSettings != null) {
+			charCurrency[charNum] += (
+				MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain / 8f))
+			);
+		} else {
+			charCurrency[charNum] += 1;
+		}
+	}
+
 	public void awardCurrency(int charId, int value) {
 		if (Global.level?.server?.customMatchSettings != null) {
 			charCurrency[charId] += (
@@ -1434,6 +1437,7 @@ public partial class Player {
 	}
 
 	public bool canReviveSigma(out Point spawnPoint, int sigmaHypermode) {
+		spawnPoint = default;
 		return false;
 	}
 

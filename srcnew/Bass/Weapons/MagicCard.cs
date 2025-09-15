@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -428,7 +428,7 @@ public class MagicCardSpecialProj : Projectile {
 		} else {
 			Point enemyPos = closestEnemy.getCenterPos();
 			float moveSpeed = 425;
-			stopMovingWeak();
+			stopMoving();
 			Point speed = pos.directionToNorm(enemyPos).times(moveSpeed);
 			byteAngle = speed.byteAngle;
 

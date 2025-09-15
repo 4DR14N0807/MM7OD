@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SFML.Graphics;
@@ -35,7 +35,7 @@ public class BluesUpgradeMenu : IMainMenu {
 	public int getMaxIndex() {
 		var mainPlayer = Global.level.mainPlayer;
 		if (selectArrowPosX == 0) return Math.Clamp(1 + mainPlayer.ltanks.Count, 1, getMaxLTanks());
-		return Math.Clamp(1 + mainPlayer.mtanks.Count, 1, getMaxMTanks());
+		return Math.Clamp(1 + mainPlayer.ltanks.Count, 1, getMaxLTanks());
 	}
 
 	public int getMaxLTanks() {

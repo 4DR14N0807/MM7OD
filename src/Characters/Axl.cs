@@ -364,7 +364,7 @@ public class Axl : Character {
 			stingChargeTime -= Global.spf;
 
 			if (stingChargeTime <= 0) {
-				player.delaySubtank();
+				//player.delayETank();
 				enterCombat();
 				stingChargeTime = 0;
 			}
@@ -520,7 +520,7 @@ public class Axl : Character {
 					increaseCharge();
 				} else {
 					if (isCharging()) {
-						shootAssassinShot();
+						//shootAssassinShot();
 					}
 					stopCharge();
 				}
@@ -825,9 +825,6 @@ public class Axl : Character {
 
 		float dist = MathF.Abs(forwardAngle - bulletAngle);
 		dist = Helpers.clampMin0(dist - 90);
-		if (Global.level.server?.customMatchSettings?.axlBackwardsDebuff == false) {
-			dist = 0;
-		}
 		return Helpers.clamp01(dist / 90f);
 	}
 

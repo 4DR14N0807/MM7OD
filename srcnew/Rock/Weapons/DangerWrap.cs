@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SFML.Graphics;
 
@@ -448,7 +448,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 	) {
 		netOwner = victim;
 		character = victim.character;
-		character?.stopMovingWeak();
+		character?.stopMoving();
 		useGravity = false;
 		canBeLocal = false;
 

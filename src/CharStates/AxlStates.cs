@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System;
 
 namespace MMXOnline;
@@ -155,12 +155,12 @@ public class DodgeRoll : CharState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		axl.dodgeRollCooldown = Global.customSettings?.axlDodgerollCooldown ?? Axl.maxDodgeRollCooldown;
+		//axl.dodgeRollCooldown = Global.customSettings?.axlDodgerollCooldown ?? Axl.maxDodgeRollCooldown;
 	}
 
 	public override void update() {
 		base.update();
-		axl.dodgeRollCooldown = Global.customSettings?.axlDodgerollCooldown ?? Axl.maxDodgeRollCooldown;
+		//axl.dodgeRollCooldown = Global.customSettings?.axlDodgerollCooldown ?? Axl.maxDodgeRollCooldown;
 
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();

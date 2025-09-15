@@ -16,7 +16,6 @@ public class RPC {
 	public bool allowBreakMtuLimit;
 	public bool isCollision;
 	public bool levelless;
-	public bool allowBreakMtuLimit;
 	public int index;
 
 	// Need templates? Use these:
@@ -64,6 +63,7 @@ public class RPC {
 	public static RPCRemoveBot removeBot = new();
 	public static RPCMakeSpectator makeSpectator = new();
 	public static RPCSyncValue syncValue = new();
+	public static RPCBroadcastLoadout broadcastLoadout = new();
 	public static RPCHeal heal = new();
 	public static RPCCommandGrabPlayer commandGrabPlayer = new();
 	public static RPCClearOwnership clearOwnership = new();
@@ -71,9 +71,7 @@ public class RPC {
 	public static RPCPlaySound playSound = new();
 	public static RPCStopSound stopSound = new();
 	public static RPCAddDamageText addDamageText = new();
-	public static RPCBroadcastLoadout broadcastLoadout = new();
 	public static RPCChangeDamage changeDamage = new();
-	public static RPCLogWeaponKills logWeaponKills = new();
 	public static RPCUseSubTank useSubtank = new();
 	public static RPCUseETank useETank = new();
 	public static RPCUseWTank useWTank = new();
@@ -99,7 +97,6 @@ public class RPC {
 		addBot,
 		removeBot,
 		makeSpectator,
-		logWeaponKills,
 		periodicServerSync,
 		periodicServerPing,
 		periodicHostSync,
@@ -133,7 +130,6 @@ public class RPC {
 		stopSound,
 		syncValue,
 		// Gameplay stuff.
-		broadcastLoadout,
 		switchCharacter,
 		reflectProj,
 		commandGrabPlayer,
@@ -1810,26 +1806,6 @@ public class RPCAddDamageText : RPC {
 	}
 }
 
-public class RPCBroadcastLoadout : RPC {
-	public RPCBroadcastLoadout() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-	}
-
-	public override void invoke(params byte[] arguments) {
-		LoadoutData loadout = Helpers.deserialize<LoadoutData>(arguments);
-		var player = Global.level?.getPlayerById(loadout.playerId);
-		if (player == null) return;
-
-		player.loadout = loadout;
-		player.loadoutSet = true;
-	}
-
-	public void sendRpc(Player player) {
-		byte[] loadoutBytes = Helpers.serialize(player.loadout);
-		Global.serverClient?.rpc(this, loadoutBytes);
-	}
-}
-
 public class RPCChangeDamage : RPC {
 	public RPCChangeDamage() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
@@ -1857,17 +1833,6 @@ public class RPCChangeDamage : RPC {
 		Global.serverClient.rpc(RPC.changeDamage, netIdBytes[0], netIdBytes[1],
 			damageBytes[0], damageBytes[1], damageBytes[2], damageBytes[3],
 			(byte)flinch);
-	}
-}
-
-public class RPCLogWeaponKills : RPC {
-	public RPCLogWeaponKills() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		isServerMessage = true;
-	}
-
-	public void sendRpc() {
-		Global.serverClient?.rpc(logWeaponKills);
 	}
 }
 

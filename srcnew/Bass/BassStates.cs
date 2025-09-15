@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SFML.Graphics;
@@ -593,7 +593,7 @@ public class BassKick : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.stopMovingWeak();
+		character.stopMoving();
 		character.vel.x = character.xDir * 120;
 	}
 
@@ -704,7 +704,7 @@ public class SweepingLaserState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.stopMovingWeak();
+		character.stopMoving();
 		if (!character.grounded && oldState is not BassFly) {
 			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
 		}
@@ -742,7 +742,7 @@ public class DarkCometState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.stopMovingWeak();
+		character.stopMoving();
 		if (!character.grounded && character.isDashing) {
 			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
 		}

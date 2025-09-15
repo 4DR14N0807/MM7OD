@@ -113,6 +113,7 @@ public partial class Character : Actor, IDamagable {
 	public const float maxLastAttackerTime = 5;
 
 	public float igFreezeProgress;
+	public float igFreezeRecoveryCooldown;
 	public float crystalizeInvulnTime;
 	public float dwrapInvulnTime;
 	public float grabInvulnTime;
@@ -142,10 +143,7 @@ public partial class Character : Actor, IDamagable {
 	public bool isATrans;
 	public DNACore? linkedDna;
 	public Character? linkedATransChar;
-	public bool oldATrans => (
-		isATrans &&
-		Global.level.server?.customMatchSettings?.oldATrans == true
-	);
+	public bool oldATrans = false;
 
 	// For states with special propieties.
 	// For doublejump.
@@ -450,7 +448,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void addIgFreezeProgress(float amount, int freezeTime = 120) {
-		if (freezeInvulnTime > 0 || frozenTime > 0 || isSlowImmune()) {
+		if (isSlowImmune()) {
 			return;
 		}
 		igFreezeProgress += amount;
@@ -916,7 +914,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (rootTime > 0) {
-			//stopMovingWeak();
+			//stopMoving();
 			Helpers.decrementFrames(ref rootTime);
 			if (rootAnim == null || rootAnim.destroyed) {
 				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
@@ -1870,7 +1868,7 @@ public partial class Character : Actor, IDamagable {
 			rootTime = time;
 		}
 		//useGravity = false;
-		stopMovingWeak();
+		stopMoving();
 		charState.canStopJump = false;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
 		if (enemyPlayer != null) {
@@ -2888,7 +2886,7 @@ public partial class Character : Actor, IDamagable {
 			playHealSound = true;
 		}
 		commonHealLogic(healer, (decimal)healAmount, health, maxHealth, drawHealText);
-		addHealth(healAmount, fillEtank: false);
+		addHealth(healAmount);
 	}
 
 
@@ -2912,8 +2910,8 @@ public partial class Character : Actor, IDamagable {
 		// Self damaging projIds can go thru alliance check
 		bool isSelfDamaging = (
 			projId == (int)RockProjIds.RSBomb ||
-			projId == (int)RockProjIds.RSBombExplosion;
-
+			projId == (int)RockProjIds.RSBombExplosion
+		);
 		if (isSelfDamaging && damagerPlayerId == player.id) {
 			return true;
 		}
@@ -2921,6 +2919,14 @@ public partial class Character : Actor, IDamagable {
 		if (player.alliance == damagerAlliance) return false;
 
 		return true;
+	}
+
+	public void enterCombat() {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		inCombatCooldown = 120;
+		outOfCombatTime = 0;
 	}
 
 	public virtual void applyDamage(
@@ -3153,12 +3159,16 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 	}
-	
-	public void addHealth(int amount, bool fillSubtank = true) {
-		addHealth((decimal)amount, fillSubtank);
+
+	public void addHealth(float amount) {
+		addHealth((decimal)amount);
 	}
 
-	public void addHealth(float amount, bool fillEtank = true) {
+	public void addHealth(int amount) {
+		addHealth((decimal)amount);
+	}
+
+	public void addHealth(decimal amount) {
 		if (health >= maxHealth) {
 			return;
 		}
@@ -3322,12 +3332,12 @@ public partial class Character : Actor, IDamagable {
 	public void dwrapStart() {
 		isDWrapped = true;
 		useGravity = false;
-		stopMovingWeak();
+		stopMoving();
 	}
 
 	public void dwrapEnd() {
 		isDWrapped = false;
-		stopMovingWeak();
+		stopMoving();
 		useGravity = true;
 		playSound("hit");
 	}
@@ -3426,6 +3436,7 @@ public partial class Character : Actor, IDamagable {
 	public float dWrappedTime;
 	public Damager? dWrapDamager;
 	public DWrapBigBubble? bigBubble;
+	public bool disguiseCoverBlown = true;
 
 	public void addBubble(Player attacker) {
 		if (isSlowImmune() || isStunImmune()) return;
@@ -3784,8 +3795,8 @@ public partial class Character : Actor, IDamagable {
 			alive,
 			player.isDefenderFavored,
 			invulnTime > 0,
-			charState.immuneToWind,
-			charState.stunResistant,
+			charState.pushImmune,
+			charState.stunImmune,
 			hasBubble
 		]);
 
@@ -3882,8 +3893,8 @@ public partial class Character : Actor, IDamagable {
 		alive = boolData[0];
 		player.isDefenderFavoredNonOwner = boolData[1];
 		invulnTime = boolData[2] ? 10 : 0;
-		charState.immuneToWind = boolData[3];
-		charState.stunResistant = boolData[4];
+		charState.pushImmune = boolData[3];
+		charState.stunImmune = boolData[4];
 		hasBubbleNet = boolData[5];
 
 		// Optional statuses.

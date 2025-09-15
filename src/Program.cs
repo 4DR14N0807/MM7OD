@@ -212,7 +212,7 @@ class Program {
 		loadText[^1] = $"Loaded {Global.musics.Count} Songs.";
 
 		// Create render texture only if precise shaders are used.
-		if (Global.renderTextureQueue.Count > 0 && !Options.main.fastShaders && !Options.main.disableShaders) {
+		if (Global.renderTextureQueue.Count > 0 && !Options.main.fastShaders) {
 			int textureCount = Global.renderTextureQueue.Count;
 			loadText.Add($"Creating render textures, 0 of {textureCount}...");
 			loadLoopRTexture(loadText, window, Global.renderTextureQueue.ToArray());
@@ -1516,7 +1516,7 @@ class Program {
 			window.Display();
 			watch.Restart();
 
-			if (Options.main.fastShaders || Options.main.disableShaders) {
+			if (Options.main.fastShaders) {
 				return;
 			}
 			for (; pos >= 0; pos--) {

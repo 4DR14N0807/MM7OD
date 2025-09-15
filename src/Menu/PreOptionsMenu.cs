@@ -130,9 +130,6 @@ public class PreOptionsMenu : IMainMenu {
 				}
 			}
 		}
-		Global.sprites["optionMode"].drawToHUD(inGame ? 2 : 2, Global.screenW * 0.5f + 1, 20);
-		//Fonts.drawText(tileFont, "SETTINGS", Global.screenW * 0.5f, 20, Alignment.Center);
-
 		Fonts.drawText(tileFont, "SETTINGS", Global.screenW * 0.5f, 20, Alignment.Center);
 
 		Fonts.drawText(menuFont, "GENERAL SETTINGS", startX, optionPos[0], selected: selectY == 0);

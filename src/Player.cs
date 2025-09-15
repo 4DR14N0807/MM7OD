@@ -259,7 +259,7 @@ public partial class Player {
 	public static int curMul = Helpers.randomRange(2, 8);
 
 	// Mastery system.
-	public Dictionary<int, MasteryTracker> masteryLevels;
+	public Dictionary<int, MasteryTracker> masteryLevels = [];
 	public MasteryTracker mastery => masteryLevels[(int?)character?.charId ?? charNum];
 
 	public ProtectedIntMap<int> charCurrency = [];
@@ -585,12 +585,14 @@ public partial class Player {
 		this.isAI = isAI;
 
 		// Iterate over each charID and populate.
-		foreach (int i in Enum.GetValues(typeof(CharIds)).Cast<int>()) {
+		foreach (CharIds cid in Enum.GetValues(typeof(CharIds))) {
+			int i = (int)cid;
 			heartTanksMap[i] = 0;
 			charCurrency[i] = 0;
 			eTanksMap[i] = [];
 			wTanksMap[i] = [];
 			lTanksMap[i] = [];
+			masteryLevels[i] = new MasteryTracker(this, cid);
 		}
 		this.charNum = charNum;
 		newCharNum = charNum;

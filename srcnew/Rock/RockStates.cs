@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace MMXOnline;
 
@@ -51,10 +51,7 @@ public class Slide : CharState {
 			character.changeState(new SlideEnd(), true);
 			return;
 		}
-
-		var move = new Point(0, 0);
-		if (rock != null) move.x = rock.getSlideSpeed() * initialSlideDir;
-		character.move(move);
+		character.moveXY(rock.getSlideSpeed() * initialSlideDir, 0);
 
 		if (cancel) {
 			if (rock != null && rock.isSlideColliding) {

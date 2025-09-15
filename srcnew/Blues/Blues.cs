@@ -135,51 +135,51 @@ public class Blues : Character {
 		float runSpeed = Physics.WalkSpeed;
 		if (overdrive) {
 			if (shieldEquipped) {
-				runSpeed = 0.825f * 60;
+				runSpeed = 0.825f;
 			} else {
-				runSpeed = 1.2f * 60;
+				runSpeed = 1.2f;
 			}
 		}
 		else if (overheating) {
-			runSpeed = 0.75f * 60;
+			runSpeed = 0.75f;
 			if (!shieldEquipped) {
-				runSpeed = 1.125f * 60;
+				runSpeed = 1.125f;
 			}
 		}
 		else if (shieldEquipped) {
-			runSpeed = 1.125f * 60;
+			runSpeed = 1.125f;
 		}
 		return runSpeed * getRunDebuffs();
 	}
 
 	public override float getDashSpeed() {
 		bool shieldEquipped = isShieldEquipped();
-		float dashSpeed = 2.6f * 60;
+		float dashSpeed = 2.6f;
 		if (overdrive) {
-			dashSpeed = 2.45f * 60;
+			dashSpeed = 2.45f;
 		}
 		return dashSpeed * getRunDebuffs();
 	}
 
 	public float getShieldDashSpeed() {
 		bool shieldEquipped = isShieldEquipped();
-		float dashSpeed = 3.25f * 60;
+		float dashSpeed = 3.25f;
 		if (overdrive) {
-			dashSpeed = 3f * 60;
+			dashSpeed = 3f;
 			if (shieldEquipped) {
-				dashSpeed = 2.5f * 60;
+				dashSpeed = 2.5f;
 			}
 		}
 		else if (shieldEquipped) {
-			dashSpeed = 2.75f * 60;
+			dashSpeed = 2.75f;
 		}
 		return dashSpeed * getRunDebuffs();
 	}
 
 	public float getSlideSpeed() {
-		float slideSpeed = 3 * 60;
+		float slideSpeed = 3;
 		if (overheating) {
-			slideSpeed = 2.125f * 60;
+			slideSpeed = 2.125f;
 		}
 		return slideSpeed * getRunDebuffs();
 	}

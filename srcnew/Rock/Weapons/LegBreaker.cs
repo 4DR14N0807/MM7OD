@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -68,10 +68,7 @@ public class LegBreakerState : CharState {
 			character.changeState(new SlideEnd(), true);
 			return;
 		}
-
-		var move = new Point(0, 0);
-		if (rock != null) move.x = rock.getSlideSpeed() * initialSlideDir;
-		character.move(move);
+		character.moveXY(rock.getSlideSpeed() * initialSlideDir, 0);
 
 		if (cancel) {
 			if (isColliding) {

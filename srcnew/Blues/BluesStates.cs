@@ -168,14 +168,13 @@ public class ShieldDash : CharState {
 			character.changeToIdleOrFall();
 			return;
 		}
-		var move = new Point(0, 0);
-		move.x = blues.getShieldDashSpeed() * initialXDir;
+		float speed = blues.getShieldDashSpeed() * initialXDir;
 		if (character.frameIndex >= 1) {
 			if (!soundPlayed) {
 				character.playSound("slide", sendRpc: true);
 				soundPlayed = true;
 			}
-			character.move(move);
+			character.moveXY(speed, 0);
 		}
 		if (character.grounded) {
 			dustTimer += Global.speedMul;
@@ -251,8 +250,7 @@ public class BluesSlide : CharState {
 
 	public override void update() {
 		base.update();
-		Point move = new(blues.getSlideSpeed() * initialSlideDir, 0);
-		character.move(move);
+		character.moveXY(blues.getSlideSpeed() * initialSlideDir, 0);
 
 		if (slideTime >= 3 && particles > 0) {
 			slideTime = 0;

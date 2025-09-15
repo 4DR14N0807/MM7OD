@@ -25,12 +25,9 @@ public class PlayerCharData {
 }
 
 public enum CharIds {
-	//Adrian: When adding new chars, remember to add them
-	// in charHeartTanks and the code crash bomb, and spawnCharatPoint().
-	// Null stage char.
-	Stage = -1,
-	// Real char.
-	X = 0,
+	//Adrian: When adding new chars, remember to add them in charHeartTanks and the code crash bomb,
+	//and spawnCharatPoint().
+	X,
 	Zero,
 	Vile,
 	Axl,
@@ -262,7 +259,7 @@ public class SelectCharacterMenu : IMainMenu {
 
 		// Draw text
 
-		if (Global.flFrameCount % 60 < 30) {
+		if (Global.frameCount % 60 < 30) {
 			Fonts.drawText(
 				FontType.Blue, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
 				Alignment.Center

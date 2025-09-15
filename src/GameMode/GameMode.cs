@@ -10,7 +10,7 @@ namespace MMXOnline;
 public class GameMode {
 	public const string Deathmatch = "Deathmatch";
 	public const string TeamDeathmatch = "Team Deathmatch";
-	public const string CTF = "Capture The Flag";
+	public const string CTF = "CTF";
 	public const string ControlPoint = "Control Point";
 	public const string Elimination = "Elimination";
 	public const string TeamElimination = "Team Elimination";

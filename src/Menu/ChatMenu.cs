@@ -53,7 +53,7 @@ public class ChatMenu : IMainMenu {
 					typingChat = false;
 					exitedChatFrames = 3;
 					addChatEntry();
-					lastNChatFrames.Add(Global.floorFrameCount);
+					lastNChatFrames.Add(Global.frameCount);
 					if (lastNChatFrames.Count > 5) lastNChatFrames.PopFirst();
 				}
 				if (Global.input.isPressedMenu(Control.MenuPause) || (Global.input.isPressed(Key.Enter) && string.IsNullOrWhiteSpace(currentTypedChat))) {
@@ -61,7 +61,7 @@ public class ChatMenu : IMainMenu {
 					exitedChatFrames = 3;
 				}
 			} else if (!Menu.inControlMenu) {
-				bool throttleChat = lastNChatFrames.Count == 5 && Global.floorFrameCount - lastNChatFrames[0] < 600;
+				bool throttleChat = lastNChatFrames.Count == 5 && Global.frameCount - lastNChatFrames[0] < Global.normalizeFrames(600);
 				if (Global.debug) {
 					throttleChat = false;
 				}

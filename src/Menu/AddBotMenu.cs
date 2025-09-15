@@ -12,8 +12,8 @@ public class AddBotMenu : IMainMenu {
 
 	public List<Point> optionPoses = new List<Point>()
 	{
-			new Point(Global.halfScreenW, 70),
-			new Point(Global.halfScreenW, 90),
+			new Point(30, 100),
+			new Point(30, 120),
 		};
 	public int ySep = 10;
 
@@ -92,7 +92,7 @@ public class AddBotMenu : IMainMenu {
 
 	public void render() {
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-		//Global.sprites["cursor"].drawToHUD(0, optionPoses[0].x- 80, optionPoses[selectArrowPosY].y + 3);
+		Global.sprites["cursor"].drawToHUD(0, 15, optionPoses[selectArrowPosY].y + 5);
 
 		Fonts.drawText(FontType.BlueMenu, "Add Bot", Global.halfScreenW, 15, Alignment.Center);
 

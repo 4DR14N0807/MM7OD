@@ -49,52 +49,36 @@ public class CustomMatchSettings {
 
 public class CustomMatchSettingsMenu : IMainMenu {
 	public int selectArrowPosY;
-	public int selectArrowPosY2;
-	public int selectArrowPosY3;
 	public const int startX = 30;
 	public int startY = 40;
 	public const int lineH = 10;
-	public const int startX2 = 30;
-	public int startY2 = 40;
-	public const int lineH2 = 10;
-	public const int startX3 = 30;
-	public int startY3 = 40;
-	public const int lineH3 = 10;
 	public const uint fontSize = 24;
 	public IMainMenu prevMenu;
 	public bool inGame;
-	public int Page = 1;
+	public int Page;
 	public bool isOffline;
-	private FontType fontOption = FontType.Blue; 
+	private FontType fontOption = FontType.Blue;
 	public List<MenuOption> menuOptions = new List<MenuOption>();
-	public List<MenuOption> menuOptions2 = new List<MenuOption>();
-	public List<MenuOption> menuOptions3 = new List<MenuOption>();
 
-
-	SavedMatchSettings savedMatchSettings {
-		get { return isOffline ? SavedMatchSettings.mainOffline : SavedMatchSettings.mainOnline; }
-	}
-	CustomMatchSettings cSettings => savedMatchSettings.customMatchSettings;
+	SavedMatchSettings savedMatchSettings { get { return isOffline ? SavedMatchSettings.mainOffline : SavedMatchSettings.mainOnline; } }
 
 	public CustomMatchSettingsMenu(IMainMenu prevMenu, bool inGame, bool isOffline) {
 		this.prevMenu = prevMenu;
 		this.inGame = inGame;
 		int currentY = startY;
-		int currentY2 = startY2;
-		int currentY3 = startY3;
 		this.isOffline = isOffline;
 		/*menuOptions.Add(
 			new MenuOption(
 				startX, currentY,
 				() => {
-					Helpers.menuLeftRightBool(ref cSettings.hyperModeMatch);
+					Helpers.menuLeftRightBool(ref savedMatchSettings.customMatchSettings.hyperModeMatch);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						FontType.RedishOrange,
-						"Hypermode Match : " +
-						Helpers.boolYesNo(cSettings.hyperModeMatch),
-						pos.x, pos.y, selected: selectArrowPosY == index
+						FontType.Blue,
+						"1v1 or Hypermode Match : " +
+						Helpers.boolYesNo(savedMatchSettings.customMatchSettings.hyperModeMatch),
+						pos.x, pos.y, selected: selectArrowPosY == 0
 					);
 				}
 			)
@@ -232,7 +216,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 					Fonts.drawText(
 						fontOption,
 						"HEALTH MODIFIER: " +
-						((savedMatchSettings.customMatchSettings.healthModifier  / 8f) * 100).ToString() + 
+						((savedMatchSettings.customMatchSettings.healthModifier / 8f) * 100).ToString() +
 						"%",
 						pos.x, pos.y, selected: selectArrowPosY == 5
 					);
@@ -287,22 +271,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		);
 		//Currency Gain Custom Setting
 		menuOptions.Add(
-			new MenuOption(
-				startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref cSettings.currencyGain, 1, 10, true);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						FontType.Green,
-						Global.nameCoins + " gain modifier: " +
-						cSettings.currencyGain.ToString(),
-						pos.x, pos.y, selected: selectArrowPosY == index
-					);
-				}
-			)
-		);
-		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
 					Helpers.menuLeftRightInc(
@@ -320,9 +288,8 @@ public class CustomMatchSettingsMenu : IMainMenu {
 			)
 		);
 		//Respawn Time Custom Setting
-		menuOptions2.Add(
-			new MenuOption(
-				startX2, currentY2 += lineH2,
+		menuOptions.Add(
+			new MenuOption(startX, currentY += lineH,
 				() => {
 					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.respawnTime, 0, 12, true);
 				},
@@ -340,11 +307,12 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-		menuOptions2.Add(
+		//
+		menuOptions.Add(
 			new MenuOption(
-				startX2, currentY2 += lineH2,
+				startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref cSettings.assistTime, 0, 6, true);
+					Helpers.menuLeftRightBool(ref savedMatchSettings.customMatchSettings.pickupItems);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -363,30 +331,15 @@ public class CustomMatchSettingsMenu : IMainMenu {
 			10 => "Megaman",
 			11 => "Protoman",
 			12 => "Bass",
-			<10 => "No",
+			< 10 => "No",
 			_ => "ERROR"
 		};
 	}
 
 	public void update() {
-		if (Global.input.isPressedMenu(Control.Special1)) {
-			Page++;
-			if (Page > 3) Page = 1;
-		}
-		if (Page == 1) {
-			menuOptions[selectArrowPosY].update();
-			Helpers.menuUpDown(ref selectArrowPosY, 0, menuOptions.Count - 1);
-		} else if (Page == 2) {
-			menuOptions2[selectArrowPosY2].update();
-			Helpers.menuUpDown(ref selectArrowPosY2, 0, menuOptions2.Count - 1);
-		}
-		else if (Page == 3) {
-			menuOptions3[selectArrowPosY3].update();
-			Helpers.menuUpDown(ref selectArrowPosY3, 0, menuOptions3.Count - 1);
-		}
-
+		Helpers.menuUpDown(ref selectArrowPosY, 0, menuOptions.Count - 1);
 		if (Global.input.isPressedMenu(Control.MenuBack)) {
-			if (cSettings.maxHeartTanks < cSettings.startHeartTanks) {
+			if (savedMatchSettings.customMatchSettings.maxHeartTanks < savedMatchSettings.customMatchSettings.startHeartTanks) {
 				Menu.change(new ErrorMenu(new string[] { "Error: Max heart tanks can't be", "less than start heart tanks." }, this));
 				return;
 			}
@@ -402,6 +355,8 @@ public class CustomMatchSettingsMenu : IMainMenu {
 
 			Menu.change(prevMenu);
 		}
+
+		menuOptions[selectArrowPosY].update();
 	}
 
 	public void render() {
@@ -428,77 +383,14 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		);
 
 		int i = 0;
-		if (Page == 1)
 		foreach (var menuOption in menuOptions) {
 			menuOption.render(menuOption.pos, i);
 			i++;
 		}
-		if (Page == 2)
-		foreach (var menuOption2 in menuOptions2) {
-			menuOption2.render(menuOption2.pos, i);
-			i++;
-		}
-		if (Page == 3)
-		foreach (var menuOption3 in menuOptions3) {
-			menuOption3.render(menuOption3.pos, i);
-			i++;
-		}
-	}
-	public void drawText() {
-		Fonts.drawText(
-			FontType.Yellow, "Custom Match Options",
-			Global.halfScreenW, 20, alignment: Alignment.Center
-		);
-		Fonts.drawText(
-			FontType.Yellow, "Page: " + Page,
-			Global.halfScreenW+150, 20, alignment: Alignment.Center
-		);
+
 		Fonts.drawTextEX(
 			FontType.Orange, "[MLEFT]/[MRIGHT]: Change setting, [BACK]: Back",
 			Global.screenW * 0.5f, Global.screenH - 26, Alignment.Center
 		);
-	}
-	public void Cursor() {
-		if (Page == 1) {
-			if (!inGame) {
-				DrawWrappers.DrawTextureHUD(Global.textures["severbrowser"], 0, 0);
-				DrawWrappers.DrawTextureHUD(
-					Global.textures["cursor"], menuOptions[selectArrowPosY].pos.x - 8,
-					menuOptions[selectArrowPosY].pos.y - 1
-				);
-			} else {
-				DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-				Global.sprites["cursor"].drawToHUD(
-					0, menuOptions[selectArrowPosY].pos.x - 8, menuOptions[selectArrowPosY].pos.y + 5
-				);
-			}
-		} else if (Page == 2) {
-			if (!inGame) {
-				DrawWrappers.DrawTextureHUD(Global.textures["severbrowser"], 0, 0);
-				DrawWrappers.DrawTextureHUD(
-					Global.textures["cursor"], menuOptions2[selectArrowPosY2].pos.x - 8,
-					menuOptions2[selectArrowPosY2].pos.y - 1
-				);
-			} else {
-				DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-				Global.sprites["cursor"].drawToHUD(
-					0, menuOptions2[selectArrowPosY2].pos.x - 8, menuOptions2[selectArrowPosY2].pos.y + 5
-				);
-			}
-		}
-		else if (Page == 3) {
-			if (!inGame) {
-				DrawWrappers.DrawTextureHUD(Global.textures["severbrowser"], 0, 0);
-				DrawWrappers.DrawTextureHUD(
-					Global.textures["cursor"], menuOptions3[selectArrowPosY3].pos.x - 8,
-					menuOptions3[selectArrowPosY3].pos.y - 1
-				);
-			} else {
-				DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-				Global.sprites["cursor"].drawToHUD(
-					0, menuOptions3[selectArrowPosY3].pos.x - 8, menuOptions3[selectArrowPosY3].pos.y + 5
-				);
-			}
-		}
 	}
 }

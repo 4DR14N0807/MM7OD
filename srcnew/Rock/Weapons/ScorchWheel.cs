@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -537,7 +537,7 @@ public class Burning : CharState {
 		if (!base.canEnter(character) ||
 			character.isStunImmune() ||
 			character.isInvulnerable() ||
-			character.charState.stunResistant ||
+			character.charState.stunImmune ||
 			character.grabInvulnTime > 0 ||
 			character.charState.invincible
 		) {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -332,7 +332,8 @@ public class RagingChargeX : Character {
 		}
 		base.render(x, y);
 	}
-
+	
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = [];
@@ -374,6 +375,7 @@ public class RagingChargeX : Character {
 		}
 		return chargePalletes;
 	}
+	*/
 
 	public override int getDisplayChargeLevel() {
 		return Helpers.clamp(MathInt.Ceiling(ragingBuster.ammo / ragingBuster.getAmmoUsage(0)), 1, 4);

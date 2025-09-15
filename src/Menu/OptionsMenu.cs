@@ -1597,6 +1597,7 @@ public class OptionsMenu : IMainMenu {
 	}
 
 	public static void setPresetQuality(int graphicsPreset) {
+		Options.main.detectedGraphicsPreset = graphicsPreset;
 		Options.main.particleQuality = graphicsPreset;
 		Options.main.fastShaders = graphicsPreset == 0;
 		Options.main.enableMapSprites = graphicsPreset != 0;

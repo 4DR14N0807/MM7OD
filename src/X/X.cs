@@ -259,7 +259,7 @@ public class MegamanX : Character {
 			if (stingActiveTime <= 0 && health < lastChipBaseHP) {
 				if (headChipHealthCooldown <= 0) {
 					isHealingWithChip = true;
-					addHealth(1, false);
+					addHealth(1);
 					isHealingWithChip = false;
 					headChipHealthCooldown = 45;
 				} else {

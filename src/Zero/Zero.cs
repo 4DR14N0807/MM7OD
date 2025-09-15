@@ -987,6 +987,7 @@ public class Zero : Character {
 		changeState(idleState, true);
 	}
 	// Shader and display.
+	/*
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> baseShaders = base.getShaders();
 		List<ShaderWrapper> shaders = new();
@@ -1087,6 +1088,7 @@ public class Zero : Character {
 		}
 		base.render(x, y);
 	}
+	*/
 
 	public override List<byte> getCustomActorNetData() {
 		List<byte> customData = base.getCustomActorNetData();

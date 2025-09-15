@@ -409,10 +409,6 @@ public class Weapon {
 		Helpers.decrementFrames(ref soundTime);
 		Helpers.decrementFrames(ref shootCooldown);
 		Helpers.decrementFrames(ref altShotCooldown);
-		if (Global.level.server?.customMatchSettings?.axlCustomReload == true) {
-			Helpers.decrementFrames(ref rechargeAmmoCustomSettingAxl);
-			Helpers.decrementFrames(ref rechargeAmmoCustomSettingAxl2);
-		}
 		if (timeSinceLastShoot != null) {
 				timeSinceLastShoot += Global.speedMul;
 			}

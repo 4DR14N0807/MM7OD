@@ -175,8 +175,8 @@ public class MaverickWeapon : Weapon {
 		summonedOnce = true;
 		return maverick;
 	}
+
 	public bool canUseEtank(ETank eTank) {
-		if (player.isTagTeam()) return false;
 		return maverick != null && maverick.health < maverick.maxHealth;
 	}
 

@@ -120,7 +120,7 @@ public class PlayerPB {
 		curMaxNetId = player.curMaxNetId;
 		warpedIn = player.warpedInOnce;
 		readyTime = player.readyTime;
-		readyTextOver = player.readyTextOver;
+		//readyTextOver = player.readyTextOver;
 		loadoutData = player.loadout;
 		disguise = player.disguise;
 		atransLoadout = player.atransLoadout;

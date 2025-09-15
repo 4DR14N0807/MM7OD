@@ -62,10 +62,6 @@ public class AssassinBulletProj : Projectile {
 		fadeSprite = "axl_bullet_fade";
 		projId = (int)ProjIds.AssassinBullet;
 
-		if (player?.character?.isQuickAssassinate == true) {
-			projId = (int)ProjIds.AssassinBulletQuick;
-		}
-
 		this.xDir = xDir;
 		this.angle = bulletDir.angle;
 		visible = false;

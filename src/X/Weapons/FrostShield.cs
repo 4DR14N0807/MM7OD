@@ -71,9 +71,6 @@ public class FrostShieldProj : Projectile {
 		projId = (int)ProjIds.FrostShield;
 		destroyOnHit = true;
 		exhaust = new Anim(pos, "frostshield_exhaust", xDir, null, false);
-		if (Global.level.server?.customMatchSettings?.frostShieldNerf == false) {
-			isShield = true;
-		}
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -178,9 +175,6 @@ public class FrostShieldProjGround : Projectile, IDamagable {
 		maxTime = 5;
 		projId = (int)ProjIds.FrostShieldGround;
 		destroyOnHit = true;
-		if (Global.level.server?.customMatchSettings?.frostShieldNerf == false) {
-			isShield = true;
-		}
 		playSound("frostShield");
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -255,11 +249,6 @@ public class FrostShieldProjCharged : Projectile {
 		destroyOnHit = false;
 		shouldVortexSuck = false;
 		character = player.character;
-		if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == false) {
-			isShield = true;	
-		} else if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == true) {
-			isShield = false;
-		}
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
@@ -335,11 +324,7 @@ public class FrostShieldProjChargedGround : Projectile {
 		shouldVortexSuck = false;
 		character = player.character;
 		useGravity = true;
-		if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == false) {
-			isShield = true;	
-		} else if (Global.level.server?.customMatchSettings?.frostShieldChargedNerf == true) {
-			isShield = false;
-		}
+		
 		vel = new Point(xDir * 150, -100);
 		if (collider != null) { collider.wallOnly = true; }
 		slideAnim = new Anim(pos, "frostshield_charged_slide", xDir, null, false);

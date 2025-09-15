@@ -84,7 +84,7 @@ public class LargeHealthPickup : Pickup {
 		owner, pos, "pickup_health_large", netId, ownedByLocalPlayer, 
 		NetActorCreateId.LargeHealth, sendRpc: sendRpc
 	) {
-		healAmount = 7;
+		healAmount = 8;
 		pickupType = PickupType.Health;
 	}
 }
@@ -97,7 +97,7 @@ public class SmallHealthPickup : Pickup {
 		owner, pos, "pickup_health_small", netId, ownedByLocalPlayer,
 		NetActorCreateId.SmallHealth, sendRpc: sendRpc
 	) {
-		healAmount = Global.level?.server?.customMatchSettings?.smallHealthPickup ?? 4;
+		healAmount = 4;
 		pickupType = PickupType.Health;
 	}
 }

@@ -129,6 +129,7 @@ public class Options {
 	public PZeroLoadout pzeroLoadout = new PZeroLoadout();
 
 	private static Options _main = null!;
+	public int? detectedGraphicsPreset;
 
 	public static Options main {
 		get {

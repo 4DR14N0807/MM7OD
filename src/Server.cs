@@ -802,8 +802,6 @@ public class Server {
 		if (rpcTemplate is RPCUpdateStarted) {
 			started = true;
 			nonSpecPlayerCountOnStart = players.Count(p => p.isSpectator);
-		} else if (rpcTemplate is RPCLogWeaponKills) {
-			logWeaponKills();
 		} else if (rpcTemplate is RPCReportPlayerRequest) {
 			string playerName = im.ReadString();
 			var player = players.FirstOrDefault(p => p.name == playerName);

@@ -146,7 +146,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startETanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startETanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -162,7 +162,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxETanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxETanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -178,7 +178,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startWTanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startWTanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -194,7 +194,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxWTanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxWTanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(

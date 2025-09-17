@@ -541,7 +541,7 @@ public class Blues : Character {
 			stopCharge();
 		}
 
-		// E-Tank heal.
+		// L-Tank heal.
 		if (usedLtank != null && health > 0) {
 			if (eTankHealTime <= 0 && usedLtank.health > 0 && health < maxHealth) {
 				usedLtank.health--;
@@ -549,19 +549,22 @@ public class Blues : Character {
 				eTankHealTime = 8;
 				playSound("heal", forcePlay: true, sendRpc: true);
 			}
-			if (lTankCoreHealTime <= 0 && usedLtank.ammo > 0) {
-				usedLtank.ammo--;
+			if (lTankCoreHealTime <= 0 && usedLtank.health > 0 && coreAmmo > 0) {
+				usedLtank.health--;
 				coreAmmo = Helpers.clampMin(coreAmmo - 1, 0);
 				lTankCoreHealTime = 4;
+				playSound("heal", forcePlay: true, sendRpc: true);
 			}
-			if (usedLtank.health <= 0 && usedLtank.ammo <= 0) {
+			if (usedLtank.health <= 0) {
 				player.ltanks.Remove(usedLtank);
+				player.fuseLTanks();
 				usedLtank = null;
 				eTankHealTime = 0;
 				lTankCoreHealTime = 0;
 			}
 			else if (coreAmmo <= 0 && health >= maxHealth) {
 				usedLtank = null;
+				player.fuseLTanks();
 				eTankHealTime = 0;
 				lTankCoreHealTime = 0;
 			}
@@ -1009,7 +1012,7 @@ public class Blues : Character {
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_ltank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 12 * (1 - tankHealth / LTank.maxHealth);
+		/* float yPos = 12 * (1 - tankHealth / LTank.maxHealth);
 		DrawWrappers.DrawRect(
 			topLeftBar.x, topLeftBar.y + yPos, pos.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
@@ -1020,7 +1023,7 @@ public class Blues : Character {
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
 		);
 
-		deductLabelY(labelSubtankOffY);
+		deductLabelY(labelSubtankOffY); */
 	}
 
 	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
@@ -1359,6 +1362,7 @@ public class Blues : Character {
 	public override void stopETankHeal() {
 		base.stopETankHeal();
 		usedLtank = null;
+		player.fuseLTanks();
 	}
 
 	public override void aiUpdate(Actor? target) {

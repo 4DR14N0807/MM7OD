@@ -1332,7 +1332,10 @@ public partial class Character : Actor, IDamagable {
 
 		if (health >= maxHealth) {
 			healAmount = 0;
-			usedEtank = null;
+			if (usedEtank != null) {
+				usedEtank = null;
+				player.fuseETanks();
+			}
 		}
 		if (currentWeapon?.ammo >= currentWeapon?.maxAmmo) {
 			currentWeapon.weaponHealAmount = 0;
@@ -1382,6 +1385,7 @@ public partial class Character : Actor, IDamagable {
 				player.ETanks.Remove(usedEtank);
 				usedEtank = null;
 				eTankHealTime = 0;
+				//player.fuseETanks();
 			}
 
 			if (player == Global.level.mainPlayer || playHealSound) {
@@ -2658,13 +2662,13 @@ public partial class Character : Actor, IDamagable {
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 12 * (1 - tankHealth / usedEtank.maxHealth);
+		/* float yPos = 12 * (1 - tankHealth / usedEtank.maxHealth);
 		DrawWrappers.DrawRect(
 			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
 		);
 		
-		deductLabelY(labelSubtankOffY);
+		deductLabelY(labelSubtankOffY); */
 	}
 
 	public void drawWTankHealingInner(float tankAmmo) {
@@ -2673,13 +2677,13 @@ public partial class Character : Actor, IDamagable {
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_wtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 12 * (1 - tankAmmo / WTank.maxAmmo);
+		/* float yPos = 12 * (1 - tankAmmo / WTank.maxAmmo);
 		DrawWrappers.DrawRect(
 			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
 		);
 	
-		deductLabelY(labelSubtankOffY);
+		deductLabelY(labelSubtankOffY); */
 	}
 
 	public bool drawStatusProgress() {
@@ -3063,6 +3067,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual void stopETankHeal() {
 		usedEtank = null;
+		player.fuseETanks();
 	}
 
 	public void killPlayer(Player? killer, Player? assister, int? weaponIndex, int? projId) {

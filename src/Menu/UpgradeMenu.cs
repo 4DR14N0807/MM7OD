@@ -35,7 +35,7 @@ public class UpgradeMenu : IMainMenu {
 	};
 
 	public List<float> optionPositionsY = new List<float>() {
-		70, 90, 110, 130
+		60, 80, 100, 120, 140
 	};
 
 	public UpgradeMenu(IMainMenu prevMenu) {
@@ -165,13 +165,13 @@ public class UpgradeMenu : IMainMenu {
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 		if (selectArrowPosY > getMaxIndex() - 1) selectArrowPosY = getMaxIndex() - 1;
 
-		if (Global.input.isPressedMenu(Control.MenuConfirm) && mainPlayer.character != null) {
+		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			//ETANKS SECTION
 			if (selectArrowPosX == 0) {
 				if (mainPlayer.ETanks.Count <= selectArrowPosY) {
 					if (mainPlayer.ETanks.Count < getMaxETanks() && mainPlayer.currency >= eTankCost) {
 						mainPlayer.currency -= eTankCost;
-						mainPlayer.ETanks.Add(new ETank());
+						mainPlayer.ETanks.Add(new ETank(mainPlayer.maxHealth));
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ETanks.InRange(selectArrowPosY)) {
 						if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.ETanks[selectArrowPosY]))) {
@@ -204,7 +204,7 @@ public class UpgradeMenu : IMainMenu {
 							}
 
 							if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
-								mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, getAmmoPercentHeal());
+								mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
 								mainPlayer.wtanks.RemoveAt(selectArrowPosY);
 							}
 
@@ -218,7 +218,7 @@ public class UpgradeMenu : IMainMenu {
 						var currentTarget = wTankTargets[wTankTargetIndex];
 					}
 					if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
-						mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, getAmmoPercentHeal());
+						mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
 						mainPlayer.wtanks.RemoveAt(selectArrowPosY);
 					}
 					isUsingWTank = false;
@@ -273,6 +273,8 @@ public class UpgradeMenu : IMainMenu {
 						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
 					);
 				}
+				Fonts.drawText(FontType.WhiteSmall, etank.health.ToString(), optionPos.x + 6, optionPos.y - 12, Alignment.Center);
+
 			} else {
 				Global.sprites["menu_etank"].drawToHUD(0, spritePos.x, spritePos.y);
 				Point topLeftBar = new Point(spritePos.x, spritePos.y);
@@ -415,16 +417,9 @@ public class UpgradeMenu : IMainMenu {
 
 		string specialText = "[CMD]: Super Adaptor" + 
 			$" ({Rock.SuperAdaptorCost} {Global.nameCoins})";
-		if (hasAdaptor) specialText = "Super Adaptor: Activated";
-		/*specialText = (
-			rock.boughtSuperAdaptorOnce ? "" : "[CMD]: Super Adaptor" + 
-			$" ({Player.superAdaptorCost} {Global.nameCoins})"
-		);*/
-		if (rock.canGoSuperAdaptor() && mainPlayer.isRock) {
-			
-		} 
+		if (hasAdaptor) specialText = "Super Adaptor: Activated"; 
 		
-		float yPosb = Global.halfScreenH + 9;
+		float yPosb = Global.halfScreenH + 26;
 
 		DrawWrappers.DrawLine(
 			7, yPosb + offY, Global.screenW - 7,yPosb + offY, 
@@ -450,7 +445,7 @@ public class UpgradeMenu : IMainMenu {
 			Fonts.drawText(
 				hasAdaptor ? FontType.Green : FontType.Orange,
 				Helpers.controlText(specialText).ToUpperInvariant(),
-				Global.halfScreenW, yPos + extraOffset + yOff + offY, Alignment.Center
+				Global.halfScreenW, yPosb + extraOffset + yOff + offY, Alignment.Center
 			);
 		}
 

@@ -24,7 +24,7 @@ public class BluesUpgradeMenu : IMainMenu {
 		};
 
 		public List<float> optionPositionsY = new List<float>() {
-			70, 90, 110, 130
+			60, 80, 100, 120, 140
 		};
 
 
@@ -72,7 +72,7 @@ public class BluesUpgradeMenu : IMainMenu {
 				if (mainPlayer.ltanks.Count <= selectArrowPosY) {
 					if (mainPlayer.ltanks.Count < getMaxLTanks() && mainPlayer.currency >= lTankCost) {
 						mainPlayer.currency -= lTankCost;
-						mainPlayer.ltanks.Add(new LTank());
+						mainPlayer.ltanks.Add(new LTank(mainPlayer.maxHealth));
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ltanks.InRange(selectArrowPosY)) {
 						if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY]))) {
@@ -126,17 +126,13 @@ public class BluesUpgradeMenu : IMainMenu {
 				} else {
 					Point topLeftBar = new Point(spritePos.x + 1, spritePos.y + 2);
 					Point botRightBar = new Point(spritePos.x + 15, spritePos.y + 14);
-					float yPos =  12 * (ltank.health / LTank.maxHealth);
+					float yPos =  12 * (ltank.health / ltank.maxHealth);
 					DrawWrappers.DrawRect(
-						topLeftBar.x, topLeftBar.y, botRightBar.x - 7, botRightBar.y - yPos,
-						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
-					);
-					yPos = 12 * (ltank.ammo / LTank.maxAmmo);
-					DrawWrappers.DrawRect(
-						topLeftBar.x + 7, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
+						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
 						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
 					);
 				}
+				Fonts.drawText(FontType.WhiteSmall, ltank.health.ToString(), optionPos.x + 6, optionPos.y - 12, Alignment.Center);
 			} else {
 				Global.sprites["menu_ltank"].drawToHUD(1, spritePos.x, spritePos.y);
 				Point topLeftBar = new Point(spritePos.x, spritePos.y);

@@ -1,24 +1,21 @@
 namespace MMXOnline;
 
 
-public class ETank {
-	public int maxHealth = 14;
-	public float health = 14;
+public class ETank : Tank {
+	
 	public bool inUse;
-	bool once;
 
-	public ETank() {
-
+	public ETank(float maxHealth) {
+		this.maxHealth = maxHealth;
+		health = maxHealth;
 	}
 
-	public void use(Player player, Character character) {
-		if (!once) {
-			maxHealth = (int)player.maxHealth;
-			health = maxHealth;
-			once = true;
-		}
-		
+	public override void use(Player player, Character character) {
 		character.usedEtank = this;
-		RPC.useETank.sendRpc(character.netId, maxHealth);
+		RPC.useETank.sendRpc(character.netId, (int)maxHealth);
+	}
+
+	public override bool isFull() {
+		return health >= maxHealth;
 	}
 }

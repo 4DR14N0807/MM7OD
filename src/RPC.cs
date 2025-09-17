@@ -130,6 +130,7 @@ public class RPC {
 		stopSound,
 		syncValue,
 		// Gameplay stuff.
+		broadcastLoadout,
 		switchCharacter,
 		reflectProj,
 		commandGrabPlayer,

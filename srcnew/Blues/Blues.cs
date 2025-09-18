@@ -26,6 +26,7 @@ public class Blues : Character {
 	public float coreAmmoDecreaseCooldown;
 	public bool overheating;
 	public float overheatEffectTime;
+	public float overheatTime;
 	public bool starCrashOverheat;
 
 	// Break Man stuff.
@@ -312,7 +313,7 @@ public class Blues : Character {
 	}
 
 	public bool canUseBigBangStrike() {
-		return grounded && overheating;
+		return grounded && overheating && overheatTime >= 6;
 	}
 
 	public bool canUseDropSwap() {
@@ -521,6 +522,9 @@ public class Blues : Character {
 			}
 		}
 
+		if (overheating && charState is not Hurt) overheatTime += Global.speedMul;
+		else overheatTime = 0;
+
 		bool overdriveLimit = false;
 		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive && charState is not BluesRevive) {
 			overdriveAmmo--;
@@ -536,7 +540,7 @@ public class Blues : Character {
 			coreAmmoDecreaseCooldown = 60;
 			overdriveAmmoDecreaseCooldown = 10;
 			setHurt(0, Global.defFlinch, false);
-			xPushVel = -xDir * 4 * 60;
+			xPushVel = -xDir * 4;
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
@@ -1288,6 +1292,11 @@ public class Blues : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
+				if (shieldDamaged) {
+					playSound("danger_wrap_explosion", sendRpc: true);
+					new Anim(pos.addxy(xDir * 20, -20), "generic_explosion", xDir, player.getNextActorNetId(), true, true);
+				}
+				
 			}
 		}
 		// Back shield block check.

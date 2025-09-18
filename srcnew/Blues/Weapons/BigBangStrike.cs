@@ -103,7 +103,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
-					actor.move(new Point(direction * 30, 0));
+					actor.move(new Point(direction * 60, 0));
 				}
 				if (actor.getCenterPos().distanceTo(pos) <= radius) {
 					damager.applyDamage(damagable, false, weapon, this, projId);
@@ -279,7 +279,7 @@ public class StrikeAttackPushProj : Projectile {
 
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.stopMoving();
-					actor.xPushVel = xDir * pushPower;
+					actor.xPushVel = xDir * pushPower / 60;
 					if (actor is Character chara && !chara.charState.superArmor) {
 						string key = Damager.getFlinchKey(projId, damager.owner.id);
 						if (!chara.flinchCooldown.ContainsKey(key) || chara.flinchCooldown[key] <= 0) {
@@ -445,6 +445,7 @@ public class BigBangStrikeStart : CharState {
 
 	public override void update() {
 		base.update();
+		blues.turnToInput(player.input, player);
 		blues.coreAmmoDecreaseCooldown = 10;
 		blues.healShieldHPCooldown = 180;
 		if (shieldLossCD <= 0 && blues.shieldHP > 0) {
@@ -549,7 +550,7 @@ public class BigBangStrikeBackwall : Effect {
 		DrawWrappers.DrawRect(
 			Global.level.camX, Global.level.camY,
 			Global.level.camX + 1000, Global.level.camY + 1000,
-			true, new Color(0, 0, 0, (byte)System.MathF.Round(transparecy)), 1, ZIndex.Backwall
+			true, new Color(0, 0, 0, (byte)System.MathF.Round(transparecy)), 1, ZIndex.Background
 		);
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SFML.Graphics;
 
@@ -22,12 +23,13 @@ public class Bass : Character {
 	public float showNumberTime;
 	public int lastCardNumber;
 	public SuperBassRP? sbRocketPunch;
+	public bool armless;
 
 	// Modes.
 	public bool isSuperBass;
 	public const int TrebleBoostCost = 75;
 	public int phase;
-	public int[] evilEnergy = new int[3] { 0, 0, 0 };
+	public int[] evilEnergy = new int[] {0,0,0};
 	public const int MaxEvilEnergy = 28;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
@@ -55,16 +57,16 @@ public class Bass : Character {
 		weapons = getLoadout();
 
 		maxHealth = (decimal)player.getMaxHealth(charId);
-		maxHealth -= (decimal)player.evilEnergyStacks * (decimal)player.hpPerStack;
+		maxHealth -= player.evilEnergyHP;
 		health = maxHealth;
 
 		charge1Time = 40;
 		charge2Time = 105;
 		charge3Time = 180;
 
-		addAttackCooldown((int)AttackIds.Kick, new AttackCooldown(0, 75));
-		addAttackCooldown((int)AttackIds.SweepingLaser, new AttackCooldown(0, 90));
-		addAttackCooldown((int)AttackIds.DarkComet, new AttackCooldown(0, 90));
+		addAttackCooldown((int)AttackIds.Kick, new AttackCooldown((int)BassWeaponIds.BassKick, 75));
+		addAttackCooldown((int)AttackIds.SweepingLaser, new AttackCooldown((int)BassWeaponIds.SweepingLaser, 90));
+		addAttackCooldown((int)AttackIds.DarkComet, new AttackCooldown((int)BassWeaponIds.DarkComet, 90));
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			health = 0;
@@ -127,10 +129,9 @@ public class Bass : Character {
 	}
 
 	public void nextPhase(int level) {
-		evilEnergy[phase] = Bass.MaxEvilEnergy;
+		evilEnergy[phase] = MaxEvilEnergy;
 		phase = level;
 		player.pendingEvilEnergyStacks = level;
-		changeState(new EnergyIncrease());
 	}
 
 	public override void update() {
@@ -159,6 +160,7 @@ public class Bass : Character {
 		if (refillFly()) {
 			Helpers.decrementFrames(ref flyTime);
 		}
+		armless = sbRocketPunch != null;
 		if (flyTime > MaxFlyTime) {
 			flyTime = MaxFlyTime;
 		}
@@ -173,9 +175,9 @@ public class Bass : Character {
 		}
 
 		// For the shooting animation.
-		if (shootAnimTime > 0 || charState is LadderClimb) {
+		if ((shootAnimTime > 0) || charState is LadderClimb) {
 			Helpers.decrementFrames(ref shootAnimTime);
-			if (shootAnimTime <= 0) {
+			if (shootAnimTime <= 0 || string.IsNullOrEmpty(charState.shootSprite)) {
 				shootAnimTime = 0;
 				if (sprite.name.EndsWith("_shoot")) {
 					changeSpriteFromName(charState.defaultSprite, false);
@@ -186,7 +188,7 @@ public class Bass : Character {
 		if (isSuperBass) {
 			chargeLogic(shoot);
 		}
-		//quickAdaptorUpgrade(); 
+		quickAdaptorUpgrade(); 
 	}
 
 	public override void chargeGfx() {
@@ -272,11 +274,17 @@ public class Bass : Character {
 		foreach (int key in attacksCooldown.Keys) {
 			float cooldown = attacksCooldown[key].cooldown;
 			float maxCooldown = attacksCooldown[key].maxCooldown;
+			int icon = attacksCooldown[key].iconIndex;
+
 			if (cooldown > 0) {
-				drawBuff(drawPos, cooldown / maxCooldown, "hud_weapon_icon_bass", 0);
+				drawBuff(drawPos, cooldown / maxCooldown, "hud_weapon_icon_bass", icon);
 				secondBarOffset += 18 * drawDir;
 				drawPos.x += 18 * drawDir;
 			}
+		}
+
+		if (player.evilEnergyTime > 0 && player.evilEnergyStacks > 0) {
+			drawBuff(drawPos, player.evilEnergyTime / player.evilEnergyMaxTime, "hud_weapon_icon_bass", (int)BassWeaponIds.EvilEnergy);
 		}
 	}
 
@@ -602,6 +610,12 @@ public class Bass : Character {
 		return false;
 	}
 
+	public override bool canClimbLadder() {
+		if (armless) return false;
+
+		return base.canClimbLadder();
+	}
+
 	public override bool canMove() {
 		if (shootAnimTime > 0 && grounded) {
 			return false;
@@ -747,6 +761,7 @@ public class Bass : Character {
 
 		bool[] flags = [
 			isSuperBass,
+			armless,
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
@@ -767,6 +782,7 @@ public class Bass : Character {
 
 		bool[] flags = Helpers.byteToBoolArray(data[2]);
 		isSuperBass = flags[0];
+		armless = flags[1];
 	}
 }
 

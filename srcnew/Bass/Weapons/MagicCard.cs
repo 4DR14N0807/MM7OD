@@ -31,7 +31,7 @@ public class MagicCard : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		fireRate = 20;
-		ammoDisplayScale = 2;
+		//ammoDisplayScale = 2;
 		isStream = true;
 		drawCooldown = false;
 		descriptionV2 = [

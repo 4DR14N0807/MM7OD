@@ -96,17 +96,17 @@ public class LightningBoltState : CharState {
 
 		character.useGravity = false;
 		if (character.vel.y < 0) {
-			character.yPushVel = character.vel.y / 2f;
+			character.yPushVel = character.vel.y / 2f / 60;
 		}
 		else if (character.grounded) {
 			character.grounded = false;
-			character.yPushVel = -2f * 60;
+			character.yPushVel = -2f;
 		}
 		else if (character.vel.y / 2f < 2 * 60) {
-			character.yPushVel = character.vel.y / 2f;
+			character.yPushVel = character.vel.y / 2f / 60;
 		}
 		else {
-			character.yPushVel = 2 * 60;
+			character.yPushVel = 2;
 		}
 		character.stopMoving();
 		character.frameSpeed = 0;
@@ -319,7 +319,7 @@ public class LightningBoltProj : Projectile {
 			if (i % 2 == 0) sVelY *= -1;
 
 			new Anim(sparkPos, "lightning_bolt_spark", Math.Sign(sVelX), null!, true) 
-			{ xPushVel = sVelX, yPushVel = sVelY };
+			{ xPushVel = sVelX / 60, yPushVel = sVelY / 60 };
 		}
 	}
 }

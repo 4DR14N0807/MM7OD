@@ -56,6 +56,8 @@ public class Sprite {
 	internal static Texture superMegaManBitmap = null!;
 	internal static Texture superMegaManArmlessBitmap = null!;
 	internal static Texture breakManBitmap = null!;
+	internal static Texture superBassBitmap = null!;
+	internal static Texture superBassArmlessBitmap = null!;
 
 	public Sprite(string spritename) {
 		animData = Global.sprites[spritename];
@@ -193,6 +195,8 @@ public class Sprite {
 			}
 			else if (animData.textureName == "blues_default" && character is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
+			} else if (character is Bass bass && bass.isSuperBass) {
+				bitmap = bass.armless ? Sprite.superBassArmlessBitmap : Sprite.superBassBitmap;
 			}
 		}
 		Frame currentFrame = getCurrentFrame(frameIndex);

@@ -70,8 +70,8 @@ public class Rock : Character {
 		noiseCrushEffect = new ChargeEffect();
 		noiseCrushEffect.character = this;
 
-		addAttackCooldown((int)AttackIds.LegBreaker, new AttackCooldown(0, 90));
-		addAttackCooldown((int)AttackIds.ArrowSlash, new AttackCooldown(0, 90));
+		addAttackCooldown((int)AttackIds.LegBreaker, new AttackCooldown((int)RockWeaponSlotIds.LegBreaker, 90));
+		addAttackCooldown((int)AttackIds.ArrowSlash, new AttackCooldown((int)RockWeaponSlotIds.ArrowSlash, 90));
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			health = 0;
@@ -811,10 +811,11 @@ public class Rock : Character {
 			for (int i = 0; i < 2; i++) {
 				float cd = attacksCooldown[i].cooldown;
 				float maxCd = attacksCooldown[i].maxCooldown;
+				int icon = attacksCooldown[i].iconIndex;
 
 				if (cd > 0) {
 					drawBuff(
-						drawPos, cd / maxCd, "hud_weapon_icon", (int)RockWeaponSlotIds.ArrowSlash + i
+						drawPos, cd / maxCd, "hud_weapon_icon", icon
 					);
 
 					secondBarOffset += 18 * drawDir;

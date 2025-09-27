@@ -229,6 +229,8 @@ public class Rush : Actor, IDamagable {
 		return true;
 	}
 
+	public override bool canBePlatform(GameObject other) { return false; }
+
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
 		return [

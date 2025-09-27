@@ -1234,7 +1234,7 @@ public class GameMode {
 		int barIndex = 0;
 
 		for (var i = 0; i < MathF.Ceiling(player.maxHealth); i++) {
-			float trueHP = player.maxHealth - (player.evilEnergyStacks * player.hpPerStack);
+			decimal trueHP = (decimal)player.maxHealth - (player.evilEnergyStacks * player.hpPerStack);
 			// Draw HP
 			if (i < MathF.Ceiling(health)) {
 				Global.sprites["hud_health_full"].drawToHUD(barIndex, baseX, baseY);

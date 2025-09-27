@@ -118,7 +118,7 @@ public class Blues : Character {
 		shieldMaxHP = (int)Player.getModifiedHealth(shieldMaxHP);
 		shieldHP = shieldMaxHP;
 
-		addAttackCooldown((int)AttackIds.RedStrike, new AttackCooldown(0, 240));
+		addAttackCooldown((int)AttackIds.RedStrike, new AttackCooldown(3, 240));
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			shieldHP = 0;
@@ -1660,12 +1660,13 @@ public class Blues : Character {
 
 		float redStrikeCooldown = attacksCooldown[(int)AttackIds.RedStrike].cooldown;
 		float redStrikeMaxCooldown = attacksCooldown[(int)AttackIds.RedStrike].maxCooldown;
+		int icon = attacksCooldown[(int)AttackIds.RedStrike].iconIndex;
 
 		if (redStrikeCooldown > 0) {
 			drawBuff(
 				drawPos, 
 				redStrikeCooldown / redStrikeMaxCooldown, 
-				"hud_blues_weapon_icon", 3
+				"hud_blues_weapon_icon", icon
 			);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;

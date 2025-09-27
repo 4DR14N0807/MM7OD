@@ -1567,6 +1567,7 @@ public partial class Character : Actor, IDamagable {
 				if (!grounded) {
 					dashedInAir++;
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
+					isDashing = false;
 				} else {
 					grounded = false;
 				}
@@ -1612,7 +1613,7 @@ public partial class Character : Actor, IDamagable {
 				isDashing = (
 					isDashing || player.dashPressed(out string dashControl) && canDash()
 				);
-				if (isDashing) {
+				if (isDashing && this is not Bass) {
 					dashedInAir++;
 				}
 				changeState(getJumpState());
@@ -1656,6 +1657,7 @@ public partial class Character : Actor, IDamagable {
 					//bass double jump
 					// Adrian: como es que una anim puede desyncear tan durooooo.
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
+					isDashing = false;
 					vel.y = -getJumpPower();
 					changeState(getAirJumpState(), true);
 					return true;
@@ -3720,7 +3722,7 @@ public partial class Character : Actor, IDamagable {
 		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
 		baseY -= 16;
 		decimal modifier = (decimal)Player.getHealthModifier();
-		decimal maxHP = Math.Ceiling(maxHealth / modifier);
+		decimal maxHP = Math.Ceiling((decimal)player.getMaxHealth(charId) / modifier);
 		decimal curHP = Math.Floor(health / modifier);
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
@@ -3734,6 +3736,9 @@ public partial class Character : Actor, IDamagable {
 			}
 			else if (i < savings) {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
+			}
+			else if (i >= Math.Ceiling(maxHP) - player.evilEnergyHP) {
+				Global.sprites["hud_energy_full"].drawToHUD(2, baseX, baseY);
 			}
 			else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);

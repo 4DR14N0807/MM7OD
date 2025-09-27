@@ -17,6 +17,10 @@ public enum BassWeaponIds {
 	MagicCard,
 	SuperBassBuster,
 	SuperBassRP,
+	BassKick,
+	SweepingLaser,
+	DarkComet,
+	EvilEnergy,
 }
 
 [ProtoContract]

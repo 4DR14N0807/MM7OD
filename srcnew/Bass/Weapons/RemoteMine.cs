@@ -60,7 +60,7 @@ public class RemoteMineProj : Projectile {
 			pos, xDir, owner, "remote_mine_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMine;
-		maxTime = 1.25f;
+		maxTime = 1f;
 		destroyOnHit = false;
 
 		vel.x = 240 * xDir;

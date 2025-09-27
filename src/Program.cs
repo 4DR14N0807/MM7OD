@@ -886,7 +886,8 @@ class Program {
 		Sprite.superMegaManBitmap = Global.textures["rock_superadaptor"];
 		Sprite.superMegaManArmlessBitmap = Global.textures["rock_superadaptor_armless"];
 		Sprite.breakManBitmap = Global.textures["blues_breakman"];
-		//Sprite.superBassBitmap = Global.textures["bass_super"];
+		Sprite.superBassBitmap = Global.textures["bass_superadaptor"];
+		Sprite.superBassArmlessBitmap = Global.textures["bass_superadaptor_armless"];
 	}
 
 	static string loadSpritesSub(string[] spriteFilePaths) {

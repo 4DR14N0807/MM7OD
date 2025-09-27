@@ -890,7 +890,7 @@ public class Dash : CharState {
 	public Anim dashSpark;
 	public bool isColliding;
 
-	public Dash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
+	public Dash(string initialDashButton) : base("dash") {
 		attackCtrl = true;
 		normalCtrl = true;
 		this.initialDashButton = initialDashButton;

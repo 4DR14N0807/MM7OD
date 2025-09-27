@@ -309,7 +309,7 @@ public class SpreadDrillSmallProj : Projectile {
 		hits++;
 		playSound("spreaddrillHit", true);
 		vel.x = xDir * -120;
-		yPushVel = yDir * 60;
+		yPushVel = yDir;
 		Point? hitPos = sprite.getCurrentFrame().POIs[0];
 		new Anim(
 			pos.add(hitPos.Value.times(xDir)), 

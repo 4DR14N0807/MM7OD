@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ProtoBuf;
 
 namespace MMXOnline;
 
@@ -112,6 +113,22 @@ public class Damager {
 		}
 		damagable.projectileCooldown[key] = hitCooldown;
 
+		if (damagable.isInvincible(owner, projId) && damage > 0) {
+			victim.playSound("ding");
+			if (Helpers.randomRange(0, 50) == 10) {
+				victim.addDamageText("Bloqueo! Por 48 horas!", 1);
+			}
+			return true;
+		}
+
+		// Would only get reached client-side due to lag.
+		// Otherwise, the owner that initiates the applyDamage call
+		// would have already considered it and avoided entering the method
+		// This allows dodge abilities to "favor the defender"
+		if (!damagable.canBeDamaged(owner.alliance, owner.id, projId)) {
+			return true;
+		}
+
 		// Run the RPC on all clients first, before it can modify the parameters, so clients can act accordingly
 		if (sendRpc && victim.netId != null && Global.serverClient?.isLagging() == false) {
 			byte[] damageBytes = BitConverter.GetBytes(damage);
@@ -155,22 +172,6 @@ public class Damager {
 				linkedMeleeId, // 19
 			};
 			RPC.applyDamage.sendRpc(byteParams.ToArray());
-		}
-
-		if (damagable.isInvincible(owner, projId) && damage > 0) {
-			victim.playSound("ding");
-			if (Helpers.randomRange(0, 50) == 10) {
-				victim.addDamageText("Bloqueo! Por 48 horas!", 1);
-			}
-			return true;
-		}
-
-		// Would only get reached due to lag.
-		// Otherwise, the owner that initiates the applyDamage call
-		// would have already considered it and avoided entering the method
-		// This allows dodge abilities to "favor the defender"
-		if (!damagable.canBeDamaged(owner.alliance, owner.id, projId)) {
-			return true;
 		}
 
 		if (damagable != null && damagable is not CrackedWall && owner.ownedByLocalPlayer && !isDot(projId)) {
@@ -620,3 +621,37 @@ public class DamagerMessage {
 	public int? flinch;
 	public float? damage;
 }
+
+public enum EffectId {
+	Flinch,
+	ElecStun,
+	IceStun,
+	FireStun,
+	IceSlow,
+	ElecRoot,
+	IceRoot,
+	FireDot,
+	AcidDot,
+	RockBubble
+}
+
+[ProtoContract]
+public class DamagerProtoBuff {
+	[ProtoMember(1)] public uint? targetId;
+	[ProtoMember(2)] public uint? damager;
+	[ProtoMember(3)] public uint? damagerOwnerId;
+	[ProtoMember(4)] public byte damagerPlayerId;
+	[ProtoMember(5)] public byte? meleeId;
+
+	[ProtoMember(6)] public float damage;
+	[ProtoMember(7)] public float hitCooldown;
+	[ProtoMember(8)] public int flinch;
+	[ProtoMember(9)] public float? flinchCooldown;
+
+	[ProtoMember(10)] public Dictionary<EffectId, float> effects = [];
+	[ProtoMember(11)] public Dictionary<EffectId, float> effectCooldown = [];
+	[ProtoMember(12)] public HashSet<ChipId> chips = [];
+}
+
+
+

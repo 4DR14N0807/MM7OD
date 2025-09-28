@@ -228,6 +228,9 @@ public partial class Character : Actor, IDamagable {
 	// Ctrl data
 	public int altCtrlsLength = 1;
 
+	// Chip system.
+	public ChipInventory chips;
+
 	// Puppet data.
 	public Maverick? currentMaverick {
 		get {
@@ -1075,7 +1078,13 @@ public partial class Character : Actor, IDamagable {
 
 	public void debuffCooldowns() {
 		if (Global.level.mainPlayer.readyTextOver) {
-			Helpers.decrementTime(ref invulnTime);
+			if (invulnTime > 0) {
+				invulnTime -= Global.spf;
+				if (invulnTime <= 0) {
+					invulnTime = 0;
+					chips.onRespawn.Invoke(this);
+				}
+			}
 		}
 
 		if (inCombatCooldown > 0) {
@@ -2953,20 +2962,28 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		decimal damage = decimal.Parse(fDamage.ToString());
-		decimal originalDamage = damage;
-		decimal originalHP = health;
 		// For Dark Hold break.
-		if (damage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
+		if (fDamage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
 		}
 		if (Global.level.isRace() &&
-			damage != (decimal)Damager.envKillDamage &&
-			damage != (decimal)Damager.switchKillDamage &&
+			fDamage != Damager.envKillDamage &&
+			fDamage != Damager.switchKillDamage &&
 			attacker != player
 		) {
-			damage = 0;
+			fDamage = 0;
 		}
+
+		// Chip stuff.
+		Character? enemyChar = (actor as Projectile).ownerActor as Character ?? attacker.character;
+		fDamage = chips.onDamage.Invoke(this, fDamage, actor, enemyChar);
+
+		// Default values.
+		decimal damage = decimal.Parse(fDamage.ToString());
+		decimal originalDamage = damage;
+		decimal originalHP = health;
+
+		// Pierce.
 		bool isArmorPiercing = Damager.isArmorPiercing(projId);
 
 		// For fractional damage shenanigans.
@@ -3058,6 +3075,7 @@ public partial class Character : Actor, IDamagable {
 			}
 			killPlayer(attacker, null, weaponIndex, projId);
 			alive = false;
+			chips.onDeath.Invoke(this, fDamage, actor, enemyChar);
 		}
 	}
 

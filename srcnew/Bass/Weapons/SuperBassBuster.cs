@@ -12,6 +12,7 @@ public class SBassBuster : Weapon {
 	public SBassBuster() : base() {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SuperBassBuster;
+		weaponSlotIndex = index;
 		fireRate = 15;
 		drawAmmo = false;
 	}
@@ -32,19 +33,19 @@ public class SBassBuster : Weapon {
 			character.playSound("buster3", sendRpc: true);
 
 			for (int i = 1; i < 3; i++) {
-			Global.level.delayedActions.Add(new DelayedAction(
-				() => {
-					new SBassShot(
-						bass, shootPos.addxy(11 * xDir, 0), xDir, 
-						player.getNextActorNetId(), true, superBass: bass.isSuperBass
-					);
-					character.playSound("buster2", sendRpc: true);
-					shootCooldown = fireRate;
-					bass.weaponCooldown = fireRate;
-				},
-				(i * 8) / 60f
-			));
-		}
+				Global.level.delayedActions.Add(new DelayedAction(
+					() => {
+						new SBassShot(
+							bass, shootPos.addxy(11 * xDir, 0), xDir, 
+							player.getNextActorNetId(), true, superBass: bass.isSuperBass
+						);
+						character.playSound("buster2", sendRpc: true);
+						shootCooldown = fireRate;
+						bass.weaponCooldown = fireRate;
+					},
+					(i * 8) / 60f
+				));
+			}
 		}
 		else if (chargeLevel == 2) {
 			new ChamoBuster(bass, shootPos, xDir, player.getNextActorNetId(), true);
@@ -80,6 +81,7 @@ public class SBassRP : Weapon {
 	public SBassRP() : base() {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SuperBassRP;
+		weaponSlotIndex = index;
 		fireRate = 15;
 		drawAmmo = false;
 	}
@@ -95,7 +97,27 @@ public class SBassRP : Weapon {
 		int chargeLevel = args[0];
 		Bass bass = character as Bass ?? throw new NullReferenceException();
 
-		if (chargeLevel >= 2) {
+		if (chargeLevel >= 3) {
+
+			new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			character.playSound("super_adaptor_punch", sendRpc: true);
+
+			for (int i = 1; i < 3; i++) {
+				Global.level.delayedActions.Add(new DelayedAction(
+					() => {
+						new SBassShot(
+							bass, shootPos.addxy(11 * xDir, 0), xDir, 
+							player.getNextActorNetId(), true, superBass: bass.isSuperBass
+						);
+						character.playSound("buster2", sendRpc: true);
+						shootCooldown = fireRate;
+						bass.weaponCooldown = fireRate;
+					},
+					(i * 8) / 60f
+				));
+			}
+		}
+		else if (chargeLevel == 2) {
 			new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("super_adaptor_punch", sendRpc: true);
 		} 
@@ -192,7 +214,7 @@ public class ChamoBuster : Projectile {
 		projId = (int)BassProjIds.ChamoBuster;
 		maxTime = 0.5f;
 
-		vel.x = 350 * xDir;
+		vel.x = 360 * xDir;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
 
@@ -537,6 +559,7 @@ public class DarkCometUpProj : Projectile {
 
 		if (wall != null && other.isCeilingHit()) {
 			hitWall = true;
+			createProjs();
 			destroySelf();
 			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true) 
 			{ yScale = yScale * -1 };
@@ -545,7 +568,13 @@ public class DarkCometUpProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (damagedOnce || !ownedByLocalPlayer || actor == null || hitWall) return;
+		if (damagedOnce || !ownedByLocalPlayer || hitWall) return;
+
+		createProjs();
+	}
+
+	void createProjs() {
+		if (actor == null) return;
 
 		for (int i = -1; i < 2; i++) {
 			new DarkCometDownProj(

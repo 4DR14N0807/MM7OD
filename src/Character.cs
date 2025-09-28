@@ -1341,7 +1341,10 @@ public partial class Character : Actor, IDamagable {
 
 		if (health >= maxHealth) {
 			healAmount = 0;
-			usedEtank = null;
+			if (usedEtank != null) {
+				usedEtank = null;
+				player.fuseETanks();
+			}
 		}
 		if (currentWeapon?.ammo >= currentWeapon?.maxAmmo) {
 			currentWeapon.weaponHealAmount = 0;
@@ -1391,6 +1394,7 @@ public partial class Character : Actor, IDamagable {
 				player.ETanks.Remove(usedEtank);
 				usedEtank = null;
 				eTankHealTime = 0;
+				//player.fuseETanks();
 			}
 
 			if (player == Global.level.mainPlayer || playHealSound) {
@@ -1572,6 +1576,7 @@ public partial class Character : Actor, IDamagable {
 				if (!grounded) {
 					dashedInAir++;
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
+					isDashing = false;
 				} else {
 					grounded = false;
 				}
@@ -1617,7 +1622,7 @@ public partial class Character : Actor, IDamagable {
 				isDashing = (
 					isDashing || player.dashPressed(out string dashControl) && canDash()
 				);
-				if (isDashing) {
+				if (isDashing && this is not Bass) {
 					dashedInAir++;
 				}
 				changeState(getJumpState());
@@ -1661,6 +1666,7 @@ public partial class Character : Actor, IDamagable {
 					//bass double jump
 					// Adrian: como es que una anim puede desyncear tan durooooo.
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
+					isDashing = false;
 					vel.y = -getJumpPower();
 					changeState(getAirJumpState(), true);
 					return true;
@@ -2667,13 +2673,13 @@ public partial class Character : Actor, IDamagable {
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 12 * (1 - tankHealth / usedEtank.maxHealth);
+		/* float yPos = 12 * (1 - tankHealth / usedEtank.maxHealth);
 		DrawWrappers.DrawRect(
 			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
 		);
 		
-		deductLabelY(labelSubtankOffY);
+		deductLabelY(labelSubtankOffY); */
 	}
 
 	public void drawWTankHealingInner(float tankAmmo) {
@@ -2682,13 +2688,13 @@ public partial class Character : Actor, IDamagable {
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_wtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 12 * (1 - tankAmmo / WTank.maxAmmo);
+		/* float yPos = 12 * (1 - tankAmmo / WTank.maxAmmo);
 		DrawWrappers.DrawRect(
 			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
 		);
 	
-		deductLabelY(labelSubtankOffY);
+		deductLabelY(labelSubtankOffY); */
 	}
 
 	public bool drawStatusProgress() {
@@ -3081,6 +3087,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual void stopETankHeal() {
 		usedEtank = null;
+		player.fuseETanks();
 	}
 
 	public void killPlayer(Player? killer, Player? assister, int? weaponIndex, int? projId) {
@@ -3733,7 +3740,7 @@ public partial class Character : Actor, IDamagable {
 		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
 		baseY -= 16;
 		decimal modifier = (decimal)Player.getHealthModifier();
-		decimal maxHP = Math.Ceiling(maxHealth / modifier);
+		decimal maxHP = Math.Ceiling((decimal)player.getMaxHealth(charId) / modifier);
 		decimal curHP = Math.Floor(health / modifier);
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
@@ -3747,6 +3754,9 @@ public partial class Character : Actor, IDamagable {
 			}
 			else if (i < savings) {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
+			}
+			else if (i >= Math.Ceiling(maxHP) - player.evilEnergyHP) {
+				Global.sprites["hud_energy_full"].drawToHUD(2, baseX, baseY);
 			}
 			else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);

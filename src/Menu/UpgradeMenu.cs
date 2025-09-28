@@ -35,7 +35,7 @@ public class UpgradeMenu : IMainMenu {
 	};
 
 	public List<float> optionPositionsY = new List<float>() {
-		70, 90, 110, 130
+		60, 80, 100, 120, 140
 	};
 
 	public UpgradeMenu(IMainMenu prevMenu) {
@@ -95,12 +95,12 @@ public class UpgradeMenu : IMainMenu {
 	}
 
 	public float getAmmoPercentHeal() {
-		int weps = 0;
-		foreach (var wep in mainPlayer.weapons) {
+		/* int weps = 0;
+		foreach(var wep in mainPlayer.weapons) {
 			if (wep.getAmmoUsage(0) > 0 && wep is not RushWeapon) weps++;
 		}
-		if (weps == 2) return 100f;
-		return 75f;
+		if (weps == 2) return 100f; */
+		return 100f;
 	}
 
 	public void update() {
@@ -129,7 +129,7 @@ public class UpgradeMenu : IMainMenu {
 			if (selectArrowPosX < 0) selectArrowPosX = 1;
 
 			if (wTankTargets.Count > 0 && isUsingWTank) wTankTargetIndex--;
-			if (wTankTargetIndex < 0) wTankTargetIndex = wTankTargets.Count - 1;
+			if (wTankTargetIndex < 0 ) wTankTargetIndex = wTankTargets.Count - 1;
 
 			if (mainPlayer.realCharNum == 0) {
 				if (mainPlayer.canUpgradeXArmor()) {
@@ -165,20 +165,22 @@ public class UpgradeMenu : IMainMenu {
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 		if (selectArrowPosY > getMaxIndex() - 1) selectArrowPosY = getMaxIndex() - 1;
 
-		if (Global.input.isPressedMenu(Control.MenuConfirm) && mainPlayer.character != null) {
+		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			//ETANKS SECTION
 			if (selectArrowPosX == 0) {
 				if (mainPlayer.ETanks.Count <= selectArrowPosY) {
 					if (mainPlayer.ETanks.Count < getMaxETanks() && mainPlayer.currency >= eTankCost) {
 						mainPlayer.currency -= eTankCost;
-						mainPlayer.ETanks.Add(new ETank());
+						mainPlayer.ETanks.Add(new ETank(mainPlayer.maxHealth));
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ETanks.InRange(selectArrowPosY)) {
 						if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.ETanks[selectArrowPosY]))) {
 							mainPlayer.ETanks[selectArrowPosY - 1].use(mainPlayer, mainPlayer.character);
 						}
 					}
-				} else if (mainPlayer.ETanks.InRange(selectArrowPosY)) {
+				}
+
+				else if (mainPlayer.ETanks.InRange(selectArrowPosY)) {
 					if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.ETanks[selectArrowPosY]))) {
 						mainPlayer.ETanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
 					}
@@ -195,33 +197,35 @@ public class UpgradeMenu : IMainMenu {
 					} else if (mainPlayer.wtanks.InRange(selectArrowPosY)) {
 						if (!isUsingWTank) {
 							isUsingWTank = true;
-
+							
 						} else {
 							if (wTankTargets.Count > 0) {
 								var currentTarget = wTankTargets[wTankTargetIndex];
 							}
 
 							if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
-								mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, getAmmoPercentHeal());
+								mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
 								mainPlayer.wtanks.RemoveAt(selectArrowPosY);
 							}
 
 							isUsingWTank = false;
 						}
 					}
-				} else if (mainPlayer.wtanks.InRange(selectArrowPosY)) {
+				}
+
+				else if (mainPlayer.wtanks.InRange(selectArrowPosY)) {
 					if (wTankTargets.Count > 0) {
 						var currentTarget = wTankTargets[wTankTargetIndex];
 					}
 					if (canUseWTankInMenu(mainPlayer.canUseWTank(mainPlayer.wtanks[selectArrowPosY]))) {
-						mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character, getAmmoPercentHeal());
+						mainPlayer.wtanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
 						mainPlayer.wtanks.RemoveAt(selectArrowPosY);
 					}
 					isUsingWTank = false;
 				}
 			}
 
-
+			
 		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
 			if (isUsingWTank) isUsingWTank = false;
 			else Menu.change(prevMenu);
@@ -263,12 +267,14 @@ public class UpgradeMenu : IMainMenu {
 				} else {
 					Point topLeftBar = new Point(spritePos.x + 1, spritePos.y + 2);
 					Point botRightBar = new Point(spritePos.x + 15, spritePos.y + 14);
-					float yPos = 12 * (etank.health / etank.maxHealth);
+					float yPos =  12 * (etank.health / etank.maxHealth);
 					DrawWrappers.DrawRect(
 						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
 						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
 					);
 				}
+				Fonts.drawText(FontType.WhiteSmall, etank.health.ToString(), optionPos.x + 6, optionPos.y - 12, Alignment.Center);
+
 			} else {
 				Global.sprites["menu_etank"].drawToHUD(0, spritePos.x, spritePos.y);
 				Point topLeftBar = new Point(spritePos.x, spritePos.y);
@@ -285,7 +291,7 @@ public class UpgradeMenu : IMainMenu {
 				if (!canUseEtank) {
 					useString = "CANNOT USE E-TANK";
 					font = FontType.Red;
-				}
+				} 
 				Fonts.drawText(
 					font, useString, optionPos.x + 24, optionPos.y - 4,
 					selected: selectArrowPosY == i && selectArrowPosX == 0
@@ -328,7 +334,7 @@ public class UpgradeMenu : IMainMenu {
 					if (!wTankTargets.InRange(wTankTargetIndex)) wTankTargetIndex = 0;
 
 					var currentTarget = wTankTargets[wTankTargetIndex];
-
+					
 					float targetXPos = 113;
 					if (wTankTargets.Count > 1 && isUsingWTank) {
 						Global.sprites["hud_weapon_icon"].drawToHUD(currentTarget.weaponSlotIndex, optionPos.x + targetXPos + 5, optionPos.y);
@@ -398,7 +404,7 @@ public class UpgradeMenu : IMainMenu {
 		}
 		return false;
 	}
-
+	
 	public static void drawAdaptorUpgrades(Player mainPlayer, int offY) {
 		if (mainPlayer.character == null) return;
 		if (mainPlayer.character is not Rock) return;
@@ -409,21 +415,14 @@ public class UpgradeMenu : IMainMenu {
 
 		bool hasAdaptor = rock.hasSuperAdaptor;
 
-		string specialText = "[CMD]: Super Adaptor" +
+		string specialText = "[CMD]: Super Adaptor" + 
 			$" ({Rock.SuperAdaptorCost} {Global.nameCoins})";
-		if (hasAdaptor) specialText = "Super Adaptor: Activated";
-		/*specialText = (
-			rock.boughtSuperAdaptorOnce ? "" : "[CMD]: Super Adaptor" + 
-			$" ({Player.superAdaptorCost} {Global.nameCoins})"
-		);*/
-		if (rock.canGoSuperAdaptor() && mainPlayer.isRock) {
-
-		}
-
-		float yPosb = Global.halfScreenH + 9;
+		if (hasAdaptor) specialText = "Super Adaptor: Activated"; 
+		
+		float yPosb = Global.halfScreenH + 26;
 
 		DrawWrappers.DrawLine(
-			7, yPosb + offY, Global.screenW - 7, yPosb + offY,
+			7, yPosb + offY, Global.screenW - 7,yPosb + offY, 
 			new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
 		);
 
@@ -433,7 +432,7 @@ public class UpgradeMenu : IMainMenu {
 		);
 
 		DrawWrappers.DrawLine(
-			7, yPosb + 30 + offY, Global.screenW - 7, yPosb + 30 + offY,
+			7, yPosb + 30 + offY, Global.screenW - 7, yPosb + 30 + offY, 
 			new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
 		);
 
@@ -442,11 +441,11 @@ public class UpgradeMenu : IMainMenu {
 			float yOff = specialText.Contains('\n') ? -3 : 0;
 			float yPos = Global.halfScreenH + 9;
 			float extraOffset = mainPlayer.currency >= Rock.SuperAdaptorCost ? 11 : 4;
-
+			
 			Fonts.drawText(
 				hasAdaptor ? FontType.Green : FontType.Orange,
 				Helpers.controlText(specialText).ToUpperInvariant(),
-				Global.halfScreenW, yPos + extraOffset + yOff + offY, Alignment.Center
+				Global.halfScreenW, yPosb + extraOffset + yOff + offY, Alignment.Center
 			);
 		}
 
@@ -460,6 +459,6 @@ public class UpgradeMenu : IMainMenu {
 				Global.halfScreenW, yPos + 18 + yOff + offY, Alignment.Center
 			);
 		}
-
+	
 	}
 }

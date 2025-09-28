@@ -10,7 +10,7 @@ public class TenguBlade : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.TenguBlade;
 		displayName = "TENGU BLADE";
-		maxAmmo = 48;
+		maxAmmo = 24;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
@@ -18,7 +18,7 @@ public class TenguBlade : Weapon {
 		fireRate = 60;
 		switchCooldown = 30;
 		hasCustomAnim = true;
-		ammoDisplayScale = 4;
+		//ammoDisplayScale = 4;
 		descriptionV2 = [
 			[ "Throws a projectile that bounces on walls.\n" +
 			"Press DASH + SHOOT to do a dash attack." ]
@@ -35,7 +35,7 @@ public class TenguBlade : Weapon {
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
-		return 2;
+		return 1;
 	}
 }
 
@@ -61,6 +61,7 @@ public class TenguBladeStart : Projectile {
 			character = ownerPlayer.character;
 			if (character != null) {
 				distance = pos.directionTo(character.getCenterPos());
+				distance = new Point(MathF.Abs(distance.x), -distance.y);
 			}
 		}
 
@@ -81,8 +82,10 @@ public class TenguBladeStart : Projectile {
 		base.update();
 		if (!ownedByLocalPlayer) return;
 
+		
 		if (character != null) {
-			changePos(character.getCenterPos().subtract(distance));
+			xDir = character.xDir;
+			changePos(character.getCenterPos().addxy(distance.x * xDir, distance.y));
 		}
 
 		if (isAnimOver()) destroySelf(doRpcEvenIfNotOwned: true);
@@ -93,7 +96,7 @@ public class TenguBladeStart : Projectile {
 
 		if (!ownedByLocalPlayer || character == null) return;
 		new TenguBladeProj(character, pos, xDir, character.player.getNextActorNetId(), true);
-		playSound("tengublade", true);
+		playSound("tengublade", sendRpc: true);
 	}
 }
 
@@ -112,6 +115,7 @@ public class TenguBladeState : CharState {
 
 	public override void update() {
 		base.update();
+		character.turnToInput(player.input, player);
 
 		if (!fired && character.currentFrame.getBusterOffset() != null) {
 			Point shootPos = character.getFirstPOI() ?? character.getShootPos();
@@ -121,26 +125,7 @@ public class TenguBladeState : CharState {
 			fired = true;
 		}
 
-		/* if (player.input.isPressed(Control.Jump, player) && checkJump()) {
-				character.vel.y = -character.getJumpPower();
-				character.playSound("jump", true);
-				character.dashedInAir++;
-				
-				if (!character.grounded)  {
-					new Anim(
-						character.pos, "double_jump_anim", character.xDir, 
-						player.getNextActorNetId(), true, true
-					);
-				}
-			} */
-
 		if (character.isAnimOver()) character.changeToIdleOrFall();
-	}
-
-	bool checkJump() {
-		if (character.grounded) {
-			return character.canJump();
-		} return character.canAirJump();
 	}
 }
 
@@ -156,7 +141,7 @@ public class TenguBladeProj : Projectile {
 		pos, xDir, owner, "tengu_blade_proj", netProjId, altPlayer
 	) {
 		fadeSprite = "tengu_blade_proj_fade";
-		maxTime = 40f / 60f;
+		maxTime = 1;
 		projId = (int)BassProjIds.TenguBladeProj;
 
 		vel.x = 120 * xDir;
@@ -190,18 +175,20 @@ public class TenguBladeProj : Projectile {
 	public override void onHitWall(CollideData other) {
 		base.onHitWall(other);
 		if (!ownedByLocalPlayer) return;
+		if (other.gameObject.collider?.isClimbable == false) return;
 
 		if (other.isCeilingHit()) destroySelf();
 
 		bouncedOnce = true;
-		incPos(new Point(6 * -xDir, 0));
+		incPos(new Point(8 * -xDir, 0));
+		stopMoving();
 		xDir *= -1;
 		vel.x *= -1;
-		vel.y *= -1;
+		playSound("tengublade", true);
 		
 		time = 0;
 		hits++;
-		if (hits >= 4) destroySelf();
+		if (hits >= 5) destroySelf();
 	}
 }
 
@@ -241,7 +228,6 @@ public class TenguBladeDash : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 		character.isDashing = true;
-		//character.xPushVel = character.xDir * character.getDashSpeed() * 2;
 		dashSpark = new Anim(
 			character.getDashSparkEffectPos(character.xDir),
 			"dash_sparks", character.xDir, player.getNextActorNetId(),
@@ -274,13 +260,13 @@ public class TenguBladeDash : CharState {
 		if (inputXDir != startXDir && inputXDir != 0) character.changeToIdleOrFall(); 
 		else if (stateFrames >= 16) {
 			character.changeState(new TenguBladeDashEnd(), true);
-			character.xTenguPushVel = 240 * character.xDir;
+			character.xTenguPushVel = 4 * character.xDir;
 			return;
 		} 
 
 		Point move = new Point();
 		move.x = character.xDir * character.getDashSpeed() * 1.5f;
-		character.move(move);
+		character.moveXY(move.x, move.y);
 	}
 }
 

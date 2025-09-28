@@ -10,7 +10,7 @@ namespace MMXOnline;
 public class GameMode {
 	public const string Deathmatch = "Deathmatch";
 	public const string TeamDeathmatch = "Team Deathmatch";
-	public const string CTF = "Capture The Flag";
+	public const string CTF = "CTF";
 	public const string ControlPoint = "Control Point";
 	public const string Elimination = "Elimination";
 	public const string TeamElimination = "Team Elimination";
@@ -1234,7 +1234,7 @@ public class GameMode {
 		int barIndex = 0;
 
 		for (var i = 0; i < MathF.Ceiling(player.maxHealth); i++) {
-			float trueHP = player.maxHealth - (player.evilEnergyStacks * player.hpPerStack);
+			decimal trueHP = (decimal)player.maxHealth - (player.evilEnergyStacks * player.hpPerStack);
 			// Draw HP
 			if (i < MathF.Ceiling(health)) {
 				Global.sprites["hud_health_full"].drawToHUD(barIndex, baseX, baseY);

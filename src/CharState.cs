@@ -147,7 +147,7 @@ public class CharState {
 			character.stopMoving();
 		}
 		if (this is not Run and not Idle and not Taunt) {
-			player.delayETank();
+			//player.delayETank();
 		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
 		wasGrounded = character.grounded;
@@ -890,7 +890,7 @@ public class Dash : CharState {
 	public Anim dashSpark;
 	public bool isColliding;
 
-	public Dash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
+	public Dash(string initialDashButton) : base("dash") {
 		attackCtrl = true;
 		normalCtrl = true;
 		this.initialDashButton = initialDashButton;

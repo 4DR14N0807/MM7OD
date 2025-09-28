@@ -314,11 +314,13 @@ public class BluesSpreadShoot : CharState {
 		base.onEnter(oldState);
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.inCustomShootAnim = true;
+		blues.shieldCustomState = false;
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		blues.inCustomShootAnim = false;
+		blues.shieldCustomState = null;
 	}
 
 	public override void update() {
@@ -420,11 +422,12 @@ public class ProtoStrike : CharState {
 			blues.overdriveAmmoDecreaseCooldown = 12;
 		}
 		if (!fired) {
+			character.turnToInput(player.input, player);
 			return;
 		}
 		if (!isShooting && stateFrames >= startTime + 60 || stateFrames >= startTime + 180) {
 			character.setHurt(-character.xDir, Global.halfFlinch, false);
-			character.slideVel = 200 * -character.xDir;
+			character.slideVel = 200 / 60 * -character.xDir;
 			return;
 		}
 		coreCooldown -= Global.speedMul;
@@ -465,7 +468,7 @@ public class RedStrike : CharState {
 		if (stateFrames >= startTime + 20) {
 			blues.addCoreAmmo(4);
 			character.setHurt(-character.xDir, Global.halfFlinch, false);
-			character.slideVel = 200 * -character.xDir;
+			character.slideVel = 200 / 60 * -character.xDir;
 			return;
 		}
 	}
@@ -504,7 +507,7 @@ public class OverheatShutdownStart : CharState {
 		blues.coreAmmoDecreaseCooldown = 10;
 		blues.playSound("danger_wrap_explosion", sendRpc: true);
 		character.vel.y = -4.25f * 60;
-		character.slideVel = 1.75f * 60 * -character.xDir;
+		character.slideVel = 1.75f * -character.xDir;
 	}
 }
 
@@ -624,6 +627,7 @@ public class BluesRevive : CharState {
 		blues.overdrive = true;
 		blues.overdriveAmmo = 0;
 		blues.overdriveAmmoDecreaseCooldown = 30;
+		blues.alive = true;
 	}
 
 	public override void onExit(CharState? newState) {

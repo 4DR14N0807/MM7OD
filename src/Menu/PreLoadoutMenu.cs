@@ -13,30 +13,12 @@ public class PreLoadoutMenu : IMainMenu {
 		150,
 		170
 	};
-	public int[] optionPos2 = {
-		(int)Global.halfScreenW - 40,
-		(int)Global.halfScreenW - 50,
-		(int)Global.halfScreenW - 55,
-		(int)Global.halfScreenW - 50,
-		(int)Global.halfScreenW - 45,
-		(int)Global.halfScreenW - 55,
-		(int)Global.halfScreenW - 50
-	};
-	public int[] optionPos3 = {
-		(int)Global.halfScreenW + 40,
-		(int)Global.halfScreenW + 50,
-		(int)Global.halfScreenW + 55,
-		(int)Global.halfScreenW + 50,
-		(int)Global.halfScreenW + 45,
-		(int)Global.halfScreenW + 55,
-		(int)Global.halfScreenW + 50
-	};
 	public MainMenu prevMenu;
 	public string message;
 	public Action yesAction;
 	public bool inGame;
 	public bool isAxl;
-	public float startX = Global.halfScreenW;
+	public float startX = 150;
 	public float Time = 1, Time2;
 	public bool Confirm = false, Confirm2 = false;
 	public PreLoadoutMenu(MainMenu prevMenu) {
@@ -64,6 +46,15 @@ public class PreLoadoutMenu : IMainMenu {
 				Menu.change(new SelectZeroWeaponMenu(this, false));
 			}
 			if (selectY == 2) {
+				Menu.change(new SelectVileWeaponMenu(this, false));
+			}
+			if (selectY == 3) {
+				Menu.change(new SelectAxlWeaponMenu(this, false));
+			}
+			if (selectY == 4) {
+				Menu.change(new SelectSigmaWeaponMenu(this, false));
+			}
+			if (selectY == (int)CharIds.PunchyZero) {
 				Menu.change(new SelectPunchyZeroWeaponMenu(this, false));
 			}
 			*/
@@ -76,7 +67,7 @@ public class PreLoadoutMenu : IMainMenu {
 			if (selectY == 2) {
 				Menu.change(new BassWeaponMenu(this, false));
 			}
-		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
+		} //else if (Global.input.isPressedMenu(Control.MenuBack)) {
 			if (Time2 >= 1) {
 				Menu.change(prevMenu);
 				prevMenu.Time = 0;
@@ -84,7 +75,7 @@ public class PreLoadoutMenu : IMainMenu {
 				prevMenu.Confirm = false;
 				prevMenu.Confirm2 = false;
 			}
-		}
+		//} 
 		
 	}
 
@@ -92,18 +83,10 @@ public class PreLoadoutMenu : IMainMenu {
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0);
 			//DrawWrappers.DrawTextureMenu(Global.textures["cursor"], 20, topLeft.y + ySpace + (selectArrowPosY * ySpace));
-			//Global.sprites["cursor"].drawToHUD(0, startX - 10, 53 + (selectY * 20));
+			Global.sprites["cursor"].drawToHUD(0, startX - 10, 53 + (selectY * 20));
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-			//Global.sprites["cursor"].drawToHUD(0, startX - 10, 53 + (selectY * 20));
-		}
-		if (Global.flFrameCount % 60 < 30) {
-			for (int i = 0; i < 6; i++) {
-				if (selectY == i) {
-					Fonts.drawText(FontType.Blue, "<", optionPos2[i], optionPos[i], Alignment.Center, selected: selectY == i, selectedFont: FontType.DarkOrange);
-					Fonts.drawText(FontType.Blue, ">", optionPos3[i]-1, optionPos[i], Alignment.Center, selected: selectY == i, selectedFont: FontType.DarkOrange);
-				}
-			}
+			Global.sprites["cursor"].drawToHUD(0, startX - 10, 53 + (selectY * 20));
 		}
 
 		Fonts.drawText(FontType.BlueMenu, "SELECT CHARACTER LOADOUT", Global.screenW * 0.5f, 20, Alignment.Center);
@@ -113,9 +96,7 @@ public class PreLoadoutMenu : IMainMenu {
 		Fonts.drawText(FontType.Grey, "BASS LOADOUT", startX, optionPos[2], selected: selectY == 2);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 200, Alignment.Center);
-		if (Options.main.blackFade) {
-			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, Time);
-			DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0, 0, Time2);
-		}
+		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time);
+		DrawWrappers.DrawTextureHUD(Global.textures["menubackground"], 0, 0, 384, 216, 0,0, Time2);
 	}
 }

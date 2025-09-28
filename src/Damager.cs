@@ -262,9 +262,9 @@ public class Damager {
 					break;
 				}
 				case (int)ProjIds.TenguBladeDash: {
-					character.xPushVel += 180 * damagingActor?.xDir ?? 180 * -character.xDir;
+					character.xPushVel += 3 * damagingActor?.xDir ?? 3 * -character.xDir;
 					break;
-				}
+				} 
 				case (int)BassProjIds.MagicCard1:
 					character.xDir *= -1;
 					break;
@@ -274,7 +274,7 @@ public class Damager {
 					break;
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor != null) {
-						Point push = Point.createFromByteAngle(damagingActor.byteAngle).times(300);
+						Point push = Point.createFromByteAngle(damagingActor.byteAngle).times(5);
 						character.xPushVel += push.x;
 						character.yPushVel += push.y;
 					}
@@ -375,6 +375,8 @@ public class Damager {
 			(int)BassProjIds.LightningBolt => true,
 			(int)BassProjIds.RemoteMineExplosion => true,
 			(int)BassProjIds.SpreadDrill => true,
+			(int)BassProjIds.SpreadDrillMid => true,
+			(int)BassProjIds.SpreadDrillSmall => true,
 			(int)ProjIds.BassKick => true,
 			(int)ProjIds.SonicCrusher => true,
 			(int)BassProjIds.SweepingLaser => true,

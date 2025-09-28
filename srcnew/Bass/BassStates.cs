@@ -233,7 +233,7 @@ public class SuperBassStart : CharState {
 
 		if (bass.grounded) {
 			bass.grounded = false;
-			bass.yPushVel = -2f * 60;
+			bass.yPushVel = -2f;
 		}
 	}
 
@@ -485,6 +485,7 @@ public class BassFly : CharState {
 	public override void update() {
 		base.update();
 		if (player == null) return;
+		player.delayETank();
 
 		if (character.flag != null) {
 			character.changeToIdleOrFall();
@@ -543,6 +544,7 @@ public class BassFly : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		player.delayETank();
 		bass = character as Bass ?? throw new NullReferenceException();
 		bass.canRefillFly = false;
 
@@ -573,8 +575,8 @@ public class BassFly : CharState {
 		base.onExit(newState);
 		character.stopMoving();
 		if (newState is SweepingLaserState or DarkCometState) {
-			character.xPushVel = getFlightMove().x * 0.8f;
-			character.yPushVel = getFlightMove().y;
+			character.xPushVel = getFlightMove().x * 0.8f / 60;
+			character.yPushVel = getFlightMove().y / 60;
 		}
 		bass.canRefillFly = true;
 	}

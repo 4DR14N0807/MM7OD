@@ -14,25 +14,7 @@ public class InGameMainMenu : IMainMenu {
 		150,
 		170
 	};
-	public int[] optionPos2 = {
-		(int)Global.halfScreenW - 50,
-		(int)Global.halfScreenW - 50,
-		(int)Global.halfScreenW - 60,
-		(int)Global.halfScreenW - 50,
-		(int)Global.halfScreenW - 40,
-		(int)Global.halfScreenW - 40,
-		(int)Global.halfScreenW - 50
-	};
-	public int[] optionPos3 = {
-		(int)Global.halfScreenW + 50,
-		(int)Global.halfScreenW + 50,
-		(int)Global.halfScreenW + 60,
-		(int)Global.halfScreenW + 50,
-		(int)Global.halfScreenW + 40,
-		(int)Global.halfScreenW + 40,
-		(int)Global.halfScreenW + 50
-	};
-	public float startX = Global.halfScreenW - 1;
+	public float startX = 92;
 
 	public InGameMainMenu() {
 	}
@@ -67,7 +49,7 @@ public class InGameMainMenu : IMainMenu {
 					if (UpgradeMenu.onUpgradeMenu && !Global.level.server.disableHtSt) {
 						Menu.change(new UpgradeMenu(this));
 					} else if (Global.level.mainPlayer.realCharNum == 0) {
-						Menu.change(new UpgradeArmorMenuEX(this));						
+						Menu.change(new UpgradeArmorMenu(this));
 					} else if (Global.level.mainPlayer.realCharNum == 2) {
 						Menu.change(new SelectVileArmorMenu(this));
 					}
@@ -87,7 +69,7 @@ public class InGameMainMenu : IMainMenu {
 			} else if (selectY == 4) {
 				Menu.change(new PreControlMenu(this, true));
 			} else if (selectY == 5) {
-				Menu.change(new PreOptionsMenu(null, true));
+				Menu.change(new PreOptionsMenu(this, true));
 			} else if (selectY == 6) {
 				Menu.change(new ConfirmLeaveMenu(this, "Are you sure you want to leave?", () => {
 					Global._quickStart = false;

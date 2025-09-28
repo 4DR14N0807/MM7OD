@@ -64,9 +64,7 @@ public class SelectVileWeaponMenu : IMainMenu {
 				NoneFlamethrower.netWeapon,
 				WildHorseKick.netWeapon,
 				SeaDragonRage.netWeapon,
-				DragonsWrath.netWeapon,
-				NoneNapalmFlamethrower.netWeapon,
-
+				DragonsWrath.netWeapon
 			]),
 			("Laser", [
 				new VileLaser(VileLaserType.None),
@@ -232,8 +230,8 @@ public class SelectVileWeaponMenu : IMainMenu {
 		string ammousage = wep.ammousage.ToString();
 		string effect = wep.effect;
 		string hitcooldown = wep.hitcooldown;
-		string Flinch = wep.flinch;
-		string FlinchCD = wep.flinchCD;
+		//string Flinch = wep.Flinch;
+		//string FlinchCD = wep.FlinchCD;
 
 		DrawWrappers.DrawRect(25, wsy - 7, Global.screenW - 30, wsy + 28, true, new Color(0, 0, 0, 100), 
 		0.5f, ZIndex.HUD, false, outlineColor: outlineColor); // Big Rectangle
@@ -264,10 +262,10 @@ public class SelectVileWeaponMenu : IMainMenu {
 		Fonts.drawTextEX(FontType.Purple, "Flinch CD:", 147, wsy+8, Alignment.Center);
 		Fonts.drawTextEX(FontType.Purple, "Hit CD:", 138, wsy+19, Alignment.Center);
 		Fonts.drawTextEX(FontType.Purple, damage, 86, 163, Alignment.Center);
-		Fonts.drawTextEX(FontType.Purple, Flinch, 86, wsy+8, Alignment.Center);	
+		//Fonts.drawTextEX(FontType.Purple, Flinch, 86, wsy+8, Alignment.Center);	
 		Fonts.drawTextEX(FontType.Purple, ammousage, 100, wsy+19, Alignment.Center);	
 		Fonts.drawTextEX(FontType.Purple, rateOfFire, 189, wsy-4, Alignment.Center);
-		Fonts.drawTextEX(FontType.Purple, FlinchCD, 189, wsy+8, Alignment.Center);
+		//Fonts.drawTextEX(FontType.Purple, FlinchCD, 189, wsy+8, Alignment.Center);
 		Fonts.drawTextEX(FontType.Purple, hitcooldown, 184, wsy+19, Alignment.Center);
 		Fonts.drawTextEX(FontType.Purple, effect, 281, wsy+19, Alignment.Center);
 

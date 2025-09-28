@@ -810,7 +810,7 @@ public partial class Actor : GameObject {
 		if (xTenguPushVel != 0 && Math.Sign(xTenguPushVel) != xDir) {
 			xTenguPushVel = 0;
 		}
-		if (Math.Abs(xTenguPushVel) > 5) {
+		if (Math.Abs(xTenguPushVel) != 0) {
 			xTenguPushVel = Helpers.lerp(xTenguPushVel, 0, Global.spf * 7);
 
 			var wall = Global.level.checkTerrainCollisionOnce(this, xTenguPushVel * Global.spf, 0);
@@ -859,7 +859,7 @@ public partial class Actor : GameObject {
 		}
 
 		if (!isStatic) {
-			float xExtraSpeed = xFlinchPushVel + xIceVel + xPushVel + xSwingVel;
+			float xExtraSpeed = xFlinchPushVel + xIceVel + xPushVel + xSwingVel + xTenguPushVel;
 			movePoint((vel / 60f).addxy(xExtraSpeed, 0), true, true, false);
 			if (yPushVel != 0) {
 				moveXY(0, yPushVel, true, false, false);
@@ -1841,9 +1841,10 @@ public partial class Actor : GameObject {
 	}
 
 	public void moveWithMovingPlatform() {
-		if (!Global.level.hasMovingPlatforms) {
+		/* if (!Global.level.hasMovingPlatforms) {
 			return;
-		}
+		} */ //TODO: Add a proper exception for ice wall.
+
 		List<CollideData> collideDatas = Global.level.getTerrainTriggerList(this, new Point(0, 1));
 		foreach (CollideData collideData in collideDatas) {
 			if (collideData.gameObject is Wall wall && wall.deltaMove != Point.zero) {
@@ -1856,7 +1857,7 @@ public partial class Actor : GameObject {
 			}
 			if (collideData.gameObject is Actor actor &&
 				(actor.isSolidWall || actor.isPlatform) &&
-				canBePlatform(this)
+				actor.canBePlatform(this)
 			) {
 				move(actor.deltaPos, useDeltaTime: false);
 				break;

@@ -184,8 +184,8 @@ public class ControlMenu : IMainMenu {
 	}
 
 	public void render() {
-		var topLeft = new Point(startX + 86, 34);
-		int startYOff = 8;
+		var topLeft = new Point(startX + 10, 28);
+		int startYOff = 10;
 		int cursorYOff = 6;
 
 		if (!inGame) {
@@ -199,7 +199,9 @@ public class ControlMenu : IMainMenu {
 			);
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-			//Global.sprites["cursor"].drawToHUD(0, startX, topLeft.y + startYOff + (selectArrowPosY * 8) + cursorYOff + 5);
+			Global.sprites["cursor"].drawToHUD(
+				0, startX, topLeft.y + startYOff + (selectArrowPosY * 8) + cursorYOff + 5
+			);
 		}
 
 		string subtitle = charNum switch {

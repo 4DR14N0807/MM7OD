@@ -57,7 +57,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 	public bool inGame;
 	public int Page;
 	public bool isOffline;
-	private FontType fontOption = FontType.Blue;
+	private FontType fontOption = FontType.Blue; 
 	public List<MenuOption> menuOptions = new List<MenuOption>();
 
 	SavedMatchSettings savedMatchSettings { get { return isOffline ? SavedMatchSettings.mainOffline : SavedMatchSettings.mainOnline; } }
@@ -146,7 +146,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startETanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startETanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -162,7 +162,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxETanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxETanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -178,7 +178,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startWTanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startWTanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -194,7 +194,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxWTanks, 0, 4, true);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxWTanks, 0, 5, true);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -216,7 +216,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 					Fonts.drawText(
 						fontOption,
 						"HEALTH MODIFIER: " +
-						((savedMatchSettings.customMatchSettings.healthModifier / 8f) * 100).ToString() +
+						((savedMatchSettings.customMatchSettings.healthModifier  / 8f) * 100).ToString() + 
 						"%",
 						pos.x, pos.y, selected: selectArrowPosY == 5
 					);
@@ -331,7 +331,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 			10 => "Megaman",
 			11 => "Protoman",
 			12 => "Bass",
-			< 10 => "No",
+			<10 => "No",
 			_ => "ERROR"
 		};
 	}

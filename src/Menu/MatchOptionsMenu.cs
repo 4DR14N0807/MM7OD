@@ -23,41 +23,11 @@ public class MatchOptionsMenu : IMainMenu {
 	}
 
 	public List<MenuOption> menuOptions;
-	public int startX = (int)Global.halfScreenW;
+	public int startX = 90;
 	public int startY = 50;
 	public int lineH = 10;
 
 	public float muteCooldown;
-	public int[] optionPos2 = {
-		(int)Global.halfScreenW - 30,
-		(int)Global.halfScreenW - 30,
-		(int)Global.halfScreenW - 80,
-		(int)Global.halfScreenW - 30,
-		(int)Global.halfScreenW - 70,
-		(int)Global.halfScreenW - 45,
-		(int)Global.halfScreenW - 45,
-		(int)Global.halfScreenW - 60,
-		(int)Global.halfScreenW - 80,
-		(int)Global.halfScreenW - 60,
-		(int)Global.halfScreenW - 55,
-		(int)Global.halfScreenW - 50,
-
-	};
-	public int[] optionPos3 = {
-		(int)Global.halfScreenW + 30,
-		(int)Global.halfScreenW + 30,
-		(int)Global.halfScreenW + 80,
-		(int)Global.halfScreenW + 30,
-		(int)Global.halfScreenW + 70,
-		(int)Global.halfScreenW + 45,
-		(int)Global.halfScreenW + 45,
-		(int)Global.halfScreenW + 60,
-		(int)Global.halfScreenW + 80,
-		(int)Global.halfScreenW + 60,
-		(int)Global.halfScreenW + 55,
-		(int)Global.halfScreenW + 50,
-
-	};
 
 	public MatchOptionsMenu(IMainMenu prevMenu) {
 		this.prevMenu = prevMenu;
@@ -98,8 +68,8 @@ public class MatchOptionsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						canSuicide() ? FontType.Red : FontType.Grey, "Suicide",
-						pos.x, pos.y, Alignment.Center, selected: selectY == index
+						canSuicide() ? FontType.Red : FontType.Black, "SUICIDE",
+						pos.x, pos.y, selected: selectY == index
 					);
 				}
 			),
@@ -134,7 +104,7 @@ public class MatchOptionsMenu : IMainMenu {
 				string teamName = Global.level.gameMode.teamNames[selectedTeam];
 				Fonts.drawText(
 					canChangeToTeam() ? FontType.Blue : FontType.Black,
-					$"Change Team to < {teamName} >", pos.x, pos.y, Alignment.Center, selected: selectY == index
+					$"CHANGE TEAM TO: < {teamName} >", pos.x, pos.y, selected: selectY == index
 			);
 			}),
 			// Add bot
@@ -150,7 +120,7 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				Fonts.drawText(
 					canAddBot() ? FontType.Blue : FontType.Black,
-					"Add Bot", pos.x, pos.y, Alignment.Center, selected: selectY == index
+					"ADD BOT", pos.x, pos.y, selected: selectY == index
 				);
 			}),
 			// Remove bot
@@ -195,7 +165,7 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				Fonts.drawText(
 					canRemoveBot() ? FontType.Blue : FontType.Black,
-					"Remove Bot: " + (botToRemove?.name ?? "(No bots)"),
+					"REMOVE BOT: " + (botToRemove?.name ?? "(No bots)"),
 					pos.x, pos.y, selected: selectY == index
 			);
 			}),
@@ -209,7 +179,7 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				Fonts.drawText(
 					FontType.Blue,
-					 "Chat History", pos.x, pos.y, selected: selectY == index
+					 "CHAT HISTORY", pos.x, pos.y, selected: selectY == index
 				);
 			}),
 			// Disable chat
@@ -222,7 +192,7 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				Fonts.drawText(
 					FontType.Blue,
-					Global.level.gameMode.chatMenu.chatEnabled ? "Disable Chat" : "Enable Chat",
+					Global.level.gameMode.chatMenu.chatEnabled ? "DISABLE CHAT" : "ENABLE CHAT",
 					pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -258,12 +228,12 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				Fonts.drawText(
 					FontType.Blue,
-					"Mute: " + getPlayerMuteMsg(playerToMute),
+					"MUTE: " + getPlayerMuteMsg(playerToMute),
 					pos.x, pos.y, selected: selectY == index
 				);
 			}),
 			// Report
-			/*new MenuOption(startX, startY + (lineH * lineNum++),
+			new MenuOption(startX, startY + (lineH * lineNum++),
 			() => {
 				if (playerToReport == null) return;
 
@@ -287,11 +257,10 @@ public class MatchOptionsMenu : IMainMenu {
 			(Point pos, int index) => {
 				Fonts.drawText(
 					FontType.Blue,
-					"Report: " + (playerToReport?.name ?? "(No players)"),
-					pos.x, pos.y, Alignment.Center, selected: selectY == index
+					"REPORT: " + (playerToReport?.name ?? "(No players)"),
+					pos.x, pos.y, selected: selectY == index
 				);
 			}),
-			*/
 			// Kick/Ban
 			new MenuOption(startX, startY + (lineH * lineNum++),
 			() => {
@@ -317,8 +286,8 @@ public class MatchOptionsMenu : IMainMenu {
 				string prefix = "";
 				if (!KickMenu.hasDirectKickPower()) prefix = "VOTE ";
 				Fonts.drawText(
-					canKick() ? FontType.Blue : FontType.Grey,
-					prefix + "Kick: " + (playerToKick?.name ?? "(No players)"),
+					canKick() ? FontType.Blue : FontType.Black,
+					prefix + "KICK: " + (playerToKick?.name ?? "(No players)"),
 					pos.x, pos.y, selected: selectY == index
 				);
 			}),
@@ -427,15 +396,8 @@ public class MatchOptionsMenu : IMainMenu {
 			Global.screenW * 0.5f, 16, Alignment.Center
 		);
 
-		//Global.sprites["cursor"].drawToHUD(0, startX - 80, startY + 3 + (selectY * lineH));
-		if (Global.flFrameCount % 60 < 30) {
-			for (int a = 0; a < 11; a++) {
-				if (selectY == a) {
-					Fonts.drawText(FontType.Blue, "<", optionPos2[a], startY  + (selectY * lineH), Alignment.Center, selected: selectY == a);
-					Fonts.drawText(FontType.Blue, ">", optionPos3[a], startY  + (selectY * lineH), Alignment.Center, selected: selectY == a);
-				}
-			}
-		}
+		Global.sprites["cursor"].drawToHUD(0, startX - 10, startY + 3 + (selectY * lineH));
+
 		int i = 0;
 		foreach (var menuOption in menuOptions) {
 			menuOption.render(menuOption.pos, i);

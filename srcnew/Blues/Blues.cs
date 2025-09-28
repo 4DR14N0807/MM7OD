@@ -26,6 +26,7 @@ public class Blues : Character {
 	public float coreAmmoDecreaseCooldown;
 	public bool overheating;
 	public float overheatEffectTime;
+	public float overheatTime;
 	public bool starCrashOverheat;
 
 	// Break Man stuff.
@@ -117,7 +118,7 @@ public class Blues : Character {
 		shieldMaxHP = (int)Player.getModifiedHealth(shieldMaxHP);
 		shieldHP = shieldMaxHP;
 
-		addAttackCooldown((int)AttackIds.RedStrike, new AttackCooldown(0, 240));
+		addAttackCooldown((int)AttackIds.RedStrike, new AttackCooldown(3, 240));
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			shieldHP = 0;
@@ -312,7 +313,7 @@ public class Blues : Character {
 	}
 
 	public bool canUseBigBangStrike() {
-		return grounded && overheating;
+		return grounded && overheating && overheatTime >= 6;
 	}
 
 	public bool canUseDropSwap() {
@@ -521,6 +522,9 @@ public class Blues : Character {
 			}
 		}
 
+		if (overheating && charState is not Hurt) overheatTime += Global.speedMul;
+		else overheatTime = 0;
+
 		bool overdriveLimit = false;
 		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive && charState is not BluesRevive) {
 			overdriveAmmo--;
@@ -536,12 +540,12 @@ public class Blues : Character {
 			coreAmmoDecreaseCooldown = 60;
 			overdriveAmmoDecreaseCooldown = 10;
 			setHurt(0, Global.defFlinch, false);
-			xPushVel = -xDir * 4 * 60;
+			xPushVel = -xDir * 4;
 			playSound("danger_wrap_explosion", sendRpc: true);
 			stopCharge();
 		}
 
-		// E-Tank heal.
+		// L-Tank heal.
 		if (usedLtank != null && health > 0) {
 			if (eTankHealTime <= 0 && usedLtank.health > 0 && health < maxHealth) {
 				usedLtank.health--;
@@ -549,19 +553,22 @@ public class Blues : Character {
 				eTankHealTime = 8;
 				playSound("heal", forcePlay: true, sendRpc: true);
 			}
-			if (lTankCoreHealTime <= 0 && usedLtank.ammo > 0) {
-				usedLtank.ammo--;
+			if (lTankCoreHealTime <= 0 && usedLtank.health > 0 && coreAmmo > 0) {
+				usedLtank.health--;
 				coreAmmo = Helpers.clampMin(coreAmmo - 1, 0);
 				lTankCoreHealTime = 4;
+				playSound("heal", forcePlay: true, sendRpc: true);
 			}
-			if (usedLtank.health <= 0 && usedLtank.ammo <= 0) {
+			if (usedLtank.health <= 0) {
 				player.ltanks.Remove(usedLtank);
+				player.fuseLTanks();
 				usedLtank = null;
 				eTankHealTime = 0;
 				lTankCoreHealTime = 0;
 			}
 			else if (coreAmmo <= 0 && health >= maxHealth) {
 				usedLtank = null;
+				player.fuseLTanks();
 				eTankHealTime = 0;
 				lTankCoreHealTime = 0;
 			}
@@ -1009,7 +1016,7 @@ public class Blues : Character {
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_ltank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		float yPos = 12 * (1 - tankHealth / LTank.maxHealth);
+		/* float yPos = 12 * (1 - tankHealth / LTank.maxHealth);
 		DrawWrappers.DrawRect(
 			topLeftBar.x, topLeftBar.y + yPos, pos.x, botRightBar.y,
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
@@ -1020,7 +1027,7 @@ public class Blues : Character {
 			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
 		);
 
-		deductLabelY(labelSubtankOffY);
+		deductLabelY(labelSubtankOffY); */
 	}
 
 	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
@@ -1285,6 +1292,11 @@ public class Blues : Character {
 				if (sprite.name.EndsWith("_shield")) {
 					changeSprite(sprite.name[..^7], false);
 				}
+				if (shieldDamaged) {
+					playSound("danger_wrap_explosion", sendRpc: true);
+					new Anim(pos.addxy(xDir * 20, -20), "generic_explosion", xDir, player.getNextActorNetId(), true, true);
+				}
+				
 			}
 		}
 		// Back shield block check.
@@ -1359,6 +1371,7 @@ public class Blues : Character {
 	public override void stopETankHeal() {
 		base.stopETankHeal();
 		usedLtank = null;
+		player.fuseLTanks();
 	}
 
 	public override void aiUpdate(Actor? target) {
@@ -1647,12 +1660,13 @@ public class Blues : Character {
 
 		float redStrikeCooldown = attacksCooldown[(int)AttackIds.RedStrike].cooldown;
 		float redStrikeMaxCooldown = attacksCooldown[(int)AttackIds.RedStrike].maxCooldown;
+		int icon = attacksCooldown[(int)AttackIds.RedStrike].iconIndex;
 
 		if (redStrikeCooldown > 0) {
 			drawBuff(
 				drawPos, 
 				redStrikeCooldown / redStrikeMaxCooldown, 
-				"hud_blues_weapon_icon", 3
+				"hud_blues_weapon_icon", icon
 			);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;

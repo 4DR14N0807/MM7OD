@@ -153,7 +153,7 @@ public partial class Player {
 			}
 		}
 	}
-	public float _maxHealth = 16;
+	public float _maxHealth = 32;
 	public float maxHealth {
 		get {
 			if (character != null) {
@@ -473,7 +473,10 @@ public partial class Player {
 	public int evilEnergyStacks;
 	public float evilEnergyTime;
 	public float evilEnergyMaxTime = 1800;
-	public float hpPerStack = 4;
+	public decimal hpPerStack = 3;
+	public decimal evilEnergyHP;
+	public decimal evilEnergyHPToRemove;
+	public float evilEnergyHPTimer;
 	public List<GrenadeProj> grenades = new List<GrenadeProj>();
 	public List<ChillPIceStatueProj> iceStatues = new List<ChillPIceStatueProj>();
 	public List<WSpongeSpike> seeds = new List<WSpongeSpike>();
@@ -625,8 +628,8 @@ public partial class Player {
 				etCount = altEtCount;
 			}
 			for (int i = 0; i < etCount; i++) {
-				eTanksMap[key].Add(new ETank());
-				lTanksMap[key].Add(new LTank());
+				eTanksMap[key].Add(new ETank(getMaxHealth((CharIds)key)));
+				lTanksMap[key].Add(new LTank(getMaxHealth((CharIds.Blues))));
 			}
 		}
 		foreach (int key in wTanksMap.Keys) {
@@ -870,14 +873,22 @@ public partial class Player {
 			return;
 		}
 		// Evil Energy Timer.
-		if (character != null && !character.destroyed && character is Bass) {
+		if (character != null && !character.destroyed && character is Bass && character.alive) {
 			Helpers.decrementFrames(ref evilEnergyTime);
 		} 
-		if (character != null && evilEnergyTime == 0 && evilEnergyStacks > 0) {
-			character.spawnHealthToAdd += MathInt.Ceiling(evilEnergyStacks * hpPerStack);
+		if (character != null && evilEnergyTime <= 0 && evilEnergyStacks > 0) {
 			evilEnergyTime = evilEnergyMaxTime;
 			evilEnergyStacks = 0;
+			maxHealth = getMaxHealth((CharIds)charNum);
+			evilEnergyHPTimer = 4;
 		}
+		Helpers.decrementFrames(ref evilEnergyHPTimer);
+		if (evilEnergyHPTimer <= 0 && evilEnergyHP > 0 && evilEnergyStacks <= 0) {
+			evilEnergyHPTimer = 4;
+			evilEnergyHP--;
+			character?.playSound("heal");
+		}
+
 		// Never spawn a character if it already exists
 		if (character == null && ownedByLocalPlayer) {
 			if (!warpedInOnce && firstSpawn == null) {
@@ -1065,6 +1076,7 @@ public partial class Player {
 			evilEnergyStacks = pendingEvilEnergyStacks;
 			pendingEvilEnergyStacks = 0;
 			evilEnergyTime = evilEnergyMaxTime;
+			evilEnergyHP = evilEnergyStacks * hpPerStack;
 		}
 		Character newChar;
 		if (charNum == (int)CharIds.Rock) {
@@ -1967,7 +1979,8 @@ public partial class Player {
 	public bool canUseLTank(LTank ltank) {
 		if (character is Blues blues) {
 			if (isDead) return false;
-			if (health <= 0 || health >= maxHealth) return false;
+			if (health <= 0) return false;
+			if (health >= maxHealth && blues.coreAmmo <= 0) return false;
 			if (blues.charState is WarpOut) return false;
 			if (blues.charState.invincible) return false;
 			if (blues.charState is OverheatShutdown or OverheatShutdownStart) return false;
@@ -1991,6 +2004,38 @@ public partial class Player {
 			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
 			BluesUpgradeMenu.lTankDelay = BluesUpgradeMenu.maxLTankDelay;
 		}
+	}
+
+	public void fuseETanks() {
+		for (int i = 0; i < ETanks.Count; i++) {
+			if (!ETanks[i].isFull() && i + 1 < ETanks.Count) {
+				int hpToMove = (int)Math.Min(ETanks[i].maxHealth - ETanks[i].health, ETanks[i + 1].health);
+				ETanks[i].health += hpToMove;
+				ETanks[i + 1].health -= hpToMove;
+			}
+		}
+
+		for (int i = 0; i < ETanks.Count; i++) {
+			if (ETanks[i].health <= 0) {
+				ETanks.RemoveAt(i);
+			}
+		} 
+	}
+
+	public void fuseLTanks() {
+		for (int i = 0; i < ltanks.Count; i++) {
+			if (!ltanks[i].isFull() && i + 1 < ltanks.Count) {
+				int hpToMove = (int)Math.Min(ltanks[i].maxHealth - ltanks[i].health, ltanks[i + 1].health);
+				ltanks[i].health += hpToMove;
+				ltanks[i + 1].health -= hpToMove;
+			}
+		}
+
+		for (int i = 0; i < ltanks.Count; i++) {
+			if (ltanks[i].health <= 0) {
+				ltanks.RemoveAt(i);
+			}
+		} 
 	}
 }
 

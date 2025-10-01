@@ -21,26 +21,21 @@ public class Geometry : GameObject {
 		collider = new Collider(points, false, null, true, true, 0, new Point(0, 0));
 	}
 
-	public virtual void preUpdate() {
-
-	}
-
-	public virtual void update() {
-
-	}
+	public virtual void preUpdate() {}
+	public virtual void update() {}
+	public virtual void physicsUpdate() {}
+	public virtual void postUpdate() {}
 
 	public virtual void statePreUpdate() { }
 	public virtual void stateUpdate() { }
 	public virtual void statePostUpdate() { }
 
-	public virtual void netUpdate() {
-
-	}
+	public virtual void netUpdate() {}
 
 	public virtual void render(float x, float y) {
 		if (Global.showHitboxes && this is Wall) {
 			List<Point> points = collider.shape.clone(x, y).points;
-			if (points.Count == 4) {
+			if (points.Count == 4 && collider.shape.isRect()) {
 				Rect rect = collider.shape.clone(x, y).getRect();
 				rect.x1 = MathF.Floor(rect.x1) + 1;
 				rect.y1 = MathF.Floor(rect.y1) + 1;
@@ -92,9 +87,6 @@ public class Geometry : GameObject {
 	}
 
 	public void onStart() {
-	}
-
-	public void postUpdate() {
 	}
 
 	public List<Collider> getAllColliders() {

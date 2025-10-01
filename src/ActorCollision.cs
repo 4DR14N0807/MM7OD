@@ -378,8 +378,6 @@ public partial class Actor {
 		if (amount.y < 0) {
 			movedUpOnFrame = true;
 		}
-		// Add to Move Delta.
-		moveDelta += amount;
 		// Ice physics shenanigans.
 		if (grounded && groundedIce && useIce && slideOnIce) {
 			if (amount.x > 0) {
@@ -393,6 +391,8 @@ public partial class Actor {
 			}
 			return;
 		}
+		// Add to Move Delta.
+		stackedMoveDelta += amount;
 		//No collider: just move
 		if (physicsCollider == null) {
 			incPos(amount);
@@ -401,12 +401,12 @@ public partial class Actor {
 		// and stop moving past a collider if that's the case
 		else {
 			Point? mtv = Global.level.getMtvDir(this, amount.x, amount.y, amount, pushIncline);
-			if (mtv != null && mtv?.magnitude > 10) {
-				mtv = Global.level.getMtvDir(this, amount.x, amount.y, null, false);
+			if (mtv != null && mtv?.magnitude > 8) {
+				mtv = Global.level.getMtvDir(this, amount.x, amount.y, null, pushIncline);
 			}
 			incPos(amount);
 			if (mtv != null) {
-				incPos(mtv.Value.unitInc(0.01f));
+				incPos(mtv.Value);
 			}
 			freeFromCollision();
 		}
@@ -444,7 +444,7 @@ public partial class Actor {
 			if (this is Character && freeVec.Value.magnitude > 20) {
 				return;
 			}
-			incPos(freeVec.Value.unitInc(0.01f));
+			incPos(freeVec.Value);
 		}
 	}
 

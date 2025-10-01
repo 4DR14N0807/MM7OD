@@ -291,8 +291,17 @@ public struct Point {
 		return bestPoint;
 	}
 
+	
+	public Point floor() {
+		return new Point(MathF.Floor(x), MathF.Floor(y));
+	}
+
 	public Point round() {
 		return new Point(MathF.Round(x), MathF.Round(y));
+	}
+
+	public Point ceiling() {
+		return new Point(MathF.Ceiling(x), MathF.Ceiling(y));
 	}
 
 	public static Point operator+ (Point l, Point r) {

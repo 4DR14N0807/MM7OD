@@ -105,6 +105,7 @@ public class GameMode {
 
 	public float hudErrorMsgTime;
 	string hudErrorMsg = "";
+	string hudDebugMsg = "";
 	FontType? hudErrorOverrideFont;
 
 	public Player? hudTopLeftPlayer;
@@ -641,6 +642,12 @@ public class GameMode {
 				hudErrorOverrideFont ?? FontType.BlueSmall, hudErrorMsg,
 				Global.halfScreenW, 50, Alignment.Center
 			);
+		} else if (hudDebugMsg != "") {
+			Fonts.drawText(
+				FontType.BlueSmall, hudDebugMsg,
+				Global.halfScreenW, 50, Alignment.Center
+			);
+			hudDebugMsg = "";
 		}
 		if (currentVoteKick != null) {
 			currentVoteKick.render();
@@ -719,8 +726,7 @@ public class GameMode {
 	}
 
 	public void setHUDDebugWarning(string message, FontType? overrideFont = null) {
-		hudErrorMsg = message;
-		hudErrorMsgTime = 2;
+		hudDebugMsg += message + "\n";
 		hudErrorOverrideFont = overrideFont;
 	}
 

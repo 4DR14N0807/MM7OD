@@ -13,6 +13,7 @@ public interface GameObject {
 	void onStart();
 	void preUpdate();
 	void update();
+	void physicsUpdate();
 	void postUpdate();
 	void render(float x, float y);
 	Collider? collider { get; }

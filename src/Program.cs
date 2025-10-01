@@ -1286,6 +1286,7 @@ class Program {
 								_ => 0
 							};
 							Options.main.updateFpsMode();
+							Options.main.showFPS = true;
 							f7Released = false;
 						}
 					} else {

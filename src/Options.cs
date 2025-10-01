@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace MMXOnline;
 
 public class Options {
-	public string playerName;
+	public string playerName = "";
 	public float musicVolume = 1;
 	public float soundVolume = 1;
 	public bool showWeaponHUD = true;

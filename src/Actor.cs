@@ -490,8 +490,9 @@ public partial class Actor : GameObject {
 	public virtual void preUpdate() {
 		collidedInFrame.Clear();
 		deltaPos = pos.subtract(prevPos);
-		moveDelta = stackedMoveDelta;
 		prevPos = pos;
+		moveDelta = stackedMoveDelta;
+		stackedMoveDelta = Point.zero;
 
 		if (locallyControlled && sprite.name != "null") {
 			int oldFrameIndex = sprite.frameIndex;
@@ -597,38 +598,17 @@ public partial class Actor : GameObject {
 		float gravity = getGravity();
 
 		if (isUnderwater()) {
-			//maxVelY = Physics.MaxUnderwaterFallSpeed;
+			maxVelY = Physics.MaxUnderwaterFallSpeed;
 			gravity *= 0.5f;
 		}
 
-		yVar += Global.speedMul * gravity;
-		if (yVar > maxVelY) yVar = maxVelY;
+		if (yVar < maxVelY) {
+			yVar += Global.speedMul * gravity;
+			if (yVar > maxVelY) yVar = maxVelY;
+		}
 	}
 
 	public virtual void update() {
-		if (immuneToKnockback) {
-			stopMovingS();
-		}
-
-		//G.Hold floating
-
-		if (gHolded && reversedGravity) {
-			float stopPos = pos.y;
-			if (gHoldTime >= 240) gHoldEnd(true);
-			if (gHoldTime == 10) {
-				stopMoving();
-				useGravity = false;
-				stopPos = pos.y;
-			} else if (gHoldTime > 10) {
-				useGravity = false;
-				float mod = gHoldTime % 2 == 0 ? 1 : -1;
-				pos.y = Helpers.lerp(stopPos, 0, Global.spf * 5 * mod);
-			}
-			gHoldTime++;
-		}
-
-
-
 		foreach (var key in netSounds.Keys.ToList()) {
 			if (!Global.sounds.Contains(netSounds[key])) {
 				netSounds.Remove(key);
@@ -660,6 +640,44 @@ public partial class Actor : GameObject {
 			}
 		};
 
+		for (int i = 0; i < damageHistory.Count - 1; i++) {
+			if (Global.time - damageHistory[i].time > 15f &&
+				(damageHistory.Count > 1 || Global.level.isTraining())
+			) {
+				damageHistory.RemoveAt(i);
+				i--;
+			}
+		}
+
+		if (gravityWellable) {
+			Helpers.decrementTime(ref gravityWellTime);
+			if (gravityWellTime <= 0) {
+				gravityWellModifier = 1;
+			}
+		}
+	}
+
+	public virtual void physicsUpdate() {
+		if (!locallyControlled) {
+			return;
+		}
+
+		//G.Hold floating
+		if (gHolded && reversedGravity) {
+			float stopPos = pos.y;
+			if (gHoldTime >= 240) gHoldEnd(true);
+			if (gHoldTime == 10) {
+				stopMoving();
+				useGravity = false;
+				stopPos = pos.y;
+			} else if (gHoldTime > 10) {
+				useGravity = false;
+				float mod = gHoldTime % 2 == 0 ? 1 : -1;
+				pos.y = Helpers.lerp(stopPos, 0, Global.spf * 5 * mod);
+			}
+			gHoldTime++;
+		}
+		
 		bool wading = isWading();
 		bool underwater = isUnderwater();
 
@@ -674,81 +692,12 @@ public partial class Actor : GameObject {
 			grounded = true;
 			if (vel.y > 0) vel.y = 0;
 		}
-
-		bool isRaSpawning = (ra != null && ra.isSpawning());
-		bool isChrSpawning = (chr != null && chr.isSpawning());
-		if (splashable && !isChrSpawning && !isRaSpawning) {
-			if (wading || underwater) {
-				if (waterTime == 0) {
-					new Anim(new Point(pos.x, lastWaterY), "splash", 1, null, true);
-					playSound("splash");
-					vel.y = 0;
-				}
-				waterTime += Global.spf;
-			} else {
-				if (waterTime > 0) {
-					new Anim(new Point(pos.x, lastWaterY), "splash", 1, null, true);
-					playSound("splash");
-				}
-				waterTime = 0;
-			}
-
-			if (wading && !underwater) {
-				waterWade.visible = true;
-				if (waterWade.pos.x != pos.x) {
-					waterWade.changeSprite("splash", false); //wade_move
-				} else {
-					waterWade.changeSprite("splash", false); // wade
-				}
-				waterWade.pos = new Point(pos.x, lastWaterY);
-			} else {
-				waterWade.visible = false;
-			}
-
-			if (underwater) {
-				underwaterTime += Global.spf;
-				if (chr != null) {
-					bubbleTime += Global.spf;
-					if (bubbleTime > 2) {
-						bubbleTime = 0;
-						new BubbleAnim(chr.getHeadPos() ?? chr.getCenterPos(), "bubbles");
-					}
-				}
-				if (underwaterTime < 0.5f) {
-					bigBubbleTime -= Global.spf;
-					if (bigBubbleTime <= 0) {
-						bigBubbleTime = 0.08f;
-						var points = globalCollider?.shape.points;
-						//if (points != null && points.Count >= 1) 
-						// new BubbleAnim(new Point(pos.x, points[0].y), "bigbubble" + ((Global.frameCount % 3) + 1));
-					}
-				}
-			} else {
-				underwaterTime = 0;
-			}
-		}
-
-		if (gravityWellable) {
-			Helpers.decrementTime(ref gravityWellTime);
-			if (gravityWellTime <= 0) {
-				gravityWellModifier = 1;
-			}
-		}
-
-		for (int i = 0; i < damageHistory.Count - 1; i++) {
-			if (Global.time - damageHistory[i].time > 15f && (damageHistory.Count > 1 || Global.level.isTraining())) {
-				damageHistory.RemoveAt(i);
-				i--;
-			}
-		}
 	}
 
 	// This code is horrible awfull confusing ugly and slow.
 	// Also why the game lags so much. We need to optimize it ASAP.
 	public void localUpdate(bool underwater) {
-		Character? chr = this as Character;
 		float grav = getGravity();
-		float terminalVelUp = getFallSpeed(false);
 		float terminalVelDown = getFallSpeed();
 
 		if (gravityOverride ?? useGravity && !grounded) {
@@ -843,12 +792,14 @@ public partial class Actor : GameObject {
 				// There must be a better way to do this, really.
 				Point oldPos = pos;
 				Point oldDeltaPos = deltaPos;
+				Point oldMoveDelta = stackedMoveDelta;
 				moveXY(xIceVel, 0, useIce: false);
 				if (oldPos.x == pos.x && oldPos.y == pos.y) {
 					xIceVel = 0f;
 				}
-				pos = oldPos;
+				changePos(oldPos);
 				deltaPos = oldDeltaPos;
+				stackedMoveDelta = oldMoveDelta;
 			}
 		}
 
@@ -953,6 +904,72 @@ public partial class Actor : GameObject {
 			lastGroundedPos = pos;
 		}
 		movedUpOnFrame = false;
+	}
+
+	public void splashEffects() {
+		if (!splashable) {
+			return;
+		}
+		if ((this as Character)?.isSpawning() == true) {
+			return;
+		}
+		if ((this as RideArmor)?.isSpawning() == true) {
+			return;
+		}
+		bool wading = isWading();
+		bool underwater = isUnderwater();
+
+		if (wading || underwater) {
+			if (waterTime == 0) {
+				new Anim(new Point(pos.x, lastWaterY), "splash", 1, null, true);
+				playSound("splash");
+				vel.y = 0;
+			}
+			waterTime += Global.spf;
+		} else {
+			if (waterTime > 0) {
+				new Anim(new Point(pos.x, lastWaterY), "splash", 1, null, true);
+				playSound("splash");
+			}
+			waterTime = 0;
+		}
+		if (wading && !underwater) {
+			waterWade.visible = true;
+			if (waterWade.pos.x != pos.x) {
+				waterWade.changeSprite("splash", false); //wade_move
+			} else {
+				waterWade.changeSprite("splash", false); // wade
+			}
+			waterWade.pos = new Point(pos.x, lastWaterY);
+		} else {
+			waterWade.visible = false;
+		}
+		if (underwater) {
+			underwaterTime += Global.spf;
+			if (this is Character chara) {
+				bubbleTime += Global.spf;
+				if (bubbleTime > 2) {
+					bubbleTime = 0;
+					new BubbleAnim(chara.getHeadPos() ?? chara.getCenterPos(), "bubbles");
+				}
+			}
+			/*if (underwaterTime < 0.5f) {
+				bigBubbleTime -= Global.spf;
+				if (bigBubbleTime <= 0) {
+					bigBubbleTime = 0.08f;
+					var points = globalCollider?.shape.points;
+					if (points != null && points.Count >= 1) {
+						new BubbleAnim(
+							new Point(pos.x, points[0].y),
+							"bigbubble" + ((Global.frameCount % 3) + 1)
+						);
+					}
+				}
+			}
+			*/
+		} else {
+			underwaterTime = 0;
+		}
 	}
 
 	public float getTopY() {

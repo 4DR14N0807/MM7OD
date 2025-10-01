@@ -1395,6 +1395,7 @@ public partial class Level {
 			go.speedMul = slowAmount * Global.gameSpeed;
 			go.update();
 			if (go.hasStateMachine) { go.stateUpdate(); }
+			go.physicsUpdate();
 			if (isNon1v1Elimination() &&
 				gameMode.virusStarted > 0 && go is Actor actor &&
 				actor.ownedByLocalPlayer && go is IDamagable damagable
@@ -1479,7 +1480,7 @@ public partial class Level {
 				if (currentGrid[i].iDestroyed || currentGrid[i].iDisabled) {
 					continue;
 				}
-				for (int j = i; j < currentGrid.Count; j++) {
+				for (int j = i+1; j < currentGrid.Count; j++) {
 					// Exit if we get destroyed.
 					if (currentGrid[i].iDestroyed || currentGrid[i].iDisabled) {
 						break;

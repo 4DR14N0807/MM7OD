@@ -2981,7 +2981,7 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		// Chip stuff.
-		Character? enemyChar = (actor as Projectile).ownerActor as Character ?? attacker.character;
+		Character? enemyChar = (actor as Projectile)?.ownerActor as Character ?? attacker?.character;
 		fDamage = chips.onDamage.Invoke(this, fDamage, actor, enemyChar);
 
 		// Default values.

@@ -17,7 +17,7 @@ public class Chip {
 
 	// Delegates.
 	public delegate void GenericLink(Character chara);
-	public delegate decimal AttackLink(
+	public delegate float AttackLink(
 		Character chara, float val, float trackVal, Actor? damager, Character? enemyChar
 	);
 	public delegate void CreateLink(Character chara, Projectile proj);

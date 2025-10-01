@@ -104,7 +104,7 @@ public struct Shape {
 	//IMPORTANT NOTE- When determining normals, it is always off "other".
 	public HitData? intersectsShape(Shape other, Point? vel = null) {
 		Global.collisionCalls++;
-		
+
 		// Skip
 		if (minX > other.maxX ||
 			maxX < other.minX ||
@@ -113,16 +113,15 @@ public struct Shape {
 		) {
 			return null;
 		}
-
 		var pointOutside = false;
-		foreach (var point in points) {
+		foreach (Point point in points) {
 			if (!other.containsPoint(point)) {
 				pointOutside = true;
 				break;
 			}
 		}
 		var pointOutside2 = false;
-		foreach (var point in other.points) {
+		foreach (Point point in other.points) {
 			if (!containsPoint(point)) {
 				pointOutside2 = true;
 				break;
@@ -132,16 +131,16 @@ public struct Shape {
 			return new HitData(null, null);
 		}
 
-		List<Line> hitLines = new List<Line>();
-		var lines1 = getLines();
-		var lines2 = other.getLines();
-		var hitNormals = new List<Point>();
-		var hitPoints = new List<Point>();
-		foreach (var line1 in lines1) {
-			var normals = other.getNormals();
+		List<Line> hitLines = new();
+		List<Line> lines1 = getLines();
+		List<Line> lines2 = other.getLines();
+		List<Point> hitNormals = new();
+		List<Point> hitPoints = new();
+		foreach (Line line1 in lines1) {
+			List<Point> normals = other.getNormals();
 			for (var i = 0; i < lines2.Count; i++) {
-				var line2 = lines2[i];
-				var hitPoint = line1.getIntersectPoint(line2);
+				Line line2 = lines2[i];
+				Point? hitPoint = line1.getIntersectPoint(line2);
 				if (hitPoint != null) {
 					hitNormals.Add(normals[i]);
 					hitPoints.Add(hitPoint.Value);

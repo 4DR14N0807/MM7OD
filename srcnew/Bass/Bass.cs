@@ -390,7 +390,7 @@ public class Bass : Character {
 
 	public override bool normalCtrl() {
 		if (isSuperBass) {
-			if (player.input.isPressed(Control.Jump, player) && !grounded && dashedInAir <= 0) {
+			if (player.input.isPressed(Control.Jump, player) && !grounded && !canAirJump()) {
 				dashedInAir++;
 				changeState(new BassFly(), true);
 				return true;

@@ -324,7 +324,7 @@ public class RushSearchState : RushState {
 			case 0:
 				if (!inTransition() && rush.isAnimOver()) {
 					rush.changeSprite("rush_dig", true);
-					rush.player.currency -= rock?.RushSearchCost ?? 5;
+					rush.player.currency -= Rock.RushSearchCost;
 					digging = true;
 					state = 1;
 				} break;

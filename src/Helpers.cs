@@ -504,6 +504,27 @@ public class Helpers {
 		}
 	}
 
+	public static void menuLeftRight(ref int val, int min, int max, bool wrap = false, bool playSound = false, int valueToAdd = 1) {
+		if (min == max) return;
+		if (Global.input.isPressedMenu(Control.MenuLeft)) {
+			val -= valueToAdd;
+			if (val < min) {
+				val = wrap ? max : min;
+				if (wrap && playSound) Global.playSound("menu");
+			} else {
+				if (playSound) Global.playSound("menu");
+			}
+		} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+			val += valueToAdd;
+			if (val > max) {
+				val = wrap ? min : max;
+				if (wrap && playSound) Global.playSound("menu");
+			} else {
+				if (playSound) Global.playSound("menu");
+			}
+		}
+	}
+
 	public static void menuLeftRightInc(ref int val, int min, int max, bool wrap = false, bool playSound = false, int valueToAdd = 1) {
 		if (min == max) return;
 		if (Global.input.isPressedOrHeldMenu(Control.MenuLeft)) {

@@ -174,6 +174,16 @@ public class SelectCharacterMenu : IMainMenu {
 			playerData.armorSet = charSelections[0].mappedCharArmor;
 		}
 
+		if (Global.input.isPressedMenu(Control.Special2)) {
+			//Menu.change(new BluesMovelistMenu(this, isInGame, Options.main.bluesLoadout.specialWeapon, false, true));
+			Menu.change(
+				MovelistMenuHandler.getCharMovelistMenu(
+					this, false, charSelections[playerData.uiSelectedCharIndex].mappedCharNum, false, false
+				)
+			);
+			return;
+		}
+
 		if (!isInGameEndSelect) {
 			if (!isInGame) {
 				if (Global.input.isPressedMenu(Control.MenuBack)) {
@@ -245,7 +255,7 @@ public class SelectCharacterMenu : IMainMenu {
 
 		// Draw character + box
 		var charPosX1 = Global.halfScreenW;
-		var charPosY1 = 85;
+		var charPosY1 = 75;
 		Global.sprites["playerbox"].drawToHUD(0, charPosX1, charPosY1+2);
 		string sprite = charSelection.sprite;
 		int frameIndex = charSelection.frameIndex;
@@ -261,16 +271,16 @@ public class SelectCharacterMenu : IMainMenu {
 
 		if (Global.frameCount % 60 < 30) {
 			Fonts.drawText(
-				FontType.Blue, "<", Global.halfScreenW - 60, Global.halfScreenH + 22,
+				FontType.Blue, "<", Global.halfScreenW - 60, Global.halfScreenH + 12,
 				Alignment.Center
 			);
 			Fonts.drawText(
-				FontType.Blue, ">", Global.halfScreenW + 60, Global.halfScreenH + 22,
+				FontType.Blue, ">", Global.halfScreenW + 60, Global.halfScreenH + 12,
 				Alignment.Center
 			);
 		}
 		Fonts.drawText(
-			FontType.Blue, charSelection.name, Global.halfScreenW, Global.halfScreenH + 22,
+			FontType.Blue, charSelection.name, Global.halfScreenW, Global.halfScreenH + 12,
 			alignment: Alignment.Center
 		);
 
@@ -289,37 +299,20 @@ public class SelectCharacterMenu : IMainMenu {
 		};
 		if (description.Length > 0) {
 			DrawWrappers.DrawRect(
-				25, startY + 98, Global.screenW - 25, startY + 137,
+				25, startY + 88, Global.screenW - 25, startY + 127,
 				true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, false, outlineColor: new Color(255, 255, 255, 200)
 			);
 			for (int i = 0; i < description.Length; i++) {
 				Fonts.drawText(
 					FontType.WhiteSmall, description[i],
-					Global.halfScreenW, startY + 93 + (10 * (i + 1)), alignment: Alignment.Center
+					Global.halfScreenW, startY + 83 + (10 * (i + 1)), alignment: Alignment.Center
 				);
 			}
 		}
-		
-		
-		/*
-		if (!isInGame) {
-			Fonts.drawTextEX(
-				FontType.Grey, "[OK]: Continue, [BACK]: Back\n[MLEFT]/[MRIGHT]: Change character",
-				Global.screenW * 0.5f, 182, Alignment.Center
-			);
-		} else {
-			if (!Global.isHost) {
-				Fonts.drawTextEX(
-					FontType.Grey, "[ESC]: Quit\n[MLEFT]/[MRIGHT]: Change character",
-					Global.screenW * 0.5f, 190, Alignment.Center
-				);
-			} else {
-				Fonts.drawTextEX(
-					FontType.Grey, "[OK]: Continue, [BACK]: Back\n[MLEFT]/[MRIGHT]: Change character",
-					Global.screenW * 0.5f, 190, Alignment.Center
-				);
-			}
-		}
-		*/
+
+		Fonts.drawTextEX(
+			FontType.Blue, "[OK]: Continue, [BACK]: Back\n[MLEFT]/[MRIGHT]: Change character, [CMD]: See movelist",
+			Global.screenW / 2, 178, Alignment.Center
+		);
 	}
 }

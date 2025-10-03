@@ -64,7 +64,7 @@ public class BluesWeaponMenu : IMainMenu {
 	public string[] categoryNames = [
 		"Special Weapon"
 	];
-	public Weapon[] specialWeapons = [
+	public static Weapon[] specialWeapons = [
 		new NeedleCannon(),
 		new HardKnuckle(),
 		new SearchSnake(),

@@ -179,9 +179,9 @@ public class HardKnuckleShoot : CharState {
 		if (!character.grounded) {
 			character.changeSpriteFromName(airSprite, true);
 			character.vel.y = -Physics.JumpSpeed * 0.6f;
-			character.slideVel = -character.xDir * 2.5f * 60f;
+			character.slideVel = -character.xDir * 2.5f;
 		} else {
-			character.slideVel = -character.xDir * 2f * 60f;
+			character.slideVel = -character.xDir * 2f;
 		}
 	}
 

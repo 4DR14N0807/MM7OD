@@ -6,13 +6,14 @@ namespace MMXOnline;
 public class InGameMainMenu : IMainMenu {
 	public static int selectY = 0;
 	public int[] optionPos = {
-		50,
-		70,
-		90,
-		110,
-		130,
-		150,
-		170
+		48,
+		66,
+		84,
+		102,
+		120,
+		138,
+		156,
+		174
 	};
 	public float startX = 92;
 
@@ -26,7 +27,7 @@ public class InGameMainMenu : IMainMenu {
 			UpgradeMenu.onUpgradeMenu = true;
 		}
 
-		Helpers.menuUpDown(ref selectY, 0, 6);
+		Helpers.menuUpDown(ref selectY, 0, 7);
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			if (selectY == 0) {
 				int selectedCharNum = Global.level.mainPlayer.newCharNum;
@@ -61,16 +62,28 @@ public class InGameMainMenu : IMainMenu {
 					}
 				}
 			} else if (selectY == 2) {
+				bool hasHypermode = (
+					mainPlayer.character is Rock { hasSuperAdaptor: true} ||
+					mainPlayer.character is Blues { isBreakMan: true } ||
+					mainPlayer.character is Bass { isSuperBass: true }
+				);
+				bool hasShield = mainPlayer.character is Blues { isShieldActive: true };
+				Menu.change(
+					MovelistMenuHandler.getCharMovelistMenu(
+						this, true, Global.level.mainPlayer.realCharNum, hasHypermode, hasShield
+					)
+				);
+			} else if (selectY == 3) {
 				if (isSelCharDisabled()) return;
 				Menu.change(new SelectCharacterMenu(this, Global.level.is1v1(), Global.serverClient == null, true, false, Global.level.gameMode.isTeamMode, Global.isHost, () => { Menu.exit(); }));
-			} else if (selectY == 3) {
+			} else if (selectY == 4) {
 				if (isMatchOptionsDisabled()) return;
 				Menu.change(new MatchOptionsMenu(this));
-			} else if (selectY == 4) {
-				Menu.change(new PreControlMenu(this, true));
 			} else if (selectY == 5) {
-				Menu.change(new PreOptionsMenu(this, true));
+				Menu.change(new PreControlMenu(this, true));
 			} else if (selectY == 6) {
+				Menu.change(new PreOptionsMenu(this, true));
+			} else if (selectY == 7) {
 				Menu.change(new ConfirmLeaveMenu(this, "Are you sure you want to leave?", () => {
 					Global._quickStart = false;
 					Global.leaveMatchSignal = new LeaveMatchSignal(LeaveMatchScenario.LeftManually, null, null);
@@ -124,7 +137,7 @@ public class InGameMainMenu : IMainMenu {
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
 		Fonts.drawText(FontType.BlueMenu, "MENU", Global.screenW * 0.5f, 20, Alignment.Center);
 
-		Global.sprites["cursor"].drawToHUD(0, startX - 10, optionPos[0] + 3 + (selectY * 20));
+		Global.sprites["cursor"].drawToHUD(0, startX - 10, optionPos[selectY] + 4);
 
 		Fonts.drawText(
 			isSelWepDisabled() ? FontType.Black : FontType.Blue,
@@ -135,16 +148,19 @@ public class InGameMainMenu : IMainMenu {
 			"UPGRADE MENU", startX, optionPos[1], selected: selectY == 1
 		);
 		Fonts.drawText(
+			FontType.Blue, "CHARACTER MOVELIST", startX, optionPos[2], selected: selectY == 2
+		);
+		Fonts.drawText(
 			isSelCharDisabled() ? FontType.Black : FontType.Blue,
-			"SWITCH CHARACTER", startX, optionPos[2], selected: selectY == 2
+			"SWITCH CHARACTER", startX, optionPos[3], selected: selectY == 3
 		);
 		Fonts.drawText(
 			isMatchOptionsDisabled() ? FontType.Black : FontType.Blue,
-			"MATCH OPTIONS", startX, optionPos[3], selected: selectY == 3
+			"MATCH OPTIONS", startX, optionPos[4], selected: selectY == 4
 		);
-		Fonts.drawText(FontType.Blue, "CONTROLS", startX, optionPos[4], selected: selectY == 4);
-		Fonts.drawText(FontType.Blue, "SETTINGS", startX, optionPos[5], selected: selectY == 5);
-		Fonts.drawText(FontType.Blue, "LEAVE MATCH", startX, optionPos[6], selected: selectY == 6);
+		Fonts.drawText(FontType.Blue, "CONTROLS", startX, optionPos[5], selected: selectY == 5);
+		Fonts.drawText(FontType.Blue, "SETTINGS", startX, optionPos[6], selected: selectY == 6);
+		Fonts.drawText(FontType.Blue, "LEAVE MATCH", startX, optionPos[7], selected: selectY == 7);
 		Fonts.drawTextEX(FontType.Blue, "[OK]: Choose, [ESC]: Cancel", Global.halfScreenW, 198, Alignment.Center);
 
 		Color outline = new Color(41, 41, 41);

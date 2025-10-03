@@ -98,22 +98,8 @@ namespace MMXOnline {
 				doesIntersect = true;
 			}
 
-			// Special Cases
-			// p1, q1 and p2 are colinear and p2 lies on segment p1q1
-			if (o1 == 0 && onSegment(p1, p2, q1)) {
-				coincidePoint = p2;
-			}
-			// p1, q1 and q2 are colinear and q2 lies on segment p1q1
-			else if (o2 == 0 && onSegment(p1, q2, q1)) {
-				coincidePoint = q2;
-			}
-			// p2, q2 and p1 are colinear and p1 lies on segment p2q2
-			else if (o3 == 0 && onSegment(p2, p1, q2)) {
-				coincidePoint = p1;
-			}
-			// p2, q2 and q1 are colinear and q1 lies on segment p2q2
-			else if (o4 == 0 && onSegment(p2, q1, q2)) {
-				coincidePoint = q1;
+			if (o1 == 0 || o2 == 0 || o3 == 0 || o4 == 0) {
+				return null;
 			}
 
 			if (coincidePoint != null) doesIntersect = true;

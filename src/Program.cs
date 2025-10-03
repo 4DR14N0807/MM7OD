@@ -1280,6 +1280,7 @@ class Program {
 					// Framerate shenanigans.
 					if (Keyboard.IsKeyPressed(Key.F7)) {
 						if (f7Released) {
+							/*
 							Options.main.fpsMode = Options.main.fpsMode switch {
 								0 => 1,
 								1 => 2,
@@ -1288,6 +1289,7 @@ class Program {
 							Options.main.updateFpsMode();
 							Options.main.showFPS = true;
 							f7Released = false;
+							*/
 						}
 					} else {
 						f7Released = true;
@@ -1428,16 +1430,16 @@ class Program {
 	}
 
 	public static void loadExceptionHandler(Task task) {
-        if (task.Exception != null) {
+		if (task.Exception != null) {
 			Logger.LogFatalException(task.Exception);
 		}
-    }
+	}
 
 	public static void mainLoopExceptionHandler(Task task) {
-        if (task.Exception != null) {
+		if (task.Exception != null) {
 			logicThreadException = task.Exception;
 		}
-    }
+	}
 
 	public static void loadLoop(List<String> loadText, RenderWindow window, Task loadTread) {
 		// Variables for stuff.

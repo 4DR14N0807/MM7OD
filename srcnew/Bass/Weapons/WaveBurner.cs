@@ -48,10 +48,10 @@ public class WaveBurner : Weapon {
 		} else {
 			
 			new WaveBurnerProj(bass, shootPos, shootAngle + bass.wBurnerAngle, player.getNextActorNetId(), true, player);
-			bass.wBurnerAngle += 8 * bass.wBurnerAngleMod;
-			if (Math.Abs(bass.wBurnerAngle) > 32) {
+			bass.wBurnerAngle += 3 * bass.wBurnerAngleMod;
+			if (Math.Abs(bass.wBurnerAngle) > 16) {
 				bass.wBurnerAngleMod *= -1;
-				bass.wBurnerAngle = 32 * MathF.Sign(bass.wBurnerAngle);
+				bass.wBurnerAngle = 16 * MathF.Sign(bass.wBurnerAngle);
 			}
 
 			if (soundTime <= 0) {
@@ -64,7 +64,7 @@ public class WaveBurner : Weapon {
 
 
 public class WaveBurnerProj : Projectile {
-	Character? character;
+	public bool inWater;
 
 	public WaveBurnerProj(
 		Actor owner, Point pos, float byteAngle, ushort? netProjId, 
@@ -73,19 +73,16 @@ public class WaveBurnerProj : Projectile {
 		pos, 1, owner, "wave_burner_proj", netProjId, altPlayer 
 	) {
 		projId = (int)BassProjIds.WaveBurner;
-		maxTime = 0.2f;
-		destroyOnHit = false;
-		vel = Point.createFromByteAngle(byteAngle) * 240;
+		maxTime = 0.4f;
+		destroyOnHit = true;
+		vel = Point.createFromByteAngle(byteAngle) * 5f * 60;
+
+		if (byteAngle > 64 && byteAngle < 192) {
+			xDir = -1;
+		}
 
 		damager.damage = 1;
 		damager.hitCooldown = 12;
-
-		if (ownedByLocalPlayer) {
-			character = ownerPlayer.character;
-			if (character != null) {
-				xDir = character.getShootXDir();
-			}
-		}
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle);
@@ -100,18 +97,28 @@ public class WaveBurnerProj : Projectile {
 
 	public override void update() {
 		base.update();
-		checkUnderwater();
-	}
-
-	public void checkUnderwater() {
-		if (!ownedByLocalPlayer) return;
-		if (isUnderwater()) {
+		if (isUnderwater() && !inWater) {
 			new BubbleAnim(pos, "bubbles") { vel = new Point(0, -60) };
 			Global.level.delayedActions.Add(
 				new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f)
 			);
-			destroySelf();
+			vel *= 0.5f;
+			inWater = true;
 		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x, y);
+
+		float savedAlpha = alpha;
+		long savedZindex = zIndex;
+		zIndex = ZIndex.Background;
+		alpha = savedAlpha * 0.25f;
+		base.render(x + (-moveDelta.x * 3), y + (-moveDelta.y * 3));
+		alpha = savedAlpha * 0.5f;
+		base.render(x + (-moveDelta.x * 1.5f), y + (-moveDelta.y * 1.5f));
+		alpha = savedAlpha;
+		zIndex = savedZindex;
 	}
 }
 
@@ -178,10 +185,5 @@ public class WaveBurnerUnderwaterProj : Projectile {
 				bubble2.ttl = 0.5f;
 			}
 		}
-	}
-
-	public override void update() {
-		base.update();
-		if (!isUnderwater()) destroySelf();
 	}
 }

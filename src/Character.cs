@@ -227,9 +227,10 @@ public partial class Character : Actor, IDamagable {
 
 	// Ctrl data
 	public int altCtrlsLength = 1;
+	public bool checkWallClimb;
 
 	// Chip system.
-	public ChipInventory chips;
+	public ChipInventory chips = new();
 
 	// Puppet data.
 	public Maverick? currentMaverick {
@@ -1441,20 +1442,22 @@ public partial class Character : Actor, IDamagable {
 			vel.y = 0;
 		}
 
-		if (Global.level.checkTerrainCollisionOnce(this, 0, 1) != null) {
-			if (gHolded && gHoldModifier > 0 && gHoldOwner != null) {
-				/* Damager.applyDamage(
-					gHoldOwner, 2, 60, Global.defFlinch, this,
-					false, (int)BluesWeaponIds.GravityHold, 0, gHoldOwner?.character ?? this,
-					(int)BluesProjIds.GravityHoldCrash
-				); */
+		if (gHolded && gHoldModifier > 0 && gHoldOwner != null &&
+			Global.level.checkTerrainCollisionOnce(this, 0, 1) != null) {
+			/* Damager.applyDamage(
+				gHoldOwner, 2, 60, Global.defFlinch, this,
+				false, (int)BluesWeaponIds.GravityHold, 0, gHoldOwner?.character ?? this,
+				(int)BluesProjIds.GravityHoldCrash
+			); */
 
-				//Temporal fix.
-				applyDamage(3, gHoldOwner, this, (int)BluesWeaponIds.GravityHold, (int)BluesProjIds.GravityHoldCrash);
-				setHurt(-xDir, Global.defFlinch, false);
-				playSound("hurt", sendRpc: true);
-				gHolded = false;
-			}
+			//Temporal fix.
+			applyDamage(3, gHoldOwner, this,
+				(int)BluesWeaponIds.GravityHold,
+				(int)BluesProjIds.GravityHoldCrash
+			);
+			setHurt(-xDir, Global.defFlinch, false);
+			playSound("hurt", sendRpc: true);
+			gHolded = false;
 		}
 
 		// This overrides the ground checks made by Actor.update();

@@ -207,6 +207,14 @@ public class CharState {
 				}
 			}
 		}
+		if (character.checkWallClimb) {
+			wallChecks();
+		}
+		airTrasition();
+		wasGrounded = character.grounded && character.vel.y >= 0;
+	}
+
+	public void wallChecks() {
 		var lastLeftWallData = character.getHitWall(-1, 0);
 		lastLeftWallCollider = lastLeftWallData != null ? lastLeftWallData.otherCollider : null;
 		if (lastLeftWallCollider != null && !lastLeftWallCollider.isClimbable) {
@@ -251,9 +259,6 @@ public class CharState {
 		} else if (rightWallPlat?.gameObject is Actor rightActor && rightActor.isPlatform && rightActor.pos.x > character.pos.x) {
 			lastRightWallCollider = rightActor.collider;
 		}
-
-		airTrasition();
-		wasGrounded = character.grounded && character.vel.y >= 0;
 	}
 
 	public virtual void airTrasition() {
@@ -1401,13 +1406,13 @@ public class Win : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bool air = !character.grounded || character.vel.y < 0;
-        defaultSprite = sprite;
-        landSprite = "win";
-        if (air) {
+		defaultSprite = sprite;
+		landSprite = "win";
+		if (air) {
 			sprite = "win_air";
 			defaultSprite = sprite;
 		}
-        character.changeSpriteFromName(sprite, true);
+		character.changeSpriteFromName(sprite, true);
 	}
 
 	public override void update() {

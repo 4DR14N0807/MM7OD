@@ -103,8 +103,8 @@ public struct Shape {
 
 	//IMPORTANT NOTE- When determining normals, it is always off "other".
 	public HitData? intersectsShape(Shape other, Point? vel = null) {
+		// Debug stuff.
 		Global.collisionCalls++;
-
 		// Skip
 		if (minX > other.maxX ||
 			maxX < other.minX ||

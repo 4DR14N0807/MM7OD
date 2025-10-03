@@ -816,7 +816,6 @@ public partial class Actor : GameObject {
 				moveXY(0, yPushVel, true, false, false);
 			}
 		}
-		freeFromCollision();
 
 		float yMod = reversedGravity ? -1 : 1;
 		if (physicsCollider != null && !isStatic && (canBeGrounded || (gravityOverride ?? useGravity))) {

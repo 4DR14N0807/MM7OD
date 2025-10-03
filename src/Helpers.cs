@@ -467,8 +467,8 @@ public class Helpers {
 			return false;
 		}
 #else
-       		Console.WriteLine(caption + Environment.NewLine + message);
-    		return true;
+			Console.WriteLine(caption + Environment.NewLine + message);
+			return true;
 #endif
 	}
 

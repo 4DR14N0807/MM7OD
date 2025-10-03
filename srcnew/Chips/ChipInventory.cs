@@ -8,22 +8,22 @@ namespace MMXOnline;
 public class ChipInventory {
 	public SortedList<ChipId, Chip> chips = new();
 
-	public GenericCAct onRunning;
-	public AttackCAct onDeath;
-	public GenericCAct onRespawn;
-	public CreateCAct onAttack;
-	public CreateCAct onMelee;
-	public CreateCAct onShoot;
-	public AttackCAct onJump;
-	public AttackCAct onDamage;
-	public AttackCAct onApplyDamage;
-	public AttackCAct onFlinch;
-	public AttackCAct onApplyFlinch;
-	public AttackCAct onStun;
-	public AttackCAct onApplyStun;
-	public AttackCAct onHealing;
-	public AttackCAct onApplyHeal;
-	public AttackCAct onKill;
+	public GenericCAct onRunning = [];
+	public AttackCAct onDeath = [];
+	public GenericCAct onRespawn = [];
+	public CreateCAct onAttack = [];
+	public CreateCAct onMelee = [];
+	public CreateCAct onShoot = [];
+	public AttackCAct onJump = [];
+	public AttackCAct onDamage = [];
+	public AttackCAct onApplyDamage = [];
+	public AttackCAct onFlinch = [];
+	public AttackCAct onApplyFlinch = [];
+	public AttackCAct onStun = [];
+	public AttackCAct onApplyStun = [];
+	public AttackCAct onHealing = [];
+	public AttackCAct onApplyHeal = [];
+	public AttackCAct onKill = [];
 
 	public void preUpdate(Character chara) {
 		foreach (Chip chip in chips.Values) {

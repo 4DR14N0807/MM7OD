@@ -3077,7 +3077,10 @@ public partial class Character : Actor, IDamagable {
 			if (player.showTrainingDps && player.trainingDpsStartTime > 0) {
 				float timeToKill = Global.time - player.trainingDpsStartTime;
 				float dps = player.trainingDpsTotalDamage / timeToKill;
-				Global.level.gameMode.dpsString = "DPS: " + dps.ToString("0.0");
+				Global.level.gameMode.dpsString = (
+					$"DPS: {dps:0.0000}\n" +
+					$"TTK: {timeToKill:0.0000}"
+				);
 
 				player.trainingDpsTotalDamage = 0;
 				player.trainingDpsStartTime = 0;

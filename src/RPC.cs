@@ -367,7 +367,7 @@ public class RPCApplyDamage : RPC {
 							player, projId, damage, flinch, hitCooldown
 						);
 					}
-					Damager.applyDamage(
+					bool didDamage = Damager.applyDamage(
 						player,
 						damage,
 						hitCooldown,
@@ -385,7 +385,7 @@ public class RPCApplyDamage : RPC {
 			return;
 		}
 
-		Damager.applyDamage(
+		bool didDamage = Damager.applyDamage(
 			player,
 			damage,
 			hitCooldown,

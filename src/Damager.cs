@@ -12,6 +12,7 @@ public class Damager {
 		get => hitCooldown / 60f;
 	}
 	public float hitCooldown;
+	public float excludeSameHit;
 	public int flinch; // Number of frames to flinch
 	public float knockback;
 
@@ -33,6 +34,11 @@ public class Damager {
 		{ (int)BluesProjIds.LemonOverdrive, 3 },
 	};
 	
+	public static Dictionary<int, int> gfxCooldown = new() {
+		{ (int)BassProjIds.WaveBurner, 8 },
+		{ (int)BassProjIds.WaveBurnerUnderwater, 8 },
+	};
+
 
 	public Damager(Player owner, float damage, int flinch, float hitCooldown, float knockback = 0) {
 		this.owner = owner;
@@ -459,14 +465,7 @@ public class Damager {
 		if (damager == null) {
 			return false;
 		}
-		if (projId >= 0 && (
-			projId == (int)ProjIds.Burn ||
-			projId == (int)ProjIds.SelfDmg ||
-			projId == (int)ProjIds.RumblingBangProj ||
-			projId == (int)ProjIds.FlameRoundFlameProj ||
-			projId == (int)ProjIds.MaroonedTomahawk ||
-			projId == (int)ProjIds.AcidBurstPoison
-		)) {
+		if (isDot(projId)) {
 			return false;
 		}
 		if (damager is not Projectile { isMelee: false }) {
@@ -485,6 +484,8 @@ public class Damager {
 			if (proj.canBeLocal && damager.vel.x != 0) {
 				if (checkDelta(actor, damager.vel.x)) {
 					return true;
+				} else {
+					return false;
 				}
 			}
 			if (proj.isMelee || proj.isOwnerLinked) {

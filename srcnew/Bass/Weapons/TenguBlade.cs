@@ -15,7 +15,7 @@ public class TenguBlade : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 60;
+		fireRate = 30;
 		switchCooldown = 30;
 		hasCustomAnim = true;
 		//ammoDisplayScale = 4;

@@ -20,6 +20,7 @@ public class Projectile : Actor {
 
 	public Weapon weapon;
 	public bool destroyOnHit = true;
+	public bool excludeSameHit = false;
 	public bool destroyOnHitWall = false;
 	public bool reflectable = false;
 	public bool reflectableFBurner = false;
@@ -60,7 +61,12 @@ public class Projectile : Actor {
 	public float shieldBounceTimeY = 0;
 	public float shieldBounceMaxTime = 0.25f;
 	public float halfShieldBounceMaxTime => (shieldBounceMaxTime / 2f);
-	
+
+	public int hitCount;
+	public int maxHits = int.MaxValue;
+	public int uniqueHitCount;
+	public int maxUHitCount = int.MaxValue;
+
 	// Wall crawl.
 	public struct WallPathNodeData {
 		public WallPathNode bestStartNode;
@@ -77,7 +83,8 @@ public class Projectile : Actor {
 	float initWallCooldown;
 	public Point currentWallDest;
 	public float dirToDestByteAngle;
-	
+
+	public HashSet<int> uniqueHits = new();
 
 	public Projectile(
 		Weapon weapon, Point pos, int xDir, float speed, float damage,
@@ -497,26 +504,15 @@ public class Projectile : Actor {
 
 			if (canBeDamaged) {
 				Point? hitPos = other.otherCollider.shape.getIntersectPoint(pos, vel);
-				if (hitPos != null && destroyOnHit) changePos(hitPos.Value);
-
-				bool weakness = false;
-				if (character is MegamanX) {
-					int wi = character.player.weapon.weaknessIndex;
-					if (wi > 0 && wi == weapon.index) weakness = true;
+				if (hitPos != null && destroyOnHit) {
+					changePos(hitPos.Value);
 				}
-
-				if (this is BlackArrowProj && destroyed) return;
-				if ((this is BlackArrowProj || this is SpiralMagnumProj) && character?.isAlwaysHeadshot() == true) {
-					weakness = true;
-				}
-
 				if (owner.ownedByLocalPlayer && projId == (int)ProjIds.CopyShot && character != null) {
 					owner.copyShotDamageEvents.Add(new CopyShotDamageEvent(character));
 				}
-
 				if (shouldDealDamage(damagable)) {
 					if (isNetcodeDamageOwner(damagable.actor())) {
-						damager.applyDamage(damagable, weakness, weapon, this, projId);
+						damager.applyDamage(damagable, false, weapon, this, projId);
 					}
 				}
 				onHitDamagable(damagable);
@@ -596,6 +592,23 @@ public class Projectile : Actor {
 				destroySelf(fadeSprite, fadeSound, doRpcEvenIfNotOwned: true);
 			}
 		}
+		addUniqueHit(damagable);
+	}
+
+	public void addUniqueHit(IDamagable damagable) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		Actor damagedActor = damagable.getActor;
+		if (damagedActor.netId != null &&
+			!uniqueHits.Contains(damagedActor.netId.Value)
+		) {
+			uniqueHits.Add(damagedActor.netId.Value);
+			uniqueHitCount++;
+			if (ownedByLocalPlayer && uniqueHitCount >= maxUHitCount) {
+				destroySelf();
+			}
+		}
 	}
 
 	public virtual void afterDamage(IDamagable damagable, bool wasHit) { }
@@ -607,7 +620,13 @@ public class Projectile : Actor {
 		return null;
 	}
 
-	public virtual void onDamageEX(IDamagable damagable) {}
+	public virtual void onDamageEX(IDamagable damagable) {
+		hitCount++;
+		if (canBeLocal && hitCount >= maxHits) {
+			destroySelf();
+		}
+		addUniqueHit(damagable);
+	}
 
 	// Updates damager values and sends them over the network.
 	public void updateDamager(float? damage = null, int? flinch = null) {

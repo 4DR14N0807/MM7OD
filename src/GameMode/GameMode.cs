@@ -2398,7 +2398,7 @@ public class GameMode {
 	public void drawDpsIfSet(int yPos) {
 		if (!string.IsNullOrEmpty(dpsString)) {
 			Fonts.drawText(
-				FontType.BlueMenu, dpsString, 5, yPos
+				FontType.Blue, dpsString, 5, yPos
 			);
 		}
 	}

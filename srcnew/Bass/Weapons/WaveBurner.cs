@@ -15,7 +15,7 @@ public class WaveBurner : Weapon {
 		weaponBarIndex = index;
 		fireRate = 4;
 		isStream = true;
-		maxAmmo = 168;
+		maxAmmo = 168 * 2;
 		ammo = maxAmmo;
 		allowSmallBar = false;
 		ammoDisplayScale = 9;
@@ -72,17 +72,18 @@ public class WaveBurnerProj : Projectile {
 	) : base(
 		pos, 1, owner, "wave_burner_proj", netProjId, altPlayer 
 	) {
+		damager.damage = 0.5f;
+		damager.hitCooldown = 8;
+		maxUHitCount = 2;
+
 		projId = (int)BassProjIds.WaveBurner;
 		maxTime = 0.4f;
-		destroyOnHit = true;
+		destroyOnHit = false;
 		vel = Point.createFromByteAngle(byteAngle) * 5f * 60;
 
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;
 		}
-
-		damager.damage = 1;
-		damager.hitCooldown = 12;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle);
@@ -97,14 +98,26 @@ public class WaveBurnerProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (isUnderwater() && !inWater) {
+		if (!inWater && isUnderwater()) {
+			reduceSpeed();
 			new BubbleAnim(pos, "bubbles") { vel = new Point(0, -60) };
 			Global.level.delayedActions.Add(
 				new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f)
 			);
-			vel *= 0.5f;
-			inWater = true;
 		}
+	}
+
+	public override void onHitWall(CollideData other) {
+		base.onHitWall(other);
+		reduceSpeed();
+	}
+
+	public void reduceSpeed() {
+		if (inWater) {
+			return;
+		}
+		vel *= 0.5f;
+		inWater = true;
 	}
 
 	public override void render(float x, float y) {

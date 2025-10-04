@@ -129,9 +129,11 @@ public class LightningBoltState : CharState {
 		anim?.changePos(character.pos.add(animOffset));
 
 		if (phase == 0) {
-			float moveX = character.player.input.getXDir(character.player) * 180;
-			aim?.move(new Point(moveX, 0));
+			float moveX = character.player.input.getXDir(character.player) * 4f;
 			if (aim != null) {
+				if (moveX != 0) {
+					aim.moveXY(moveX, 0);
+				}
 				aim.pos.y = character.pos.y - 25;
 			}
 

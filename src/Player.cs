@@ -719,8 +719,8 @@ public partial class Player {
 
 	public float getMaxHealth(CharIds charId) {
 		float baseHP = charId switch {
-			CharIds.Blues => 14,
-			CharIds.Bass => 20,
+			CharIds.Blues => 12,
+			CharIds.Bass => 18,
 			_ => 28
 		};
 		return MathF.Ceiling(getModifiedHealth(baseHP));

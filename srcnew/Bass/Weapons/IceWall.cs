@@ -18,7 +18,8 @@ public class IceWall : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 30;
+		//fireRate = 30;
+		fireRate = 10;
 		descriptionV2 = [
 			[ "Pushes enemies away.\n" +
 			"Can be used as a platform and transport\n" +
@@ -26,24 +27,43 @@ public class IceWall : Weapon {
 		];
 	}
 
+	public override void update() {
+		base.update();
+		if (ammo <= 0 || wall?.destroyed == false) {
+			isStream = true;
+		} else {
+			isStream = false;
+		}
+	}
+
 	public override bool canShoot(int chargeLevel, Character character) {
-		return base.canShoot(chargeLevel, character) && (wall == null || wall?.destroyed == true);
+		return true;
+	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
 	}
 
 	public override void shoot(Character character, params int[] args) {
-		base.shoot(character, args);
-		Bass bass = character as Bass ?? throw new NullReferenceException();
-		Point shootPos = character.getShootPos().addxy(0, 2);
+		Point shootPos = character.getShootPos();
 		Player player = character.player;
-
-		wall = new IceWallProj(
-			bass, shootPos, bass.getShootXDir(),
-			player.getNextActorNetId(), rpc: true
-		);
-		bass.playSound("icewall", true);
+		if (!player.ownedByLocalPlayer) return;
+		Bass bass = character as Bass ?? throw new NullReferenceException();
+	
+		if (ammo > 0 && !isStream && wall?.destroyed != false) {
+			wall = new IceWallProj(
+				bass, shootPos, bass.getShootXDir(),
+				player.getNextActorNetId(), rpc: true
+			);
+			bass.playSound("icewall", true);
+			addAmmo(-1, player);
+		} else {
+			new IceWallLemon(bass, shootPos, bass.xDir, player.getNextActorNetId(), true);
+			bass.playSound("bassbuster", true);
+		}
 	}
 }
-	
+
 public class IceWallProj : Projectile, IDamagable {
 	public bool startedMoving;
 	public bool isFalling;
@@ -193,5 +213,33 @@ public class IceWallProj : Projectile, IDamagable {
 		bool[] flags = Helpers.byteToBoolArray(data[0]);
 		startedMoving = flags[0];
 		isFalling = flags[1];
+	}
+}
+
+public class IceWallLemon : Projectile {
+	public IceWallLemon(
+		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		bool rpc = false, Player? altPlayer = null
+	) : base(
+		pos, xDir, owner, "copy_vision_lemon", netProjId, altPlayer
+	) {
+		projId = (int)BassProjIds.IceWallLemon;
+		maxTime = 0.525f;
+		fadeSprite = "copy_vision_lemon_fade";
+
+		vel.x = 240 * xDir;
+		damager.damage = 0.5f;
+		damager.hitCooldown = 9;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
+		}
+		addRenderEffect(RenderEffectType.ChargeBlue);
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new IceWallLemon(
+			arg.owner, arg.pos, arg.xDir, arg.netId
+		);
 	}
 }

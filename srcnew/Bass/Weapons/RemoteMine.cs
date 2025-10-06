@@ -11,7 +11,7 @@ public class RemoteMine : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.RemoteMine;
 		displayName = "REMOTE MINE";
-		maxAmmo = 16;
+		maxAmmo = 20;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;

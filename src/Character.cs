@@ -228,6 +228,7 @@ public partial class Character : Actor, IDamagable {
 	// Ctrl data
 	public int altCtrlsLength = 1;
 	public bool checkWallClimb;
+	public float stackedDashSpeed = 1f;
 
 	// Chip system.
 	public ChipInventory chips = new();
@@ -456,7 +457,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		igFreezeProgress += amount;
-		igFreezeRecoveryCooldown = 0;
+		igFreezeRecoveryCooldown = 30;
 		if (igFreezeProgress >= 4) {
 			igFreezeProgress = 4;
 		}
@@ -487,7 +488,7 @@ public partial class Character : Actor, IDamagable {
 			shaders.Add(player.oilShader);
 		}
 		if (igFreezeProgress > 0 && !sprite.name.Contains("frozen") && player.igShader != null) {
-			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 4);
+			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 6);
 			shaders.Add(player.igShader);
 		}
 		if (virusTime > 0 && player.infectedShader != null) {
@@ -818,7 +819,6 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Local only starts here.
 		updateAttackCooldowns();
-		debuffCooldowns();
 		Helpers.decrementFrames(ref eTankHealTime);
 		if (grounded && !isDashing) {
 			dashedInAir = 0;
@@ -982,11 +982,15 @@ public partial class Character : Actor, IDamagable {
 		}
 		Helpers.decrementFrames(ref slowdownTime);
 
-		igFreezeRecoveryCooldown += Global.spf;
-		if (igFreezeRecoveryCooldown > 0.2f) {
-			igFreezeRecoveryCooldown = 0;
-			igFreezeProgress--;
-			if (igFreezeProgress < 0) igFreezeProgress = 0;
+		if (igFreezeProgress > 0) {
+			igFreezeRecoveryCooldown -= speedMul;
+			if (igFreezeRecoveryCooldown <= 0) {
+				igFreezeRecoveryCooldown = 15;
+				igFreezeProgress--;
+				if (igFreezeProgress < 0) {
+					igFreezeProgress = 0;
+				}
+			}
 		}
 		if (burnStunStacks > 0) {
 			if (burningRecoveryCooldown <= 0) {
@@ -1625,7 +1629,7 @@ public partial class Character : Actor, IDamagable {
 				isDashing = (
 					isDashing || player.dashPressed(out string dashControl) && canDash()
 				);
-				if (isDashing && this is not Bass) {
+				if (isDashing) {
 					dashedInAir++;
 				}
 				changeState(getJumpState());

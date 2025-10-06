@@ -83,7 +83,10 @@ public class Damager {
 		) {
 			return false;
 		}
-		string key = projId.ToString() + "_" + owner.id.ToString();
+		string key = $"{projId}_{owner.id}";
+		if (projId == (int)BassProjIds.IceWallLemon) {
+			key = $"{(int)BassProjIds.BassLemon}_{owner.id}";
+		}
 
 		if (victim is not IDamagable damagable) {
 			return false;
@@ -267,11 +270,15 @@ public class Damager {
 					}
 					break;
 				}
+				/*case (int)BassProjIds.IceWallLemon: {
+					character.addIgFreezeProgress(0.5f);
+					break;
+				}*/
 				case (int)ProjIds.TenguBladeDash: {
 					character.xPushVel += 3 * damagingActor?.xDir ?? 3 * -character.xDir;
 					break;
 				} 
-				case (int)BassProjIds.MagicCard1:
+				case (int)BassProjIds.MagicCardFlip:
 					character.xDir *= -1;
 					break;
 				case (int)BassProjIds.SpreadDrillMid:

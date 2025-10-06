@@ -15,7 +15,7 @@ public class WaveBurner : Weapon {
 		weaponBarIndex = index;
 		fireRate = 4;
 		isStream = true;
-		maxAmmo = 168 * 2;
+		maxAmmo = 24 * 9;
 		ammo = maxAmmo;
 		allowSmallBar = false;
 		ammoDisplayScale = 9;
@@ -72,7 +72,7 @@ public class WaveBurnerProj : Projectile {
 	) : base(
 		pos, 1, owner, "wave_burner_proj", netProjId, altPlayer 
 	) {
-		damager.damage = 0.5f;
+		damager.damage = 0.55f;
 		damager.hitCooldown = 8;
 		maxUHitCount = 2;
 
@@ -116,7 +116,7 @@ public class WaveBurnerProj : Projectile {
 		if (inWater) {
 			return;
 		}
-		vel *= 0.5f;
+		vel *= 0.6f;
 		inWater = true;
 	}
 

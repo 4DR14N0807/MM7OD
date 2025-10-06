@@ -17,7 +17,7 @@ public class CopyVision : Weapon {
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
 		killFeedIndex = 0;
-		maxAmmo = 10;
+		maxAmmo = 12;
 		ammo = maxAmmo;
 		//switchCooldown = 0.75f; //gambiarrita
 		fireRate = 9;

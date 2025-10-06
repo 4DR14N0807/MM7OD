@@ -13,7 +13,7 @@ public class SpreadDrill : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		maxAmmo = 10;
+		maxAmmo = 14;
 		ammo = maxAmmo;
 		fireRate = 90;
 		switchCooldown = 30;

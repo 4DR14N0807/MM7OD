@@ -7,7 +7,8 @@ namespace MMXOnline;
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
-	public int cardCount = 7;
+	public int maxCardCount = 4;
+	public int cardCount = 1;
 	string[] effectsText = new[] {
 		"",
 		"FLIP!",
@@ -30,8 +31,10 @@ public class MagicCard : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 20;
-		//ammoDisplayScale = 2;
+		fireRate = 17;
+		maxAmmo = 48;
+		ammo = maxAmmo;
+		ammoDisplayScale = 2;
 		isStream = true;
 		drawCooldown = false;
 		descriptionV2 = [
@@ -68,16 +71,18 @@ public class MagicCard : Weapon {
 		}
 
 		if (shootAngle is 0 or 128) {
-			int offset = 8;
-			int offset2 = Math.Min(cardsOnField.Count * offset, 2 * offset);
-			shootPos = shootPos.addxy(0, offset - offset2);
+			if (bass.grounded) {
+				shootPos = shootPos.addxy(0, Helpers.randomRange(-8, 12));
+			} else {
+				shootPos = shootPos.addxy(0, Helpers.randomRange(-8, 8));
+			}
 		}
 
 		int effect = 0;
 		cardCount--;
 
 		if (cardCount <= 0) {
-			cardCount += 7;
+			cardCount += maxCardCount;
 			int[] effectChances = [
 				1, 1, 1, 1,
 				2, 2, 2, 2,
@@ -97,7 +102,14 @@ public class MagicCard : Weapon {
 			bass.showNumberTime = 60;
 			bass.lastCardNumber = effect;
 			bass.playSound(effectsSounds[effect], true);
-			Global.level.gameMode.setHUDErrorMessage(player, effectsText[effect], false, overrideFont: FontType.WhiteSmall);
+			int[] colors = [
+				(int)FontType.WhiteSmall,
+				(int)FontType.BlueSmall,
+				(int)FontType.GreenSmall,
+				(int)FontType.YellowSmall,
+				(int)FontType.OrangeSmall,
+			];
+			bass.addDamageText(effectsText[effect], colors[effect]);
 		}
 		if (effect >= (int)MagicCardEffects.MultiShot) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
@@ -145,6 +157,7 @@ public class MagicCardProj : Projectile {
 		projId = (int)BassProjIds.MagicCard;
 		maxTime = 5f;
 		maxReverseTime = 0.45f;
+		destroyOnHit = true;
 
 		this.byteAngle = byteAngle;
 		startAngle = byteAngle;
@@ -157,12 +170,11 @@ public class MagicCardProj : Projectile {
 				returnPos = shooter.getCenterPos();
 			}
 		}
-		destroyOnHit = effect != (int)MagicCardEffects.Refill;
-		if (effect >= 1) changeSprite(sprite.name + effect.ToString(), true);
-
+		if (effect >= 1) {
+			changeSprite(sprite.name + effect.ToString(), true);
+		}
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
 		damager.damage = 1;
-		damager.hitCooldown = 18;
 		ownChr = owner;
 		originalDir = xDir;
 
@@ -171,7 +183,13 @@ public class MagicCardProj : Projectile {
 			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, (byte)(xDir + 1));
 		}
 
-		if (effect == (int)MagicCardEffects.Flip) projId = (int)BassProjIds.MagicCard1;
+		if (effect == (int)MagicCardEffects.Flip) {
+			projId = (int)BassProjIds.MagicCardFlip;
+		}
+		if (effect == (int)MagicCardEffects.Refill) {
+			damager.hitCooldown = 10;
+			projId = (int)BassProjIds.MagicCardRefill;
+		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -387,10 +405,8 @@ public class MagicCardSpecialProj : Projectile {
 		this.type = type;
 		changeSprite(sprite.name + type.ToString(), true);
 
-		base.byteAngle = (type * 10 ) + startAngle;
-		if (xDir < 0 && startAngle != 128) byteAngle = -byteAngle + 128;
-		vel = Point.createFromByteAngle(byteAngle).times(speed);
-
+		this.byteAngle = startAngle;
+		vel = Point.createFromByteAngle(byteAngle).times(150);
 		damager.damage = 1;
 
 		canBeLocal = false;
@@ -414,8 +430,12 @@ public class MagicCardSpecialProj : Projectile {
 
 		if (!ownedByLocalPlayer) return;
 
-		if (time >= 0.33f) followTarget();
-		else byteAngle = vel.byteAngle;
+		if (time >= 0.33f) {
+			vel = Point.zero;
+			followTarget();
+		} else {
+			byteAngle = vel.byteAngle;
+		}
 	}
 
 	public void followTarget() {

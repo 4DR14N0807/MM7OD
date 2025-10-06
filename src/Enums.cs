@@ -322,6 +322,7 @@ public enum RockWeaponIds {
 public enum BassProjIds {
 	BassLemon = 700,
 	IceWall,
+	IceWallLemon,
 	CopyVisionLemon,
 	CopyVisionLemonAlt,
 	SpreadDrill,
@@ -337,7 +338,8 @@ public enum BassProjIds {
 	TenguBladeProj,
 	TenguBladeDash,
 	MagicCard,
-	MagicCard1,
+	MagicCardFlip,
+	MagicCardRefill,
 	MagicCardSSpawn,
 	MagicCardS,
 	SuperBassLemon,

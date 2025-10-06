@@ -10,7 +10,7 @@ public class TenguBlade : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.TenguBlade;
 		displayName = "TENGU BLADE";
-		maxAmmo = 24;
+		maxAmmo = 28;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;

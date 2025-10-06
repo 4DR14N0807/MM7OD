@@ -725,6 +725,12 @@ public class GameMode {
 		}
 	}
 
+	public void forceHUDErrorMessage(string message, FontType? overrideFont = null) {
+		hudErrorMsg = message;
+		hudErrorMsgTime = 2;
+		hudErrorOverrideFont = overrideFont;
+	}
+
 	public void setHUDDebugWarning(string message, FontType? overrideFont = null) {
 		hudDebugMsg += message + "\n";
 		hudErrorOverrideFont = overrideFont;
@@ -1840,7 +1846,7 @@ public class GameMode {
 		else if (weapon is RemoteMine rMine && rMine.mine?.destroyed == false) {
 			text = "1";
 		}
-		else if (weapon is MagicCard magicCard && magicCard.cardCount != 0) {
+		else if (weapon is MagicCard magicCard && magicCard.cardCount > 1) {
 			text = magicCard.cardCount.ToString();
 			if (magicCard.cardCount >= 10) {
 				text = "?";

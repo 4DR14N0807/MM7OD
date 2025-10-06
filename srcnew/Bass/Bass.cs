@@ -217,7 +217,7 @@ public class Bass : Character {
 	}
 
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
-		offset = offset.addxy(0, 17);
+		offset = offset.addxy(0, 0);
 		base.renderHUD(offset, position);
 
 		if (!isSuperBass) return;

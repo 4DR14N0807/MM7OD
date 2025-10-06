@@ -887,6 +887,8 @@ public class Fall : CharState {
 }
 
 public class Dash : CharState {
+	public float dashSpeed = 1.5f;
+	public float maxDashSpeed = 3.5f;
 	public float dashTime;
 	public float dustTime;
 	public string initialDashButton;
@@ -910,32 +912,30 @@ public class Dash : CharState {
 		int inputXDir = player.input.getXDir(player);
 		bool dashHeld = player.input.isHeld(initialDashButton, player);
 
-		if (dashTime > 30 && !stop) {
+		if (!stop && dashTime > 30) {
 			dashTime = 0;
 			stop = true;
 			sprite = "dash_end";
 			shootSprite = "dash_end_shoot";
 			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
 		}
-		if (dashTime < 4 || stop) {
+		else {
 			if (inputXDir != 0 && inputXDir != dashDir) {
-				character.xDir = (int)inputXDir;
+				character.xDir = inputXDir;
 				dashDir = character.xDir;
 			}
 		}
 		// Dash regular speed.
-		if (dashTime >= 4 && !stop) {
-			character.moveXY(character.getDashSpeed() * dashDir, 0);
+		if (!stop) {
+			character.moveXY(dashSpeed * character.getRunDebuffs() * dashDir, 0);
 		}
 		// End move.
-		else if (stop && inputXDir != 0) {
+		else {
 			character.moveXY(character.getRunSpeed() * inputXDir, 0);
-			character.changeState(character.getRunState(true), true);
-			return;
-		}
-		// Speed at start and end.
-		else if (!stop || dashHeld) {
-			character.moveXY(Physics.DashStartSpeed * character.getRunDebuffs() * dashDir, 0);
+			if (dashTime >= 4) {
+				character.changeState(character.getRunState(true), true);
+				return;
+			}
 		}
 		// Dust effect.
 		if (dustTime >= 6 && !character.isUnderwater()) {
@@ -950,6 +950,12 @@ public class Dash : CharState {
 		}
 		// Timer.
 		dashTime += character.speedMul;
+		if (dashSpeed < maxDashSpeed) {
+			dashSpeed += 0.25f;
+			if (dashSpeed > maxDashSpeed) {
+				dashSpeed = maxDashSpeed;
+			}
+		}
 
 		// End.
 		if (stop && character.isAnimOver()) {
@@ -967,12 +973,9 @@ public class Dash : CharState {
 		base.onEnter(oldState);
 		dashDir = character.xDir;
 		character.isDashing = true;
-		//character.globalCollider = character.getDashingCollider();
-		/*dashSpark = new Anim(
-			character.getDashSparkEffectPos(dashDir),
-			"dash_sparks", dashDir, player.getNextActorNetId(),
-			true, sendRpc: true
-		);*/
+
+		dashSpeed = 1.5f;
+		maxDashSpeed = character.getDashSpeed();
 	}
 
 	public override void onExit(CharState? newState) {

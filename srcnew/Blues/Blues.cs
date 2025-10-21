@@ -1327,6 +1327,7 @@ public class Blues : Character {
 		} else {
 			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("ding", sendRpc: true);
+				if (actor is Projectile proj) proj.onBlock();
 			}
 			if (shieldHitBack && !bodyPierced) {
 				backShieldDamaged = true;

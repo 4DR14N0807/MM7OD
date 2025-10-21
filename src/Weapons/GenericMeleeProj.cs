@@ -145,8 +145,23 @@ public class GenericMeleeProj : Projectile {
 	}
 
 	public override DamagerMessage? onDamage(IDamagable? damagable, Player? attacker) {	
+		Point? hitPoint = (damagable as Actor)?.getCenterPos() ?? new Point(0,0);
+		Collider? hitbox = getGlobalCollider();
+		Collider? collider = (damagable as Actor)?.collider;
+		if (hitbox?.shape != null && collider?.shape != null) {
+			var hitboxCenter = hitbox.shape.getRect().center();
+			var hitCenter = collider.shape.getRect().center();
+			hitPoint = new Point((hitboxCenter.x + hitCenter.x) * 0.5f, (hitboxCenter.y + hitCenter.y) * 0.5f);
+		}
+		if (ownedByLocalPlayer) {
+			if (projId == (int)RockProjIds.SlashClaw) {
+				new Anim(hitPoint.Value, "slash_claw_fade", xDir,
+					Global.level.mainPlayer.getNextActorNetId(), true, sendRpc: true);
+			};
+		}
 		return null;
 	}
+
 	public override void onDestroy() {
 		base.onDestroy();
 	}

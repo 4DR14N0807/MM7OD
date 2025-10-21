@@ -16,7 +16,7 @@ public class SlashClawWeapon : Weapon {
 		killFeedIndex = 0;
 		maxAmmo = 24;
 		ammo = maxAmmo;
-		fireRate = 45;
+		fireRate = 30;
 		descriptionV2 = [
 			[ "Fast melee attack, able to pierce shields.\n" + "No tiene flinch." ]
 		];

@@ -54,17 +54,11 @@ public class SARocketPunch : Weapon {
 			rock.playSound("buster2", sendRpc: true);
 
 		} else {
-			var proj = new RockBusterProj(rock, shootPos, xDir, player.getNextActorNetId(), true);
-			lemonsOnField.Add(proj);
-			rock.lemons++;
-			rock.playSound("buster", sendRpc: true);
-
-			rock.timeSinceLastShoot = 0;
-			rock.lemonTime += 20f * rock.lemons;
-			if (rock.lemonTime >= 60f) {
-				rock.lemonTime = 0;
-				rock.weaponCooldown = 30;
-			}
+			//var proj = new RockBusterProj(rock, shootPos, xDir, player.getNextActorNetId(), true);
+			//lemonsOnField.Add(proj);
+			//rock.lemons++;
+			//rock.playSound("buster", sendRpc: true);
+			
 		}
 	}
 }

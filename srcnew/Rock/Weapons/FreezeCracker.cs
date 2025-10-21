@@ -103,7 +103,6 @@ public class FreezeCrackerProj : Projectile {
 	public void onHit() {
 		if (!ownedByLocalPlayer) {
 			destroySelf();
-			//destroySelfNoEffect(disableRpc: true, true);
 			return;
 		}
 
@@ -123,6 +122,7 @@ public class FreezeCrackerProj : Projectile {
 		//if (!ownedByLocalPlayer) return;
 		if (other.gameObject.collider == null) return;
 		if (!other.gameObject.collider.isClimbable) return;
+		fragment();
 		onHit();
 	}
 
@@ -131,7 +131,24 @@ public class FreezeCrackerProj : Projectile {
 		destroySelf();
 	}
 
+	public override void onBlock() {
+		base.onBlock();
+		fragment();
+	}
 
+	public void fragment() {
+		if (!ownedByLocalPlayer) return;
+
+		float fTime = 1.25f;
+		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+		{ frameSpeed = 0, frameIndex = 0, useGravity = true, vel = new Point(-xDir * 60, -120), ttl = fTime };
+		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+		{ frameSpeed = 0, frameIndex = 0, useGravity = true, vel = new Point(xDir * 30, -60), ttl = fTime };
+		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+		{ frameSpeed = 0, frameIndex = 1, useGravity = true, vel = new Point(xDir * 30, -180), ttl = fTime };
+		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+		{ frameSpeed = 0, frameIndex = 1, useGravity = true, vel = new Point(-xDir * 30, -120), ttl = fTime };
+	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new FreezeCrackerProj(

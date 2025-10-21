@@ -324,7 +324,6 @@ public class RushSearchState : RushState {
 			case 0:
 				if (!inTransition() && rush.isAnimOver()) {
 					rush.changeSprite("rush_dig", true);
-					rush.player.currency -= Rock.RushSearchCost;
 					digging = true;
 					state = 1;
 				} break;
@@ -342,6 +341,7 @@ public class RushSearchState : RushState {
 					//RNG starts here.
 					int dice = Helpers.randomRange(1, 100);
 					getRandomItem(dice);
+					rush.player.currency -= Rock.RushSearchCost;
 
 					state = 3;
 				} break;

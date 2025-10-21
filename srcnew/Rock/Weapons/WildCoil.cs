@@ -61,9 +61,12 @@ public class WildCoil : Weapon {
 
 public class WildCoilProj : Projectile {
 
-	public int bounceSpeed = 240;
+	public int bouncePower = 240;
+	float bounceMod = 1;
 	float soundCooldown;
 	float projSpeed = 120;
+	int hits;
+	bool bouncedOnce;
 	public WildCoilProj(
 		Actor owner, Point pos, int xDir, int type, 
 		ushort? netProjId, bool rpc = false, Player? altPlayer = null
@@ -75,11 +78,12 @@ public class WildCoilProj : Projectile {
 		useGravity = true;
 		maxTime = 1.5f;
 		fadeOnAutoDestroy = true;
+		destroyOnHit = false;
 		fadeSprite = "generic_explosion";
 		canBeLocal = false;
 
 		damager.damage = 2;
-		damager.hitCooldown = 6;
+		damager.hitCooldown = 30;
 
 		vel.y = -200;
 		if (type == 0) vel.x = projSpeed * xDir;
@@ -108,9 +112,7 @@ public class WildCoilProj : Projectile {
 
 
 	public override void onHitWall(CollideData other) {
-
 		var normal = other.hitData.normal ?? new Point(0, -1);
-
 
 		if (normal.isSideways()) {
 			destroySelf();
@@ -123,25 +125,54 @@ public class WildCoilProj : Projectile {
 			}
 			vel.y *= -1;
 			if (vel.y < 0) {
-				if (vel.y != -bounceSpeed) vel.y = -bounceSpeed;
+				if (vel.y != -bouncePower) vel.y = -bouncePower;
 			} else {
-				if (vel.y != -bounceSpeed) vel.y = bounceSpeed;
+				if (vel.y != -bouncePower) vel.y = bouncePower;
 			}
 
 			incPos(new Point(0, 5 * MathF.Sign(vel.y)));
+			bouncedOnce = true;
 		}
+	}
+
+	public override void onDamageEX(IDamagable damagable) {
+		base.onDamageEX(damagable);
+		Actor? actor = damagable as Actor;
+		changeSprite("wild_coil_jump", true);
+		hits++;
+		bounceMod = Math.Max(bounceMod - 0.2f, 0);
+
+		float mod = 1f;
+		if (actor != null) {
+			if (actor.getTopY() - pos.y is <= 8 and >= 0) {
+				vel.y = -bouncePower * bounceMod * mod;
+			} 	
+			else if (actor.pos.y - getTopY() is <= 8 and >= 0) {
+				vel.y = bouncePower * bounceMod * mod;
+			} 
+			else {
+				if (vel.y < 0 && bouncedOnce) vel.y = bouncePower * bounceMod * mod;
+				else vel.y = -bouncePower * bounceMod * mod;
+			}	
+		}
+		else {
+			if (vel.y < 0 && bouncedOnce) vel.y = bouncePower * bounceMod * mod;
+			else vel.y = -bouncePower * bounceMod * mod;
+		}
+
+		bouncedOnce = true;
+		if (hits >= 2) destroySelf();
 	}
 }
 
 
 public class WildCoilChargedProj : Projectile {
 
-	public int bounceSpeed = 330;
-	public float bouncePower = 1;
+	public int bouncePower = 330;
+	public float bounceMod = 1;
+	int hits;
 	float soundCooldown;
-	int bounceReq = 1;
 	int bounceCounter;
-	int bounceBuff;
 	bool bouncedOnce;
 	int frame;
 	float projSpeed = 120;
@@ -158,17 +189,17 @@ public class WildCoilChargedProj : Projectile {
 		maxTime = 2f;
 		useGravity = true;
 		fadeOnAutoDestroy = true;
+		destroyOnHit = false;
 		fadeSprite = "generic_explosion";
 		canBeLocal = false;
-		damager.damage = 2;
+		damager.damage = 3;
+		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 30;
 
 		player = altPlayer;
 		if (player != null) {
-			if (player.input.isHeld(Control.Up, player)) bounceSpeed = 480;
-			else if (player.input.isHeld(Control.Down, player)) {
-				bounceReq = 6;
-				bounceSpeed = 60;
-			} else bouncePower = 1f;
+			if (player.input.isHeld(Control.Up, player)) bouncePower = 480;
+			else if (player.input.isHeld(Control.Down, player)) bouncePower = 60;
 		}	
 
 		vel.y = -200;
@@ -196,19 +227,6 @@ public class WildCoilChargedProj : Projectile {
 		if (!ownedByLocalPlayer) return;
 		if (soundCooldown > 0) Helpers.decrementTime(ref soundCooldown);
 
-		bounceBuff = (int)bounceCounter / bounceReq;
-
-		if (bounceBuff < 3) {
-			switch (bounceBuff) {
-				case 1:
-					updateDamager(3, 4);
-					break;
-
-				case 2:
-					updateDamager(3, Global.halfFlinch);
-					break;
-			}
-		}
 		frame = bouncedOnce ? frameIndex : 3;
 	}
 
@@ -229,9 +247,9 @@ public class WildCoilChargedProj : Projectile {
 			bounceCounter++;
 
 			if (vel.y < 0) {
-				if (vel.y != -bounceSpeed * bouncePower) vel.y = -bounceSpeed * bouncePower;
+				if (vel.y != -bouncePower * bounceMod) vel.y = -bouncePower * bounceMod;
 			} else {
-				if (vel.y != -bounceSpeed * bouncePower) vel.y = bounceSpeed * bouncePower;
+				if (vel.y != -bouncePower * bounceMod) vel.y = bouncePower * bounceMod;
 			}
 
 			incPos(new Point(0, 5 * MathF.Sign(vel.y)));
@@ -240,6 +258,36 @@ public class WildCoilChargedProj : Projectile {
 				frameIndex = 0;
 			}
 		} else destroySelf(); 	
+	}
+
+	public override void onDamageEX(IDamagable damagable) {
+		base.onDamageEX(damagable);
+		Actor? actor = damagable as Actor;
+		changeSprite("wild_coil_charge_jump", true);
+		bounceCounter++;
+		hits++;
+		bounceMod = Math.Max(bounceMod - 0.25f, 0);
+
+		float mod = 1f;
+		if (actor != null) {
+			if (actor.getTopY() - pos.y is <= 8 and >= 0) {
+				vel.y = -bouncePower * bounceMod * mod;
+			} 	
+			else if (actor.pos.y - getTopY() is <= 8 and >= 0) {
+				vel.y = bouncePower * bounceMod * mod;
+			} 
+			else {
+				if (vel.y < 0 && bouncedOnce) vel.y = bouncePower * bounceMod * mod;
+				else vel.y = -bouncePower * bounceMod * mod;
+			}	
+		}
+		else {
+			if (vel.y < 0 && bouncedOnce) vel.y = bouncePower * bounceMod * mod;
+			else vel.y = -bouncePower * bounceMod * mod;
+		}
+
+		bouncedOnce = true;
+		if (hits >= 3) destroySelf();
 	}
 
 	public override void render(float x, float y) {
@@ -251,22 +299,16 @@ public class WildCoilChargedProj : Projectile {
 	}
 
 	string getOutline() {
-		return bounceBuff switch  {
-			0 => "wild_coil_outline1",
-			1 => "wild_coil_outline2",
-			_ => "wild_coil_outline3"
-		};
+		return "wild_coil_outline2";
 	}
 
 	public override List<byte> getCustomActorNetData() {
 		return [
-			(byte)bounceBuff,
 			(byte)frame
 		];
 	}
 
 	public override void updateCustomActorNetData(byte[] data) {
-		bounceBuff = data[0];
 		frame = data[1];
 	}
 }

@@ -9,7 +9,7 @@ public class Slide : CharState {
 	public bool stop;
 	public int particles = 3;
 	Anim? dust;
-	Rock? rock;
+	Rock rock = null!;
 
 	public Slide(string initialSlideButton) : base("slide", "", "") {
 		enterSound = "slide";
@@ -23,7 +23,7 @@ public class Slide : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		rock = character as Rock;
+		rock = character as Rock ?? throw new NullReferenceException();
 		initialSlideDir = character.xDir;
 	}
 
@@ -51,7 +51,7 @@ public class Slide : CharState {
 			character.changeState(new SlideEnd(), true);
 			return;
 		}
-		character.moveXY(rock.getSlideSpeed() * initialSlideDir, 0);
+		if (rock != null) character.moveXY(rock.getSlideSpeed() * initialSlideDir, 0);
 
 		if (cancel) {
 			if (rock != null && rock.isSlideColliding) {

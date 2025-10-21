@@ -20,7 +20,7 @@ public class JunkShield : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.JunkShield;
 		killFeedIndex = 0;
-		maxAmmo = 10;
+		maxAmmo = 12;
 		ammo = maxAmmo;
 		descriptionV2 = [
 			[ "Defenseless barrier that gets\n" + 
@@ -49,7 +49,7 @@ public class JunkShield : Weapon {
 	public override void getProjs(Rock rock, params int[] args) {
 		for (int i = 0; i < 3; i++) {
 			new JunkShieldMagnet(
-				rock.getCenterPos(), rock.xDir, rock,
+				this, rock.getCenterPos(), rock.xDir, rock,
 				rock.player.getNextActorNetId(), i * 85	
 			);
 		}
@@ -64,15 +64,17 @@ public class JunkShieldMagnet : Anim {
 	float ang;
 	float radius;
 	bool once;
+	Weapon wep = null!;
 
 	public JunkShieldMagnet(
-		Point pos, int xDir, Rock character, ushort? netId, float ang
+		Weapon wep, Point pos, int xDir, Rock character, ushort? netId, float ang
 	) : base(
 		pos, "junk_shield_magnet", xDir, netId, false, true
 	) {
 		if (ownedByLocalPlayer) {
 			rock = character;
 			rock.junkShieldProjs.Add(this);
+			this.wep = wep;
 		}
 		
 		this.ang = ang;
@@ -91,7 +93,7 @@ public class JunkShieldMagnet : Anim {
 			once = true;
 			for (int i = 0; i < 8; i++) {
 				new JunkShieldPiece(
-					rock.getCenterPos(), rock.xDir, rock,
+					wep, rock.getCenterPos(), rock.xDir, rock,
 					rock.player.getNextActorNetId(), i * 32, this
 				);
 			};
@@ -119,8 +121,9 @@ public class JunkShieldPiece : Anim {
 	float startAng;
 	float ang;
 	float radius = 80;
+	Weapon wep = null!;
 	public JunkShieldPiece(
-		Point pos, int xDir, Character character, ushort? netId, float ang, Anim magnet
+		Weapon wep, Point pos, int xDir, Character character, ushort? netId, float ang, Anim magnet
 	) : base(
 		pos, "junk_shield_pieces", xDir, netId, false, true
 	) {
@@ -131,6 +134,7 @@ public class JunkShieldPiece : Anim {
 		this.magnet = magnet;
 		startAng = ang;
 		this.ang = ang;
+		this.wep = wep;
 		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
 	}
 
@@ -162,7 +166,7 @@ public class JunkShieldPiece : Anim {
 		for (int i = 0; i < 3; i++) {
 			//Main pices
 			float ang = 85 * i;
-			var parent = new JunkShieldProj(rock, pos, xDir, ang, player.getNextActorNetId(), true, player)
+			var parent = new JunkShieldProj(rock, wep, pos, xDir, ang, player.getNextActorNetId(), true, player)
 			{ frameIndex = 5, isParent = true };
 
 			for (int j = 0; j < 2; j++) {
@@ -172,8 +176,8 @@ public class JunkShieldPiece : Anim {
 				int frame = small ? Helpers.randomRange(0, 1) : Helpers.randomRange(2, 4);
 				if (MathF.Ceiling(angs) % 85 == 0 || angs == 0) angs -= 12;
 
-				var son = new JunkShieldProj(rock, pos, xDir, angs, player.getNextActorNetId(), true, player)
-				{ frameIndex = frame, smallestSon = small };
+				var son = new JunkShieldProj(rock, wep, pos, xDir, angs, player.getNextActorNetId(), true, player)
+				{ frameIndex = frame, smallestSon = small, alpha = small ? 0.5f : 1 };
 
 				son.parent = parent;
 				parent.sons.Add(son);
@@ -194,10 +198,9 @@ public class JunkShieldProj : Projectile {
 	Rock? rock;
 	float ang;
 	float radius = 30;
-	bool sound;
-
+	Weapon wep = null!;
 	public JunkShieldProj(
-		Actor owner, Point pos, int xDir, float ang, 
+		Actor owner, Weapon wep, Point pos, int xDir, float ang, 
 		ushort? netProjId, bool rpc = false, Player? altPlayer = null 
 	) : base(
 		pos, xDir, owner, "junk_shield_pieces", netProjId, altPlayer
@@ -210,6 +213,7 @@ public class JunkShieldProj : Projectile {
 				rock.junkShieldProjs.Add(this);
 				changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
 			}
+			this.wep = wep;
 		}
 		
 		damager.damage = 1;
@@ -232,8 +236,8 @@ public class JunkShieldProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new JunkShieldProj(
-			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
-			arg.netId, altPlayer: arg.player
+			arg.owner, JunkShield.netWeapon, arg.pos, arg.xDir, 
+			arg.extraData[0], arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -260,7 +264,8 @@ public class JunkShieldProj : Projectile {
 			rock.currentWeapon is not JunkShield
 		) {
 			shootProjs();
-			rock.weaponCooldown = JunkShield.cooldown;
+			wep.shootCooldown = JunkShield.cooldown;
+			rock.weaponCooldown = 20;
 		}
 	}
 
@@ -272,9 +277,14 @@ public class JunkShieldProj : Projectile {
 	
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!smallestSon && !threw) new Anim(pos, "generic_explosion", xDir, null, true);
+		if (!threw) new Anim(pos, sprite.name, xDir, null!, false, false)
+		{ useGravity = true, vel = new Point(0, -180), ttl = 1.25f, frameSpeed = 0, frameIndex = this.frameIndex };
+
 		if (!ownedByLocalPlayer || rock == null) return;
 		
 		rock.junkShieldProjs.Remove(this);
+		if (!smallestSon && !threw) playSound("danger_wrap_explosion", sendRpc: true);
 	}
 
 	public void shootProjs() {
@@ -315,7 +325,7 @@ public class JunkShieldProj : Projectile {
 		if (rock == null) return;
 
 		new JunkShieldProj2(
-			rock, rock.getCenterPos(), xDir, damager.owner.getNextActorNetId(), frameIndex, a, true
+			rock, pos, xDir, damager.owner.getNextActorNetId(), frameIndex, a, true
 		);
 
 		destroySelf();

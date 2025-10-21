@@ -189,6 +189,7 @@ public class MagicCardProj : Projectile {
 		if (effect == (int)MagicCardEffects.Refill) {
 			damager.hitCooldown = 10;
 			projId = (int)BassProjIds.MagicCardRefill;
+			destroyOnHit = false;
 		}
 	}
 

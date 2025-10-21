@@ -7,7 +7,6 @@ namespace MMXOnline;
 
 public class Rock : Character {
 	public RockLoadout loadout;
-	public float lemonTime;
 	public int lemons;
 	public float weaponCooldown;
 	public List<Actor> junkShieldProjs = new();
@@ -83,22 +82,18 @@ public class Rock : Character {
 
 		if (!ownedByLocalPlayer) return;
 
-		Helpers.decrementFrames(ref lemonTime);
 		Helpers.decrementFrames(ref weaponCooldown);
 		armless = saRocketPunchProj != null;
 		if (rushWeaponSpecial) {
 			rushWeapon.update();
 			rushWeapon.charLinkedUpdate(this, true);
 		}
-
-		timeSinceLastShoot++;
-		if (timeSinceLastShoot >= 30) lemons = 0;
-
+		
 		if (currentWeapon?.ammo >= currentWeapon?.maxAmmo) {
 			weaponHealAmount = 0;
 		}
 
-		if (currentWeapon is not NoiseCrush) hasChargedNoiseCrush = false;
+		//if (currentWeapon is not NoiseCrush) hasChargedNoiseCrush = false;
 
 		if (hasChargedNoiseCrush) {
 			if (chargedNoiseCrushSound == null) {
@@ -229,8 +224,8 @@ public class Rock : Character {
 			weaponCooldown = currentWeapon.switchCooldown;
 		}
 		currentWeapon.addAmmo(-currentWeapon.getAmmoUsage(chargeLevel), player);
-		if (oldShootAnimTime <= 15f && !currentWeapon.hasCustomAnim) {
-			shootAnimTime = 15f;
+		if (oldShootAnimTime <= 20 && !currentWeapon.hasCustomAnim) {
+			shootAnimTime = 20;
 		}
 		stopCharge();
 	}
@@ -658,7 +653,7 @@ public class Rock : Character {
 		if (ownedByLocalPlayer) {
 			chargeEffect.stop();
 		}
-		if (hasChargedNoiseCrush) return;
+		//if (hasChargedNoiseCrush) return;
 
 		if (isCharging()) {
 			chargeSound.play();

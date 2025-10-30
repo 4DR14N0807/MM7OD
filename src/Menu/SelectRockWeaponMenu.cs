@@ -30,7 +30,7 @@ public class RockWeaponMenu : IMainMenu {
 	];
 
 	public Weapon[] specialWeapons = [
-		new RockBuster(),
+		new RockBuster(false),
 		new FreezeCracker(),
 		new ThunderBolt(),
 		new JunkShield(),

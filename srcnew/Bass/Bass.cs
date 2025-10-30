@@ -591,6 +591,8 @@ public class Bass : Character {
 		if (sprite.name == getSprite("dash")) {
 			return (24, 30);
 		}
+		if (sprite.name.Contains("fly")) return (34, 44);
+
 		return (24, 36);
 	}
 

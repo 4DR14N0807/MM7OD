@@ -21,12 +21,14 @@ public class ArrowSlashProj : Projectile {
 		Actor owner, Point pos, int xDir, ushort? netProjId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "slash_claw_proj", netProjId, altPlayer
+		pos, xDir, owner, "arrow_slash_proj", netProjId, altPlayer
 	) {
 		maxTime = 1f;
 		projId = (int)RockProjIds.SAArrowSlash;
 
-		damager.damage = 1;
+		damager.damage = 2;
+		damager.flinch = Global.halfFlinch;
+		fadeSprite = "arrow_slash_fade";
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
@@ -49,16 +51,6 @@ public class ArrowSlashProj : Projectile {
 		}
 
 		if (timeMoving >= Global.spf * 8 && base.vel.y > -120) base.vel.y -= 5;
-
-		damager.damage = getDamageIncrease();
-
-	}
-
-	int getDamageIncrease() {
-		int finalDamage;
-		finalDamage = (int)(time / (20f / 60f)) + 1;
-		if (finalDamage >= 3) damager.flinch = Global.halfFlinch;
-		return finalDamage;
 	}
 }
 

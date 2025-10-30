@@ -151,7 +151,6 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 		base.onHitWall(other);
 		destroySelf();
 	}
-
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
@@ -302,6 +301,7 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
 		ownChr = owner;
+		canBeLocal = false;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);

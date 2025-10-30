@@ -183,11 +183,6 @@ public class Weapon {
 				new GravityWell(),
 				new FrostShield(),
 				new TornadoFang(),
-				new RockBuster(),
-				new FreezeCracker(),
-				new SlashClawWeapon(),
-				new NoiseCrush(),
-				new WildCoil(),
 			};
 	}
 
@@ -211,7 +206,7 @@ public class Weapon {
 	public static List<Weapon> getAllMM7Weapons() {
 		return new List<Weapon>() 
 		{
-				new RockBuster(),
+				new RockBuster(false),
 				new FreezeCracker(),
 				new ThunderBolt(),
 				new JunkShield(),

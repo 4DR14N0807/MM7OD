@@ -4,18 +4,19 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class RockBuster : Weapon {
-	public static RockBuster netWeapon = new();
+	public static RockBuster netWeapon = new(false);
+	public static RockBuster netWeaponSA = new(true);
 
 	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
+	public bool superAdaptor;
 
-	public RockBuster() : base() {
+	public RockBuster(bool superAdaptor) : base() {
 		displayName = "MEGA BUSTER";
 		index = (int)RockWeaponIds.MegaBuster;
 		killFeedIndex = 0;
 		weaponBarBaseIndex = (int)RockWeaponBarIds.MegaBuster;
 		weaponBarIndex = weaponBarBaseIndex;
-		weaponSlotIndex = (int)RockWeaponSlotIds.MegaBuster;
-		//shootSounds = new List<string>() {"buster", "buster2", "buster3", ""};
+		weaponSlotIndex = superAdaptor ? (int)RockWeaponSlotIds.SARocketPunch : (int)RockWeaponSlotIds.MegaBuster;
 		fireRate = 9;
 		switchCooldown = 0;
 		drawAmmo = false;
@@ -23,6 +24,7 @@ public class RockBuster : Weapon {
 			[ "Rock's default weapon.\n" + "Can be charged to deal more damage." ]
 		];
 		
+		this.superAdaptor = superAdaptor;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -58,19 +60,25 @@ public class RockBuster : Weapon {
 		int chargeLevel = args[0];
 
 		if (chargeLevel >= 2) {
-			if (rock.grounded && rock.charState is not Run) {
-				rock.changeState(new RockChargeShotState(rock.grounded), true);
+			if (superAdaptor) {
+				if (rock.grounded && rock.charState is not Run) rock.changeState(new SARocketPunchState(), true);
+				else new SARocketPunchProj(rock, shootPos, xDir, player.getNextActorNetId(), true, player);
+				rock.playSound("super_adaptor_punch", sendRpc: true);
+				rock.setShootAnim();
 			} else {
-				new RockBusterChargedProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
-				rock.playSound("buster3", sendRpc: true);
-			} 
+				if (rock.grounded && rock.charState is not Run) {
+					rock.changeState(new RockChargeShotState(rock.grounded), true);
+				} else {
+					new RockBusterChargedProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
+					rock.playSound("buster3", sendRpc: true);
+				} 
+			}
 		} else if (chargeLevel == 1) {
 			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
 			rock.playSound("buster2", sendRpc: true);
 		} else {
 			var proj = new RockBusterProj(rock, this, shootPos, xDir, netId, true);
 			lemonsOnField.Add(proj);
-			rock.lemons++;
 			rock.playSound("buster", sendRpc: true);
 		}
 	}

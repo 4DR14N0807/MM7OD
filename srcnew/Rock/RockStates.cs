@@ -244,21 +244,19 @@ public class RockDoubleJump : CharState {
 	public const float jumpSpeedY = -180;
 
 	public RockDoubleJump() : base("doublejump", "doublejump_shoot", "", "") {
+		useGravity = false;
 		enterSound = "super_adaptor_jump";
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		character.useGravity = false;
-		character.vel = new Point(jumpSpeedX * character.xDir, jumpSpeedY);
+		//character.vel = new Point(jumpSpeedX * character.xDir, jumpSpeedY);
 		anim = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);
 		//Global.playSound("super_adaptor_jump");
 	}
 
 	public override void onExit(CharState? oldState) {
 		base.onExit(oldState);
-		character.vel = new Point();
-		character.useGravity = true;
 		anim?.destroySelf();
 	}
 
@@ -269,10 +267,12 @@ public class RockDoubleJump : CharState {
 
 		if (anim != null) anim.changePos(character.pos);
 
-		CollideData? collideData = Global.level.checkTerrainCollisionOnce(character, character.xDir, 0);
+		/* CollideData? collideData = Global.level.checkTerrainCollisionOnce(character, character.xDir, 0);
 		if (collideData != null && character.ownedByLocalPlayer) {
 			character.move(new Point(0, jumpSpeedY));
-		}
+		} */
+		character.move(new Point(character.xDir * jumpSpeedX, 0));
+		character.move(new Point(0, jumpSpeedY));
 
 		time += Global.spf;
 		if (stateFrames > 30 || (stateFrames > 6 && character.player.input.isPressed(Control.Jump, character.player))) {

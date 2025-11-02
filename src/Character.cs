@@ -1579,7 +1579,6 @@ public partial class Character : Actor, IDamagable {
 				if (!grounded) {
 					dashedInAir++;
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
-					isDashing = false;
 				} else {
 					grounded = false;
 				}
@@ -1669,7 +1668,6 @@ public partial class Character : Actor, IDamagable {
 					//bass double jump
 					// Adrian: como es que una anim puede desyncear tan durooooo.
 					new Anim(pos, "double_jump_anim", xDir, player.getNextActorNetId(), true, true);
-					isDashing = false;
 					vel.y = -getJumpPower();
 					changeState(getAirJumpState(), true);
 					return true;

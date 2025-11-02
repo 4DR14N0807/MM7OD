@@ -21,10 +21,13 @@ public enum NetActorCreateId {
 	Velguarder,
 	WolfSigmaHead,
 	WolfSigmaHand,
+	GiantHealth,
 	LargeHealth,
 	SmallHealth,
+	GiantAmmo,
 	LargeAmmo,
 	SmallAmmo,
+	GiantBolt,
 	LargeBolt,
 	SmallBolt,
 	MechaniloidTank,
@@ -86,17 +89,26 @@ public class RPCCreateActor : RPC {
 			case (int)NetActorCreateId.CopyVisionClone:
 				new CopyVisionClone(actor, pos, xDir, netProjByte, false, altPlayer: player);
 				break;
+			case (int)NetActorCreateId.GiantHealth:
+				new GiantHealthPickup(player, pos, netProjByte, false);
+				break;
 			case (int)NetActorCreateId.LargeHealth:
 				new LargeHealthPickup(player, pos, netProjByte, false);
 				break;
 			case (int)NetActorCreateId.SmallHealth:
 				new SmallHealthPickup(player, pos, netProjByte, false);
 				break;
+			case (int)NetActorCreateId.GiantAmmo:
+				new GiantAmmoPickup(player, pos, netProjByte, false);
+				break;
 			case (int)NetActorCreateId.LargeAmmo:
 				new LargeAmmoPickup(player, pos, netProjByte, false);
 				break;
 			case (int)NetActorCreateId.SmallAmmo:
 				new SmallAmmoPickup(player, pos, netProjByte, false);
+				break;
+			case (int)NetActorCreateId.GiantBolt:
+				new GiantBoltPickup(player, pos, netProjByte, false);
 				break;
 			case (int)NetActorCreateId.LargeBolt:
 				new LargeBoltPickup(player, pos, netProjByte, false);

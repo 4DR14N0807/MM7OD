@@ -350,7 +350,7 @@ public partial class Player {
 	public void removeWeaponsButBuster() {
 		weaponSlot = 0;
 		weapons.RemoveAll(w => w is not RockBuster);
-		if (!weapons.Any(w => w is RockBuster)) weapons.Add(new RockBuster());
+		if (!weapons.Any(w => w is RockBuster)) weapons.Add(new RockBuster(false));
 	}
 
 	public void updateWeapons() {

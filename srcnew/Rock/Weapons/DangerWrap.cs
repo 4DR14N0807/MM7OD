@@ -17,7 +17,7 @@ public class DangerWrap : Weapon {
 		killFeedIndex = 0;
 		fireRate = 75;
 		switchCooldown = 45;
-		maxAmmo = 10;
+		maxAmmo = 12;
 		ammo = maxAmmo;
 		descriptionV2 = [
 			[ "Complex weapon able to catch foes.\n" +
@@ -151,7 +151,6 @@ public class DangerWrapBubbleProj : Projectile, IDamagable {
 		base.onHitWall(other);
 		destroySelf();
 	}
-
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
@@ -202,7 +201,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 		projId = (int)RockProjIds.DangerWrapMine;
 		maxTime = 1.125f;
 		useGravity = true;
-		damager.damage = 2;
+		damager.damage = 3;
 		damager.hitCooldown = 30;
 		ownChr = owner;
 		canBeGrounded = true;
@@ -278,6 +277,7 @@ public class DangerWrapMineProj : Projectile, IDamagable {
 public class DangerWrapLandProj : Projectile, IDamagable {
 	public float health = 1;
 	public Actor ownChr;
+	Point collideDir;
 
 	public DangerWrapLandProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
@@ -285,11 +285,12 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 	) : base (
 		pos, xDir, owner, "danger_wrap_land", netProjId, altPlayer
 	) {
-		useGravity = true;
+		useGravity = false;
 		projId = (int)RockProjIds.DangerWrapMineLanded;
 		maxTime = 20;
 		fadeSprite = "generic_explosion";
 		fadeOnAutoDestroy = true;
+		destroyOnHit = false;
 
 		if (collider != null) {
 			collider.isTrigger = false;
@@ -300,6 +301,8 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
 		ownChr = owner;
+		canBeLocal = false;
+
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
@@ -315,11 +318,20 @@ public class DangerWrapLandProj : Projectile, IDamagable {
 
 	public override void update() {
 		base.update();
-		moveWithMovingPlatform();
+		moveWithMovingPlatform(collideDir);
 
 		if (time >= 18) {
 			changeSprite("danger_wrap_land_active", true);
 		}
+
+		if (ownedByLocalPlayer) {
+			useGravity = !(Global.level.checkTerrainCollisionOnce(this, 0, 1, checkPlatforms: true) != null);
+		}
+	}
+
+	public override void onDamageEX(IDamagable damagable) {
+		base.onDamageEX(damagable);
+		destroySelf();
 	}
 
 	public override void onDestroy() {

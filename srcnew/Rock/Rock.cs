@@ -7,8 +7,6 @@ namespace MMXOnline;
 
 public class Rock : Character {
 	public RockLoadout loadout;
-	public float lemonTime;
-	public int lemons;
 	public float weaponCooldown;
 	public List<Actor> junkShieldProjs = new();
 	public LoopingSound? junkShieldSound;
@@ -31,7 +29,7 @@ public class Rock : Character {
 	public RushWeapon rushWeapon;
 	public bool rushWeaponSpecial;
 	public int rushWeaponIndex;
-	public const int RushSearchCost = 5;
+	public const int RushSearchCost = 6;
 	public bool hasSuperAdaptor;
 	public const int SuperAdaptorCost = 75;
 
@@ -83,22 +81,18 @@ public class Rock : Character {
 
 		if (!ownedByLocalPlayer) return;
 
-		Helpers.decrementFrames(ref lemonTime);
 		Helpers.decrementFrames(ref weaponCooldown);
 		armless = saRocketPunchProj != null;
 		if (rushWeaponSpecial) {
 			rushWeapon.update();
 			rushWeapon.charLinkedUpdate(this, true);
 		}
-
-		timeSinceLastShoot++;
-		if (timeSinceLastShoot >= 30) lemons = 0;
-
+		
 		if (currentWeapon?.ammo >= currentWeapon?.maxAmmo) {
 			weaponHealAmount = 0;
 		}
 
-		if (currentWeapon is not NoiseCrush) hasChargedNoiseCrush = false;
+		//if (currentWeapon is not NoiseCrush) hasChargedNoiseCrush = false;
 
 		if (hasChargedNoiseCrush) {
 			if (chargedNoiseCrushSound == null) {
@@ -125,7 +119,7 @@ public class Rock : Character {
 		}
 
 		// For the shooting animation.
-		if (isCharging() && currentWeapon is RockBuster && charState is not LadderClimb) {
+		if (isCharging() && currentWeapon is RockBuster { superAdaptor: false } && charState is not LadderClimb) {
 			if (charState.attackCtrl && !sprite.name.EndsWith("_shoot")) {
 				if (shootAnimTime < 2) {
 					shootAnimTime = 2;
@@ -229,8 +223,8 @@ public class Rock : Character {
 			weaponCooldown = currentWeapon.switchCooldown;
 		}
 		currentWeapon.addAmmo(-currentWeapon.getAmmoUsage(chargeLevel), player);
-		if (oldShootAnimTime <= 15f && !currentWeapon.hasCustomAnim) {
-			shootAnimTime = 15f;
+		if (oldShootAnimTime <= 20 && !currentWeapon.hasCustomAnim) {
+			shootAnimTime = 20;
 		}
 		stopCharge();
 	}
@@ -389,7 +383,7 @@ public class Rock : Character {
 	public bool canCallRush(int type) {
 		if (isInvulnerableAttack() ||
 			hasSuperAdaptor ||
-			(type == 2 && player.currency < RushSearchCost) ||
+			//(type == 2 && player.currency < RushSearchCost) ||
 			flag != null
 		) {
 			return false;
@@ -437,7 +431,7 @@ public class Rock : Character {
 	public static List<Weapon> getAllWeapons() {
 		return new List<Weapon>()
 		{
-				new RockBuster(),
+				new RockBuster(false),
 				new FreezeCracker(),
 				new ThunderBolt(),
 				new JunkShield(),
@@ -452,7 +446,7 @@ public class Rock : Character {
 
 	public static Weapon getWeaponById(int id) {
 		return id switch {
-			0 => new RockBuster(),
+			0 => new RockBuster(false),
 			1 => new FreezeCracker(),
 			2 => new ThunderBolt(),
 			3 => new JunkShield(),
@@ -461,7 +455,7 @@ public class Rock : Character {
 			6 => new NoiseCrush(),
 			7 => new DangerWrap(),
 			8 => new WildCoil(),
-			_ => new RockBuster()
+			_ => new RockBuster(false)
 		};
 	}
 	
@@ -580,10 +574,6 @@ public class Rock : Character {
 		);
 		bool isRushJet = rush != null && rush == this.rush && rush.rushState is RushJetState;
 
-		if (charState is RockDoubleJump && wall != null) {
-			vel = new Point(RockDoubleJump.jumpSpeedX * xDir, RockDoubleJump.jumpSpeedY);
-		}
-
 		if (isGHit && isLanding() && isRushJet && rush?.rushState is RushJetState rjs && !rjs.once) {
 			rjs.once = true;
 		}
@@ -658,7 +648,7 @@ public class Rock : Character {
 		if (ownedByLocalPlayer) {
 			chargeEffect.stop();
 		}
-		if (hasChargedNoiseCrush) return;
+		//if (hasChargedNoiseCrush) return;
 
 		if (isCharging()) {
 			chargeSound.play();
@@ -751,11 +741,12 @@ public class Rock : Character {
 	public void setSuperAdaptor(bool addOrRemove) {
 		if (addOrRemove) {
 			hasSuperAdaptor = true;
-			player.removeWeaponsButBuster();
-			player.addSARocketPunch();
+			weapons.Add(new RockBuster(true));
 		} else {
-			player.removeSARocketPunch();
 			hasSuperAdaptor = false;
+			foreach (Weapon wep in weapons) {
+				if (wep is RockBuster { superAdaptor: true }) weapons.Remove(wep);
+			}
 		}
 	}
 

@@ -1856,12 +1856,13 @@ public partial class Actor : GameObject {
 		return -1;
 	}
 
-	public void moveWithMovingPlatform() {
+	public void moveWithMovingPlatform(Point? overrideCollider = null) {
 		/* if (!Global.level.hasMovingPlatforms) {
 			return;
 		} */ //TODO: Add a proper exception for ice wall.
 
-		List<CollideData> collideDatas = Global.level.getTerrainTriggerList(this, new Point(0, 1));
+		Point collideDir = overrideCollider ?? new Point(0,1);
+		List<CollideData> collideDatas = Global.level.getTerrainTriggerList(this, collideDir);
 		foreach (CollideData collideData in collideDatas) {
 			if (collideData.gameObject is Wall wall && wall.deltaMove != Point.zero) {
 				move(wall.deltaMove, useDeltaTime: false);

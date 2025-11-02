@@ -290,6 +290,7 @@ public class RushSearchState : RushState {
 	int pickupTime;
 	int sound;
 	string soundStr = null!;
+	double dice;
 	public RushSearchState() : base("rush_dig_start", "rush_smell") {
 
 	}
@@ -297,7 +298,7 @@ public class RushSearchState : RushState {
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
 		rock = rush.character as Rock ?? throw new NullReferenceException();
-		pickupPos = new Point(rush.pos.x + (rush.xDir * 10), rush.pos.y);
+		pickupPos = new Point(rush.pos.x + (rush.xDir * 10), rush.pos.y - 16);
 		sound = Helpers.randomRange(0, 1);
 		soundStr = sound == 0 ? "rush_search_searching1" : "rush_search_searching2";
 	}
@@ -324,7 +325,6 @@ public class RushSearchState : RushState {
 			case 0:
 				if (!inTransition() && rush.isAnimOver()) {
 					rush.changeSprite("rush_dig", true);
-					rush.player.currency -= Rock.RushSearchCost;
 					digging = true;
 					state = 1;
 				} break;
@@ -340,8 +340,10 @@ public class RushSearchState : RushState {
 					rush.changeSprite("rush_dig_end", true);
 
 					//RNG starts here.
-					int dice = Helpers.randomRange(1, 100);
-					getRandomItem(dice);
+					dice = Helpers.randomRange(1, 1000);
+					getRandomItem();
+					player.currency -= Rock.RushSearchCost;
+					//rock.rushWeapon.addAmmo(-Rock.RushSearchCost, player);
 
 					state = 3;
 				} break;
@@ -352,96 +354,119 @@ public class RushSearchState : RushState {
 		}
 	}
 
-	void getRandomItem(int dice) {
+	void getRandomItem() {
 		if (!rush.ownedByLocalPlayer) return;
-		var pl = Global.level.mainPlayer;
-		var clonePos = pickupPos.clone();
 		string text = "";
+		string sound = "";
 		FontType font;
+		Point pickupVel = new Point(0, -300);
+		dice /= 10;
 
-		// 20 Bolts.
-		if (dice is > 95)
-		{
-			rush.playSound("upgrade", true);
-			text = "20 BOLTS!!!";
+		// Full Heal.
+		if (dice > 98.5){
+			sound = "upgrade";
+			text = "FULL HEAL";
+			font = FontType.Blue;
+
+			new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+			{ vel = pickupVel, teamOnly = true };
+		}
+		// Full Ammo refill. 
+		else if (dice > 97) {
+			sound = "upgrade";
+			text = "FULL AMMO REFILL";
 			font = FontType.Green;
 
-			var pickups = new List<Pickup>() {
-				new SmallBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
-				true, true),
-				new SmallBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
-				true, true),
-				new LargeBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
-				true, true),
-			};
+			new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+			{ vel = pickupVel, teamOnly = true };	
+		}
+		// 100 bolts 
+		else if (dice > 95.5) {
+			sound = "upgrade";
+			text = "100 BOLTS!!!";
+			font = FontType.Yellow;
 
-			foreach (var pickup in pickups) {
-				float velX = Helpers.randomRange(1, 30) * Helpers.randomRange(-1, 1);
-				pickup.vel = new Point(velX, -240);
-			}
-		} 
-		else if (dice is >= 86 and <= 95) 
-		{
-			// Large HP/Ammo capsule.
-			rush.playSound("upgrade", true);
-			if (dice % 2 == 0) {
-				text = "LARGE HEALTH CAPSULE!";
-				font = FontType.Yellow;
-				new LargeHealthPickup(pl, clonePos, pl.getNextActorNetId(), 
-				true, true) {vel = new Point(0, -360)};
-			} else {
-				text = "LARGE AMMO CAPSULE!";
-				font = FontType.Orange;
-				new LargeAmmoPickup(pl, clonePos, pl.getNextActorNetId(), 
-				true, true) {vel = new Point(0, -360)};
-			}
-		} 
-		else if (dice is >= 71 and <= 85) 
-		{
-			// Small HP/Ammo capsule.
-			rush.playSound("rush_search_end", true);
-			if (dice % 2 == 0) {
-				text = "Small health capsule";
-				font = FontType.Yellow;
-				new SmallHealthPickup(pl, clonePos, pl.getNextActorNetId(), 
-				true, true) {vel = new Point(0, -360)};
-			} else {
-				text = "Small ammo capsule";
-				font = FontType.Orange;
-				new SmallAmmoPickup(pl, clonePos, pl.getNextActorNetId(), 
-				true, true) {vel = new Point(0, -360)};
-			}
+			new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+			{ vel = pickupVel, teamOnly = true };	
 		}
-		else if (dice is >= 41 and <= 70) 
-		{
-			//5 Bolts.
-			rush.playSound("rush_search_end", true);
-			text = "5 Bolts";
-			font = FontType.Green;
-			new SmallBoltPickup(pl, clonePos, pl.getNextActorNetId(), 
-			true, true)  {vel = new Point(0, -240)};
-		}
-		else if (dice is >= 6 and <= 40) 
-		{
-			// Trash.
-			rush.playSound("rush_search_end", true);
-			text = "Try Again.";
-			font = FontType.Grey;
-			pickup = new Trash(pickupPos.addxy(0, -4), rush.player?.getNextActorNetId(), 
-			sendRpc: true); 
-		} 
-		else 
-		{
-			// Bomb.
-			rush.playSound("rush_search_end", true);
-			text = "KA-BOOM";
+		// Bomb
+		else if (dice > 94) {
+			sound = "rush_search_end";
+			text = "KA-BOOM!!!";
 			font = FontType.Red;
+
 			new RSBombProj(rock, pickupPos, 1, rush.player?.getNextActorNetId(), true, rush.player);
 		}
+		// Big HP
+		else if (dice > 86) {
+			sound = "upgrade";
+			text = "BIG HEALTH CAPSULE!";
+			font = FontType.Blue;
 
-		Fonts.drawText(font, text, Global.halfScreenW, 64, Alignment.Center);
+			new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+			{ vel = pickupVel, teamOnly = true };
+		}
+		// Big ammo 
+		else if (dice > 78) {
+			sound = "upgrade";
+			text = "BIG AMMO CAPSULE!";
+			font = FontType.Green;
+
+			new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+			{ vel = pickupVel, teamOnly = true };
+		} 
+		// 40 Bolts
+		else if (dice > 70) {
+			sound = "upgrade";
+			text = "40 BOLTS!";
+			font = FontType.Yellow;
+
+			for (int i = 0; i < 5; i++) {
+				new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+				{ xPushVel = Helpers.randomRange(-2, 2) * 30, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
+			}
+		}
+		// Small HP 
+		else if (dice > 55) {
+			sound = "rush_search_end";
+			text = "SMALL HEALTH CAPSULE";
+			font = FontType.Blue;
+
+			new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+			{ vel = pickupVel, teamOnly = true };
+		}
+		//Small ammo
+		else if (dice > 40) {
+			sound = "rush_search_end";
+			text = "SMALL AMMO CAPSULE";
+			font = FontType.Green;
+
+			new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+			{ vel = pickupVel, teamOnly = true };
+		}
+		// 10 Bolts
+		else if (dice > 25) {
+			sound = "rush_search_end";
+			text = "10 BOLTS";
+			font = FontType.Yellow;
+
+			for (int i = 0; i < 5; i++) {
+				new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
+				{ xPushVel = Helpers.randomRange(-2, 2) * 30, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
+			}
+		}
+		// Trash
+		else {
+			sound = "rush_search_end";
+			text = "TRY AGAIN";
+			font = FontType.Red;
+
+			new Trash(pickupPos, player.getNextActorNetId(), true, true);
+		}
+
+		rush.playSound(sound, true);
 		Global.level.gameMode.setHUDErrorMessage(
-			player, text, false
+			player, text, false, overrideFont: font
 		);
 	}
 }
@@ -519,7 +544,7 @@ public class Trash : Anim {
 		setzIndex(ZIndex.Default);
 		frameSpeed = 0;
 		frameIndex = Helpers.randomRange(0, sprite.totalFrameNum - 1);
-		vel = new Point(0, -360);
+		vel = new Point(0, -300);
 		useGravity = true;
 		if (collider != null) collider.wallOnly = true;
 	}
@@ -527,7 +552,7 @@ public class Trash : Anim {
 	public override void update() {
 		base.update();
 		//add a fade anim on destroy
-		if(time >= 2 || checkCollision(0, 1) != null){
+		if(time >= 2 || checkCollision(0, 1) != null) {
 			destroySelf();
 			new Anim(pos,"dust", xDir, netId, true, sendRpc: true);
 		}

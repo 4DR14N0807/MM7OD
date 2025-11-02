@@ -69,6 +69,7 @@ public class IceWallProj : Projectile, IDamagable {
 	public bool isFalling;
 	public float health = 2;
 	float maxSpeed = 3f * 60;
+	float groundTime;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
@@ -123,6 +124,15 @@ public class IceWallProj : Projectile, IDamagable {
 			gravityModifier = 1;
 		}
 		isFalling = deltaPos.y > 0;
+
+		if (grounded && startedMoving) {		
+			if (groundTime % 10 == 0) {
+				new Anim(pos.addxy(-11 * xDir,24), "ice_wall_sled", xDir, null, true, ownedByLocalPlayer);
+			}
+			groundTime += Global.speedMul;
+		} else {
+			groundTime = 0;
+		}
 	}
 
 	public bool selectiveSolidity(GameObject other) {
@@ -166,7 +176,7 @@ public class IceWallProj : Projectile, IDamagable {
 				xDir *= -1;
 				vel.x *= -1;
 				pos.y += xDir;
-				playSound("ding");
+				playSound("icewallBounce", ownedByLocalPlayer);
 			}
 			return;
 		}
@@ -181,6 +191,7 @@ public class IceWallProj : Projectile, IDamagable {
 				startedMoving = true;
 				xDir = MathF.Sign(pos.x - ownChar.pos.x) >= 0 ? 1 : -1;
 				vel.x = xDir * 30;
+				time = 0;
 			}
 		}
 	}

@@ -327,6 +327,10 @@ public class Projectile : Actor {
 		forceNetUpdateNextFrame = true;
 	}
 
+	public virtual void onBlock() {
+		
+	}
+
 	public bool getHeadshotVictim(Player player, out IDamagable? victim, out Point? hitPoint) {
 		victim = null;
 		hitPoint = null;
@@ -538,10 +542,10 @@ public class Projectile : Actor {
 			}
 
 			//bool isNoiseCrush = projId == (int)RockProjIds.NoiseCrush;
-			if (ownedByLocalPlayer && damagableActor.ownedByLocalPlayer && damagable == damager.owner.character && this is NoiseCrushProj ns && character is Rock rock && ns.bounces >= 1) {
+			/* if (ownedByLocalPlayer && damagableActor.ownedByLocalPlayer && damagable == damager.owner.character && this is NoiseCrushProj ns && character is Rock rock && ns.bounces >= 1) {
 				if (ns.isMain) rock.hasChargedNoiseCrush = true;
 				ns.destroySelfNoEffect();
-			}
+			} */
 
 			// Vaccination
 			if (projId == (int)ProjIds.DrDopplerBall2 && ownedByLocalPlayer && damagable is Character damagableChr && damagableChr.player.alliance == damager.owner.alliance) {

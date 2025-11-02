@@ -16,19 +16,26 @@ public class SARocketPunch : Weapon {
 		drawAmmo = false;
 	}
 
-		public override bool canShoot(int chargeLevel, Player player) {
+	public override bool canShoot(int chargeLevel, Player player) {
 		if (!base.canShoot(chargeLevel, player)) return false;
+		Rock? rock = player.character as Rock;
 		if (chargeLevel > 1) {
 			return true;
 		}
+		
+		return lemonsOnField.Count < 3;
+	}
+
+	public override void update() {
+		base.update();
+
 		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
 			if (lemonsOnField[i].destroyed) {
 				lemonsOnField.RemoveAt(i);
-				continue;
 			}
 		}
-		return lemonsOnField.Count < 3;
 	}
+	
 
 	public override float getAmmoUsage(int chargeLevel) {
 		return 0;
@@ -53,19 +60,12 @@ public class SARocketPunch : Weapon {
 			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
 			rock.playSound("buster2", sendRpc: true);
 
-		} else {
-			var proj = new RockBusterProj(rock, shootPos, xDir, player.getNextActorNetId(), true);
+		} /* else {
+			var proj = new RockBusterProj(rock, this, shootPos, xDir, player.getNextActorNetId(), true);
 			lemonsOnField.Add(proj);
-			rock.lemons++;
 			rock.playSound("buster", sendRpc: true);
-
-			rock.timeSinceLastShoot = 0;
-			rock.lemonTime += 20f * rock.lemons;
-			if (rock.lemonTime >= 60f) {
-				rock.lemonTime = 0;
-				rock.weaponCooldown = 30;
-			}
-		}
+			
+		} */
 	}
 }
 
@@ -131,7 +131,7 @@ public class SARocketPunchProj : Projectile {
 			return;
 		}
 
-		var targets = Global.level.getTargets(shooter.pos, player.alliance, true);
+		var targets = Global.level.getTargets(shooter.pos, player.alliance, false);
 		foreach (var t in targets) {
 			if (shooter.isFacing(t) && MathF.Abs(t.pos.y - shooter.pos.y) < 80) {
 				target = t;

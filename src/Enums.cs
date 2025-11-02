@@ -400,6 +400,7 @@ public enum RockProjIds  {
 	ScorchWheelUnderwaterProj,
 	ScorchWheelBurn,
 	SlashClaw,
+	NoiseCrushSpawner,
 	NoiseCrush,
 	NoiseCrushCharged,
 	DangerWrap,

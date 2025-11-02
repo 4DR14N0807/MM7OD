@@ -14,7 +14,6 @@ public class BassShoot : CharState {
 		useDashJumpSpeed = true;
 		canJump = true;
 		canStopJump = true;
-		//airSpriteReset = true;
 	}
 
 	public override void update() {
@@ -293,14 +292,10 @@ public class SuperBassStart : CharState {
 			case 4:
 				if (t >= 255) {
 					//tIncrease = -12.75f;
-					treble.destroySelf();
-					bass.frameSpeed = 1;
+					treble.destroySelf();	
 					bass.setSuperBass();
 					bass.changeSpriteFromName("enter", true);
-
-					aura = new Anim(
-						bass.pos, "sbass_aura", bass.xDir, null, false, true
-					) { zIndex = ZIndex.Character - 10 };
+					bass.frameSpeed = 0;
 
 					phase = 5;
 				}
@@ -311,6 +306,12 @@ public class SuperBassStart : CharState {
 					drawSquare = false;
 					new SuperBassPilar(character.pos);
 					character.playSound("super_bass_aura", sendRpc: true);
+					bass.frameSpeed = 1;
+
+					aura = new Anim(
+						bass.pos, "sbass_aura", bass.xDir, null, false, true
+					) { zIndex = ZIndex.Character - 10 };
+
 					phase = 6;
 				} 
 				break;
@@ -396,6 +397,7 @@ public class EnergyCharge : CharState {
 		) { zIndex = ZIndex.Character - 10 };
 		bass.stopMoving();
 		bass.gravityModifier = 0.1f;
+		bass.frameIndex = 3;
 	}
 
 	public override void onExit(CharState? newState) {
@@ -445,6 +447,7 @@ public class EnergyIncrease : CharState {
 		bass = character as Bass ?? throw new NullReferenceException();
 		bass.nextPhase(bass.phase + 1);
 		bass.playSound("super_bass_aura", sendRpc: true);
+		bass.frameIndex = 3;
 	}
 
 	public override void update() {
@@ -596,12 +599,13 @@ public class BassKick : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
-		character.vel.x = character.xDir * 120;
+		character.xPushVel = character.xDir * 4;
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.triggerCooldown((int)Bass.AttackIds.Kick);
+		character.stopMovingS();
 	}
 
 	public override void update() {
@@ -626,7 +630,7 @@ public class BassKick : CharState {
 			airTime++;
 		}
 
-		if (airTime >= 40) {
+		if (airTime >= 30) {
 			character.useGravity = true;
 			character.changeToIdleOrFall();
 		}
@@ -692,7 +696,7 @@ public class SonicCrusher : CharState {
 		} 
 
 		bass.flyTime += 1.25f;
-		if (stateFrames >= 32) character.changeToIdleOrFall();
+		if (stateFrames >= 32) character.changeToIdleFallorFly();
 	}
 }
 
@@ -709,6 +713,13 @@ public class SweepingLaserState : CharState {
 		character.stopMoving();
 		if (!character.grounded && oldState is not BassFly) {
 			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
+		}
+
+		if (Global.level.checkTerrainCollisionOnce(
+			character, 0, 16, checkPlatforms: true, checkQuicksand: true
+		) != null) 
+		{
+			character.yPushVel = -3;
 		}
 	}
 
@@ -729,7 +740,7 @@ public class SweepingLaserState : CharState {
 			);
 			character.stopMoving();
 			once = true;
-		}
+		} 
 
 		if (once) character.move(new Point(300 * character.xDir, 0));
 		if (stateFrames >= 45) character.changeToIdleFallorFly();

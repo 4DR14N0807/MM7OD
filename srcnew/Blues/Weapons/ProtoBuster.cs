@@ -64,7 +64,7 @@ public class ProtoBusterAngledProj : Projectile {
 		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
-		damager.damage = 2;
+		damager.damage = 1;
 		damager.hitCooldown = 60;
 
 		if (byteAngle > 64 && byteAngle < 192) {
@@ -75,10 +75,11 @@ public class ProtoBusterAngledProj : Projectile {
 		}
 
 		if (type == 0) {
-			changeSprite("proto_buster_proj", true);
+			changeSprite("rock_buster_proj", true);
 			fadeSprite = "proto_buster_proj_fade";
-			damager.damage = 1;
+			damager.damage = 0.5f;
 		} else if (type == 2) {
+			damager.damage = 2;
 			damager.flinch = Global.miniFlinch;
 			changeSprite("proto_chargeshot_yellow_proj", true);
 			fadeSprite = "proto_chargeshot_yellow_proj_fade";

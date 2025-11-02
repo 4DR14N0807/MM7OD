@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using SFML.Graphics;
-using SFML.Graphics.Glsl;
 
 namespace MMXOnline;
 
 public class CopyVision : Weapon {
 	public static CopyVision netWeapon = new();
-	public CopyVisionClone? bassClone;
+	public CopyVisionClone? clone;
 
 	public CopyVision() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -44,11 +41,10 @@ public class CopyVision : Weapon {
 		if (!player.ownedByLocalPlayer) return;
 		Bass bass = character as Bass ?? throw new NullReferenceException();
 	
-		if (ammo > 0 && !isStream && bass.cVclone?.destroyed != false) {
-			bassClone = new CopyVisionClone(
+		if (ammo > 0 && !isStream && clone?.destroyed != false) {
+			clone = new CopyVisionClone(
 				bass, shootPos, character.xDir, character.player.getNextActorNetId(), true, true, player
 			);
-			bass.cVclone = bassClone;
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
 		} else {
@@ -63,7 +59,7 @@ public class CopyVision : Weapon {
 
 	public override void update() {
 		base.update();
-		if (ammo <= 0 || bassClone?.destroyed == false) {
+		if (ammo <= 0 || clone?.destroyed == false) {
 			isStream = true;
 		} else {
 			isStream = false;
@@ -148,7 +144,6 @@ public class CopyVisionClone : Actor {
 		bool rpc = false, Player? altPlayer = null
 	) : base("copy_vision_start", pos, netId, ownedByLocalPlayer, false
 	) {
-		
 		if (ownedByLocalPlayer) {
 			bass = owner as Bass ?? throw new NullReferenceException();
 			player = altPlayer ?? throw new NullReferenceException();
@@ -200,9 +195,6 @@ public class CopyVisionClone : Actor {
 			pos, "copy_vision_exit", xDir,
 			player.getNextActorNetId(), true, sendRpc: true
 		);
-		if (bass != null && bass.cVclone == this) {
-			bass.cVclone = null;
-		}
 	}
 
 }

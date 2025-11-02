@@ -11,7 +11,8 @@ namespace MMXOnline;
 public class Blues : Character {
 	// Lemons.
 	public float lemonCooldown;
-	public float[] unchargedLemonCooldown = new float[4];
+	// Overdrive uses max length, normal and overdrive is -1.
+	public float[] unchargedLemonCooldown = new float[3];
 
 	// Mode variables.
 	public bool isShieldActive = true;
@@ -36,8 +37,8 @@ public class Blues : Character {
 	public float overdriveAmmoMaxCooldown = 20;
 
 	// Shield vars.
-	public decimal shieldHP = 20;
-	public int shieldMaxHP = 20;
+	public decimal shieldHP = 18;
+	public int shieldMaxHP = 18;
 	public float healShieldHPCooldown = 15;
 	public decimal shieldDamageSavings;
 	public decimal shieldDamageDebt;
@@ -467,6 +468,7 @@ public class Blues : Character {
 
 		// Special weapon stuff.
 		specialWeapon.update();
+		specialWeapon.charLinkedUpdate(this, true);
 
 		// Revive stuff.
 		if (player.canReviveBlues() && player.input.isPressed(Control.Special2, player)) {
@@ -795,11 +797,11 @@ public class Blues : Character {
 		int type = overdrive ? 1 : 0;
 
 		if (chargeLevel == 0) {
-			int lemonLimit = unchargedLemonCooldown.Length;
-			if (!overdrive && !overheating) {
-				lemonLimit = unchargedLemonCooldown.Length - 1;
+			int lemonLimit = unchargedLemonCooldown.Length - 1;
+			if (overdrive && !overheating) {
+				lemonLimit = unchargedLemonCooldown.Length;
 			}
-			for (int i = 0; i < unchargedLemonCooldown.Length; i++) {
+			for (int i = 0; i < lemonLimit; i++) {
 				if (unchargedLemonCooldown[i] <= 0) {
 					lemonNum = i;
 					break;
@@ -836,7 +838,7 @@ public class Blues : Character {
 			}
 			playSound("buster", sendRpc: true);
 			lemonCooldown = 8;
-			unchargedLemonCooldown[lemonNum] = 50;
+			unchargedLemonCooldown[lemonNum] = 40;
 			if (oldShootAnimTime <= 0.25f) {
 				shootAnimTime = 0.25f;
 			}

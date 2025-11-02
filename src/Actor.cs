@@ -785,7 +785,7 @@ public partial class Actor : GameObject {
 		}
 		if (xIceVel != 0f) {
 			xIceVel = Helpers.lerp(xIceVel, 0f, Global.spf);
-			if (MathF.Abs(xIceVel) < 1 / 32f) {
+			if (MathF.Abs(xIceVel) < 1 / 64f) {
 				xIceVel = 0f;
 			} else {
 				// Gacel's notes:

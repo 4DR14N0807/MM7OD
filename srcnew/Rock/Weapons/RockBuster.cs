@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -52,7 +52,7 @@ public class RockBuster : Weapon {
 		int chargeLevel = args[0];
 
 		if (chargeLevel >= 2) {
-			if (rock.grounded && rock.charState is not Run) {
+			if (rock.grounded && rock.charState is not BaseRun) {
 				rock.changeState(new RockChargeShotState(rock.grounded), true);
 			} else {
 				new RockBusterChargedProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);

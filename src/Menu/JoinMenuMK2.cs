@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -363,11 +363,11 @@ public static class MasterServerData {
 				string contents;
 				using (var wc = new System.Net.WebClient()) {
 					contents = wc.DownloadString(
-						"http://mmx-online-hdm.github.io/serverinfo/serverurl.txt"
+						"https://mmx-online-hdm.github.io/serverinfo/serverurl.txt"
 					);
 				}
 				portUrl = contents.Split(":");
-			} catch {
+			} catch (Exception ex) {
 				return;
 			}
 		}

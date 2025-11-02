@@ -147,13 +147,14 @@ public class IceWallProj : Projectile, IDamagable {
 	}
 
 	public override bool canBePlatform(GameObject other) {
-		if (other is RemoteMineProj or RemoteMineLandProj) return true;
-
+		if (other is RemoteMineProj or RemoteMineLandProj or DangerWrapLandProj or DangerWrapMineProj) {
+			return true;
+		}
 		return (
 			other is Character chara &&
 			chara.player.alliance == damager.owner.alliance &&
 			chara.pos.y <= getTopY() + 16
-		); 
+		);
 	}
 
 	public override void onCollision(CollideData other) {
@@ -176,7 +177,7 @@ public class IceWallProj : Projectile, IDamagable {
 		Character? ownChar = damager.owner?.character;
 		// Movement start.
 		if (other.gameObject == ownChar && !startedMoving) {
-			if (ownChar.pos.y >= getTopY() + 10 && (ownChar.charState is Dash or Run or TenguBladeDash || (ownChar.canMove() && ownChar.player.input.getXDir(ownChar.player) != 0))) {
+			if (ownChar.pos.y >= getTopY() + 10 && (ownChar.charState is Dash or BaseRun or TenguBladeDash || (ownChar.canMove() && ownChar.player.input.getXDir(ownChar.player) != 0))) {
 				startedMoving = true;
 				xDir = MathF.Sign(pos.x - ownChar.pos.x) >= 0 ? 1 : -1;
 				vel.x = xDir * 30;

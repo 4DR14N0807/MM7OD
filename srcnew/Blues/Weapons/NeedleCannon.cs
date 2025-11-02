@@ -4,12 +4,15 @@ namespace MMXOnline;
 
 public class NeedleCannon : Weapon {
 	public static NeedleCannon netWeapon = new();
+	public float bloomLevel = 4;
+	public float bloomCooldown = 0;
+	public float bloomSpeed = 0;
 
 	public NeedleCannon() : base() {
 		// Tecnical data.
 		index = (int)BluesWeaponIds.NeedleCannon;
 		fireRate = 6;
-		defaultAmmoUse = 0.65f;
+		defaultAmmoUse = 0.35f;
 
 		// Display data.
 		displayName = "NEEDLE CANNON";
@@ -20,10 +23,25 @@ public class NeedleCannon : Weapon {
 		// Auto-calculation for ammo per second text.
 		decimal ammoUseDec = Decimal.Parse(defaultAmmoUse.ToString());
 		decimal chps = ammoUseDec * (60m / (decimal)fireRate);
-		string chpsString = chps.ToString("#.#");
+		string chpsString = chps.ToString("#.####");
 
 		// Ammo use text.
 		ammoUseText = chpsString + " per second";
+	}
+
+	public override void charLinkedUpdate(Character character, bool isAlwaysOn) {
+		base.charLinkedUpdate(character, isAlwaysOn);
+
+		if (shootCooldown <= 0) {
+			if (bloomCooldown <= 0 && bloomLevel > 4) {
+				bloomLevel -= bloomSpeed;
+				bloomSpeed++;
+				if (bloomLevel < 4) {
+					bloomLevel = 4;
+				}
+			}
+			Helpers.decrementFrames(ref bloomCooldown);
+		}
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -33,10 +51,13 @@ public class NeedleCannon : Weapon {
 		int xDir = blues.getShootXDir();
 		Player player = blues.player;
 		float shootAngle = 0;
-		if (blues.grounded) {
-			shootAngle = Helpers.randomRange(-30, 20);
-		} else {
-			shootAngle = Helpers.randomRange(-25, 25);
+
+		shootAngle = Helpers.randomRange(-bloomLevel, bloomLevel);
+		bloomLevel += 2;
+		bloomCooldown = 4;
+		bloomSpeed = 1;
+		if (bloomLevel > 24) {
+			bloomLevel = 24;
 		}
 		if (xDir == -1) {
 			shootAngle = -shootAngle + 128;

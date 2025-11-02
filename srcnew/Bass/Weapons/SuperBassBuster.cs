@@ -430,11 +430,10 @@ public class SweepingLaserProj : Projectile {
 
 		if (ownedByLocalPlayer) {
 			bass = owner as Bass ?? throw new NullReferenceException();
+			start();
 		}
 	}
-
-	public override void onStart() {
-		base.onStart();
+	void start() {
 		if (!ownedByLocalPlayer) return;
 
 		startHeight = (int)sprite.getCurrentFrame().rect.h();
@@ -476,7 +475,7 @@ public class SweepingLaserProj : Projectile {
 
 		if (ground && bottomAnim != null) {
 			Global.sprites[bottomAnim.sprite.name].draw(
-				bottomAnim.frameIndex, pos.x, endPos.y, 
+				bottomAnim.frameIndex, pos.x + (xDir * 2), endPos.y, 
 				xDir, yDir, null, alpha, 1, 1, zIndex
 			);
 		}
@@ -536,18 +535,17 @@ public class DarkCometUpProj : Projectile {
 
 	public override void onStart() {
 		base.onStart();
-		anim = new Anim(pos, "dark_comet_anim", xDir, null, false) { visible = false };
+		anim = new Anim(pos, "dark_comet_center", xDir, null, false) { visible = false };
 	}
 
 	public override void render(float x, float y) {
+		base.render(x,y);
 		if (anim != null) {
 			Global.sprites[anim.sprite.name].draw(
-				anim.frameIndex, pos.x, pos.y, 
+				anim.frameIndex, pos.x, pos.y + 2, 
 				xDir, yDir, null, alpha, 1, 1, zIndex
 			);
 		}
-
-		base.render(x,y);
 	}
 
 	public override void onHitWall(CollideData other) {
@@ -606,7 +604,7 @@ public class DarkCometDownProj : Projectile {
 
 	public override void onStart() {
 		base.onStart();
-		anim = new Anim(pos, "dark_comet_anim", xDir, null, false) { visible = false };
+		anim = new Anim(pos, "dark_comet_center", xDir, null, false) { visible = false };
 	}
 
 	public override void onHitWall(CollideData other) {
@@ -623,14 +621,13 @@ public class DarkCometDownProj : Projectile {
 	}
 
 	public override void render(float x, float y) {
+		base.render(x,y);
 		if (anim != null) {
 			Global.sprites[anim.sprite.name].draw(
-				anim.frameIndex, pos.x, pos.y, 
+				anim.frameIndex, pos.x, pos.y + 2, 
 				xDir, yDir, null, alpha, 1, 1, zIndex
 			);
 		}
-
-		base.render(x,y);
 	} 
 }
 

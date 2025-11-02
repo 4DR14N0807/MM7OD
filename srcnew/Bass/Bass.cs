@@ -220,7 +220,7 @@ public class Bass : Character {
 		offset = offset.addxy(0, 0);
 		base.renderHUD(offset, position);
 
-		if (!isSuperBass) return;
+		if (!isSuperBass || !alive) return;
 
 		Point energyBarPos = GameMode.getHUDHealthPosition(position, false).add(offset);
 
@@ -588,18 +588,22 @@ public class Bass : Character {
 	}
 
 	public override (float, float) getGlobalColliderSize() {
-		if (sprite.name == getSprite("dash")) {
+		if (sprite.name == getSprite("dash") || sprite.name == getSprite("tblade_dash")) {
 			return (24, 30);
 		}
-		if (sprite.name.Contains("fly")) return (34, 44);
+		if (sprite.name == getSprite("soniccrusher")) return (38, 20);
 
-		return (24, 36);
+		float yExtra = isSuperBass ? 4 : 0;
+		return (24, 36 + yExtra);
 	}
 
 	public override (float, float) getTerrainColliderSize() {
-		if (sprite.name == getSprite("dash")) {
+		if (sprite.name == getSprite("dash") || sprite.name == getSprite("tblade_dash")) {
 			return (24, 24);
 		}
+
+		if (sprite.name == getSprite("soniccrusher")) return (24, 20);
+
 		return (24, 30);
 	}
 

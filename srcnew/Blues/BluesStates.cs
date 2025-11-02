@@ -305,9 +305,11 @@ public class BluesSpreadShoot : CharState {
 
 	public BluesSpreadShoot() : base("spreadshoot_air") {
 		canJump = true;
+		canStopJump = true;
 		airMove = true;
-		exitOnLanding = true;
 		normalCtrl = true;
+		landSprite = "spreadshoot";
+		airSprite = "spreadshoot_air";
 	}
 
 	public override void onEnter(CharState oldState) {

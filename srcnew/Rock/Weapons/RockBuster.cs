@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -61,12 +61,15 @@ public class RockBuster : Weapon {
 
 		if (chargeLevel >= 2) {
 			if (superAdaptor) {
-				if (rock.grounded && rock.charState is not Run) rock.changeState(new SARocketPunchState(), true);
-				else new SARocketPunchProj(rock, shootPos, xDir, player.getNextActorNetId(), true, player);
+				if (rock.grounded && rock.charState is not BaseRun) {
+					rock.changeState(new SARocketPunchState(), true);
+				} else {
+					new SARocketPunchProj(rock, shootPos, xDir, player.getNextActorNetId(), true, player);
+				}
 				rock.playSound("super_adaptor_punch", sendRpc: true);
 				rock.setShootAnim();
 			} else {
-				if (rock.grounded && rock.charState is not Run) {
+				if (rock.grounded && rock.charState is not BaseRun) {
 					rock.changeState(new RockChargeShotState(rock.grounded), true);
 				} else {
 					new RockBusterChargedProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);

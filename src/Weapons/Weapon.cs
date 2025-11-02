@@ -409,7 +409,7 @@ public class Weapon {
 			}
 	}
 
-	public void charLinkedUpdate(Character character, bool isAlwaysOn) {
+	public virtual void charLinkedUpdate(Character character, bool isAlwaysOn) {
 		if (ammo >= maxAmmo || weaponHealAmount <= 0) {
 			weaponHealAmount = 0f;
 			weaponHealTime = 0;

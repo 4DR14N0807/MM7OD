@@ -23,7 +23,7 @@ public partial class Player {
 	public static Player errorPlayer = new Player(
 		"Error", 255, -1,
 		new PlayerCharData() { charNum = -1 },
-		false, false, GameMode.neutralAlliance,
+		false, true, GameMode.neutralAlliance,
 		new Input(false),
 		new ServerPlayer(
 			"Error", 255, false,
@@ -719,8 +719,10 @@ public partial class Player {
 
 	public float getMaxHealth(CharIds charId) {
 		float baseHP = charId switch {
-			CharIds.Blues => 12,
-			CharIds.Bass => 18,
+			CharIds.Rock => 22,
+			CharIds.Blues => 14,
+			CharIds.Bass => 16,
+			CharIds.Slashman => 18,
 			_ => 28
 		};
 		return MathF.Ceiling(getModifiedHealth(baseHP));
@@ -1119,6 +1121,11 @@ public partial class Player {
 				this, pos.x, pos.y, xDir,
 				false, charNetId, ownedByLocalPlayer,
 				loadout: bassLoadout
+			);
+		} else if (charNum == (int)CharIds.Slashman) {
+			newChar = new Slashman(
+				this, pos.x, pos.y, xDir,
+				false, charNetId, ownedByLocalPlayer
 			);
 		}
 		// Error out if invalid id.

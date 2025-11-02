@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MMXOnline;
 
 public class RemoteMine : Weapon {
 	public static RemoteMine netWeapon = new();
-	public RemoteMineProj? mine;
+	public bool shootOnFrame;
+	public RemoteMineProj? activeMine;
+	public List<Projectile> landedMines = [];
 
 	public RemoteMine() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -25,50 +28,76 @@ public class RemoteMine : Weapon {
 		];
 	}
 
-	public override bool canShoot(int chargeLevel, Player player) {
-		Bass? bass = player.character as Bass;
+	public override void charLinkedUpdate(Character character, bool isAlwaysOn) {
+		base.charLinkedUpdate(character, isAlwaysOn);
 
-		return
-		bass?.rMine == null && bass?.rMineExplosion == null &&
-		base.canShoot(chargeLevel, player);
+		if (!shootOnFrame && activeMine?.destroyed == false && character.currentWeapon == this &&
+			character.player.input.isPressed(Control.Shoot, character.player)
+		) {
+			activeMine.explode();
+		}
+		shootOnFrame = false;
+
+		if (landedMines.Count > 0) {
+			landedMines = landedMines.Where(mine => !mine.destroyed).ToList();
+		}
 	}
+
+	public override bool canShoot(int chargeLevel, Actor actor) {
+		return base.canShoot(chargeLevel, actor) && (shootCooldown > 0 || activeMine?.destroyed != false);
+	}
+
 	public override void shoot(Character character, params int[] args) {
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
-		Bass bass = character as Bass ?? throw new NullReferenceException();
+		shootOnFrame = true;
 
-		mine = new RemoteMineProj(bass, shootPos, bass.getShootXDir(), player.getNextActorNetId(), true);
+		landedMines = landedMines.Where(mine => !mine.destroyed).ToList();
+		activeMine = new RemoteMineProj(
+			character, shootPos, character.getShootXDir(), player.getNextActorNetId(), true,
+			linkedWeapon: this
+		);
+	}
+
+	public void addMine(Projectile proj) {
+		landedMines.Add(proj);
+
+		landedMines = landedMines.Where(mine => !mine.destroyed).ToList();
+		int removalTheshold = landedMines.Count - 2;
+
+		for (int i = landedMines.Count - 1; i >= 0; i--) {
+			if (i < removalTheshold) {
+				Projectile mine = landedMines[i];
+				landedMines.RemoveAt(i);
+				mine.destroySelf();
+			}
+		}
 	}
 }
 
-
 public class RemoteMineProj : Projectile {
-	bool exploded;
-	bool landed;
-	bool landedOnce;
-	bool wallLanded;
-	Character? host;
-	Anim? anim;
-	string animName = "remote_mine_anim";
-	Bass bass = null!;
-	Wall? cWall;
+	public Actor? attachHost;
+	public Sprite altAnim = new Sprite("remote_mine_anim");
+	public bool exploded;
+	public bool landed;
+	public RemoteMine? linkedWeapon;
 
 	public RemoteMineProj(
-		Actor owner, Point pos, int xDir, ushort? netProjId, 
-		bool rpc = false, Player? altPlayer = null
-	) : base (
+		Actor owner, Point pos, int xDir, ushort? netProjId,
+		bool rpc = false, Player? altPlayer = null, RemoteMine? linkedWeapon = null
+	) : base(
 			pos, xDir, owner, "remote_mine_proj", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMine;
-		maxTime = 1f;
+		maxTime = 50 / 60f;
 		destroyOnHit = false;
 
 		vel.x = 240 * xDir;
 		damager.hitCooldown = 30;
 
 		if (ownedByLocalPlayer && owner.ownedByLocalPlayer) {
-			bass = ownerPlayer.character as Bass ?? throw new NullReferenceException();
-			bass.rMine = this;
+			this.linkedWeapon = linkedWeapon;
+			linkedWeapon?.addMine(this);
 		}
 		canBeLocal = false;
 
@@ -83,58 +112,39 @@ public class RemoteMineProj : Projectile {
 		);
 	}
 
-	public override void onStart() {
-		base.onStart();
-		if (bass != null && ownedByLocalPlayer && bass.ownedByLocalPlayer) {
-			anim = new Anim(
-				getCenterPos(), animName, xDir,
-				bass.player.getNextActorNetId(), false, true
-			);
-			anim.visible = false;
-		}
-	}
-
 	public override void update() {
 		base.update();
-
-		if (host != null) changePos(host.getCenterPos());
-
-
+		altAnim.update();
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-
-		if (time >= maxTime && !destroyed && bass != null && bass.ownedByLocalPlayer){
-			//ruben: cant put this as fade anim or on destroy because it will conflict with the explosion anim
+		if (attachHost != null) {
+			changePos(attachHost.getCenterPos());
+		}
+		/*
+		if (time >= maxTime && !destroyed && bass != null && bass.ownedByLocalPlayer) {
+			// ruben: cant put this as fade anim
+			// or on destroy because it will conflict with the explosion anim
 			new Anim(
-				getCenterPos(), "remote_mine_fade_anim", xDir, 
+				getCenterPos(), "remote_mine_fade_anim", xDir,
 				bass.player.getNextActorNetId(), true, true
 			);
 		}
-
-		if (anim != null) anim.changePos(getCenterPos());
-
+		*/
 		int moveY = owner.input.getYDir(owner);
-		if (moveY != 0 && !landedOnce) move(new Point(0, 90 * moveY ));
-
-		if (ownedByLocalPlayer && bass?.rMine != null &&
-			landed && owner.input.isPressed(Control.Shoot, owner) &&
-			bass.currentWeapon is RemoteMine
-		) {
-			if (!exploded) {
-				explode();
-			}	
+		if (moveY != 0) {
+			moveXY(0, 1.5f * moveY);
 		}
 	}
 
 	public override void render(float x, float y) {
-		base.render(x,y);
-		if (anim == null || !visible) return;
-
+		base.render(x, y);
+		if (!visible) {
+			return;
+		}
 		Point center = getCenterPos();
-
-		Global.sprites[animName].draw(
-			anim.frameIndex, center.x, center.y, xDir, yDir,
+		altAnim.draw(
+			altAnim.frameIndex, center.x, center.y, xDir, yDir,
 			null, alpha, 1, 1, zIndex
 		);
 	}
@@ -144,96 +154,90 @@ public class RemoteMineProj : Projectile {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (other.gameObject is KillZone) return;
+		if (landed || exploded || attachHost != null) {
+			return;
+		}
+		if (other.gameObject is KillZone) {
+			return;
+		}
 
-		var chr = other.gameObject as Character;
-		bool characterLand = (
-			chr != null && chr != bass && 
-			chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)
-		);
-		
 		if (!landed && (
 			other.gameObject is Wall ||
 			other.gameObject is MovingPlatform ||
 			other.gameObject is Actor actor && (actor.isPlatform || actor.isSolidWall)
 		)) {
-			wallLanded = true;
-			useGravity = false;
+			landed = true;
 			destroySelf();
 			playSound("remotemineStick", true);
 			return;
 		}
-		if (!landed && (characterLand || wallLanded)) {
-			if (characterLand) {
-				host = chr;
-				visible = false;
-			}
-			stopMoving(); 
+
+		if (other.gameObject is not Character chr) {
+			return;
+		}
+
+		bool characterLand = (
+			chr != ownerActor &&
+			chr.canBeDamaged(ownerPlayer.alliance, ownerPlayer.id, projId)
+		);
+
+		if (characterLand) {
+			attachHost = chr;
+			stopMoving();
 			changeSprite("remote_mine_land", true);
 			playSound("remotemineStick", true);
-			landed = true;
-			landedOnce = true;
-			maxTime = 10;
+			maxTime = 2;
 		}
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (bass == null || !ownedByLocalPlayer) {
+		if (exploded || ownerActor == null) {
 			return;
 		}
-
-		if (anim != null) anim.destroySelf();
-		if (bass != null) bass.rMine = null!;
-
-		if (time >= maxTime && !exploded && landed) explode();
-		if (wallLanded && bass != null) bass.rMine = new RemoteMineLandProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
+		if (landed) {
+			new RemoteMineLandProj(
+				ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true,
+				linkedWeapon: linkedWeapon
+			);
+		}
+		else if (time >= maxTime) {
+			explode();
+		}
 	}
 
 	public void explode() {
-		destroySelf();
-		if (ownedByLocalPlayer) {
-			new RemoteMineExplosionProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
+		if (!destroyed) {
+			destroySelf();
+		}
+		if (exploded) {
+			return;
+		}
+		if (ownedByLocalPlayer && ownerActor != null) {
+			new RemoteMineExplosionProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
 			playSound("remotemineExplode", true);
 		}
 		exploded = true;
 	}
-
-	public override List<byte> getCustomActorNetData() {
-		return [Helpers.boolArrayToByte([
-			visible
-		])];
-	}
-	public override void updateCustomActorNetData(byte[] data) {
-		bool[] flags = Helpers.byteToBoolArray(data[0]);
-		visible = flags[0];
-	}
 }
 
-
 public class RemoteMineLandProj : Projectile {
+	public Bass? bass;
+	public Sprite altAnim = new Sprite("remote_mine_anim");
+	public bool exploded;
 
-	Bass bass = null!;
-	Anim? anim;
-	string animName = "remote_mine_anim";
-	bool landed;
-	bool wallLanded;
-	bool characterLand;
-	bool exploded;
-	Character? host;
 	public RemoteMineLandProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
-		bool rpc = false, Player? player = null
+		bool rpc = false, Player? altPlayer = null, RemoteMine? linkedWeapon = null
 	) : base(
-		pos, xDir, owner, "remote_mine_land", netId, player
+		pos, xDir, owner, "remote_mine_land", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMineLand;
-		maxTime = 10;
-		destroyOnHit = false;
+		maxTime = 4;
+		destroyOnHit = true;
 
 		if (ownedByLocalPlayer && owner.ownedByLocalPlayer) {
-			bass = ownerPlayer.character as Bass ?? throw new NullReferenceException();
-			bass.rMine = this;
+			linkedWeapon?.addMine(this);
 		}
 		canBeLocal = false;
 
@@ -244,77 +248,41 @@ public class RemoteMineLandProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RemoteMineLandProj(
-			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
-	}
-
-	public override void onStart() {
-		base.onStart();
-		if (bass != null && ownedByLocalPlayer && bass.ownedByLocalPlayer) {
-			anim = new Anim(
-				getCenterPos(), animName, xDir,
-				bass.player.getNextActorNetId(), false, true
-			);
-			anim.visible = false;
-		}
 	}
 
 	public override void update() {
 		base.update();
-
-		if (host != null) changePos(host.getCenterPos());
-		else {
-			moveWithMovingPlatform();
-			if (!isColliding()) {
-				explode();
-				return;
-			}
+		altAnim.update();
+		if (!ownedByLocalPlayer) {
+			return;
 		}
 
-		if (ownedByLocalPlayer && bass?.rMine != null &&
-			owner.input.isPressed(Control.Shoot, owner) &&
-			bass.currentWeapon is RemoteMine
-		) {
-			if (!exploded) {
-				explode();
-			}	
+		if (exploded) {
+			return;
+		}
+		// Explode if not on a plaform anymore.
+		moveWithMovingPlatform();
+		if (!isColliding()) {
+			explode();
+			return;
+		}
+		// Explode if enemies are nearby even if not touched.
+		Actor[] closeActors = getCloseActors(38).Where(obj => obj is Character).ToArray();
+		if (closeActors.Length > 0) {
+			explode();
 		}
 	}
 
 	public override void render(float x, float y) {
-		base.render(x,y);
-		if (anim == null || !visible) return;
+		base.render(x, y);
 
 		Point center = getCenterPos();
-
-		Global.sprites[animName].draw(
-			anim.frameIndex, center.x, center.y, xDir, yDir,
+		altAnim.draw(
+			altAnim.frameIndex, center.x, center.y, xDir, yDir,
 			null, alpha, 1, 1, zIndex
 		);
-	}
-
-	public override void onCollision(CollideData other) {
-		base.onCollision(other);
-		if (!ownedByLocalPlayer) {
-			return;
-		}
-		if (other.gameObject is KillZone) return;
-
-		var chr = other.gameObject as Character;
-		bool characterLand = (
-			chr != null && chr != bass && 
-			chr.canBeDamaged(bass.player.alliance, bass.player.id, projId)
-		);
-		
-		if (!landed && characterLand) {
-			if (characterLand) {
-				host = chr;
-				visible = false;
-			}
-			stopMoving(); 
-			playSound("remotemineStick", true);
-			landed = true;
-		}
 	}
 
 	public override void onDestroy() {
@@ -322,23 +290,26 @@ public class RemoteMineLandProj : Projectile {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-
-		if (anim != null) anim.destroySelf();
-		if (bass != null) bass.rMine = null!;
-
-		if (time >= maxTime && !exploded && landed) explode();
+		if (!exploded) {
+			explode();
+		}
 	}
 
 	public void explode() {
-		destroySelf();
-		if (ownedByLocalPlayer) {
-			new RemoteMineExplosionProj(bass, pos, xDir, damager.owner.getNextActorNetId(), true);
+		if (exploded) {
+			return;
+		}
+		if (!destroyed) {
+			destroySelf();
+		}
+		if (ownedByLocalPlayer && ownerActor != null) {
+			new RemoteMineExplosionProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
 			playSound("remotemineExplode", true);
 		}
 		exploded = true;
 	}
 
-	bool isColliding() {
+	public bool isColliding() {
 		List<CollideData> collideDatas = Global.level.getTerrainTriggerList(this, new Point(0, 1));
 		foreach (CollideData collideData in collideDatas) {
 			if (collideData.gameObject is Wall or MovingPlatform) {
@@ -353,29 +324,17 @@ public class RemoteMineLandProj : Projectile {
 		}
 		return false;
 	}
-
-	public override List<byte> getCustomActorNetData() {
-		return [Helpers.boolArrayToByte([
-			visible
-		])];
-	}
-	public override void updateCustomActorNetData(byte[] data) {
-		bool[] flags = Helpers.byteToBoolArray(data[0]);
-		visible = flags[0];
-	}
 }
-
 
 public class RemoteMineExplosionProj : Projectile {
 	int expTime;
 	Anim? part;
 	int animLap;
-	Bass? bass;
 
 	public RemoteMineExplosionProj(
-		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		Actor owner, Point pos, int xDir, ushort? netProjId,
 		bool rpc = false, Player? altPlayer = null
-	) : base (
+	) : base(
 		pos, xDir, owner, "remote_mine_explosion", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMineExplosion;
@@ -387,12 +346,6 @@ public class RemoteMineExplosionProj : Projectile {
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 60;
 
-		if (ownedByLocalPlayer) {
-			bass = ownerPlayer.character as Bass;
-			if (bass != null) {
-				bass.rMineExplosion = this;
-			}
-		}
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
@@ -406,7 +359,6 @@ public class RemoteMineExplosionProj : Projectile {
 
 	public override void update() {
 		base.update();
-
 		expTime++;
 
 		if (part == null) {
@@ -416,23 +368,23 @@ public class RemoteMineExplosionProj : Projectile {
 				if (!ownedByLocalPlayer) return;
 				part = new Anim(pos, "remote_mine_explosion_part", xDir,
 					damager.owner.getNextActorNetId(), true, true);
-				
+
 				switch (animLap) {
-					case 1: 
-					part.vel = Point.createFromByteAngle(23 + (i * 21)) * 180;
-					break;
+					case 1:
+						part.vel = Point.createFromByteAngle(23 + (i * 21)) * 180;
+						break;
 
 					case 2:
-					part.vel.y = 90 * (i - 2);
-					break;
+						part.vel.y = 90 * (i - 2);
+						break;
 
 					case 3:
-					part.vel = Point.createFromByteAngle(64 + (i * 16)) * 180;
-					break;
+						part.vel = Point.createFromByteAngle(64 + (i * 16)) * 180;
+						break;
 
 					default:
-					part.vel = Point.createFromByteAngle(0 + (i * 16)) * 180;
-					break;
+						part.vel = Point.createFromByteAngle(0 + (i * 16)) * 180;
+						break;
 				}
 			}
 		} else {
@@ -440,68 +392,6 @@ public class RemoteMineExplosionProj : Projectile {
 			else part.visible = false;
 
 			if (part.destroyed) part = null;
-		} 
-	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (bass != null) {
-			bass.rMineExplosion = null;
 		}
-	}
-}
-
-
-public class RemoteMineAnim : Anim {
-
-	Character? chara;
-	Player? player;
-	Anim? anim;
-	public RemoteMineAnim(
-		Character chara, Player player, ushort? netId
-	) : base(
-		chara.getCenterPos(), "remote_mine_proj", chara.xDir, netId, false, true
-	) {
-		zIndex = chara.zIndex + 3;
-		frameSpeed = 0;
-		if (ownedByLocalPlayer) {
-			this.chara = chara;
-			this.player = player;
-		} 
-	}
-
-	public override void onStart() {
-		base.onStart();
-		if (player == null) return;
-
-		anim = new Anim(
-			getCenterPos(), "remote_mine_anim", xDir, player.getNextActorNetId(), false
-		) { visible = false };
-	}
-
-	public override void update() {
-		base.update();
-		if (chara != null) {
-			changePos(chara.getCenterPos());
-		}
-
-		if (time >= 10) destroySelf();
-	}
-
-	public override void render(float x, float y) {
-		base.render(x,y);
-		if (anim == null) return;
-
-		Point center = getCenterPos();
-
-		Global.sprites[anim.sprite.name].draw(
-			anim.frameIndex, center.x, center.y, xDir, yDir,
-			null, alpha, 1, 1, zIndex
-		);
-	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		anim?.destroySelf();
 	}
 }

@@ -196,10 +196,6 @@ public partial class Character : Actor, IDamagable {
 	public float burnStunStacks;
 	public float burnStunTime;
 
-	//Remote Mine
-	public Dictionary<int, Projectile> rMines = new();
-	public Anim? rMineAnim;
-
 	// Ice
 	public float slowdownTime;
 
@@ -3313,8 +3309,6 @@ public partial class Character : Actor, IDamagable {
 		chargeEffect?.destroy();
 		chargeSound?.destroy();
 		parasiteAnim?.destroySelf();
-		rMines.Clear();
-		rMineAnim?.destroySelf();
 
 		// This ensures that the "onExit" charState function
 		// Can do any cleanup it needs to do without having to copy-paste that code here too.
@@ -3373,30 +3367,6 @@ public partial class Character : Actor, IDamagable {
 		stopMoving();
 		useGravity = true;
 		playSound("hit");
-	}
-
-	public void addRMine(Player attacker, Projectile mine) {
-		if (!ownedByLocalPlayer) return;
-		if (!rMines.ContainsKey(attacker.id)) {
-			rMines.Add(attacker.id, mine);
-		}
-		
-		if (rMineAnim == null) {
-			rMineAnim = new RemoteMineAnim(this, player, player.getNextActorNetId());
-		}
-	}
-
-	public void removeRMine(Player attacker) {
-		if (!ownedByLocalPlayer) return;
-
-		if (rMines.ContainsKey(attacker.id)) {
-			rMines.Remove(attacker.id);
-
-			if (rMines.Count <= 0 && rMineAnim != null) {
-				rMineAnim.destroySelf();
-				rMineAnim = null;
-			}
-		}
 	}
 
 	// PARASITE SECTION

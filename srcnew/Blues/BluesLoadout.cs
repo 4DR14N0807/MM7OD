@@ -81,6 +81,17 @@ public class BluesWeaponMenu : IMainMenu {
 		targetLoadout = Options.main.bluesLoadout;
 		specialWeapon = targetLoadout.specialWeapon;
 		latestIndex = specialWeapon;
+
+		specialWeapons = [
+			new NeedleCannon(),
+			new HardKnuckle(),
+			new SearchSnake(),
+			new SparkShock(),
+			new GravityHold(),
+			new PowerStone(),
+			new GyroAttack(),
+			new StarCrash(),
+		];
 	}
 
 	public void update() {

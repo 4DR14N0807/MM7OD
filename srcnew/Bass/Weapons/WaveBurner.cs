@@ -5,6 +5,9 @@ namespace MMXOnline;
 
 public class WaveBurner : Weapon {
 	public static WaveBurner netWeapon = new();
+	public float shootAngle;
+	public float angleMod = 1;
+	public float bloomTimer = 0;
 
 	public WaveBurner() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -28,12 +31,27 @@ public class WaveBurner : Weapon {
 		];
 	}
 
+	public override void charLinkedUpdate(Character character, bool isAlwaysOn) {
+		base.charLinkedUpdate(character, isAlwaysOn);
+
+		if (shootAngle != 0 && character.currentWeapon != this ||
+			!character.player.input.isHeld(Control.Shoot, character.player)
+		) {
+			bloomTimer -= character.speedMul;
+			if (bloomTimer <= 0) {
+				shootAngle = 0;
+				angleMod *= -1;
+			}
+		}
+	}
+
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 		Bass bass = character as Bass ?? throw new NullReferenceException();
 		float shootAngle = bass.getShootAngle(true, true);
+		bloomTimer = 6;
 
 		if (character.isUnderwater()) {
 			new WaveBurnerUnderwaterProj(
@@ -46,12 +64,14 @@ public class WaveBurner : Weapon {
 			bass.yPushVel = pushVel.y;
 
 		} else {
-			
-			new WaveBurnerProj(bass, shootPos, shootAngle + bass.wBurnerAngle, player.getNextActorNetId(), true, player);
-			bass.wBurnerAngle += 3 * bass.wBurnerAngleMod;
-			if (Math.Abs(bass.wBurnerAngle) > 16) {
-				bass.wBurnerAngleMod *= -1;
-				bass.wBurnerAngle = 16 * MathF.Sign(bass.wBurnerAngle);
+			new WaveBurnerProj(
+				bass, shootPos, shootAngle + this.shootAngle,
+				player.getNextActorNetId(), true, player
+			);
+			this.shootAngle += 3 * angleMod;
+			if (Math.Abs(this.shootAngle) >= 16) {
+				angleMod *= -1;
+				this.shootAngle = 16 * MathF.Sign(this.shootAngle);
 			}
 
 			if (soundTime <= 0) {

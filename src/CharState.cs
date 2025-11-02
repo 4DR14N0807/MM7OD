@@ -146,9 +146,6 @@ public class CharState {
 			character.useGravity = false;
 			character.stopMoving();
 		}
-		if (this is not Run and not Idle and not Taunt) {
-			//player.delayETank();
-		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
 		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick and not TenguBladeState && (!oldState.canStopJump || oldState.stoppedJump)) {
@@ -677,7 +674,17 @@ public class Idle : CharState {
 	}
 }
 
-public class Run : CharState {
+public abstract class BaseRun : CharState {
+	public BaseRun(
+		string sprite, string shootSprite = "",
+		string attackSprite = "", string transitionSprite = "", string transShootSprite = ""
+	) : base(
+		sprite, shootSprite, attackSprite, transitionSprite, transShootSprite
+	) {
+	}
+}
+
+public class Run : BaseRun {
 	public bool skipIntro;
 
 	public Run(bool skipIntro = false) : base("run", "run_shoot", "attack", "run_start", "run_shoot_start") {
@@ -951,7 +958,7 @@ public class Dash : CharState {
 		// Timer.
 		dashTime += character.speedMul;
 		if (dashSpeed < maxDashSpeed) {
-			dashSpeed += 0.25f;
+			dashSpeed += 0.75f;
 			if (dashSpeed > maxDashSpeed) {
 				dashSpeed = maxDashSpeed;
 			}
@@ -1015,19 +1022,9 @@ public class AirDash : CharState {
 			character.useGravity = true;
 			dashTime = 0;
 			stop = true;
-			if (character is not Doppma or CmdSigma) {
-				sprite = "dash_end";
-				shootSprite = "dash_end_shoot";
-				character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
-			}
-			else if (character is Doppma) {
-				character.changeSpriteFromName("fall", false);
-				exitOnLanding = true;
-			}
-			if (character is CmdSigma) {
-				character.changeSpriteFromName("fall", false);
-				exitOnLanding = true;
-			}
+			sprite = "dash_end";
+			shootSprite = "dash_end_shoot";
+			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
 		}
 		if (dashTime < 4 || stop) {
 			if (inputXDir != 0 && inputXDir != dashDir) {

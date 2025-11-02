@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -51,7 +51,7 @@ public class SARocketPunch : Weapon {
 		Point shootPos = rock.getShootPos();
 
 		if (chargeLevel >= 2) {
-			if (rock.grounded && rock.charState is not Run) rock.changeState(new SARocketPunchState(), true);
+			if (rock.grounded && rock.charState is not BaseRun) rock.changeState(new SARocketPunchState(), true);
 			else new SARocketPunchProj(rock, shootPos, xDir, player.getNextActorNetId(), true, player);
 			rock.playSound("super_adaptor_punch", sendRpc: true);
 			rock.setShootAnim();

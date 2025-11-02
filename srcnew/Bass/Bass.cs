@@ -10,18 +10,7 @@ public class Bass : Character {
 	// Weapons.
 	public BassLoadout loadout;
 	public float weaponCooldown;
-	public CopyVisionClone? cVclone;
-	public SpreadDrillProj? sDrill;
-	public SpreadDrillMediumProj? sDrillM;
-	public Projectile? rMine;
-	public RemoteMineExplosionProj? rMineExplosion;
-	public LoopingSound? wBurnerSound;
-	public float wBurnerAngle;
-	public int wBurnerAngleMod = 1;
 	public float tBladeDashCooldown;
-	public int cardsCount = 4;
-	public float showNumberTime;
-	public int lastCardNumber;
 	public SuperBassRP? sbRocketPunch;
 	public bool armless;
 
@@ -156,7 +145,6 @@ public class Bass : Character {
 
 		Helpers.decrementFrames(ref weaponCooldown);
 		Helpers.decrementFrames(ref tBladeDashCooldown);
-		Helpers.decrementFrames(ref showNumberTime);
 		if (refillFly()) {
 			Helpers.decrementFrames(ref flyTime);
 		}
@@ -168,11 +156,6 @@ public class Bass : Character {
 			if (evilEnergy[i] > MaxEvilEnergy) evilEnergy[i] = MaxEvilEnergy;
 		}
 		player.changeWeaponControls();
-
-		if (player.weapon is not WaveBurner || !player.input.isHeld(Control.Shoot, player)) {
-			wBurnerAngleMod = 1;
-			wBurnerAngle = 0;
-		}
 
 		// For the shooting animation.
 		if ((shootAnimTime > 0) || charState is LadderClimb) {
@@ -651,7 +634,7 @@ public class Bass : Character {
 		return 2;
 	}
 	public override float getDashSpeed() {
-		return 3.45f * getRunDebuffs();
+		return 3.25f * getRunDebuffs();
 	}
 
 	public override float getFallSpeed(bool checkUnderwater = true) {
@@ -734,25 +717,8 @@ public class Bass : Character {
 			shaders.Add(palette);
 		}
 		shaders.AddRange(baseShaders);
-		
+
 		return shaders;
-	}
-
-	void removeLastingProjs() {
-		if (rMine != null) {
-			if (rMine is RemoteMineProj m) m.explode();
-			else if (rMine is RemoteMineLandProj lm) lm.explode();
-		}
-	}
-
-	public override void destroySelf(
-		string spriteName = "", string fadeSound = "",
-		bool disableRpc = false, bool doRpcEvenIfNotOwned = false,
-		bool favorDefenderProjDestroy = false
-	) {
-		removeLastingProjs();
-
-		base.destroySelf(spriteName, fadeSound, disableRpc, doRpcEvenIfNotOwned, favorDefenderProjDestroy);
 	}
 
 	public override List<byte> getCustomActorNetData() {

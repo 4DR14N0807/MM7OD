@@ -30,7 +30,7 @@ public class Damager {
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
-		{ (int)BluesProjIds.LemonAngled, 2 },
+		{ (int)BluesProjIds.LemonAngled, 3 },
 		{ (int)BluesProjIds.LemonOverdrive, 3 },
 	};
 	
@@ -221,10 +221,6 @@ public class Damager {
 				case (int)RockProjIds.DangerWrap:
 					damagerMessage = onDWrapDamage(damagable, owner);
 					break;
-				case (int)BassProjIds.RemoteMine:
-				case (int)BassProjIds.RemoteMineLand:
-					damagerMessage = onRMineDamage(damagable, owner, proj);
-					break;
 			}
 			if (damagerMessage?.flinch != null) flinch = damagerMessage.flinch.Value;
 			if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
@@ -244,10 +240,6 @@ public class Damager {
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
 					character.root(60, 100, owner.id);
-					break;
-				}
-				case (int)BassProjIds.RemoteMineExplosion: {
-					character.removeRMine(owner);
 					break;
 				}
 				case (int)BassProjIds.IceWall: {
@@ -549,10 +541,6 @@ public class Damager {
 		return null;
 	}
 
-	public static DamagerMessage? onRMineDamage(IDamagable damagable, Player attacker, Projectile proj) {
-		(damagable as Character)?.addRMine(attacker, proj);
-		return null;
-	}
 	// Count for kills and assist even if it does 0 damage.
 	public static bool alwaysAssist(int? projId) {
 		if (projId == null) {

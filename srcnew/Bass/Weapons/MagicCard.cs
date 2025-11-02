@@ -99,8 +99,6 @@ public class MagicCard : Weapon {
 			if (effect >= 2) {
 				addAmmo(-effect + 1, player);
 			}
-			bass.showNumberTime = 60;
-			bass.lastCardNumber = effect;
 			bass.playSound(effectsSounds[effect], true);
 			int[] colors = [
 				(int)FontType.WhiteSmall,

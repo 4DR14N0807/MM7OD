@@ -1829,22 +1829,29 @@ public class GameMode {
 
 	public void drawWeaponSlot(Weapon weapon, float x, float y, bool selected = false) {
 		Global.sprites[weapon.iconSprite].drawToHUD(weapon.weaponSlotIndex, x, y);
-		
+
 		bool canShoot = weapon.canShoot(0, mainPlayer);
+		FontType textColor = FontType.WhiteSmall;
 		if (!canShoot && (selected || weapon.ammo > 0)) {
 			drawWeaponStateOverlay(x, y, 2);
+			textColor = FontType.RedSmall;
 		} else if (canShoot && weapon.shootCooldown > 0 && weapon.fireRate > 10 && weapon.drawCooldown) {
 			drawWeaponStateOverlay(x, y, 1);
+			textColor = FontType.YellowSmall;
 		} else if (selected) {
 			drawWeaponStateOverlay(x, y, 0);
+			textColor = FontType.GreenSmall;
 		}
 
 		string text = "";
 		if (weapon is DangerWrap dwrap && dwrap.dangerMines.Count > 0) {
 			text = dwrap.dangerMines.Count.ToString();
 		}
-		else if (weapon is RemoteMine rMine && rMine.mine?.destroyed == false) {
-			text = "1";
+		else if (weapon is RemoteMine rMine) {
+			int count = rMine.landedMines.Count;
+			if (count > 0) {
+				text = count.ToString();
+			}
 		}
 		else if (weapon is MagicCard magicCard && magicCard.cardCount > 1) {
 			text = magicCard.cardCount.ToString();
@@ -1853,10 +1860,7 @@ public class GameMode {
 			}
 		}
 		if (text != "") {
-			Fonts.drawText(
-				selected ? FontType.GreenSmall : FontType.WhiteSmall,
-				text, x + 8, y, Alignment.Right
-			);
+			Fonts.drawText(textColor, text, x + 8, y, Alignment.Right);
 		}
 
 		if (weapon.ammo < weapon.maxAmmo && weapon.drawAmmo) {
@@ -2404,7 +2408,7 @@ public class GameMode {
 	public void drawDpsIfSet(int yPos) {
 		if (!string.IsNullOrEmpty(dpsString)) {
 			Fonts.drawText(
-				FontType.Blue, dpsString, 5, yPos
+				FontType.Blue, dpsString, 44, yPos
 			);
 		}
 	}

@@ -65,7 +65,7 @@ public class AI {
 
 	public void doJump(float jumpTime = 0.75f) {
 		if (this.jumpTime == 0) {
-			if (character is Blues blues && blues.grounded && blues.charState is Idle or Run) {
+			if (character is Blues blues && blues.grounded && blues.charState is Idle or BaseRun) {
 				blues.isShieldActive = false;
 				if (blues.canShieldDash() && !blues.aiJumpedOnFrame &&
 					Global.level.getGroundPosNoKillzone(character.pos.addxy(16 * character.xDir, 0)) == null

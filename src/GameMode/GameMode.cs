@@ -675,7 +675,7 @@ public class GameMode {
 		if (level.isNon1v1Elimination() && virusStarted > 0) {
 			addMapNavpoint("GFlag", safeZonePoint);
 		}
-
+		/*
 		if (level.mainPlayer.isX && level.mainPlayer.character?.charState is XReviveStart xrs) {
 			Character chr = level.mainPlayer.character;
 
@@ -710,6 +710,7 @@ public class GameMode {
 				Global.sprites["drlight_portrait"].drawToHUD(index, 15, boxStartY + boxHeight * 0.5f);
 			}
 		}
+		*/
 	}
 
 	public void setHUDErrorMessage(Player player, string message, bool playSound = true, bool resetCooldown = false, FontType? overrideFont = null) {

@@ -135,6 +135,7 @@ public class Projectile : Actor {
 		);
 		ownerActor = owner;
 		damager = new Damager(ownerPlayer, 0, 0, 0);
+		ownerActor = owner;
 		this.xDir = xDir;
 		if (Global.level.gameMode.isTeamMode && Global.level.mainPlayer != ownerPlayer &&
 			this is not NapalmPartProj or FlameBurnerProj
@@ -729,7 +730,7 @@ public class Projectile : Actor {
 		Point pos, Actor owner, Player player, ushort? netProjId,
 		float angle, params byte[] extraData
 	) {
-		int byteAngle = MathInt.Round(angle % 256f);
+		int byteAngle = MathInt.Round(Helpers.to256(angle));
 		rpcCreateHelper(pos, player, netProjId, byteAngle, true, owner, extraData);
 	}
 	public virtual void rpcCreateAngle(

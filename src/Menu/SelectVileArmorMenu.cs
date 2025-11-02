@@ -57,7 +57,10 @@ public class SelectVileArmorMenu : IMainMenu {
 		var mainPlayer = Global.level.mainPlayer;
 		var gameMode = Global.level.gameMode;
 		DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
-		Global.sprites["menu_viledefault"].drawToHUD(0, 310, 110);
+		DrawWrappers.DrawTextureHUD(
+			Global.textures[CVile?.isVileMK2 == true ? "vileNewMenuMK2" : "vileNewMenuDefault"],
+			Global.halfScreenW + 60, Global.halfScreenH - 103
+		);
 
 		if (!Global.level.server.disableHtSt && Global.frameCount % 60 < 30) {
 			Fonts.drawText(FontType.DarkPurple, "<", 18, Global.halfScreenH + 10, Alignment.Center);

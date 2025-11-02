@@ -20,7 +20,7 @@ public class CharState {
 	public string airSprite = "";
 	public string fallSprite = "";
 	public bool airSpriteReset;
-	public bool wasGrounded = true;
+	public bool? wasGrounded = null;
 	public Point busterOffset;
 	public Character character = null!;
 	public Collider? lastLeftWallCollider;
@@ -147,7 +147,6 @@ public class CharState {
 			character.stopMoving();
 		}
 		wasGrounded = character.grounded && character.vel.y >= 0;
-		wasGrounded = character.grounded;
 		if (this is not Jump and not WallKick and not TenguBladeState && (!oldState.canStopJump || oldState.stoppedJump)) {
 			stoppedJump = true;
 		}
@@ -159,7 +158,9 @@ public class CharState {
 	public virtual bool canEnter(Character character) {
 		if (character.charState is InRideArmor &&
 			!(this is Die || this is Idle || this is Jump || this is Fall || this is StrikeChainHooked || this is ParasiteCarry || this is VileMK2Grabbed || this is DarkHoldState ||
-			  this is NecroBurstAttack || this is UPGrabbed || this is WhirlpoolGrabbed || this is DeadLiftGrabbed || Helpers.isOfClass(this, typeof(GenericGrabbedState)))) {
+			  this is UPGrabbed || this is WhirlpoolGrabbed || this is DeadLiftGrabbed || Helpers.isOfClass(this, typeof(GenericGrabbedState)))
+		) {
+			//if (character.currentWeapon is NecroBurst && character.charState is LaserAttack) return false;
 			return false;
 		}
 		if (character.charState is DarkHoldState dhs && dhs.stunTime > 0) {
@@ -182,6 +183,10 @@ public class CharState {
 	}
 
 	public virtual void render(float x, float y) {
+	}
+
+	public virtual void preUpdate() {
+		wasGrounded = character.grounded;
 	}
 
 	public virtual void update() {
@@ -258,8 +263,12 @@ public class CharState {
 		}
 	}
 
+	public virtual void postUpdate() {
+		airTrasition();
+	}
+
 	public virtual void airTrasition() {
-		if (airSprite != "" && !character.grounded && wasGrounded && sprite == landSprite) {
+		if (airSprite != "" && !character.grounded && wasGrounded != false && sprite == landSprite) {
 			sprite = airSprite;
 			if (character.vel.y >= 0 && fallSprite != "") {
 				sprite = fallSprite;
@@ -274,11 +283,7 @@ public class CharState {
 				character.sprite.frameIndex = character.sprite.totalFrameNum - 1;
 				character.sprite.frameTime = character.sprite.getCurrentFrame().duration;
 			}
-		}
-		else if (
-			landSprite != "" && character.grounded && !wasGrounded &&
-			(sprite == airSprite || sprite == fallSprite)
-		) {
+		} else if (landSprite != "" && character.grounded && wasGrounded != true && sprite == airSprite) {
 			character.playAltSound("land", sendRpc: true, altParams: "larmor");
 			sprite = landSprite;
 			int oldFrameIndex = character.frameIndex;
@@ -407,8 +412,7 @@ public class WarpIn : CharState {
 			character.frameSpeed = 1;
 			if (character.isAnimOver()) {
 				character.grounded = true;
-				character.pos.y = destY;
-				character.pos.x = destX;
+				character.changePos(destX, destY);
 				character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate));
 			}
 			return;
@@ -579,7 +583,7 @@ public class WarpOut : CharState {
 			character.playSound("warpOut", forcePlay: true, sendRpc: true);
 		}
 
-		warpAnim.pos.y -= Global.spf * 1000;
+		warpAnim.incPos(0, -16 * character.speedMul);
 
 		if (character.pos.y <= destY) {
 			warpAnim.destroySelf();
@@ -911,9 +915,15 @@ public class Dash : CharState {
 		enterSound = "slide";
 	}
 
+	public override void preUpdate() {
+		dashTime += character.speedMul;
+		dustTime += character.speedMul;
+	}
+
 	public override void update() {
 		base.update();
-		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
+
+		if (!player.isAI && !stop && !player.input.isHeld(initialDashButton, player)) {
 			dashTime = 900;
 		}
 		int inputXDir = player.input.getXDir(player);
@@ -952,8 +962,6 @@ public class Dash : CharState {
 				"dust", dashDir, player.getNextActorNetId(), true,
 				sendRpc: true
 			);
-		} else {
-			dustTime += character.speedMul;
 		}
 		// Timer.
 		dashTime += character.speedMul;
@@ -980,7 +988,6 @@ public class Dash : CharState {
 		base.onEnter(oldState);
 		dashDir = character.xDir;
 		character.isDashing = true;
-
 		dashSpeed = 1.5f;
 		maxDashSpeed = character.getDashSpeed();
 	}
@@ -1010,6 +1017,11 @@ public class AirDash : CharState {
 		enterSoundArgs = "larmor";
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		dashTime += character.speedMul;
+	}
+
 	public override void update() {
 		base.update();
 		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
@@ -1017,6 +1029,11 @@ public class AirDash : CharState {
 		}
 		int inputXDir = player.input.getXDir(player);
 		bool dashHeld = player.input.isHeld(initialDashButton, player);
+
+		if (character.canWallClimb() && character.isCWallClose != null && inputXDir == character.xDir) {
+			character.changeToIdleOrFall();
+			return;
+		}
 
 		if (dashTime > 28 && !stop) {
 			character.useGravity = true;
@@ -1033,20 +1050,17 @@ public class AirDash : CharState {
 			}
 		}
 		// Dash regular speed.
-		if (dashTime >= 4 && !stop) {
+		if (dashTime >= 4 && !stop || stop && dashHeld) {
 			character.moveXY(character.getDashSpeed() * dashDir, 0);
 		}
-		// End move.
-		else if (stop && inputXDir != 0) {
-			character.moveXY(character.getDashSpeed() * inputXDir, 0);
-		}
-		// Speed at start and end.
+		// Dash start.
 		else if (!stop) {
 			character.moveXY(Physics.DashStartSpeed * character.getRunDebuffs() * dashDir, 0);
 		}
-		// Timer
-		dashTime += character.speedMul;
-
+		// Air move.
+		else if (stop && inputXDir != 0) {
+			character.moveXY(character.getDashSpeed() * inputXDir, 0);
+		}
 		// End.
 		if (stop && character.isAnimOver()) {
 			character.changeToIdleOrFall();
@@ -1089,6 +1103,7 @@ public class WallSlide : CharState {
 		this.wallDir = wallDir;
 		this.wallCollider = wallCollider;
 		accuracy = 2;
+		normalCtrl = true;
 		attackCtrl = true;
 		enterSound = "wallLand";
 		enterSoundArgs = "larmor";
@@ -1222,6 +1237,8 @@ public class WallSlideAttack : CharState {
 }
 
 public class WallKick : CharState {
+	public float dashThreshold = 0.2f;
+
 	public WallKick() : base("wall_kick", "wall_kick_shoot") {
 		accuracy = 5;
 		exitOnLanding = true;
@@ -1238,6 +1255,10 @@ public class WallKick : CharState {
 		base.update();
 		if (character.vel.y > 0) {
 			character.changeState(character.getFallState());
+		}
+		if (!character.isDashing && stateTime < dashThreshold && player.input.isHeld(Control.Dash, player)) {
+			character.dashedInAir++;
+			character.isDashing = true;
 		}
 	}
 }

@@ -138,6 +138,8 @@ public partial class Level {
 	public ShaderWrapper foregroundShader;
 	public Texture foregroundShaderImage;
 
+	public float mapVersion;
+
 	public List<Player> players = new List<Player>();
 	public Player mainPlayer;
 	public Player? otherPlayer {
@@ -446,16 +448,19 @@ public partial class Level {
 			int yDir = flipY ? -1 : 1;
 			if (instance.points != null) {
 				foreach (var point in instance.points) {
-					points.Add(new Point((float)point.x, (float)point.y));
+					points.Add(new Point((float)point.x, (float)point.y).round());
 				}
 			}
-			Point pos = new Point((float)(instance.pos?.x ?? 0), (float)(instance.pos?.y ?? 0));
+			Point pos = new Point((float)(instance.pos?.x ?? 0), (float)(instance.pos?.y ?? 0)).round();
 
 			if (objectName == "Collision Shape") {
 				Wall wall = new Wall(instanceName, points);
 
 				float moveX = instance?.properties?.moveX ?? 0;
-				wall.moveX = moveX / 60f;
+				if (mapVersion == 0) {
+					moveX /= 60;
+				}
+				wall.moveX = moveX;
 
 				if (instance?.properties?.slippery != null && instance.properties.slippery == true) {
 					wall.slippery = true;
@@ -469,14 +474,14 @@ public partial class Level {
 				if (instance?.properties?.pitWall != null && instance.properties.pitWall == true) {
 					isPitWall = true;
 					wall.collider._shape.points[2] = (
-						new Point(wall.collider._shape.points[2].x, Global.level.height + 45)
+						new Point(wall.collider._shape.points[2].x, Global.level.height + 45).round()
 					);
 					wall.collider._shape.points[3] = (
-						new Point(wall.collider._shape.points[3].x, Global.level.height + 45)
+						new Point(wall.collider._shape.points[3].x, Global.level.height + 45).round()
 					);
-					var rect = wall.collider.shape.getRect();
-					var newRect = new Rect(rect.x1, rect.y2, rect.x2, rect.y2 + 1000);
-					var pitWall = new Wall(wall.name + "Pit", newRect.getPoints());
+					Rect rect = wall.collider.shape.getRect();
+					Rect newRect = new Rect(rect.x1, rect.y2, rect.x2, rect.y2 + 1000);
+					Wall pitWall = new Wall(wall.name + "Pit", newRect.getPoints());
 					pitWall.collider.isClimbable = false;
 					addGameObject(pitWall);
 				}
@@ -537,6 +542,9 @@ public partial class Level {
 				float? damage = instance.properties.damage;
 				bool flinch = instance.properties.flinch ?? false;
 				float hitCooldown = instance.properties.hitCooldown ?? 1;
+				if (mapVersion == 0) {
+					hitCooldown *= 60;
+				}
 
 				var killZone = new KillZone(instanceName, points, killInvuln, damage, flinch, hitCooldown);
 				addGameObject(killZone);
@@ -547,9 +555,16 @@ public partial class Level {
 				addGameObject(sandZone);
 			} else if (objectName == "Move Zone") {
 				if (levelData.name != "giantdam" || enableGiantDamPropellers()) {
+					float moveX = (float?)instance.properties.moveX ?? 0;
+					float moveY = (float?)instance.properties.moveY ?? 0;
+
+					if (mapVersion == 0) {
+						moveX /= 60;
+						moveY /= 60;
+					}
 					var moveZone = new MoveZone(
 						instanceName, points,
-						(float)instance.properties.moveX / 60f, (float)instance.properties.moveY / 60f
+						moveX, moveY
 					);
 					addGameObject(moveZone);
 				}
@@ -1433,7 +1448,7 @@ public partial class Level {
 
 		// Collision shenanigans.
 		collidedGObjs.Clear();
-		(int x, int y)[] arrayGrid = populatedGrids.OrderBy(grid => grid.x + grid.y * 8192).ToArray();
+		(int x, int y)[] arrayGrid = populatedGrids.OrderBy(grid => grid.x + grid.y * 4096).ToArray();
 		foreach ((int x, int y)gridData in arrayGrid) {
 			// Initalize data.
 			List<GameObject> currentGrid = new(grid[gridData.x, gridData.y]);

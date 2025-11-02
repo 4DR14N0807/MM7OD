@@ -53,27 +53,13 @@ public partial class Actor : GameObject {
 	public List<Projectile> globalProjs = new List<Projectile>();
 	public Dictionary<string, string> spriteFrameToSounds = new Dictionary<string, string>();
 
-	private int internal_xDir = 1;
-	private int internal_yDir = 1;
-	public int xDir {
-		get => internal_xDir;
-		set {
-			if (value == 0) {
-				throw new Exception("Object xDir cannot be 0");
-			}
-			internal_xDir = value;
-		}
+	public int xDir; //-1 or 1
+	public int yDir;
+	public Point pos {
+		get => unsafePos;
+		set => changePos(value);
 	}
-	public int yDir {
-		get => internal_yDir;
-		set {
-			if (value == 0) {
-				throw new Exception("Object yDir cannot be 0");
-			}
-			internal_yDir = value;
-		}
-	}
-	public Point pos; //Current location
+	public Point unsafePos; //Current location
 	public Point prevPos;
 	public Point deltaPos;
 	public Point stackedMoveDelta;
@@ -223,7 +209,7 @@ public partial class Actor : GameObject {
 			sprite.name = "null";
 		}
 		// Initalize other stuff.
-		this.pos = pos;
+		unsafePos = pos;
 		prevPos = pos;
 		/*
 		if (Global.debug && Global.serverClient != null && netId != null
@@ -633,6 +619,7 @@ public partial class Actor : GameObject {
 			timeStopTime = 0;
 			sprite.time += Global.spf;
 		}
+
 		if (timeStopTime > 0) {
 			timeStopTime--;
 			if (timeStopTime <= 0) {
@@ -681,14 +668,11 @@ public partial class Actor : GameObject {
 		bool wading = isWading();
 		bool underwater = isUnderwater();
 
-		var chr = this as Character;
-		var ra = this as RideArmor;
-
 		if (locallyControlled) {
 			localUpdate(underwater);
 		}
 
-		if (this is RideChaser && isWading()) {
+		if (this is RideChaser && wading) {
 			grounded = true;
 			if (vel.y > 0) vel.y = 0;
 		}
@@ -1897,6 +1881,7 @@ public partial class Actor : GameObject {
 	public const int labelNameOffY = 10;
 
 	public float currentLabelY;
+	public Point lastGroundedPos;
 
 	public void deductLabelY(float amount) {
 		currentLabelY -= amount;

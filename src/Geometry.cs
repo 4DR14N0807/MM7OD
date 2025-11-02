@@ -24,13 +24,13 @@ public class Geometry : GameObject {
 	public virtual void preUpdate() {}
 	public virtual void update() {}
 	public virtual void physicsUpdate() {}
-	public virtual void postUpdate() {}
-
 	public virtual void statePreUpdate() { }
 	public virtual void stateUpdate() { }
 	public virtual void statePostUpdate() { }
-
-	public virtual void netUpdate() {}
+	public virtual void netUpdate() { }
+	public void postUpdate() { }
+	public virtual void onCollision(CollideData other) { }
+	public void onStart() { }
 
 	public virtual void render(float x, float y) {
 		if (Global.showHitboxes && this is Wall) {
@@ -80,13 +80,6 @@ public class Geometry : GameObject {
 				);
 			}
 		}
-	}
-
-	public virtual void onCollision(CollideData other) {
-
-	}
-
-	public void onStart() {
 	}
 
 	public List<Collider> getAllColliders() {

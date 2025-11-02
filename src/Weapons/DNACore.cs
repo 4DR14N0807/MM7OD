@@ -162,10 +162,6 @@ public class DNACore : AxlWeapon {
 		sprite = "axl_arm_pistol";
 	}
 
-	public override void axlShoot(
-		Player player, AxlBulletType axlBulletType = AxlBulletType.Normal,
-		int? overrideChargeLevel = null
-	) {
-		
+	public override void axlShoot(Character character, int[] args) {
 	}
 }

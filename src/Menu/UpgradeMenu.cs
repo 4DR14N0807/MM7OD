@@ -132,9 +132,9 @@ public class UpgradeMenu : IMainMenu {
 			if (wTankTargetIndex < 0 ) wTankTargetIndex = wTankTargets.Count - 1;
 
 			if (mainPlayer.realCharNum == 0) {
-				if (mainPlayer.canUpgradeXArmor()) {
-					UpgradeArmorMenu.xGame = 3;
-					Menu.change(new UpgradeArmorMenu(prevMenu));
+				if (mainPlayer.canUpgradeXArmor()) {		
+					UpgradeArmorMenu.xGame = 1;
+					Menu.change(new UpgradeArmorMenu(this));
 					onUpgradeMenu = false;
 					return;
 				}
@@ -151,7 +151,7 @@ public class UpgradeMenu : IMainMenu {
 			if (mainPlayer.realCharNum == 0) {
 				if (mainPlayer.canUpgradeXArmor()) {
 					UpgradeArmorMenu.xGame = 1;
-					Menu.change(new UpgradeArmorMenu(prevMenu));
+					Menu.change(new UpgradeArmorMenu(this));
 					onUpgradeMenu = false;
 					return;
 				}

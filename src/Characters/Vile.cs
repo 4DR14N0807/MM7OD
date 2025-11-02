@@ -6,18 +6,14 @@ using System.Reflection;
 namespace MMXOnline;
 
 public class Vile : Character {
-	public const float maxCalldownMechCooldown = 2;
-	public float grabCooldown = 1;
-	public bool vulcanActive;
+	public const float maxCalldownMechCooldown = 120;
 	public float vulcanLingerTime;
 	public const int callNewMechCost = 5;
-	float mechBusterCooldown;
+	public float mechBusterCooldown;
 	public bool usedAmmoLastFrame;
 	public int buckshotDanceNum;
-	public float vileAmmoRechargeCooldown;
-	public bool isShootingLongshotGizmo;
-	public int longshotGizmoCount;
-	public float gizmoCooldown;
+	public bool isShootingGizmo;
+	public bool isShootingVulcan => vulcanLingerTime > 0;
 	public bool hasFrozenCastle;
 	public bool hasSpeedDevil;
 	public bool summonedGoliath;
@@ -27,35 +23,35 @@ public class Vile : Character {
 	public bool isVileMK5 { get { return vileForm == 2; } }
 	public float vileHoverTime;
 	public float vileMaxHoverTime = 6;
-
 	public const decimal frozenCastlePercent = 0.125m;
 	public const float speedDevilRunSpeed = 110;
 	public const int frozenCastleCost = 3;
 	public const int speedDevilCost = 3;
-	public bool lastFrameWeaponLeftHeld;
-	public bool lastFrameWeaponRightHeld;
 	public int cannonAimNum;
-	
 	public float calldownMechCooldown;
-
 	public VileAmmoWeapon energy = new();
 	public VileCannon cannonWeapon;
 	public VileLoadout loadout;
-	public Vulcan vulcanWeapon;
+	public VileVulcan vulcanWeapon;
 	public VileMissile missileWeapon;
 	public RocketPunch rocketPunchWeapon;
-	public Napalm napalmWeapon;
+	public VileNapalm napalmWeapon;
 	public VileBall grenadeWeapon;
 	public VileCutter cutterWeapon;
 	public VileFlamethrower flamethrowerWeapon;
 	public VileLaser laserWeapon;
 	public MechMenuWeapon rideMenuWeapon;
+	public Weapon downAirSpWeapon;
+	public Weapon airSpWeapon;
+	public Weapon downSpWeapon;
+	public float deadCooldown;
+	public const float maxdeadCooldown = 60;
 
 	public Vile(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 		bool isWarpIn = true, bool mk2VileOverride = false, bool mk5VileOverride = false,
-		VileLoadout loadout = null,
+		VileLoadout? loadout = null,
 		int? heartTanks = null, bool isATrans = false
 	) : base(
 		player, x, y, xDir, isVisible,
@@ -77,21 +73,78 @@ public class Vile : Character {
 		loadout ??= player.loadout.vileLoadout.clone();
 		this.loadout = loadout;
 
-		vulcanWeapon = new Vulcan((VulcanType)loadout.vulcan);
-		cannonWeapon = new VileCannon((VileCannonType)loadout.cannon);
-		missileWeapon = new VileMissile((VileMissileType)loadout.missile);
-		rocketPunchWeapon = new RocketPunch((RocketPunchType)loadout.rocketPunch);
-		napalmWeapon = new Napalm((NapalmType)loadout.napalm);
-		grenadeWeapon = new VileBall((VileBallType)loadout.ball);
-		cutterWeapon = new VileCutter((VileCutterType)loadout.cutter);
+		vulcanWeapon = loadout.vulcan switch {
+			1 => new DistanceNeedler(),
+			2 => new BuckshotDance(),
+			3 => new NoneVulcan(),
+			_ => new CherryBlast()
+		};
+		cannonWeapon = loadout.cannon switch {
+			1 => new FatBoy(),
+			2 => new LongShotGizmo(),
+			3 => new NoneCannon(),
+			_ => new FrontRunner()
+		};
+		missileWeapon = loadout.missile switch {
+			1 => new HumerusCrush(),
+			2 => new PopcornDemon(),
+			3 => new NoneMissile(),
+			_ => new ElectricShock()
+		};
+		rocketPunchWeapon = loadout.rocketPunch switch {
+			1 => new SpoiledBrat(),
+			2 => new InfinityGig(),
+			3 => new NoneRocketPunch(),
+			_ => new GoGetterRight()
+		};
+		napalmWeapon = loadout.napalm switch {
+			1 => new FireGrenade(),
+			2 => new SplashHit(),
+			3 => new NoneNapalm(),
+			_ => new RumblingBang()
+		};
+		grenadeWeapon = loadout.ball switch {
+			1 => new SpreadShot(),
+			2 => new PeaceOutRoller(),
+			3 => new NoneBall(),
+			_ => new ExplosiveRound()
+		};
+		cutterWeapon = loadout.cutter switch {
+			1 => new ParasiteSword(),
+			2 => new MaroonedTomahawk(),
+			3 => new NoneCutter(),
+			_ => new QuickHomesick()
+		};
 		flamethrowerWeapon = loadout.flamethrower switch {
-			-1 => new NoneFlamethrower(),
 			1 => new SeaDragonRage(),
 			2 => new DragonsWrath(),
-			3 => new NoneNapalmFlamethrower(),
+			3 => new NoneFlamethrower(),
 			_ => new WildHorseKick()
 		};
-		laserWeapon = new VileLaser((VileLaserType)loadout.laser);
+		downSpWeapon = loadout.downSpWeapon switch {
+			0 => napalmWeapon,
+			1 => grenadeWeapon,
+			2 => flamethrowerWeapon,
+			_ => napalmWeapon,
+		};
+		airSpWeapon = loadout.airSpWeapon switch {
+			0 => napalmWeapon,
+			1 => grenadeWeapon,
+			2 => flamethrowerWeapon,
+			_ => napalmWeapon,
+		};
+		downAirSpWeapon = loadout.downAirSpWeapon switch {
+			0 => napalmWeapon,
+			1 => grenadeWeapon,
+			2 => flamethrowerWeapon,
+			_ => napalmWeapon,
+		};
+		laserWeapon = loadout.laser switch {
+			1 => new NecroBurst(),
+			2 => new StraightNightmare(),
+			3 => new NoneLaser(),
+			_ => new RisingSpecter()
+		};
 		rideMenuWeapon = new MechMenuWeapon(VileMechMenuType.All);
 		hasFrozenCastle = player.frozenCastle;
 		hasSpeedDevil = player.speedDevil;
@@ -152,62 +205,39 @@ public class Vile : Character {
 
 	public override void preUpdate() {
 		base.preUpdate();
-		if (isVileMK1) {
-			altSoundId = AltSoundIds.X1;
-		} else if (isVileMK2 || isVileMK5) {
-			altSoundId = AltSoundIds.X3;
+
+		if (isVileMK1) altSoundId = AltSoundIds.X1;
+		else if (isVileMK2 || isVileMK5) altSoundId = AltSoundIds.X3;
+
+		if (!ownedByLocalPlayer) return;
+
+		if (!isShootingGizmo && !isShootingVulcan && !usedAmmoLastFrame) {
+			energy.addAmmo(0.25f * speedMul, player);
+		}
+		usedAmmoLastFrame = false;
+
+		if (isShootingVulcan && sprite.name.EndsWith("shoot"))
+			changeSpriteFromName(charState.shootSpriteEx, false);
+		else changeSpriteFromName(charState.sprite, resetFrame: false);
+
+		Helpers.decrementFrames(ref calldownMechCooldown);
+		Helpers.decrementFrames(ref mechBusterCooldown);
+		Helpers.decrementFrames(ref aiAttackCooldown);
+		Helpers.decrementFrames(ref vulcanLingerTime);
+		Helpers.decrementFrames(ref deadCooldown);
+		addWeaponHealAmmo();
+
+		if ((grounded || charState is LadderClimb or LadderEnd or WallSlide) && vileHoverTime > 0) {
+			vileHoverTime -= Global.spf * 6;
+			if (vileHoverTime < 0) vileHoverTime = 0;
 		}
 	}
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer) {
-			return;
-		}
-		if ((grounded || charState is LadderClimb || charState is LadderEnd || charState is WallSlide) &&
-			vileHoverTime > 0
-		) {
-			vileHoverTime -= Global.spf * 6;
-			if (vileHoverTime < 0) vileHoverTime = 0;
-		}
 
-		bool isShootingVulcan = vulcanLingerTime <= 0.1;
-		if (isShootingVulcan) {
-			vileAmmoRechargeCooldown = 0.15f;
-		}
-
-		if (vileAmmoRechargeCooldown > 0) {
-			Helpers.decrementTime(ref vileAmmoRechargeCooldown);
-		} else if (usedAmmoLastFrame) {
-			usedAmmoLastFrame = false;
-		} else if (!isShootingLongshotGizmo && !isShootingVulcan) {
-			energy.addAmmo(0.25f * speedMul, player);
-		}
-
-
-		if (energy.ammo >= energy.maxAmmo) {
-			weaponHealAmount = 0;
-		}
-		if (weaponHealAmount > 0 && alive) {
-			weaponHealTime += Global.spf;
-			if (weaponHealTime > 0.05) {
-				weaponHealTime = 0;
-				weaponHealAmount--;
-				energy.addAmmo(1, player);
-				if (isVileMK1) {
-					playSound("heal", forcePlay: true, true);
-				} else {
-					playSound("healX3", forcePlay: true, true);
-				}
-			}
-		}
-
-		if (vulcanLingerTime <= 0.1f && vulcanWeapon.shootCooldown == 0f) {
-			vulcanLingerTime += Global.spf;
-			if (vulcanLingerTime > 0.1f && sprite.name.EndsWith("shoot")) {
-				changeSpriteFromName(charState.sprite, resetFrame: false);
-			}
-		}
+		if (!ownedByLocalPlayer) return;
+		
 		cannonWeapon.update();
 		vulcanWeapon.update();
 		missileWeapon.update();
@@ -218,23 +248,12 @@ public class Vile : Character {
 		laserWeapon.update();
 		flamethrowerWeapon.update();
 
-		if (calldownMechCooldown > 0) {
-			calldownMechCooldown -= Global.spf;
-			if (calldownMechCooldown < 0) calldownMechCooldown = 0;
-		}
-		Helpers.decrementTime(ref grabCooldown);
-		Helpers.decrementTime(ref mechBusterCooldown);
-		Helpers.decrementTime(ref gizmoCooldown);
-		Helpers.decrementFrames(ref aiAttackCooldown);
-
-
-		//if (charState is InRideChaser) {
-			//return;
-		//}
 		RideArmorAttacks();
 		RideLinkMK5();
+
 		// GMTODO: Consider a better way here instead of a hard-coded deny list
 		// Gacel: Done, now it uses attackCtrl
+		
 		if (!charState.attackCtrl || charState is VileMK2GrabState) {
 			chargeLogic(null);
 		} else {
@@ -243,27 +262,31 @@ public class Vile : Character {
 	}
 
 	public override bool attackCtrl() {
-		bool specialPressed = player.input.isPressed(Control.Special1, player);
-		bool shootHeld = player.input.isHeld(Control.Shoot, player);
-
-		bool weaponRightHeld = (
-			player.input.isHeld(Control.WeaponRight, player) && 
-			(!isATrans || !player.input.isHeld(Control.Up, player))
-		);
-
+		// First test the special weapons.
 		if (dashGrabSpecial() ||
 			airDownAttacks() ||
 			normalAttacks()
 		) {
 			return true;
 		}
-		if (shootHeld && cannonWeapon.type > -1) {
+		// Get input.
+		bool shootHeld = player.input.isHeld(Control.Shoot, player);
+		bool upHeld = player.input.getYDir(player) == -1;
+		bool weaponRightHeld = (
+			player.input.isHeld(Control.WeaponRight, player) && 
+			(!isATrans || !player.input.isHeld(Control.Down, player))
+		);
+		if (shootHeld) {
 			if (cannonWeapon.shootCooldown < cannonWeapon.fireRate * 0.75f) {
 				cannonWeapon.vileShoot(0, this);
 				return true;
 			}
 		}
-		if (weaponRightHeld && vulcanWeapon.type > -3) {
+		if (weaponRightHeld && upHeld) {
+			cutterWeapon.vileShoot(WeaponIds.VileCutter, this);
+			return true;
+		}
+		if (weaponRightHeld) {
 			vulcanWeapon.vileShoot(0, this);
 			return true;
 		}
@@ -278,24 +301,17 @@ public class Vile : Character {
 			return false;
 		}
 		bool leftorRightHeld = player.input.getXDir(player) != 0;
-		bool upHeld = player.input.getYDir(player) == -1;
-		if (charState is Crouch) {
-			napalmWeapon.vileShoot(WeaponIds.Napalm, this);
+		bool downHeld = player.input.getYDir(player) == 1;
+		if (downHeld) {
+			downSpWeapon.vileShoot(WeaponIds.Napalm, this);
 			return true;
 		}
-		if (upHeld && cutterWeapon.type > -1) {
-			cutterWeapon.vileShoot(WeaponIds.VileCutter, this);
+		if (leftorRightHeld) {
+			rocketPunchWeapon.vileShoot(0, this);
 			return true;
 		}
-		if (leftorRightHeld && rocketPunchWeapon.type > -1) {
-			rocketPunchWeapon.vileShoot(WeaponIds.RocketPunch, this);
-			return true;
-		}
-		if (missileWeapon.type > -1) {
-			missileWeapon.vileShoot(WeaponIds.ElectricShock, this);
-			return true;
-		}
-		return false;
+		missileWeapon.vileShoot(WeaponIds.ElectricShock, this);
+		return true;
 	}
 
 	public bool airDownAttacks() {
@@ -306,29 +322,21 @@ public class Vile : Character {
 			return false;
 		}
 		bool heldDown = player.input.getYDir(player) == 1;
-
-		if (heldDown && flamethrowerWeapon.type >= 0) {
-			flamethrowerWeapon.vileShoot(WeaponIds.VileFlamethrower, this);
+		if (heldDown) {
+			downAirSpWeapon.vileShoot(WeaponIds.VileFlamethrower, this);
 			return true;
 		}
-		if (napalmWeapon.type >= 0) {
-			if (heldDown || grenadeWeapon.type < 0) {
-				napalmWeapon.vileShoot(0, this);
-				return true;
-			}
-		}
-		if (grenadeWeapon.type >= 0) {
-			grenadeWeapon.vileShoot(WeaponIds.VileBomb, this);
-			return true;
-		}
-		return false;
+		airSpWeapon.vileShoot(WeaponIds.VileBomb, this);
+		return true;
 	}
 
 	public bool dashGrabSpecial() {
-		if (!player.input.isPressed(Control.Special1, player)) {
+		if (!player.input.isHeld(Control.Special1, player)) {
 			return false;
 		}
-		if (charState is Dash or AirDash && isVileMK2) {
+		if (isDashing && isVileMK2 &&
+			charState is Dash or AirDash { stop: false }
+		) {
 			charState.isGrabbing = true;
 			charState.superArmor = true; //peakbalance
 			changeSpriteFromName("dash_grab", true);
@@ -343,7 +351,7 @@ public class Vile : Character {
 		bool stunShotPressed = player.input.isPressed(Control.Special1, player);
 		bool HeldDown = player.input.isHeld(Control.Down, player);
 		bool goliathShotPressed = player.input.isPressed(Control.WeaponLeft, player) || player.input.isPressed(Control.WeaponRight, player);
-		bool raStates = rideArmor?.rideArmorState is RAIdle || rideArmor?.rideArmorState is RAJump || rideArmor?.rideArmorState is RAFall || rideArmor?.rideArmorState is RADash;
+		bool raStates = rideArmor?.rideArmorState is RAIdle or RAJump or RAFall or RADash;
 		if (rideArmor != null && raState != null && !raState.isHiding) {
 			if (raStates) {
 				if (Goliath && Options.main.swapGoliathInputs) {
@@ -352,14 +360,12 @@ public class Vile : Character {
 					goliathShotPressed = oldStunShotPressed;
 				}
 				if (stunShotPressed && !HeldDown && missileWeapon.shootCooldown <= 0) {
-					if (tryUseVileAmmo(missileWeapon.vileAmmo)) {
-						missileWeapon.vileShoot(WeaponIds.ElectricShock, this);
-					}
+					missileWeapon.vileShoot(WeaponIds.ElectricShock, this);
 				}
 				if (goliathShotPressed) {
-					if (Goliath && !rideArmor.isAttacking() && mechBusterCooldown == 0) {
+					if (Goliath && !rideArmor.isAttacking() && mechBusterCooldown <= 0) {
 						rideArmor.changeState(new RAGoliathShoot(rideArmor.grounded), true);
-						mechBusterCooldown = 1;
+						mechBusterCooldown = 60;
 					}
 				}
 			}
@@ -564,6 +570,10 @@ public class Vile : Character {
 	}
 
 	public bool tryUseVileAmmo(float ammo, bool isVulcan = false) {
+		// Do not drain if negative, use ammo regen for that.
+		if (ammo < 0) {
+			return true;
+		}
 		if (isVulcan) {
 			usedAmmoLastFrame = true;
 		}
@@ -574,6 +584,7 @@ public class Vile : Character {
 		}
 		return false;
 	}
+
 	public override void addAmmo(float amount) {
 		if (amount < 0) {
 			energy.addAmmo(amount, player);
@@ -587,6 +598,24 @@ public class Vile : Character {
 	public override bool canAddAmmo() {
 		return energy.ammo < energy.maxAmmo;
 	}
+	public void addWeaponHealAmmo() {
+        if (energy.ammo >= energy.maxAmmo) {
+			weaponHealAmount = 0;
+		}
+		if (weaponHealAmount > 0 && alive) {
+			weaponHealTime += Global.spf;
+			if (weaponHealTime > 0.05) {
+				weaponHealTime = 0;
+				weaponHealAmount--;
+				energy.addAmmo(1, player);
+				if (isVileMK1) {
+					playSound("heal", forcePlay: true, true);
+				} else {
+					playSound("healX3", forcePlay: true, true);
+				}
+			}
+		}
+    }
 
 	private void cantAffordRideArmorMessage() {
 		if (Global.level.is1v1()) {
@@ -600,10 +629,30 @@ public class Vile : Character {
 
 	public Point getVileShootVel(bool aimable) {
 		Point vel = new Point(1, 0);
-		if (!aimable) {
-			return vel;
-		}
+		if (!aimable) return vel;
+		bool isHeldUp = player.input.isHeld(Control.Up, player);
+		bool isHeldDown = player.input.isHeld(Control.Down, player);
+		bool isLeftOrRightHeld = player.input.isLeftOrRightHeld(player);
+		bool isRideArmor = rideArmor != null;
+		bool isCrouchState = charState is Crouch;
+		if (isRideArmor) {
+			if (isHeldUp) vel = new Point(1, -0.5f);
+			else vel = new Point(1, 0.5f);
+		} else if (!isCrouchState) {
+			if (!canVileAim60Degrees()) return vel;
+			if (isHeldUp) {
+				if (isLeftOrRightHeld) vel = new Point(1, -0.75f);
+				else vel = new Point(1, -3);
+			} else if (isHeldDown) {
+				if (isLeftOrRightHeld) vel = new Point(1, 0.75f);
+				else vel = new Point(1, 3);
+			}
+		} else if (isCrouchState) {
+			if (isHeldUp) vel = new Point(1, -0.5f);
+			if (isLeftOrRightHeld) vel = new Point(1, 0.5f);
+        }
 
+		/*
 		if (rideArmor != null) {
 			if (player.input.isHeld(Control.Up, player)) {
 				vel = new Point(1, -0.5f);
@@ -611,7 +660,7 @@ public class Vile : Character {
 				vel = new Point(1, 0.5f);
 			}
 		} else if (charState is VileMK2GrabState) {
-			vel = new Point(1, -0.75f);
+			vel = new Point(1, -0.75f); //This code was from old times when you could shoot cannon on GrabState
 		} else if (player.input.isHeld(Control.Up, player)) {
 			if (!canVileAim60Degrees() || (player.input.isHeld(Control.Left, player) || player.input.isHeld(Control.Right, player))) {
 				vel = new Point(1, -0.75f);
@@ -642,14 +691,11 @@ public class Vile : Character {
 		return charState is MissileAttack || charState is Idle || charState is CannonAttack;
 	}
 
-	public Point? getVileMK2StunShotPos() {
+	public Point getVileMK2StunShotPos() {
 		if (charState is InRideArmor) {
 			return pos.addxy(xDir * -8, -12);
 		}
-
-		var headPos = getHeadPos();
-		if (headPos == null) return null;
-		return headPos.Value.addxy(-xDir * 5, 3);
+		return pos.addxy(-xDir * 5, -32);
 	}
 
 	public void setVileShootTime(Weapon weapon, float modifier = 1f, Weapon? targetCooldownWeapon = null) {
@@ -690,7 +736,7 @@ public class Vile : Character {
 	}
 
 	public override bool isSoftLocked() {
-		if (isShootingLongshotGizmo) {
+		if (isShootingGizmo) {
 			return true;
 		}
 		if (isVileMK5 && linkedRideArmor != null && player.input.isHeld(Control.WeaponLeft, player)) {
@@ -703,7 +749,7 @@ public class Vile : Character {
 	}
 
 	public override bool canChangeWeapons() {
-		if (isShootingLongshotGizmo) {
+		if (isShootingGizmo) {
 			return false;
 		}
 		return base.canChangeWeapons();
@@ -840,6 +886,7 @@ public class Vile : Character {
 		base.onDeath();
 		player.lastDeathWasVileMK2 = isVileMK2;
 		player.lastDeathWasVileV = isVileMK5;
+		deadCooldown = maxdeadCooldown;
 	}
 
 	public override List<byte> getCustomActorNetData() {
@@ -868,8 +915,7 @@ public class Vile : Character {
 		int Vattack = Helpers.randomRange(1, 7);
 		bool isFacingTarget = (pos.x < target?.pos.x && xDir == 1) || (pos.x >= target?.pos.x && xDir == -1);
 		if (!charState.isGrabbedState && !player.isDead && !isInvulnerableAttack()
-			&& !(charState is VileRevive or HexaInvoluteState or NecroBurstAttack
-			or StraightNightmareAttack or RisingSpecterState or VileMK2GrabState 
+			&& !(charState is VileRevive or HexaInvoluteState or LaserAttack or VileMK2GrabState 
 			or GenericStun or Hurt or Die) && aiAttackCooldown <= 0) {
 			if (isVileMK2 && charState is Dash or AirDash && isFacingTarget) {
 				player.press(Control.Special1);

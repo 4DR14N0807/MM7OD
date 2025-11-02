@@ -250,13 +250,18 @@ public partial class Character : Actor, IDamagable {
 	public Dictionary<string, DisarrayStack> disarrayStacks = new();
 
 	public AltSoundIds altSoundId = AltSoundIds.None;
-
 	public enum AltSoundIds {
 		None,
 		X1,
 		X2,
 		X3,
 	}
+	public CollideData? isCWallClose => (
+		Global.level.raycastCond(
+			pos, pos.addxy(10 * xDir, 0),
+			[typeof(Wall)], (go) => go is Wall { slippery: false }
+		)
+	);
 
 	// Netcode flags.
 	public byte? lastNetHP;
@@ -549,7 +554,8 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool canDash() {
 		if (player.isAI && charState is Dash) return false;
 		if (rideArmorPlatform != null) return false;
-		if (charState is WallKick wallKick && wallKick.stateTime < 0.25f) return false;
+		if (charState is WallSlide) return false;
+		if (charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold) return false;
 		if (isSoftLocked()) return false;
 		if (rootTime > 0) return false;
 		if (bigBubble != null) return false;
@@ -693,7 +699,7 @@ public partial class Character : Actor, IDamagable {
 		return Physics.WalkSpeed * getRunDebuffs();
 	}
 
-	public float getRunDebuffs() {
+	public virtual float getRunDebuffs() {
 		if (isSlowImmune()) {
 			return 1;
 		}
@@ -1150,10 +1156,7 @@ public partial class Character : Actor, IDamagable {
 				removeBurn();
 			}
 		}
-		if (flattenedTime > 0 && !(charState is Die)) {
-			flattenedTime -= Global.spf;
-			if (flattenedTime < 0) flattenedTime = 0;
-		}
+		Helpers.decrementFrames(ref flattenedTime);
 		Helpers.decrementTime(ref slowdownTime);
 		igFreezeRecoveryCooldown += speedMul;
 		if (igFreezeRecoveryCooldown > 12) {
@@ -1478,13 +1481,38 @@ public partial class Character : Actor, IDamagable {
 		updateCtrl();
 	}
 
+	
+	public override void statePreUpdate() {
+		charState.stateFrames += 1f * Global.speedMul;
+		charState.preUpdate();
+	}
+
 	public override void stateUpdate() {
 		charState.update();
 	}
 
 	public override void statePostUpdate() {
-		base.statePostUpdate();
-		charState.stateFrames += 1f * Global.speedMul;
+		charState.postUpdate();
+	}
+
+	public override void postUpdate() {
+		base.postUpdate();
+		postUpdateCtrl();
+	}
+
+	public virtual bool postUpdateCtrl() {
+		if (!ownedByLocalPlayer) {
+			return false;
+		}
+		if (charState.exitOnLanding && grounded) {
+			landingCode();
+			return true;
+		}
+		if (charState.exitOnAirborne && !grounded) {
+			changeState(getFallState());
+			return true;
+		}
+		return false;
 	}
 
 	public virtual bool updateCtrl() {

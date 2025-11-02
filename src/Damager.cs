@@ -234,7 +234,7 @@ public class Damager {
 			// Ride armor stomp
 			bool isStompWeapon = false;
 			if (isStompWeapon) {
-				character.flattenedTime = 0.5f;
+				character.flattenedTime = 30;
 			}
 			// Status effects.
 			switch (projId) {

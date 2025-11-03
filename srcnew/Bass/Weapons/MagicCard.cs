@@ -454,18 +454,26 @@ public class MagicCardSpecialProj : Projectile {
 			// X axis follow.
 			if (pos.x < enemyPos.x) {
 				move(new Point(moveSpeed, 0));
-				if (pos.x > enemyPos.x) { pos.x = enemyPos.x; }
+				if (pos.x > enemyPos.x) {
+					changePos(enemyPos.x, pos.y);
+				}
 			} else if (pos.x > enemyPos.x) {
 				move(new Point(-moveSpeed, 0));
-				if (pos.x < enemyPos.x) { pos.x = enemyPos.x; }
+				if (pos.x < enemyPos.x) {
+					changePos(enemyPos.x, pos.y);
+				}
 			}
 			// Y axis follow.
 			if (pos.y < enemyPos.y) {
 				move(new Point(0, moveSpeed));
-				if (pos.y > enemyPos.y) { pos.y = enemyPos.y; }
+				if (pos.y > enemyPos.y) {
+					changePos(pos.x, enemyPos.y);
+				}
 			} else if (pos.y > enemyPos.y) {
 				move(new Point(0, -moveSpeed));
-				if (pos.y < enemyPos.y) { pos.y = enemyPos.y; }
+				if (pos.y < enemyPos.y) {
+					changePos(pos.x, enemyPos.y);
+				}
 			}
 		}
 	}

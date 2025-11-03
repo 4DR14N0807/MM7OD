@@ -57,7 +57,7 @@ public class AxlBullet : AxlWeapon {
 		Projectile bullet;
 		bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 
@@ -117,7 +117,7 @@ public class DoubleBullet : AxlWeapon {
 		Projectile bullet;
 		bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 
@@ -178,7 +178,7 @@ public class MettaurCrash : AxlWeapon {
 		Projectile bullet;
 		bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 
@@ -232,7 +232,7 @@ public class BeastKiller : AxlWeapon {
 		Projectile bullet;
 		bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 
@@ -344,7 +344,7 @@ public class RevolverBarrel : AxlWeapon {
 		Projectile bullet;
 		bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 
@@ -407,7 +407,7 @@ public class AncientGun : AxlWeapon {
 		Projectile bullet;
 		bullet = new CopyShotProj(weapon, bulletPos, chargeLevel, player, bulletDir, netId);
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 	public override void axlGetProjectile(

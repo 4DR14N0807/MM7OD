@@ -134,7 +134,7 @@ public class LightningBoltState : CharState {
 				if (moveX != 0) {
 					aim.moveXY(moveX, 0);
 				}
-				aim.pos.y = character.pos.y - 25;
+				aim.changePos(aim.pos.x, character.pos.y - 25);
 			}
 
 			if (stateFrames % chargeTime == 0 && stateFrames >= minTime && stateFrames != maxTime) charge();

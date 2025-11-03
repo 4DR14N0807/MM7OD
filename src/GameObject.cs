@@ -13,7 +13,6 @@ public interface GameObject {
 	void onStart();
 	void preUpdate();
 	void update();
-	void physicsUpdate();
 	void postUpdate();
 	void physicsUpdate();
 	void render(float x, float y);

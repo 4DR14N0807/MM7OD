@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Xml;
 
 namespace MMXOnline;
@@ -8,6 +8,7 @@ public class WaveBurner : Weapon {
 	public float shootAngle;
 	public float angleMod = 1;
 	public float bloomTimer = 0;
+	public int soundTime;
 
 	public WaveBurner() : base() {
 		iconSprite = "hud_weapon_icon_bass";

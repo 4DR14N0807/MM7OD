@@ -74,7 +74,7 @@ public class RayGun : AxlWeapon {
 			laserChargeLevel = axl.rayGunAltProj.getChargeLevel();
 		}
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, bullet.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 

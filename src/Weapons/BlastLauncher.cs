@@ -54,7 +54,7 @@ public class BlastLauncher : AxlWeapon {
 		Projectile grenade;
 		grenade = new GreenSpinnerProj(weapon, bulletPos, xDir, player, bulletDir, target, netId);
 		if (player.ownedByLocalPlayer) {
-			RPC.axlShoot.sendRpc(player.id, grenade.projId, netId, bulletPos, xDir, angle);
+			//RPC.axlShoot.sendRpc(player.id, grenade.projId, netId, bulletPos, xDir, angle);
 		}
 	}
 

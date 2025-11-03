@@ -175,7 +175,7 @@ public class IceWallProj : Projectile, IDamagable {
 			if (other.isSideWallHit()) {
 				xDir *= -1;
 				vel.x *= -1;
-				pos.y += xDir;
+				incPos(xDir, 0);
 				playSound("icewallBounce", ownedByLocalPlayer);
 			}
 			return;

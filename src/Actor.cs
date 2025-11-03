@@ -660,7 +660,7 @@ public partial class Actor : GameObject {
 			} else if (gHoldTime > 10) {
 				useGravity = false;
 				float mod = gHoldTime % 2 == 0 ? 1 : -1;
-				pos.y = Helpers.lerp(stopPos, 0, Global.spf * 5 * mod);
+				changePos(0, Helpers.lerp(stopPos, 0, Global.spf * 5 * mod));
 			}
 			gHoldTime++;
 		}
@@ -1881,7 +1881,6 @@ public partial class Actor : GameObject {
 	public const int labelNameOffY = 10;
 
 	public float currentLabelY;
-	public Point lastGroundedPos;
 
 	public void deductLabelY(float amount) {
 		currentLabelY -= amount;

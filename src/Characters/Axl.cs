@@ -380,7 +380,7 @@ public class Axl : Character {
 		if (stingChargeTime > 0) {
 			stingChargeTime -= Global.spf;
 			if (stingChargeTime <= 0) {
-				player.delaySubtank();
+				//player.delaySubtank();
 				enterCombat();
 				stingChargeTime = 0;
 			}

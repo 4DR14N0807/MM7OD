@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MMXOnline;
 
@@ -19,7 +18,7 @@ public class SBassBuster : Weapon {
 
 	public override float getAmmoUsage(int chargeLevel) {
 		return 0;
-	} 
+	}
 
 	public override void shoot(Character character, params int[] args) {
 		Point shootPos = character.getShootPos();
@@ -36,7 +35,7 @@ public class SBassBuster : Weapon {
 				Global.level.delayedActions.Add(new DelayedAction(
 					() => {
 						new SBassShot(
-							bass, shootPos.addxy(11 * xDir, 0), xDir, 
+							bass, shootPos.addxy(11 * xDir, 0), xDir,
 							player.getNextActorNetId(), true, superBass: bass.isSuperBass
 						);
 						character.playSound("buster2", sendRpc: true);
@@ -46,30 +45,25 @@ public class SBassBuster : Weapon {
 					(i * 8) / 60f
 				));
 			}
-		}
-		else if (chargeLevel == 2) {
+		} else if (chargeLevel == 2) {
 			new ChamoBuster(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster3", sendRpc: true);
-		} 
-		else if (chargeLevel == 1) {
+		} else if (chargeLevel == 1) {
 			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster2", sendRpc: true);
-		}
-		else {
+		} else {
 			float ang = 32;
 			if (xDir < 0) ang = -ang + 128;
 			float speed = 360;
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
-				{ vel = Point.createFromByteAngle(-ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(-ang).times(speed) };
 
 			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true);
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
-				{ vel = Point.createFromByteAngle(ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(ang).times(speed) };
 
 			character.playSound("buster");
-		}	
+		}
 	}
 }
 
@@ -88,7 +82,7 @@ public class SBassRP : Weapon {
 
 	public override float getAmmoUsage(int chargeLevel) {
 		return 0;
-	} 
+	}
 
 	public override void shoot(Character character, params int[] args) {
 		Point shootPos = character.getShootPos();
@@ -106,7 +100,7 @@ public class SBassRP : Weapon {
 				Global.level.delayedActions.Add(new DelayedAction(
 					() => {
 						new SBassShot(
-							bass, shootPos.addxy(11 * xDir, 0), xDir, 
+							bass, shootPos.addxy(11 * xDir, 0), xDir,
 							player.getNextActorNetId(), true, superBass: bass.isSuperBass
 						);
 						character.playSound("buster2", sendRpc: true);
@@ -116,30 +110,25 @@ public class SBassRP : Weapon {
 					(i * 8) / 60f
 				));
 			}
-		}
-		else if (chargeLevel == 2) {
+		} else if (chargeLevel == 2) {
 			new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("super_adaptor_punch", sendRpc: true);
-		} 
-		else if (chargeLevel == 1) {
+		} else if (chargeLevel == 1) {
 			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster2", sendRpc: true);
-		}
-		else {
+		} else {
 			float ang = 32;
 			if (xDir < 0) ang = -ang + 128;
 			float speed = 360;
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
-				{ vel = Point.createFromByteAngle(-ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(-ang).times(speed) };
 
 			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true);
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true)
-				{ vel = Point.createFromByteAngle(ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(ang).times(speed) };
 
 			character.playSound("buster");
-		}	
+		}
 	}
 }
 
@@ -149,7 +138,7 @@ public class SBassRP : Weapon {
 #region Projectiles
 public class SBassLemon : Projectile {
 	public SBassLemon(
-		Actor owner, Point pos, int xDir, ushort? netId, 
+		Actor owner, Point pos, int xDir, ushort? netId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "bass_buster_proj", netId, altPlayer
@@ -176,7 +165,7 @@ public class SBassLemon : Projectile {
 public class SBassShot : Projectile {
 
 	public SBassShot(
-		Actor owner, Point pos, int xDir, ushort? netId, 
+		Actor owner, Point pos, int xDir, ushort? netId,
 		bool rpc = false, Player? altPlayer = null, bool superBass = false
 	) : base(
 		pos, xDir, owner, "bass_buster_proj2", netId, altPlayer
@@ -206,7 +195,7 @@ public class SBassShot : Projectile {
 
 public class ChamoBuster : Projectile {
 	public ChamoBuster(
-		Actor owner, Point pos, int xDir, ushort? netId, 
+		Actor owner, Point pos, int xDir, ushort? netId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "bass_chamobuster", netId, altPlayer
@@ -240,7 +229,7 @@ public class SuperBassRP : Projectile {
 	float projSpeed = 240;
 
 	public SuperBassRP(
-		Actor owner, Point pos, int xDir, ushort? netId, 
+		Actor owner, Point pos, int xDir, ushort? netId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "sb_rocket_punch", netId, altPlayer
@@ -250,7 +239,7 @@ public class SuperBassRP : Projectile {
 			bass = owner as Bass ?? throw new NullReferenceException();
 			if (bass != null) bass.sbRocketPunch = this;
 		}
-		
+
 		maxReverseTime = 0.5f;
 		this.player = ownerPlayer;
 
@@ -330,24 +319,32 @@ public class SuperBassRP : Projectile {
 	public void followOwner() {
 		if (bass != null) {
 			float targetPosX = bass.getCenterPos().x;
-			float targetPosY =  bass.getCenterPos().y;
+			float targetPosY = bass.getCenterPos().y;
 			float moveSpeed = speed;
 
 			// X axis follow.
 			if (pos.x < targetPosX) {
 				move(new Point(moveSpeed, 0));
-				if (pos.x > targetPosX) { pos.x = targetPosX; }
+				if (pos.x > targetPosX) {
+					changePos(targetPosX, pos.y);
+				}
 			} else if (pos.x > targetPosX) {
 				move(new Point(-moveSpeed, 0));
-				if (pos.x < targetPosX) { pos.x = targetPosX; }
+				if (pos.x < targetPosX) {
+					changePos(targetPosX, pos.y);
+				}
 			}
 			// Y axis follow.
 			if (pos.y < targetPosY) {
 				move(new Point(0, moveSpeed));
-				if (pos.y > targetPosY) { pos.y = targetPosY; }
+				if (pos.y > targetPosY) {
+					changePos(pos.x, targetPosY);
+				}
 			} else if (pos.y > targetPosY) {
 				move(new Point(0, -moveSpeed));
-				if (pos.y < targetPosY) { pos.y = targetPosY; }
+				if (pos.y < targetPosY) {
+					changePos(pos.x, targetPosY);
+				}
 			}
 		}
 	}
@@ -355,7 +352,7 @@ public class SuperBassRP : Projectile {
 	public void followTarget() {
 		if (target == null) {
 			target = Global.level.getClosestTarget(
-			new Point (pos.x, pos.y),
+			new Point(pos.x, pos.y),
 			damager.owner.alliance,
 			false, 200
 			);
@@ -366,18 +363,26 @@ public class SuperBassRP : Projectile {
 			// X axis follow.
 			if (pos.x < enemyPos.x) {
 				move(new Point(moveSpeed, 0));
-				if (pos.x > enemyPos.x) { pos.x = enemyPos.x; }
+				if (pos.x > enemyPos.x) {
+					changePos(enemyPos.x, pos.y);
+				}
 			} else if (pos.x > enemyPos.x) {
 				move(new Point(-moveSpeed, 0));
-				if (pos.x < enemyPos.x) { pos.x = enemyPos.x; }
+				if (pos.x < enemyPos.x) {
+					changePos(enemyPos.x, pos.y);
+				}
 			}
 			// Y axis follow.
 			if (pos.y < enemyPos.y) {
 				move(new Point(0, moveSpeed));
-				if (pos.y > enemyPos.y) { pos.y = enemyPos.y; }
+				if (pos.y > enemyPos.y) {
+					changePos(pos.x, enemyPos.y);
+				}
 			} else if (pos.y > enemyPos.y) {
 				move(new Point(0, -moveSpeed));
-				if (pos.y < enemyPos.y) { pos.y = enemyPos.y; }
+				if (pos.y < enemyPos.y) {
+					changePos(pos.x, enemyPos.y);
+				}
 			}
 		}
 	}
@@ -455,14 +460,13 @@ public class SweepingLaserProj : Projectile {
 		if (ground) groundTime++;
 
 		if (groundTime != lastGroundTime && groundTime % 4 == 0 && ground) {
-			new Anim(endPos, "dust_purple", xDir, damager.owner.getNextActorNetId(), true, true, zIndex: zIndex - 2)
-			{ vel = new Point(0, -60) };
+			new Anim(endPos, "dust_purple", xDir, damager.owner.getNextActorNetId(), true, true, zIndex: zIndex - 2) { vel = new Point(0, -60) };
 			lastGroundTime = groundTime;
 		}
 	}
 
 	public override void render(float x, float y) {
-		base.render(x,y);
+		base.render(x, y);
 		if (bodyAnim == null || bodySprite == null) return;
 
 		int pieces = (MathInt.Floor(pos.distanceTo(endPos)) - startHeight) / spriteHeight;
@@ -476,7 +480,7 @@ public class SweepingLaserProj : Projectile {
 
 		if (ground && bottomAnim != null) {
 			Global.sprites[bottomAnim.sprite.name].draw(
-				bottomAnim.frameIndex, pos.x, endPos.y, 
+				bottomAnim.frameIndex, pos.x, endPos.y,
 				xDir, yDir, null, alpha, 1, 1, zIndex
 			);
 		}
@@ -527,7 +531,7 @@ public class DarkCometUpProj : Projectile {
 		maxTime = 0.5f;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
-		
+
 		vel.y = -240;
 		yDir *= -1;
 
@@ -542,12 +546,12 @@ public class DarkCometUpProj : Projectile {
 	public override void render(float x, float y) {
 		if (anim != null) {
 			Global.sprites[anim.sprite.name].draw(
-				anim.frameIndex, pos.x, pos.y, 
+				anim.frameIndex, pos.x, pos.y,
 				xDir, yDir, null, alpha, 1, 1, zIndex
 			);
 		}
 
-		base.render(x,y);
+		base.render(x, y);
 	}
 
 	public override void onHitWall(CollideData other) {
@@ -561,10 +565,9 @@ public class DarkCometUpProj : Projectile {
 			hitWall = true;
 			createProjs();
 			destroySelf();
-			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true) 
-			{ yScale = yScale * -1 };
+			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true) { yScale = yScale * -1 };
 		}
-	} 
+	}
 
 	public override void onDestroy() {
 		base.onDestroy();
@@ -578,7 +581,7 @@ public class DarkCometUpProj : Projectile {
 
 		for (int i = -1; i < 2; i++) {
 			new DarkCometDownProj(
-				actor, pos.addxy(48 * i, 0), xDir, 
+				actor, pos.addxy(48 * i, 0), xDir,
 				damager.owner.getNextActorNetId(), true, damager.owner
 			);
 		}
@@ -600,7 +603,7 @@ public class DarkCometDownProj : Projectile {
 		maxTime = 1.5f;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
-		
+
 		vel.y = 240;
 	}
 
@@ -625,13 +628,13 @@ public class DarkCometDownProj : Projectile {
 	public override void render(float x, float y) {
 		if (anim != null) {
 			Global.sprites[anim.sprite.name].draw(
-				anim.frameIndex, pos.x, pos.y, 
+				anim.frameIndex, pos.x, pos.y,
 				xDir, yDir, null, alpha, 1, 1, zIndex
 			);
 		}
 
-		base.render(x,y);
-	} 
+		base.render(x, y);
+	}
 }
 
 #endregion

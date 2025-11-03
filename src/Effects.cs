@@ -93,7 +93,7 @@ public class ChargeEffect {
 			if (part.time > 0) {
 				//part.pos.x = Helpers.moveTo(part.pos.x, 0, Global.spf * 70);
 				//part.pos.y = Helpers.moveTo(part.pos.y, 0, Global.spf * 70);
-				part.pos.y -= Global.speedMul * 4;
+				part.incPos(0, Global.speedMul * -4);
 			}
 			chargePart = chargeLevel switch {
 				2 => "charge_part_2",
@@ -114,8 +114,8 @@ public class ChargeEffect {
 			part.time += Global.spf * 20;
 			if (part.time > 3) {
 				part.time = -3;
-				part.pos.x = Helpers.randomRange(-16, 16);
-				part.pos.y = Helpers.randomRange(0, 16);
+				part.unsafePos.x = Helpers.randomRange(-16, 16);
+				part.unsafePos.y = Helpers.randomRange(0, 16);
 			}
 		}
 	}

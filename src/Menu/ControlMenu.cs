@@ -26,7 +26,7 @@ public class ControlMenu : IMainMenu {
 		previous = mainMenu;
 		this.inGame = inGame;
 		this.isController = isController;
-		this.charNum = charNum;
+		this.charNum = charNum + (int)CharIds.Rock;
 		this.axlAimMode = axlAimMode;
 
 		if (isController) {
@@ -48,7 +48,12 @@ public class ControlMenu : IMainMenu {
 			[Control.WeaponLeft, "Alt L"],
 			[Control.WeaponRight, "Alt R"],
 			[Control.Special2, "Command"],
-			[Control.Taunt, "Taunt"]
+			[Control.Taunt, "Taunt"],
+			[Control.GridNeutral, "Grid Neutral"],
+			[Control.GridUp, "Grid Up"],
+			[Control.GridDown, "Grid Down"],
+			[Control.GridRight, "Grid Right"],
+			[Control.GridLeft, "Grid Left"]
 		];
 
 		// General menu controls not to be overridden on characters

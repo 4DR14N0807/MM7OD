@@ -44,6 +44,11 @@ public class Control {
 	public const string AllChat = "menuallchat";
 	public const string Taunt = "taunt";
 	public const string Special2 = "command";
+	public const string GridNeutral = "gridneutral";
+	public const string GridUp = "gridup";
+	public const string GridDown = "griddown";
+	public const string GridRight = "gridright";
+	public const string GridLeft = "gridleft";
 
 	public static JoystickInfo? joystick;
 
@@ -171,27 +176,26 @@ public class Control {
 				{ Down, 1001 },
 				{ Left, -1000 },
 				{ Right, 1000 },
-				{ MenuUp, -1001 },
-				{ MenuDown, 1001 },
-				{ MenuLeft, -1000 },
-				{ MenuRight, 1000 },
-				{ Jump, 0 },
-				{ Shoot, 2 },
-				{ Dash, 1 },
-				{ Special1, 3 },
-				{ WeaponLeft, 4 },
-				{ WeaponRight, 5 },
-				{ Scoreboard, 8 },
-				{ MenuPause, 9 },
-				{ MenuConfirm, 0 },
-				{ MenuAlt, 2 },
-				{ MenuBack, 1 },
-				{ AimUp, -1001 },
-				{ AimDown, 1001 },
-				{ AimLeft, -1000 },
-				{ AimRight, 1000 },
-				{ AimAngleUp, -1001 },
-				{ AimAngleDown, 1001 },
+				{ Jump, 14 },
+				{ Shoot, 15 },
+				{ Dash, 13 },
+				{ Special1, 12 },
+				{ Special2, 1 },
+				{ Taunt, 0 },
+				{ MenuUp, 4 },
+				{ MenuDown, 6 },
+				{ MenuLeft, 7 },
+				{ MenuRight, 5 },
+				{ Scoreboard, 9 },
+				{ MenuPause, 3 },
+				{ MenuConfirm, 14 },
+				{ MenuAlt, 15 },
+				{ MenuBack, 13 },
+				{ GridNeutral, 2 },
+				{ GridUp, -1003 },
+				{ GridDown, 1003 },
+				{ GridRight, 1002 },
+				{ GridLeft, -1002 },
 			};
 	}
 

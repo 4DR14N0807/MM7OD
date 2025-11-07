@@ -1710,8 +1710,17 @@ public partial class Player {
 		return null;
 	}
 
-	public Point gridModePointsEX(Point originPos, float ang, int radius = 30) {
-		return originPos.add(Point.createFromAngle(ang).times(radius));
+	public Point[] gridModePointsEX() {
+		Point[] points = new[] {Point.zero};
+		if (weapons.Count == 2) points = new[] {new Point(-1,0), new Point(1,0)};
+		else if (weapons.Count == 3) points = new[] {Point.zero, new Point(-1,0), new Point(1, 0)};
+		else if (weapons.Count == 4) points = new[] {Point.zero, new Point(0, -1), new Point(1, 0), new Point(-1, 0)};
+		else if (weapons.Count == 5) points = new[] {Point.zero, new Point(1, -1), new Point(1, 1), new Point(-1, 1), new Point(-1, -1)};
+		else if (weapons.Count == 6) points = new[] {Point.zero, new Point(0, -1), new Point(1, 0), new Point(1,1), new Point(-1, 1), new Point(-1, 0)};
+		else if (weapons.Count == 7) points = new[] {Point.zero, new Point(1, -1), new Point(1, 0), new Point(1,1), new Point(-1, 1), new Point(-1, 0), new Point(-1, -1)};
+		else if (weapons.Count == 8) points = new[] {new Point(0, -1), new Point(1, -1), new Point(1, 0), new Point(1, 1), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(-1, -1)};
+		else if (weapons.Count == 9) points = new[] {Point.zero, new Point(0, -1), new Point(1, -1), new Point(1, 0), new Point(1, 1), new Point(0, 1), new Point(-1, 1), new Point(-1, 0), new Point(-1, -1)};
+		return points;
 	}
 
 	// 0000 0000 0000 0000 [boots][body][helmet][arm]

@@ -713,6 +713,26 @@ public class Input {
 		return yDir;
 	}
 
+	public Point getGridInputDir(Player player) {
+		return new Point(getGridXDir(player), getGridYDir(player));
+	}
+
+	public int getGridXDir(Player player) {
+		int xDir = 0;
+		if (isHeld(Control.GridLeft, player)) { xDir--; }
+		if (isHeld(Control.GridRight, player)) { xDir++; }
+		
+		return xDir;
+	}
+
+	public int getGridYDir(Player player) {
+		int yDir = 0;
+		if (isHeld(Control.GridUp, player)) { yDir--; }
+		if (isHeld(Control.GridDown, player)) { yDir++; }
+		
+		return yDir;
+	}
+
 #if WINDOWS
 	[DllImport(
 		"user32.dll", CharSet = CharSet.Auto,

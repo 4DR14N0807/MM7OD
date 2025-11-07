@@ -62,51 +62,19 @@ public partial class Player {
 		if (character == null) return;
 		if (!character.canChangeWeapons()) return;
 
-		if (isGridModeEnabled() && character.weapons.Count > 1) {
-			if (input.isWeaponLeftOrRightHeld(this)) {
-
+		if (isGridModeEnabled()) {
+			if (input.getGridInputDir(this) != Point.zero || input.isPressed(Control.GridNeutral, this)) {
 				gridModeHeld = true;
-
-				/* if (input.getInputDir(this) != Point.zero) {
-					gridModePos = input.getInputDir(this);
-					float inputAngle = gridModePos.angle;
-					float divide = 360 / character.weapons.Count;
-					float dif = inputAngle;
-					int c = 0;
-
-					for (int i = 0; i < character.weapons.Count; i++) {
-						if (MathF.Abs(i * divide - inputAngle) < dif) {
-							dif = Math.Abs(i * divide - inputAngle);
-							c++;
-						}
-					}
-
-					changeWeaponSlot(c);
-				} */
-				
-				/* gridModePos.x = 0;
-				gridModePos.y = 0; */
-				gridModeHeld = true;
-				if (input.isPressedMenu(Control.Up)) gridModePos.y--;
-				else if (input.isPressedMenu(Control.Down)) gridModePos.y++;
-
-				if (input.isPressedMenu(Control.Left)) gridModePos.x--;
-				else if (input.isPressedMenu(Control.Right)) gridModePos.x++;
-
-				if (gridModePos.y < -1) gridModePos.y = -1;
-				if (gridModePos.y > 1) gridModePos.y = 1;
-				if (gridModePos.x < -1) gridModePos.y = -1;
-				if (gridModePos.x > 1) gridModePos.x = 1;
-
-				var gridPoints = gridModePoints();
-
-				for (int i = 0; i < character.weapons.Count; i++) {
-					if (i >= gridPoints.Length) break;
-					var gridPoint = gridPoints[i];
-					if (gridModePos.x == gridPoint.x && gridModePos.y == gridPoint.y && character.weapons.Count >= i + 1) {
-						changeWeaponSlot(i);
+				Point[] gridPoints = gridModePointsEX();
+				int weaponIndex = 0;
+				for (int i = 0; i < gridPoints.Length; i++) {
+					if (gridPoints[i] == input.getGridInputDir(this)) {
+						weaponIndex = i;
+						break;
 					}
 				}
+				if (input.isPressed(Control.GridNeutral, this)) weaponIndex = 0;
+				changeWeaponSlot(weaponIndex);
 			} else {
 				gridModeHeld = false;
 				gridModePos = new Point();

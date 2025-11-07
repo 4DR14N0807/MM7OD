@@ -634,7 +634,7 @@ public class Bass : Character {
 		return 2;
 	}
 	public override float getDashSpeed() {
-		return 3.25f * getRunDebuffs();
+		return 3.45f * getRunDebuffs();
 	}
 
 	public override float getFallSpeed(bool checkUnderwater = true) {

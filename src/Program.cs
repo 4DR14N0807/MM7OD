@@ -308,6 +308,8 @@ class Program {
 		Joystick.Update();
 		if (Joystick.IsConnected(0)) {
 			joystickConnectedHelper(0);
+			Options.main.gridModeRock = 2;
+			Options.main.gridModeBass = 2;
 		}
 
 	}

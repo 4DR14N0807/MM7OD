@@ -1374,7 +1374,7 @@ public partial class Player {
 	public void awardCurrency() {
 		if (Global.level?.server?.customMatchSettings != null) {
 			charCurrency[charNum] += (
-				MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain / 8f))
+				MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain + 1) * 0.5f)
 			);
 		} else {
 			charCurrency[charNum] += 1;
@@ -1384,7 +1384,7 @@ public partial class Player {
 	public void awardCurrency(int charId, int value) {
 		if (Global.level?.server?.customMatchSettings != null) {
 			charCurrency[charId] += (
-				MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain / 8f) * value)
+				MathInt.Ceiling((Global.level.server.customMatchSettings.currencyGain + 1) * 0.5f * value)
 			);
 		} else {
 			charCurrency[charId] += value;

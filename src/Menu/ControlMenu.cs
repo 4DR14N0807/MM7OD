@@ -26,7 +26,7 @@ public class ControlMenu : IMainMenu {
 		previous = mainMenu;
 		this.inGame = inGame;
 		this.isController = isController;
-		this.charNum = charNum + (int)CharIds.Rock;
+		this.charNum = charNum;
 		this.axlAimMode = axlAimMode;
 
 		if (isController) {

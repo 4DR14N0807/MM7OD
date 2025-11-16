@@ -309,6 +309,6 @@ public class WildCoilChargedProj : Projectile {
 	}
 
 	public override void updateCustomActorNetData(byte[] data) {
-		frame = data[1];
+		frame = data[0];
 	}
 }

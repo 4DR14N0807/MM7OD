@@ -3117,6 +3117,22 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
+	public void applyGHoldDamage(GravityHoldProj proj, Player owner, Damager damager, int projId, float hitCooldown) {
+		if (!grounded && !isPushImmune()) {
+			gHoldOwner = damager.owner;
+			gHolded = true;
+			gHoldModifier = 1;
+			charState.stoppedJump = true;
+			vel.y = 800;
+		} else {
+			damager.applyDamage(
+				this, false, GravityHold.netWeapon, proj,
+				projId, 1, Global.defFlinch
+			);
+		}
+		projectileCooldown[projId + "_" + owner.id] = 1 * hitCooldown;
+	}
+
 	public virtual void stopETankHeal() {
 		usedEtank = null;
 		player.fuseETanks();

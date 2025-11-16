@@ -54,7 +54,7 @@ public class GravityHoldProj : Projectile {
 		midR = maxR / 2;
 		netcodeOverride = NetcodeModel.FavorDefender;
 
-		damager.hitCooldown = 45;
+		damager.hitCooldown = 60;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
@@ -91,19 +91,7 @@ public class GravityHoldProj : Projectile {
 					chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) &&
 					chara.projectileCooldown.GetValueOrDefault(projId + "_" + owner.id) <= 0
 				) {
-					if (!chara.grounded && !chara.isPushImmune()) {
-						chara.gHoldOwner = damager.owner;
-						chara.gHolded = true;
-						gHoldModifier = 1;
-						chara.charState.stoppedJump = true;
-						chara.vel.y = 800;
-					} else {
-						damager.applyDamage(
-							chara, false, GravityHold.netWeapon, this,
-							projId, 1, Global.defFlinch
-						);
-					}
-					chara.projectileCooldown[projId + "_" + owner.id] = 1 * 60;
+					chara.applyGHoldDamage(this, damager.owner, damager, projId, damager.hitCooldown);
 				}
 			}
 		}

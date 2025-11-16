@@ -347,6 +347,9 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.SuperBassShot, SBassShot.rpcInvoke },
 		{ (int)BassProjIds.ChamoBuster, ChamoBuster.rpcInvoke },
 		{ (int)BassProjIds.SuperBassRocketPunch, SuperBassRP.rpcInvoke },
+		{ (int)BassProjIds.SweepingLaser, SweepingLaserProj.rpcInvoke },
+		{ (int)BassProjIds.DarkCometUp, DarkCometUpProj.rpcInvoke },
+		{ (int)BassProjIds.DarkCometDown, DarkCometDownProj.rpcInvoke },
 	};
 
 }

@@ -84,7 +84,7 @@ public class ThunderBoltProj : Projectile {
 		if (type == 0) {
 			if (isAnimOver()) {
 				new ThunderBoltProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 1, pierce, rpc: true);
-				destroySelfNoEffect(disableRpc: true, true);
+				destroySelfNoEffect();
 			}
 		}
 	}

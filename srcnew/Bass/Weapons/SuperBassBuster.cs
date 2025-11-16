@@ -52,15 +52,11 @@ public class SBassBuster : Weapon {
 			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster2", sendRpc: true);
 		} else {
-			float ang = 32;
-			if (xDir < 0) ang = -ang + 128;
-			float speed = 360;
+			new SBassLemon(bass, shootPos, xDir, 0, player.getNextActorNetId(), true);
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(-ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, 1, player.getNextActorNetId(), true);
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true);
-
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, 2, player.getNextActorNetId(), true);
 
 			character.playSound("buster");
 		}
@@ -117,15 +113,12 @@ public class SBassRP : Weapon {
 			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster2", sendRpc: true);
 		} else {
-			float ang = 32;
-			if (xDir < 0) ang = -ang + 128;
-			float speed = 360;
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(-ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, 0, player.getNextActorNetId(), true);
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			new SBassLemon(bass, shootPos, xDir, 1, player.getNextActorNetId(), true);
 
-			new SBassLemon(bass, shootPos, xDir, player.getNextActorNetId(), true) { vel = Point.createFromByteAngle(ang).times(speed) };
+			new SBassLemon(bass, shootPos, xDir, 2, player.getNextActorNetId(), true);
 
 			character.playSound("buster");
 		}
@@ -138,7 +131,7 @@ public class SBassRP : Weapon {
 #region Projectiles
 public class SBassLemon : Projectile {
 	public SBassLemon(
-		Actor owner, Point pos, int xDir, ushort? netId,
+		Actor owner, Point pos, int xDir, int type, ushort? netId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "bass_buster_proj", netId, altPlayer
@@ -146,18 +139,22 @@ public class SBassLemon : Projectile {
 		projId = (int)BassProjIds.SuperBassLemon;
 		maxTime = 0.3f;
 
-		vel.x = 360 * xDir;
+		byteAngle = (type - 1) * 32;
+		if (xDir < 0) byteAngle = -byteAngle + 128;
+		vel = Point.createFromByteAngle(byteAngle).times(360);
+		
 		damager.damage = 1;
 		damager.hitCooldown = 9;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)type });
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SBassLemon(
-			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 }
@@ -410,6 +407,7 @@ public class SweepingLaserProj : Projectile {
 	int startHeight;
 	Sprite? bodySprite;
 	int spriteHeight;
+	int pieces;
 	int maxPieces = 6;
 	Point endPos;
 	Anim? topAnim;
@@ -420,8 +418,8 @@ public class SweepingLaserProj : Projectile {
 	int groundTime;
 	int lastGroundTime;
 	public SweepingLaserProj(
-		Actor owner, Point pos, int xDir,
-		ushort? netId, bool rpc = false, Player? player = null
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? player = null
 	) : base(
 		pos, xDir, owner, "sweeping_laser_top", netId, player
 	) {
@@ -432,15 +430,25 @@ public class SweepingLaserProj : Projectile {
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 30;
+		canBeLocal = false;
 
 		if (ownedByLocalPlayer) {
 			bass = owner as Bass ?? throw new NullReferenceException();
-			start();
+		}
+		start();
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
 	}
-	void start() {
-		if (!ownedByLocalPlayer) return;
 
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SweepingLaserProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+		);
+	}
+
+	void start() {
 		startHeight = (int)sprite.getCurrentFrame().rect.h();
 		bodySprite = new Sprite("sweeping_laser");
 		spriteHeight = (int)bodySprite.getCurrentFrame().rect.h();
@@ -453,6 +461,7 @@ public class SweepingLaserProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
 
 		changePos(bass.getShootPos());
 		checkGround();
@@ -462,13 +471,13 @@ public class SweepingLaserProj : Projectile {
 			new Anim(endPos, "dust_purple", xDir, damager.owner.getNextActorNetId(), true, true, zIndex: zIndex - 2) { vel = new Point(0, -60) };
 			lastGroundTime = groundTime;
 		}
+
+		pieces = (MathInt.Floor(pos.distanceTo(endPos)) - startHeight) / spriteHeight;
 	}
 
 	public override void render(float x, float y) {
 		base.render(x, y);
 		if (bodyAnim == null || bodySprite == null) return;
-
-		int pieces = (MathInt.Floor(pos.distanceTo(endPos)) - startHeight) / spriteHeight;
 
 		for (int i = 0; i < pieces; i++) {
 			bodySprite.draw(
@@ -511,6 +520,16 @@ public class SweepingLaserProj : Projectile {
 		};
 		globalCollider = new Collider(points, true, null!, false, false, 0, Point.zero);
 	}
+
+	public override List<byte> getCustomActorNetData() {
+		return [
+			(byte)pieces
+		];
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		pieces = data[0];
+	}
 }
 
 
@@ -535,6 +554,16 @@ public class DarkCometUpProj : Projectile {
 		yDir *= -1;
 
 		if (ownedByLocalPlayer && owner != null) actor = owner;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new DarkCometUpProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+		);
 	}
 
 	public override void onStart() {
@@ -603,6 +632,16 @@ public class DarkCometDownProj : Projectile {
 		damager.flinch = Global.halfFlinch;
 
 		vel.y = 240;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new DarkCometDownProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+		);
 	}
 
 	public override void onStart() {

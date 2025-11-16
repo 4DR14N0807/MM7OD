@@ -209,6 +209,7 @@ public class NoiseCrushProj : Projectile {
 
 	public override void update() {
 		base.update();
+		if (!ownedByLocalPlayer) return;
 
 		if (pos.distanceTo(rock.getCenterPos()) <= 20 && bounces >= 1) {
 			chargeRockNoiseCrush();

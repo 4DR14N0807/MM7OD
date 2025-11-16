@@ -125,6 +125,7 @@ public class RockBusterProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (!ownedByLocalPlayer) return;
 		if (wep.lemonsOnField.Contains(this)) {
 			wep.lemonsOnField.Remove(this);
 		} 

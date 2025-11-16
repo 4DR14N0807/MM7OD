@@ -201,6 +201,7 @@ public class SuperBassStart : CharState {
 	Point landPos;
 	float jumpMaxTime = 30;
 	float jumpTime;
+	SuperBassSquare? square;
 	bool drawSquare;
 	float s = 112; // Square size
 	float a; // Square rotation
@@ -225,8 +226,9 @@ public class SuperBassStart : CharState {
 		//Spawns Treble.
 		spawnPos = character.pos.addxy(character.xDir * -32, -200);
 		treble = new Anim(
-			spawnPos, "treble_warp_beam", character.xDir, null, false, true) 
+			spawnPos, "treble_warp_beam", character.xDir, player.getNextActorNetId(), false, true) 
 			{ vel = new Point(0, 480), zIndex = ZIndex.Character + 10 };
+		treble.canBeLocal = false;
 
 		character.playSound("warpin", sendRpc: true);
 
@@ -240,6 +242,7 @@ public class SuperBassStart : CharState {
 		base.onExit(newState);
 		treble?.destroySelf();
 		aura?.destroySelf();
+		square?.destroySelf();
 	}
 
 	public override void update() {
@@ -286,6 +289,10 @@ public class SuperBassStart : CharState {
 				character.playSound("treble_boost_activate");
 				phase = 4;
 				drawSquare = true;
+				square = new SuperBassSquare(
+					bass, bass.getCenterPos(), bass.xDir, 
+					player.getNextActorNetId(), bass.ownedByLocalPlayer, true
+				);
 				
 				break;
 			//Despawns treble and uses hypermode
@@ -304,13 +311,15 @@ public class SuperBassStart : CharState {
 			case 5:
 				if (s <= 0) {
 					drawSquare = false;
+					square?.destroySelf(doRpcEvenIfNotOwned: true);
 					new SuperBassPilar(character.pos);
 					character.playSound("super_bass_aura", sendRpc: true);
 					bass.frameSpeed = 1;
 
 					aura = new Anim(
-						bass.pos, "sbass_aura", bass.xDir, null, false, true
-					) { zIndex = ZIndex.Character - 10 };
+						bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(), 
+						false, true, zIndex: ZIndex.Character - 10
+					);
 
 					phase = 6;
 				} 
@@ -324,7 +333,7 @@ public class SuperBassStart : CharState {
 		base.render(x,y);
 		if (!drawSquare) return;
 
-		Point center = bass.getCenterPos().addxy(bass.xDir * 3, -4);
+		/* Point center = bass.getCenterPos().addxy(bass.xDir * 3, -4);
 		Point[] points = new Point[4];
 		Color color = new Color(255,255,255, (byte)t);
 
@@ -334,7 +343,7 @@ public class SuperBassStart : CharState {
 			);
 		}
 
-		DrawWrappers.DrawPolygon(points.ToList(), color, true, ZIndex.Foreground + 10);
+		DrawWrappers.DrawPolygon(points.ToList(), color, true, ZIndex.Foreground + 10);  */
 	}
 
 	Point getJumpVel() {
@@ -345,6 +354,49 @@ public class SuperBassStart : CharState {
 		float y2 = ((Physics.Gravity * 60) * (jumpMaxTime / 60)) / 2;
 		
 		return new Point(x, y1 - y2);
+	}
+}
+
+public class SuperBassSquare : Anim {
+
+	Actor chr = null!;
+	float s = 112; // Square size
+	float a; // Square rotation
+	float t = 200; // Square opacity
+	float tIncrease = 7;
+	public SuperBassSquare(
+		Actor owner, Point pos, int xDir, ushort? netId, bool ownedByLocalPlayer, bool rpc = false
+	) : base(
+		pos, "gyro_attack_proj", xDir, netId, false, rpc
+	) {
+		chr = owner;
+		canBeLocal = false;
+	}
+
+	public override void update() {
+		base.update();
+		changePos(chr.getCenterPos());
+
+		s -= 1f;
+		a += 4;
+		t += tIncrease;
+		if (t > 255) t = 255;
+		else if (t < 0) t = 0;
+	}
+
+	public override void render(float x, float y) {
+		Point center = chr.getCenterPos().addxy(chr.xDir * 3, -4);
+		Point[] points = new Point[4];
+		Color color = new Color(255,255,255, (byte)t);
+
+		for (int i = 0; i < 4; i++) {
+			points[i] = center.add(
+				Point.createFromByteAngle(a + (i * 64)).times(s)
+			);
+		}
+
+		DrawWrappers.DrawPolygon(points.ToList(), color, true, ZIndex.Foreground + 10);
+		base.render(x,y);
 	}
 }
 
@@ -393,8 +445,8 @@ public class EnergyCharge : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 		aura = new Anim(
-			bass.pos, "sbass_aura", bass.xDir, null, false, true
-		) { zIndex = ZIndex.Character - 10 };
+			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 10 
+		);
 		bass.stopMoving();
 		bass.gravityModifier = 0.1f;
 		bass.frameIndex = 3;

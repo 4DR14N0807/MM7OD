@@ -1914,11 +1914,12 @@ public partial class Actor : GameObject {
 	public void drawFuelMeterEXH(int length, int maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
 		Point bp = barPos.substractxy(Global.level.camX, Global.level.camY);
 		for (int i = 0; i < maxLength; i++) {
-			if (i < length) {
-				Global.sprites["hud_bar_small_h"].drawToHUD(colorIndex, bp.x, bp.y);
-			} else if (drawFullBar) {
+			if (drawFullBar) {
 				Global.sprites["hud_bar_small_h"].drawToHUD(0, bp.x, bp.y);
 			}
+			if (i < length) {
+				Global.sprites["hud_bar_small_h"].drawToHUD(colorIndex, bp.x, bp.y);
+			} 
 			bp.x += 2;
 		}
 	}

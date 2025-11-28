@@ -1837,12 +1837,13 @@ public class GameMode {
 				text = "?";
 			}
 		}
-		if (text != "") {
-			Fonts.drawText(textColor, text, x + 8, y, Alignment.Right);
-		}
-
+		
 		if (weapon.ammo < weapon.maxAmmo && weapon.drawAmmo) {
 			drawWeaponSlotAmmo(x, y, weapon.ammo / weapon.maxAmmo);
+		}
+
+		if (text != "") {
+			Fonts.drawText(textColor, text, x + 8, y, Alignment.Right);
 		}
 	}
 
@@ -2277,7 +2278,7 @@ public class GameMode {
 
 			//Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, cols[0] + 5, posY - 2);
 			Fonts.drawText(charColor, player.name, cols[0] + 12, posY);
-			Fonts.drawText(FontType.Blue, player.kills.ToString(), cols[1], posY);
+			Fonts.drawText(FontType.Blue, (player.kills - player.assists).ToString(), cols[1], posY);
 			Fonts.drawText(FontType.Red, player.getDeathScore().ToString(), cols[2], posY);
 
 			if (Global.serverClient != null) {
@@ -2707,15 +2708,22 @@ public class GameMode {
 		int leaderTeam = 0;
 		int leaderScore = -1;
 		bool moreThanOneLeader = false;
+		int leaderCount = 0;
+		//First we check the current highest team score.
 		for (int i = 0; i < Global.level.teamNum; i++) {
-			if (teamPoints[0] >= leaderScore) {
+			if (teamPoints[i] >= leaderScore) {
 				leaderTeam = i;
-				if (leaderScore == teamPoints[i]) {
-					moreThanOneLeader = true;
-				}
 				leaderScore = teamPoints[i];
 			}
 		}
+		//Then we check if there is more than one team with said highest score.
+		for (int i = 0; i < Global.level.teamNum; i++) {
+			if (leaderScore == teamPoints[i]) {
+				leaderCount++;
+			}
+		}
+		moreThanOneLeader = leaderCount > 1;
+
 		if (!moreThanOneLeader) {
 			Fonts.drawText(
 				teamFontsSmall[leaderTeam], $"Leader: {leaderScore.ToString().PadLeft(2, ' ')}",

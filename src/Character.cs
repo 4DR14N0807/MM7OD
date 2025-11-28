@@ -2498,7 +2498,7 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		if (shouldDrawHealthBar || Global.overrideDrawHealth) {
-			drawHealthBar();
+			//drawHealthBar();
 		}
 		if (shouldDrawName || Global.overrideDrawName && overrideName != "") {
 			drawName(overrideName, overrideColor);
@@ -2884,7 +2884,7 @@ public partial class Character : Actor, IDamagable {
 		getHealthNameOffsets(out bool shieldDrawn, ref healthPct);
 
 		string playerName = player.name;
-		FontType playerColor = FontType.Grey;
+		FontType playerColor = FontType.WhiteSmall;
 		if (Global.level.gameMode.isTeamMode && player.alliance < Global.level.teamNum) {
 			playerColor = Global.level.gameMode.teamFontsSmall[player.alliance];
 		}
@@ -2894,10 +2894,11 @@ public partial class Character : Actor, IDamagable {
 			playerColor = overrideColor.Value;
 		}
 		float textPosX = pos.x;
-		float textPosY = pos.y + currentLabelY - 8;
+		float textPosY = pos.y + currentLabelY - 14;
+		if (this is Blues && Global.level.specPlayer.character == this) textPosY -= 5;
 
 		Fonts.drawText(
-			FontType.Grey, playerName, textPosX, textPosY,
+			FontType.WhiteSmall, playerName, textPosX, textPosY,
 			Alignment.Center, true, depth: ZIndex.HUD
 		);
 
@@ -3693,6 +3694,30 @@ public partial class Character : Actor, IDamagable {
 		renderLifebar(offset, position);
 		renderAmmo(offset, position);
 		renderBuffs(offset, position);
+
+		bool shouldDrawHealthBar = false;
+		if (!hideHealthAndName()) {
+			if (Global.level.mainPlayer.isSpectator) {
+				shouldDrawHealthBar = true;
+			} 
+			// Basic case, drawing alliance of teammates in team modes
+			else if (
+				!player.isMainPlayer && player.alliance == Global.level.mainPlayer.alliance &&
+				Global.level.gameMode.isTeamMode
+			) {
+			
+				shouldDrawHealthBar = true;
+			}
+		}
+
+		if (shouldDrawHealthBar || Global.overrideDrawHealth) {
+			drawFuelMeterEXH(((int)health * 16) / (int)maxHealth, 16, 1, new Point(pos.x - 16, pos.y + 10 + currentLabelY));
+			if (this is Blues blues) {
+				drawFuelMeterEXH(
+					((int)blues.shieldHP * 16) / (int)blues.shieldMaxHP, 16, 2, new Point(pos.x - 16, pos.y + 5 + currentLabelY)
+				);
+			}
+		}
 	}
 
 	public virtual void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
@@ -3849,12 +3874,6 @@ public partial class Character : Actor, IDamagable {
 			charState.stunImmune,
 			hasBubble
 		]);
-
-		customData.Add(netHP);
-		customData.Add(netMaxHP);
-		customData.Add(netAlliance);
-		customData.Add(netCurrency);
-		customData.Add(stateFlag);
 
 		customData.Add(netHP);
 		customData.Add(netMaxHP);

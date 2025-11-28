@@ -351,6 +351,7 @@ public enum BassProjIds {
 	SweepingLaser,
 	DarkCometUp,
 	DarkCometDown,
+	SuperBassSquare,
 }
 
 public enum BluesProjIds  {

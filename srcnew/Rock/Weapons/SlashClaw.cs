@@ -65,14 +65,8 @@ public class SlashClawState : CharState {
 	public override void update() {
 		base.update();
 
+		airTrasition();
 		if (character.isAnimOver()) character.changeToIdleOrFall();
-		/* else {
-			if (character.grounded && player.input.isPressed(Control.Jump, player)) {
-				character.vel.y = -character.getJumpPower();
-				sprite = "slashclaw_air";
-				character.changeSpriteFromName(sprite, false);
-			}
-		} */
 	}
  }
 

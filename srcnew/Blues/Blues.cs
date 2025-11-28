@@ -274,9 +274,6 @@ public class Blues : Character {
 
 
 	public override bool canJump() {
-		if (charState is ShieldDash) {
-			return false;
-		}
 		if (charState is BluesSlide bsd && bsd.locked) return false;
 		return base.canJump();
 	}
@@ -741,7 +738,19 @@ public class Blues : Character {
 		}
 		if (shieldDash && canShieldDash()) {
 			addCoreAmmo(2);
-			changeState(new ShieldDash(), true);
+			if (canJump() && player.input.isPressed(Control.Jump, player)) {
+				isDashing = true;
+				vel.y = -getJumpPower();
+				changeState(getJumpState(), true);
+				playSound("slide", sendRpc: true);
+				new Anim(
+					getDashDustEffectPos(xDir).addxy(0, 4),
+					"dust", xDir, player.getNextActorNetId(), true,
+					sendRpc: true
+				) { vel = new Point(0, -40) };
+			} else {
+				changeState(new ShieldDash(), true);
+			}
 			if (!grounded) {
 				dashedInAir++;
 			}

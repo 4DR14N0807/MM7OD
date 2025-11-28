@@ -350,6 +350,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.SweepingLaser, SweepingLaserProj.rpcInvoke },
 		{ (int)BassProjIds.DarkCometUp, DarkCometUpProj.rpcInvoke },
 		{ (int)BassProjIds.DarkCometDown, DarkCometDownProj.rpcInvoke },
+		{ (int)BassProjIds.SuperBassSquare, SuperBassSquare.rpcInvoke },
 	};
 
 }

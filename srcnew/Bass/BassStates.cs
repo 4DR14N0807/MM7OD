@@ -291,7 +291,7 @@ public class SuperBassStart : CharState {
 				drawSquare = true;
 				square = new SuperBassSquare(
 					bass, bass.getCenterPos(), bass.xDir, 
-					player.getNextActorNetId(), bass.ownedByLocalPlayer, true
+					player.getNextActorNetId(), true
 				);
 				
 				break;
@@ -357,20 +357,33 @@ public class SuperBassStart : CharState {
 	}
 }
 
-public class SuperBassSquare : Anim {
+public class SuperBassSquare : Projectile {
 
 	Actor chr = null!;
 	float s = 112; // Square size
 	float a; // Square rotation
-	float t = 200; // Square opacity
+	float t = 0; // Square opacity
 	float tIncrease = 7;
 	public SuperBassSquare(
-		Actor owner, Point pos, int xDir, ushort? netId, bool ownedByLocalPlayer, bool rpc = false
+		Actor owner, Point pos, int xDir, ushort? netId, 
+		bool rpc = false, Player? player = null
 	) : base(
-		pos, "gyro_attack_proj", xDir, netId, false, rpc
+		pos, xDir, owner, "empty", netId, player
 	) {
+		projId = (int)BassProjIds.SuperBassSquare;
+		maxTime = 2;
 		chr = owner;
 		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SuperBassSquare(
+			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+		);
 	}
 
 	public override void update() {
@@ -382,9 +395,12 @@ public class SuperBassSquare : Anim {
 		t += tIncrease;
 		if (t > 255) t = 255;
 		else if (t < 0) t = 0;
+
+		if (s <= 0) destroySelf(doRpcEvenIfNotOwned: true);
 	}
 
 	public override void render(float x, float y) {
+		base.render(x,y);
 		Point center = chr.getCenterPos().addxy(chr.xDir * 3, -4);
 		Point[] points = new Point[4];
 		Color color = new Color(255,255,255, (byte)t);
@@ -396,7 +412,6 @@ public class SuperBassSquare : Anim {
 		}
 
 		DrawWrappers.DrawPolygon(points.ToList(), color, true, ZIndex.Foreground + 10);
-		base.render(x,y);
 	}
 }
 

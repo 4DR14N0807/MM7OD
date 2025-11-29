@@ -277,11 +277,11 @@ public class JunkShieldProj : Projectile {
 	
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!smallestSon && !threw) new Anim(pos, "generic_explosion", xDir, null, true);
-		if (!threw) new Anim(pos, sprite.name, xDir, null!, false, false)
-		{ useGravity = true, vel = new Point(0, -180), ttl = 1.25f, frameSpeed = 0, frameIndex = this.frameIndex };
-
 		if (!ownedByLocalPlayer || rock == null) return;
+
+		if (!smallestSon && !threw) new Anim(pos, "generic_explosion", xDir, null, true, true);
+		if (!threw) new Anim(pos, sprite.name, xDir, null!, false, true)
+		{ useGravity = true, vel = new Point(0, -180), ttl = 1.25f, frameSpeed = 0, frameIndex = this.frameIndex };
 		
 		rock.junkShieldProjs.Remove(this);
 		if (!smallestSon && !threw) playSound("danger_wrap_explosion", sendRpc: true);

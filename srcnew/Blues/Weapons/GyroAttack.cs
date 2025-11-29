@@ -79,6 +79,10 @@ public class GyroAttackProj : Projectile {
 				changedDir = true;
 			}
 		}
+
+		if (time / maxTime >= 0.6f && !changedDir) {
+			visible = Global.isOnFrameCycle(5);
+		} else visible = true;
 	}
 
 	public override void onDamageEX(IDamagable damagable) {

@@ -1709,41 +1709,18 @@ public class GameMode {
 		var startY = Global.screenH - 12;
 
 		if (player.isGridModeEnabled()) {
-			if (player.gridModeHeld == true && player.character != null) {
+			if (player.input.getGridInputDir(player) != Point.zero && player.character != null) {
 
-				/* for (int i = 0; i < player.character.weapons.Count; i++) {
-					float ang = (360 / player.character.weapons.Count) * i;
-					Point iconPos = player.gridModePointsEX(
-						player.character.getCenterPos().substractxy(
-							Global.level.camX, Global.level.camY
-						), ang
-					);
-
-					drawWeaponSlot(player.character.weapons[i], iconPos.x, iconPos.y);
-
-					if (i == player.character.weaponSlot) {
-						drawWeaponStateOverlay(iconPos.x, iconPos.y, 0);
-					}		
-				} */
-
-				var gridPoints = player.gridModePoints();
-				for (int i = 0; i < player.weapons.Count && i < 9; i++) {
-					Point pos = gridPoints[i];
+				Point[] gridPositions = player.gridModePointsEX();
+				for (int i = 0; i < gridPositions.Length; i++) {
 					Weapon weapon = player.weapons[i];
-					float x = Global.halfScreenW + (pos.x * 20);
-					float y = Global.screenH - 30 + pos.y * 20;
-					int slotSelected = -1;
-					if (player.character != null) {
-						x = player.character.pos.x - Global.level.camX;
-						y = player.character.pos.y - Global.level.camY;
-						slotSelected = player.character.weaponSlot;
-					}
-					x += pos.x * 20;
-					y += -30 + pos.y * 20;
+					Point pos;
+					pos.x = player.character.getCenterPos().x - Global.level.camX + (gridPositions[i].x * 25);
+					pos.y = player.character.getCenterPos().y - Global.level.camY + (gridPositions[i].y * 25);
 
-					drawWeaponSlot(weapon, x, y);
-					if (i == slotSelected) {
-						drawWeaponStateOverlay(x, y, 0);
+					drawWeaponSlot(weapon, pos.x, pos.y);
+					if (i == player.character.weaponSlot) {
+						drawWeaponStateOverlay(pos.x, pos.y, 0);
 					}
 				}
 			}
@@ -1860,12 +1837,13 @@ public class GameMode {
 				text = "?";
 			}
 		}
-		if (text != "") {
-			Fonts.drawText(textColor, text, x + 8, y, Alignment.Right);
-		}
-
+		
 		if (weapon.ammo < weapon.maxAmmo && weapon.drawAmmo) {
 			drawWeaponSlotAmmo(x, y, weapon.ammo / weapon.maxAmmo);
+		}
+
+		if (text != "") {
+			Fonts.drawText(textColor, text, x + 8, y, Alignment.Right);
 		}
 	}
 
@@ -2300,7 +2278,7 @@ public class GameMode {
 
 			//Global.sprites[getCharIcon(player)].drawToHUD(player.realCharNum, cols[0] + 5, posY - 2);
 			Fonts.drawText(charColor, player.name, cols[0] + 12, posY);
-			Fonts.drawText(FontType.Blue, player.kills.ToString(), cols[1], posY);
+			Fonts.drawText(FontType.Blue, (player.kills - player.assists).ToString(), cols[1], posY);
 			Fonts.drawText(FontType.Red, player.getDeathScore().ToString(), cols[2], posY);
 
 			if (Global.serverClient != null) {
@@ -2730,15 +2708,22 @@ public class GameMode {
 		int leaderTeam = 0;
 		int leaderScore = -1;
 		bool moreThanOneLeader = false;
+		int leaderCount = 0;
+		//First we check the current highest team score.
 		for (int i = 0; i < Global.level.teamNum; i++) {
-			if (teamPoints[0] >= leaderScore) {
+			if (teamPoints[i] >= leaderScore) {
 				leaderTeam = i;
-				if (leaderScore == teamPoints[i]) {
-					moreThanOneLeader = true;
-				}
 				leaderScore = teamPoints[i];
 			}
 		}
+		//Then we check if there is more than one team with said highest score.
+		for (int i = 0; i < Global.level.teamNum; i++) {
+			if (leaderScore == teamPoints[i]) {
+				leaderCount++;
+			}
+		}
+		moreThanOneLeader = leaderCount > 1;
+
 		if (!moreThanOneLeader) {
 			Fonts.drawText(
 				teamFontsSmall[leaderTeam], $"Leader: {leaderScore.ToString().PadLeft(2, ' ')}",

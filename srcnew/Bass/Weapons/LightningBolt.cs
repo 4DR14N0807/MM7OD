@@ -143,6 +143,7 @@ public class LightningBoltState : CharState {
 
 				float xPos = aim?.pos.x ?? character.pos.x;
 				float yPos = aim?.pos.y + 34 ?? character.pos.y;
+				yPos = Math.Min(yPos, character.pos.y + spawnYPos);
 				lightningPos = new Point(xPos, yPos);
 				aim?.destroySelf();
 				overrideDamage = MathF.Floor((stateFrames / chargeTime)) + 2;

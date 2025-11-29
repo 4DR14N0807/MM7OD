@@ -233,7 +233,7 @@ public class RemoteMineLandProj : Projectile {
 		pos, xDir, owner, "remote_mine_land", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMineLand;
-		maxTime = 4;
+		maxTime = 10;
 		destroyOnHit = true;
 
 		if (ownedByLocalPlayer && owner.ownedByLocalPlayer) {

@@ -55,17 +55,16 @@ public class ProtoBusterAngledProj : Projectile {
 		Actor owner, Point pos, float byteAngle, int type, 
 		ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, 1, owner, "proto_midcharge_proj", netId, altPlayer
+		pos, 1, owner, "proto_buster_proj", netId, altPlayer
 	) {
 		byteAngle = byteAngle % 256;
-		fadeSprite = "proto_midcharge_proj_fade";
+		fadeSprite = "proto_buster_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 0.425f;
 		projId = (int)BluesProjIds.LemonAngled;
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
 		damager.damage = 1;
-		damager.hitCooldown = 60;
 
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;
@@ -76,7 +75,7 @@ public class ProtoBusterAngledProj : Projectile {
 
 		if (type == 0) {
 			changeSprite("rock_buster_proj", true);
-			fadeSprite = "proto_buster_proj_fade";
+			fadeSprite = "rock_buster_fade";
 			damager.damage = 0.5f;
 		} else if (type == 2) {
 			damager.damage = 2;

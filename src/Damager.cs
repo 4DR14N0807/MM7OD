@@ -30,7 +30,7 @@ public class Damager {
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
-		{ (int)BluesProjIds.LemonAngled, 3 },
+		//{ (int)BluesProjIds.LemonAngled, 3 },
 		{ (int)BluesProjIds.LemonOverdrive, 3 },
 	};
 	

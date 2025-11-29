@@ -67,10 +67,10 @@ public class CharSelection {
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
 
 	public static CharSelection[] selections => [
-		new CharSelection("Megaman", (int)CharIds.Rock, 0, 0, "rock_idle", 0),
-		new CharSelection("Protoman", (int)CharIds.Blues, 0, 0, "blues_idle", 0 ),
-		new CharSelection("Bass", (int)CharIds.Bass, 0, 0, "bass_idle", 0),
-		new CharSelection("Slashman", (int)CharIds.Slashman, 0, 0, "rock_idle", 0),
+		new CharSelection("MEGA MAN", (int)CharIds.Rock, 0, 0, "rock_idle", 0),
+		new CharSelection("PROTO MAN", (int)CharIds.Blues, 0, 0, "blues_idle", 0 ),
+		new CharSelection("BASS", (int)CharIds.Bass, 0, 0, "bass_idle", 0),
+		new CharSelection("SLASH MAN", (int)CharIds.Slashman, 0, 0, "rock_idle", 0),
 	];
 
 	public static CharSelection[] selections1v1 => selections;

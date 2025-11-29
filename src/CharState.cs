@@ -283,7 +283,7 @@ public class CharState {
 				character.sprite.frameIndex = character.sprite.totalFrameNum - 1;
 				character.sprite.frameTime = character.sprite.getCurrentFrame().duration;
 			}
-		} else if (landSprite != "" && character.grounded && wasGrounded != true && sprite == airSprite) {
+		} else if (landSprite != "" && character.grounded && wasGrounded != true) {
 			character.playAltSound("land", sendRpc: true, altParams: "larmor");
 			sprite = landSprite;
 			int oldFrameIndex = character.frameIndex;
@@ -964,7 +964,6 @@ public class Dash : CharState {
 			);
 		}
 		// Timer.
-		dashTime += character.speedMul;
 		if (dashSpeed < maxDashSpeed) {
 			dashSpeed += 0.75f;
 			if (dashSpeed > maxDashSpeed) {

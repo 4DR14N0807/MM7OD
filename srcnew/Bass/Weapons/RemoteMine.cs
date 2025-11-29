@@ -35,16 +35,21 @@ public class RemoteMine : Weapon {
 			character.player.input.isPressed(Control.Shoot, character.player)
 		) {
 			activeMine.explode();
+			shootOnFrame = true;
+		} else {
+			shootOnFrame = false;
 		}
-		shootOnFrame = false;
-
 		if (landedMines.Count > 0) {
 			landedMines = landedMines.Where(mine => !mine.destroyed).ToList();
 		}
 	}
 
-	public override bool canShoot(int chargeLevel, Actor actor) {
-		return base.canShoot(chargeLevel, actor) && (shootCooldown > 0 || activeMine?.destroyed != false);
+	public override bool canShoot(int chargeLevel, Character chara) {
+		return (
+			!shootOnFrame &&
+			ammo > 0 &&
+			activeMine?.destroyed != false
+		);
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -63,7 +68,7 @@ public class RemoteMine : Weapon {
 		landedMines.Add(proj);
 
 		landedMines = landedMines.Where(mine => !mine.destroyed).ToList();
-		int removalTheshold = landedMines.Count - 2;
+		int removalTheshold = landedMines.Count - 1;
 
 		for (int i = landedMines.Count - 1; i >= 0; i--) {
 			if (i < removalTheshold) {
@@ -97,7 +102,6 @@ public class RemoteMineProj : Projectile {
 
 		if (ownedByLocalPlayer && owner.ownedByLocalPlayer) {
 			this.linkedWeapon = linkedWeapon;
-			linkedWeapon?.addMine(this);
 		}
 		canBeLocal = false;
 
@@ -213,9 +217,17 @@ public class RemoteMineProj : Projectile {
 		if (exploded) {
 			return;
 		}
+		// Explode if local player.
 		if (ownedByLocalPlayer && ownerActor != null) {
-			new RemoteMineExplosionProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
+			var rme = new RemoteMineExplosionProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
 			playSound("remotemineExplode", true);
+			// Apply direct damage if attached.
+			if (attachHost is IDamagable damagable) {
+				rme.damager.applyDamage(
+					damagable, false, linkedWeapon ?? weapon,
+					rme, (int)BassProjIds.RemoteMineMeleeExplosion
+				);
+			}
 		}
 		exploded = true;
 	}
@@ -233,7 +245,7 @@ public class RemoteMineLandProj : Projectile {
 		pos, xDir, owner, "remote_mine_land", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMineLand;
-		maxTime = 10;
+		maxTime = 4;
 		destroyOnHit = true;
 
 		if (ownedByLocalPlayer && owner.ownedByLocalPlayer) {

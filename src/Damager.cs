@@ -87,6 +87,9 @@ public class Damager {
 		if (projId == (int)BassProjIds.IceWallLemon) {
 			key = $"{(int)BassProjIds.BassLemon}_{owner.id}";
 		}
+		if (projId == (int)BassProjIds.RemoteMineMeleeExplosion) {
+			key = $"{(int)BassProjIds.RemoteMineExplosion}_{owner.id}";
+		}
 
 		if (victim is not IDamagable damagable) {
 			return false;
@@ -310,7 +313,9 @@ public class Damager {
 			if (damage > 0 || projId == (int)BassProjIds.BassLemon) {
 				//Hurt Direction
 				int hurtDir = -character.xDir;
-				if (damagingActor != null && hitFromBehind(character, damagingActor, owner, projId)) {
+				if (damagingActor != null && !alwaysDirBlock(damagingActor, projId) &&
+					hitFromBehind(character, damagingActor, owner, projId)
+				) {
 					hurtDir *= -1;
 				}
 				// Flinch above 0.
@@ -502,9 +507,6 @@ public class Damager {
 	}
 
 	public static bool alwaysDirBlock(Actor actor, int projId) {
-		if (projId == (int)BassProjIds.RemoteMineExplosion && actor is RemoteMineExplosionProj remoteMine) {
-			return remoteMine.time >= 6f / 60f;
-		}
 		if (projId == (int)RockProjIds.ScorchWheel && actor is ScorchWheelProj) {
 			return true;
 		}
@@ -512,6 +514,7 @@ public class Damager {
 			(int)RockProjIds.ScorchWheelBurn => true,
 			(int)ProjIds.AcidBurstPoison => true,
 			(int)ProjIds.Burn => true,
+			(int)BassProjIds.RemoteMineMeleeExplosion => true,
 			_ => false
 		};
 	}

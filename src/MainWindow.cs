@@ -89,8 +89,8 @@ public partial class Global {
 			#if WINDOWS
 				IntPtr handle = window.SystemHandle;
 				const int GWL_STYLE = -16;
-				const UInt32 WS_POPUP = 0x80000000;
-				UInt32 currentStyle = Program.GetWindowLong(handle, GWL_STYLE);
+				const uint WS_POPUP = 0x80000000;
+				uint currentStyle = Program.GetWindowLong(handle, GWL_STYLE);
 				Program.SetWindowLong(handle, GWL_STYLE, currentStyle & ~(WS_POPUP));
 			#endif
 		}

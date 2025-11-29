@@ -16,7 +16,7 @@ public class BluesMovelistMenu : MovelistMenu {
 	public BluesMovelistMenu(
 		IMainMenu prevMenu, bool inGame, int weaponId, bool hasShield, bool isBreakMan
 	) : base(
-		prevMenu, inGame, isBreakMan ? "BREAK MAN" : "PROTO MAN"
+		prevMenu, inGame, isBreakMan ? "Breakman" : "Protoman"
 	) {
 		this.hasShield = hasShield;
 		this.weaponId = (weaponId + 1) * 2;
@@ -52,7 +52,7 @@ public class BluesMovelistMenu : MovelistMenu {
 			new MovelistItem(
 				spriteName, 24, "BIG BANG STRIKE", Control.Special1, "OVERHEAT ONLY"
 			),
-			//Break Man
+			//Breakman
 			new MovelistItem(
 				spriteNameBreakMan, hasShield ? 20 : 19, "AIR DASH", Control.Dash, "MID-AIR"
 			),
@@ -74,7 +74,7 @@ public class BluesMovelistMenu : MovelistMenu {
 	public override void update() {
 		base.update();
 
-		if (scrollIndex > 1) title = "BREAK MAN";
+		if (scrollIndex > 1) title = "Breakman";
 		else title = ogTitle;
 	}
 

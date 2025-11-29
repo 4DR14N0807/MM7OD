@@ -30,7 +30,7 @@ public class Blues : Character {
 	public float overheatTime;
 	public bool starCrashOverheat;
 
-	// Break Man stuff.
+	// Breakman stuff.
 	public bool overdrive;
 	public float overdriveAmmo = 20;
 	public float overdriveAmmoDecreaseCooldown;

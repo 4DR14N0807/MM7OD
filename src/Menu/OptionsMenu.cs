@@ -856,7 +856,7 @@ public class OptionsMenu : IMainMenu {
 							pos.x + 200, pos.y
 						);
 					},
-					"If set to Hold, Proto Man will use his shield \n" + "only as long as WEAPON L/R is held."
+					"If set to Hold, Protoman will use his shield \n" + "only as long as WEAPON L/R is held."
 				),
 				new MenuOption(
 					30, startY,

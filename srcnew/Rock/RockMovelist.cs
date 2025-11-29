@@ -12,7 +12,7 @@ public class RockMovelistMenu : MovelistMenu {
 	public RockMovelistMenu(
 		IMainMenu prevMenu, bool inGame, bool hasSuperAdaptor
 	) : base(
-		prevMenu, inGame, hasSuperAdaptor ? "SUPER MEGA MAN" : "MEGA MAN"
+		prevMenu, inGame, hasSuperAdaptor ? "SUPER MEGAMAN" : "MEGAMAN"
 	) {
 		this.hasSuperAdaptor = hasSuperAdaptor;
 		ogTitle = title;
@@ -80,7 +80,7 @@ public class RockMovelistMenu : MovelistMenu {
 	public override void update() {
 		base.update();
 
-		if (scrollIndex > 1) title = "SUPER MEGA MAN";
+		if (scrollIndex > 1) title = "SUPER MEGAMAN";
 		else title = ogTitle;
 	}
 

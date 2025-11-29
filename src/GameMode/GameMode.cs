@@ -2484,7 +2484,7 @@ public class GameMode {
 		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver && level.mainPlayer.canReviveBlues()) {
 			Fonts.drawTextEX(
 				FontType.Red, Helpers.controlText(
-						$"[CMD]: Revive as Break Man ({Blues.reviveCost} {Global.nameCoins})"
+						$"[CMD]: Revive as Breakman ({Blues.reviveCost} {Global.nameCoins})"
 					),
 				Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
 			);

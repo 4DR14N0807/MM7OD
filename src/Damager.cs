@@ -378,6 +378,7 @@ public class Damager {
 			(int)ProjIds.TenguBladeDash => true,
 			(int)BassProjIds.TenguBladeDash => true,
 			(int)BassProjIds.LightningBolt => true,
+			(int)BassProjIds.RemoteMineMeleeExplosion => true,
 			(int)BassProjIds.RemoteMineExplosion => true,
 			(int)BassProjIds.SpreadDrill => true,
 			(int)BassProjIds.SpreadDrillMid => true,

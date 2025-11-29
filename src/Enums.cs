@@ -332,6 +332,7 @@ public enum BassProjIds {
 	WaveBurnerUnderwater,
 	RemoteMine,
 	RemoteMineLand,
+	RemoteMineMeleeExplosion,
 	RemoteMineExplosion,
 	LightningBolt,
 	TenguBladeStart,

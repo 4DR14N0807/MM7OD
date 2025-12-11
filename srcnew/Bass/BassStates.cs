@@ -329,23 +329,6 @@ public class SuperBassStart : CharState {
 		if (endTime >= 60) character.changeToIdleOrFall();
 	}
 
-	public override void render(float x, float y) {
-		base.render(x,y);
-		if (!drawSquare) return;
-
-		/* Point center = bass.getCenterPos().addxy(bass.xDir * 3, -4);
-		Point[] points = new Point[4];
-		Color color = new Color(255,255,255, (byte)t);
-
-		for (int i = 0; i < 4; i++) {
-			points[i] = center.add(
-				Point.createFromByteAngle(a + (i * 64)).times(s)
-			);
-		}
-
-		DrawWrappers.DrawPolygon(points.ToList(), color, true, ZIndex.Foreground + 10);  */
-	}
-
 	Point getJumpVel() {
 		if (treble == null) return Point.zero;
 		headPos = character.pos.addxy(0, -40);

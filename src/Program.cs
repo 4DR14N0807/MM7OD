@@ -258,7 +258,7 @@ class Program {
 
 		// Force startup config to be fetched
 		Menu.change(new MainMenu());
-		Global.changeMusic("menu");
+		Global.changeMusic("menu3");
 
 		if (mode == 1) {
 			HostMenu menu = new HostMenu(new MainMenu(), null, false, false, true);
@@ -993,6 +993,7 @@ class Program {
 
 		float startPos = 0;
 		float endPos = 0;
+		bool loop = true;
 		if (iniData["loopData"] is NullableMap<string, dynamic> loopData) {
 			if (loopData["loopStart"] is decimal loopStart) {
 				startPos = float.Parse(loopStart.ToString());
@@ -1000,8 +1001,9 @@ class Program {
 			if (loopData["loopEnd"] is decimal loopEnd) {
 				endPos = float.Parse(loopEnd.ToString());
 			}
+			loop = loopData["loop"] == "true";
 		}
-		MusicWrapper musicWrapper = new MusicWrapper(file, startPos, endPos, true);
+		MusicWrapper musicWrapper = new MusicWrapper(file, startPos, endPos, loop);
 		if (endPos == 0) {
 			musicWrapper.endPos = musicWrapper.music.Duration.AsSeconds();
 		}

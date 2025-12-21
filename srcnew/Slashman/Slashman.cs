@@ -129,7 +129,8 @@ public class Slashman : Character {
 	}
 
 	public override string getSprite(string spriteName) {
-		return "rock_" + spriteName;
+		//Adrian: Just in case since we are going to update soon.
+		return "slashm_" + spriteName;
 	}
 
 	public override (string, int) getBaseHpSprite() {

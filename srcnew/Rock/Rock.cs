@@ -44,6 +44,8 @@ public class Rock : Character {
 		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
 	) {
 		charId = CharIds.Rock;
+		maxHealth = (decimal)player.getMaxHealth(charId);
+		health = (decimal)player.getMaxHealth(charId);
 		if (loadout == null) {
 			loadout = new RockLoadout {
 				weapon1 = player.loadout.rockLoadout.weapon1,

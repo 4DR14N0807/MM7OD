@@ -1724,7 +1724,7 @@ public class Blues : Character {
 				new Vertex((0, Global.halfScreenH)  + offsets[i], colors[3]),
 			];
 			if (i == 1 || i == 3) {
-				rectHud = rectHud.Reverse().ToArray();
+				rectHud.Reverse();
 			}
 			DrawWrappers.drawToHUD(rectHud, PrimitiveType.Quads);
 		}

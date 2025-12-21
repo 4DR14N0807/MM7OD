@@ -74,6 +74,7 @@ public partial class Player {
 		if (pingOrStartPing == null) {
 			return "?";
 		}
+		if (pingOrStartPing > 999) return "+999";
 		return MathInt.Floor(pingOrStartPing.Value).ToString();
 	}
 

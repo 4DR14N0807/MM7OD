@@ -629,7 +629,7 @@ public class GameMode {
 		}
 		if (level.isAfkWarn()) {
 			Fonts.drawText(
-				FontType.RedishOrange, "Warning: Time before AFK Kick: " + Global.level.afkWarnTimeAmount(),
+				FontType.WhiteSmall, "Warning: Time before AFK Kick: " + Global.level.afkWarnTimeAmount(),
 				Global.halfScreenW, 50, Alignment.Center
 			);
 		} else if (Global.serverClient != null && Global.serverClient.isLagging() && hudErrorMsgTime == 0) {

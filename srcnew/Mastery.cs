@@ -222,7 +222,7 @@ public class ExpBolts : Actor {
 		base.onCollision(other);
 		if (hommingOnActor && other.gameObject == target) {
 			destroySelf();
-			playSound("heal");
+			playSound("bolt");
 		}
 	}
 

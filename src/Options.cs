@@ -8,8 +8,8 @@ namespace MMXOnline;
 
 public class Options {
 	public string playerName = "";
-	public float musicVolume = 1;
-	public float soundVolume = 1;
+	public float musicVolume = 0.5f;
+	public float soundVolume = 0.5f;
 	public bool showWeaponHUD = true;
 	public int? regionIndex;
 	public bool logTelemetry = true;
@@ -51,7 +51,7 @@ public class Options {
 	public bool enableLowEndMap;
 	public bool enableSmallBars;
 	public bool smallBarsEx;
-	public bool oldNavPoints;
+	public bool oldNavPoints = true;
 
 	public bool lowQualityParticles() { return particleQuality == 0; }
 

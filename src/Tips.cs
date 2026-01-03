@@ -640,10 +640,6 @@ public class Tips {
 	{
 			new string[]
 			{
-				"When frozen, mash buttons to break out faster!",
-			},
-			new string[]
-			{
 				"Press 1-9 to switch weapons more quickly.",
 				"If you have these keys bound already, it won't work."
 			},
@@ -652,10 +648,6 @@ public class Tips {
 				"You can switch weapons or characters any time",
 				"in a match. Press the menu button",
 				"(default: ESCAPE) to do so.",
-			},
-			new string[]
-			{
-				$"The further you are behind, the more {Global.nameCoins} you earn.",
 			},
 			new string[]
 			{
@@ -669,7 +661,11 @@ public class Tips {
 			},
 			new string[]
 			{
-				"In CTF, hold the SLIDE key to drop the flag."
+				$"In CTF, hold the {Helpers.controlText("[DASH]")} key to drop the flag."
+			},
+			new string[] {
+				"Some attacks are able to deal full damage to Proto Man shield",
+				"They display a purple or yellow color when doing so."	
 			},
 		};
 
@@ -717,45 +713,88 @@ public class Tips {
 
 		new string[]
 		{
-			"As Super Adaptor, you can press DOWN + SLIDE",
+			$"As Super Adaptor, you can press {Helpers.controlText("[DOWN]")} + {Helpers.controlText("[DASH]")}",
 			"to use Leg Breaker."
 		},
 
 		new string[]
 		{
-			"As Super Adaptor, press DOWN + FOWARD + SHOOT",
+			$"As Super Adaptor, press {Helpers.controlText("[SPECIAL]")}",
 			"to use Arrow Slash."
 		},
 
 		new string[]
 		{
-			"Arrow Slash is not very effective at close range",
-			"Try using it against enemies in the air."
-		},
-
-		new string[]
-		{
 			"You can aim Freeze Cracker",
-			"by pressing UP or DOWN."
+			$"by pressing {Helpers.controlText("[UP]")} or {Helpers.controlText("[DOWN]")}."
 		},
 
 		new string[]
 		{
 			"You can change charged Wild Coil bounce patterns",
-			"by pressing UP or DOWN when shooting it."
+			$"by pressing {Helpers.controlText("[UP]")} or {Helpers.controlText("[DOWN]")} when shooting it."
 		},
-
 		new string[]
 		{
-			"Charged Wild Coil starts with low damage",
-			"but it gets stronger the more it bounces."
-		},
-
-		new string[]
-		{
-			"Hold SHOOT button to keep Scorch Wheel",
+			"Hold " + Helpers.controlText("[SHOOT]")  + " button to keep Scorch Wheel",
 			"arround you for more time."
 		},
+	};
+
+	public static List<string[]> bluesTipsPool = new List<string[]>() {
+		new string[] {
+			"Proto Shield makes your movement slower and jumps shorter,",
+			"Disable it to move faster across the map."
+		},
+		new string[] {
+			"Proto Man can't block attacks in front of him while doing most of his attacks.",
+			"Spamming attacks constantly can leave him exposed."	
+		},
+		new string[] {
+			"Unlike other weapons, Gravity Hold and Power Stone can be",
+			"used while Proto Man shield is active."	
+		},
+		new string[] {
+			"Proto Man shield health refills after taking",
+			"no damage during 3 seconds."
+		},
+		new string[] {
+			"Proto Man can use his backshield to reduce damage even",
+			"if he ran out of shield health."
+		},
+		new string[] {
+			"Big Bang Strike is a very situational attack, use it wisely."	
+		},
+		new string[] {
+			"While overdrive is active, most of your movements and attacks",
+			"decrease or increase your heat, watch out your heat bar!"
+		}
+	};
+
+	public static List<string[]> bassTipsPool = new List<string[]>() {
+		new string[] {
+			"Bass is a very frail character, make sure to keep",
+			"your distance as much as possible."
+		},
+		new string[] {
+			"Use Ice Wall + double jump to reach even higher spots!"	
+		},
+		new string[] {
+			"You can not double jump after dash-jumping."
+		},
+		new string[] {
+			"Ice Wall and Copy Vision let you use your buster while active.",
+			"However, you can't aim it."
+		},
+		new string[] {
+			"On Super Bass form, you can obtaing evil energy killing enemies or",
+			$"holding {Helpers.controlText("[CMD]")}."
+		},
+		new string[] {
+			"The more evil energy levels you reach, the stronger you will become now",
+			"and the weaker you will become on next respawn."	
+		},
+
 	};
 
 	public static string[] getRandomTip(int charNum) {
@@ -766,7 +805,9 @@ public class Tips {
 		else if (charNum == 2) tipsPool.AddRange(Tips.vileTipsPool);
 		else if (charNum == 3) tipsPool.AddRange(Tips.axlTipsPool);
 		else if (charNum == 4) tipsPool.AddRange(Tips.sigmaTipsPool);
-		else if (charNum == 5) tipsPool.AddRange(Tips.rockTipsPool);
+		else if (charNum == (int)CharIds.Rock) tipsPool.AddRange(Tips.rockTipsPool);
+		else if (charNum == (int)CharIds.Blues) tipsPool.AddRange(Tips.bluesTipsPool);
+		else if (charNum == (int)CharIds.Bass) tipsPool.AddRange(Tips.bassTipsPool);
 		return tipsPool.GetRandomItem();
 	}
 }

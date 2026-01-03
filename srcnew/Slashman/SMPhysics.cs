@@ -2,7 +2,7 @@
 	public static float minWalk = 0.25f;
 	public static float maxWalk = 1.25f;
 	public static float maxRun = 2.25f;
-	public static float maxSprint = 3;
+	public static float maxSprint = 3.25f;
 	public static float accel = 0.09375f;
 	public static float decel = 0.0625f;
 	public static float skidWalk = 0.15625f;

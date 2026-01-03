@@ -66,6 +66,15 @@ public class GameMode {
 		FontType.Orange
 	};
 
+	public Color[] teamColors = {
+		new Color(132, 206, 255),
+		new Color(255, 115, 115),
+		new Color(123, 255, 123),
+		new Color(206, 156, 255),
+		new Color(255, 231, 0),
+		new Color(255, 148, 0),
+	};
+
 	public VoteKick? currentVoteKick;
 	public float voteKickCooldown;
 

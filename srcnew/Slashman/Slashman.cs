@@ -17,7 +17,8 @@ public class Slashman : Character {
 	) {
 		charId = CharIds.Slashman;
 		charge1Time = 50;
-		maxHealth -= 18;
+		maxHealth = 18;
+		checkWallClimb = true;
 	}
 
 	public override void preUpdate() {
@@ -27,6 +28,9 @@ public class Slashman : Character {
 
 		int ixDir = player.input.getXDir(player);
 		int mdDir = MathF.Sign(moveDelta.x);
+		if (charState is WallSlide or WallKick && runSpeed < SMPhysics.maxRun) {
+			runSpeed = SMPhysics.maxRun;
+		}
 		if (MathF.Abs(moveDelta.x) > 0.1f && ixDir == mdDir) {
 			skidDir = 0;
 			float mul = grounded ? 1 : 0.5f;
@@ -60,9 +64,9 @@ public class Slashman : Character {
 
 	public override bool canCrouch() => false;
 	public override bool canDash() => false;
-	public override bool canWallClimb() => false;
+	public override bool canWallClimb() => base.canWallClimb();
 	public override CharState getRunState(bool skipInto = false) => new SlashmanRun();
-	public override bool canTurn() => MathF.Abs(runSpeed) < 0.5f;
+	public override bool canTurn() => MathF.Abs(runSpeed) < 0.5f || charState is WallKick or WallSlide;
 	public override float getRunSpeed() => runSpeed * getRunDebuffs();
 	public override float getJumpPower() {
 		return (SMPhysics.baseJump + (runSpeed * 5 * SMPhysics.jumpMul)) * 60;
@@ -129,7 +133,7 @@ public class Slashman : Character {
 	}
 
 	public override string getSprite(string spriteName) {
-		return "rock_" + spriteName;
+		return "slashman_" + spriteName;
 	}
 
 	public override (string, int) getBaseHpSprite() {

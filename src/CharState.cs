@@ -1238,7 +1238,7 @@ public class WallSlideAttack : CharState {
 public class WallKick : CharState {
 	public float dashThreshold = 0.2f;
 
-	public WallKick() : base("wall_kick", "wall_kick_shoot") {
+	public WallKick() : base("jump", "wall_kick_shoot") {
 		accuracy = 5;
 		exitOnLanding = true;
 		useDashJumpSpeed = true;

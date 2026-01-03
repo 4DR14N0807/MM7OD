@@ -218,8 +218,10 @@ public class Damager {
 
 			switch (projId) {
 				case (int)RockProjIds.ScorchWheel:
-				case (int)RockProjIds.ScorchWheelMove:
 					damagerMessage = onScorchDamage(damagable, owner, 1);
+					break;
+				case (int)RockProjIds.ScorchWheelMove:
+					damagerMessage = onScorchDamage(damagable, owner, 2);
 					break;
 				case (int)RockProjIds.DangerWrap:
 					damagerMessage = onDWrapDamage(damagable, owner);
@@ -281,10 +283,8 @@ public class Damager {
 					character.slowdownTime = MathF.Max(character.slowdownTime, 20);
 					break;
 				case (int)BassProjIds.WaveBurnerUnderwater:
-					if (damagingActor != null) {
-						Point push = Point.createFromByteAngle(damagingActor.byteAngle).times(5);
-						character.xPushVel += push.x;
-						character.yPushVel += push.y;
+					if (damagingActor is WaveBurnerUnderwaterProj wbproj) {
+						character.pushEffect(new Point(wbproj.pushDir, 0));
 					}
 					break;
 			}

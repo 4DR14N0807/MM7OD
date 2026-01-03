@@ -98,7 +98,7 @@ public class WaveBurnerProj : Projectile {
 	) : base(
 		pos, 1, owner, "wave_burner_proj", netProjId, altPlayer 
 	) {
-		damager.damage = 0.5f;
+		damager.damage = 0.55f;
 		damager.hitCooldown = 8;
 		maxUHitCount = 2;
 

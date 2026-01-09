@@ -279,7 +279,7 @@ public class FreezeMan : Character {
 	}
 
     public override string getSprite(string spriteName) {
-		return "freezem_" + spriteName;
+		return "_" + spriteName;
 	}
 
 	public override List<byte> getCustomActorNetData() {

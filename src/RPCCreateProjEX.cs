@@ -351,6 +351,13 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.DarkCometUp, DarkCometUpProj.rpcInvoke },
 		{ (int)BassProjIds.DarkCometDown, DarkCometDownProj.rpcInvoke },
 		{ (int)BassProjIds.SuperBassSquare, SuperBassSquare.rpcInvoke },
+
+		// Freeze Man
+		{ (int)RobotMastersProjIds.FreezeMProj, FreezeMProj.rpcInvoke },
+		{ (int)RobotMastersProjIds.FreezeMFreezeProj, FreezeMFreezeProj.rpcInvoke },
+		{ (int)RobotMastersProjIds.FreezeMSplitProj, FreezeMSplitProj.rpcInvoke },
+		{ (int)RobotMastersProjIds.FreezeMSplitProj2, FreezeMSplitProj2.rpcInvoke },
+		//{ (int)RobotMastersProjIds.FreezeMCrawlProj, FreezeMCrawlProj.rpcInvoke },
 	};
 
 }

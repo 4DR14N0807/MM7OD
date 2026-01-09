@@ -1117,6 +1117,11 @@ public partial class Player {
 				false, charNetId, ownedByLocalPlayer,
 				loadout: bassLoadout
 			);
+		} else if (charNum == (int)CharIds.Freezeman) {
+			newChar = new FreezeMan(
+				this, pos.x, pos.y, xDir, 
+				true, charNetId, ownedByLocalPlayer
+			);
 		} else if (charNum == (int)CharIds.Slashman) {
 			newChar = new Slashman(
 				this, pos.x, pos.y, xDir,

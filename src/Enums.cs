@@ -419,6 +419,15 @@ public enum RockProjIds  {
 	LegBreaker,
 }
 
+public enum RobotMastersProjIds {
+	FreezeMProj = 800,
+	FreezeMSplitProj,
+	FreezeMSplitProj2,
+	FreezeMFreezeProj,
+	FreezeMCrawlProj,
+
+}
+
 public enum ProjIds {
 
 	// Adrián: Some of Rock projectiles IDs have to be here because GM moment
@@ -870,6 +879,7 @@ public enum ProjIds {
 	TenguBladeDash,
 	BassKick,
 	SonicCrusher,
+	FreezeMDownAttack,
 
 	//7OD stuff
 	SlashmanIdle,

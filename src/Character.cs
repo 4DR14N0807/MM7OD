@@ -1666,7 +1666,7 @@ public partial class Character : Actor, IDamagable {
 				return true;
 			}
 			if (player.input.isPressed(Control.Taunt, player)) {
-				changeState(getTauntState());
+				changeState(getTauntState(), false);
 				return true;
 			}
 		}
@@ -1833,7 +1833,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (isStunImmune()) { return; }
+		if (isStunImmune() || isFreezeImmune()) { return; }
 		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
 			return;
 		}
@@ -2012,6 +2012,10 @@ public partial class Character : Actor, IDamagable {
 			isTrueStatusImmune() || charState.pushImmune == true ||
 			immuneToKnockback || isClimbingLadder()
 		);
+	}
+
+	public virtual bool isFreezeImmune() {
+		return false;
 	}
 
 	public virtual bool isTimeImmune() {
@@ -2442,7 +2446,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		currentLabelY = -getLabelOffY();
 		float? savedAlpha = null;
-		if (invulnTime > 0) {
+		if (invulnTime > 0 || isWarpIn()) {
 			savedAlpha = alpha;
 			if (Global.level.frameCount % 4 < 2) {
 				alpha *= 0.15f;
@@ -3751,6 +3755,19 @@ public partial class Character : Actor, IDamagable {
 				drawPos, buff.time / buff.maxTime,
 				buff.iconName, buff.iconIndex
 			);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
+
+		foreach (AttackCooldown at in attacksCooldown.Values) {
+			if (at.cooldown <= 0) continue;
+			float cd = at.cooldown;
+			float maxCd = at.maxCooldown;
+			int icon = at.iconIndex;
+			string sprite = at.sprite;
+				
+			drawBuff(drawPos, cd / maxCd, sprite, icon);
+
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}

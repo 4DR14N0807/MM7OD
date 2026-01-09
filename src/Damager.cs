@@ -287,6 +287,15 @@ public class Damager {
 						character.yPushVel += push.y;
 					}
 					break;
+				case (int)ProjIds.FreezeMDownAttack:
+					if (!character.grounded) {
+						character.vel.y += 300;
+						spiked = true;
+					}
+					break;
+				case (int)RobotMastersProjIds.FreezeMFreezeProj:
+					character.freeze(60, 150, owner.id);
+					break;
 			}
 			float flinchCooldown = 0;
 			if (projectileFlinchCooldowns.ContainsKey(projId)) {

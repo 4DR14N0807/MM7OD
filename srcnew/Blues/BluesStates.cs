@@ -344,7 +344,7 @@ public class BluesSpreadShoot : CharState {
 			}
 			if (type == 1){
 				blues.addCoreAmmo(1f);
-				blues.playSound("buster", sendRpc: true);
+				blues.playSound("protoLemon", sendRpc: true);
 			}
 			if (type == 2){
 				blues.addCoreAmmo(-0.5f, resetCooldown: true);

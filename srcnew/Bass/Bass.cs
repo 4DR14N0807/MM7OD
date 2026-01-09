@@ -53,9 +53,15 @@ public class Bass : Character {
 		charge2Time = 105;
 		charge3Time = 180;
 
-		addAttackCooldown((int)AttackIds.Kick, new AttackCooldown((int)BassWeaponIds.BassKick, 75));
-		addAttackCooldown((int)AttackIds.SweepingLaser, new AttackCooldown((int)BassWeaponIds.SweepingLaser, 90));
-		addAttackCooldown((int)AttackIds.DarkComet, new AttackCooldown((int)BassWeaponIds.DarkComet, 90));
+		addAttackCooldown(
+			(int)AttackIds.Kick, new AttackCooldown((int)BassWeaponIds.BassKick, "hud_weapon_icon_bass", 75)
+		);
+		addAttackCooldown(
+			(int)AttackIds.SweepingLaser, new AttackCooldown((int)BassWeaponIds.SweepingLaser, "hud_weapon_icon_bass", 90)
+		);
+		addAttackCooldown(
+			(int)AttackIds.DarkComet, new AttackCooldown((int)BassWeaponIds.DarkComet, "hud_weapon_icon_bass", 90)
+		);
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			health = 0;
@@ -242,32 +248,6 @@ public class Bass : Character {
 			int color = 4;
 			if (length <= maxLength * 0.5) color = 3;
 			drawFuelMeterEXV(length, maxLength, color, pos.addxy(-20 * xDir, -27));
-		}
-	}
-
-	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
-		base.renderBuffs(offset, position);
-		int drawDir = 1;
-		if (position == GameMode.HUDHealthPosition.Right) {
-			drawDir = -1;
-		}
-		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
-		drawPos = drawPos.addxy(0, 16);
-
-		foreach (int key in attacksCooldown.Keys) {
-			float cooldown = attacksCooldown[key].cooldown;
-			float maxCooldown = attacksCooldown[key].maxCooldown;
-			int icon = attacksCooldown[key].iconIndex;
-
-			if (cooldown > 0) {
-				drawBuff(drawPos, cooldown / maxCooldown, "hud_weapon_icon_bass", icon);
-				secondBarOffset += 18 * drawDir;
-				drawPos.x += 18 * drawDir;
-			}
-		}
-
-		if (player.evilEnergyTime > 0 && player.evilEnergyStacks > 0) {
-			drawBuff(drawPos, player.evilEnergyTime / player.evilEnergyMaxTime, "hud_weapon_icon_bass", (int)BassWeaponIds.EvilEnergy);
 		}
 	}
 

@@ -70,8 +70,12 @@ public class Rock : Character {
 		noiseCrushEffect = new ChargeEffect();
 		noiseCrushEffect.character = this;
 
-		addAttackCooldown((int)AttackIds.LegBreaker, new AttackCooldown((int)RockWeaponSlotIds.LegBreaker, 90));
-		addAttackCooldown((int)AttackIds.ArrowSlash, new AttackCooldown((int)RockWeaponSlotIds.ArrowSlash, 90));
+		addAttackCooldown(
+			(int)AttackIds.LegBreaker, new AttackCooldown((int)RockWeaponSlotIds.LegBreaker, "hud_weapon_icon", 90)
+		);
+		addAttackCooldown(
+			(int)AttackIds.ArrowSlash, new AttackCooldown((int)RockWeaponSlotIds.ArrowSlash, "hud_weapon_icon", 90)
+		);
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			health = 0;
@@ -777,47 +781,6 @@ public class Rock : Character {
 		) {
 			changeSpriteFromName(newState.shootSprite, false);
 		}
-	}
-
-
-	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
-		int drawDir = 1;
-		if (position == GameMode.HUDHealthPosition.Right) {
-			drawDir = -1;
-		}
-		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
-
-		if (Global.level.mainPlayer != player) {
-			base.renderBuffs(offset, position);
-			return;
-		}
-		if (rushWeaponSpecial && !boughtSuperAdaptorOnce) {
-			drawBuffAlt(
-				drawPos, rushWeapon.ammo / rushWeapon.maxAmmo,
-				"hud_weapon_icon", 11
-			);
-			secondBarOffset += 18 * drawDir;
-			drawPos.x += 18 * drawDir;
-		}
-
-		if (boughtSuperAdaptorOnce) {
-			for (int i = 0; i < 2; i++) {
-				float cd = attacksCooldown[i].cooldown;
-				float maxCd = attacksCooldown[i].maxCooldown;
-				int icon = attacksCooldown[i].iconIndex;
-
-				if (cd > 0) {
-					drawBuff(
-						drawPos, cd / maxCd, "hud_weapon_icon", icon
-					);
-
-					secondBarOffset += 18 * drawDir;
-					drawPos.x += 18 * drawDir;
-				}
-			}
-		}
-
-		base.renderBuffs(offset, position);
 	}
 
 	public override List<byte> getCustomActorNetData() {

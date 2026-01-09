@@ -10,9 +10,11 @@ public class AttackCooldown {
 	public float maxCooldown;
 	float modifier;
 	public int iconIndex;
+	public string sprite;
 
-	public AttackCooldown(int iconIndex, float maxCooldown, float cooldown = 0, float modifier = 1) {
+	public AttackCooldown(int iconIndex, string sprite, float maxCooldown, float cooldown = 0, float modifier = 1) {
 		this.iconIndex = iconIndex;
+		this.sprite = sprite;
 		this.cooldown = cooldown;
 		this.maxCooldown = maxCooldown;
 		this.modifier = modifier;

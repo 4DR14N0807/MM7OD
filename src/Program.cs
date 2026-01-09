@@ -1001,7 +1001,9 @@ class Program {
 			if (loopData["loopEnd"] is decimal loopEnd) {
 				endPos = float.Parse(loopEnd.ToString());
 			}
-			loop = loopData["loop"] == "true";
+			if (loopData["loop"] == "false") {
+				loop = false;
+			}
 		}
 		MusicWrapper musicWrapper = new MusicWrapper(file, startPos, endPos, loop);
 		if (endPos == 0) {

@@ -76,7 +76,7 @@ public class Projectile : Actor {
 	int wallCrawlDir = 1;
 	WallPathNode? currentNode;
 	// Legacy wall crawl stuff.
-	bool useLegacyWallCrawl;
+	public bool useLegacyWallCrawl;
 	GameObject? currentWall;
 	List<Point> dests = new();
 	int? destIndex;

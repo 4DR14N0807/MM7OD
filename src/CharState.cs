@@ -395,6 +395,7 @@ public class WarpIn : CharState {
 		this.refillHP = refillHP;
 		invincible = true;
 		statusEffectImmune = true;
+		useGravity = false;
 	}
 
 	public override void update() {
@@ -413,7 +414,15 @@ public class WarpIn : CharState {
 			if (character.isAnimOver()) {
 				character.grounded = true;
 				character.changePos(destX, destY);
-				character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate));
+				if (!player.warpedInOnce || Global.level.joinedLate) {
+					character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate));
+				} else {
+					if (character is Blues) {
+						character.changeToIdleOrFall("swap");
+					} else {
+						character.changeToIdleOrFall();
+					}
+				}
 			}
 			return;
 		}
@@ -441,17 +450,21 @@ public class WarpIn : CharState {
 				warpAnim.changePos(new Point(warpAnim.pos.x, destY));
 			}
 		}
+
+		if (character.ownedByLocalPlayer && player.warpedInOnce) {
+			character.health = character.maxHealth;
+			player.health = player.maxHealth;
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMovingS();
-		character.useGravity = false;
 		character.visible = false;
 		character.frameSpeed = 0;
 		destY = character.pos.y;
 		destX = character.pos.x;
-		startY = character.pos.y;
+		startY = character.pos.y; 
 	}
 
 	public override void onExit(CharState newState) {
@@ -460,7 +473,11 @@ public class WarpIn : CharState {
 		if (warpAnim != null) {
 			warpAnim.destroySelf();
 		}
+		if (character.ownedByLocalPlayer) {
+			character.invulnTime = player.warpedInOnce ? 2 : 0;
+		}
 		player.warpedInOnce = true;
+		
 	}
 }
 
@@ -472,6 +489,7 @@ public class WarpIdle : CharState {
 
 	public WarpIdle(bool firstSpawn = false) : base("win") {
 		invincible = true;
+		useGravity = false;
 		this.firstSpawn = firstSpawn;
 	}
 
@@ -540,19 +558,17 @@ public class WarpIdle : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
-		character.useGravity = false;
 		specialId = SpecialStateIds.WarpIdle;
-		character.invulnTime = firstSpawn ? 5 : 0;
+		character.invulnTime = firstSpawn ? 5 : 1;
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.visible = true;
-		character.useGravity = true;
 		character.splashable = true;
 		specialId = SpecialStateIds.None;
 		if (character.ownedByLocalPlayer) {
-			character.invulnTime = firstSpawn ? 1 : 0;
+			character.invulnTime = firstSpawn ? 1 : 1;
 		}
 	}
 }
@@ -1406,12 +1422,26 @@ public class LadderEnd : CharState {
 public class Taunt : CharState {
 	float tauntTime = 1;
 	public Taunt() : base("win") {
+		normalCtrl = true;
+		attackCtrl = true;
 	}
 	public override void update() {
 		base.update();
-		if (stateTime >= tauntTime) {
-			character.changeToIdleOrFall();
+
+		if (character is FreezeMan && !once && character.frameIndex == 4) {
+	
 		}
+
+		if (character.sprite.doesLoop) {
+			if (stateTime >= tauntTime) {
+				character.changeToIdleOrFall();
+			}
+		} else {
+			if (character.isAnimOver()) {
+				character.changeToIdleOrFall();
+			}
+		}
+		
 	}
 }
 

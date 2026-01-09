@@ -29,7 +29,7 @@ public class Rock : Character {
 	public RushWeapon rushWeapon;
 	public bool rushWeaponSpecial;
 	public int rushWeaponIndex;
-	public const int RushSearchCost = 6;
+	public const int RushSearchCost = 5;
 	public bool hasSuperAdaptor;
 	public const int SuperAdaptorCost = 75;
 

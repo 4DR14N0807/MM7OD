@@ -201,10 +201,7 @@ public class ScorchWheelProj : Projectile {
 	public override void update() {
 		base.update();
 		checkUnderwater();
-		if (rock == null || destroyed) return;
-		if (rock != null) {
-			xDir = rock.getShootXDir();
-		}
+
 		projAngle += 3 * xDir;
 		if (projAngle >= 256 || projAngle < 0) {
 			projAngle += 256;
@@ -217,6 +214,11 @@ public class ScorchWheelProj : Projectile {
 			secondAngle %= 256;
 		}
 
+		if (rock == null || destroyed) return;
+		if (rock != null) {
+			xDir = rock.getShootXDir();
+		}
+		
 		if (ownedByLocalPlayer && player != null) {
 			if (Options.main.wheelDoubleTap) {
 				if (!player.input.isPressed(Control.Shoot, owner)) {
@@ -268,7 +270,7 @@ public class ScorchWheelProj : Projectile {
 		}
 
 		//main pieces render
-		for (var i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			float extraAngle = projAngle + i * 64;
 			long altZIndex = zIndex;
 			if (extraAngle >= 256) extraAngle %= 256;

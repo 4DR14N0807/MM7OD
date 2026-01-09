@@ -155,8 +155,9 @@ public class ChatMenu : IMainMenu {
 			) {
 				color = gameMode.teamColors[chat.alliance.Value];
 			}
+			//WhiteMini
 			Fonts.drawText(
-				FontType.WhiteMini, chat.getDisplayMessage(),
+				FontType.WhiteSmall, chat.getDisplayMessage(),
 				topLeftX, messageHistoryY - (i * chatLineHeight), Alignment.Left,
 				color: color
 			);
@@ -170,7 +171,8 @@ public class ChatMenu : IMainMenu {
 				chatDisplay = "Console:" + currentTypedChat;
 				outlineColor = Color.Black;
 			}
-			int width = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteMini), chatDisplay);
+			//WhiteMini
+			int width = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteSmall), chatDisplay);
 
 			int bgWidth = width + 4;
 			if (bgWidth < 77) {
@@ -187,10 +189,12 @@ public class ChatMenu : IMainMenu {
 				true, new Color(16, 16, 16), 1, ZIndex.HUD, false,
 				new Color(255, 255, 255)
 			);
-			Fonts.drawText(FontType.WhiteMini, chatDisplay, topLeftX, typedChatY);
+			//WhiteMini
+			Fonts.drawText(FontType.WhiteSmall, chatDisplay, topLeftX, typedChatY);
 
 			if (chatBlinkTime >= 0.5f) {
-				Fonts.drawText(FontType.WhiteMini, "|", topLeftX + width - 1, typedChatY);
+				//WhiteMini
+				Fonts.drawText(FontType.WhiteSmall, "|", topLeftX + width - 1, typedChatY);
 			}
 		}
 	}

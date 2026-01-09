@@ -268,16 +268,6 @@ public class Bass : Character {
 		hyperProgress = 0;
 	}
 
-	public void drawFlightMeter(float healthPct, float sx, float sy) {
-		float healthBarInnerWidth = 30;
-		Color color = Color.Magenta;
-		float width = Helpers.clampMax(MathF.Ceiling(healthBarInnerWidth * healthPct), healthBarInnerWidth);
-		if (healthPct <= 0.5f) color = Color.Red;
-
-		DrawWrappers.DrawRect(pos.x - 47 + sx, pos.y - 16 + sy, pos.x - 42 + sx, pos.y + 16 + sy, true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White);
-		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
-	}
-
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {
 		int meleeId = getHitboxMeleeId(hitbox);
 		if (meleeId == -1) {
@@ -710,6 +700,10 @@ public class Bass : Character {
 		byte ammo = (byte)MathF.Ceiling(currentWeapon?.ammo ?? 0);
 		customData.Add((byte)weaponIndex);
 		customData.Add(ammo);
+		customData.Add((byte)phase);
+		customData.Add((byte)evilEnergy[0]);
+		customData.Add((byte)evilEnergy[1]);
+		customData.Add((byte)evilEnergy[2]);
 
 		bool[] flags = [
 			isSuperBass,
@@ -731,8 +725,12 @@ public class Bass : Character {
 			weaponSlot = weapons.IndexOf(targetWeapon);
 			targetWeapon.ammo = data[1];
 		}
+		phase = data[2];
+		evilEnergy[0] = data[3];
+		evilEnergy[1] = data[4];
+		evilEnergy[2] = data[5];
 
-		bool[] flags = Helpers.byteToBoolArray(data[2]);
+		bool[] flags = Helpers.byteToBoolArray(data[6]);
 		isSuperBass = flags[0];
 		armless = flags[1];
 	}

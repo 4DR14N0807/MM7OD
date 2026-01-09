@@ -3750,6 +3750,16 @@ public partial class Character : Actor, IDamagable {
 			drawPos.x += 18 * drawDir;
 		}
 
+		// Evil Energy.
+		if (player.evilEnergyStacks > 0) {
+			drawBuff(
+				drawPos, player.evilEnergyTime / player.evilEnergyMaxTime,
+				"hud_weapon_icon_bass", 14
+			);
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
+
 		foreach (Buff buff in buffList) {
 			drawBuff(
 				drawPos, buff.time / buff.maxTime,
@@ -3771,6 +3781,7 @@ public partial class Character : Actor, IDamagable {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
+		
 	}
 
 	public void drawBuff(Point pos, float cooldown, string sprite, int index) {
@@ -3948,6 +3959,18 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
 			boolMaskB[0] = true;
 		}
+		if (player.evilEnergyStacks > 0) {
+			customData.Add((byte)MathF.Ceiling(player.evilEnergyStacks));
+			boolMaskB[1] = true;
+		}
+		if (player.evilEnergyTime > 0) {
+			customData.Add((byte)MathF.Ceiling(player.evilEnergyTime));
+			boolMaskB[2] = true;
+		}
+		if (player.evilEnergyHP > 0) {
+			customData.Add((byte)MathF.Ceiling((float)player.evilEnergyHP));
+			boolMaskB[3] = true;
+		}
 
 		// Add the final value of the bool mask.
 		customData[boolMaskPos] = Helpers.boolArrayToByte(boolMask);
@@ -4036,6 +4059,22 @@ public partial class Character : Actor, IDamagable {
 		rootTime = 0;
 		if (boolMaskB[0]) {
 			rootTime = data[pos] * 2;
+			pos++;
+		}
+		player.evilEnergyStacks = 0;
+		if (boolMaskB[1]) {
+			player.evilEnergyStacks = data[pos];
+			pos++;
+		}
+		player.evilEnergyTime = 0;
+		if (boolMaskB[2]) {
+			player.evilEnergyTime = data[pos];
+			pos++;
+		}
+		player.evilEnergyHP = 0;
+		if (boolMaskB[3]) {
+			player.evilEnergyHP = data[pos];
+			pos++;
 		}
 	}
 }

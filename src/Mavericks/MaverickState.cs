@@ -1364,7 +1364,7 @@ public class MWallKick : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		new Anim(maverick.pos.addxy(12 * maverick.xDir, 0), "wall_sparks", maverick.xDir, null, true);
+		new Anim(maverick.pos.addxy(12 * maverick.xDir, 0), "dash_sparks", maverick.xDir, null, true);
 	}
 
 	public override void onExit(MaverickState newState) {

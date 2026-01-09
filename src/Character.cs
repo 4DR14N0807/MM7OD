@@ -1584,7 +1584,7 @@ public partial class Character : Actor, IDamagable {
 			var wallSparkPoint = pos.addxy(12 * xDir, 0);
 			var rect = new Rect(wallSparkPoint.addxy(-2, -2), wallSparkPoint.addxy(2, 2));
 			if (Global.level.checkCollisionShape(rect.getShape(), null) != null) {
-				new Anim(wallSparkPoint, "wall_sparks", xDir,
+				new Anim(wallSparkPoint, "dash_sparks", xDir,
 					player.getNextActorNetId(), true, sendRpc: true
 				);
 			}
@@ -1705,7 +1705,7 @@ public partial class Character : Actor, IDamagable {
 			}
 			// Wallclimb code.
 			if (canWallClimb() && charState is not WallSlide && wallKickTimer <= 0) {
-				bool velYRequirementMet = vel.y > 0 || (charState is VileHover vh && vh.fallY > 0);
+				bool velYRequirementMet = vel.y > 0;
 				// This logic can be abit confusing,
 				// but we are trying to mirror the actual Mega man X wall climb physics.
 				// In the actual game, X will not initiate a climb

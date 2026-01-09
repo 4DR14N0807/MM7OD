@@ -48,6 +48,7 @@ public class Fonts {
 		int fontSpacing = 1;
 		int newLineSpacing = 10;
 		int fontSpaceWidth = 8;
+		// Basic data goes like: Size, GridSize, Width, SpaceWidth, Spacing.
 		if (baseFontData.ContainsKey(fontStr)) {
 			fontTextureSize = baseFontData[fontStr][0];
 			fontGridSpacing = baseFontData[fontStr][1];
@@ -107,7 +108,7 @@ public class Fonts {
 				float yPos = MathF.Round(y) + (line * newLineSpacing);
 				textSprite.Position = new Vector2f(currentXOff, yPos);
 				// Text spacing.
-				if (Char.IsWhiteSpace(letter) ||
+				if (char.IsWhiteSpace(letter) ||
 					pos >= textLines[line].Length - 1 ||
 					Char.IsWhiteSpace(textLines[line][pos + 1])
 				) {
@@ -276,6 +277,7 @@ public class Fonts {
 			for (int i = 0; i < basicData.Length; i++) {
 				basicData[i] = Int32.Parse(strBData[i]);
 			}
+			// Basic data goes like: Size, GridSize, Width, SpaceWidth, Spacing.
 			baseFontData[fileName] = basicData;
 			// We check if optional detailed info exists.
 			if (text.Length < 2) {
@@ -292,7 +294,7 @@ public class Fonts {
 	}
 
 	public static void loadFontSprites() {
-		var fontSprites = Helpers.getFiles(Global.assetPath + "assets/fonts", true, "png", "psd");
+		List<string> fontSprites = Helpers.getFiles(Global.assetPath + "assets/fonts", true, "png", "psd");
 		for (int i = 0; i < fontSprites.Count; i++) {
 			string path = fontSprites[i];
 			Texture texture = new Texture(path);
@@ -342,6 +344,7 @@ public class Fonts {
 			FontType.OrangeSmall => "OrangeSmall",
 			FontType.YellowSmall => "YellowSmall",
 			FontType.PurpleSmall => "PurpleSmall",
+			FontType.WhiteMini => "WhiteMini",
 			_ => "Blue"
 		};
 	}
@@ -396,4 +399,5 @@ public enum FontType {
 	YellowSmall,
 	PurpleSmall,
 	WhiteSmall,
+	WhiteMini,
 }

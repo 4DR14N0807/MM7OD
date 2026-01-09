@@ -44,6 +44,7 @@ public class WaveBurner : Weapon {
 				angleMod *= -1;
 			}
 		}
+		soundTime -= 1;
 	}
 
 	public override void shoot(Character character, params int[] args) {
@@ -54,31 +55,35 @@ public class WaveBurner : Weapon {
 		float shootAngle = bass.getShootAngle(true, true);
 		bloomTimer = 6;
 
-		if (character.isUnderwater()) {
+		if (bass.isUnderwater()) {
 			new WaveBurnerUnderwaterProj(
-				bass, shootPos, shootAngle,
-				player.getNextActorNetId(), true
+				bass, shootPos, shootAngle + (this.shootAngle * 1.25f),
+				shootAngle, bass.xDir, player.getNextActorNetId(), true
 			);
-
-			Point pushVel = Point.createFromByteAngle(shootAngle + 128).times(30);
-			bass.xPushVel = pushVel.x;
-			bass.yPushVel = pushVel.y;
-
-		} else {
+			
+			Point pushVel = Point.createFromByteAngle(shootAngle + 128) * 0.5f;
+			if (!bass.isPushImmune()) {
+				bass.xPushVel += pushVel.x;
+				if (!bass.grounded) {
+					bass.yPushVel += pushVel.y * 1.5f;
+				}
+			}
+		}
+		else {
 			new WaveBurnerProj(
 				bass, shootPos, shootAngle + this.shootAngle,
 				player.getNextActorNetId(), true, player
 			);
-			this.shootAngle += 3 * angleMod;
-			if (Math.Abs(this.shootAngle) >= 16) {
-				angleMod *= -1;
-				this.shootAngle = 16 * MathF.Sign(this.shootAngle);
-			}
 
-			if (soundTime <= 0) {
-				soundTime = 4;
-				bass.playSound("waveburnerLoop", sendRpc: true);
-			}
+		}
+		this.shootAngle += 3 * angleMod;
+		if (Math.Abs(this.shootAngle) >= 16) {
+			angleMod *= -1;
+			this.shootAngle = 16 * MathF.Sign(this.shootAngle);
+		}
+		if (soundTime <= 0) {
+			soundTime = 4;
+			bass.playSound("waveburnerLoop", sendRpc: true);
 		}
 	}
 }
@@ -93,7 +98,7 @@ public class WaveBurnerProj : Projectile {
 	) : base(
 		pos, 1, owner, "wave_burner_proj", netProjId, altPlayer 
 	) {
-		damager.damage = 0.5f;
+		damager.damage = 0.55f;
 		damager.hitCooldown = 8;
 		maxUHitCount = 2;
 
@@ -157,67 +162,69 @@ public class WaveBurnerProj : Projectile {
 }
 
 public class WaveBurnerUnderwaterProj : Projectile {
-	int rand;
+	public int pushDir = 1;
+	public int rand;
+	public readonly float spd = 5 * 60;
 	Anim? bubble1;
 	Point bubble1Spd;
 	Anim? bubble2;
 	Point bubble2Spd;
-	float spd = 240;
+
 	public WaveBurnerUnderwaterProj(
-		Actor owner, Point pos, float byteAngle, ushort? netProjId, 
+		Actor owner, Point pos, float byteAngle, float drawAngle, int pushDir, ushort? netProjId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, 1, owner, "wave_burner_underwater_proj", netProjId, altPlayer
+		pos, -1, owner, "wave_burner_underwater_proj", netProjId, altPlayer
 	) {
-		projId = (int)BassProjIds.WaveBurnerUnderwater;
-		maxTime = 0.33f;
-		destroyOnHit = false;
+		damager.damage = 0.55f;
+		damager.hitCooldown = 8;
 		rand = Helpers.randomRange(1, 4);
 
+		projId = (int)BassProjIds.WaveBurnerUnderwater;
+		maxTime = 0.4f;
+		destroyOnHit = true;
 		vel = Point.createFromByteAngle(byteAngle) * spd;
-		this.byteAngle = byteAngle;
-		damager.damage = 1;
-		damager.hitCooldown = 24;
 
-		bubble1Spd = Point.createFromByteAngle(byteAngle + (Helpers.randomRange(-12, 12))).times(spd);
-		bubble2Spd = Point.createFromByteAngle(byteAngle + (Helpers.randomRange(-12, 12))).times(spd);
+		this.byteAngle = drawAngle;
+		this.pushDir = pushDir;
+
+		bubble1Spd = Point.createFromByteAngle(byteAngle + (Helpers.randomRange(-12, 12))) * spd;
+		bubble2Spd = Point.createFromByteAngle(byteAngle + (Helpers.randomRange(-12, 12))) * spd;
 
 		if (rpc) {
-			rpcCreateByteAngle(pos, owner, ownerPlayer, netProjId, byteAngle);
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netProjId, byteAngle, (byte)pushDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WaveBurnerUnderwaterProj(
-			arg.owner, arg.pos, arg.byteAngle, arg.netId, altPlayer: arg.player
+			arg.owner, arg.pos, arg.byteAngle, arg.extraData[1],
+			arg.extraData[0], arg.netId, altPlayer: arg.player
 		);
 	}
 
 	public override void onStart() {
 		base.onStart();
-		if (ownedByLocalPlayer) {
-			if (rand % 2 == 0) {
-				bubble1 = new BubbleAnim(
-					pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)),
-					"wave_burner_underwater_bubble", damager.owner.getNextActorNetId()
-				);
-					bubble1.xDir = xDir;
-					bubble1.vel = bubble1Spd;
-					bubble1.frameSpeed = 0;
-					bubble1.ttl = 0.5f;
-			}
-			if (rand > 2) {
-				bubble2 = new BubbleAnim(
-					pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)),
-					"wave_burner_underwater_bubble", damager.owner.getNextActorNetId()
-				);
-			
-				bubble2.xDir = xDir;
-				bubble2.vel = bubble2Spd;
-				bubble2.frameSpeed = 0;
-				bubble2.frameIndex = 1;
-				bubble2.ttl = 0.5f;
-			}
+		if (rand % 2 == 0) {
+			bubble1 = new BubbleAnim(
+				pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)),
+				"wave_burner_underwater_bubble"
+			);
+			bubble1.xDir = pushDir;
+			bubble1.vel = bubble1Spd;
+			bubble1.frameSpeed = 0;
+			bubble1.ttl = 0.5f;
+		}
+		if (rand > 2) {
+			bubble2 = new BubbleAnim(
+				pos.addxy(Helpers.randomRange(-2, 2), Helpers.randomRange(-6, 6)),
+				"wave_burner_underwater_bubble"
+			);
+			bubble2.xDir = pushDir;
+			bubble2.vel = bubble2Spd;
+			bubble2.frameSpeed = 0;
+			bubble2.frameIndex = 1;
+			bubble2.ttl = 0.5f;
 		}
 	}
 }

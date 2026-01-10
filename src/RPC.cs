@@ -2027,7 +2027,7 @@ public class RPCAddExp : RPC {
 		if (player == null) return;
 		if (exp > 255) { exp = 255; }
 		ushort expShort = (ushort)MathF.Ceiling(exp * 256f);
-		byte[] expBytes = BitConverter.GetBytes(exp);
+		byte[] expBytes = BitConverter.GetBytes(expShort);
 
 		Global.serverClient?.rpc(
 			this,

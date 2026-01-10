@@ -157,7 +157,7 @@ public class ChatMenu : IMainMenu {
 			}
 			//WhiteMini
 			Fonts.drawText(
-				FontType.WhiteSmall, chat.getDisplayMessage(),
+				FontType.WhiteMini, chat.getDisplayMessage(),
 				topLeftX, messageHistoryY - (i * chatLineHeight), Alignment.Left,
 				color: color
 			);
@@ -172,7 +172,7 @@ public class ChatMenu : IMainMenu {
 				outlineColor = Color.Black;
 			}
 			//WhiteMini
-			int width = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteSmall), chatDisplay);
+			int width = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteMini), chatDisplay);
 
 			int bgWidth = width + 4;
 			if (bgWidth < 77) {
@@ -190,11 +190,11 @@ public class ChatMenu : IMainMenu {
 				new Color(255, 255, 255)
 			);
 			//WhiteMini
-			Fonts.drawText(FontType.WhiteSmall, chatDisplay, topLeftX, typedChatY);
+			Fonts.drawText(FontType.WhiteMini, chatDisplay, topLeftX, typedChatY);
 
 			if (chatBlinkTime >= 0.5f) {
 				//WhiteMini
-				Fonts.drawText(FontType.WhiteSmall, "|", topLeftX + width - 1, typedChatY);
+				Fonts.drawText(FontType.WhiteMini, "|", topLeftX + width - 1, typedChatY);
 			}
 		}
 	}

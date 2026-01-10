@@ -191,7 +191,6 @@ public class RemoteMineProj : Projectile {
 			changeSprite("remote_mine_land", true);
 			playSound("remotemineStick", true);
 			maxTime = 2;
-			linkedWeapon?.addMine(this);
 		}
 	}
 

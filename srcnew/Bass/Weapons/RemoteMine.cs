@@ -199,6 +199,7 @@ public class RemoteMineProj : Projectile {
 		if (exploded || ownerActor == null) {
 			return;
 		}
+		attachHost = null;
 		if (landed) {
 			new RemoteMineLandProj(
 				ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true,

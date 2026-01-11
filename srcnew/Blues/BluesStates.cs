@@ -300,9 +300,9 @@ public class BluesSlide : CharState {
 
 public class BluesSpreadShoot : CharState {
 	int shotAngle = 64;
+	int shotNum = 0;
 	int shotLastFrame = 10;
 	Blues blues = null!;
-	int shots = 5;
 
 	public BluesSpreadShoot() : base("spreadshoot_air") {
 		canJump = true;
@@ -328,7 +328,7 @@ public class BluesSpreadShoot : CharState {
 
 	public override void update() {
 		base.update();
-		if (character.frameIndex != shotLastFrame && shots >= 1) {
+		if (character.frameIndex != shotLastFrame && shotNum < 5) {
 			int angleOffset = 1;
 			int shootDir = blues.getShootXDir();
 			int type = blues.overdrive ? 2 : (blues.overheating ? 0 : 1);
@@ -341,19 +341,19 @@ public class BluesSpreadShoot : CharState {
 			);
 			// This way lemons and mid charge shot sounds wont conflict.
 			if (type == 0) {
-				blues.playSound("buster", sendRpc: true);
+				blues.playSound("protoLemon", sendRpc: true);
 			}
 			if (type == 1){
 				blues.addCoreAmmo(1f);
-				blues.playSound("protoLemon", sendRpc: true);
+				blues.playSound("buster2", sendRpc: true);
 			}
 			if (type == 2){
 				blues.addCoreAmmo(-0.5f, resetCooldown: true);
 				blues.playSound("buster3", sendRpc: true);
 			}
 			shotAngle -= 16;
+			shotNum++;
 			shotLastFrame = character.frameIndex;
-			shots--;
 		}
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();

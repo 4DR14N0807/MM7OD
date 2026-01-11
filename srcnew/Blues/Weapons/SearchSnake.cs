@@ -14,7 +14,7 @@ public class SearchSnake : Weapon {
 		defaultAmmoUse = 2;
 
 		index = (int)BluesWeaponIds.SearchSnake;
-		fireRate = 35;
+		fireRate = 30;
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -50,7 +50,6 @@ public class SearchSnakeProj : Projectile {
 
 		vel.x = 120 * xDir;
 		damager.damage = 2;
-		damager.hitCooldown = 30;
 		xScale = 1;
 
 		if (rpc) {

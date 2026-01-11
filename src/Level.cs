@@ -147,8 +147,8 @@ public partial class Level {
 			return players.FirstOrDefault(p => !p.isMainPlayer);
 		}
 	}
-	private Player _specPlayer;
-	public Player specPlayer {
+	private Player? _specPlayer;
+	public Player? specPlayer {
 		get { return _specPlayer; }
 		set {
 			if (_specPlayer == value) return;

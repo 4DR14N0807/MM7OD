@@ -66,7 +66,7 @@ public class NeedleCannon : Weapon {
 		new NeedleCannonProj(blues, shootPos, shootAngle, player.getNextActorNetId(), true) {
 			ownerActor = blues
 		};
-		blues.playSound("buster");
+		blues.playSound("bassbuster");
 		blues.xPushVel = -xDir;
 	}
 
@@ -82,7 +82,7 @@ public class NeedleCannonProj : Projectile {
 		pos, 1, owner, "needle_cannon_proj", netId, altPlayer
 	) {
 		byteAngle = MathF.Round(byteAngle);
-		maxTime = 0.25f;
+		maxTime = 18 / 60f;
 		fadeSprite = "needle_cannon_proj_fade";
 		projId = (int)BluesProjIds.NeedleCannon;
 		this.byteAngle = byteAngle;

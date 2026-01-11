@@ -17,7 +17,7 @@ public class Blues : Character {
 	// Mode variables.
 	public bool isShieldActive = true;
 	public bool isBreakMan;
-	public const int reviveCost = 75;
+	public const int reviveCost = 50;
 
 	// Core heat system.
 	public float coreMaxAmmo = 28;
@@ -849,7 +849,7 @@ public class Blues : Character {
 				playSound("buster2", sendRpc: true);
 				addCoreAmmo(0.75f);
 			}
-			playSound("protoLemon", sendRpc: true);
+			playSound("buster", sendRpc: true);
 			lemonCooldown = 8;
 			unchargedLemonCooldown[lemonNum] = 40;
 			if (oldShootAnimTime <= 0.25f) {
@@ -885,6 +885,7 @@ public class Blues : Character {
 			addCoreAmmo(getChargeShotAmmoUse(1));
 			if (type == 0) {
 				playSound("buster2", sendRpc: true);
+				playSound("buster", sendRpc: true);
 			} else {
 				playSound("buster3", sendRpc: true);
 			}

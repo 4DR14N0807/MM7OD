@@ -2402,12 +2402,18 @@ public partial class Character : Actor, IDamagable {
 		}
 		else {
 			string spriteName = sprite.name;
-			string targetSprite = newState.sprite;
 			if (newState.sprite == newState.transitionSprite &&
 				!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
 			) {
-				targetSprite = newState.defaultSprite;
 				newState.sprite = newState.defaultSprite;
+			}
+			if (newState.sprite == newState.defaultSprite) {
+				if (newState.sprite == newState.landSprite) {
+					if (!grounded) { newState.sprite = newState.airSprite; }
+				}
+				else if (newState.sprite == newState.airSprite) {
+					if (grounded) { newState.sprite = newState.landSprite; }
+				}
 			}
 			if (Global.sprites.ContainsKey(getSprite(newState.sprite))) {
 				changeSprite(getSprite(newState.sprite), true);

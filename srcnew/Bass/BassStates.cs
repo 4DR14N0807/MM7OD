@@ -691,35 +691,23 @@ public class BassKick : CharState {
 public class SonicCrusher : CharState {
 
 	Bass bass = null!;
-	float? speed;
-	float? oldSpeed;
+	Point speed;
+	Point oldSpeed = Point.zero;
 
-	public SonicCrusher(float? oldSpeed = null) : base("soniccrusher") {
-		normalCtrl = false;
+	public SonicCrusher(Point oldSpeed) : base("soniccrusher") {
+		normalCtrl = true;
 		attackCtrl = true;
 		useGravity = false;
-		this.oldSpeed = oldSpeed;
+		this.oldSpeed = new Point(Math.Abs(oldSpeed.x), Math.Abs(oldSpeed.y));
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 		bass.canRefillFly = false;
-		float full = Bass.MaxFlyTime;
-		float half = full / 2;
 
-		if (
-			oldSpeed != null && oldSpeed > speed && 
-			bass.flyTime < half
-		) {
-			speed = oldSpeed;
-		} else if (bass.flyTime < half) {
-			speed = 180;
-		} else if (bass.flyTime >= half && bass.flyTime < full) {
-			speed = 120;
-		} else {
-			speed = 60;
-		}
+		speed.x = Math.Max(oldSpeed.x, 180);
+		speed.y = oldSpeed.y;
 	}
 
 	public override void onExit(CharState? newState) {
@@ -730,14 +718,15 @@ public class SonicCrusher : CharState {
 	public override void update () {
 		base.update();
 
-		if (speed != null) character.move(new Point(character.xDir * speed.Value, 0));
+		character.move(new Point(character.xDir * speed.x, 0));
+		character.move(new Point(0, player.input.getYDir(player) * 60));
 
 		float depth = 24;
 		if (character.checkCollision(0, depth) != null && stateFrames % 6 == 0) {
 			Point offset = new Point(character.xDir * -16, 0);
 			var groundPos = Global.level.getGroundPosNoKillzone(character.pos.add(offset), depth);
 
-			 if (groundPos != null) {
+			if (groundPos != null) {
 				new Anim(
 					groundPos.Value,
 					"dust", character.xDir, null, true, true
@@ -746,7 +735,9 @@ public class SonicCrusher : CharState {
 		} 
 
 		bass.flyTime += 1.25f;
-		if (stateFrames >= 32) character.changeToIdleFallorFly();
+		if (stateFrames >= 32 && (bass.flyTime >= Bass.MaxFlyTime || !player.input.isHeld(Control.Special1, player))) {
+			character.changeToIdleFallorFly();
+		} 
 	}
 }
 

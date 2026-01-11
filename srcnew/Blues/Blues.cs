@@ -126,6 +126,10 @@ public class Blues : Character {
 			health = 0;
 			healShieldHPCooldown = 60 * 4;
 		}
+
+		if (player.warpedInOnce) {
+			shieldHP = shieldMaxHP;
+		}
 	}
 
 	public override bool canAddAmmo() {
@@ -1520,11 +1524,11 @@ public class Blues : Character {
 				pendAmmo = coreMaxAmmo;
 			}
 
-			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
-			int length = MathInt.Ceiling((maxLength * coreAmmo) / coreMaxAmmo);
+			decimal lengthP = (maxLength * (decimal)pendAmmo) / (decimal)coreMaxAmmo;
+			decimal length = (maxLength * (decimal)coreAmmo) / (decimal)coreMaxAmmo;
 
-			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
-			drawFuelMeterEXH(length, maxLength, 3, barPos, false);
+			drawBarHHUD(lengthP, maxLength, 1, barPos);
+			drawBarHHUD(length, maxLength, 3, barPos, false);
 		}
 
 		//Overdrive ammo
@@ -1534,11 +1538,11 @@ public class Blues : Character {
 				pendAmmo = coreMaxAmmo;
 			}
 
-			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
-			int length = MathInt.Ceiling((maxLength * overdriveAmmo) / coreMaxAmmo);
+			decimal lengthP = (maxLength * (decimal)pendAmmo) / (decimal)coreMaxAmmo;
+			decimal length = (maxLength * (decimal)coreAmmo) / (decimal)coreMaxAmmo;
 
-			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
-			drawFuelMeterEXH(length, maxLength, 2, barPos, false);
+			drawBarHHUD(lengthP, maxLength, 1, barPos);
+			drawBarHHUD(length, maxLength, 2, barPos, false);
 		}
 	}
 

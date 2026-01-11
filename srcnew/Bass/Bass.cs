@@ -19,7 +19,7 @@ public class Bass : Character {
 	public const int TrebleBoostCost = 75;
 	public int phase;
 	public int[] evilEnergy = new int[] {0,0,0};
-	public const int MaxEvilEnergy = 28;
+	public const int MaxEvilEnergy = 16;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
 	public bool canRefillFly;
@@ -243,11 +243,11 @@ public class Bass : Character {
 		Global.sprites["hud_energy_top"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
 
 		if (player.isMainPlayer && (charState is BassFly || flyTime > 0)) {
-			int maxLength = 14;
-			int length = MathInt.Ceiling((maxLength * (MaxFlyTime - flyTime)) / MaxFlyTime);
+			decimal maxLength = 14;
+			decimal length = (maxLength * (decimal)(MaxFlyTime - flyTime)) / (decimal)MaxFlyTime;
 			int color = 4;
-			if (length <= maxLength * 0.5) color = 3;
-			drawFuelMeterEXV(length, maxLength, color, pos.addxy(-20 * xDir, -27));
+			if (length <= maxLength * (1 / 2)) color = 3;
+			drawBarVHUD(length, maxLength, color, pos.addxy(-20 * xDir, -27));
 		}
 	}
 
@@ -295,7 +295,6 @@ public class Bass : Character {
 	}
 
 	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
-		Damager damager = sonicCrusherDamager();
 		return id switch {
 			(int)MeleeIds.TenguBlade => new TenguBladeProjMelee(
 				projPos, player, addToLevel: addToLevel
@@ -308,7 +307,7 @@ public class Bass : Character {
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.SonicCrusher => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.SonicCrusher, player, damager.damage, damager.flinch, 1 * 60,
+				new Weapon(), projPos, ProjIds.SonicCrusher, player, 2, Global.halfFlinch, 1 * 60,
 				addToLevel: addToLevel
 			),
 			_ => null
@@ -327,13 +326,6 @@ public class Bass : Character {
 		Kick,
 		DarkComet,
 		SweepingLaser,
-	}
-
-	Damager sonicCrusherDamager() {
-		float damage = flyTime < MaxFlyTime ? 2 : 1;
-		int flinch = flyTime < MaxFlyTime / 2 ? Global.halfFlinch : 0;
-
-		return new Damager(player, damage, flinch, 0);
 	}
 
 	public bool canUseTBladeDash() {
@@ -399,10 +391,10 @@ public class Bass : Character {
 			if (grounded && isCooldownOver((int)AttackIds.Kick)) {
 				changeState(new BassKick(), true);
 				return true;
-			} else {
-				float? vel = null;
-				if (charState is BassFly bfly) vel = bfly.getFlightMove().x;
-				changeState(new SonicCrusher(vel), true);
+			} else if (flyTime < MaxFlyTime) {
+				Point spd = Point.zero;
+				if (charState is BassFly bfly) spd.x = bfly.getFlightMove().x;
+				changeState(new SonicCrusher(spd.addxy(xPushVel + xIceVel, 0)), true);
 				return true;
 			}
 		}
@@ -615,7 +607,7 @@ public class Bass : Character {
 	}
 
 	public override bool canAirJump() {
-		return dashedInAir == 0 && rootTime <= 0 && charState is not BassShootLadder;
+		return dashedInAir == 0 && rootTime <= 0 && charState is not BassShootLadder && !isSuperBass;
 	}
 
 	public override bool canAirDash() {

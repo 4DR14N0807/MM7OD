@@ -157,7 +157,7 @@ class Program {
 			"NOM BIOS v" + Global.version + ", An Energy Sunstar Ally",
 			"Copyright ©20XX, NOM Corporation",
 			"",
-			"MMXOD " + Global.shortForkName + " " + Global.versionName + " " + Global.subVersionName,
+			Global.shortForkName + " " + Global.versionName + " " + Global.subVersionName,
 			"",
 			string.IsNullOrEmpty(Options.main.playerName) ? "User: Dr. Light" : "User: " + Options.main.playerName,
 			// Get CPU name here.

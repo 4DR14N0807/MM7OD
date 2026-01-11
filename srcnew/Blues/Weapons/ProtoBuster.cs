@@ -78,7 +78,6 @@ public class ProtoBusterAngledProj : Projectile {
 			fadeSprite = "rock_buster_fade";
 			damager.damage = 0.5f;
 		} else if (type == 2) {
-			damager.damage = 2;
 			damager.flinch = Global.miniFlinch;
 			changeSprite("proto_chargeshot_yellow_proj", true);
 			fadeSprite = "proto_chargeshot_yellow_proj_fade";

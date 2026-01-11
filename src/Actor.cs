@@ -1899,27 +1899,82 @@ public partial class Actor : GameObject {
 		DrawWrappers.DrawRect(pos.x - 46 + sx, pos.y + 15 - width + sy, pos.x - 43 + sx, pos.y + 15 + sy, true, color, 0, ZIndex.HUD - 1);
 	}
 
-	public void drawFuelMeterEXV(int length, int maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
-		Point bp = barPos.substractxy(Global.level.camX, Global.level.camY);
+	public void drawBarV(decimal length, decimal maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
+		Point bp = barPos;
+		decimal lengthFloor = Math.Floor(length);
+		decimal lengthCeiling = Math.Ceiling(length);
+		float alpha = (float)length - (float)lengthFloor;
 		for (int i = 0; i < maxLength; i++) {
-			if (i < length) {
-				Global.sprites["hud_bar_small_v"].drawToHUD(colorIndex, bp.x, bp.y);
-			} else if (drawFullBar) {
-				Global.sprites["hud_bar_small_v"].drawToHUD(0, bp.x, bp.y);
+			if (i < lengthFloor) {
+				Global.sprites["hud_bar_small_v"].draw(colorIndex, bp.x, bp.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 1);
+			} else {
+				Global.sprites["hud_bar_small_v"].draw(0, bp.x, bp.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 1);
+				if (i < lengthCeiling) {
+					Global.sprites["hud_bar_small_v"].draw(colorIndex, bp.x, bp.y,  1, 1, null, alpha, 1, 1, ZIndex.HUD - 1);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_v"].draw(0, bp.x, bp.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 1);
+				}
 			}
 			bp.y -= 2;
 		}
 	}
 
-	public void drawFuelMeterEXH(int length, int maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
-		Point bp = barPos.substractxy(Global.level.camX, Global.level.camY);
+	public void drawBarH(decimal length, decimal maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
+		Point bp = barPos;
+		decimal lengthFloor = Math.Floor(length);
+		decimal lengthCeiling = Math.Ceiling(length);
+		float alpha = (float)length - (float)lengthFloor;
 		for (int i = 0; i < maxLength; i++) {
-			if (drawFullBar) {
-				Global.sprites["hud_bar_small_h"].drawToHUD(0, bp.x, bp.y);
+			if (i < lengthFloor) {
+				Global.sprites["hud_bar_small_h"].draw(colorIndex, bp.x, bp.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 1);
+			} else {
+				Global.sprites["hud_bar_small_h"].draw(0, bp.x, bp.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 1);
+				if (i < lengthCeiling) {
+					Global.sprites["hud_bar_small_h"].draw(colorIndex, bp.x, bp.y,  1, 1, null, alpha, 1, 1, ZIndex.HUD - 1);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_h"].draw(0, bp.x, bp.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 1);
+				}
 			}
-			if (i < length) {
+			bp.x += 2;
+		}
+	}
+
+	public void drawBarVHUD(decimal length, decimal maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
+		Point bp = barPos.substractxy(Global.level.camX, Global.level.camY);
+		decimal lengthFloor = Math.Floor(length);
+		decimal lengthCeiling = Math.Ceiling(length);
+		float alpha = (float)length - (float)lengthFloor;
+		for (int i = 0; i < maxLength; i++) {
+			if (i < lengthFloor) {
+				Global.sprites["hud_bar_small_v"].drawToHUD(colorIndex, bp.x, bp.y);
+			} else {
+				Global.sprites["hud_bar_small_v"].drawToHUD(0, bp.x, bp.y);
+				if (i < lengthCeiling) {
+					Global.sprites["hud_bar_small_v"].drawToHUD(colorIndex, bp.x, bp.y, alpha);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_v"].drawToHUD(0, bp.x, bp.y);
+				}
+			}
+			bp.y -= 2;
+		}
+	}
+
+	public void drawBarHHUD(decimal length, decimal maxLength, int colorIndex, Point barPos, bool drawFullBar = true) {
+		Point bp = barPos.substractxy(Global.level.camX, Global.level.camY);
+		decimal lengthFloor = Math.Floor(length);
+		decimal lengthCeiling = Math.Ceiling(length);
+		float alpha = (float)length - (float)lengthFloor;
+		for (int i = 0; i < maxLength; i++) {
+			if (i < lengthFloor) {
 				Global.sprites["hud_bar_small_h"].drawToHUD(colorIndex, bp.x, bp.y);
-			} 
+			} else {
+				Global.sprites["hud_bar_small_h"].drawToHUD(0, bp.x, bp.y);
+				if (i < lengthCeiling) {
+					Global.sprites["hud_bar_small_h"].drawToHUD(colorIndex, bp.x, bp.y, alpha);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_h"].drawToHUD(0, bp.x, bp.y);
+				}
+			}
 			bp.x += 2;
 		}
 	}

@@ -302,12 +302,12 @@ public class BluesSpreadShoot : CharState {
 	int shotAngle = 64;
 	int shotLastFrame = 10;
 	Blues blues = null!;
+	int shots = 5;
 
 	public BluesSpreadShoot() : base("spreadshoot_air") {
 		canJump = true;
 		canStopJump = true;
 		airMove = true;
-		normalCtrl = true;
 		landSprite = "spreadshoot";
 		airSprite = "spreadshoot_air";
 	}
@@ -317,6 +317,7 @@ public class BluesSpreadShoot : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.inCustomShootAnim = true;
 		blues.shieldCustomState = false;
+		if (!blues.grounded) blues.changeSpriteFromName(airSprite, true);
 	}
 
 	public override void onExit(CharState? newState) {
@@ -327,7 +328,7 @@ public class BluesSpreadShoot : CharState {
 
 	public override void update() {
 		base.update();
-		if (character.frameIndex != shotLastFrame) {
+		if (character.frameIndex != shotLastFrame && shots >= 1) {
 			int angleOffset = 1;
 			int shootDir = blues.getShootXDir();
 			int type = blues.overdrive ? 2 : (blues.overheating ? 0 : 1);
@@ -352,6 +353,7 @@ public class BluesSpreadShoot : CharState {
 			}
 			shotAngle -= 16;
 			shotLastFrame = character.frameIndex;
+			shots--;
 		}
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();

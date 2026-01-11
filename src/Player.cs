@@ -1426,7 +1426,7 @@ public partial class Player {
 			if (character is Bass bass && bass.isSuperBass) {
 				int level = bass.phase;
 				if (bass.evilEnergy[level] < Bass.MaxEvilEnergy && level < 2) {
-					bass.evilEnergy[level] += 7;
+					bass.evilEnergy[level] += 6;
 					if (bass.evilEnergy[level] >= Bass.MaxEvilEnergy) {
 						bass.evilEnergy[level] = Bass.MaxEvilEnergy;
 					}

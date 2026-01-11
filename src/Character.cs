@@ -2503,6 +2503,7 @@ public partial class Character : Actor, IDamagable {
 
 		if (shouldDrawHealthBar || Global.overrideDrawHealth) {
 			//drawHealthBar();
+			drawHealthBarEX(health, maxHealth, 1);
 		}
 		if (shouldDrawName || Global.overrideDrawName && overrideName != "") {
 			drawName(overrideName, overrideColor);
@@ -2883,6 +2884,18 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
+	public virtual void drawHealthBarEX(decimal health, decimal maxHealth, int scale) {
+		decimal hp3 = health / scale;
+		decimal maxHp = Math.Ceiling(maxHealth / scale);
+		Point drawPos = new Point(getCenterPos().x - (float)maxHp, pos.y + currentLabelY + 6);
+
+		drawBarH(hp3, maxHp, 1, drawPos);
+		if (this is Blues blues) {
+			drawPos.x = getCenterPos().x - blues.shieldMaxHP;
+			drawBarH(blues.shieldHP, blues.shieldMaxHP, 2, drawPos.addxy(0, -5));
+		}
+	}
+
 	public void drawName(string overrideName = "", FontType? overrideColor = null) {
 		float healthPct = 0;
 		getHealthNameOffsets(out bool shieldDrawn, ref healthPct);
@@ -2898,8 +2911,8 @@ public partial class Character : Actor, IDamagable {
 			playerColor = overrideColor.Value;
 		}
 		float textPosX = pos.x;
-		float textPosY = pos.y + currentLabelY - 14;
-		if (this is Blues && Global.level.specPlayer.character == this) textPosY -= 5;
+		float textPosY = pos.y + currentLabelY - 10;
+		if (this is Blues && Global.level.specPlayer?.character == this) textPosY -= 5;
 
 		Fonts.drawText(
 			FontType.WhiteSmall, playerName, textPosX, textPosY,
@@ -3714,14 +3727,9 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (shouldDrawHealthBar || Global.overrideDrawHealth) {
-			drawFuelMeterEXH(((int)health * 16) / (int)maxHealth, 16, 1, new Point(pos.x - 16, pos.y + 10 + currentLabelY));
-			if (this is Blues blues) {
-				drawFuelMeterEXH(
-					((int)blues.shieldHP * 16) / (int)blues.shieldMaxHP, 16, 2, new Point(pos.x - 16, pos.y + 5 + currentLabelY)
-				);
-			}
-		}
+		/* if (shouldDrawHealthBar || Global.overrideDrawHealth) {
+			drawHealthBarEX(health, maxHealth, 1);
+		} */
 	}
 
 	public virtual void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {

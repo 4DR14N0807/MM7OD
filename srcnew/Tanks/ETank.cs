@@ -2,7 +2,6 @@ namespace MMXOnline;
 
 
 public class ETank : Tank {
-	
 	public bool inUse;
 
 	public ETank(float maxHealth) {

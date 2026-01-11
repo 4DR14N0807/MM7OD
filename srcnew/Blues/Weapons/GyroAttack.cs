@@ -11,7 +11,7 @@ public class GyroAttack : Weapon {
 		descriptionV2 = [
 			[ "A propeller weapon that can\nbe aimed in 2 diferent directions." ],
 		];
-		defaultAmmoUse = 2;
+		defaultAmmoUse = 3;
 
 		index = (int)BluesWeaponIds.GyroAttack;
 		fireRate = 35;
@@ -28,24 +28,24 @@ public class GyroAttack : Weapon {
 		int xDir = blues.getShootXDir();
 		Player player = blues.player;
 
-		new GyroAttackProj(blues, shootPos, xDir, player.getNextActorNetId(), true, player);
+		new GyroAttackProj(blues, shootPos, xDir, !blues.grounded, player.getNextActorNetId(), true, player);
 		blues.playSound("buster2");
 	}
 }
 
 public class GyroAttackProj : Projectile {
-
+	int defaultDir = -1;
 	bool changedDir;
 	const float projSpeed = 180;
 
 	public GyroAttackProj(
-		Actor owner, Point pos, int xDir,ushort? netId, 
+		Actor owner, Point pos, int xDir, bool air, ushort? netId, 
 		bool rpc = false, Player? altPlayer = null
 	) :
 	base(
 		pos, xDir, owner, "gyro_attack_proj", netId, altPlayer
 	) {
-		maxTime = 0.625f;
+		maxTime = 1;
 		projId = (int)BluesProjIds.GyroAttack;
 		netOwner = altPlayer;
 		fadeOnAutoDestroy = true;
@@ -53,36 +53,41 @@ public class GyroAttackProj : Projectile {
 
 		vel.x = projSpeed * xDir;
 		damager.damage = 2;
+		damager.flinch = Global.miniFlinch;
+
+		if (air) {
+			defaultDir = 1;
+		}
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)(air ? 1 : 0));
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new GyroAttackProj(
-			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
+			args.owner, args.pos, args.xDir, args.extraData[0] == 1, args.netId, altPlayer: args.player
 		);
 	}
 
 	public override void update() {
 		base.update();
+		int iyDir = netOwner.input.getYDir(netOwner);
 
-		if (!changedDir && netOwner != null) {
-			if (netOwner.input.isPressed(Control.Up, netOwner)) {
-				base.vel = new Point(0, -projSpeed);
-				time = 0;
-				changedDir = true;
-			} else if (netOwner.input.isPressed(Control.Down, netOwner)) {
-				base.vel = new Point(0, projSpeed);
-				time = 0;
-				changedDir = true;
+		if (iyDir != 0 && !changedDir && netOwner != null || time >= 35/60f && !changedDir) {
+			if (iyDir == 0) {
+				iyDir = defaultDir;
 			}
-		}
+			if (iyDir == 1) {
+				vel = new Point(0, projSpeed);
+			} else {
+				vel = new Point(0, -projSpeed);
+			}
+			time = 0;
+			maxTime = 25 / 60f;
 
-		if (time / maxTime >= 0.6f && !changedDir) {
-			visible = Global.isOnFrameCycle(5);
-		} else visible = true;
+			changedDir = true;
+		}
 	}
 
 	public override void onDamageEX(IDamagable damagable) {
@@ -90,6 +95,7 @@ public class GyroAttackProj : Projectile {
 		if (!ownedByLocalPlayer) return;
 		new Anim(pos, "rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true);
 	}
+
 	public override void onDestroy() {
 		base.onDestroy();
 		Anim.createGibEffect("gyro_attack_pieces", pos, null!, zIndex: zIndex);

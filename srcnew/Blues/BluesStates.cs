@@ -321,6 +321,7 @@ public class BluesSpreadShoot : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.inCustomShootAnim = true;
 		blues.shieldCustomState = false;
+		if (!blues.grounded) blues.changeSpriteFromName(airSprite, true);
 	}
 
 	public override void onExit(CharState? newState) {

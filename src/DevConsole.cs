@@ -8,7 +8,7 @@ public class DevConsole {
 	public static bool showConsole = false;
 	private static bool showLogOnly = false;
 	public static List<string> consoleLog = new List<string>();
-	public static void log(string message, bool showConsole = false) {
+	public static string log(string message, bool showConsole = false) {
 		if (consoleLog.Count > 16) {
 			consoleLog.RemoveAt(0);
 		}
@@ -18,11 +18,15 @@ public class DevConsole {
 		if (showConsole) {
 			showLogOnly = true;
 		}
+		return message;
 	}
 
 	public static void toggleShow() {
-		if (showConsole) hide();
-		else show();
+		if (showConsole) {
+			hide();
+		} else {
+			show();
+		}
 	}
 
 	public static void show() {
@@ -36,10 +40,11 @@ public class DevConsole {
 		Menu.chatMenu.closeChat();
 	}
 
-	public static void toggleShowLogOnly() {
+	public static string toggleShowLogOnly() {
 		hide();
 		showLogOnly = true;
 		consoleLog.Clear();
+		return "";
 	}
 
 	public static void drawConsole() {
@@ -57,42 +62,89 @@ public class DevConsole {
 		}
 	}
 
-	public static void aiSwitch(string[] args) {
+	public static string setMatchTime(string[] args) {
+		float time = 0;
+		if (args.Length == 0) {
+			time = 5;
+		} else {
+			if (!float.TryParse(args[0], out float par)) {
+				return "Error: Error parsing arg 1.";
+			}
+			time = par;
+		}
+		return $"Match time set to {time}s";
+	}
+
+
+	public static string aiSwitch2(AITrainingBehavior aib) {
+		AI.trainingBehavior = aib;
+		return $"AI behaviour changed to {aib}";
+	}
+
+	public static string aiSwitch(string[] args) {
+		if (args.Length == 0 || !int.TryParse(args[0], out _)) {
+			return "Use: /aiswitch [#slot] [a]";
+		}
+		string log = "";
 		int slot = int.Parse(args[0]);
 		Global.level.otherPlayer.changeWeaponSlot(slot - 1);
 		if (args.Contains("a")) {
 			AI.trainingBehavior = AITrainingBehavior.Attack;
+			log += $"AI behaviour changed to {AI.trainingBehavior}.\n";
 		}
+		log += $"Changed AI slot to {slot}";
+		return log;
 	}
 
-	public static void currencyCommand(string[] args) {
-		if (args[0] == "max") args[0] = "9999";
+	public static string currencyCommand(string[] args) {
+		if (args.Length == 0) {
+			return "Error: Needs 1 argument.";
+		}
+		if (args[0] == "max") {
+			args[0] = "9999";
+			return $"{Global.nameCoins} set to max.";
+		}
 		int currency = int.Parse(args[0]);
 		Global.level.mainPlayer.currency = currency;
+
+		return $"{Global.nameCoins} set to {args[0]}.";
 	}
 
-	public static void setHealth(string[] args) {
+	public static string setHealth(string[] args) {
+		if (args.Length == 0) {
+			return "Error: Needs 1 argument.";
+		}
 		if (Global.level.mainPlayer.character?.currentMaverick != null) {
 			Global.level.mainPlayer.character.currentMaverick.health = int.Parse(args[0]);
+			return $"Puppet HP set to {args[0]}";
 		}
 		Global.level.mainPlayer.health = int.Parse(args[0]);
+		return $"HP set to {args[0]}";
 	}
-	public static void selfDMG(string[] args) {
+
+	public static string selfDMG(string[] args) {
+		if (args.Length == 0) {
+			return "Error: Needs 1 argument.";
+		}
 		Global.level.mainPlayer?.character?.applyDamage
 		(float.Parse(args[0]), Global.level.mainPlayer, null, null, (int)ProjIds.SelfDmg);
+
+		return $"Applied {args[0]} damage.";
 	}
 
-	public static void setMusicNearEnd() {
+	public static string setMusicNearEnd() {
 		Global.music?.setNearEndCheat();
+		return "";
 	}
 
-	public static void printChecksum() {
+	public static string printChecksum() {
 		if (Global.level?.levelData?.isCustomMap == true) {
-			log(Global.level.levelData.checksum);
+			return log(Global.level.levelData.checksum);
 		}
+		return "Error: Current map is not a custom one.";
 	}
 
-	public static void addDnaCore(string[] args) {
+	public static string addDnaCore(string[] args) {
 		int count = 10;
 		if (args.Length > 0) {
 			count = int.Parse(args[0]);
@@ -103,45 +155,51 @@ public class DevConsole {
 				Global.level.mainPlayer.weapons.Add(new DNACore(chr, Global.level.mainPlayer));
 			}
 		}
+		return "";
 	}
 
-	public static void showOrHideHitboxes(string[] args) {
+	public static string showOrHideHitboxes(string[] args) {
 		Global.showHitboxes = !Global.showHitboxes;
+		return "";
 	}
 
-	public static void showOrHideGrid(string[] args) {
+	public static string showOrHideGrid(string[] args) {
 		Global.showGridHitboxes = !Global.showGridHitboxes;
+		return "";
 	}
 
-	public static void printClientPort(string[] args) {
+	public static string showOrHideTGrid(string[] args) {
+		Global.showTerrainGridHitboxes = !Global.showTerrainGridHitboxes;
+		return "";
+	}
+
+	public static string printClientPort(string[] args) {
 		if (Global.serverClient != null) {
-			log(Global.serverClient.client.Port.ToString());
-		} else {
-			log("No server client detected");
+			return log(Global.serverClient.client.Port.ToString());
 		}
+		return log("No server client detected");
 	}
 
-	public static void printServerPort(string[] args) {
+	public static string printServerPort(string[] args) {
 		if (Global.localServer != null) {
-			log(Global.localServer.s_server.Port.ToString());
-		} else {
-			log("No server host detected");
+			return log(Global.localServer.s_server.Port.ToString());
 		}
+		return log("No server host detected");
 	}
 
-	public static void printRadminIP(string[] args) {
+	public static string printRadminIP(string[] args) {
 		if (Global.localServer != null && Global.radminIP != "") {
-			log(Global.radminIP + ":" + Global.localServer.s_server.Port);
-		} else {
-			log("No server host detected");
+			return log(Global.radminIP + ":" + Global.localServer.s_server.Port);
 		}
+		return log("No server host detected");
 	}
 
-	public static void becomeMoth() {
+	public static string becomeMoth() {
 		var mmc = Global.level?.mainPlayer?.currentMaverick as MorphMothCocoon;
 		if (mmc != null) {
 			mmc.selfDestructTime = Global.spf;
 		}
+		return "";
 	}
 
 	public static void win() {
@@ -160,22 +218,26 @@ public class DevConsole {
 		}
 	}
 
-	public static void aiRevive() {
+	public static string aiRevive() {
 		if (Global.debug) {
 			Global.shouldAiAutoRevive = true;
 			Global.level.otherPlayer.character?.applyDamage(
 				Damager.ohkoDamage, Global.level.otherPlayer, Global.level.otherPlayer.character, null, null
 			);
+			return "";
 		}
+		return "Failed, debug mode is not active.";
 	}
 
-	public static void aiMash(string[] args) {
+	public static string aiMash(string[] args) {
 		int mashType = 0;
 		if (args.Length > 0) {
 			mashType = int.Parse(args[0]);
 		}
 		mashType = Helpers.clamp(mashType, 0, 2);
 		Global.level.otherPlayer.character.ai.mashType = mashType;
+
+		return $"Mash type set to {mashType}";
 	}
 
 	public static void spawnRideChaser() {
@@ -206,16 +268,21 @@ public class DevConsole {
 		Menu.exit();
 	}
 
-	public static void aiDebug(bool changeToSpec) {
-		Global.showAIDebug = true;
+	public static string aiDebug(bool changeToSpec) {
+		Global.showAIDebug = !Global.showAIDebug;
 		if (changeToSpec) {
 			Global.level.setMainPlayerSpectate();
 		}
+		return "";
 	}
 
-	public static void aiGiga() {
-		Global.level.otherPlayer.weapons.Add(new GigaCrush());
-		Global.level.otherPlayer.character.changeState(new GigaCrushCharState(), true);
+	public static string aiGiga() {
+		if (Global.level.otherPlayer.character is MegamanX) {
+			Global.level.otherPlayer.weapons.Add(new GigaCrush());
+			Global.level.otherPlayer.character.changeState(new GigaCrushCharState(), true);
+			return "";
+		}
+		return "Error: Other player is not X.";
 	}
 
 	public static List<Command> commands = new List<Command>() {
@@ -233,50 +300,85 @@ public class DevConsole {
 		new Command("serverport", (args) => printServerPort(args), false),
 		new Command("radminip", (args) => printRadminIP(args), false),
 		new Command("grid", (args) => showOrHideGrid(args), false),
-		new Command("tgrid", (args) => Global.showTerrainGridHitboxes = !Global.showTerrainGridHitboxes, false),
-		new Command("dumpnetids", (args) => Helpers.WriteToFile("netIdDump.txt", Global.level.getNetIdDump())),
+		new Command("tgrid", (args) => showOrHideTGrid(args), false),
+		new Command("dumpnetids", (args) => {
+			Helpers.WriteToFile("netIdDump.txt", Global.level.getNetIdDump());
+			return "";
+		}),
 		new Command(
 			"dumpkillfeed",
-			(args) => Helpers.WriteToFile(
-				"killFeedDump.txt", string.Join(Environment.NewLine, Global.level.gameMode.killFeedHistory)
-			),
-			false
+			(args) => {
+				Helpers.WriteToFile(
+					"killFeedDump.txt",
+					string.Join(Environment.NewLine, Global.level.gameMode.killFeedHistory)
+				);
+				return "";
+			}, false
 		),
-		new Command("invuln", (args) => Global.level.mainPlayer.character.invulnTime = 60),
+		new Command("invuln", (args) => {
+			Global.level.mainPlayer.character.invulnTime = 60;
+			return "";
+		}),
 		new Command("ult", (args) => {
 			if (Global.level.mainPlayer.character is MegamanX mmx) {
 				mmx.hasUltimateArmor = true;
+				return "Error: Main player is not X.";
 			}
+			return "";
 		}),
 		new Command("hp", (args) => setHealth(args)),
 		new Command("dmg", (args) => selfDMG(args)),
-		new Command("freeze", (args) => Global.level.mainPlayer.character.freeze(1, 0, 255)),
-		new Command("hurt", (args) => Global.level.mainPlayer.character.setHurt(-1, Global.defFlinch, false)),
-		new Command("trhealth", (args) => Global.spawnTrainingHealth = !Global.spawnTrainingHealth),
+		new Command("freeze", (args) => {
+			Global.level.mainPlayer.character?.freeze(1, 0, 255);
+			return "";
+		}),
+		new Command("hurt", (args) => {
+			Global.level.mainPlayer.character?.setHurt(-1, Global.defFlinch, false);
+			return "";
+		}),
+		new Command("trhealth", (args) => {
+			Global.spawnTrainingHealth = !Global.spawnTrainingHealth;
+			return "";
+		}),
 		new Command("checksum", (args) => printChecksum(), false),
 		new Command("dna", (args) => addDnaCore(args)),
-		new Command("timeleft", (args) => Global.level.gameMode.remainingTime = 5),
-		new Command("aiattack", (args) => AI.trainingBehavior = AITrainingBehavior.Attack),
-		new Command("aijump", (args) => AI.trainingBehavior = AITrainingBehavior.Jump),
-		new Command("aiguard", (args) => AI.trainingBehavior = AITrainingBehavior.Guard),
-		new Command("aicrouch", (args) => AI.trainingBehavior = AITrainingBehavior.Crouch),
-		new Command("aistop", (args) => AI.trainingBehavior = AITrainingBehavior.Idle),
-		new Command("aikill", (args) => Global.level.otherPlayer?.forceKill()),
+		new Command("timeleft", (args) => setMatchTime(args)),
+		new Command("aiattack", (args) => aiSwitch2(AITrainingBehavior.Attack)),
+		new Command("aijump", (args) => aiSwitch2(AITrainingBehavior.Jump)),
+		new Command("aiguard", (args) => aiSwitch2(AITrainingBehavior.Guard)),
+		new Command("aicrouch", (args) => aiSwitch2(AITrainingBehavior.Crouch)),
+		new Command("aistop", (args) => aiSwitch2(AITrainingBehavior.Idle)),
+		new Command("aikill", (args) => {
+			Global.level.otherPlayer?.forceKill();
+			return "";
+		}),
 		new Command("aiswitch", aiSwitch),
 		new Command("aimash", (args) => aiMash(args)),
 		new Command("bolt", currencyCommand),
-		new Command("die", (args) => Global.level.mainPlayer.forceKill()),
-		new Command("raflight", (args) => Global.level.rideArmorFlight = !Global.level.rideArmorFlight),
+		new Command("die", (args) => {
+			Global.level.mainPlayer.forceKill();
+			return "";
+		}),
+		new Command("raflight", (args) => {
+			Global.level.rideArmorFlight = !Global.level.rideArmorFlight;
+			return "";
+		}),
 		// Online
-		new Command("diagnostics", (args) => Global.showDiagnostics = !Global.showDiagnostics, false),
-		new Command("diag", (args) => Global.showDiagnostics = !Global.showDiagnostics, false),
-		new Command("clear", (args) => consoleLog.Clear(), false),
+		new Command("diagnostics", (args) => {
+			Global.showDiagnostics = !Global.showDiagnostics;
+			return "";
+		}, false),
+		new Command("diag", (args) => {
+			Global.showDiagnostics = !Global.showDiagnostics;
+			return "";
+		}, false),
+		new Command("clear", (args) => { consoleLog.Clear(); return ""; }, false),
 		new Command("musicend", (args) => setMusicNearEnd()),
 		// GMTODO: remove
 		// Gacel: Not. This could be usefull for bug reports with flags.
 		new Command(
 			"dumpflagdata",
-			(args) => Helpers.WriteToFile("flagDataDump.txt", Global.level.getFlagDataDump()),
+			(args) => Helpers.WriteToFile("flagDataDump.txt", Global.level.getFlagDataDump()) ?? "",
 			offlineOnly: false
 		),
 		/*
@@ -296,7 +398,7 @@ public class DevConsole {
 		*/
 	};
 
-	public static void runCommand(string commandStr) {
+	public static string runCommand(string commandStr) {
 		List<string> pieces = commandStr.Split(' ').ToList();
 		string command = pieces[0];
 		var args = new List<string>();
@@ -306,31 +408,31 @@ public class DevConsole {
 
 		var commandObj = commands.FirstOrDefault(c => c.name == command.ToLowerInvariant());
 		if (commandObj != null) {
-			if (!commandObj.offlineOnly || Global.serverClient == null || Global.debug) {
+			if (!commandObj.offlineOnly || Global.serverClient == null) {
 				try {
-					log("Ran command \"" + command + "\"");
+					string localLog = log("Ran command \"" + command + "\"");
 					commandObj.action.Invoke(args.ToArray());
-					if (args.Contains("q")) {
+					if (args.Contains("-v")) {
 						hide();
 					}
+					return localLog;
 				} catch {
-					log("Command \"" + command + "\" failed");
+					return log("Command \"" + command + "\" failed");
 				}
 			} else {
-				log("Command \"" + command + "\" is only available offline");
+				return log("Command \"" + command + "\" is only available offline");
 			}
-		} else {
-			log("Command \"" + command + "\" does not exist.");
 		}
+		return log("Command \"" + command + "\" does not exist.");
 	}
 }
 
 public class Command {
 	public string name;
 	public bool offlineOnly;
-	public Action<string[]> action;
+	public Func<string[], string> action;
 
-	public Command(string name, Action<string[]> action, bool offlineOnly = true) {
+	public Command(string name, Func<string[], string> action, bool offlineOnly = true) {
 		this.name = name;
 		this.offlineOnly = offlineOnly;
 		this.action = action;

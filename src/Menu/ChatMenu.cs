@@ -101,6 +101,11 @@ public class ChatMenu : IMainMenu {
 	public void addChatEntry() {
 		bool isSpectator = Global.level.mainPlayer.isSpectator;
 
+		if (currentTypedChat.StartsWith("/")) {
+			runChatCommand(currentTypedChat);
+			return;
+		}
+
 		ChatEntry chatEntry = new ChatEntry(
 			currentTypedChat,
 			Global.level.mainPlayer.name,
@@ -111,6 +116,12 @@ public class ChatMenu : IMainMenu {
 		);
 
 		addChatEntry(chatEntry, true);
+	}
+
+	public void runChatCommand(string text) {
+		string debugLog = DevConsole.runCommand(text.RemovePrefix("/"));
+		ChatEntry chatEntry = new ChatEntry(debugLog, "", null, false, false, -100);
+		addChatEntry(chatEntry, false);
 	}
 
 	// Internal helper method to add a chat entry, useful for programmatic chat writes for "system" messages

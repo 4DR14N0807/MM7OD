@@ -69,7 +69,6 @@ public class EnterLadderNTP : NodeTransitionPhase {
 		base.update();
 		if (yDir == -1) {
 			player.press(Control.Up);
-			ai.doJump(1);
 		} else {
 			player.press(Control.Down);
 		}
@@ -148,14 +147,14 @@ public class JumpToPlatformNTP : NodeTransitionPhase {
 			if (platformJumpDir >= 1) {
 				var rightWall = Global.level.checkTerrainCollisionOnce(character, platformJumpDirDist, 0);
 				if (rightWall != null && rightWall.gameObject is Wall) {
-					if (ai.jumpTime > 0.5f) {
+					if (ai.jumpTime > 30) {
 						state = 1;
 					}
 				}
 			} else if (platformJumpDir <= -1) {
 				var leftWall = Global.level.checkTerrainCollisionOnce(character, -platformJumpDirDist, 0);
 				if (leftWall != null && leftWall.gameObject is Wall) {
-					if (ai.jumpTime > 0.5f) {
+					if (ai.jumpTime > 30) {
 						state = 1;
 					}
 				}

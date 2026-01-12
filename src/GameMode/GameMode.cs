@@ -675,8 +675,8 @@ public class GameMode {
 			}
 		} else if (level.mainPlayer.aiTakeover) {
 			Fonts.drawText(
-				FontType.OrangeMenu, "AI Takeover active. Press F12 to stop.",
-				Global.halfScreenW, 180, Alignment.Center
+				FontType.WhiteMini, "AI Takeover active. Press F12 to stop.",
+				Global.halfScreenW, 180, Alignment.Center, color: Color.Red
 			);
 		}
 		drawDiagnostics();

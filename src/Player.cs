@@ -1833,6 +1833,19 @@ public partial class Player {
 		Key key = (Key)control;
 		input.keyPressed[key] = !input.keyHeld.GetValueOrDefault(key);
 		input.keyHeld[key] = true;
+		if (input.keyHeldAI[key] == null) {
+			input.keyHeldAI[key] = 0;
+		}
+	}
+
+	public void hold(string inputMapping, int frames) {
+		string keyboard = "keyboard";
+		int? control = Control.controllerNameToMapping[keyboard].GetValueOrDefault(inputMapping);
+		if (control == null) return;
+		Key key = (Key)control;
+		input.keyPressed[key] = !input.keyHeld.GetValueOrDefault(key);
+		input.keyHeld[key] = true;
+		input.keyHeldAI[key] = frames;
 	}
 
 	public void release(string inputMapping) {
@@ -1842,19 +1855,19 @@ public partial class Player {
 		Key key = (Key)control;
 		input.keyHeld[key] = false;
 		input.keyPressed[key] = false;
+		input.keyHeldAI[key] = 0;
 	}
 
 	public void clearAiInput() {
-		input.keyHeld.Clear();
-		input.keyPressed.Clear();
-		if (character != null && character.ai.framesChargeHeld > 0) {
-			press("shoot");
-		}
-		if (character != null) {
-			if (character.ai.jumpTime > 0) {
-				press("jump");
+		Key[] keyList = input.keyHeldAI.Keys.ToArray();
+		foreach(Key key in keyList) {
+    		if (input.keyHeldAI[key] is null or <= 0) {
+				input.keyHeld[key] = false;
+				input.keyPressed[key] = false;
+				input.keyHeldAI[key] = null;
 			} else {
-				release("jump");
+				input.keyHeldAI[key] -= Global.gameSpeed;
+				input.keyPressed[key] = false;
 			}
 		}
 	}

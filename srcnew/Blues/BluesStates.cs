@@ -295,6 +295,10 @@ public class BluesSlide : CharState {
 		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = false;
 		blues.changeGlobalColliderOnSpriteChange(blues.sprite.name);
+
+		if (!player.isAI) {
+			normalCtrl = false;
+		}
 	}
 }
 
@@ -308,7 +312,6 @@ public class BluesSpreadShoot : CharState {
 		canJump = true;
 		canStopJump = true;
 		airMove = true;
-		normalCtrl = true;
 		landSprite = "spreadshoot";
 		airSprite = "spreadshoot_air";
 	}

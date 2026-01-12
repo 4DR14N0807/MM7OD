@@ -16,7 +16,7 @@ public class Bass : Character {
 
 	// Modes.
 	public bool isSuperBass;
-	public const int TrebleBoostCost = 50;
+	public const int TrebleBoostCost = 70;
 	public int phase;
 	public int[] evilEnergy = new int[] {0,0,0};
 	public const int MaxEvilEnergy = 28;

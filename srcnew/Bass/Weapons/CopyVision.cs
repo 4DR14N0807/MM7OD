@@ -48,11 +48,7 @@ public class CopyVision : Weapon {
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
 		} else {
-			if (ammo > 0) {
-				new CopyVisionLemon(bass, shootPos, bass.xDir, player.getNextActorNetId(), true);
-			} else {
-				new CopyVisionLemonAlt(bass, shootPos, bass.xDir, player.getNextActorNetId(), true);
-			}
+			new CopyVisionLemonAlt(bass, shootPos, bass.xDir, ammo <= 0, player.getNextActorNetId(), true);
 			bass.playSound("bassbuster", true);
 		}
 	}
@@ -84,12 +80,10 @@ public class CopyVisionLemon : Projectile {
 
 		vel.x = 240 * xDir;
 		damager.damage = 1;
-		damager.hitCooldown = 9;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
-		projId = (int)BassProjIds.BassLemon;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -101,28 +95,30 @@ public class CopyVisionLemon : Projectile {
 
 public class CopyVisionLemonAlt : Projectile {
 	public CopyVisionLemonAlt(
-		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		Actor owner, Point pos, int xDir, bool isWeak, ushort? netProjId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "copy_vision_lemon", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.CopyVisionLemonAlt;
-		maxTime = 0.525f;
+		maxTime = 28 / 60f;
 		fadeSprite = "copy_vision_lemon_fade";
 
 		vel.x = 240 * xDir;
-		damager.damage = 0.5f;
-		damager.hitCooldown = 9;
+		damager.damage = 1;
+		if (isWeak) {
+			damager.damage = 0.5f;
+		}
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)(isWeak ? 1 : 0));
 		}
-		projId = (int)BassProjIds.BassLemon;
+		addRenderEffect(RenderEffectType.ChargePurple);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new CopyVisionLemonAlt(
-			arg.owner, arg.pos, arg.xDir, arg.netId
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0] == 1, arg.netId
 		);
 	}
 }
@@ -135,8 +131,8 @@ public class CopyVisionClone : Actor {
 	int lemons;
 
 	// Define the rateOfFire of the clone.
-	float rateOfFire = 9;
-	Bass bass = null!;
+	float rateOfFire = 12;
+	Bass? bass = null!;
 	Player? player;
 
 	public CopyVisionClone(
@@ -146,7 +142,7 @@ public class CopyVisionClone : Actor {
 	) {
 		if (ownedByLocalPlayer) {
 			bass = owner as Bass ?? throw new NullReferenceException();
-			player = altPlayer ?? throw new NullReferenceException();
+			player = bass.player;
 		}
 
 		useGravity = false;

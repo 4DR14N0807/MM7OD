@@ -43,6 +43,7 @@ public enum InputAction {
 public class Input {
 	public Dictionary<Key, bool> keyHeld = new Dictionary<Key, bool>();
 	public Dictionary<Key, bool> keyPressed = new Dictionary<Key, bool>();
+	public NullDir<Key, float> keyHeldAI = new();
 
 	public Dictionary<int, bool> buttonHeld = new Dictionary<int, bool>();
 	public Dictionary<int, bool> buttonPressed = new Dictionary<int, bool>();
@@ -359,7 +360,7 @@ public class Input {
 
 	public int mashCount;
 
-	public const char backspaceChar = '~';
+	public const char backspaceChar = (char)1;
 
 	public static float mouseX;
 	public static float mouseY;

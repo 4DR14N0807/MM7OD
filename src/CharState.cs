@@ -47,6 +47,7 @@ public class CharState {
 	public bool isGrabbedState;
 
 	public bool wasVileHovering;
+	public bool wasDashing;
 
 	// For grab states (I am grabber)
 	public bool isGrabbing;
@@ -110,6 +111,9 @@ public class CharState {
 		if (newState == null) {
 			character.rideArmorPlatform = null;
 			return;
+		}
+		if (character.isDashing) {
+			wasDashing = true;
 		}
 		if (newState is not Dash &&
 			newState is not Jump &&

@@ -255,10 +255,13 @@ public class HostMenu : IMainMenu {
 			playerCount = 5;
 		}
 
-		foreach (var kvp in Global.levelDatas) {
-			var levelData = kvp.Value;
-			if (levelData.isMirrored || levelData.name.EndsWith("_inverted")) continue;
+		List<LevelData> levelDatas = Global.levelDatas.Values.ToList();
+		levelDatas.Sort((x, y) => string.Compare(x.name, y.name));
 
+		foreach (LevelData levelData in levelDatas) {
+			if (levelData.isMirrored || levelData.name.EndsWith("_inverted")) {
+				continue;
+			}
 			if (!levelData.isCustomMap) {
 				if (levelData.isTraining()) {
 					trainingMaps.Add(levelData);
@@ -368,6 +371,10 @@ public class HostMenu : IMainMenu {
 		/*if (isOffline && botCount == 0) {
 			botCount = is1v1 ? 1 : 7;
 		}*/
+		// Melee easter egg.
+		if (Helpers.randomRange(0, 10) == 2) {
+			mapSizes[1] = "1v1, no items, Fox only"; 
+		}
 	}
 
 	public void setMenuOptions() {
@@ -459,8 +466,12 @@ public class HostMenu : IMainMenu {
 					}
 				},
 				(Point pos, int index) => {
+					string mapName = selectedLevel.displayName;
+					if (!isMapSelected) {
+						mapName = "[Select]";
+					}
 					Fonts.drawText(
-						fontOption, "MAP: " + (isMapSelected ? selectedLevel.displayName : "[Select]"),
+						fontOption, $"MAP: {mapName}",
 						pos.x, pos.y, selected: index == selectArrowPosY
 					);
 				},
@@ -835,13 +846,20 @@ public class HostMenu : IMainMenu {
 		}
 	}
 
-	public string[] mapSortOrder = new string[] {
-		//MD Maps
-		"urbanarea_md", "iceberg_md", "robotmuseum_md", "willy2_md", "willy3_md",
-		//Large Maps
-		"urbanarea", "iceberg", "recyclingplant", "substancefactory", "weatherinstitute", 
-		"dinosaurjungle", "willy1", "willy4", 
-	};
+	public string[] mapSortOrder = [
+		"training",
+		"iceberg", "icebergmd",
+		"weatherinstitute", "weatherinstitute_1v1",
+		"recyclingplant", "recyclingplant2",
+		"dinosaurjungle", "dinosaurjungle_md",
+		"oldcastle",
+		"substancefactory",
+		"urbanarea", "urbanarea_md", 
+		"robotmuseum",
+		"willy1", "willy2md", "willy3md", "willy4", 
+		"nodetest"
+	];
+
 	public int mapSortFunc(LevelData a, LevelData b) {
 		int aIndex = -1;
 		int bIndex = -1;
@@ -858,7 +876,7 @@ public class HostMenu : IMainMenu {
 			}
 		}
 		int compareTo = aIndex.CompareTo(bIndex);
-		if (compareTo == 0) {
+		if (compareTo == 0 || bIndex == -1 || aIndex == -1) {
 			return a.name.CompareTo(b.name);
 		}
 		return compareTo;

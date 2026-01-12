@@ -53,7 +53,7 @@ public class NeedleCannon : Weapon {
 		float shootAngle = 0;
 
 		shootAngle = Helpers.randomRange(-bloomLevel, bloomLevel);
-		bloomLevel += 2;
+		bloomLevel += 1.5f;
 		bloomCooldown = 4;
 		bloomSpeed = 1;
 		if (bloomLevel > 24) {

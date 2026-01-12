@@ -437,6 +437,9 @@ public partial class Level {
 			if (instance.mirrorEnabled == 2 && !levelData.isMirrored) {
 				continue;
 			}
+			if (otherRestricted(instance)) {
+				continue;
+			}
 
 			string instanceName = instance.name;
 			string objectName = instance.objectName;
@@ -964,7 +967,7 @@ public partial class Level {
 	private long getZIndexFromProperty(dynamic property, long defaultZIndex) {
 		string zIndexString = property;
 		long zIndex;
-		if (zIndexString == "aboveForeground") zIndex = ZIndex.Foreground + 100;
+		if (zIndexString == "aboveForeground") zIndex = ZIndex.Foreground + 5;
 		else if (zIndexString == "aboveInstances") zIndex = ZIndex.Default - 5;
 		else if (zIndexString == "aboveBackground") zIndex = ZIndex.Background + 5;
 		else if (zIndexString == "aboveBackwall") zIndex = ZIndex.Backwall + 5;
@@ -1016,6 +1019,14 @@ public partial class Level {
 		if (instance.properties.nonKothOnly == true && Global.level.server.gameMode.Contains(GameMode.KingOfTheHill)) return true;
 		if (instance.properties.dmOnly == true && !Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
 		if (Global.level.server?.customMatchSettings?.pickupItems == false) return true;
+		return false;
+	}
+	public bool otherRestricted(dynamic instance) {
+		if (instance.properties.nonDmOnly == true && Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
+		if (instance.properties.nonCpOnly == true && Global.level.server.gameMode.Contains(GameMode.ControlPoint)) return true;
+		if (instance.properties.nonCtfOnly == true && Global.level.server.gameMode.Contains(GameMode.CTF)) return true;
+		if (instance.properties.nonKothOnly == true && Global.level.server.gameMode.Contains(GameMode.KingOfTheHill)) return true;
+		if (instance.properties.dmOnly == true && !Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
 		return false;
 	}
 
@@ -1711,13 +1722,6 @@ public partial class Level {
 		}
 
 		foreach (var player in players.ToList()) {
-			if (player.isAI && AI.trainingBehavior != AITrainingBehavior.Idle) {
-				player.clearAiInput();
-			}
-			player.input.clearMashCount();
-		}
-
-		foreach (var player in players.ToList()) {
 			player.update();
 		}
 
@@ -1744,6 +1748,13 @@ public partial class Level {
 		// Send RPCs.
 		if (Global.serverClient != null && isSendMessageFrame()) {
 			Global.serverClient.flush();
+		}
+		
+		foreach (var player in players.ToList()) {
+			if (player.isAI && AI.trainingBehavior != AITrainingBehavior.Idle) {
+				player.clearAiInput();
+			}
+			player.input.clearMashCount();
 		}
 	}
 
@@ -2340,7 +2351,12 @@ public partial class Level {
 			foreach (var navMeshNode in navMeshNodes) {
 				float textPosX = navMeshNode.pos.x - Global.level.camX / Global.viewSize;
 				float textPosY = (navMeshNode.pos.y - 20 - Global.level.camY) / Global.viewSize;
-				DrawWrappers.DrawRect(navMeshNode.pos.x - 10, navMeshNode.pos.y - 10, navMeshNode.pos.x + 10, navMeshNode.pos.y + 10, true, new Color(0, 255, 0, 128), 1, ZIndex.HUD + 100, true);
+				DrawWrappers.DrawRect(
+					navMeshNode.pos.x - 7, navMeshNode.pos.y - 15, 
+					navMeshNode.pos.x + 7, navMeshNode.pos.y + 15,
+					true, new Color(0, 255, 0, 64), 1, ZIndex.HUD + 100,
+					true, new Color(0, 255, 0, 128)
+				);
 				Fonts.drawText(
 					FontType.Grey, navMeshNode.name, navMeshNode.pos.x, navMeshNode.pos.y - 20,
 					Alignment.Center, true, depth: ZIndex.HUD

@@ -806,6 +806,9 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void preUpdate() {
+		if (ownedByLocalPlayer && ai != null) {
+			ai.update();
+		}
 		base.preUpdate();
 		updateProjectileCooldown();
 		debuffUpdate();
@@ -1419,10 +1422,6 @@ public partial class Character : Actor, IDamagable {
 					playSound("heal", forcePlay: true, sendRpc: true);
 				}
 			}
-		}
-
-		if (ai != null) {
-			ai.update();
 		}
 
 		if (slideVel != 0) {
@@ -2565,9 +2564,15 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (Global.showAIDebug) {
-			float textPosX = pos.x;// (pos.x - Global.level.camX) / Global.viewSize;
+			float textPosX = pos.x;// (pos.x - Global.level.textPosY -= offY,camX) / Global.viewSize;
 			float textPosY = pos.y - 50;// (pos.y - 50 - Global.level.camY) / Global.viewSize;
+			if (player.isMainPlayer) {
+				textPosX = (Global.screenW * 0.5f + Global.level.camX);
+				textPosY = (Global.screenH * 0.25f + Global.level.camY);
+			}
+			
 			Color outlineColor = player.alliance == GameMode.blueAlliance ? Helpers.DarkBlue : Helpers.DarkRed;
+			int offY = 8;
 
 			//DrawWrappers.DrawText(
 			//	"Possessing...", pos.x, pos.y - 15 + currentLabelY,
@@ -2576,43 +2581,85 @@ public partial class Character : Actor, IDamagable {
 			//);
 
 			Fonts.drawText(
-				FontType.Grey, player.name + " " + getActorTypeName(), textPosX, textPosY,
+				FontType.WhiteMini, player.name + " " + getActorTypeName(), textPosX, textPosY,
 				Alignment.Center, true, depth: ZIndex.HUD
 			);
 			if (ai != null) {
-				var charTarget = ai.target as Character;
+				string dest = $"Dest: {ai.aiState.getDestNodeName()}";
+				string next = $"Next: {ai.aiState.getNextNodeName()}";
+				string prev = $"Prev: {ai.aiState.getPrevNodeName()}";
 				Fonts.drawText(
-					FontType.Grey, "dest:" + ai.aiState.getDestNodeName(),
-					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.WhiteMini, $"{prev} {next} {dest}",
+					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 				);
-				Fonts.drawText(
-					FontType.Grey, "next:" + ai.aiState.getNextNodeName(), textPosX, textPosY -= 10,
-					Alignment.Center, true, depth: ZIndex.HUD
-				);
-				Fonts.drawText(
-					FontType.Grey, "prev:" + ai.aiState.getPrevNodeName(), textPosX, textPosY -= 10,
-					Alignment.Center, true, depth: ZIndex.HUD
-				);
-				Fonts.drawText(
-					FontType.Grey, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
-					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
-				);
-				if (charTarget != null) {
+				if (ai.target is Character charTarget) {
 					Fonts.drawText(
-						FontType.Grey, "target:" + charTarget?.name, textPosX, textPosY -= 10,
+						FontType.WhiteMini, "target:" + charTarget?.name, textPosX, textPosY -= offY,
 						Alignment.Center, true, depth: ZIndex.HUD
 					);
-					if (ai.aiState is FindPlayer fp) {
+				}
+				if (ai.aiState is FindPlayer fp) {
+					string nt = "FindPlayer";
+					if (fp.nodeTransition != null) {
+						nt += $" - {fp.nodeTransition.currentPhase.ToString().RemovePrefix("MMXOnline.")}";
+					}
+					if (fp.nextNode != null) {
+						Point dist = (
+							fp.nextNode.pos - abstractedActor().getCenterPos()
+						);
+						nt += $" | {MathF.Round(dist.x)}, {MathF.Round(dist.y)}";
+					}
+					Fonts.drawText(
+						FontType.WhiteMini, nt,
+						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					);
+					/*if (fp.stuckTime > 0) {
 						Fonts.drawText(
-							FontType.Grey, "stuck:" + fp.stuckTime, textPosX, textPosY -= 10,
+							FontType.WhiteMini, "stuck:" + fp.stuckTime, textPosX, textPosY -= offY,
+							Alignment.Center, true, depth: ZIndex.HUD
+						);
+					}*/
+				} else  {
+					Fonts.drawText(
+						FontType.WhiteMini, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
+						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					);
+				}
+				if (ai.jumpTime > 0) {
+					bool jumpPress = player.input.isPressed(Control.Jump, player);
+					bool jumpHeld = player.input.isHeld(Control.Jump, player);
+					Fonts.drawText(
+						FontType.WhiteMini,
+						$"JP: {ai.jumpTime}, {jumpPress} {jumpHeld}",
+						textPosX, textPosY -= offY,
+						Alignment.Center, true, depth: ZIndex.HUD
+					);
+				}
+				else {
+					List<CollideData> jumpZones = Global.level.getTerrainTriggerList(
+						abstractedActor(), Point.zero, typeof(JumpZone)
+					);
+					string text = "Inside jump zone";
+					if (jumpZones.Count > 0) {
+						if (ai.aiState is FindPlayer fp2 &&
+							jumpZones.FindAll(
+								j => fp2.neighbor?.isJumpZoneExcluded(j.gameObject.name) != true
+							).Count == 0
+						) {
+							text += ", but excluded";
+						}
+						Fonts.drawText(
+							FontType.WhiteMini,
+							$"{text}.",
+							textPosX, textPosY -= offY,
 							Alignment.Center, true, depth: ZIndex.HUD
 						);
 					}
 				}
 			} else {
 				Fonts.drawText(
-					FontType.Grey, charState.GetType().ToString().RemovePrefix("MMXOnline."),
-					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.WhiteMini, charState.GetType().ToString().RemovePrefix("MMXOnline."),
+					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 				);
 			}
 		}
@@ -3716,7 +3763,6 @@ public partial class Character : Actor, IDamagable {
 				!player.isMainPlayer && player.alliance == Global.level.mainPlayer.alliance &&
 				Global.level.gameMode.isTeamMode
 			) {
-			
 				shouldDrawHealthBar = true;
 			}
 		}
@@ -3782,13 +3828,12 @@ public partial class Character : Actor, IDamagable {
 			float maxCd = at.maxCooldown;
 			int icon = at.iconIndex;
 			string sprite = at.sprite;
-				
+
 			drawBuff(drawPos, cd / maxCd, sprite, icon);
 
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-		
 	}
 
 	public void drawBuff(Point pos, float cooldown, string sprite, int index) {

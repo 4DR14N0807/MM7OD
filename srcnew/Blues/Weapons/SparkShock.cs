@@ -39,10 +39,12 @@ public class SparkShockProj : Projectile {
 	) : base(
 		pos, xDir, owner, "spark_shock_proj", netId, altPlayer
 	) {
-		maxTime = 0.75f;
+		maxTime = 45 / 60f;
 		projId = (int)BluesProjIds.SparkShock;
+		fadeSprite = "proto_chargeshot_yellow_proj_fade";
+		fadeOnAutoDestroy = true;
 
-		vel.x = 180 * xDir;
+		vel.x = (1 / 60f) * xDir;
 		damager.damage = 1;
 		damager.flinch = Global.miniFlinch;
 
@@ -55,5 +57,36 @@ public class SparkShockProj : Projectile {
 		return new SparkShockProj(
 			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
 		);
+	}
+
+	public override void update() {
+		base.update();
+		if (reflectCount == 0) {
+			vel.x += Global.speedMul * xDir * 8;
+		}
+	}
+
+	public override void onReflect() {
+		vel.x = 200;
+		base.onReflect();
+	}
+
+	public override void render(float x, float y) {
+		float savedAlpha = alpha;
+		long savedZindex = zIndex;
+		zIndex = ZIndex.Background;			
+		for (int i = 6; i >= 1; i--) {
+			int j = (6 - i);
+			alpha = j * 0.1f + 0.4f;
+			xScale = j * 0.1f + 0.3f;
+			yScale = j * 0.1f + 0.3f;
+			base.render(x + (-moveDelta.x * i), y);
+		}
+		alpha = savedAlpha;
+		zIndex = savedZindex;
+		xScale = 1;
+		yScale = 1;
+		
+		base.render(x, y);
 	}
 }

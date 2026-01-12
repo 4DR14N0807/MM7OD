@@ -17,7 +17,7 @@ public class Blues : Character {
 	// Mode variables.
 	public bool isShieldActive = true;
 	public bool isBreakMan;
-	public const int reviveCost = 50;
+	public const int reviveCost = 70;
 
 	// Core heat system.
 	public float coreMaxAmmo = 28;
@@ -69,6 +69,8 @@ public class Blues : Character {
 	public float aiSpecialUseTimer = 0;
 	public bool aiActivateShieldOnLand;
 	public bool aiJumpedOnFrame;
+	public float aiLemonCooldown;
+	public bool aiCoreCooldownMode;
 
 	// Overdrive mode music.
 	public MusicWrapper? breakmanMusic;
@@ -836,16 +838,16 @@ public class Blues : Character {
 				new ProtoBusterProj(
 					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
 				);
+				playSound("buster", sendRpc: true);
 			} else {
 				float shootAngle = xDir == 1 ? 0 : 128;
 				shootAngle += Helpers.randomRange(-2, 2);
 				new BreakBusterProj(
 					this, shootPos, shootAngle, player.getNextActorNetId(), rpc: true
 				);
-				playSound("buster2", sendRpc: true);
+				playSound("buster2X1", sendRpc: true);
 				addCoreAmmo(0.75f);
 			}
-			playSound("buster", sendRpc: true);
 			lemonCooldown = 8;
 			unchargedLemonCooldown[lemonNum] = 40;
 			if (oldShootAnimTime <= 0.25f) {
@@ -881,7 +883,6 @@ public class Blues : Character {
 			addCoreAmmo(getChargeShotAmmoUse(1));
 			if (type == 0) {
 				playSound("buster2", sendRpc: true);
-				playSound("buster", sendRpc: true);
 			} else {
 				playSound("buster3", sendRpc: true);
 			}
@@ -1394,7 +1395,7 @@ public class Blues : Character {
 		}
 		aiJumpedOnFrame = false;
 		if (target == null) {
-			player.press(Control.Shoot);
+			player.hold(Control.Shoot, 1);
 		}
 	}
 
@@ -1411,17 +1412,42 @@ public class Blues : Character {
 		if (AI.trainingBehavior != 0) {
 			return;
 		}
+		if (!aiCoreCooldownMode && coreAmmo >= 20) {
+			aiCoreCooldownMode = true;
+		} else if (aiCoreCooldownMode && coreAmmo <= 2) {
+			aiCoreCooldownMode = false;
+		}
 		Helpers.decrementFrames(ref aiSpecialUseTimer);
-		if (!isFacing(target)) {
-			if (canCharge() && shootAnimTime == 0) {
-				increaseCharge();
+		Helpers.decrementFrames(ref aiLemonCooldown);
+
+		if (!aiCoreCooldownMode && (!isFacing(target) || aiLemonCooldown > 0)) {
+			if (canCharge() && (shootAnimTime == 0 || aiLemonCooldown > 0)) {
+				// Hold charge.
+				player.hold(Control.Shoot, 1);
+				if (getChargeLevel() < 3) {
+					aiLemonCooldown = 10;
+				}
 			}
 			return;
 		}
 		if (!charState.attackCtrl) {
 			return;
 		}
-		if (aiSpecialUseTimer == 0 &&
+		if (!aiCoreCooldownMode && coreAmmo < 20 &&
+			!isCharging() && isFacing(target) &&
+			charState is Jump
+		) {
+			player.press(Control.Down);
+			player.press(Control.Shoot);
+			return;
+		}
+		if (isFacing(target) && target.pos.distanceTo(pos) > 96 && grounded &&
+			charState.normalCtrl && charState is not BluesSlide
+		) {
+			changeState(new BluesSlide());
+			return;
+		}
+		if (!aiCoreCooldownMode && aiSpecialUseTimer == 0 &&
 			specialWeapon is not StarCrash && canShootSpecial() &&
 			coreMaxAmmo - coreAmmo > specialWeapon.getAmmoUsage(0) * 2
 		) {
@@ -1429,9 +1455,17 @@ public class Blues : Character {
 			shootSpecial(0);
 			return;
 		}
-		if (canShoot() && lemonCooldown == 0) {
+		if (canShoot() && lemonCooldown == 0 && aiLemonCooldown == 0 &&
+			(!isCharging() && target.pos.distanceTo(pos) < 96 || getChargeLevel() >= 3)
+		) {
 			shoot(getChargeLevel());
 			return;
+		}
+		if (!aiCoreCooldownMode && unchargedLemonCooldown[1] >= 0 &&
+			(coreAmmo < 20 &&coreAmmoDamageCooldown < 0 ||
+			coreAmmo < 2
+		)) {
+			aiLemonCooldown = 30;
 		}
 	}
 
@@ -1498,8 +1532,8 @@ public class Blues : Character {
 		return pos.addxy(0, -yCollider);
 	}
 	
-	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
-		offset = offset.addxy(0, 17);
+	public override void renderHUD(Point offset, HUDHealthPosition position) {
+		offset = offset.addxy(0, 13);
 		if (overdrive) {
 			renderOverdriveHUD();
 		}
@@ -1507,49 +1541,11 @@ public class Blues : Character {
 			renderOverheatHUD();
 		}
 		base.renderHUD(offset, position);
-
-		if (destroyed || charState is Die) return;
-
-		float pAmmo = getChargeShotCorePendingAmmo();
-		Point barPos = pos.addxy(-12, -44);
-		int maxLength = 14;
-		// Core ammo
-		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0 ) && Options.main.coreHeatDisplay >= 1) {
-
-			float pendAmmo = coreAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = coreMaxAmmo;
-			}
-
-			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
-			int length = MathInt.Ceiling((maxLength * coreAmmo) / coreMaxAmmo);
-
-			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
-			drawFuelMeterEXH(length, maxLength, 3, barPos, false);
-		}
-
-		//Overdrive ammo
-		if (player.isMainPlayer && Options.main.coreHeatDisplay >= 1 && overdriveAmmo > 0 && overdrive) {
-			float pendAmmo = overdriveAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = coreMaxAmmo;
-			}
-
-			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
-			int length = MathInt.Ceiling((maxLength * overdriveAmmo) / coreMaxAmmo);
-
-			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
-			drawFuelMeterEXH(length, maxLength, 2, barPos, false);
-		}
+		renderCoreAlt();
 	}
 
-	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
+	public override void renderLifebar(Point offset, HUDHealthPosition position) {
 		base.renderLifebar(offset, position);
-
-		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
-		float baseX = hudHealthPosition.x + offset.x;
-		float baseY = hudHealthPosition.y + offset.y;
-
 		renderShieldBar(offset, position);
 	}
 
@@ -1561,17 +1557,18 @@ public class Blues : Character {
 		return ("hud_health_top", 1);
 	}
 
-	public void renderShieldBar(Point offset, GameMode.HUDHealthPosition position) {
+	public void renderShieldBar(Point offset, HUDHealthPosition position) {
 		decimal damageSavings = 0;
 		if (shieldHP > 0) {
-			damageSavings = MathInt.Floor(this.shieldDamageSavings);
+			damageSavings = MathInt.Floor(shieldDamageSavings);
 		}
-		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
+		Point hudHealthPosition = getHUDHealthPosition(position, true);
 		float baseX = hudHealthPosition.x + offset.x;
 		float baseY = hudHealthPosition.y + offset.y;
+
 		decimal modifier = (decimal)Player.getHealthModifier();
 		decimal maxHP = maxHealth / modifier;
-		baseY += -4 - offset.y - (float)(maxHP * 2);
+		baseY += -21 - (float)(maxHP * 2);
 		decimal maxShield = shieldMaxHP / modifier;
 		decimal curShield = Math.Floor(shieldHP) / modifier;
 		decimal ceilShield = Math.Ceiling(shieldHP / modifier);
@@ -1598,8 +1595,8 @@ public class Blues : Character {
 		Global.sprites["hud_health_top"].drawToHUD(0, baseX, baseY);
 	}
 
-	public override void renderAmmo(Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null) {
-		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, false);
+	public override void renderAmmo(Point offset, HUDHealthPosition position, Weapon? weaponOverride = null) {
+		Point hudHealthPosition = getHUDHealthPosition(position, false);
 		float baseX = hudHealthPosition.x + offset.x;
 		float baseY = hudHealthPosition.y + offset.y;
 
@@ -1660,6 +1657,40 @@ public class Blues : Character {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, ammoAlpha);
 				yPos -= 2;
 			}
+		}
+	}
+
+	public void renderCoreAlt() {
+		float pAmmo = getChargeShotCorePendingAmmo();
+		Point barPos = pos.addxy(-12, -44);
+		int maxLength = 14;
+		// Core ammo
+		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0 ) && Options.main.coreHeatDisplay >= 1) {
+
+			float pendAmmo = coreAmmo + pAmmo;
+			if (pendAmmo > coreMaxAmmo) {
+				pendAmmo = coreMaxAmmo;
+			}
+
+			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
+			int length = MathInt.Ceiling((maxLength * coreAmmo) / coreMaxAmmo);
+
+			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
+			drawFuelMeterEXH(length, maxLength, 3, barPos, false);
+		}
+
+		//Overdrive ammo
+		if (player.isMainPlayer && Options.main.coreHeatDisplay >= 1 && overdriveAmmo > 0 && overdrive) {
+			float pendAmmo = overdriveAmmo + pAmmo;
+			if (pendAmmo > coreMaxAmmo) {
+				pendAmmo = coreMaxAmmo;
+			}
+
+			int lengthP = MathInt.Ceiling((maxLength * pendAmmo) / coreMaxAmmo);
+			int length = MathInt.Ceiling((maxLength * overdriveAmmo) / coreMaxAmmo);
+
+			drawFuelMeterEXH(lengthP, maxLength, 1, barPos);
+			drawFuelMeterEXH(length, maxLength, 2, barPos, false);
 		}
 	}
 

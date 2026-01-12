@@ -322,6 +322,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BluesProjIds.RedStrikeExplosion, RedStrikeExplosionProj.rpcInvoke },
 		{ (int)BluesProjIds.BigBangStrike, BigBangStrikeProj.rpcInvoke },
 		{ (int)BluesProjIds.BigBangStrikeExplosion, BigBangStrikeExplosionProj.rpcInvoke },
+		{ (int)BluesProjIds.SuperBluesSquare, SuperBluesSquare.rpcInvoke },
 
 		//Bass stuff.
 		{ (int)BassProjIds.BassLemon, BassBusterProj.rpcInvoke },

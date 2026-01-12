@@ -474,9 +474,17 @@ public class Blues : Character {
 		specialWeapon.charLinkedUpdate(this, true);
 
 		// Revive stuff.
-		if (player.canReviveBlues() && player.input.isPressed(Control.Special2, player)) {
-			changeState(new BluesRevive(), true);
-			player.currency -= reviveCost;
+		
+		// Breakman mode.
+		if (player.input.isPressed(Control.Special2, player)) {
+			if (player.canReviveBlues()) {
+				changeState(new BluesRevive(), true);
+				player.currency -= reviveCost;
+			}
+			else if (alive && charState.normalCtrl && canUseBreakman()) {
+				changeState(new BluesRevive(), true);
+				player.currency -= reviveCost;
+			}
 		}
 
 		// Shield HP.
@@ -1177,6 +1185,18 @@ public class Blues : Character {
 			return isShieldActive;
 		}
 		return (shieldCustomState ?? isShieldActive);
+	}
+
+	public bool canUseBreakman() {
+		if (isBreakMan) {
+			Global.level.gameMode.setHUDDebugWarning("test");
+			return false;
+		}
+		if (currency >= reviveCost) {
+			Global.level.gameMode.setHUDDebugWarning("test2");
+			return true;
+		}
+		return false;
 	}
 
 	public override void applyDamage(

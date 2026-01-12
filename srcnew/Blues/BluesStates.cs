@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using SFML.Graphics;
 
 namespace MMXOnline;
 
@@ -636,6 +638,10 @@ public class BluesRevive : CharState {
 		blues.overdriveAmmo = 0;
 		blues.overdriveAmmoDecreaseCooldown = 30;
 		blues.alive = true;
+		new SuperBluesSquare(
+			blues, blues.getCenterPos(), blues.xDir, 
+			player.getNextActorNetId(), sendRpc: true
+		);
 	}
 
 	public override void onExit(CharState? newState) {
@@ -643,5 +649,67 @@ public class BluesRevive : CharState {
 		character.removeRenderEffect(RenderEffectType.Flash);
 		blues.overdrive = true;
 		blues.overheating = false;
+	}
+}
+
+
+public class SuperBluesSquare : Projectile {
+	float size = 42; // Square size
+	float rot; // Square rotation
+	float trans = 260; // Square opacity
+
+	public SuperBluesSquare(
+		Actor owner, Point pos, int xDir, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
+	) : base(
+		pos, xDir, owner, "empty", netId, altPlayer
+	) {
+		projId = (int)BluesProjIds.SuperBluesSquare;
+		maxTime = 2;
+		canBeLocal = false;
+
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SuperBassSquare(
+			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+		);
+	}
+
+	public override void update() {
+		base.update();
+		if (ownerActor != null) {
+			changePos(ownerActor.getCenterPos());
+			xDir = ownerActor.xDir;
+		}
+
+		size -= 1 * speedMul;
+		if (size <= 0) { size = 0; }
+		rot += 4 * speedMul;
+		trans -= 4 * speedMul;
+		if (trans < 0) { trans = 0; }
+		if (trans <= 0 || size <= 0) {
+			destroySelf(doRpcEvenIfNotOwned: true);
+		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x, y);
+		Point center = pos.addxy(0, -4);
+		List<Point> points = [];
+		Color color = new Color(241, 9, 18, (byte)Math.Min(trans * 0.9f, 255));
+		Color colorOut = new Color(200, 18, 130, (byte)Math.Min(trans, 255));
+		int jumps = MathInt.Floor(256 / 5f);
+
+		for (int i = 0; i < 5; i++) {
+			points.Add(center + Point.createFromByteAngle(rot + i * jumps) * size);
+		}
+		DrawWrappers.DrawPolygon(
+			points, color, true, ZIndex.Foreground + 10,
+			outlineColor: colorOut, thickness: 6
+		);
 	}
 }

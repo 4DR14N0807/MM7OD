@@ -115,7 +115,12 @@ public class Bass : Character {
 	}
 
 	public void setSuperBass() {
+		if (isSuperBass) {
+			return;
+		}
 		isSuperBass = true;
+		maxHealth += 2;
+		heal(player, (float)(maxHealth - health));
 		phase = 0;
 		player.changeWeaponSlot(0);
 		weapons.Clear();
@@ -209,8 +214,63 @@ public class Bass : Character {
 		offset = offset.addxy(0, 0);
 		base.renderHUD(offset, position);
 
-		if (!isSuperBass || !alive) return;
+	}
 
+	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
+		decimal damageSavings = 0;
+		if (health > 0 && health < maxHealth) {
+			damageSavings = MathInt.Floor(this.damageSavings);
+		}
+
+		Point hudHealthPosition = GameMode.getHUDHealthPosition(position, true);
+		float baseX = hudHealthPosition.x + offset.x;
+		float baseY = hudHealthPosition.y + offset.y;
+
+		(string healthBaseSprite, int baseSpriteIndex) = getBaseHpSprite();
+		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
+		baseY -= 16;
+		decimal modifier = (decimal)Player.getHealthModifier();
+		decimal maxHP = Math.Ceiling((maxHealth + player.evilEnergyHP) / modifier);
+		decimal curHP = Math.Floor(health / modifier);
+		decimal ceilCurHP = Math.Ceiling(health / modifier);
+		decimal floatCurHP = health / modifier;
+		float fhpAlpha = (float)(floatCurHP - curHP);
+		decimal savings = curHP + (damageSavings / modifier);
+
+		for (var i = 0; i < Math.Ceiling(maxHP); i++) {
+			// Draw HP
+			if (i < curHP) {
+				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
+			}
+			else if (i < savings) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
+			}
+			else if (i >= Math.Ceiling(maxHP) - player.evilEnergyHP) {
+				Global.sprites["hud_energy_full"].drawToHUD(2, baseX, baseY);
+			}
+			else {
+				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
+				if (i < ceilCurHP) {
+					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
+				}
+			}
+			baseY -= 2;
+		}
+		(string healthTopSprite, int baseTopIndex) = getTopHpSprite();
+		Global.sprites[healthTopSprite].drawToHUD(baseTopIndex, baseX, baseY);
+	}
+
+	public override void renderAmmo(
+		Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null
+	) {
+		if (isSuperBass) {
+			renderSuperAmmo(offset, position);
+			return;
+		}
+		base.renderAmmo(offset, position, weaponOverride);
+	}
+
+	public void renderSuperAmmo(Point offset, GameMode.HUDHealthPosition position) {
 		Point energyBarPos = GameMode.getHUDHealthPosition(position, false).add(offset);
 
 		Global.sprites["hud_energy_base"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
@@ -219,11 +279,11 @@ public class Bass : Character {
 		}
 		energyBarPos.y -= 16;
 		Point energyStartPos = energyBarPos;
-		int[][] index = new int[][] {
+		int[][] index = [
 			[0,1,2],
 			[3,4,5],
-			[6,7,8]			
-		};
+			[6,7,8]
+		];
 
 		for (int i = 0; i < phase + 1; i++) {
 			int amount =  evilEnergy[i];
@@ -231,7 +291,9 @@ public class Bass : Character {
 			for (int j = 0; j < MaxEvilEnergy; j++) {
 				int k = i == 1 && evilEnergy[i] >= MaxEvilEnergy ? 2 : i;
 				if (j < amount) {
-					Global.sprites["hud_energy_full"].drawToHUD(index[phase][k], energyBarPos.x, energyBarPos.y);
+					Global.sprites["hud_energy_full"].drawToHUD(
+						index[phase][k], energyBarPos.x, energyBarPos.y
+					);
 				}
 				else if (i == 0){
 					Global.sprites["hud_energy_empty"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);

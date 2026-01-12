@@ -75,8 +75,8 @@ public class AI {
 				}
 				blues.aiJumpedOnFrame = true;
 			}
-			//player.release(Control.Jump);
-			player.press(Control.Jump);
+			player.release(Control.Jump);
+			player.hold(Control.Jump, 2);
 			this.jumpTime = jumpTime;
 		}
 	}

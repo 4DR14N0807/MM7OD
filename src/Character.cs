@@ -36,7 +36,10 @@ public partial class Character : Actor, IDamagable {
 	// Player linked data.
 	public Player player;
 	public MasteryTracker mastery => player.masteryLevels[(int)charId];
-	public int currency;
+	public int currency {
+		get => player.charCurrency[(int)charId];
+		set => player.charCurrency[(int)charId] = value;
+	}
 
 	public List<Weapon> weapons = new();
 	public int weaponSlot;
@@ -1592,7 +1595,8 @@ public partial class Character : Actor, IDamagable {
 		if (charState.canStopJump &&
 			!charState.stoppedJump &&
 			!grounded && vel.y < 0 &&
-			!player.input.isHeld(Control.Jump, player)
+			!player.input.isHeld(Control.Jump, player) &&
+			!player.isAI
 		) {
 			vel.y *= 0.21875f;
 			charState.stoppedJump = true;
@@ -3874,7 +3878,7 @@ public partial class Character : Actor, IDamagable {
 		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
 		baseY -= 16;
 		decimal modifier = (decimal)Player.getHealthModifier();
-		decimal maxHP = Math.Ceiling((decimal)player.getMaxHealth(charId) / modifier);
+		decimal maxHP = Math.Ceiling(maxHealth / modifier);
 		decimal curHP = Math.Floor(health / modifier);
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
@@ -3888,9 +3892,6 @@ public partial class Character : Actor, IDamagable {
 			}
 			else if (i < savings) {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
-			}
-			else if (i >= Math.Ceiling(maxHP) - player.evilEnergyHP) {
-				Global.sprites["hud_energy_full"].drawToHUD(2, baseX, baseY);
 			}
 			else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
@@ -3950,7 +3951,7 @@ public partial class Character : Actor, IDamagable {
 		byte netHP = (byte)Math.Ceiling(health);
 		byte netMaxHP = (byte)Math.Ceiling(maxHealth);
 		byte netAlliance = (byte)player.alliance;
-		byte netCurrency = (byte)player.currency;
+		byte netCurrency = (byte)currency;
 
 		// Bool variables. Packed in a single byte.
 		byte stateFlag = Helpers.boolArrayToByte([

@@ -71,7 +71,7 @@ public class CharSelection {
 		new CharSelection("PROTOMAN", (int)CharIds.Blues, 0, 0, "blues_idle", 0 ),
 		new CharSelection("BASS", (int)CharIds.Bass, 0, 0, "bass_idle", 0),
 		//new CharSelection("FREEZEMAN", (int)CharIds.Freezeman, 0, 0, "freezem_idle", 0),
-		new CharSelection("SLASHMAN", (int)CharIds.Slashman, 0, 0, "slashman_idle", 0),
+		//new CharSelection("SLASHMAN", (int)CharIds.Slashman, 0, 0, "slashman_idle", 0),
 	];
 
 	public static CharSelection[] selections1v1 => selections;

@@ -383,6 +383,7 @@ public enum BluesProjIds  {
 	RedStrikeExplosion,
 	GravityHold,
 	GravityHoldCrash,
+	SuperBluesSquare,
 }
 
 public enum RockProjIds  {

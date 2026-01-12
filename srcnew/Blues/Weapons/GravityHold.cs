@@ -118,7 +118,7 @@ public class GravityHoldProj : Projectile {
 			} 
 			DrawWrappers.DrawCircle(
 				pos.x, pos.y, innerSize, true, new Color(0, 0, 0, 0),
-				r - (maxR - r), ZIndex.Backwall, outlineColor: colors[3]
+				r - (maxR - r), ZIndex.Backwall + 20, outlineColor: colors[3]
 			);
 		}
 

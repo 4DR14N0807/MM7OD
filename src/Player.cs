@@ -682,8 +682,11 @@ public partial class Player {
 	}
 
 	public static float getHealthModifier() {
-		if (Global.level.server.customMatchSettings != null) {
-			return Global.level.server.customMatchSettings.healthModifier / 8f;
+		if (Global.customSettings != null) {
+			float modifier = Global.customSettings.healthModifier / 8f;
+			if (modifier > 1) {
+				return modifier;
+			}
 		}
 		return 1;
 	}
@@ -876,13 +879,21 @@ public partial class Player {
 		if (character != null && evilEnergyTime <= 0 && evilEnergyStacks > 0) {
 			evilEnergyTime = evilEnergyMaxTime;
 			evilEnergyStacks = 0;
-			maxHealth = getMaxHealth((CharIds)charNum);
 			evilEnergyHPTimer = 4;
 		}
 		Helpers.decrementFrames(ref evilEnergyHPTimer);
 		if (evilEnergyHPTimer <= 0 && evilEnergyHP > 0 && evilEnergyStacks <= 0) {
 			evilEnergyHPTimer = 4;
 			evilEnergyHP--;
+			if (character != null) {
+				character.maxHealth++;
+				character.heal(this, 1);
+
+				if (evilEnergyHP <= 0) {
+					evilEnergyHP = 0;
+					maxHealth = getMaxHealth((CharIds)charNum);
+				}
+			}
 			character?.playSound("heal");
 		}
 
@@ -1469,11 +1480,10 @@ public partial class Player {
 	public bool canReviveBlues() {
 		return ( 
 			character is Blues blues &&
-			!blues.isBreakMan &&
 			blues.charState is Die dieState &&
 			!dieState.respawnTimerOn &&
 			lastDeathCanRevive && 
-			currency >= Blues.reviveCost
+			blues.canUseBreakman()
 		);
 	}
 

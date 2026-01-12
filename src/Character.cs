@@ -36,7 +36,10 @@ public partial class Character : Actor, IDamagable {
 	// Player linked data.
 	public Player player;
 	public MasteryTracker mastery => player.masteryLevels[(int)charId];
-	public int currency;
+	public int currency {
+		get => player.charCurrency[(int)charId];
+		set => player.charCurrency[(int)charId] = value;
+	}
 
 	public List<Weapon> weapons = new();
 	public int weaponSlot;
@@ -806,6 +809,9 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public override void preUpdate() {
+		if (ownedByLocalPlayer && ai != null) {
+			ai.update();
+		}
 		base.preUpdate();
 		updateProjectileCooldown();
 		debuffUpdate();
@@ -1421,10 +1427,6 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (ai != null) {
-			ai.update();
-		}
-
 		if (slideVel != 0) {
 			slideVel = Helpers.toZero(slideVel, speedMul * 0.1f, Math.Sign(slideVel));
 			moveXY(slideVel, 0);
@@ -1593,7 +1595,8 @@ public partial class Character : Actor, IDamagable {
 		if (charState.canStopJump &&
 			!charState.stoppedJump &&
 			!grounded && vel.y < 0 &&
-			!player.input.isHeld(Control.Jump, player)
+			!player.input.isHeld(Control.Jump, player) &&
+			!player.isAI
 		) {
 			vel.y *= 0.21875f;
 			charState.stoppedJump = true;
@@ -2566,9 +2569,15 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (Global.showAIDebug) {
-			float textPosX = pos.x;// (pos.x - Global.level.camX) / Global.viewSize;
+			float textPosX = pos.x;// (pos.x - Global.level.textPosY -= offY,camX) / Global.viewSize;
 			float textPosY = pos.y - 50;// (pos.y - 50 - Global.level.camY) / Global.viewSize;
+			if (player.isMainPlayer) {
+				textPosX = (Global.screenW * 0.5f + Global.level.camX);
+				textPosY = (Global.screenH * 0.25f + Global.level.camY);
+			}
+			
 			Color outlineColor = player.alliance == GameMode.blueAlliance ? Helpers.DarkBlue : Helpers.DarkRed;
+			int offY = 8;
 
 			//DrawWrappers.DrawText(
 			//	"Possessing...", pos.x, pos.y - 15 + currentLabelY,
@@ -2577,43 +2586,85 @@ public partial class Character : Actor, IDamagable {
 			//);
 
 			Fonts.drawText(
-				FontType.Grey, player.name + " " + getActorTypeName(), textPosX, textPosY,
+				FontType.WhiteMini, player.name + " " + getActorTypeName(), textPosX, textPosY,
 				Alignment.Center, true, depth: ZIndex.HUD
 			);
 			if (ai != null) {
-				var charTarget = ai.target as Character;
+				string dest = $"Dest: {ai.aiState.getDestNodeName()}";
+				string next = $"Next: {ai.aiState.getNextNodeName()}";
+				string prev = $"Prev: {ai.aiState.getPrevNodeName()}";
 				Fonts.drawText(
-					FontType.Grey, "dest:" + ai.aiState.getDestNodeName(),
-					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.WhiteMini, $"{prev} {next} {dest}",
+					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 				);
-				Fonts.drawText(
-					FontType.Grey, "next:" + ai.aiState.getNextNodeName(), textPosX, textPosY -= 10,
-					Alignment.Center, true, depth: ZIndex.HUD
-				);
-				Fonts.drawText(
-					FontType.Grey, "prev:" + ai.aiState.getPrevNodeName(), textPosX, textPosY -= 10,
-					Alignment.Center, true, depth: ZIndex.HUD
-				);
-				Fonts.drawText(
-					FontType.Grey, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
-					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
-				);
-				if (charTarget != null) {
+				if (ai.target is Character charTarget) {
 					Fonts.drawText(
-						FontType.Grey, "target:" + charTarget?.name, textPosX, textPosY -= 10,
+						FontType.WhiteMini, "target:" + charTarget?.name, textPosX, textPosY -= offY,
 						Alignment.Center, true, depth: ZIndex.HUD
 					);
-					if (ai.aiState is FindPlayer fp) {
+				}
+				if (ai.aiState is FindPlayer fp) {
+					string nt = "FindPlayer";
+					if (fp.nodeTransition != null) {
+						nt += $" - {fp.nodeTransition.currentPhase.ToString().RemovePrefix("MMXOnline.")}";
+					}
+					if (fp.nextNode != null) {
+						Point dist = (
+							fp.nextNode.pos - abstractedActor().getCenterPos()
+						);
+						nt += $" | {MathF.Round(dist.x)}, {MathF.Round(dist.y)}";
+					}
+					Fonts.drawText(
+						FontType.WhiteMini, nt,
+						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					);
+					/*if (fp.stuckTime > 0) {
 						Fonts.drawText(
-							FontType.Grey, "stuck:" + fp.stuckTime, textPosX, textPosY -= 10,
+							FontType.WhiteMini, "stuck:" + fp.stuckTime, textPosX, textPosY -= offY,
+							Alignment.Center, true, depth: ZIndex.HUD
+						);
+					}*/
+				} else  {
+					Fonts.drawText(
+						FontType.WhiteMini, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
+						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					);
+				}
+				if (ai.jumpTime > 0) {
+					bool jumpPress = player.input.isPressed(Control.Jump, player);
+					bool jumpHeld = player.input.isHeld(Control.Jump, player);
+					Fonts.drawText(
+						FontType.WhiteMini,
+						$"JP: {ai.jumpTime}, {jumpPress} {jumpHeld}",
+						textPosX, textPosY -= offY,
+						Alignment.Center, true, depth: ZIndex.HUD
+					);
+				}
+				else {
+					List<CollideData> jumpZones = Global.level.getTerrainTriggerList(
+						abstractedActor(), Point.zero, typeof(JumpZone)
+					);
+					string text = "Inside jump zone";
+					if (jumpZones.Count > 0) {
+						if (ai.aiState is FindPlayer fp2 &&
+							jumpZones.FindAll(
+								j => fp2.neighbor?.isJumpZoneExcluded(j.gameObject.name) != true
+							).Count == 0
+						) {
+							text += ", but excluded";
+						}
+						Fonts.drawText(
+							FontType.WhiteMini,
+							$"{text}.",
+							textPosX, textPosY -= offY,
 							Alignment.Center, true, depth: ZIndex.HUD
 						);
 					}
 				}
 			} else {
 				Fonts.drawText(
-					FontType.Grey, charState.GetType().ToString().RemovePrefix("MMXOnline."),
-					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.WhiteMini, charState.GetType().ToString().RemovePrefix("MMXOnline."),
+					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 				);
 			}
 		}
@@ -3728,7 +3779,6 @@ public partial class Character : Actor, IDamagable {
 				!player.isMainPlayer && player.alliance == Global.level.mainPlayer.alliance &&
 				Global.level.gameMode.isTeamMode
 			) {
-			
 				shouldDrawHealthBar = true;
 			}
 		}
@@ -3789,13 +3839,12 @@ public partial class Character : Actor, IDamagable {
 			float maxCd = at.maxCooldown;
 			int icon = at.iconIndex;
 			string sprite = at.sprite;
-				
+
 			drawBuff(drawPos, cd / maxCd, sprite, icon);
 
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-		
 	}
 
 	public void drawBuff(Point pos, float cooldown, string sprite, int index) {
@@ -3829,7 +3878,7 @@ public partial class Character : Actor, IDamagable {
 		Global.sprites[healthBaseSprite].drawToHUD(baseSpriteIndex, baseX, baseY);
 		baseY -= 16;
 		decimal modifier = (decimal)Player.getHealthModifier();
-		decimal maxHP = Math.Ceiling((decimal)player.getMaxHealth(charId) / modifier);
+		decimal maxHP = Math.Ceiling(maxHealth / modifier);
 		decimal curHP = Math.Floor(health / modifier);
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
@@ -3843,9 +3892,6 @@ public partial class Character : Actor, IDamagable {
 			}
 			else if (i < savings) {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
-			}
-			else if (i >= Math.Ceiling(maxHP) - player.evilEnergyHP) {
-				Global.sprites["hud_energy_full"].drawToHUD(2, baseX, baseY);
 			}
 			else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
@@ -3905,7 +3951,7 @@ public partial class Character : Actor, IDamagable {
 		byte netHP = (byte)Math.Ceiling(health);
 		byte netMaxHP = (byte)Math.Ceiling(maxHealth);
 		byte netAlliance = (byte)player.alliance;
-		byte netCurrency = (byte)player.currency;
+		byte netCurrency = (byte)currency;
 
 		// Bool variables. Packed in a single byte.
 		byte stateFlag = Helpers.boolArrayToByte([

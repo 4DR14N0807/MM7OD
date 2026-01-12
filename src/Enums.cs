@@ -2,16 +2,16 @@
 
 // Higher values are drawn above
 public class ZIndex {
-	public const long Default = 0;
-	public const long Actor = -500000;
-	public const long MainPlayer = -1000000;
-	public const long Character = -2000000;
-	public const long Background = -3000000;
-	public const long Backwall = -4000000;
-	public const long Parallax = -5000000;
-	public const long Foreground = 2000000;
-	public const long HUD = 1000000;
-	public const long AboveFont = 2000000;
+	public const long Parallax   = -6000000;
+	public const long Backwall   = -5000000;
+	public const long Background = -4000000;
+	public const long Character  = -3000000;
+	public const long MainPlayer = -2000000;
+	public const long Actor      = -1000000;
+	public const long Default    = 0;
+	public const long Foreground = 1000000;
+	public const long HUD        = 2000000;
+	public const long AboveFont  = 3000000;
 }
 
 public enum Alignment {
@@ -383,6 +383,7 @@ public enum BluesProjIds  {
 	RedStrikeExplosion,
 	GravityHold,
 	GravityHoldCrash,
+	SuperBluesSquare,
 }
 
 public enum RockProjIds  {

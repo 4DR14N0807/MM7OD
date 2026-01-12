@@ -154,6 +154,7 @@ public class Projectile : Actor {
 			}
 		}
 		canBeLocal = true;
+		reflectable = true;
 	}
 
 	public void setIndestructableProperties() {

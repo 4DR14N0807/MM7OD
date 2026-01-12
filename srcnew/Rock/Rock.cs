@@ -746,6 +746,7 @@ public class Rock : Character {
 
 	public void setSuperAdaptor(bool addOrRemove) {
 		if (addOrRemove) {
+			heal(player, (float)(maxHealth - health));
 			hasSuperAdaptor = true;
 			weapons.Add(new RockBuster(true));
 		} else {

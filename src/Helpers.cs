@@ -681,7 +681,7 @@ public class Helpers {
 		return text;
 	}
 
-	public static string WriteToFile(string filePath, string text) {
+	public static string? WriteToFile(string filePath, string text) {
 		filePath = Global.writePath + filePath;
 		try {
 			if (File.Exists(filePath)) {

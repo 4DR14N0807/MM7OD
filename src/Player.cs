@@ -682,8 +682,11 @@ public partial class Player {
 	}
 
 	public static float getHealthModifier() {
-		if (Global.level.server.customMatchSettings != null) {
-			return Global.level.server.customMatchSettings.healthModifier / 8f;
+		if (Global.customSettings != null) {
+			float modifier = Global.customSettings.healthModifier / 8f;
+			if (modifier > 1) {
+				return modifier;
+			}
 		}
 		return 1;
 	}
@@ -876,13 +879,21 @@ public partial class Player {
 		if (character != null && evilEnergyTime <= 0 && evilEnergyStacks > 0) {
 			evilEnergyTime = evilEnergyMaxTime;
 			evilEnergyStacks = 0;
-			maxHealth = getMaxHealth((CharIds)charNum);
 			evilEnergyHPTimer = 4;
 		}
 		Helpers.decrementFrames(ref evilEnergyHPTimer);
 		if (evilEnergyHPTimer <= 0 && evilEnergyHP > 0 && evilEnergyStacks <= 0) {
 			evilEnergyHPTimer = 4;
 			evilEnergyHP--;
+			if (character != null) {
+				character.maxHealth++;
+				character.heal(this, 1);
+
+				if (evilEnergyHP <= 0) {
+					evilEnergyHP = 0;
+					maxHealth = getMaxHealth((CharIds)charNum);
+				}
+			}
 			character?.playSound("heal");
 		}
 
@@ -1469,11 +1480,10 @@ public partial class Player {
 	public bool canReviveBlues() {
 		return ( 
 			character is Blues blues &&
-			!blues.isBreakMan &&
 			blues.charState is Die dieState &&
 			!dieState.respawnTimerOn &&
 			lastDeathCanRevive && 
-			currency >= Blues.reviveCost
+			blues.canUseBreakman()
 		);
 	}
 
@@ -1833,6 +1843,19 @@ public partial class Player {
 		Key key = (Key)control;
 		input.keyPressed[key] = !input.keyHeld.GetValueOrDefault(key);
 		input.keyHeld[key] = true;
+		if (input.keyHeldAI[key] == null) {
+			input.keyHeldAI[key] = 0;
+		}
+	}
+
+	public void hold(string inputMapping, int frames) {
+		string keyboard = "keyboard";
+		int? control = Control.controllerNameToMapping[keyboard].GetValueOrDefault(inputMapping);
+		if (control == null) return;
+		Key key = (Key)control;
+		input.keyPressed[key] = !input.keyHeld.GetValueOrDefault(key);
+		input.keyHeld[key] = true;
+		input.keyHeldAI[key] = frames;
 	}
 
 	public void release(string inputMapping) {
@@ -1842,19 +1865,19 @@ public partial class Player {
 		Key key = (Key)control;
 		input.keyHeld[key] = false;
 		input.keyPressed[key] = false;
+		input.keyHeldAI[key] = 0;
 	}
 
 	public void clearAiInput() {
-		input.keyHeld.Clear();
-		input.keyPressed.Clear();
-		if (character != null && character.ai.framesChargeHeld > 0) {
-			press("shoot");
-		}
-		if (character != null) {
-			if (character.ai.jumpTime > 0) {
-				press("jump");
+		Key[] keyList = input.keyHeldAI.Keys.ToArray();
+		foreach(Key key in keyList) {
+    		if (input.keyHeldAI[key] is null or <= 0) {
+				input.keyHeld[key] = false;
+				input.keyPressed[key] = false;
+				input.keyHeldAI[key] = null;
 			} else {
-				release("jump");
+				input.keyHeldAI[key] -= Global.gameSpeed;
+				input.keyPressed[key] = false;
 			}
 		}
 	}

@@ -23,12 +23,13 @@ public class AI {
 	public float weaponTime = 0;
 	public float maxChargeTime = 0;
 	public int framesChargeHeld = 0;
+	public float jumpZoneCooldown = 0;
 	public float jumpZoneTime = 0;
 	public bool flagger = false; //Will this ai aggressively capture the flag?
 	private static AITrainingBehavior _trainingBehavior = AITrainingBehavior.Default;
 	public static AITrainingBehavior trainingBehavior {
 		set { _trainingBehavior = value; }
-		get => Global.level.isTraining() ? _trainingBehavior : AITrainingBehavior.Default; 
+		get => Global.level.isTraining() ? _trainingBehavior : AITrainingBehavior.Default;
 	}
 	public AITrainingBehavior localTrainBehavior => (
 		Global.level.mainPlayer != character.player ? trainingBehavior : AITrainingBehavior.Default
@@ -63,8 +64,8 @@ public class AI {
 		}
 	}
 
-	public void doJump(float jumpTime = 0.75f) {
-		if (this.jumpTime == 0) {
+	public void doJump(float jumpTime = 45) {
+		if (this.jumpTime <= 0) {
 			if (character is Blues blues && blues.grounded && blues.charState is Idle or BaseRun) {
 				blues.isShieldActive = false;
 				if (blues.canShieldDash() && !blues.aiJumpedOnFrame &&
@@ -74,8 +75,8 @@ public class AI {
 				}
 				blues.aiJumpedOnFrame = true;
 			}
-			//this.player.release(Control.Jump);
-			player.press(Control.Jump);
+			player.release(Control.Jump);
+			player.hold(Control.Jump, 2);
 			this.jumpTime = jumpTime;
 		}
 	}
@@ -143,7 +144,7 @@ public class AI {
 			if (shouldShoot) {
 				player.press(Control.Shoot);
 			} else {
-				player.release(Control.Shoot);
+				//player.release(Control.Shoot);
 			}
 
 			var brakeZones = Global.level.getTerrainTriggerList(
@@ -183,7 +184,7 @@ public class AI {
 				if (jumpZones.Count + jumpTurnZoneCount > 0 && character.rideChaser?.grounded == true) {
 					jumpTime = (jumpZones.FirstOrDefault()?.gameObject as JumpZone)?.jumpTime ?? 0.5f;
 				} else if (Helpers.randomRange(0, 300) < 1) {
-					jumpTime = 0.5f;
+					doJump(30);
 				}
 			} else {
 				player.release(Control.Jump);
@@ -276,8 +277,8 @@ public class AI {
 			return;
 		}*/
 
-		if (aiState is not InJumpZone) {
-			var jumpZones = Global.level.getTerrainTriggerList(
+		if (aiState is not InJumpZone && jumpZoneCooldown <= 0) {
+			List<CollideData> jumpZones = Global.level.getTerrainTriggerList(
 				character.abstractedActor(), Point.zero, typeof(JumpZone)
 			);
 			var neighbor = (aiState as FindPlayer)?.neighbor;
@@ -288,9 +289,10 @@ public class AI {
 				var jumpZoneDir = character.xDir;
 				if (jumpZone.forceDir != 0) {
 					jumpZoneDir = jumpZone.forceDir;
+					if (jumpZoneDir == 0) {
+						jumpZoneDir = -1;
+					}
 				}
-				if (jumpZoneDir == 0) jumpZoneDir = -1;
-
 				if (jumpZone.targetNode == null || jumpZone.targetNode == aiState.getNextNodeName()) {
 					if (aiState is not FindPlayer) {
 						changeState(new InJumpZone(character, jumpZone, jumpZoneDir));
@@ -303,14 +305,16 @@ public class AI {
 
 						if (character.charState is not LadderClimb) {
 							doJump();
+							jumpZoneCooldown = 20;
 							jumpZoneTime += Global.spf;
 						}
 					}
-				} else {
 				}
 			} else {
 				jumpZoneTime = 0;
 			}
+		} else {
+			jumpZoneCooldown -= Global.gameSpeed;
 		}
 
 		if (character.flag != null) {
@@ -362,14 +366,23 @@ public class AI {
 			}
 		}
 		if (jumpTime > 0) {
-			jumpTime -= Global.spf;
+			jumpTime -= Global.speedMul;
 			if (jumpTime < 0) {
 				jumpTime = 0;
-			}
-			else if (character.grounded && 
-				Global.level.getGroundPosNoKillzone(character.pos.addxy(16 * character.xDir, 0)) == null
-			) {
-				jumpTime = 0;
+				if (character.grounded ||
+					Global.level.getGroundPosNoKillzone(character.pos.addxy(16 * character.xDir, 0)) == null
+				) {
+					player.release(Control.Jump);
+					jumpTime = 0;
+				} else {
+					jumpTime = 2;	
+				}
+			} else {
+				if (player.input.isHeld(Control.Jump, player) && character.grounded) {
+					player.release(Control.Jump);
+				} else {
+					player.hold(Control.Jump, 2);
+				}
 			}
 		}
 		randomlyChangeStuff();
@@ -425,27 +438,26 @@ public class AI {
 				changeState(new MoveToPos(character, character.pos.addxy(randAmount, 0)));
 				return;
 			}
-		} 
+		}
 		Helpers.decrementFrames(ref stopDashSpam);
 		//Randomly Jump
 		if (aiState.randomlyJump && !inNodeTransition && stuckTime == 0) {
 			if (Helpers.randomRange(0, 200) < 1) {
-				jumpTime = Helpers.randomRange(0.25f, 0.75f);
-				doJump(jumpTime);
+				doJump(Helpers.randomRange(15, 60));
 			}
 		}
 
 		if (aiState.randomlyChangeWeapon &&
-            character is MegamanX or Axl &&
-            !player.lockWeapon && player.character?.isStealthy(-1) != null &&
-            (character as MegamanX)?.chargedRollingShieldProj == null
-        ) {
-            weaponTime += Global.spf;
-				if (weaponTime > 3) {
-					weaponTime = 0;
-					player.changeWeaponSlot(getRandomWeaponIndex());
-				}
+			character is MegamanX or Axl &&
+			!player.lockWeapon && player.character?.isStealthy(-1) != null &&
+			(character as MegamanX)?.chargedRollingShieldProj == null
+		) {
+			weaponTime += Global.spf;
+			if (weaponTime > 3) {
+				weaponTime = 0;
+				player.changeWeaponSlot(getRandomWeaponIndex());
 			}
+		}
 	}
 
 }
@@ -598,7 +610,7 @@ public class FindPlayer : AIState {
 			}
 		}
 
-		float xDist = character.pos.x - nextNode.pos.x;
+		Point nodeDist = nextNode.pos - character.abstractedActor().getCenterPos();
 		bool isOnPit = false;
 		if (Global.level.getGroundPosNoKillzone(character.pos) == null) {
 			if (character.xDir == 1) {
@@ -608,11 +620,11 @@ public class FindPlayer : AIState {
 			}
 			isOnPit = true;
 		}
-		if (MathF.Abs(xDist) > 2.5f) {
+		if (MathF.Abs(nodeDist.x) > 16) {
 			if (!isOnPit) {
-				if (xDist < 0) {
+				if (nodeDist.x > 0) {
 					player.press(Control.Right);
-				} else if (xDist > 0) {
+				} else if (nodeDist.x < 0) {
 					player.press(Control.Left);
 				}
 			}
@@ -625,9 +637,11 @@ public class FindPlayer : AIState {
 			lastX = character.pos.x;
 		} else {
 			// States where it's possible to move to the next node. As more special situations are added this may need to grow
-			bool isValidTransitionState = character.grounded || neighbor?.isDestNodeInAir == true || character.charState is LadderClimb;
+			bool isValidTransitionState = (
+				character.grounded || neighbor?.isDestNodeInAir == true || character.charState is LadderClimb
+			);
 
-			if (Math.Abs(character.abstractedActor().pos.y - nextNode.pos.y) < 30 && isValidTransitionState) {
+			if (MathF.Abs(nodeDist.y) <= 32 && isValidTransitionState) {
 				goToNextNode();
 			} else {
 				stuckTime += Global.spf;

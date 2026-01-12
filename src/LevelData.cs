@@ -124,7 +124,7 @@ public class LevelData {
 			if (levelIni["MapData"]["size"] is String customSizeStr) {
 				customSize = customSizeStr.ToLowerInvariant() switch {
 					"training" => 0,
-					"1v1" => 1,
+					"1v1" or "foxonly" => 1,
 					"small" => 2,
 					"medium" => 3,
 					"large" => 4,

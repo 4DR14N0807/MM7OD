@@ -173,11 +173,13 @@ public partial class Level {
 	}
 
 	public Point? getGroundPosNoKillzone(Point pos, float depth = 60) {
+		var hit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> {
+			typeof(Wall), typeof(Ladder), typeof(SandZone)
+		});
+		if (hit == null) return null;
+
 		var kzHit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> { typeof(KillZone) });
 		if (kzHit != null) return null;
-
-		var hit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> { typeof(Wall) });
-		if (hit == null) return null;
 
 		return hit.hitData.hitPoint.Value.addxy(0, -1);
 	}

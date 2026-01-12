@@ -106,7 +106,10 @@ public class LightningBoltState : CharState {
 		else {
 			character.yPushVel = 2;
 		}
-		if (oldState is Dash || player.input.getXDir(player) == character.xDir) {
+		if (oldState is Dash || oldState.wasDashing) {
+			character.xPushVel += character.xDir * character.getDashSpeed();
+		}
+		else if (player.input.getXDir(player) == character.xDir) {
 			character.xPushVel += character.xDir * character.getRunSpeed();
 		} 
 

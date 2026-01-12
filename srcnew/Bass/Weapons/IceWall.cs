@@ -241,7 +241,6 @@ public class IceWallLemon : Projectile {
 
 		vel.x = 240 * xDir;
 		damager.damage = 0.5f;
-		damager.hitCooldown = 9;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);

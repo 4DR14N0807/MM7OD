@@ -423,7 +423,7 @@ public class RushSearchState : RushState {
 
 			for (int i = 0; i < 5; i++) {
 				new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-				{ xPushVel = Helpers.randomRange(-2, 2) * 30, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
+				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
 			}
 		}
 		// Small HP 
@@ -452,7 +452,7 @@ public class RushSearchState : RushState {
 
 			for (int i = 0; i < 5; i++) {
 				new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-				{ xPushVel = Helpers.randomRange(-2, 2) * 30, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
+				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
 			}
 		}
 		// Trash

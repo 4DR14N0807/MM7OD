@@ -461,6 +461,8 @@ public class DWrapBigBubble : Actor, IDamagable {
 		netOwner = victim;
 		character = victim.character;
 		character?.stopMoving();
+		character?.grounded = false;
+		character?.canBeGrounded = false;
 		useGravity = false;
 		canBeLocal = false;
 
@@ -551,6 +553,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 			//character.removeBubble(true);
 			character.dwrapEnd();
 			character.dwrapInvulnTime = 3;
+			character.canBeGrounded = true;
 		}
 		if (bomb != null) bomb.destroySelf();
 		new Anim(pos, "danger_wrap_big_bubble_fade", xDir, netOwner.getNextActorNetId(), true);

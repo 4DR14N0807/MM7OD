@@ -243,6 +243,7 @@ public class SuperBassStart : CharState {
 		treble?.destroySelf();
 		aura?.destroySelf();
 		square?.destroySelf();
+		character.invulnTime = 0.5f;
 	}
 
 	public override void update() {
@@ -557,7 +558,12 @@ public class BassFly : CharState {
 
 		bass.flyTime += getFlyConsume();
 		
-		if (bass.flyTime >= Bass.MaxFlyTime) character.changeToIdleOrFall();
+		if (
+			bass.flyTime >= Bass.MaxFlyTime || 
+			(player.input.isPressed(Control.Jump, player) && !character.changedStateInFrame)
+		) {
+			character.changeToIdleOrFall();
+		} 
 	}
 
 	public float getFlyConsume() {

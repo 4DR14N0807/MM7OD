@@ -293,6 +293,7 @@ public class CallDownRush : CharState {
 		invincible = true;
 		normalCtrl = false;
 		attackCtrl = false;
+		useGravity = false;
 	}
 
 	public override void update() {
@@ -384,7 +385,6 @@ public class CallDownRush : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
-		character.useGravity = false;
 		bool air = !character.grounded || character.vel.y < 0;
 		if (air) character.changeSpriteFromName("sa_activate_air", true);
 		rush = new Anim(new Point(character.pos.x + (30 * character.xDir), character.pos.y - rushAnimStartPos),
@@ -394,7 +394,7 @@ public class CallDownRush : CharState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		character.useGravity = true;
+		character.invulnTime = 0.5f;
 	}
 }
 

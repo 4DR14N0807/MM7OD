@@ -886,6 +886,17 @@ public partial class Character : Actor, IDamagable {
 				}
 			}
 		}
+		if (rootTime > 0) {
+			if (rootAnim == null || rootAnim.destroyed) {
+				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+			}
+		}
+		else if (rootAnim != null) {
+			if (!rootAnim.destroyed) {
+				rootAnim.destroySelf();
+			}
+			rootAnim = null;
+		}
 	}
 
 	public void debuffCooldowns() {
@@ -963,24 +974,7 @@ public partial class Character : Actor, IDamagable {
 				removeBurn();
 			}
 		}
-		if (rootTime > 0) {
-			Helpers.decrementFrames(ref rootTime);
-			if (rootAnim == null || rootAnim.destroyed) {
-				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
-			}
-			if (rootTime <= 0) {
-				rootTime = 0;
-				if (rootAnim != null) {
-					rootAnim.destroySelf();
-					rootAnim = null;
-				}
-			}
-		} else {
-			if (rootAnim?.destroyed == false) {
-				rootAnim.destroySelf();
-			}
-		}
-		
+		Helpers.decrementFrames(ref rootTime);
 		Helpers.decrementFrames(ref flattenedTime);
 		Helpers.decrementTime(ref slowdownTime);
 		igFreezeRecoveryCooldown += speedMul;
@@ -1680,7 +1674,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		freezeTime = time;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 
@@ -1712,7 +1706,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		burnStunTime = time;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 
@@ -1745,7 +1739,7 @@ public partial class Character : Actor, IDamagable {
 		stopMoving();
 		charState.canStopJump = false;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 		// Hud stuff.
@@ -1772,7 +1766,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		paralyzedTime = time;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 
@@ -2880,11 +2874,14 @@ public partial class Character : Actor, IDamagable {
 	public virtual void applyDamage(
 		float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId
 	) {
-		if (fDamage <= 0) {
+		// Return if not owned.
+		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
 		}
 		// Apply mastery level before any reduction.
-		if (this is not Blues && attacker != null && attacker != player && attacker != Player.stagePlayer) {
+		if (this is not Blues && attacker != null &&
+			attacker != player && attacker != Player.stagePlayer
+		) {
 			if (fDamage < Damager.ohkoDamage) {
 				mastery.addDefenseExp(fDamage);
 				attacker.mastery.addDamageExp(fDamage, true);
@@ -2892,14 +2889,9 @@ public partial class Character : Actor, IDamagable {
 					mastery.addMapExp(fDamage * 2);
 				}
 			}
-			if (ownedByLocalPlayer && !Damager.isDot(projId)) {
-				usedEtank = null;
-				usedWtank = null;
+			if (!Damager.isDot(projId)) {
+				enterCombat();
 			}
-		}
-		// Return if not owned.
-		if (!ownedByLocalPlayer) {
-			return;
 		}
 		// For Dark Hold break.
 		if (fDamage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
@@ -3407,7 +3399,9 @@ public partial class Character : Actor, IDamagable {
 		player.getNextActorNetId(), true, true);
 		bigBubble.attacker = attacker;
 		dwrapStart();
-		attacker.mastery.addSupportExp(2, true);
+		if (attacker != player) {
+			attacker.mastery.addSupportExp(2, true);
+		}
 	}
 
 	public void removeBubble(bool ejected) {

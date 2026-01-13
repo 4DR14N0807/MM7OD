@@ -622,13 +622,13 @@ public class RideChaser : Actor, IDamagable {
 				}
 			}
 
-			killer.awardCurrency();
+			killer.awardKillExp();
 		}
 
 		if (assister != null && assister != player) {
 			assister.addAssist();
 			assister.addKill();
-			assister.awardCurrency();
+			assister.awardKillExp();
 		}
 
 		if (ownedByLocalPlayer) {

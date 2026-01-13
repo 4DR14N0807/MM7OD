@@ -14,17 +14,21 @@ public class MasteryTracker {
 	public float damageExp;
 	public int damageLvLimit = 20;
 	public int damageLevel = 1;
+	public int damageLvCoins = 10;
 	public int damageLevelStacks;
 	public float defenseExp;
 	public int defenseLvLimit = 24;
 	public int defenseLevel = 1;
+	public int defenseLvCoins = 4;
 	public int defenseLevelStacks;
 	public float supportExp;
 	public int supportLvLimit = 16;
+	public int supportLvCoins = 6;
 	public int supportLevel = 1;
 	public int supportLevelStacks;
 	public float mapExp;
 	public int mapLvLimit = 30;
+	public int mapLvCoins = 2;
 	public int mapLevel = 1;
 	public int mapLevelStacks;
 	public bool mainCharActive => player == Global.level.mainPlayer && player.character != null;
@@ -86,14 +90,14 @@ public class MasteryTracker {
 
 	public void grantDamageLevel() {
 		damageLevelStacks++;
-		if (damageLevelStacks >= MathF.Ceiling(damageLevel / 5f)) {
+		if (damageLevelStacks >= getStacksPerLevel(damageLevel)) {
 			damageLevel++;
 			damageLevelStacks = 0;
 			if (mainCharActive) {
 				player.character?.addDamageText($"ATK L{damageLevel}!", (int)FontType.RedSmall);
 			}
 		}
-		player.awardCurrency(charId, 10);
+		player.awardCurrency(charId, damageLvCoins);
 		if (mainCharActive) {
 			Point spawnPos = player.character?.getCenterPos() ?? Point.zero;
 			if (player.lastDamagedCharacter != null) {
@@ -105,47 +109,51 @@ public class MasteryTracker {
 	}
 	public void grantDefenseLevel() {
 		defenseLevelStacks++;
-		if (defenseLevelStacks >= MathF.Ceiling(defenseLevel / 5f)) {
+		if (defenseLevelStacks >= getStacksPerLevel(defenseLevel)) {
 			defenseLevel++;
 			defenseLevelStacks = 0;
 			if (mainCharActive) {
 				player.character?.addDamageText($"DEF L{defenseLevel}!", (int)FontType.BlueSmall);
 			}
 		}
-		player.awardCurrency(charId, 4);
+		player.awardCurrency(charId, defenseLvCoins);
 		if (mainCharActive) {
 			createBoltsAtPos(player.character?.getCenterPos() ?? Point.zero, 2);
 		}
 	}
 	public void grantSupportLevel() {
 		supportLevelStacks++;
-		if (supportLevelStacks >= MathF.Ceiling(supportLevel / 5f)) {
+		if (supportLevelStacks >= getStacksPerLevel(supportLevel)) {
 			supportLevel++;
 			supportLevelStacks = 0;
 			if (mainCharActive) {
 				player.character?.addDamageText($"SP L{supportLevel}!", (int)FontType.GreenSmall);
 			}
 		}
-		player.awardCurrency(charId, 6);
+		player.awardCurrency(charId, supportLvCoins);
 		if (mainCharActive) {
 			createBoltsAtPos(player.character?.getCenterPos() ?? Point.zero, 3);
 		}
 	}
 	public void grantMapLevel() {
 		mapLevelStacks++;
-		if (mapLevelStacks >= MathF.Ceiling(mapLevel / 5f)) {
+		if (mapLevelStacks >= getStacksPerLevel(mapLevel)) {
 			mapLevel++;
 			mapLevelStacks = 0;
 			if (mainCharActive) {
 				player.character?.addDamageText($"MAP L{mapLevel}!", (int)FontType.PurpleSmall);
 			}
 		}
-		player.awardCurrency(charId, 2);
+		player.awardCurrency(charId, mapLvCoins);
 		if (mainCharActive) {
 			createBoltsAtPos(player.character?.getCenterPos() ?? Point.zero, 1);
 		}
 	}
-	
+
+	public static int getStacksPerLevel(int level) {
+		return 1;
+		//return MathInt.Ceiling(level / 5f);
+	}
 
 	public float roundedShortExp(float exp) {
 		if (exp > 255) { exp = 255; }

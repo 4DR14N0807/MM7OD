@@ -186,7 +186,9 @@ public class Damager {
 			RPC.applyDamage.sendRpc(byteParams.ToArray());
 		}
 
-		if (damagable != null && damagable is not CrackedWall && owner.ownedByLocalPlayer && !isDot(projId)) {
+		if (damagable != null && damagable is not CrackedWall &&
+			owner.ownedByLocalPlayer && !isDot(projId)
+		) {
 			if (owner.isMainPlayer) {
 				owner.delayETank();
 			}

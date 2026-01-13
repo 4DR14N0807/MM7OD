@@ -1256,7 +1256,11 @@ public partial class Actor : GameObject {
 		commonHealLogic(healer, (decimal)healAmount, (decimal)currentHealth, (decimal)maxHealth, drawHealText);
 	}
 
-	public void commonHealLogic(Player healer, decimal healAmount, decimal currentHealth, decimal maxHealth, bool drawHealText) {
+	public void commonHealLogic(
+		Player healer, decimal healAmount,
+		decimal currentHealth, decimal maxHealth,
+		bool drawHealText
+	) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}

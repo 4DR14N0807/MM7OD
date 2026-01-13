@@ -1190,11 +1190,11 @@ public class Blues : Character {
 
 	public bool canUseBreakman() {
 		if (isBreakMan) {
-			Global.level.gameMode.setHUDDebugWarning("test");
+			//Global.level.gameMode.setHUDDebugWarning("test");
 			return false;
 		}
 		if (currency >= reviveCost) {
-			Global.level.gameMode.setHUDDebugWarning("test2");
+			//Global.level.gameMode.setHUDDebugWarning("test2");
 			return true;
 		}
 		return false;

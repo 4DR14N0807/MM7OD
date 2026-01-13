@@ -9,12 +9,12 @@
 		<Version>20</Version>
 		<AssemblyVersion>20.0</AssemblyVersion>
 		<ApplicationIcon>favicon.ico</ApplicationIcon>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net10.0-windows</TargetFramework>
 		<ImplicitUsings>false</ImplicitUsings>
 		<SelfContained>false</SelfContained>
 		<OutputPath>./bin/</OutputPath>
 		<!--OutDir>./bin/anycpu/</OutDir-->
-		<RunWorkingDirectory>./bin/win-x64/</RunWorkingDirectory>
+		<RunWorkingDirectory>./bin/runenv/</RunWorkingDirectory>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<DebugType>embedded</DebugType>
 		<Deterministic>true</Deterministic>

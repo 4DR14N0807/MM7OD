@@ -824,6 +824,8 @@ public partial class Character : Actor, IDamagable {
 		// Local only starts here.
 		debuffCooldowns();
 		genericPuppetControl();
+		updateAttackCooldowns();
+		Helpers.decrementFrames(ref eTankHealTime);
 		if (grounded && !isDashing) {
 			dashedInAir = 0;
 		}

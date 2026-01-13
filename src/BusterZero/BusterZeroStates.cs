@@ -349,7 +349,7 @@ public class HyperBusterZeroStart : BusterZeroState {
 		LightX3?.destroySelf();
 		character.useGravity = true;
 		if (character != null) {
-			character.invulnTime = 0.5f;
+			character.invulnTime = 30;
 		}
 	}
 

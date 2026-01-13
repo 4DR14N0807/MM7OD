@@ -45,6 +45,8 @@ public class CharState {
 	public bool statusEffectImmune;
 	public int accuracy;
 	public bool isGrabbedState;
+	public bool immortal;
+	public bool invulnerable;
 
 	public bool wasVileHovering;
 	public bool wasDashing;
@@ -398,6 +400,7 @@ public class WarpIn : CharState {
 		this.addInvulnFrames = addInvulnFrames;
 		this.refillHP = refillHP;
 		invincible = true;
+		immortal = true;
 		statusEffectImmune = true;
 		useGravity = false;
 	}
@@ -408,7 +411,10 @@ public class WarpIn : CharState {
 
 		if (warpAnim == null && !warpAnimOnce) {
 			warpAnimOnce = true;
-			warpAnim = new Anim(character.pos.addxy(0, -yOffset), character.getSprite("warp_beam"), character.xDir, player.getNextActorNetId(), false, sendRpc: true);
+			warpAnim = new Anim(
+				character.pos.addxy(0, -yOffset), character.getSprite("warp_beam"),
+				character.xDir, player.getNextActorNetId(), false, sendRpc: true
+			);
 			warpAnim.splashable = false;
 		}
 
@@ -477,11 +483,7 @@ public class WarpIn : CharState {
 		if (warpAnim != null) {
 			warpAnim.destroySelf();
 		}
-		if (character.ownedByLocalPlayer) {
-			character.invulnTime = player.warpedInOnce ? 2 : 0;
-		}
 		player.warpedInOnce = true;
-		
 	}
 }
 
@@ -493,6 +495,7 @@ public class WarpIdle : CharState {
 
 	public WarpIdle(bool firstSpawn = false) : base("win") {
 		invincible = true;
+		immortal = true;
 		useGravity = false;
 		this.firstSpawn = firstSpawn;
 	}
@@ -563,7 +566,6 @@ public class WarpIdle : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		specialId = SpecialStateIds.WarpIdle;
-		character.invulnTime = firstSpawn ? 5 : 1;
 	}
 
 	public override void onExit(CharState? newState) {
@@ -572,7 +574,7 @@ public class WarpIdle : CharState {
 		character.splashable = true;
 		specialId = SpecialStateIds.None;
 		if (character.ownedByLocalPlayer) {
-			character.invulnTime = firstSpawn ? 1 : 1;
+			character.invulnTime = firstSpawn ? 20 : 60;
 		}
 	}
 }
@@ -1481,23 +1483,8 @@ public class Die : CharState {
 	public bool respawnTimerOn;
 
 	public Die() : base("die") {
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.useGravity = false;
-		character.stopMovingS();
-		character.stopCharge();
-
-		if (character is Blues blues) {
-			blues.delinkStarCrash();
-		}
-		player.lastDeathPos = character.getCenterPos();
-	}
-
-	public override void onExit(CharState newState) {
-		character.visible = true;
-		base.onExit(newState);
+		invincible = true;
+		immortal = true;
 	}
 
 	public override void update() {
@@ -1534,6 +1521,27 @@ public class Die : CharState {
 		if (character.linkedRideArmor != null) {
 			character.linkedRideArmor.selfDestructTime = Global.spf;
 			RPC.actorToggle.sendRpc(character.linkedRideArmor.netId, RPCActorToggleType.StartMechSelfDestruct);
+		}
+	}
+	
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.useGravity = false;
+		character.stopMovingS();
+		character.stopCharge();
+
+		if (character is Blues blues) {
+			blues.delinkStarCrash();
+		}
+		player.lastDeathPos = character.getCenterPos();
+	}
+
+	public override void onExit(CharState newState) {
+		character.visible = true;
+		base.onExit(newState);
+
+		if (!hidden) {
+			new DieEffect(character.getCenterPos(), player.charNum, true);
 		}
 	}
 

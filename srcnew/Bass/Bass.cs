@@ -182,7 +182,7 @@ public class Bass : Character {
 		if (isSuperBass) {
 			chargeLogic(shoot);
 		}
-		quickAdaptorUpgrade(); 
+		quickHyperUpgrade(); 
 	}
 
 	public override void chargeGfx() {
@@ -313,20 +313,20 @@ public class Bass : Character {
 		}
 	}
 
-	public void quickAdaptorUpgrade() {
-		if (!player.input.isHeld(Control.Special2, player)) {
+	public void quickHyperUpgrade() {
+		if (isSuperBass || !alive || !canGoSuperBass() ||
+			charState.immortal || charState is SuperBassStart or WarpIdle ||
+			!player.input.isHeld(Control.Special2, player)
+		) {
 			hyperProgress = 0;
 			return;
 		}
-		if (!(charState is WarpIn) && canGoSuperBass()) {
-
-			player.currency -= TrebleBoostCost;
-			changeState(new SuperBassStart(), true);
+		if (hyperProgress < 1 || charState.normalCtrl) {
+			hyperProgress += Global.spf;
 			return;
 		}
-		if (hyperProgress < 1) {
-			return;
-		}
+		player.currency -= TrebleBoostCost;
+		changeState(new SuperBassStart(), true);
 		hyperProgress = 0;
 	}
 
@@ -695,8 +695,6 @@ public class Bass : Character {
 	}
 
 	public override bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {
-		if (charState is SuperBassStart or EnergyIncrease) return true;
- 		
 		return base.isInvulnerable(ignoreRideArmorHide, factorHyperMode);
 	}
 

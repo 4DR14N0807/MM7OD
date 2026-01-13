@@ -321,7 +321,7 @@ public class Bass : Character {
 			hyperProgress = 0;
 			return;
 		}
-		if (hyperProgress < 1 || charState.normalCtrl) {
+		if (hyperProgress < 1 || !charState.normalCtrl) {
 			hyperProgress += Global.spf;
 			return;
 		}

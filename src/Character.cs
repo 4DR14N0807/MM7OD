@@ -2376,7 +2376,7 @@ public partial class Character : Actor, IDamagable {
 			if (!drewETankHealing && hyperProgress > 0) {
 				float healthBarInnerWidth = 30;
 
-				float progress = Math.Max(hyperProgress, 1);
+				float progress = Math.Min(hyperProgress, 1);
 				float width = progress * healthBarInnerWidth;
 
 				getHealthNameOffsets(out bool shieldDrawn, ref progress);

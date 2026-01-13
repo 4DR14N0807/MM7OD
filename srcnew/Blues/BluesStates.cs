@@ -349,11 +349,11 @@ public class BluesSpreadShoot : CharState {
 			if (type == 0) {
 				blues.playSound("protoLemon", sendRpc: true);
 			}
-			if (type == 1){
+			if (type == 1) {
 				blues.addCoreAmmo(1f);
 				blues.playSound("buster2X1", sendRpc: true);
 			}
-			if (type == 2){
+			if (type == 2) {
 				blues.addCoreAmmo(-0.5f, resetCooldown: true);
 				blues.playSound("buster3", sendRpc: true);
 			}

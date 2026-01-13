@@ -873,7 +873,6 @@ public class Blues : Character {
 				playSound("buster2X1", sendRpc: true);
 				addCoreAmmo(0.75f);
 			}
-			playSound("protoLemon", sendRpc: true);
 			lemonCooldown = 8;
 			unchargedLemonCooldown[lemonNum] = 40;
 			if (oldShootAnimTime <= 0.25f) {

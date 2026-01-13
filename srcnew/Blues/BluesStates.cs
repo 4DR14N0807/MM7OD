@@ -570,6 +570,7 @@ public class BluesRevive : CharState {
 
 	public BluesRevive() : base("revive") {
 		invincible = true;
+		immortal = true;
 		useGravity = false;
 	}
 
@@ -649,6 +650,7 @@ public class BluesRevive : CharState {
 		character.removeRenderEffect(RenderEffectType.Flash);
 		blues.overdrive = true;
 		blues.overheating = false;
+		blues.invulnTime = 12;
 	}
 }
 

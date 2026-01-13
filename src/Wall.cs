@@ -471,17 +471,23 @@ public class KillZone : Geometry {
 	public void applyDamage(IDamagable damagable) {
 		if (!damagable.actor().ownedByLocalPlayer) return;
 		if (damage == Damager.envKillDamage) {
-			if (damagable is not Character character || Global.level.gameMode is Race) {
+			if (damagable is not Character character) {
 				damagable.applyDamage(damage, null, null, null, null);
 			} else {
 				if (character.projectileCooldown.GetValueOrDefault("bottomlesszone") > 0) {
 					return;
 				}
-				if (character.charState is not Die and not BottomlessPitState and not BottomlessPitWarpIn) {
+				if (character.charState is not Die and not BottomlessPitState and not BottomlessPitWarpIn &&
+					!character.charState.immortal
+				) {
 					character.projectileCooldown["bottomlesszone"] = 10;
-					character.playSound("hurt");
-					character.applyDamage(4, Player.stagePlayer, character, null, null);
+					if (character.invulnTime <= 0) {
+						character.playSound("hurt");
+						character.applyDamage(4, Player.stagePlayer, character, null, null);
+					}
 					character.changeState(new BottomlessPitState());
+				} else {
+					return;
 				}
 			}
 			return;

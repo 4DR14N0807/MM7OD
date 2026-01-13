@@ -473,19 +473,15 @@ public class Blues : Character {
 		specialWeapon.update();
 		specialWeapon.charLinkedUpdate(this, true);
 
-		// Revive stuff.
-		
 		// Breakman mode.
-		if (player.input.isPressed(Control.Special2, player)) {
-			if (player.canReviveBlues()) {
-				changeState(new BluesRevive(), true);
-				player.currency -= reviveCost;
-			}
-			else if (alive && charState.normalCtrl && canUseBreakman()) {
+		if (player.canReviveBlues()) {
+			hyperProgress = 0;
+			if (player.input.isPressed(Control.Special2, player)) {
 				changeState(new BluesRevive(), true);
 				player.currency -= reviveCost;
 			}
 		}
+		quickHyperUpgrade();
 
 		// Shield HP.
 		if (healShieldHPCooldown <= 0 && shieldHP < shieldMaxHP) {
@@ -663,6 +659,23 @@ public class Blues : Character {
 		else if (overheating) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 3, 5);
 		}
+	}
+
+	public void quickHyperUpgrade() {
+		if (isBreakMan || !alive || !canUseBreakman() ||
+			charState.immortal || charState is SuperBassStart or WarpIdle ||
+			!player.input.isHeld(Control.Special2, player)
+		) {
+			hyperProgress = 0;
+			return;
+		}
+		if (hyperProgress < 1 || charState.normalCtrl) {
+			hyperProgress += Global.spf;
+			return;
+		}
+		player.currency -= reviveCost;
+		changeState(new BluesRevive(), true);
+		hyperProgress = 0;
 	}
 
 	public override int getMaxChargeLevel() {

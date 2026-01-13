@@ -214,6 +214,7 @@ public class SuperBassStart : CharState {
 		attackCtrl = false;
 		useGravity = false;
 		invincible = true;
+		immortal = true;
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -341,7 +342,6 @@ public class SuperBassStart : CharState {
 }
 
 public class SuperBassSquare : Projectile {
-
 	Actor chr = null!;
 	float s = 112; // Square size
 	float a; // Square rotation
@@ -480,7 +480,6 @@ public class EnergyCharge : CharState {
 
 
 public class EnergyIncrease : CharState {
-
 	Bass bass = null!;
 
 	public EnergyIncrease() : base("enter") {
@@ -502,11 +501,10 @@ public class EnergyIncrease : CharState {
 
 	public override void update() {
 		base.update();
-
 		if (stateFrames >= 30) {
 			if (player.input.isHeld(Control.Special2, player)) {
 				character.changeState(new EnergyCharge(), true);
-			} 
+			}
 			else {
 				character.changeToIdleOrFall();
 			} 
@@ -521,7 +519,6 @@ public class EnergyIncrease : CharState {
 
 
 public class BassFly : CharState {
-
 	public Point flyVel;
 	float flyVelAcc = 500;
 	float flyVelMaxSpeed = 200;

@@ -73,7 +73,7 @@ public class FreezeMWarpIn : CharState {
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
         if (character.ownedByLocalPlayer) {
-			character.invulnTime = player.warpedInOnce ? 2 : 0;
+			character.invulnTime = player.warpedInOnce ? 2 * 60 : 0;
 		}
         player.warpedInOnce = true;
 	}

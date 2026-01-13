@@ -263,35 +263,21 @@ public class Rock : Character {
 	}
 
 	public void quickAdaptorUpgrade() {
-		if (!player.input.isHeld(Control.Special2, player)) {
+		if (hasSuperAdaptor || boughtSuperAdaptorOnce ||
+			!alive || !canGoSuperAdaptor() ||
+			charState.immortal || charState is CallDownRush or WarpIdle ||
+			!player.input.isHeld(Control.Special2, player)
+		) {
 			hyperProgress = 0;
-			return;
-		}
-		if (hasSuperAdaptor) {
-			hyperProgress = 0;
-			return;
-		}
-		if (charState is CallDownRush or WarpIdle) {
-			hyperProgress = 0;
-			return;
-		}
-		if (player.health <= 0) {
-			hyperProgress = 0;
-			return;
-		}
-		if (charState is not WarpIn && canGoSuperAdaptor()) {
-
-			if (!boughtSuperAdaptorOnce) {
-				player.currency -= SuperAdaptorCost;
-				boughtSuperAdaptorOnce = true;
-			}
-			changeState(new CallDownRush(), true);
-
 			return;
 		}
 		if (hyperProgress < 1) {
+			hyperProgress += Global.spf;
 			return;
 		}
+		player.currency -= SuperAdaptorCost;
+		boughtSuperAdaptorOnce = true;
+		changeState(new CallDownRush(), true);
 		hyperProgress = 0;
 	}
 

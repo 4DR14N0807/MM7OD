@@ -257,7 +257,7 @@ public class GameMode {
 		if (Global.level.isRace()) {
 			foreach (var player in Global.level.players) {
 				if (player.character != null && player.character.ownedByLocalPlayer) {
-					player.character.invulnTime = 1;
+					player.character.invulnTime = 60;
 				}
 			}
 		}

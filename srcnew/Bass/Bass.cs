@@ -397,7 +397,8 @@ public class Bass : Character {
 
 	public override bool normalCtrl() {
 		if (isSuperBass) {
-			if (player.input.isPressed(Control.Jump, player) && !grounded && !canAirJump() && flyTime < MaxFlyTime) {
+			if (player.input.isPressed(Control.Jump, player) &&
+				!grounded && !canAirJump() && flyTime < MaxFlyTime) {
 				dashedInAir++;
 				changeState(new BassFly(), false);
 				return true;
@@ -438,27 +439,36 @@ public class Bass : Character {
 		}
 
 		if (isSuperBass && player.input.isPressed(Control.Special1, player)) {
-			if (player.input.isHeld(Control.Down, player) && phase >= 1 && isCooldownOver((int)AttackIds.SweepingLaser)) {
-				if (!grounded) {
+			int yInput = player.input.getYDir(player);
+
+			if (yInput == 1 && phase >= 1 && !grounded) {
+				if (isCooldownOver((int)AttackIds.SweepingLaser)) {
 					changeState(new SweepingLaserState(), true);
 					return true;
 				}
+				return false;
 			}
-			if (player.input.isHeld(Control.Up, player) && phase >= 1 && isCooldownOver((int)AttackIds.DarkComet)) {
-				if (!grounded) {
+			if (yInput == -1 && phase >= 1 && !grounded) {
+				if (isCooldownOver((int)AttackIds.DarkComet)) {
 					changeState(new DarkCometState(), true);
 					return true;
 				}
+				return false;
 			}
-			if (grounded && isCooldownOver((int)AttackIds.Kick)) {
-				changeState(new BassKick(), true);
-				return true;
-			} else if (flyTime < MaxFlyTime) {
+			if (grounded && yInput == -1) {
+				if (isCooldownOver((int)AttackIds.Kick)) {
+					changeState(new BassKick(), true);
+					return true;
+				}
+				return false;
+			}
+			if (flyTime < MaxFlyTime) {
 				Point spd = Point.zero;
 				if (charState is BassFly bfly) spd.x = bfly.getFlightMove().x;
 				changeState(new SonicCrusher(spd.addxy(xPushVel + xIceVel, 0)), true);
 				return true;
 			}
+			return false;
 		}
 		return base.attackCtrl();
 	}

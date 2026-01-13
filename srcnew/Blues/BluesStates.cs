@@ -347,11 +347,11 @@ public class BluesSpreadShoot : CharState {
 			);
 			// This way lemons and mid charge shot sounds wont conflict.
 			if (type == 0) {
-				blues.playSound("protoLemon", sendRpc: true);
+				blues.playSound("buster", sendRpc: true);
 			}
 			if (type == 1){
 				blues.addCoreAmmo(1f);
-				blues.playSound("buster2", sendRpc: true);
+				blues.playSound("protoLemon", sendRpc: true);
 			}
 			if (type == 2){
 				blues.addCoreAmmo(-0.5f, resetCooldown: true);

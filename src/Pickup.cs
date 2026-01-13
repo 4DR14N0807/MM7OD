@@ -236,6 +236,7 @@ public class GiantBoltPickup : Pickup {
 
 	public override void use(Character chr) {	
 		chr.player.currency += (int)healAmount;
+		chr.playSound("bolt");
 		base.use(chr);
 	}
 }
@@ -255,6 +256,7 @@ public class LargeBoltPickup : Pickup {
 
 	public override void use(Character chr) {	
 		chr.player.currency += (int)healAmount;
+		chr.playSound("bolt");
 		base.use(chr);
 	}
 }
@@ -274,6 +276,7 @@ public class SmallBoltPickup : Pickup {
 
 	public override void use(Character chr) {	
 		chr.player.currency += (int)healAmount;
+		chr.playSound("bolt");
 		base.use(chr);
 	}
 }

@@ -16,7 +16,7 @@ public class Bass : Character {
 
 	// Modes.
 	public bool isSuperBass;
-	public const int TrebleBoostCost = 70;
+	public const int TrebleBoostCost = 75;
 	public int phase;
 	public int[] evilEnergy = new int[] {0,0,0};
 	public const int MaxEvilEnergy = 16;
@@ -397,9 +397,9 @@ public class Bass : Character {
 
 	public override bool normalCtrl() {
 		if (isSuperBass) {
-			if (player.input.isPressed(Control.Jump, player) && !grounded && !canAirJump()) {
+			if (player.input.isPressed(Control.Jump, player) && !grounded && !canAirJump() && flyTime < MaxFlyTime) {
 				dashedInAir++;
-				changeState(new BassFly(), true);
+				changeState(new BassFly(), false);
 				return true;
 			}
 			if (

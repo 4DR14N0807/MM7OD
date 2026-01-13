@@ -31,7 +31,7 @@ public class Rock : Character {
 	public int rushWeaponIndex;
 	public const int RushSearchCost = 5;
 	public bool hasSuperAdaptor;
-	public const int SuperAdaptorCost = 70;
+	public const int SuperAdaptorCost = 75;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;

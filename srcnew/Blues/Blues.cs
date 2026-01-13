@@ -46,10 +46,6 @@ public class Blues : Character {
 	public bool customDamageDisplayOn;
 	public bool fastShieldHeal;
 
-	// Tanks
-	public LTank? usedLtank;
-	public float lTankCoreHealTime;
-
 	// Capsules.
 	public float coreHealAmount;
 	public float coreHealTime;
@@ -426,7 +422,6 @@ public class Blues : Character {
 		base.preUpdate();
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
-		Helpers.decrementFrames(ref lTankCoreHealTime);
 		Helpers.decrementFrames(ref coreHealTime);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
 
@@ -554,35 +549,7 @@ public class Blues : Character {
 			stopCharge();
 		}
 
-		// L-Tank heal.
-		if (usedLtank != null && health > 0) {
-			if (eTankHealTime <= 0 && usedLtank.health > 0 && health < maxHealth) {
-				usedLtank.health--;
-				health = Helpers.clampMax(health + 1, maxHealth);
-				eTankHealTime = 8;
-				playSound("heal", forcePlay: true, sendRpc: true);
-			}
-			if (lTankCoreHealTime <= 0 && usedLtank.health > 0 && coreAmmo > 0) {
-				usedLtank.health--;
-				coreAmmo = Helpers.clampMin(coreAmmo - 1, 0);
-				lTankCoreHealTime = 4;
-				playSound("heal", forcePlay: true, sendRpc: true);
-			}
-			if (usedLtank.health <= 0) {
-				player.ltanks.Remove(usedLtank);
-				player.fuseLTanks();
-				usedLtank = null;
-				eTankHealTime = 0;
-				lTankCoreHealTime = 0;
-			}
-			else if (coreAmmo <= 0 && health >= maxHealth) {
-				usedLtank = null;
-				player.fuseLTanks();
-				eTankHealTime = 0;
-				lTankCoreHealTime = 0;
-			}
-		}
-
+		// Core heal.
 		if (coreHealAmount > 0 && coreHealTime <= 0) {
 			coreHealAmount--;
 			coreHealTime = 3;
@@ -1048,27 +1015,6 @@ public class Blues : Character {
 		coreHealAmount = amount;
 	}
 
-	public void drawLTankHealingInner(float tankHealth, float tankAmmo) {
-		if (usedLtank == null) return;
-		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
-		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
-		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
-
-		Global.sprites["menu_ltank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		/* float yPos = 12 * (1 - tankHealth / LTank.maxHealth);
-		DrawWrappers.DrawRect(
-			topLeftBar.x, topLeftBar.y + yPos, pos.x, botRightBar.y,
-			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
-		);
-		yPos = 12 * (1 - tankAmmo / LTank.maxAmmo);
-		DrawWrappers.DrawRect(
-			pos.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
-			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
-		);
-
-		deductLabelY(labelSubtankOffY); */
-	}
-
 	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
 		if (!overdrive) {
 			return;
@@ -1415,15 +1361,8 @@ public class Blues : Character {
 		if (ogShieldHP - shieldHP > 0 && !Damager.isDot(projId) &&
 			attacker != null && attacker != player && attacker != Player.stagePlayer
 		) {
-			player.delayETank();
-			stopETankHeal();
+			enterCombat();
 		}
-	}
-
-	public override void stopETankHeal() {
-		base.stopETankHeal();
-		usedLtank = null;
-		player.fuseLTanks();
 	}
 
 	public override void aiUpdate(Actor? target) {

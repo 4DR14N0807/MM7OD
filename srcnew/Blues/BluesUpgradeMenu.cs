@@ -6,7 +6,6 @@ using SFML.Graphics;
 namespace MMXOnline;
 
 public class BluesUpgradeMenu : IMainMenu {
-
 		public static int selectArrowPosY;
 		public static int selectArrowPosX;
 		public IMainMenu prevMenu;
@@ -14,10 +13,6 @@ public class BluesUpgradeMenu : IMainMenu {
 		public int lTankCost = 40;
 		public int mTankCost = 20;
 		public int startX = 25;
-		public static float lTankDelay = 0;
-		public const float maxLTankDelay = 120;
-		public static float mTankDelay = 0;
-		public const float maxMTankDelay = 120;
 
 		public List<float> optionPositionsX = new List<float>() {
 			16, 192
@@ -126,13 +121,13 @@ public class BluesUpgradeMenu : IMainMenu {
 				} else {
 					Point topLeftBar = new Point(spritePos.x + 1, spritePos.y + 2);
 					Point botRightBar = new Point(spritePos.x + 15, spritePos.y + 14);
-					float yPos =  12 * (ltank.health / ltank.maxHealth);
+					float yPos =  12 * (ltank.ammo / ltank.maxAmmo);
 					DrawWrappers.DrawRect(
 						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
 						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
 					);
 				}
-				Fonts.drawText(FontType.WhiteSmall, ltank.health.ToString(), optionPos.x + 6, optionPos.y - 12, Alignment.Center);
+				Fonts.drawText(FontType.WhiteSmall, ltank.ammo.ToString(), optionPos.x + 6, optionPos.y - 12, Alignment.Center);
 			} else {
 				Global.sprites["menu_ltank"].drawToHUD(1, spritePos.x, spritePos.y);
 				Point topLeftBar = new Point(spritePos.x, spritePos.y);

@@ -187,9 +187,6 @@ public class Damager {
 		}
 
 		if (damagable != null && damagable is not CrackedWall && owner.ownedByLocalPlayer && !isDot(projId)) {
-			if (owner.isMainPlayer) {
-				owner.delayETank();
-			}
 			if (damagingActor is Projectile proj && proj.ownerActor is Character chara) {
 				chara.enterCombat();
 			} else {

@@ -1,28 +1,30 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using ProtoBuf;
 
 namespace MMXOnline;
 
 [ProtoContract]
 public class CustomMatchSettings {
-	[ProtoMember(1)] public bool hyperModeMatch;
-	[ProtoMember(2)] public int startCurrency = 0;
-	[ProtoMember(3)] public int startHeartTanks;
-	[ProtoMember(4)] public int startSubTanks;
+	[ProtoMember(2)] public int startCurrency;
 	[ProtoMember(5)] public int healthModifier;
-	[ProtoMember(5)] public int damageModifier;
-	[ProtoMember(6)] public int sameCharNum;
-	[ProtoMember(7)] public int redSameCharNum;
-	[ProtoMember(8)] public int maxHeartTanks;
 	[ProtoMember(9)] public int startETanks;
 	[ProtoMember(10)] public int startWTanks;
 	[ProtoMember(11)] public int maxETanks;
 	[ProtoMember(12)] public int maxWTanks;
-	[ProtoMember(13)] public int heartTankHp;
-	[ProtoMember(14)] public int heartTankCost;
 	[ProtoMember(15)] public int currencyGain;
 	[ProtoMember(16)] public int respawnTime;
 	[ProtoMember(17)] public bool pickupItems;
+
+	[JsonIgnore] public bool hyperModeMatch;
+	[JsonIgnore] public int startHeartTanks;
+	[JsonIgnore] public int startSubTanks;
+	[JsonIgnore] public int sameCharNum;
+	[JsonIgnore] public int redSameCharNum;
+	[JsonIgnore] public int maxHeartTanks;
+	[JsonIgnore] public int heartTankHp;
+	[JsonIgnore] public int heartTankCost;
+	[JsonIgnore] public int damageModifier;
 
 	public CustomMatchSettings() {
 	}
@@ -30,7 +32,7 @@ public class CustomMatchSettings {
 	public static CustomMatchSettings getDefaults() {
 		return new CustomMatchSettings {
 			hyperModeMatch = false,
-			startCurrency = 0,
+			startCurrency = 25,
 			startHeartTanks = 0,
 			startETanks = 0,
 			startWTanks = 0,
@@ -60,35 +62,25 @@ public class CustomMatchSettingsMenu : IMainMenu {
 	private FontType fontOption = FontType.Blue; 
 	public List<MenuOption> menuOptions = new List<MenuOption>();
 
-	SavedMatchSettings savedMatchSettings { get { return isOffline ? SavedMatchSettings.mainOffline : SavedMatchSettings.mainOnline; } }
+	SavedMatchSettings savedMatchSettings => (
+		isOffline ?
+		SavedMatchSettings.mainOffline :
+		SavedMatchSettings.mainOnline
+	);
 
 	public CustomMatchSettingsMenu(IMainMenu prevMenu, bool inGame, bool isOffline) {
 		this.prevMenu = prevMenu;
 		this.inGame = inGame;
 		int currentY = startY;
 		this.isOffline = isOffline;
-		/*menuOptions.Add(
-			new MenuOption(
-				startX, currentY,
-				() => {
-					Helpers.menuLeftRightBool(ref savedMatchSettings.customMatchSettings.hyperModeMatch);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						FontType.Blue,
-						"1v1 or Hypermode Match : " +
-						Helpers.boolYesNo(savedMatchSettings.customMatchSettings.hyperModeMatch),
-						pos.x, pos.y, selected: selectArrowPosY == 0
-					);
-				}
-			)
-		);*/
-
 		menuOptions.Add(
 			new MenuOption(
 				startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startCurrency, 0, 1000, true, valueToAdd: 2);
+					Helpers.menuLeftRightInc(
+						ref savedMatchSettings.customMatchSettings.startCurrency,
+						0, 900, true, valueToAdd: 5
+					);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
@@ -118,49 +110,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-		/*menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.heartTankHp, 1, 8, true);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						FontType.Blue,
-						"Heart tank HP: " +
-						savedMatchSettings.customMatchSettings.heartTankHp.ToString(),
-						pos.x, pos.y, selected: selectArrowPosY == 2
-					);
-				}
-			)
-		);*/
-
-		/*menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startHeartTanks, 0, 8, true);
-				},
-				(Point pos, int index) => {
-					
-				}
-			)
-		);*/
-
-		/*menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.maxHeartTanks, 0, 8, true);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						FontType.Blue,
-						"Max heart tanks: " +
-						savedMatchSettings.customMatchSettings.maxHeartTanks.ToString(),
-						pos.x, pos.y, selected: selectArrowPosY == 4
-					);
-				}
-			)
-		);*/
-
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
@@ -176,7 +125,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
@@ -192,7 +140,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
@@ -208,7 +155,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
@@ -224,7 +170,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
 				() => {
@@ -240,52 +185,6 @@ public class CustomMatchSettingsMenu : IMainMenu {
 				}
 			)
 		);
-		/* menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.damageModifier, 1, 4, true);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						fontOption,
-						"DAMAGE MODIFIER: " +
-						(savedMatchSettings.customMatchSettings.damageModifier * 100).ToString() + "%",
-						pos.x, pos.y, selected: selectArrowPosY == 7
-					);
-				}
-			)
-		); */
-		/* menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.sameCharNum, 10, 12);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						fontOption,
-						"MONO CHARACTER: " +
-						getSameCharString(savedMatchSettings.customMatchSettings.sameCharNum),
-						pos.x, pos.y, selected: selectArrowPosY == 8
-					);
-				}
-			)
-		); */
-
-		/* menuOptions.Add(
-			new MenuOption(startX, currentY += lineH,
-				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.redSameCharNum, 10, 12);
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						fontOption,
-						"RED MONO CHARACTER: " +
-						getSameCharString(savedMatchSettings.customMatchSettings.redSameCharNum),
-						pos.x, pos.y, selected: selectArrowPosY == 9
-					);
-				}
-			)
-		); */
 		//Respawn Time Custom Setting
 		menuOptions.Add(
 			new MenuOption(startX, currentY += lineH,
@@ -338,17 +237,28 @@ public class CustomMatchSettingsMenu : IMainMenu {
 	public void update() {
 		Helpers.menuUpDown(ref selectArrowPosY, 0, menuOptions.Count - 1);
 		if (Global.input.isPressedMenu(Control.MenuBack)) {
-			if (savedMatchSettings.customMatchSettings.maxHeartTanks < savedMatchSettings.customMatchSettings.startHeartTanks) {
-				Menu.change(new ErrorMenu(new string[] { "Error: Max heart tanks can't be", "less than start heart tanks." }, this));
+			if (savedMatchSettings.customMatchSettings.maxHeartTanks <
+				savedMatchSettings.customMatchSettings.startHeartTanks
+			) {
+				Menu.change(
+					new ErrorMenu(["Error: Max heart tanks can't be", "less than start heart tanks."], this)
+				);
 				return;
 			}
-
-			if (savedMatchSettings.customMatchSettings.maxETanks < savedMatchSettings.customMatchSettings.startETanks) {
-				Menu.change(new ErrorMenu(new string[] { "Error: Max ETanks can't be", "less than start ETanks." }, this));
+			if (savedMatchSettings.customMatchSettings.maxETanks <
+				savedMatchSettings.customMatchSettings.startETanks
+			) {
+				Menu.change(
+					new ErrorMenu(["Error: Max ETanks can't be", "less than start ETanks."], this)
+				);
 				return;
 			}
-			if (savedMatchSettings.customMatchSettings.maxWTanks < savedMatchSettings.customMatchSettings.startWTanks) {
-				Menu.change(new ErrorMenu(new string[] { "Error: Max WTanks can't be", "less than start WTanks." }, this));
+			if (savedMatchSettings.customMatchSettings.maxWTanks <
+				savedMatchSettings.customMatchSettings.startWTanks
+			) {
+				Menu.change(
+					new ErrorMenu(["Error: Max WTanks can't be", "less than start WTanks."], this)
+				);
 				return;
 			}
 

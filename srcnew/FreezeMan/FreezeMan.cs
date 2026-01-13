@@ -183,8 +183,7 @@ public class FreezeMan : Character {
 			if (damage > 0  && !Damager.isDot(projId) &&
 				attacker != null && attacker != player && attacker != Player.stagePlayer
 			) {
-				player.delayETank();
-				stopETankHeal();
+				enterCombat();
 			}
 
 			if (originalHP > 0 && (originalDamage > 0 || damage > 0)) {

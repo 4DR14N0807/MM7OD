@@ -252,7 +252,7 @@ public class RushJetState : RushState {
 			}
 			jetSpeedY = input.y * 60;
 			once = true;
-			player.delayETank();
+			rock.enterCombat();
 		} else {
 			maxDecAmmoCooldown = 45;
 			jetSpeedX = once ? 60 : 0;

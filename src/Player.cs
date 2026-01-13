@@ -225,22 +225,17 @@ public partial class Player {
 
 	// Subtanks and heart tanks internal lists.
 	private ProtectedIntMap<int> heartTanksMap = [];
-	public Dictionary<int, List<ETank>> eTanksMap = [];
-	public Dictionary<int, List<WTank>> wTanksMap = [];
-	public Dictionary<int, List<LTank>> lTanksMap = [];
+	public Dictionary<int, BaseTank> eTanksMap = [];
+	public Dictionary<int, BaseTank> wTanksMap = [];
 
 	// Getter functions.
-	public List<ETank> ETanks {
+	public BaseTank eTanks {
 		get { return eTanksMap[charNum]; }
 		set { eTanksMap[charNum] = value; }
 	}
-	public List<WTank> wtanks {
+	public BaseTank wTanks {
 		get { return wTanksMap[charNum]; }
 		set { wTanksMap[charNum] = value; }
-	}
-	public List<LTank> ltanks {
-		get { return lTanksMap[charNum]; }
-		set { lTanksMap[charNum] = value; }
 	}
 
 	public int getHeartTanks(int charId) {
@@ -589,7 +584,6 @@ public partial class Player {
 			charCurrency[i] = 0;
 			eTanksMap[i] = [];
 			wTanksMap[i] = [];
-			lTanksMap[i] = [];
 			masteryLevels[i] = new MasteryTracker(this, cid);
 		}
 		this.charNum = charNum;
@@ -624,7 +618,6 @@ public partial class Player {
 			}
 			for (int i = 0; i < etCount; i++) {
 				eTanksMap[key].Add(new ETank(getMaxHealth((CharIds)key)));
-				lTanksMap[key].Add(new LTank(getMaxHealth((CharIds.Blues))));
 			}
 		}
 		foreach (int key in wTanksMap.Keys) {
@@ -1425,7 +1418,7 @@ public partial class Player {
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
-		return 0;
+		return 25;
 	}
 
 	public void onKillEffects(bool isAssist) {
@@ -1993,41 +1986,6 @@ public partial class Player {
 		);
 	}
 
-	public bool canUseEtank(ETank etank) {
-		if (isDead) return false;
-		if (character == null) return false;
-		if (character.healAmount > 0) return false;
-		if (health <= 0 || health >= maxHealth) return false;
-		if (character.charState is WarpOut) return false;
-		if (character.charState.invincible) return false;
-		if (character.usedEtank != null) return false;
-
-		return true;
-	}
-
-	public bool canUseWTank(WTank wtank) {
-		if (isDead) return false;
-		if (health <= 0) return false;
-		if (character.charState is WarpOut) return false;
-		if (character.charState.invincible) return false;
-		if (!character.canAddAmmo()) return false;
-
-		return true;
-	}
-
-	public bool canUseLTank(LTank ltank) {
-		if (character is Blues blues) {
-			if (isDead) return false;
-			if (health <= 0) return false;
-			if (health >= maxHealth && blues.coreAmmo <= 0) return false;
-			if (blues.charState is WarpOut) return false;
-			if (blues.charState.invincible) return false;
-			if (blues.charState is OverheatShutdown or OverheatShutdownStart) return false;
-			return true;
-		} 
-		return false;
-	}
-
 	public int getSpawnIndex(int spawnPointCount) {
 		var nonSpecPlayers = Global.level.nonSpecPlayers();
 		nonSpecPlayers = nonSpecPlayers.OrderBy(p => p.id).ToList();
@@ -2036,45 +1994,6 @@ public partial class Player {
 			index = 0;
 		}
 		return index;
-	}
-
-	public void delayETank() {
-		if (isMainPlayer) {
-			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
-			BluesUpgradeMenu.lTankDelay = BluesUpgradeMenu.maxLTankDelay;
-		}
-	}
-
-	public void fuseETanks() {
-		for (int i = 0; i < ETanks.Count; i++) {
-			if (!ETanks[i].isFull() && i + 1 < ETanks.Count) {
-				int hpToMove = (int)Math.Min(ETanks[i].maxHealth - ETanks[i].health, ETanks[i + 1].health);
-				ETanks[i].health += hpToMove;
-				ETanks[i + 1].health -= hpToMove;
-			}
-		}
-
-		for (int i = 0; i < ETanks.Count; i++) {
-			if (ETanks[i].health <= 0) {
-				ETanks.RemoveAt(i);
-			}
-		} 
-	}
-
-	public void fuseLTanks() {
-		for (int i = 0; i < ltanks.Count; i++) {
-			if (!ltanks[i].isFull() && i + 1 < ltanks.Count) {
-				int hpToMove = (int)Math.Min(ltanks[i].maxHealth - ltanks[i].health, ltanks[i + 1].health);
-				ltanks[i].health += hpToMove;
-				ltanks[i + 1].health -= hpToMove;
-			}
-		}
-
-		for (int i = 0; i < ltanks.Count; i++) {
-			if (ltanks[i].health <= 0) {
-				ltanks.RemoveAt(i);
-			}
-		} 
 	}
 }
 

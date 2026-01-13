@@ -863,7 +863,11 @@ public class Blues : Character {
 				new ProtoBusterProj(
 					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
 				);
-				playSound("buster", sendRpc: true);
+				if (overheating) {
+					playSound("buster", sendRpc: true);
+				} else {
+					playSound("protoLemon", sendRpc: true);
+				}
 			} else {
 				float shootAngle = xDir == 1 ? 0 : 128;
 				shootAngle += Helpers.randomRange(-2, 2);

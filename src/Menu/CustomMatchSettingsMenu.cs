@@ -6,7 +6,7 @@ namespace MMXOnline;
 [ProtoContract]
 public class CustomMatchSettings {
 	[ProtoMember(1)] public bool hyperModeMatch;
-	[ProtoMember(2)] public int startCurrency = 0;
+	[ProtoMember(2)] public int startCurrency;
 	[ProtoMember(3)] public int startHeartTanks;
 	[ProtoMember(4)] public int startSubTanks;
 	[ProtoMember(5)] public int healthModifier;
@@ -30,7 +30,7 @@ public class CustomMatchSettings {
 	public static CustomMatchSettings getDefaults() {
 		return new CustomMatchSettings {
 			hyperModeMatch = false,
-			startCurrency = 0,
+			startCurrency = 25,
 			startHeartTanks = 0,
 			startETanks = 0,
 			startWTanks = 0,
@@ -88,7 +88,7 @@ public class CustomMatchSettingsMenu : IMainMenu {
 			new MenuOption(
 				startX, currentY += lineH,
 				() => {
-					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startCurrency, 0, 1000, true, valueToAdd: 2);
+					Helpers.menuLeftRightInc(ref savedMatchSettings.customMatchSettings.startCurrency, 0, 900, true, valueToAdd: 2);
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(

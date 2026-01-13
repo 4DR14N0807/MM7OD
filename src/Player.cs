@@ -1420,7 +1420,7 @@ public partial class Player {
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
-		return 0;
+		return 25;
 	}
 
 	public void onKillEffects(bool isAssist) {

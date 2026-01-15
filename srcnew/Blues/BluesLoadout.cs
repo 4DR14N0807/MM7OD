@@ -178,7 +178,7 @@ public class BluesWeaponMenu : IMainMenu {
 				_ => specialWeapon
 			};
 			//Arrows
-			if (Global.frameCount % 60 < 30) {
+			if (Global.floorFrameCount % 60 < 30) {
 				Fonts.drawText(
 					FontType.BlueMenu, ">", rightArrowPos, yPos - 1,
 					Alignment.Center

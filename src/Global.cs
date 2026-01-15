@@ -213,15 +213,14 @@ public partial class Global {
 	public static void cheats() {
 		if (Global.level == null) return;
 
-		//if (!Global.showAIDebug)
-		if (Global.input.isPressed(Key.F1)) {
+		//if (!Global.showAIDebug && Global.input.isPressed(Key.F1)) {
 			//Global.breakpoint = true;
 			//Global.showAIDebug = true;
 			//Global.level.setMainPlayerSpectate();
 			//Global.level.mainPlayer.character.addInfectedTime(null, 8);
 			//Global.level.otherPlayer.character.addInfectedTime(null, 8);
 			//DevConsole.toggleFTD();
-		}
+		//}
 		if (Global.input.isPressed(Key.F2)) {
 			Global.showHitboxes = !Global.showHitboxes;
 		}

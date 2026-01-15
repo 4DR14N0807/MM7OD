@@ -67,8 +67,9 @@ public class Blues : Character {
 
 	// AI variables.
 	public float aiSpecialUseTimer = 0;
+	public float aiSlideTimer = 0;
 	public bool aiActivateShieldOnLand;
-	public bool aiJumpedOnFrame;
+	public float aiJumpedOnFrame;
 	public float aiLemonCooldown;
 	public bool aiCoreCooldownMode;
 
@@ -1220,6 +1221,7 @@ public class Blues : Character {
 		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
+		onDamageHpDisplayActivation(fDamage, attacker, projId);
 		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
@@ -1430,11 +1432,10 @@ public class Blues : Character {
 	}
 
 	public override void aiUpdate(Actor? target) {
-		if (charState.normalCtrl && shieldHP > 0 && grounded && !aiJumpedOnFrame && !isShieldActive) {
+		if (charState.normalCtrl && shieldHP > 0 && grounded && aiJumpedOnFrame <= 0 && !isShieldActive) {
 			isShieldActive = true;
-			isDashing = false;
 		}
-		aiJumpedOnFrame = false;
+		Helpers.decrementFrames(ref aiJumpedOnFrame);
 		if (target == null) {
 			player.hold(Control.Shoot, 1);
 		}
@@ -1459,6 +1460,7 @@ public class Blues : Character {
 			aiCoreCooldownMode = false;
 		}
 		Helpers.decrementFrames(ref aiSpecialUseTimer);
+		Helpers.decrementFrames(ref aiSlideTimer);
 		Helpers.decrementFrames(ref aiLemonCooldown);
 
 		if (!aiCoreCooldownMode && (!isFacing(target) || aiLemonCooldown > 0)) {
@@ -1485,6 +1487,7 @@ public class Blues : Character {
 		if (isFacing(target) && target.pos.distanceTo(pos) > 96 && grounded &&
 			charState.normalCtrl && charState is not BluesSlide
 		) {
+			aiSlideTimer = 60;
 			changeState(new BluesSlide());
 			return;
 		}
@@ -1642,7 +1645,7 @@ public class Blues : Character {
 		float baseY = hudHealthPosition.y + offset.y;
 
 		int coreAmmoColor = 0;
-		if ((overheating || overdrive) && Global.frameCount % 6 >= 3) {
+		if ((overheating || overdrive) && Global.floorFrameCount % 6 >= 3) {
 			coreAmmoColor = 2;
 		}
 		if (Options.main.coreHeatDisplay == 1) return;
@@ -1654,11 +1657,11 @@ public class Blues : Character {
 		if (overdrive) {
 			int yPos = MathInt.Ceiling(baseY - 16);
 			int overdriveColor = 1;
-			if (Global.frameCount % 6 >= 3) {
+			if (Global.floorFrameCount % 6 >= 3) {
 				overdriveColor = 3;
 			}
 			float alpha = 1;
-			if (Global.frameCount % 4 >= 2) {
+			if (Global.floorFrameCount % 4 >= 2) {
 				alpha = 0.25f;
 			}
 			for (var i = 0; i < overdriveAmmo; i++) {
@@ -1735,6 +1738,30 @@ public class Blues : Character {
 			drawBarHHUD(lengthP, maxLength, 1, barPos);
 			drawBarHHUD(length, maxLength, 2, barPos, false);
 		}
+	}
+
+	public override Point renderMiniHUD(Point offset) {
+		// Values.
+		float scale = getMiniHudScale();
+		float hp = (float)health / scale;
+		float mHp = (float)maxHealth / scale;
+		// Ammo.
+		offset = renderMiniAmmo(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
+		if (overdrive) {
+			renderMiniAmmo(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
+		}
+		// Shield.
+		renderMiniAmmo(offset.addxy(mHp, 0), 5, (float)shieldHP / scale, shieldMaxHP / scale);
+		// Health.
+		offset = renderMiniAmmo(offset, 1, mHp, hp);
+		// Return offset.
+		return new Point(offset.x, offset.y);
+	}
+
+	public override int getMiniLifebarLength() {
+		float scale = getMiniHudScale();
+		int max = MathInt.Ceiling((maxHealth + shieldMaxHP) / (decimal)scale);
+		return Math.Max(MathInt.Ceiling(coreMaxAmmo / scale), max);
 	}
 
 	public void renderOverdriveHUD() {

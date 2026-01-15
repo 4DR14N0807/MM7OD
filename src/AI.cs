@@ -64,20 +64,19 @@ public class AI {
 		}
 	}
 
-	public void doJump(float jumpTime = 45) {
-		if (this.jumpTime <= 0) {
+	public void doJump() {
+		if (jumpTime <= 0 && character.grounded) {
 			if (character is Blues blues && blues.grounded && blues.charState is Idle or BaseRun) {
 				blues.isShieldActive = false;
-				if (blues.canShieldDash() && !blues.aiJumpedOnFrame &&
+				if (blues.canShieldDash() && blues.aiJumpedOnFrame < 4 &&
 					Global.level.getGroundPosNoKillzone(character.pos.addxy(16 * character.xDir, 0)) == null
 				) {
 					blues.changeState(new ShieldDash());
 				}
-				blues.aiJumpedOnFrame = true;
+				blues.aiJumpedOnFrame = 4;
 			}
-			player.release(Control.Jump);
 			player.hold(Control.Jump, 2);
-			this.jumpTime = jumpTime;
+			jumpTime = 20;
 		}
 	}
 
@@ -183,8 +182,6 @@ public class AI {
 
 				if (jumpZones.Count + jumpTurnZoneCount > 0 && character.rideChaser?.grounded == true) {
 					jumpTime = (jumpZones.FirstOrDefault()?.gameObject as JumpZone)?.jumpTime ?? 0.5f;
-				} else if (Helpers.randomRange(0, 300) < 1) {
-					doJump(30);
 				}
 			} else {
 				player.release(Control.Jump);
@@ -281,29 +278,27 @@ public class AI {
 			List<CollideData> jumpZones = Global.level.getTerrainTriggerList(
 				character.abstractedActor(), Point.zero, typeof(JumpZone)
 			);
-			var neighbor = (aiState as FindPlayer)?.neighbor;
+			NavMeshNeighbor? neighbor = (aiState as FindPlayer)?.neighbor;
 			if (neighbor != null) {
 				jumpZones = jumpZones.FindAll(j => !neighbor.isJumpZoneExcluded(j.gameObject.name));
 			}
 			if (jumpZones.Count > 0 && jumpZones[0].gameObject is JumpZone jumpZone) {
-				var jumpZoneDir = character.xDir;
+				int jumpZoneDir = character.xDir;
 				if (jumpZone.forceDir != 0) {
 					jumpZoneDir = jumpZone.forceDir;
 					if (jumpZoneDir == 0) {
-						jumpZoneDir = -1;
+						jumpZoneDir = character.xDir;
 					}
 				}
-				if (jumpZone.targetNode == null || jumpZone.targetNode == aiState.getNextNodeName()) {
+				if (jumpTime <= 0 && jumpZone.targetNode == null ||
+					jumpZone.targetNode == aiState.getNextNodeName()
+				) {
 					if (aiState is not FindPlayer) {
 						changeState(new InJumpZone(character, jumpZone, jumpZoneDir));
 					} else {
-						if (jumpZone.forceDir == -1) {
-							player.press(Control.Left);
-						} else if (jumpZone.forceDir == 1) {
-							player.press(Control.Right);
-						}
-
-						if (character.charState is not LadderClimb) {
+						if ((character.grounded || character.vel.y > 0) &&
+							character.charState is not LadderClimb
+						) {
 							doJump();
 							jumpZoneCooldown = 20;
 							jumpZoneTime += Global.spf;
@@ -369,14 +364,6 @@ public class AI {
 			jumpTime -= Global.speedMul;
 			if (jumpTime < 0) {
 				jumpTime = 0;
-				if (character.grounded ||
-					Global.level.getGroundPosNoKillzone(character.pos.addxy(16 * character.xDir, 0)) == null
-				) {
-					player.release(Control.Jump);
-					jumpTime = 0;
-				} else {
-					jumpTime = 2;	
-				}
 			} else {
 				if (player.input.isHeld(Control.Jump, player) && character.grounded) {
 					player.release(Control.Jump);
@@ -443,7 +430,7 @@ public class AI {
 		//Randomly Jump
 		if (aiState.randomlyJump && !inNodeTransition && stuckTime == 0) {
 			if (Helpers.randomRange(0, 200) < 1) {
-				doJump(Helpers.randomRange(15, 60));
+				doJump();
 			}
 		}
 
@@ -527,7 +514,7 @@ public class AIState {
 		shouldDodge = true;
 		randomlyChangeState = true;
 		randomlyDash = true;
-		randomlyJump = true;
+		randomlyJump = false;
 		randomlyChangeWeapon = true;
 		randomlyChargeWeapon = true;
 	}
@@ -548,8 +535,8 @@ public class MoveTowardsTarget : AIState {
 		randomlyChangeState = false;
 		randomlyDash = true;
 		randomlyJump = true;
-		randomlyChangeWeapon = false;
-		randomlyChargeWeapon = true;
+		randomlyChangeWeapon = true;
+		randomlyChargeWeapon = false;
 	}
 
 	public override void update() {
@@ -584,8 +571,8 @@ public class FindPlayer : AIState {
 		shouldAttack = true;
 		shouldDodge = true;
 		randomlyChangeState = false;
-		randomlyDash = true;
-		randomlyJump = true;
+		randomlyDash = false;
+		randomlyJump = false;
 		randomlyChangeWeapon = false;
 		randomlyChargeWeapon = true;
 
@@ -612,7 +599,19 @@ public class FindPlayer : AIState {
 
 		Point nodeDist = nextNode.pos - character.abstractedActor().getCenterPos();
 		bool isOnPit = false;
-		if (Global.level.getGroundPosNoKillzone(character.pos) == null) {
+		bool pitFront = false;
+		int nodeDir = MathF.Sign(nodeDist.x);
+		if (nodeDir == 0) { nodeDir = character.xDir; }
+
+		if ((!character.grounded || ai.jumpZoneCooldown > 0 || ai.jumpTime > 0) &&
+			character.vel.y >= -1 && neighbor?.includeJumpZones != "" &&
+			Global.level.checkKillZone(character.pos.addxy(16 * character.xDir, 0))
+		) {
+			pitFront = true;
+			player.release(Control.Left);
+			player.release(Control.Right);
+		}
+		if (!character.grounded && Global.level.checkKillZone(character.pos)) {
 			if (character.xDir == 1) {
 				player.press(Control.Right);
 			} else {
@@ -621,7 +620,7 @@ public class FindPlayer : AIState {
 			isOnPit = true;
 		}
 		if (MathF.Abs(nodeDist.x) > 16) {
-			if (!isOnPit) {
+			if (!isOnPit && !pitFront) {
 				if (nodeDist.x > 0) {
 					player.press(Control.Right);
 				} else if (nodeDist.x < 0) {
@@ -723,7 +722,12 @@ public class MoveToPos : AIState {
 	public MoveToPos(Character character, Point dest) : base(character) {
 		this.dest = dest;
 		facePlayer = false;
+		shouldAttack = false;
+		shouldDodge = true;
 		randomlyChangeState = false;
+		randomlyDash = false;
+		randomlyJump = false;
+		randomlyChangeWeapon = false;
 		randomlyChargeWeapon = true;
 	}
 
@@ -780,7 +784,7 @@ public class InJumpZone : AIState {
 		shouldAttack = false;
 		shouldDodge = false;
 		randomlyChangeState = false;
-		randomlyDash = true;
+		randomlyDash = false;
 		randomlyJump = false;
 		randomlyChangeWeapon = false;
 		randomlyChargeWeapon = true;
@@ -792,22 +796,32 @@ public class InJumpZone : AIState {
 		ai.doJump();
 		ai.jumpZoneTime += Global.spf;
 
-		if (jumpZoneDir == -1) {
-			player.press(Control.Left);
-		} else if (jumpZoneDir == 1) {
-			player.press(Control.Right);
+		if (!character.grounded) {
+			if (jumpZoneDir == -1) {
+				player.press(Control.Left);
+			} else if (jumpZoneDir == 1) {
+				player.press(Control.Right);
+			}
+
+			if (character.vel.x > 0 &&
+				Global.level.checkKillZone(character.pos.addxy(8 * character.xDir, 0))
+			) {
+				player.release(Control.Left);
+				player.release(Control.Right);
+			}
 		}
 
-		if (Global.level.getGroundPosNoKillzone(character.pos) == null) {
+		if (Global.level.checkKillZone(character.pos)) {
 			if (character.xDir == 1) {
 				player.press(Control.Right);
-			} else {
+			}
+			else if (character.xDir == -1) {
 				player.press(Control.Left);
 			}
 		}
 
 		//Check if out of zone
-		if (character != null && character.abstractedActor().collider != null) {
+		if (character != null && character.abstractedActor().collider != null && character.grounded) {
 			if (!character.abstractedActor().collider.isCollidingWith(jumpZone.collider)) {
 				ai.changeState(new FindPlayer(character));
 			}

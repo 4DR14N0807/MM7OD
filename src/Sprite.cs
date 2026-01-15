@@ -16,9 +16,9 @@ public class Sprite {
 	public float time;
 	public int trueFrameIndex;
 	public int frameIndex {
-		private set {
+		set {
 			if (value >= totalFrameNum) {
-				throw new Exception("Error: Frameindex is longer than anim size.");
+				throw new Exception($"Error: Frameindex [{value}] is longer than anim [{name}] size.");
 			}
 			trueFrameIndex = value;
 		}
@@ -88,12 +88,12 @@ public class Sprite {
 			return false;
 		}
 		if (frameTime >= currentFrame.duration) {
-			bool onceEnd = !animData.loop && frameIndex == animData.frames.Length - 1;
+			bool onceEnd = !animData.loop && trueFrameIndex == animData.frames.Length - 1;
 			if (!onceEnd) {
 				frameTime = 0;
-				frameIndex++;
-				if (frameIndex >= animData.frames.Length) {
-					frameIndex = animData.loopStartFrame;
+				trueFrameIndex++;
+				if (trueFrameIndex >= animData.frames.Length) {
+					trueFrameIndex = animData.loopStartFrame;
 					animTime = 0;
 					loopCount++;
 				}
@@ -101,11 +101,11 @@ public class Sprite {
 			}
 		}
 		if (frameSpeed < 0 && frameTime < 0) {
-			bool onceEnd = !animData.loop && frameIndex <= 0;
+			bool onceEnd = !animData.loop && trueFrameIndex <= 0;
 			if (!onceEnd) {
-				frameIndex--;
-				if (frameIndex < animData.loopStartFrame) {
-					frameIndex = frameIndex = animData.frames.Length - 1;;
+				trueFrameIndex--;
+				if (trueFrameIndex < animData.loopStartFrame) {
+					trueFrameIndex = trueFrameIndex = animData.frames.Length - 1;;
 					animTime = getAnimLength();
 					loopCount++;
 				}
@@ -117,7 +117,7 @@ public class Sprite {
 	}
 
 	public void restart() {
-		frameIndex = 0;
+		trueFrameIndex = 0;
 		frameTime = 0;
 		animTime = 0;
 		loopCount = 0;
@@ -162,7 +162,7 @@ public class Sprite {
 
 	public void drawSimple(Point pos, int xDir, long zIndex, float alpha = 1, Actor? actor = null) {
 		draw(
-			frameIndex, pos.x, pos.y, xDir, 1,
+			trueFrameIndex, pos.x, pos.y, xDir, 1,
 			null, alpha, 1, 1, zIndex,
 			null, 0, actor: actor, useFrameOffsets: true
 		);
@@ -195,8 +195,8 @@ public class Sprite {
 			}
 			else if (animData.textureName == "blues_default" && character is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
-			} else if (character is Bass bass && bass.isSuperBass) {
-				bitmap = bass.armless ? Sprite.superBassArmlessBitmap : Sprite.superBassBitmap;
+			} else if (animData.textureName == "bass_superadaptor" && character is Bass bass && bass.isSuperBass) {
+				bitmap = bass.armless ? superBassArmlessBitmap : superBassBitmap;
 			}
 		}
 		Frame currentFrame = getCurrentFrame(frameIndex);
@@ -434,7 +434,7 @@ public class Sprite {
 
 	public Frame getCurrentFrame(int frameIndex = -1) {
 		if (frameIndex == -1) {
-			frameIndex = this.frameIndex;
+			frameIndex = this.trueFrameIndex;
 		}
 		if (reversed) {
 			frameIndex = totalFrameNum - 1 - frameIndex;
@@ -449,7 +449,7 @@ public class Sprite {
 	}
 
 	public int getFrameIndexSafe() {
-		int frameIndex = this.frameIndex;
+		int frameIndex = this.trueFrameIndex;
 
 		if (reversed) {
 			frameIndex = animData.frames.Length - 1 - frameIndex;
@@ -465,7 +465,7 @@ public class Sprite {
 
 	public bool isAnimOver() {
 		return (
-			frameIndex == animData.frames.Length - 1 && frameTime >= getCurrentFrame().duration ||
+			trueFrameIndex == animData.frames.Length - 1 && frameTime >= getCurrentFrame().duration ||
 			loopCount > 0
 		);
 	}

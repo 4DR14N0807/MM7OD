@@ -305,36 +305,37 @@ public class Bass : Character {
 		int displayPhase = Math.Min(phase, 3);
 
 		Global.sprites["hud_energy_base"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
+		bool active = false;
 
-		if (Global.frameCount % 6 >= 3 && (charState is EnergyCharge or EnergyIncrease || phase == 4)) {
+		if (Global.floorFrameCount % 6 >= 3 && (charState is EnergyCharge or EnergyIncrease || phase == 4)) {
+			active = true;
 			Global.sprites["hud_energy_eyes"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		}
 		energyBarPos.y -= 16;
-		Point energyStartPos = energyBarPos;
+
 		int[][] index = [
 			[0, 1, 2],
 			[3, 4, 5],
-			[6, 7, 8]
+			[6, 7, 8],
+			[9, 10, 11]
 		];
+		int subIndex = phase % 3;
+		if (active) {
+			subIndex = (subIndex + MathInt.Floor(Global.frameCount / 4)) % 3;
+		}
 
-		for (int i = 0; i < phase + 1; i++) {
-			int amount =  evilEnergy;
-			energyBarPos = energyStartPos;
-			for (int j = 0; j < MaxEvilEnergy; j++) {
-				int k = i == 1 && evilEnergy >= MaxEvilEnergy ? 2 : i;
-				if (j < amount) {
-					Global.sprites["hud_energy_full"].drawToHUD(
-						index[phase][k], energyBarPos.x, energyBarPos.y
-					);
-				}
-				else if (i == 0){
-					Global.sprites["hud_energy_empty"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
-				}
-				energyBarPos.y -= 2;
+		for (int i = 0; i < MaxEvilEnergy; i++) {
+			if (i < evilEnergy) {
+				Global.sprites["hud_energy_full"].drawToHUD(
+					index[displayPhase][subIndex], energyBarPos.x, energyBarPos.y
+				);
+			} else {
+				Global.sprites["hud_energy_empty"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 			}
+			energyBarPos.y -= 2;
 		}
 	
-		Global.sprites["hud_energy_top"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
+		Global.sprites["hud_energy_top"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 
 		if (player.isMainPlayer && (charState is BassFly || flyTime > 0)) {
 			decimal maxLength = 14;
@@ -437,7 +438,7 @@ public class Bass : Character {
 			}
 			if (
 				player.input.isHeld(Control.Special2, player) &&
-				charState is not EnergyCharge && phase < 2
+				charState is not EnergyCharge && phase < 4
 			) {
 				changeState(new EnergyCharge(), true);
 				return true;
@@ -632,8 +633,10 @@ public class Bass : Character {
 	}
 
 	public override string getSprite(string spriteName) {
-		string prefix = isSuperBass ? "sbass_" : "bass_";
-		return prefix + spriteName;
+		if (isSuperBass && Global.sprites.ContainsKey("sbass_" + spriteName)) {
+			return "sbass_" + spriteName;
+		}
+		return "bass_" + spriteName;
 	}
 
 	public override (float, float) getGlobalColliderSize() {

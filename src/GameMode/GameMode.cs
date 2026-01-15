@@ -1263,10 +1263,10 @@ public class GameMode {
 			} else if (i < MathInt.Ceiling(health) + damageSavings) {
 				Global.sprites["hud_health_full"].drawToHUD(4, baseX, baseY);
 			}
-			//Evil Energy lost HP
+			// Evil Energy lost HP
 			else if (i >= trueHP && player.character != null && !player.character.destroyed) {
 				float t = player.evilEnergyTime / 10f;
-				int color = Global.frameCount % t <= 10 ? 1 : 2;
+				int color = Global.floorFrameCount % t <= 10 ? 1 : 2;
 				Global.sprites["hud_energy_full"].drawToHUD(color, baseX, baseY);
 			} else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);

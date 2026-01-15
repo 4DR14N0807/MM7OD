@@ -231,7 +231,7 @@ public class SpreadDrillMediumProj : Projectile {
 	public override void render(float x, float y) {
 		base.render(x,y);
 		string exhaust = "spread_drill_effect";
-		int fi = Global.frameCount % 2;
+		int fi = Global.floorFrameCount % 2;
 
 		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
 	}
@@ -327,7 +327,7 @@ public class SpreadDrillSmallProj : Projectile {
 	public override void render(float x, float y) {
 		base.render(x,y);
 		string exhaust = "spread_drill_effect";
-		int fi = Global.frameCount % 2;
+		int fi = Global.floorFrameCount % 2;
 
 		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
 	}

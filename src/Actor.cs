@@ -354,11 +354,10 @@ public partial class Actor : GameObject {
 			frameTime = 0;
 			animTime = 0;
 		} else {
-			frameIndex = oldFrameIndex;
+			sprite.trueFrameIndex = oldFrameIndex;
 			frameSeconds = oldFrameTime;
 			animSeconds = oldAnimTime;
 		}
-
 		if (frameIndex >= sprite.totalFrameNum) {
 			frameIndex = 0;
 			frameTime = 0;
@@ -1287,7 +1286,7 @@ public partial class Actor : GameObject {
 		float reportDamage = Helpers.clampMax(damage, maxHealth);
 		if (attacker.isMainPlayer || ownedByLocalPlayer) {
 			if (damage == Damager.ohkoDamage && damage >= maxHealth) {
-				addDamageText("Instakill!", (int)FontType.RedishOrange);
+				addDamageText("Instakill!", (int)FontType.OrangeSmall);
 			} else {
 				addDamageText(reportDamage);
 			}

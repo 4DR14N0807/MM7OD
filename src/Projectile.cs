@@ -433,7 +433,7 @@ public class Projectile : Actor {
 					owner.character.changeState(new ZeroClang(-owner.character.xDir), true);
 					//owner.character.playSound("m10ding", sendRpc: true);
 					if (Helpers.randomRange(0, 10) == 5) {
-						otherProj.owner.character.addDamageText("Clang!", 3);
+						otherProj.owner.character?.addDamageText("Clang!", (int)FontType.YellowSmall);
 					}
 
 					if (other.hitData.hitPoint != null) {

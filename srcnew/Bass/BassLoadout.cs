@@ -227,7 +227,7 @@ public class BassWeaponMenu : IMainMenu {
 			};
 			// Category name.
 			Fonts.drawText(FontType.PurpleMenu, categoryNames[i], 40, yPos - 1, selected: i == cursorRow);
-			if (Global.frameCount % 60 < 30) {
+			if (Global.floorFrameCount % 60 < 30) {
 				Fonts.drawText(
 					FontType.PurpleMenu, ">", i < 3 ? rightArrowPos : rightArrowPos - 108, yPos - 1,
 					Alignment.Center, selected: cursorRow == i

@@ -1332,11 +1332,13 @@ class Program {
 				}
 				// Reload levels. And mess checksum.
 				if (Global.level == null) {
-					if (Keyboard.IsKeyPressed(Key.F2) && Keyboard.IsKeyPressed(Key.F1)) {
+					if (IsKeyPressed(Key.F2) && IsKeyPressed(Key.F1)) {
 						if (f12Released) {
 							Global.destroyChecksum();
 							Global.levelDatas.Clear();
 							loadLevels();
+							loadImages();
+							loadSprites();
 						}
 					} else {
 						f12Released = true;

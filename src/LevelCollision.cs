@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace MMXOnline;
 
@@ -182,6 +183,29 @@ public partial class Level {
 		if (kzHit != null) return null;
 
 		return hit.hitData.hitPoint.Value.addxy(0, -1);
+	}
+
+	public bool checkKillZone(Point pos) {
+		float depth = 160;
+		CollideData? collideData = Global.level.raycast(pos.addxy(0, -1), pos.addxy(0, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (collideData != null && collideData.gameObject is not KillZone) {
+			return false;
+		}
+		collideData = Global.level.raycast(pos.addxy(-10, -1), pos.addxy(-8, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (collideData != null && collideData.gameObject is not KillZone) {
+			return false;
+		}
+		collideData = Global.level.raycast(pos.addxy(10, -1), pos.addxy(8, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (collideData != null && collideData.gameObject is not KillZone) {
+			return false;
+		}
+		return true;
 	}
 
 	public Point? getGroundPosWithNull(Point pos, float depth = 60) {

@@ -128,7 +128,7 @@ public class Damager {
 		if (damagable.isInvincible(owner, projId) && damage > 0) {
 			victim.playSound("ding");
 			if (Helpers.randomRange(0, 50) == 10) {
-				victim.addDamageText("Bloqueo! Por 48 horas!", 1);
+				victim.addDamageText("Bloqueo! Por 48 horas!", (int)FontType.WhiteMini);
 			}
 			return true;
 		}

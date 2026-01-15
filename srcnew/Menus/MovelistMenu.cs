@@ -220,7 +220,7 @@ public class MovelistMenu : IMainMenu {
 		);
 	
 		float arrowPosY = Global.halfScreenH - 9;
-		if (Global.frameCount % 60 < 30 && getMaxScroll() > 0) {
+		if (Global.floorFrameCount % 60 < 30 && getMaxScroll() > 0) {
 			Fonts.drawText(
 				FontType.BlueMenu, ">", 360, arrowPosY, Alignment.Center
 			);

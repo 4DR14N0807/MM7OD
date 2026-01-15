@@ -465,7 +465,7 @@ public class EnergyCharge : CharState {
 	public override void update() {
 		base.update();
 
-		if (!player.input.isHeld(Control.Special2, player) || bass.phase >= 2) {
+		if (!player.input.isHeld(Control.Special2, player) || bass.phase >= 4) {
 			bass.changeToIdleOrFall();
 			return;
 		}

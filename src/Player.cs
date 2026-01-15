@@ -474,7 +474,7 @@ public partial class Player {
 	public int evilEnergyStacks;
 	public float evilEnergyTime;
 	public float evilEnergyMaxTime = 1800;
-	public decimal hpPerStack = 2;
+	public decimal hpPerStack = 2.5m;
 	public decimal evilEnergyHP;
 	public decimal evilEnergyHPToRemove;
 	public float evilEnergyHPTimer;
@@ -1086,7 +1086,7 @@ public partial class Player {
 			evilEnergyStacks = pendingEvilEnergyStacks;
 			pendingEvilEnergyStacks = 0;
 			evilEnergyTime = evilEnergyMaxTime;
-			evilEnergyHP = evilEnergyStacks * hpPerStack;
+			evilEnergyHP = Math.Ceiling(evilEnergyStacks * hpPerStack);
 		}
 		Character newChar;
 		if (charNum == (int)CharIds.Rock) {

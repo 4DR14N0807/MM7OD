@@ -1574,16 +1574,15 @@ public class BottomlessPitState : CharState {
 
 		if (stateFrames >= 8 && !changedAnim) {
 			character.changeSpriteFromName("warp_in", true);
-			character.frameIndex = 4;
+			character.frameIndex = character.sprite.totalFrameNum - 1;
 			character.frameTime = character.sprite.getCurrentFrame().duration - 1;
 			character.frameSpeed = -1;
 			changedAnim = true;
 		}
-		if (changedAnim && character.frameIndex == 0 && character.frameTime == 0) {
+		if (!warpBack && changedAnim && character.frameIndex == 0 && character.frameTime == 0) {
 			character.visible = false;
 			warpBack = true;
 		}
-
 		if (stateFrames >= 20 || warpBack) {
 			character.visible = true;
 			character.grounded = true;

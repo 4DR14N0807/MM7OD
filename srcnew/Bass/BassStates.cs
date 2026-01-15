@@ -244,7 +244,7 @@ public class SuperBassStart : CharState {
 		treble?.destroySelf();
 		aura?.destroySelf();
 		square?.destroySelf();
-		character.invulnTime = 0.5f;
+		character.invulnTime = 30;
 	}
 
 	public override void update() {

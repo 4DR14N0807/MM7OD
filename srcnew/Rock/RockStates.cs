@@ -394,7 +394,7 @@ public class CallDownRush : CharState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		character.invulnTime = 0.5f;
+		character.invulnTime = 30;
 	}
 }
 

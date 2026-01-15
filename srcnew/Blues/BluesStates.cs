@@ -650,7 +650,7 @@ public class BluesRevive : CharState {
 		character.removeRenderEffect(RenderEffectType.Flash);
 		blues.overdrive = true;
 		blues.overheating = false;
-		blues.invulnTime = 12;
+		blues.invulnTime = 30;
 	}
 }
 

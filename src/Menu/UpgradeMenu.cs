@@ -12,7 +12,7 @@ public class UpgradeMenu : IMainMenu {
 	public static bool onUpgradeMenu = true;
 	public static bool isUsingWTank = false;
 	public int eTankCost = 40;
-	public int wTankCost = 30;
+	public int wTankCost = 25;
 	public List<Weapon> eTankTargets = new List<Weapon>();
 	public List<Weapon> wTankTargets = new List<Weapon>();
 	public static int eTankTargetIndex;

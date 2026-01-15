@@ -1407,15 +1407,10 @@ public partial class Player {
 			charCurrency[charId] += value;
 		}
 	}
-	
+
 	public void awardKillExp(bool isKiller = true) {
 		int toAdd = isKiller ? 4 : 2;
-		
-		if (Global.level?.server?.customMatchSettings != null) {
-			mastery.addDamageExp(toAdd);
-		} else {
-			mastery.addDamageExp(toAdd);
-		}
+		mastery.addDamageExp(toAdd);
 	}
 
 	public int getStartCurrency() {
@@ -1425,7 +1420,7 @@ public partial class Player {
 		if (Global.level?.server?.customMatchSettings != null) {
 			return Global.level.server.customMatchSettings.startCurrency;
 		}
-		return 0;
+		return 25;
 	}
 
 	public void onKillEffects(bool isAssist) {

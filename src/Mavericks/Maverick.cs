@@ -1242,14 +1242,14 @@ public class Maverick : Actor, IDamagable {
 				}
 			}
 
-			killer.awardCurrency();
+			killer.awardKillExp();
 			awardXWeapon(killer);
 		}
 
 		if (assister != null && assister != player) {
 			assister.addAssist();
 			assister.addKill();
-			assister.awardCurrency();
+			assister.awardKillExp(false);
 			awardXWeapon(killer);
 		}
 

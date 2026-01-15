@@ -31,7 +31,6 @@ public class Damager {
 
 	public static Dictionary<int, int> multiHitLimit = new() {
 		{ (int)BluesProjIds.LemonAngled, 4 },
-		{ (int)BluesProjIds.LemonAOverheat, 4 },
 		{ (int)BluesProjIds.LemonAOverdrive, 3 },
 	};
 	
@@ -187,7 +186,9 @@ public class Damager {
 			RPC.applyDamage.sendRpc(byteParams.ToArray());
 		}
 
-		if (damagable != null && damagable is not CrackedWall && owner.ownedByLocalPlayer && !isDot(projId)) {
+		if (damagable != null && damagable is not CrackedWall &&
+			owner.ownedByLocalPlayer && !isDot(projId)
+		) {
 			if (owner.isMainPlayer) {
 				owner.delayETank();
 			}

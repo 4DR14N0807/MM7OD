@@ -863,7 +863,11 @@ public class Blues : Character {
 				new ProtoBusterProj(
 					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
 				);
-				playSound("buster", sendRpc: true);
+				if (overheating) {
+					playSound("buster", sendRpc: true);
+				} else {
+					playSound("protoLemon", sendRpc: true);
+				}
 			} else {
 				float shootAngle = xDir == 1 ? 0 : 128;
 				shootAngle += Helpers.randomRange(-2, 2);
@@ -1216,21 +1220,22 @@ public class Blues : Character {
 		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
-		if (fDamage <= 0) {
-			return;
-		}
-		// Apply mastery level before any reduction.
-		if (attacker != null && attacker != player &&
-			attacker != Player.stagePlayer
-		) {
-			if (fDamage < Damager.ohkoDamage) {
-				mastery.addDefenseExp(fDamage);
-				attacker.mastery.addDamageExp(fDamage, true);
-			}
-		}
 		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
+		}
+		// Apply mastery level before any reduction.
+		if (attacker != null && attacker != player && attacker != Player.stagePlayer) {
+			if (fDamage < Damager.ohkoDamage) {
+				mastery.addDefenseExp(fDamage);
+				attacker.mastery.addDamageExp(fDamage, true);
+				if (flag != null) {
+					mastery.addMapExp(fDamage * 2);
+				}
+			}
+			if (!Damager.isDot(projId)) {
+				enterCombat();
+			}
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
@@ -1346,7 +1351,6 @@ public class Blues : Character {
 					playSound("danger_wrap_explosion", sendRpc: true);
 					new Anim(pos.addxy(xDir * 20, -20), "generic_explosion", xDir, player.getNextActorNetId(), true, true);
 				}
-				
 			}
 		}
 		// Back shield block check.

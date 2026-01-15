@@ -1340,18 +1340,13 @@ public partial class Level {
 
 				Point size = Helpers.getTextureArraySize(parallaxTextures);
 
-				if (MathF.Abs(parallaxOffsets[i].x) > size.x) parallaxOffsets[i] = new Point(0, parallaxOffsets[i].y);
-				if (MathF.Abs(parallaxOffsets[i].y) > size.y) parallaxOffsets[i] = new Point(parallaxOffsets[i].x, 0);
+				if (MathF.Abs(parallaxOffsets[i].x) > size.x) {
+					parallaxOffsets[i] = new Point(0, parallaxOffsets[i].y);
+				}
+				if (MathF.Abs(parallaxOffsets[i].y) > size.y) {
+					parallaxOffsets[i] = new Point(parallaxOffsets[i].x, 0);
+				}
 			}
-		}
-
-		if (enableGiantDamPropellers()) {
-			if (Global.flFrameCount % 30 == 0) new Anim(new Point(1728, 576 + 20), "bubbles", 1, null, false) { vel = new Point(-100, 0), ttl = 4 };
-			else if (Global.flFrameCount % 20 == 0) new Anim(new Point(1728, 600 + 20), "bubbles", 1, null, false) { vel = new Point(-100, 0), ttl = 4 };
-			else if (Global.flFrameCount % 40 == 0) new Anim(new Point(1728, 625 + 20), "bubbles", 1, null, false) { vel = new Point(-100, 0), ttl = 4 };
-			else if (Global.flFrameCount % 30 == 15) new Anim(new Point(1728, 650 + 10), "bubbles", 1, null, false) { vel = new Point(-100, 0), ttl = 4 };
-			else if (Global.flFrameCount % 20 == 10) new Anim(new Point(1728, 675 + 10), "bubbles", 1, null, false) { vel = new Point(-100, 0), ttl = 4 };
-			else if (Global.flFrameCount % 40 == 20) new Anim(new Point(1728, 690 + 10), "bubbles", 1, null, false) { vel = new Point(-100, 0), ttl = 4 };
 		}
 
 		foreach (string key in recentClipCount.Keys.ToList()) {

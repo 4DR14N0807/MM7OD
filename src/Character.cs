@@ -2907,7 +2907,7 @@ public partial class Character : Actor, IDamagable {
 
 		// Chip stuff.
 		Character? enemyChar = (actor as Projectile)?.ownerActor as Character ?? attacker?.character;
-		fDamage = chips.onDamage.Invoke(this, fDamage, actor, enemyChar);
+		fDamage = chips.onDamage.Invoke(this, fDamage, actor, attacker, enemyChar);
 
 		// Default values.
 		decimal damage = decimal.Parse(fDamage.ToString());
@@ -3007,9 +3007,8 @@ public partial class Character : Actor, IDamagable {
 				player.trainingDpsTotalDamage = 0;
 				player.trainingDpsStartTime = 0;
 			}
-			killPlayer(attacker, null, weaponIndex, projId);
+			killPlayer(attacker, actor, enemyChar, weaponIndex, projId);
 			alive = false;
-			chips.onDeath.Invoke(this, fDamage, actor, enemyChar);
 		}
 	}
 
@@ -3034,99 +3033,102 @@ public partial class Character : Actor, IDamagable {
 		player.fuseETanks();
 	}
 
-	public void killPlayer(Player? killer, Player? assister, int? weaponIndex, int? projId) {
+	public void killPlayer(
+		Player? killer, Actor? damager, Character? enemyChar,
+		int? weaponIndex, int? projId, Player? assister = null
+	) {
 		health = 0;
 		alive = false;
 		int? assisterProjId = null;
 		int? assisterWeaponId = null;
-		if (charState is not Die || !ownedByLocalPlayer) {
-			player.lastDeathCanRevive = true;
-			if (ownedByLocalPlayer) {
-				changeState(new Die(), true);
-			}
-			if (ownedByLocalPlayer) {
-				getKillerAndAssister(player, ref killer, ref assister, ref weaponIndex, ref assisterProjId, ref assisterWeaponId);
-			}
+		player.lastDeathCanRevive = true;
 
-			if (killer != null && killer != player && killer != Player.stagePlayer) {
-				killer.addKill();
-				if (Global.level.gameMode is TeamDeathMatch) {
-					if (Global.isHost) {
-						if (killer.alliance != player.alliance) {
-							Global.level.gameMode.teamPoints[killer.alliance]++;
-							Global.level.gameMode.syncTeamScores();
-						}
-					}
-				}
-				killer.awardKillExp();
-				killer.onKillEffects(false);
-				//killer.currency += 10;
-			} else if (Global.level.gameMode.level.is1v1()) {
-				// In 1v1 the other player should always be considered a killer to prevent suicide
-				var otherPlayer = Global.level.nonSpecPlayers().Find(p => p.id != player.id);
-				if (otherPlayer != null) {
-					otherPlayer.addKill();
-				}
-			}
-
-			if (assister != null && assister != player && assister != Player.stagePlayer) {
-				assister.addAssist();
-				assister.addKill();
-
-				assister.awardKillExp(false);
-				assister.onKillEffects(true);
-			}
-			player.addDeath();
-
-			Global.level.gameMode.addKillFeedEntry(
-				new KillFeedEntry(killer, assister, player, weaponIndex)
+		if (ownedByLocalPlayer) {
+			getKillerAndAssister(
+				player, ref killer, ref assister,
+				ref weaponIndex, ref assisterProjId, ref assisterWeaponId
 			);
-			if (ownedByLocalPlayer && Global.level.isNon1v1Elimination() &&
-				player.deaths >= Global.level.gameMode.playingTo
-			) {
-				Global.level.gameMode.addKillFeedEntry(
-					new KillFeedEntry(player.name + " was eliminated.", GameMode.blueAlliance),
-					sendRpc: true
-				);
-			}
+		}
 
-			if (killer?.ownedByLocalPlayer == true)
-				if (killer.character is Axl axl && killer.copyShotDamageEvents.Any(c => c.character == this)) {
-					axl.addDNACore(this);
-				}
+		// Allows to stop death before a RPC is send or a kill is added.
+		if (ownedByLocalPlayer && preDeath(killer, damager, enemyChar)) {
+			return;
+		}
 
-			if (assister?.ownedByLocalPlayer == true) {
-				if (assister.character is Axl axl && assister.copyShotDamageEvents.Any(c => c.character == this)) {
-					axl.addDNACore(this);
-				}
-			}
-
-			if (ownedByLocalPlayer) {
-				var victimPlayerIdBytes = BitConverter.GetBytes((ushort)player.id);
-
-				if (weaponIndex != null && killer != null) {
-					var bytes = new List<byte>()
-					{
-							1,
-							(byte)killer.id,
-							assister == null ? (byte)killer.id : (byte)assister.id,
-							victimPlayerIdBytes[0],
-							victimPlayerIdBytes[1],
-							(byte)weaponIndex
-						};
-
-					if (projId != null) {
-						byte[] projIdBytes = BitConverter.GetBytes((ushort)projId.Value);
-						bytes.Add(projIdBytes[0]);
-						bytes.Add(projIdBytes[1]);
+		if (killer != null && killer != player && killer != Player.stagePlayer) {
+			killer.addKill();
+			if (Global.level.gameMode is TeamDeathMatch) {
+				if (Global.isHost) {
+					if (killer.alliance != player.alliance) {
+						Global.level.gameMode.teamPoints[killer.alliance]++;
+						Global.level.gameMode.syncTeamScores();
 					}
-
-					Global.serverClient?.rpc(RPC.killPlayer, bytes.ToArray());
-				} else {
-					Global.serverClient?.rpc(RPC.killPlayer, 0, 0, 0, victimPlayerIdBytes[0], victimPlayerIdBytes[1]);
 				}
+			}
+			killer.awardKillExp();
+			killer.onKillEffects(false, player, damager, this);
+			//killer.currency += 10;
+		} else if (Global.level.gameMode.level.is1v1()) {
+			// In 1v1 the other player should always be considered a killer to prevent suicide
+			var otherPlayer = Global.level.nonSpecPlayers().Find(p => p.id != player.id);
+			if (otherPlayer != null) {
+				otherPlayer.addKill();
 			}
 		}
+
+		if (assister != null && assister != player && assister != Player.stagePlayer) {
+			assister.addAssist();
+			assister.addKill();
+
+			assister.awardKillExp(false);
+			assister.onKillEffects(false, player, damager, this);
+		}
+		player.addDeath();
+
+		Global.level.gameMode.addKillFeedEntry(
+			new KillFeedEntry(killer, assister, player, weaponIndex)
+		);
+
+		// Local only starts here.
+		if (ownedByLocalPlayer) {
+			return;
+		}
+
+		if (Global.level.isNon1v1Elimination() &&
+			player.deaths >= Global.level.gameMode.playingTo
+		) {
+			Global.level.gameMode.addKillFeedEntry(
+				new KillFeedEntry(player.name + " was eliminated.", GameMode.blueAlliance),
+				sendRpc: true
+			);
+		}
+		byte[] victimPlayerIdBytes = BitConverter.GetBytes((ushort)player.id);
+
+		if (weaponIndex != null && killer != null) {
+			List<byte> bytes = [
+				1,
+				(byte)killer.id,
+				assister == null ? (byte)killer.id : (byte)assister.id,
+				victimPlayerIdBytes[0],
+				victimPlayerIdBytes[1],
+				(byte)weaponIndex
+			];
+			if (projId != null) {
+				byte[] projIdBytes = BitConverter.GetBytes((ushort)projId.Value);
+				bytes.Add(projIdBytes[0]);
+				bytes.Add(projIdBytes[1]);
+			}
+
+			Global.serverClient?.rpc(RPC.killPlayer, bytes.ToArray());
+		} else {
+			Global.serverClient?.rpc(RPC.killPlayer, 0, 0, 0, victimPlayerIdBytes[0], victimPlayerIdBytes[1]);
+		}
+
+		// Go to death state if not stoped.
+		if (onDeath(killer, damager, enemyChar) || charState is Die) {
+			return;
+		}
+		changeState(new Die(), true);
 	}
 
 	public void addHealth(float amount) {
@@ -3149,8 +3151,6 @@ public partial class Character : Actor, IDamagable {
 		healAmount += (float)Math.Ceiling(maxHealth);
 		onHealing(Math.Ceiling(maxHealth));
 	}
-
-	public virtual void onHealing(decimal amount) { }
 
 	public virtual void addAmmo(float amount) {
 		currentWeapon?.addAmmoHeal(amount);
@@ -3255,8 +3255,23 @@ public partial class Character : Actor, IDamagable {
 		charState?.onExit(null);
 	}
 
-	public virtual void onDeath() {
+	// If true cancels the death itself and the kill reward.
+	public virtual bool preDeath(Player? killer, Actor? damager, Character? enemyChar) {
+		return chips.preDeath.Invoke(this, killer, damager, enemyChar);
+	}
 
+	// If true cancels the death state.
+	public virtual bool onDeath(Player? killer, Actor? damager, Character? enemyChar) {
+		return chips.preDeath.Invoke(this, killer, damager, enemyChar);
+	}
+
+	public virtual void onHealing(decimal amount) {
+
+	}
+
+	// If true cancels the death state.
+	public virtual void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
+		chips.onKill.Invoke(this, isAssist, enemy, damager, enemyChar);
 	}
 
 	public void cleanupBeforeTransform() {

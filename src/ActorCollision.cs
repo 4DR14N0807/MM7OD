@@ -85,12 +85,15 @@ public partial class Actor {
 	}
 
 	public List<Collider> getAllColliders() {
-		List<Collider> colliders = new();
+		List<Collider> colliders = [];
 		if (globalCollider != null) {
 			colliders.Add(globalCollider);
 		}
 		foreach (Collider collider in sprite.hitboxes) {
 			colliders.Add(collider);
+		}
+		if (frameIndex > sprite.totalFrameNum) {
+			throw new Exception($"Error retrieving animations of {sprite.name}[{frameIndex}]");
 		}
 		foreach (Collider collider in sprite.frameHitboxes[frameIndex]) {
 			colliders.Add(collider);

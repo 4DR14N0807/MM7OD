@@ -431,7 +431,7 @@ public class SuperBassPilar : Effect {
 
 
 public class EnergyCharge : CharState {
-
+	public float ammoTimer = 15;
 	Bass bass = null!;
 	Anim? aura;
 
@@ -457,6 +457,11 @@ public class EnergyCharge : CharState {
 		bass.gravityModifier = 1;
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		Helpers.decrementFrames(ref ammoTimer);
+	}
+
 	public override void update() {
 		base.update();
 
@@ -467,15 +472,16 @@ public class EnergyCharge : CharState {
 
 		aura?.changePos(bass.pos);
 
-		if (bass.evilEnergy[bass.phase] >= Bass.MaxEvilEnergy) {
+		if (bass.evilEnergy >= Bass.MaxEvilEnergy) {
 			bass.changeState(new EnergyIncrease(), true);
 			return;
 		}
 
-		if (stateFrames % 15 == 0 && stateFrames > 0) {
+		if (ammoTimer == 0) {
 			bass.playSound("heal");
-			bass.evilEnergy[bass.phase]++;
-		}	
+			bass.addEvilness(1);
+			ammoTimer = 15;
+		}
 	}
 }
 

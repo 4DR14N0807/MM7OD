@@ -18,7 +18,7 @@ public class Bass : Character {
 	public bool isSuperBass;
 	public const int TrebleBoostCost = 75;
 	public int phase;
-	public int[] evilEnergy = new int[] {0,0,0};
+	public int evilEnergy = 0;
 	public const int MaxEvilEnergy = 16;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
@@ -128,10 +128,34 @@ public class Bass : Character {
 		weapons.Add(new SBassRP());
 	}
 
+	public void addEvilness(int ammo) {
+		if (phase >= 4) {
+			return;
+		}
+		evilEnergy += ammo;
+		if (evilEnergy >= MaxEvilEnergy) {
+			int excessEnergy = evilEnergy - MaxEvilEnergy;
+			nextPhase(phase + 1);
+			if (phase >= 4) {
+				evilEnergy = MaxEvilEnergy;
+			} else {
+				evilEnergy = Helpers.clampMax(excessEnergy, MaxEvilEnergy);
+			}
+		}
+	}
+
 	public void nextPhase(int level) {
-		evilEnergy[phase] = MaxEvilEnergy;
+		if (phase >= 4) {
+			return;
+		}
+		// Incrase level.
 		phase = level;
 		player.pendingEvilEnergyStacks = level;
+		// Add HP and heal.
+		int hpToAdd = phase >= 4 ? 4 : 2;
+
+		maxHealth += hpToAdd;
+		heal(player, hpToAdd); 
 	}
 
 	public override void update() {
@@ -162,9 +186,6 @@ public class Bass : Character {
 		armless = sbRocketPunch != null;
 		if (flyTime > MaxFlyTime) {
 			flyTime = MaxFlyTime;
-		}
-		for (int i = 0; i < evilEnergy.Length; i++) {
-			if (evilEnergy[i] > MaxEvilEnergy) evilEnergy[i] = MaxEvilEnergy;
 		}
 		player.changeWeaponControls();
 
@@ -204,6 +225,15 @@ public class Bass : Character {
 			chargeEffect.character = this;
 			chargeEffect.update(level, 0);
 		}
+	}
+
+	public override void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
+		if (isSuperBass) {
+			if (phase < 4) {
+				addEvilness(isAssist ? 4 : 8);
+			}
+		}
+		base.onKill(isAssist, enemy, damager, enemyChar);
 	}
 
 	public override (string, int) getBaseHpSprite() {
@@ -272,24 +302,26 @@ public class Bass : Character {
 
 	public void renderSuperAmmo(Point offset, GameMode.HUDHealthPosition position) {
 		Point energyBarPos = GameMode.getHUDHealthPosition(position, false).add(offset);
+		int displayPhase = Math.Min(phase, 3);
 
-		Global.sprites["hud_energy_base"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
-		if (Global.frameCount % 6 >= 3 && charState is EnergyCharge or EnergyIncrease) {
-			Global.sprites["hud_energy_eyes"].drawToHUD(phase, energyBarPos.x, energyBarPos.y);
+		Global.sprites["hud_energy_base"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
+
+		if (Global.frameCount % 6 >= 3 && (charState is EnergyCharge or EnergyIncrease || phase == 4)) {
+			Global.sprites["hud_energy_eyes"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		}
 		energyBarPos.y -= 16;
 		Point energyStartPos = energyBarPos;
 		int[][] index = [
-			[0,1,2],
-			[3,4,5],
-			[6,7,8]
+			[0, 1, 2],
+			[3, 4, 5],
+			[6, 7, 8]
 		];
 
 		for (int i = 0; i < phase + 1; i++) {
-			int amount =  evilEnergy[i];
+			int amount =  evilEnergy;
 			energyBarPos = energyStartPos;
 			for (int j = 0; j < MaxEvilEnergy; j++) {
-				int k = i == 1 && evilEnergy[i] >= MaxEvilEnergy ? 2 : i;
+				int k = i == 1 && evilEnergy >= MaxEvilEnergy ? 2 : i;
 				if (j < amount) {
 					Global.sprites["hud_energy_full"].drawToHUD(
 						index[phase][k], energyBarPos.x, energyBarPos.y
@@ -763,9 +795,7 @@ public class Bass : Character {
 		customData.Add((byte)weaponIndex);
 		customData.Add(ammo);
 		customData.Add((byte)phase);
-		customData.Add((byte)evilEnergy[0]);
-		customData.Add((byte)evilEnergy[1]);
-		customData.Add((byte)evilEnergy[2]);
+		customData.Add((byte)evilEnergy);
 
 		bool[] flags = [
 			isSuperBass,
@@ -788,9 +818,7 @@ public class Bass : Character {
 			targetWeapon.ammo = data[1];
 		}
 		phase = data[2];
-		evilEnergy[0] = data[3];
-		evilEnergy[1] = data[4];
-		evilEnergy[2] = data[5];
+		evilEnergy = data[3];
 
 		bool[] flags = Helpers.byteToBoolArray(data[6]);
 		isSuperBass = flags[0];

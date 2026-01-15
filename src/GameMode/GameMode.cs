@@ -1349,39 +1349,6 @@ public class GameMode {
 			weapon = player.weapon;
 			player.lastHudWeapon = weapon;
 		}
-		if (player.character is Bass bass && bass.isSuperBass) {
-			int energy = bass.evilEnergy[0];
-			int energy2 = bass.evilEnergy[1];
-			int maxEnergy = Bass.MaxEvilEnergy;
-			int stacks = player.pendingEvilEnergyStacks;
-			bool charging = bass.charState is EnergyCharge or EnergyIncrease;
-
-			// Level 1 Evil Energy Bar.
-			int color = energy >= maxEnergy ? 3 : 1;
-			color = Global.frameCount % 6 >= 3 ? 4 : color;
-
-			renderAmmo(
-				baseX, baseY, -3, color, MathF.Ceiling(energy),
-				maxAmmo: maxEnergy, barSprite: "hud_energy_full"
-			);
-
-			//Bar Base skull eyes
-			if ((charging || energy2 >= maxEnergy) && Global.frameCount % 3 == 0) {
-				Global.sprites["hud_energy_eyes"].drawToHUD(stacks, baseX, baseY + 25);
-			}
-
-			//Level 2 Evil Energy Bar.
-			if (energy2 > 0) {
-				int yPos = MathInt.Ceiling(9 + baseY);
-				int color2 = energy2 >= maxEnergy ? 7 : 5;
-				color2 = Global.frameCount % 6 >= 3 ? 8 : color2;
-
-				for (int i = 0; i < energy2; i++) {
-					Global.sprites["hud_energy_full"].drawToHUD(color2, baseX, yPos);
-					yPos -= 2;
-				}
-			}
-		}
 
 		// Return if there is no weapon to render.
 		if (weapon == null) {

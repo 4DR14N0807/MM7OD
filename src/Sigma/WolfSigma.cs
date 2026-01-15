@@ -74,7 +74,7 @@ public class WolfSigma : Character {
 		}
 		return pos.round().addxy(camOffsetX, 0);
 	}
-
+	/*
 	public override void onDeath() {
 		base.onDeath();
 		player.lastDeathWasSigmaHyper = true;
@@ -95,4 +95,5 @@ public class WolfSigma : Character {
 		ede.host = anim;
 		Global.level.addEffect(ede);
 	}
+	*/
 }

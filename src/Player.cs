@@ -474,7 +474,7 @@ public partial class Player {
 	public int evilEnergyStacks;
 	public float evilEnergyTime;
 	public float evilEnergyMaxTime = 1800;
-	public decimal hpPerStack = 3;
+	public decimal hpPerStack = 2;
 	public decimal evilEnergyHP;
 	public decimal evilEnergyHPToRemove;
 	public float evilEnergyHPTimer;
@@ -1080,7 +1080,9 @@ public partial class Player {
 		if (ownedByLocalPlayer) {
 			lastDamagedCharacter = null;
 		}
-		if (pendingEvilEnergyStacks > 0 && charNum == (int)CharIds.Bass) {
+		if (pendingEvilEnergyStacks > 0 && charNum == (int)CharIds.Bass &&
+			isMainChar && isMainPlayer && ownedByLocalPlayer
+		) {
 			evilEnergyStacks = pendingEvilEnergyStacks;
 			pendingEvilEnergyStacks = 0;
 			evilEnergyTime = evilEnergyMaxTime;
@@ -1423,22 +1425,11 @@ public partial class Player {
 		return 25;
 	}
 
-	public void onKillEffects(bool isAssist) {
+	public void onKillEffects(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
 		if (!ownedByLocalPlayer || character == null) {
 			return; 
 		}
-
-		if (!isAssist) {
-			if (character is Bass bass && bass.isSuperBass) {
-				int level = bass.phase;
-				if (bass.evilEnergy[level] < Bass.MaxEvilEnergy && level < 2) {
-					bass.evilEnergy[level] += 6;
-					if (bass.evilEnergy[level] >= Bass.MaxEvilEnergy) {
-						bass.evilEnergy[level] = Bass.MaxEvilEnergy;
-					}
-				} 
-			}
-		}
+		character.onKill(isAssist, enemy, damager, enemyChar);
 	}
 
 	public int getRespawnTime() {

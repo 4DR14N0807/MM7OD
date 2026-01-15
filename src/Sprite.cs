@@ -14,15 +14,15 @@ public class Sprite {
 	public Collider[] hitboxes;
 	public Collider[][] frameHitboxes;
 	public float time;
-	public int frameIndex;
-	public int frameIndexSafe {
-		get => frameIndex;
-		set {
+	public int trueFrameIndex;
+	public int frameIndex {
+		private set {
 			if (value >= totalFrameNum) {
 				throw new Exception("Error: Frameindex is longer than anim size.");
 			}
-			frameIndex = value;
+			trueFrameIndex = value;
 		}
+		get => trueFrameIndex;
 	}
 	public float frameSpeed = 1;
 	public int loopStartFrame;

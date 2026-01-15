@@ -808,7 +808,7 @@ public class RPCKillPlayer : RPC {
 		// If assister is passed in as the same as the killer it is a sentinel value for no killer
 		if (assister == killer) assister = null;
 
-		victim?.lastCharacter?.killPlayer(killer, assister, weaponIndex, projId);
+		victim?.lastCharacter?.killPlayer(killer, null, null, weaponIndex, projId, assister);
 	}
 }
 

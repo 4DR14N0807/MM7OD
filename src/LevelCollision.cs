@@ -168,21 +168,20 @@ public partial class Level {
 	}
 
 	public Point getGroundPos(Point pos, float depth = 60) {
-		var hit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> { typeof(Wall) });
-		if (hit == null) return pos;
-		return hit.hitData.hitPoint.Value.addxy(0, -1);
+		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone)
+		]);
+		return hit?.hitData.hitPoint?.addxy(0, -1) ?? pos;
 	}
 
 	public Point? getGroundPosNoKillzone(Point pos, float depth = 60) {
-		var hit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> {
-			typeof(Wall), typeof(Ladder), typeof(SandZone)
-		});
-		if (hit == null) return null;
-
-		var kzHit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> { typeof(KillZone) });
-		if (kzHit != null) return null;
-
-		return hit.hitData.hitPoint.Value.addxy(0, -1);
+		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (hit?.gameObject is KillZone) {
+			return null;
+		}
+		return hit?.hitData.hitPoint?.addxy(0, -1);
 	}
 
 	public bool checkKillZone(Point pos) {

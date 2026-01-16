@@ -1751,9 +1751,9 @@ public class Blues : Character {
 			renderMiniAmmo(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
 		}
 		// Shield.
-		renderMiniAmmo(offset.addxy(mHp, 0), 5, (float)shieldHP / scale, shieldMaxHP / scale);
+		renderMiniAmmo(offset.addxy(mHp * 2, 0), 5, (float)shieldHP / scale, shieldMaxHP / scale);
 		// Health.
-		offset = renderMiniAmmo(offset, 1, mHp, hp);
+		offset = renderMiniAmmo(offset, 1, hp, mHp);
 		// Return offset.
 		return new Point(offset.x, offset.y);
 	}

@@ -2340,10 +2340,10 @@ public partial class Character : Actor, IDamagable {
 
 		Point barOffset = pos.round().addxy(-getMiniLifebarLength(), -44);
 
-		if (shouldDrawHealthBar) {
+		if (shouldDrawHealthBar && visible && !sprite.name.EndsWith("die")) {
 			barOffset = renderMiniHUD(barOffset);
 		}
-		if (shouldDrawName) {
+		if (shouldDrawName && visible && !sprite.name.EndsWith("die")) {
 			barOffset = renderPlayerName(barOffset);
 		}
 
@@ -3845,7 +3845,9 @@ public partial class Character : Actor, IDamagable {
 	public virtual Point renderPlayerName(Point offset) {
 		string playerName = player.name;
 		Color nameColor = Color.White;
-		if (Global.level.gameMode.isTeamMode &&
+		if (player.isSpectator ||
+			player.alliance != Global.level.mainPlayer.alliance &&
+			Global.level.gameMode.isTeamMode &&
 			player.alliance < Global.level.teamNum &&
 			player.alliance < Global.level.gameMode.teamColors.Length
 		) {

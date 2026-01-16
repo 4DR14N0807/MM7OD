@@ -72,7 +72,7 @@ public class SBassRP : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SuperBassRP;
 		weaponSlotIndex = index;
-		fireRate = 15;
+		fireRate = 10;
 		drawAmmo = false;
 	}
 

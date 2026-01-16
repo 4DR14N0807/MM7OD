@@ -45,6 +45,7 @@ public class MasteryTracker {
 		if (!player.ownedByLocalPlayer) { return; }
 		value = roundedShortExp(value);
 		damageExp += value;
+		player.character?.onEnemyDamage(value);
 		while (damageExp >= damageLvLimit) {
 			damageExp -= damageLvLimit;
 			grantDamageLevel();

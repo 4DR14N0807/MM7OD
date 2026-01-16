@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using Lidgren.Network;
 using Newtonsoft.Json;
@@ -361,13 +362,13 @@ public static class MasterServerData {
 		} else {
 			try {
 				string contents;
-				using (var wc = new System.Net.WebClient()) {
+				using (var wc = new WebClient()) {
 					contents = wc.DownloadString(
 						"https://mmx-online-hdm.github.io/serverinfo/serverurl.txt"
 					);
 				}
 				portUrl = contents.Split(":");
-			} catch (Exception ex) {
+			} catch {
 				return;
 			}
 		}

@@ -12,7 +12,7 @@ public class SBassBuster : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SuperBassBuster;
 		weaponSlotIndex = index;
-		fireRate = 15;
+		fireRate = 10;
 		drawAmmo = false;
 	}
 
@@ -142,7 +142,6 @@ public class SBassLemon : Projectile {
 		byteAngle = (type - 1) * 32;
 		if (xDir < 0) byteAngle = -byteAngle + 128;
 		vel = Point.createFromByteAngle(byteAngle).times(360);
-		
 		damager.damage = 1;
 		damager.hitCooldown = 9;
 

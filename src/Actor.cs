@@ -1672,7 +1672,7 @@ public partial class Actor : GameObject {
 	}
 
 	public void addAttackCooldown(int id, AttackCooldown cooldown) {
-		attacksCooldown.Add(id, cooldown);
+		attacksCooldown[id] = cooldown;
 	}
 
 	public void triggerCooldown(int id, float? overrideNewCooldown = null) {
@@ -1680,7 +1680,10 @@ public partial class Actor : GameObject {
 	}
 
 	public bool isCooldownOver(int id) {
-		return attacksCooldown[id].cooldown <= 0;
+		if (attacksCooldown.ContainsKey(id)) {
+			return attacksCooldown[id].cooldown <= 0;
+		}
+		return true;
 	}
 
 	public void turnToPos(Point lookPos) {

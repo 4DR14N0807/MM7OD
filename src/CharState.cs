@@ -681,7 +681,9 @@ public class Idle : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		hasHurtIdle = Global.sprites.ContainsKey(character.getSprite("idle_hurt"));
+		if (character is not Bass { isSuperBass: true}) {
+			hasHurtIdle = Global.sprites.ContainsKey(character.getSprite("idle_hurt"));
+		}
 		hurtIdleCheck();
 	}
 
@@ -1022,11 +1024,12 @@ public class Dash : CharState {
 }
 
 public class AirDash : CharState {
+	public float dashSpeed = 1.5f;
+	public float maxDashSpeed = 3.5f;
 	public float dashTime;
 	public string initialDashButton;
 	public int dashDir;
 	public bool stop;
-	public Anim? dashSpark;
 
 	public AirDash(string initialDashButton) : base("dash", "dash_shoot", "attack_dash") {
 		accuracy = 10;
@@ -1034,8 +1037,7 @@ public class AirDash : CharState {
 		normalCtrl = true;
 		useGravity = false;
 		this.initialDashButton = initialDashButton;
-		enterSound = "airdash";
-		enterSoundArgs = "larmor";
+		enterSound = "slide";
 	}
 
 	public override void preUpdate() {
@@ -1045,42 +1047,42 @@ public class AirDash : CharState {
 
 	public override void update() {
 		base.update();
-		if (!player.isAI && !player.input.isHeld(initialDashButton, player) && !stop) {
+		if (!player.isAI && !stop && !player.input.isHeld(initialDashButton, player)) {
 			dashTime = 900;
 		}
 		int inputXDir = player.input.getXDir(player);
-		bool dashHeld = player.input.isHeld(initialDashButton, player);
 
-		if (character.canWallClimb() && character.isCWallClose != null && inputXDir == character.xDir) {
-			character.changeToIdleOrFall();
-			return;
-		}
-
-		if (dashTime > 28 && !stop) {
-			character.useGravity = true;
+		if (!stop && dashTime > 30) {
 			dashTime = 0;
 			stop = true;
 			sprite = "dash_end";
 			shootSprite = "dash_end_shoot";
 			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
 		}
-		if (dashTime < 4 || stop) {
+		else {
 			if (inputXDir != 0 && inputXDir != dashDir) {
-				character.xDir = (int)inputXDir;
+				character.xDir = inputXDir;
 				dashDir = character.xDir;
 			}
 		}
 		// Dash regular speed.
-		if (dashTime >= 4 && !stop || stop && dashHeld) {
-			character.moveXY(character.getDashSpeed() * dashDir, 0);
+		if (!stop) {
+			character.moveXY(dashSpeed * character.getRunDebuffs() * dashDir, 0);
 		}
-		// Dash start.
-		else if (!stop) {
-			character.moveXY(Physics.DashStartSpeed * character.getRunDebuffs() * dashDir, 0);
+		// End move.
+		else {
+			character.moveXY(character.getRunSpeed() * inputXDir, 0);
+			if (dashTime >= 4) {
+				character.changeState(character.getRunState(true), true);
+				return;
+			}
 		}
-		// Air move.
-		else if (stop && inputXDir != 0) {
-			character.moveXY(character.getDashSpeed() * inputXDir, 0);
+		// Timer.
+		if (dashSpeed < maxDashSpeed) {
+			dashSpeed += 0.75f;
+			if (dashSpeed > maxDashSpeed) {
+				dashSpeed = maxDashSpeed;
+			}
 		}
 		// End.
 		if (stop && character.isAnimOver()) {
@@ -1094,19 +1096,8 @@ public class AirDash : CharState {
 		character.dashedInAir++;
 		dashDir = character.xDir;
 		character.isDashing = true;
-		//character.globalCollider = character.getDashingCollider();
-		/*dashSpark = new Anim(
-			character.getDashSparkEffectPos(dashDir),
-			"dash_sparks", dashDir, player.getNextActorNetId(),
-			true, sendRpc: true
-		);*/
-	}
-
-	public override void onExit(CharState? newState) {
-		if (!dashSpark?.destroyed == true) {
-			dashSpark?.destroySelf();
-		}
-		base.onExit(newState);
+		dashSpeed = 1.5f;
+		maxDashSpeed = character.getDashSpeed();
 	}
 }
 

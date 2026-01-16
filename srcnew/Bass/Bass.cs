@@ -15,11 +15,12 @@ public class Bass : Character {
 	public bool armless;
 
 	// Modes.
+	public bool isTrebbleBoost;
 	public bool isSuperBass;
 	public const int TrebleBoostCost = 75;
 	public int phase;
-	public int evilEnergy = 0;
-	public const int MaxEvilEnergy = 16;
+	public float evilEnergy = 0;
+	public const float MaxEvilEnergy = 16;
 	public float flyTime;
 	public const float MaxFlyTime = 240;
 	public bool canRefillFly;
@@ -54,14 +55,31 @@ public class Bass : Character {
 		charge3Time = 180;
 
 		addAttackCooldown(
-			(int)AttackIds.Kick, new AttackCooldown((int)BassWeaponIds.BassKick, "hud_weapon_icon_bass", 75)
+			(int)AttackIds.Kick,
+			new AttackCooldown(
+				(int)BassWeaponIds.BassKick,
+				"hud_weapon_icon_bass", 75
+			)
 		);
 		addAttackCooldown(
-			(int)AttackIds.SweepingLaser, new AttackCooldown((int)BassWeaponIds.SweepingLaser, "hud_weapon_icon_bass", 90)
+			(int)AttackIds.SweepingLaser,
+			new AttackCooldown(
+				(int)BassWeaponIds.SweepingLaser,
+				"hud_weapon_icon_bass", 90
+			)
 		);
 		addAttackCooldown(
-			(int)AttackIds.DarkComet, new AttackCooldown((int)BassWeaponIds.DarkComet, "hud_weapon_icon_bass", 90)
+			(int)AttackIds.DarkComet,
+			new AttackCooldown(
+				(int)BassWeaponIds.DarkComet,
+				"hud_weapon_icon_bass", 90
+			)
 		);
+		addAttackCooldown(
+			(int)AttackIds.LowerEvilness,
+			new AttackCooldown(
+				14, "hud_weapon_icon_bass", 60 * 8
+		));
 
 		if (isWarpIn && ownedByLocalPlayer) {
 			health = 0;
@@ -109,7 +127,7 @@ public class Bass : Character {
 	public bool canGoSuperBass() {
 		return (
 			charState is not Die && charState.normalCtrl &&
-			!isSuperBass && player.currency >= TrebleBoostCost &&
+			!isSuperBass && !isTrebbleBoost && player.currency >= TrebleBoostCost &&
 			player.evilEnergyStacks <= 0 && player.pendingEvilEnergyStacks <= 0
 		);
 	}
@@ -128,24 +146,29 @@ public class Bass : Character {
 		weapons.Add(new SBassRP());
 	}
 
-	public void addEvilness(int ammo) {
-		if (phase >= 4) {
-			return;
-		}
+	public void addEvilness(float ammo) {
 		evilEnergy += ammo;
 		if (evilEnergy >= MaxEvilEnergy) {
-			int excessEnergy = evilEnergy - MaxEvilEnergy;
-			nextPhase(phase + 1);
+			float excessEnergy = evilEnergy - MaxEvilEnergy;
 			if (phase >= 4) {
-				evilEnergy = MaxEvilEnergy;
+				setHurt(-xDir, Global.superFlinch, false);
+				playSound("hurt", sendRpc: true);
 			} else {
-				evilEnergy = Helpers.clampMax(excessEnergy, MaxEvilEnergy);
+				nextPhase(phase + 1);
 			}
+			evilEnergy = Helpers.clampMax(excessEnergy, MaxEvilEnergy - 2);
+		}
+	}
+
+	public void removeEvilness(float ammo) {
+		evilEnergy -= ammo;
+		if (evilEnergy <= 0) {
+			evilEnergy = 0;
 		}
 	}
 
 	public void nextPhase(int level) {
-		if (phase >= 4) {
+		if (phase >= 4 || phase >= level) {
 			return;
 		}
 		// Incrase level.
@@ -156,6 +179,18 @@ public class Bass : Character {
 
 		maxHealth += hpToAdd;
 		heal(player, hpToAdd); 
+	}
+
+	public void lowerPhase(int level) {
+		if (phase >= 4 || phase <= 0 || phase <= level ) {
+			return;
+		}
+		// Decrease level.
+		phase = level;
+		player.pendingEvilEnergyStacks = level;
+		// Remove HP and clamp.
+		maxHealth -= 2;
+		health = Math.Min(health, maxHealth);
 	}
 
 	public override void update() {
@@ -227,10 +262,22 @@ public class Bass : Character {
 		}
 	}
 
+	public override void onEnemyDamage(float amount) {
+		if (isSuperBass) {
+			if (phase < 4) {
+				addEvilness(amount / 4f);
+			} else {
+				addEvilness(amount / 8f);
+			}
+		}
+	}
+
 	public override void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
 		if (isSuperBass) {
 			if (phase < 4) {
-				addEvilness(isAssist ? 4 : 8);
+				addEvilness(!isAssist ? 4 : 2);
+			} else {
+				addEvilness(!isAssist ? 2 : 1);
 			}
 		}
 		base.onKill(isAssist, enemy, damager, enemyChar);
@@ -307,7 +354,7 @@ public class Bass : Character {
 		Global.sprites["hud_energy_base"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		bool active = false;
 
-		if (Global.floorFrameCount % 6 >= 3 && (charState is EnergyCharge or EnergyIncrease || phase == 4)) {
+		if (charState is EnergyCharge or EnergyIncrease || phase == 4) {
 			active = true;
 			Global.sprites["hud_energy_eyes"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		}
@@ -320,17 +367,32 @@ public class Bass : Character {
 			[9, 10, 11]
 		];
 		int subIndex = phase % 3;
+		int subAltIndex = (phase - 1 + 3) % 3;
 		if (active) {
-			subIndex = (subIndex + MathInt.Floor(Global.frameCount / 4)) % 3;
+			subIndex = (subIndex + MathInt.Floor(Global.floorFrameCount / 4f)) % 3;
 		}
+		float fEnergy = MathF.Floor(evilEnergy);
+		float cEnergy = MathF.Ceiling(evilEnergy);
+		float ceAlpha = evilEnergy - fEnergy;
 
 		for (int i = 0; i < MaxEvilEnergy; i++) {
-			if (i < evilEnergy) {
+			if (i < fEnergy) {
 				Global.sprites["hud_energy_full"].drawToHUD(
 					index[displayPhase][subIndex], energyBarPos.x, energyBarPos.y
 				);
 			} else {
+				if (displayPhase > 0 && phase < 4) {
+					Global.sprites["hud_energy_full"].drawToHUD(
+						index[displayPhase][subAltIndex], energyBarPos.x, energyBarPos.y, 0.5f
+					);
+				}
 				Global.sprites["hud_energy_empty"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
+
+				if (i < cEnergy) {
+					Global.sprites["hud_energy_full"].drawToHUD(
+						index[displayPhase][subIndex], energyBarPos.x, energyBarPos.y, ceAlpha
+					);
+				}
 			}
 			energyBarPos.y -= 2;
 		}
@@ -421,6 +483,7 @@ public class Bass : Character {
 		Kick,
 		DarkComet,
 		SweepingLaser,
+		LowerEvilness,
 	}
 
 	public bool canUseTBladeDash() {
@@ -436,12 +499,18 @@ public class Bass : Character {
 				changeState(new BassFly(), false);
 				return true;
 			}
-			if (
-				player.input.isHeld(Control.Special2, player) &&
-				charState is not EnergyCharge && phase < 4
-			) {
-				changeState(new EnergyCharge(), true);
-				return true;
+			if (phase < 4 && player.input.isPressed(Control.Special2, player)) {
+				int yDir = player.input.getYDir(player);
+				if (yDir == 1 && phase > 0) {
+					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
+						lowerPhase(phase - 1);
+						changeState(new BottomlessPitWarpIn());
+						triggerCooldown((int)AttackIds.LowerEvilness);
+					}
+				} else if ((yDir != 1 || phase >= 4) && charState is not EnergyCharge) {
+					changeState(new EnergyCharge(), true);
+					return true;
+				}
 			}
 		}
 		return base.normalCtrl();
@@ -718,7 +787,7 @@ public class Bass : Character {
 	}
 
 	public override bool canAirDash() {
-		return false;
+		return isSuperBass && dashedInAir <= 1 && phase >= 3;
 	}
 
 	public override bool canWallClimb() {

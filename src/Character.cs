@@ -2344,7 +2344,7 @@ public partial class Character : Actor, IDamagable {
 			barOffset = renderMiniHUD(barOffset);
 		}
 		if (shouldDrawName && visible && !sprite.name.EndsWith("die")) {
-			barOffset = renderPlayerName(barOffset);
+			barOffset = renderPlayerName(barOffset, !shouldDrawHealthBar);
 		}
 
 		if (!hideNoShaderIcon()) {
@@ -3277,6 +3277,10 @@ public partial class Character : Actor, IDamagable {
 
 	}
 
+	public virtual void onEnemyDamage(float amount) {
+
+	}
+
 	// If true cancels the death state.
 	public virtual void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
 		chips.onKill.Invoke(this, isAssist, enemy, damager, enemyChar);
@@ -3551,7 +3555,6 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
-
 	public virtual void chargeLogic(Action<int>? shootFunct) {
 		// Charge shoot logic.
 		// We test if we are holding charge and not inside a vehicle.
@@ -3641,9 +3644,8 @@ public partial class Character : Actor, IDamagable {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-
 		// Evil Energy.
-		if (player.evilEnergyStacks > 0) {
+		if (this is Bass && player.evilEnergyStacks > 0) {
 			drawBuff(
 				drawPos, player.evilEnergyTime / player.evilEnergyMaxTime,
 				"hud_weapon_icon_bass", 14
@@ -3651,7 +3653,6 @@ public partial class Character : Actor, IDamagable {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-
 		foreach (Buff buff in buffList) {
 			drawBuff(
 				drawPos, buff.time / buff.maxTime,
@@ -3660,7 +3661,6 @@ public partial class Character : Actor, IDamagable {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-
 		foreach (AttackCooldown at in attacksCooldown.Values) {
 			if (at.cooldown <= 0) continue;
 			float cd = at.cooldown;
@@ -3768,25 +3768,45 @@ public partial class Character : Actor, IDamagable {
 		int maxBarAmmo = getMiniWeaponLength();
 		float hp = (float)health / scale;
 		float mHp = (float)maxHealth / scale;
-		// Border.
+		Color? color = Global.level.gameMode.teamColors[3];
+		// Weapon.
 		if (maxBarAmmo > 0) {
+			// Border.
 			DrawWrappers.DrawRect(
 				offset.x + 1, offset.y - 4, offset.x + maxBarAmmo * 2, offset.y - 1,
 				true, new Color(49, 49, 49), 1, ZIndex.HUD - 100, outlineColor: new Color(0, 0, 0)
 			);
-		}
-		// Weapon.
-		if (currentWeapon != null && currentWeapon.drawAmmo) {
-			float displayAmmo = currentWeapon.ammo / currentWeapon.ammoDisplayScale / scale;
-			float displayMaxAmmo = currentWeapon.maxAmmo / currentWeapon.ammoDisplayScale / scale;
-			offset = renderMiniAmmo(offset, 2, displayAmmo, displayMaxAmmo);
-		} else {
-			offset.y -= 4;
+			// Weapon.
+			if (currentWeapon != null && currentWeapon.drawAmmo) {
+				float displayAmmo = currentWeapon.ammo / currentWeapon.ammoDisplayScale / scale;
+				float displayMaxAmmo = currentWeapon.maxAmmo / currentWeapon.ammoDisplayScale / scale;
+				renderMiniHudBorder(offset, color, maxBarAmmo);
+				offset = renderMiniAmmo(offset, 2, displayAmmo, displayMaxAmmo);
+			} else {
+				renderMiniHudBorder(offset, color, maxBarAmmo);
+				offset = renderMiniAmmo(offset, 3, maxBarAmmo, maxBarAmmo);
+			}
 		}
 		// Health.
+		renderMiniHudBorder(offset, color, mHp);
 		offset = renderMiniAmmo(offset, 1, hp, mHp);
 		// Return offset.
 		return new Point(offset.x, offset.y);
+	}
+
+	
+	public virtual void renderMiniHudBorder(Point offset, Color? color, float ammo) {
+		if (color == null) {
+			return;
+		}
+		DrawWrappers.DrawRect(
+			offset.x, offset.y - 5, offset.x + 1 + ammo * 2, offset.y,
+			false, color.Value, 1, ZIndex.HUD - 101
+		);
+		DrawWrappers.DrawRect(
+			offset.x - 1, offset.y - 6, offset.x + 2 + ammo * 2, offset.y + 1,
+			false, Color.Black, 1, ZIndex.HUD - 102
+		);
 	}
 
 	public virtual Point renderMiniAmmo(Point offset, int color, float ammo, float maxAmmo) {
@@ -3832,7 +3852,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual float getMiniHudScale() {
-		float scale = player.isMainPlayer ? 1 : 2;
+		float scale = 2;
 		if (Global.customSettings != null) {
 			float mod = Global.customSettings.healthModifier / 8f;
 			if (mod > 1) {
@@ -3842,10 +3862,10 @@ public partial class Character : Actor, IDamagable {
 		return scale;
 	}
 
-	public virtual Point renderPlayerName(Point offset) {
+	public virtual Point renderPlayerName(Point offset, bool useColor = false) {
 		string playerName = player.name;
 		Color nameColor = Color.White;
-		if (player.isSpectator ||
+		if (useColor &&
 			player.alliance != Global.level.mainPlayer.alliance &&
 			Global.level.gameMode.isTeamMode &&
 			player.alliance < Global.level.teamNum &&

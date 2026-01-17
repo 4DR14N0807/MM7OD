@@ -208,7 +208,11 @@ public class Bass : Character {
 		if (phase < 4) {
 			addDamageText("POWER\n    UP!", (int)FontType.PurpleMenu);
 		} else {
-			addDamageText("too..\n   much...\n      power...", (int)FontType.Purple);
+			if (Helpers.randomRange(0, 3) == 0) {
+				addDamageText("too..\n   much...\n      power...", (int)FontType.Purple);
+			} else {
+				addDamageText("POWER\n  OVERLOAD!", (int)FontType.PurpleMenu);
+			}
 		}
 	}
 

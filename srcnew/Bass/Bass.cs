@@ -307,11 +307,7 @@ public class Bass : Character {
 	}
 
 	public override void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
-		if (phase < 4) {
-			addEvilness(!isAssist ? 4 : 2);
-		} else {
-			addEvilness(!isAssist ? 2 : 1);
-		}
+		addEvilness(!isAssist ? 4 : 2);
 		base.onKill(isAssist, enemy, damager, enemyChar);
 	}
 

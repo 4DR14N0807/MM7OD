@@ -195,7 +195,9 @@ public class Sprite {
 			}
 			else if (animData.textureName == "blues_default" && character is Blues { isBreakMan: true }) {
 				bitmap = Sprite.breakManBitmap;
-			} else if (animData.textureName == "bass_superadaptor" && character is Bass bass && bass.isSuperBass) {
+			} else if (animData.textureName == "bass_superadaptor" && character is Bass bass &&
+				(bass.isSuperBass || bass.isTrebbleBoost)
+			) {
 				bitmap = bass.armless ? superBassArmlessBitmap : superBassBitmap;
 			}
 		}

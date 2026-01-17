@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static MMXOnline.GameMode;
-using SFML.Graphics;
 using System.Numerics;
+using SFML.Graphics;
 using SFML.System;
+using static MMXOnline.GameMode;
 
 namespace MMXOnline;
 
@@ -1745,14 +1745,25 @@ public class Blues : Character {
 		float scale = getMiniHudScale();
 		float hp = (float)health / scale;
 		float mHp = (float)maxHealth / scale;
+		Color color = Color.White;
+		if (Global.level.gameMode.isTeamMode &&
+			player.alliance < Global.level.teamNum &&
+			player.alliance < Global.level.gameMode.teamColors.Length
+		) {
+			color = Global.level.gameMode.teamColors[player.alliance];
+		}
 		// Ammo.
+		renderMiniHudBorder(offset, color, coreMaxAmmo / scale);
 		offset = renderMiniAmmo(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
 		if (overdrive) {
 			renderMiniAmmo(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
 		}
 		// Shield.
-		renderMiniAmmo(offset.addxy(mHp * 2, 0), 5, (float)shieldHP / scale, shieldMaxHP / scale);
+		Point shieldOffset = offset.addxy(mHp * 2, 0);
+		renderMiniHudBorder(shieldOffset, color, shieldMaxHP / scale);
+		renderMiniAmmo(shieldOffset, 5, (float)shieldHP / scale, shieldMaxHP / scale);
 		// Health.
+		renderMiniHudBorder(offset, color, mHp);
 		offset = renderMiniAmmo(offset, 1, hp, mHp);
 		// Return offset.
 		return new Point(offset.x, offset.y);

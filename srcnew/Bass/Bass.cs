@@ -15,6 +15,7 @@ public class Bass : Character {
 	public bool armless;
 
 	// Modes.
+	public int hyperModeNum;
 	public bool isTrebbleBoost;
 	public bool isSuperBass;
 	public const int TrebleBoostCost = 75;
@@ -24,6 +25,7 @@ public class Bass : Character {
 	public float flyTime;
 	public const float MaxFlyTime = 240;
 	public bool canRefillFly;
+	public float sonicCrusherCooldown;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -133,11 +135,17 @@ public class Bass : Character {
 	}
 
 	public void setSuperBass() {
-		if (isSuperBass) {
+		if (isSuperBass || isTrebbleBoost) {
 			return;
 		}
-		isSuperBass = true;
-		maxHealth += 2;
+		if (hyperModeNum == 0) {
+			isSuperBass = true;
+		} else {
+			isTrebbleBoost = true;
+		}
+		if (!isTrebbleBoost) {
+			maxHealth += 2;
+		}
 		heal(player, (float)(maxHealth - health));
 		phase = 0;
 		player.changeWeaponSlot(0);
@@ -147,13 +155,30 @@ public class Bass : Character {
 	}
 
 	public void addEvilness(float ammo) {
+		if (!isTrebbleBoost && phase >= 3) {
+			return;
+		}
 		evilEnergy += ammo;
-		if (evilEnergy >= MaxEvilEnergy) {
+		if (evilEnergy >= MaxEvilEnergy && isTrebbleBoost) {
 			float excessEnergy = evilEnergy - MaxEvilEnergy;
 			if (phase >= 4) {
-				setHurt(-xDir, Global.superFlinch, false);
+				changeState(new BottomlessPitWarpIn());
+				heal(player, 2);
+				playSound("super_bass_aura", sendRpc: true);
 				playSound("hurt", sendRpc: true);
+				if (Helpers.randomRange(0, 10) == 0) {
+					addDamageText("ugh...", (int)FontType.Purple);
+				} else if (Helpers.randomRange(0, 10) == 0) {
+					addDamageText("darn...", (int)FontType.Purple);
+				} else if (Helpers.randomRange(0, 10) == 0) {
+					addDamageText("this power...", (int)FontType.Purple);
+				} else if (Helpers.randomRange(0, 10) == 0) {
+					addDamageText("too much...", (int)FontType.Purple);
+				} else {
+					addDamageText("...", (int)FontType.Purple);
+				}
 			} else {
+				changeState(new EnergyIncrease());
 				nextPhase(phase + 1);
 			}
 			evilEnergy = Helpers.clampMax(excessEnergy, MaxEvilEnergy - 2);
@@ -178,27 +203,42 @@ public class Bass : Character {
 		int hpToAdd = phase >= 4 ? 4 : 2;
 
 		maxHealth += hpToAdd;
-		heal(player, hpToAdd); 
+		heal(player, hpToAdd);
+
+		if (phase < 4) {
+			addDamageText("POWER\n    UP!", (int)FontType.PurpleMenu);
+		} else {
+			addDamageText("too..\n   much...\n      power...", (int)FontType.Purple);
+		}
 	}
 
 	public void lowerPhase(int level) {
-		if (phase >= 4 || phase <= 0 || phase <= level ) {
+		if (phase >= 4 || phase <= level) {
 			return;
 		}
+		int ogPhase = phase;
 		// Decrease level.
 		phase = level;
 		player.pendingEvilEnergyStacks = level;
+		if (phase < 0) {
+			phase = 0;
+			evilEnergy = 0;
+		}
 		// Remove HP and clamp.
-		maxHealth -= 2;
+		if (phase < ogPhase) {
+			maxHealth -= 2;
+		}
 		health = Math.Min(health, maxHealth);
+		addDamageText("POWER\n  DOWN!", (int)FontType.PurpleMenu);
 	}
 
 	public override void update() {
 		base.update();
+		Helpers.decrementFrames(ref sonicCrusherCooldown);
 	
 		//Hypermode Music.
 		if (Global.level.enabledBreakmanMusic()) {
-			if (isSuperBass) {
+			if (isSuperBass || isTrebbleBoost) {
 				if (musicSource == null) {
 					addMusicSource("basstheme", getCenterPos(), true);
 				}
@@ -235,7 +275,7 @@ public class Bass : Character {
 			}
 		}
 
-		if (isSuperBass) {
+		if (isSuperBass || isTrebbleBoost) {
 			chargeLogic(shoot);
 		}
 		quickHyperUpgrade(); 
@@ -263,22 +303,14 @@ public class Bass : Character {
 	}
 
 	public override void onEnemyDamage(float amount) {
-		if (isSuperBass) {
-			if (phase < 4) {
-				addEvilness(amount / 4f);
-			} else {
-				addEvilness(amount / 8f);
-			}
-		}
+		addEvilness(amount / 4f);
 	}
 
 	public override void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
-		if (isSuperBass) {
-			if (phase < 4) {
-				addEvilness(!isAssist ? 4 : 2);
-			} else {
-				addEvilness(!isAssist ? 2 : 1);
-			}
+		if (phase < 4) {
+			addEvilness(!isAssist ? 4 : 2);
+		} else {
+			addEvilness(!isAssist ? 2 : 1);
 		}
 		base.onKill(isAssist, enemy, damager, enemyChar);
 	}
@@ -340,7 +372,7 @@ public class Bass : Character {
 	public override void renderAmmo(
 		Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null
 	) {
-		if (isSuperBass) {
+		if (isSuperBass || isTrebbleBoost) {
 			renderSuperAmmo(offset, position);
 			return;
 		}
@@ -354,7 +386,7 @@ public class Bass : Character {
 		Global.sprites["hud_energy_base"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		bool active = false;
 
-		if (charState is EnergyCharge or EnergyIncrease || phase == 4) {
+		if (charState is EnergyCharge or EnergyIncrease || phase >= 4 || isSuperBass && phase >= 3) {
 			active = true;
 			Global.sprites["hud_energy_eyes"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		}
@@ -409,7 +441,7 @@ public class Bass : Character {
 	}
 
 	public void quickHyperUpgrade() {
-		if (isSuperBass || !alive || !canGoSuperBass() ||
+		if (isSuperBass || isTrebbleBoost || !alive || !canGoSuperBass() ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
 			!player.input.isHeld(Control.Special2, player)
 		) {
@@ -492,22 +524,31 @@ public class Bass : Character {
 	}
 
 	public override bool normalCtrl() {
-		if (isSuperBass) {
+		if (isSuperBass || isTrebbleBoost) {
 			if (player.input.isPressed(Control.Jump, player) &&
 				!grounded && !canAirJump() && flyTime < MaxFlyTime) {
 				dashedInAir++;
 				changeState(new BassFly(), false);
 				return true;
 			}
-			if (phase < 4 && player.input.isPressed(Control.Special2, player)) {
+			if ((phase < 3 || isTrebbleBoost) && player.input.isPressed(Control.Special2, player)) {
 				int yDir = player.input.getYDir(player);
-				if (yDir == 1 && phase > 0) {
+				if (isTrebbleBoost && yDir == 1 && phase < 4) {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
 						lowerPhase(phase - 1);
+						playSound("super_bass_aura", sendRpc: true);
 						changeState(new BottomlessPitWarpIn());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}
-				} else if ((yDir != 1 || phase >= 4) && charState is not EnergyCharge) {
+				} else if (evilEnergy >= MaxEvilEnergy && isSuperBass && phase < 3) {
+					changeState(new EnergyIncrease());
+					nextPhase(phase + 1);
+					if (phase >= 3) {
+						evilEnergy = MaxEvilEnergy;
+					} else {
+						evilEnergy = 0;
+					}
+				} else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
 					changeState(new EnergyCharge(), true);
 					return true;
 				}
@@ -540,10 +581,10 @@ public class Bass : Character {
 			}
 		}
 
-		if (isSuperBass && player.input.isPressed(Control.Special1, player)) {
+		if ((isSuperBass || isTrebbleBoost) && player.input.isPressed(Control.Special1, player)) {
 			int yInput = player.input.getYDir(player);
 
-			if (yInput == 1 && phase >= 1 && !grounded) {
+			if (yInput == 1 && phase >= 3 && !grounded) {
 				if (isCooldownOver((int)AttackIds.SweepingLaser)) {
 					changeState(new SweepingLaserState(), true);
 					return true;
@@ -557,16 +598,18 @@ public class Bass : Character {
 				}
 				return false;
 			}
-			if (grounded && yInput == -1) {
+			if (grounded && yInput == -1 && (phase >= 1 || isSuperBass)) {
 				if (isCooldownOver((int)AttackIds.Kick)) {
 					changeState(new BassKick(), true);
 					return true;
 				}
 				return false;
 			}
-			if (flyTime < MaxFlyTime) {
+			if (flyTime < MaxFlyTime && sonicCrusherCooldown <= 0 && charState is not SonicCrusher) {
 				Point spd = Point.zero;
-				if (charState is BassFly bfly) spd.x = bfly.getFlightMove().x;
+				if (charState is BassFly bfly) {
+					spd.x = bfly.getFlightMove().x;
+				}
 				changeState(new SonicCrusher(spd.addxy(xPushVel + xIceVel, 0)), true);
 				return true;
 			}
@@ -702,7 +745,7 @@ public class Bass : Character {
 	}
 
 	public override string getSprite(string spriteName) {
-		if (isSuperBass && Global.sprites.ContainsKey("sbass_" + spriteName)) {
+		if ((isSuperBass || isTrebbleBoost) && Global.sprites.ContainsKey("sbass_" + spriteName)) {
 			return "sbass_" + spriteName;
 		}
 		return "bass_" + spriteName;
@@ -714,8 +757,7 @@ public class Bass : Character {
 		}
 		if (sprite.name == getSprite("soniccrusher")) return (38, 20);
 
-		float yExtra = isSuperBass ? 4 : 0;
-		return (24, 36 + yExtra);
+		return (24, 36);
 	}
 
 	public override (float, float) getTerrainColliderSize() {
@@ -723,8 +765,9 @@ public class Bass : Character {
 			return (24, 24);
 		}
 
-		if (sprite.name == getSprite("soniccrusher")) return (24, 20);
-
+		if (sprite.name == getSprite("soniccrusher")) {
+			return (24, 20);
+		}
 		return (24, 30);
 	}
 
@@ -760,7 +803,7 @@ public class Bass : Character {
 	}
 
 	public override bool canCharge() {
-		return base.canCharge() && isSuperBass && charState.attackCtrl;
+		return base.canCharge() && (isSuperBass || isTrebbleBoost) && charState.attackCtrl;
 	}
 
 	public override bool chargeButtonHeld() {
@@ -768,7 +811,7 @@ public class Bass : Character {
 	}
 
 	public override int getMaxChargeLevel() {
-		if (isSuperBass && phase >= 2) return 3;
+		if ((isSuperBass || isTrebbleBoost) && phase >= 2) return 3;
 		return 2;
 	}
 	public override float getDashSpeed() {
@@ -783,7 +826,10 @@ public class Bass : Character {
 	}
 
 	public override bool canAirJump() {
-		return dashedInAir == 0 && rootTime <= 0 && charState is not BassShootLadder && !isSuperBass;
+		return (
+			dashedInAir == 0 && rootTime <= 0 &&
+			charState is not BassShootLadder && !isSuperBass && !isTrebbleBoost
+		);
 	}
 
 	public override bool canAirDash() {
@@ -849,7 +895,7 @@ public class Bass : Character {
 		palette?.SetUniform("paletteTexture", Global.textures["bass_palette_texture"]);
 
 		//We don't apply palette shader on hypermode.
-		if (palette != null && !isSuperBass) {
+		if (palette != null && !isSuperBass && !isTrebbleBoost) {
 			shaders.Add(palette);
 		}
 		shaders.AddRange(baseShaders);
@@ -872,6 +918,7 @@ public class Bass : Character {
 		bool[] flags = [
 			isSuperBass,
 			armless,
+			isTrebbleBoost,
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
@@ -895,6 +942,7 @@ public class Bass : Character {
 		bool[] flags = Helpers.byteToBoolArray(data[6]);
 		isSuperBass = flags[0];
 		armless = flags[1];
+		isTrebbleBoost = flags[2];
 	}
 }
 

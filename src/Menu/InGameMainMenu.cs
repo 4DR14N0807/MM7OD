@@ -65,7 +65,8 @@ public class InGameMainMenu : IMainMenu {
 				bool hasHypermode = (
 					mainPlayer.character is Rock { hasSuperAdaptor: true} ||
 					mainPlayer.character is Blues { isBreakMan: true } ||
-					mainPlayer.character is Bass { isSuperBass: true }
+					mainPlayer.character is Bass { isSuperBass: true } ||
+					mainPlayer.character is Bass { isTrebbleBoost: true } 
 				);
 				bool hasShield = mainPlayer.character is Blues { isShieldActive: true };
 				Menu.change(

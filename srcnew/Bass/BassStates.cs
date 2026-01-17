@@ -432,7 +432,7 @@ public class SuperBassPilar : Effect {
 
 
 public class EnergyCharge : CharState {
-	public float ammoTimer = 7;
+	public float ammoTimer = 8;
 	Bass bass = null!;
 	Anim? aura;
 
@@ -445,7 +445,8 @@ public class EnergyCharge : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 		aura = new Anim(
-			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 10
+			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
+			false, true, zIndex: ZIndex.Character - 10
 		);
 		bass.stopMoving();
 		bass.gravityModifier = 0.1f;
@@ -466,17 +467,14 @@ public class EnergyCharge : CharState {
 	public override void update() {
 		base.update();
 
-		if (!player.input.isHeld(Control.Special2, player) || bass.phase >= 4) {
+		if (!player.input.isHeld(Control.Special2, player) ||
+			bass.phase >= 4 && bass.evilEnergy <= 0 ||
+			bass.phase < 4 && bass.evilEnergy >= Bass.MaxEvilEnergy
+		) {
 			bass.changeToIdleOrFall();
 			return;
 		}
-
 		aura?.changePos(bass.pos);
-
-		if (bass.evilEnergy >= Bass.MaxEvilEnergy) {
-			bass.changeState(new EnergyIncrease(), true);
-			return;
-		}
 
 		if (ammoTimer == 0) {
 			bass.playSound("heal");
@@ -485,7 +483,7 @@ public class EnergyCharge : CharState {
 			} else {
 				bass.removeEvilness(0.5f);
 			}
-			ammoTimer = 7;
+			ammoTimer = 8;
 		}
 	}
 }
@@ -493,26 +491,20 @@ public class EnergyCharge : CharState {
 
 public class EnergyIncrease : CharState {
 	Bass bass = null!;
+	Anim? aura;
 
 	public EnergyIncrease() : base("enter") {
 		normalCtrl = false;
 		attackCtrl = false;
 		useGravity = false;
 		invincible = true;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		character.stopMoving();
-		character.gravityModifier = 0.1f;
-		bass = character as Bass ?? throw new NullReferenceException();
-		bass.nextPhase(bass.phase + 1);
-		bass.playSound("super_bass_aura", sendRpc: true);
-		bass.frameIndex = 3;
+		stunImmune = true;
 	}
 
 	public override void update() {
 		base.update();
+		aura?.changePos(bass.pos);
+
 		if (stateFrames >= 30) {
 			if (player.input.isHeld(Control.Special2, player)) {
 				character.changeState(new EnergyCharge(), true);
@@ -522,8 +514,21 @@ public class EnergyIncrease : CharState {
 		}
 	}
 
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		bass = character as Bass ?? throw new NullReferenceException();
+		character.stopMoving();
+		aura = new Anim(
+			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
+			false, true, zIndex: ZIndex.Character - 10
+		);
+		character.gravityModifier = 0.1f;
+		bass.playSound("super_bass_aura", sendRpc: true);
+	}
+
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
+		aura?.destroySelf();
 		character.gravityModifier = 1;
 	}
 }
@@ -675,10 +680,10 @@ public class BassKick : CharState {
 		base.update();
 
 		if (!jumped) {
-
 			if (character.frameIndex >= 1) {
 				jumped = true;
 				character.vel.y = -character.getJumpPower();
+				character.playSound("slash_claw", sendRpc: true);
 			}
 		}
 
@@ -708,6 +713,7 @@ public class SonicCrusher : CharState {
 	Point oldSpeed = Point.zero;
 
 	public SonicCrusher(Point oldSpeed) : base("soniccrusher") {
+		enterSound = "slide";
 		normalCtrl = true;
 		attackCtrl = true;
 		useGravity = false;
@@ -726,6 +732,7 @@ public class SonicCrusher : CharState {
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		bass.canRefillFly = true;
+		bass.sonicCrusherCooldown = 6;
 	}
 
 	public override void update() {
@@ -791,6 +798,7 @@ public class SweepingLaserState : CharState {
 				character, character.getShootPos(), character.xDir,
 				player.getNextActorNetId(), true, player
 			);
+			character.playSound("buster4X1", sendRpc: true);
 			character.stopMoving();
 			once = true;
 		}
@@ -827,6 +835,7 @@ public class DarkCometState : CharState {
 				character, character.getShootPos(), character.xDir,
 				player.getNextActorNetId(), true, player
 			);
+			character.playSound("buster3X1", sendRpc: true);
 			character.stopMoving();
 			once = true;
 		}

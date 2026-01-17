@@ -185,6 +185,7 @@ public partial class Character : Actor, IDamagable {
 	public float rootTime;
 	public Dictionary<int, float> rootCooldown = new();
 	public Anim? rootAnim;
+	public Anim? slowdownAnim;
 
 	public float burnEffectTime;
 	public float burnHurtCooldown;
@@ -899,6 +900,14 @@ public partial class Character : Actor, IDamagable {
 			}
 			rootAnim = null;
 		}
+		if (slowdownTime > 0) {
+			if (slowdownAnim == null || slowdownAnim.destroyed) {
+				slowdownAnim = new Anim(getCenterPos(), "ra_elec", 1, null, true, host: this);
+			}
+		} else if (slowdownAnim != null) {
+			slowdownAnim?.destroySelf();
+			slowdownAnim = null;
+		}
 	}
 
 	public void debuffCooldowns() {
@@ -933,8 +942,8 @@ public partial class Character : Actor, IDamagable {
 				vaccineTime = 0;
 			}
 		}
-		Helpers.decrementTime(ref virusTime);
-		Helpers.decrementTime(ref oilTime);
+		Helpers.decrementFrames(ref virusTime);
+		Helpers.decrementFrames(ref oilTime);
 
 		if (acidTime > 0) {
 			acidTime -= Global.spf;
@@ -978,15 +987,15 @@ public partial class Character : Actor, IDamagable {
 		}
 		Helpers.decrementFrames(ref rootTime);
 		Helpers.decrementFrames(ref flattenedTime);
-		Helpers.decrementTime(ref slowdownTime);
+		Helpers.decrementFrames(ref slowdownTime);
 		igFreezeRecoveryCooldown += speedMul;
 		if (igFreezeRecoveryCooldown > 12) {
 			igFreezeRecoveryCooldown = 0;
 			igFreezeProgress = Helpers.clampMin0(igFreezeProgress - 1);
 		}
-		Helpers.decrementTime(ref crystalizeInvulnTime);
-		Helpers.decrementTime(ref grabInvulnTime);
-		Helpers.decrementTime(ref darkHoldInvulnTime);
+		Helpers.decrementFrames(ref crystalizeInvulnTime);
+		Helpers.decrementFrames(ref grabInvulnTime);
+		Helpers.decrementFrames(ref darkHoldInvulnTime);
 		
 		if (burnStunStacks > 0) {
 			if (burningRecoveryCooldown <= 0) {
@@ -3768,7 +3777,13 @@ public partial class Character : Actor, IDamagable {
 		int maxBarAmmo = getMiniWeaponLength();
 		float hp = (float)health / scale;
 		float mHp = (float)maxHealth / scale;
-		Color? color = Global.level.gameMode.teamColors[3];
+		Color? color = Color.White;
+		if (Global.level.gameMode.isTeamMode &&
+			player.alliance < Global.level.teamNum &&
+			player.alliance < Global.level.gameMode.teamColors.Length
+		) {
+			color = Global.level.gameMode.teamColors[player.alliance];
+		}
 		// Weapon.
 		if (maxBarAmmo > 0) {
 			// Border.
@@ -3866,7 +3881,6 @@ public partial class Character : Actor, IDamagable {
 		string playerName = player.name;
 		Color nameColor = Color.White;
 		if (useColor &&
-			player.alliance != Global.level.mainPlayer.alliance &&
 			Global.level.gameMode.isTeamMode &&
 			player.alliance < Global.level.teamNum &&
 			player.alliance < Global.level.gameMode.teamColors.Length

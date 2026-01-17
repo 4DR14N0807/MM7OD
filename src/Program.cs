@@ -1339,12 +1339,13 @@ class Program {
 							loadLevels();
 							loadImages();
 							loadSprites();
+							f12Released = false;
 						}
 					} else {
 						f12Released = true;
 					}
 				} else {
-					f12Released = false;
+					f12Released = true;
 				}
 			}
 			if (!(deltaTime >= 1)) {

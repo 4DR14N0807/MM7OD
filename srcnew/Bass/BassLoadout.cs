@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ProtoBuf;
 using SFML.Graphics;
@@ -28,6 +28,7 @@ public class BassLoadout {
 	[ProtoMember(1)] public int weapon1;
 	[ProtoMember(2)] public int weapon2;
 	[ProtoMember(3)] public int weapon3;
+	[ProtoMember(4)] public int hypermode;
 
 	public List<int> getBassWeaponIndices() {
 		return new List<int>() { weapon1, weapon2, weapon3 };
@@ -51,6 +52,9 @@ public class BassLoadout {
 			weapon2 = 1;
 			weapon3 = 2;
 		}
+		if (hypermode > 1) {
+			hypermode = 0;
+		}
 	}
 
 	public static BassLoadout createRandom() {
@@ -69,6 +73,8 @@ public class BassLoadout {
 		loadout.weapon3 = weapons[targetWeapon];
 		weapons.RemoveAt(targetWeapon);
 
+		loadout.hypermode = 0;
+
 		loadout.validate();
 		return loadout;
 	}
@@ -83,10 +89,8 @@ public class BassWeaponMenu : IMainMenu {
 	public BassLoadout targetLoadout;
 
 	// Loadout items.
-
-	public int[] sWeapons = [
-		0,1,2
-	];
+	public int[] sWeapons = [0, 1, 2];
+	public int hypermode = 0;
 
 	public int[][] weaponIcons = [
 		[0, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -94,7 +98,11 @@ public class BassWeaponMenu : IMainMenu {
 		[0, 1, 2, 3, 4, 5, 6, 7, 8]
 	];
 	public string[] categoryNames = [
-		"Slot 1", "Slot 2", "Slot 3"
+		"Slot 1", "Slot 2", "Slot 3", "Hypermode"
+	];
+
+	public string[] hypermodeNames = [
+		"Treble Boost", "Super Bass"
 	];
 
 	public Weapon[] specialWeapons = [
@@ -119,6 +127,7 @@ public class BassWeaponMenu : IMainMenu {
 		sWeapons[0] = targetLoadout.weapon1;
 		sWeapons[1] = targetLoadout.weapon2;
 		sWeapons[2] = targetLoadout.weapon3;
+		hypermode = targetLoadout.hypermode;
 		latestIndex = sWeapons[cursorRow];
 		latestRow = cursorRow;
 	}
@@ -133,8 +142,12 @@ public class BassWeaponMenu : IMainMenu {
 			Global.playSound("menu");
 		} 
 
-		Helpers.menuUpDown(ref cursorRow, 0, 2);
-		Helpers.menuLeftRightInc(ref sWeapons[cursorRow], 0, specialWeapons.Length - 1, true, playSound: true);
+		Helpers.menuUpDown(ref cursorRow, 0, 3);
+		if (cursorRow < 3) {
+			Helpers.menuLeftRightInc(ref sWeapons[cursorRow], 0, specialWeapons.Length - 1, true, playSound: true);
+		} else {
+			Helpers.menuLeftRightInc(ref hypermode, 0, 1, true, playSound: true);
+		}
 
 		// Random loadout
 		bool randomPressed = Global.input.isPressedMenu(Control.Special1);
@@ -156,8 +169,10 @@ public class BassWeaponMenu : IMainMenu {
 			}
 		}
 
-		if (latestIndex != sWeapons[cursorRow] || latestRow != cursorRow) {
-			latestIndex = sWeapons[cursorRow];
+		if (latestRow != cursorRow || cursorRow < 3 && latestIndex != sWeapons[cursorRow] ) {
+			if (cursorRow < 3) {
+				latestIndex = sWeapons[cursorRow];
+			}
 			latestRow = cursorRow;
 			descIndex = 0;
 		}
@@ -168,6 +183,7 @@ public class BassWeaponMenu : IMainMenu {
 				targetLoadout.weapon1 = sWeapons[0];
 				targetLoadout.weapon2 = sWeapons[1];
 				targetLoadout.weapon3 = sWeapons[2];
+				targetLoadout.hypermode = hypermode;
 				isChanged = true;
 			}
 			if (isChanged) {
@@ -233,7 +249,8 @@ public class BassWeaponMenu : IMainMenu {
 					Alignment.Center, selected: cursorRow == i
 				);
 				Fonts.drawText(
-					FontType.PurpleMenu, "<", leftArrowPos, yPos - 1 , Alignment.Center, selected: cursorRow == i
+					FontType.PurpleMenu, "<", leftArrowPos, yPos - 1 ,
+					Alignment.Center, selected: cursorRow == i
 				);
 			}
 			// Icons.
@@ -251,20 +268,42 @@ public class BassWeaponMenu : IMainMenu {
 				}
 			}
 		}
+		//int namePos = startY - 6 + (3 * wepH);
+		//Fonts.drawText(FontType.PurpleMenu, categoryNames[3], 40, namePos - 1, selected: cursorRow == 3);
+
 		// Weapon and data.
 		string menuTitle = "";
 		string weaponTitle = "";
 		string weaponDescription = "";
 		Weapon currentWeapon = new();
-		
+		if (cursorRow < 3) {
 			currentWeapon = specialWeapons[sWeapons[cursorRow]];
+			weaponTitle = hypermodeNames[hypermode];
 			menuTitle = "Special Weapon";
-			weaponTitle = currentWeapon.displayName;;
+			weaponTitle = currentWeapon.displayName; ;
 			int di = 0;
 			if (currentWeapon.descriptionV2.Length > 0) {
 				di = descIndex % currentWeapon.descriptionV2.Length;
 			}
 			weaponDescription = currentWeapon.descriptionV2[di][0];
+		} else {
+			menuTitle = "Hypermode";
+			weaponTitle = hypermodeNames[hypermode];
+			if (hypermode == 0) {
+				weaponDescription = (
+					"Draw the power of Evil energy to make you stronger.\n" +
+					"Automatically powers up.  Max posible level: 4\n" +
+					"Warning: Reaching level 4 may lead to side effects."
+				);
+			} else {
+				weaponDescription = (
+					"Draw the power of Evil energy to make you stronger.\n" +
+					"Manually powers up..        Max posible level: 3\n" +
+					"Safer to use than other variants."
+				);
+			}
+			currentWeapon.descriptionV2 = [];
+		}
 		
 		// Draw rectangle.
 		int wsy = 108;
@@ -296,7 +335,11 @@ public class BassWeaponMenu : IMainMenu {
 
 		//Switch info page section.
 		for (int i = 0; i < currentWeapon.descriptionV2.Length; i++) {
-			int fi = currentWeapon.descriptionV2.Length - 1 - i == descIndex % currentWeapon.descriptionV2.Length ? 2 : 0;
+			int fi = (
+				currentWeapon.descriptionV2.Length - 1 - i ==
+				descIndex % currentWeapon.descriptionV2.Length ?
+				2 : 0
+			);
 
 			Global.sprites["cursor"].drawToHUD(
 				fi, Global.screenW - 31 - (i  * 10), row2Y + 6

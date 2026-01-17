@@ -89,6 +89,17 @@ public class ClimbLadderNTP : NodeTransitionPhase {
 
 	public override void update() {
 		base.update();
+		// Try to walk to stair pos.
+		if (findPlayer.prevNode != null &&
+			MathF.Abs(character.pos.y - findPlayer.prevNode.pos.y) > 2
+		) {
+			float nodeDist = findPlayer.prevNode.pos.x - character.abstractedActor().pos.x;
+			if (nodeDist > 0) {
+				player.press(Control.Right);
+			} else {
+				player.press(Control.Left);
+			}
+		}
 		if (yDir == -1) {
 			player.press(Control.Up);
 		} else {

@@ -139,9 +139,9 @@ public class Bass : Character {
 			return;
 		}
 		if (hyperModeNum == 0) {
-			isSuperBass = true;
-		} else {
 			isTrebbleBoost = true;
+		} else {
+			isSuperBass = true;
 		}
 		if (!isTrebbleBoost) {
 			maxHealth += 2;
@@ -276,7 +276,7 @@ public class Bass : Character {
 		}
 
 		if (isSuperBass || isTrebbleBoost) {
-			chargeLogic(shoot);
+			chargeLogic(shootSuper);
 		}
 		quickHyperUpgrade(); 
 	}
@@ -576,7 +576,11 @@ public class Bass : Character {
 				currentWeapon?.canShoot(0, this) == true &&
 				currentWeapon?.shootCooldown <= 0 && canShoot()
 			) {
-				shoot(getChargeLevel());
+				if (!isSuperBass) {
+					shoot(getChargeLevel());
+				} else {
+					shootSuper(getChargeLevel());
+				}
 				return true;
 			}
 		}
@@ -641,6 +645,50 @@ public class Bass : Character {
 			}
 			else {
 				changeState(new BassShoot(), true);
+			}
+		}
+		currentWeapon.shoot(this, chargeLevel);
+		currentWeapon.shootCooldown = currentWeapon.fireRate;
+		weaponCooldown = currentWeapon.fireRate;
+		if (currentWeapon.switchCooldown < weaponCooldown) {
+			weaponCooldown = currentWeapon.switchCooldown;
+		}
+		currentWeapon.addAmmo(-currentWeapon.getAmmoUsageEX(0, this), player);
+		stopCharge();
+	}
+
+	public void shootSuper(int chargeLevel) {
+		if (!ownedByLocalPlayer || currentWeapon == null) {
+			return;
+		}
+		turnToInput(player.input, player);
+		if (!currentWeapon.hasCustomAnim) {
+			if (charState is LadderClimb lc) {
+				changeState(new BassShootLadder(lc.ladder), true);
+			} else if (charState is BassShootLadder bsl) {
+				changeState(new BassShootLadder(bsl.ladder), true);
+			} else {
+				if (charState is Dash or AirDash) {
+					changeToIdleOrFall();
+				}
+				string shootSprite = getSprite(charState.shootSprite);
+				if (!Global.sprites.ContainsKey(shootSprite)) {
+					if (grounded) {
+						shootSprite = getSprite("shoot");
+					} else {
+						shootSprite = getSprite("jump_shoot");
+					}
+				}
+				if (shootAnimTime == 0) {
+					shootAnimTime = 18;
+					changeSprite(shootSprite, false);
+				}
+				if (shootSprite == getSprite("shoot") || charState is BassFly) {
+					frameIndex = 0;
+					frameTime = 0;
+					animTime = 0;
+				}
+				shootAnimTime = 18;
 			}
 		}
 		currentWeapon.shoot(this, chargeLevel);
@@ -787,7 +835,7 @@ public class Bass : Character {
 	}
 
 	public override bool canMove() {
-		if (shootAnimTime > 0 && grounded) {
+		if (!isSuperBass && !isTrebbleBoost && shootAnimTime > 0 && grounded) {
 			return false;
 		}
 		return base.canMove();
@@ -879,7 +927,11 @@ public class Bass : Character {
 			return;
 		}
 		if (canShoot()) {
-			shoot(getChargeLevel());
+			if (isSuperBass) {
+				shoot(getChargeLevel());
+			} else {
+				shootSuper(getChargeLevel());
+			}
 		}
 	}
 

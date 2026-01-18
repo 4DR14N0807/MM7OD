@@ -991,7 +991,7 @@ public class Bass : Character {
 		phase = data[2];
 		evilEnergy = data[3];
 
-		bool[] flags = Helpers.byteToBoolArray(data[6]);
+		bool[] flags = Helpers.byteToBoolArray(data[4]);
 		isSuperBass = flags[0];
 		armless = flags[1];
 		isTrebbleBoost = flags[2];

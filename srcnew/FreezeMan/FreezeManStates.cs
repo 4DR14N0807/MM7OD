@@ -165,9 +165,11 @@ public class FreezeMChargeState : CharState {
 	public override void update() {
 		base.update();
 
-        if (stateFrames > 0 && stateFrames % 15 == 0 && freezem?.freezeAmmo < freezem?.freezeMaxAmmo) {
-            freezem?.freezeAmmo += 1;
-            freezem?.playSound("heal", sendRpc: true);
+        if (stateFrames > 0 && stateFrames % 15 == 0 && freezem != null &&
+			freezem?.freezeAmmo < freezem?.freezeMaxAmmo
+		) {
+            freezem.freezeAmmo += 1;
+            freezem.playSound("heal", sendRpc: true);
         }
 
         if (

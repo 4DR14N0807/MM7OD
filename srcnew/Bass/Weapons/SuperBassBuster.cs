@@ -12,7 +12,7 @@ public class SBassBuster : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SuperBassBuster;
 		weaponSlotIndex = index;
-		fireRate = 15;
+		fireRate = 10;
 		drawAmmo = false;
 	}
 
@@ -36,7 +36,8 @@ public class SBassBuster : Weapon {
 					() => {
 						new SBassShot(
 							bass, shootPos.addxy(11 * xDir, 0), xDir,
-							player.getNextActorNetId(), true, superBass: bass.isSuperBass
+							player.getNextActorNetId(), true,
+							superBass: bass.isSuperBass || bass.isTrebbleBoost
 						);
 						character.playSound("buster2", sendRpc: true);
 						shootCooldown = fireRate;
@@ -50,15 +51,13 @@ public class SBassBuster : Weapon {
 			character.playSound("buster3", sendRpc: true);
 		} else if (chargeLevel == 1) {
 			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
-			character.playSound("buster2", sendRpc: true);
+			character.playSound("buster2X1", sendRpc: true);
 		} else {
 			new SBassLemon(bass, shootPos, xDir, 0, player.getNextActorNetId(), true);
-
 			new SBassLemon(bass, shootPos, xDir, 1, player.getNextActorNetId(), true);
-
 			new SBassLemon(bass, shootPos, xDir, 2, player.getNextActorNetId(), true);
 
-			character.playSound("buster");
+			character.playSound("bassbuster");
 		}
 	}
 }
@@ -72,7 +71,7 @@ public class SBassRP : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.SuperBassRP;
 		weaponSlotIndex = index;
-		fireRate = 15;
+		fireRate = 10;
 		drawAmmo = false;
 	}
 
@@ -88,7 +87,6 @@ public class SBassRP : Weapon {
 		Bass bass = character as Bass ?? throw new NullReferenceException();
 
 		if (chargeLevel >= 3) {
-
 			new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("super_adaptor_punch", sendRpc: true);
 
@@ -97,7 +95,8 @@ public class SBassRP : Weapon {
 					() => {
 						new SBassShot(
 							bass, shootPos.addxy(11 * xDir, 0), xDir,
-							player.getNextActorNetId(), true, superBass: bass.isSuperBass
+							player.getNextActorNetId(), true,
+							superBass: bass.isSuperBass || bass.isTrebbleBoost
 						);
 						character.playSound("buster2", sendRpc: true);
 						shootCooldown = fireRate;
@@ -111,16 +110,13 @@ public class SBassRP : Weapon {
 			character.playSound("super_adaptor_punch", sendRpc: true);
 		} else if (chargeLevel == 1) {
 			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
-			character.playSound("buster2", sendRpc: true);
+			character.playSound("buster2X1", sendRpc: true);
 		} else {
-
 			new SBassLemon(bass, shootPos, xDir, 0, player.getNextActorNetId(), true);
-
 			new SBassLemon(bass, shootPos, xDir, 1, player.getNextActorNetId(), true);
-
 			new SBassLemon(bass, shootPos, xDir, 2, player.getNextActorNetId(), true);
 
-			character.playSound("buster");
+			character.playSound("bassbuster");
 		}
 	}
 }
@@ -142,9 +138,10 @@ public class SBassLemon : Projectile {
 		byteAngle = (type - 1) * 32;
 		if (xDir < 0) byteAngle = -byteAngle + 128;
 		vel = Point.createFromByteAngle(byteAngle).times(360);
-		
 		damager.damage = 1;
 		damager.hitCooldown = 9;
+		fadeSprite = "bass_buster_proj_fade";
+		fadeOnAutoDestroy = true;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)type });
@@ -176,6 +173,8 @@ public class SBassShot : Projectile {
 			damager.damage = 1;
 			damager.flinch = Global.miniFlinch;
 		}
+		fadeSprite = "rock_buster1_fade";
+		fadeOnAutoDestroy = true;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -203,6 +202,8 @@ public class ChamoBuster : Projectile {
 		vel.x = 360 * xDir;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
+		fadeSprite = "thunder_bolt_fade2";
+		fadeOnAutoDestroy = true;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -585,14 +586,17 @@ public class DarkCometUpProj : Projectile {
 		base.onHitWall(other);
 		if (!ownedByLocalPlayer) return;
 
-		var wall = other.gameObject as Wall;
-		Point hitPos = other.hitData.hitPoint ?? pos;
-
-		if (wall != null && other.isCeilingHit()) {
+		if (other.gameObject is Wall && other.isCeilingHit()) {
 			hitWall = true;
 			createProjs();
 			destroySelf();
-			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true) { yScale = yScale * -1 };
+			new Anim(
+				pos.addxy(0, -28), "dark_comet_land",
+				xDir, damager.owner.getNextActorNetId(), true, true
+			) {
+				yScale = yScale * -1
+			};
+			playSound("lightningbolt", sendRpc: true);;
 		}
 	}
 

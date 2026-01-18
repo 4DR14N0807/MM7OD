@@ -357,8 +357,10 @@ public enum BassProjIds {
 
 public enum BluesProjIds  {
 	Lemon = 600,
-	LemonAngled,
 	LemonOverdrive,
+	LemonAngled,
+	LemonAOverheat,
+	LemonAOverdrive,
 	BusterLV2,
 	BusterLV3,
 	BusterLV4,

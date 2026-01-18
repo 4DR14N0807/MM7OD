@@ -65,7 +65,8 @@ public class InGameMainMenu : IMainMenu {
 				bool hasHypermode = (
 					mainPlayer.character is Rock { hasSuperAdaptor: true} ||
 					mainPlayer.character is Blues { isBreakMan: true } ||
-					mainPlayer.character is Bass { isSuperBass: true }
+					mainPlayer.character is Bass { isSuperBass: true } ||
+					mainPlayer.character is Bass { isTrebbleBoost: true } 
 				);
 				bool hasShield = mainPlayer.character is Blues { isShieldActive: true };
 				Menu.change(
@@ -169,25 +170,25 @@ public class InGameMainMenu : IMainMenu {
 		drawLevelBar(
 			$"ATK", Global.screenW - 76, 8,
 			FontType.RedSmall, new Color(255, 115, 127),
-			mastery.damageLevelStacks, MathInt.Ceiling(mastery.damageLevel / 5f),
+			mastery.damageLevelStacks, MasteryTracker.getStacksPerLevel(mastery.damageLevel),
 			mastery.damageExp, mastery.damageLvLimit, mastery.damageLevel
 		);
 		drawLevelBar(
 			$"DEF", Global.screenW - 76, 23,
 			FontType.BlueSmall, new Color(66, 206, 239),
-			mastery.defenseLevelStacks, MathInt.Ceiling(mastery.defenseLevel / 5f),
+			mastery.defenseLevelStacks, MasteryTracker.getStacksPerLevel(mastery.defenseLevel),
 			mastery.defenseExp, mastery.defenseLvLimit, mastery.defenseLevel
 		);
 		drawLevelBar(
 			$"SP", Global.screenW - 76, 38,
 			FontType.GreenSmall, new Color(123, 231, 148),
-			mastery.supportLevelStacks, MathInt.Ceiling(mastery.supportLevel / 5f),
+			mastery.supportLevelStacks, MasteryTracker.getStacksPerLevel(mastery.supportLevel),
 			mastery.supportExp, mastery.supportLvLimit, mastery.supportLevel
 		);
 		drawLevelBar(
 			$"MAP", Global.screenW - 76, 53,
 			FontType.PurpleSmall, new Color(189, 115, 214),
-			mastery.mapLevelStacks, MathInt.Ceiling(mastery.mapLevel / 5f),
+			mastery.mapLevelStacks, MasteryTracker.getStacksPerLevel(mastery.mapLevel),
 			mastery.mapExp, mastery.mapLvLimit, mastery.mapLevel
 		);
 	}

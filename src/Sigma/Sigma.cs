@@ -796,6 +796,7 @@ public class BaseSigma : Character {
 		}
 		return retWeapons;
 	}
+	/*
 	public override void onDeath() {
 		base.onDeath();
 		foreach (var maverick in player.mavericks) {
@@ -804,4 +805,5 @@ public class BaseSigma : Character {
 			}
 		}
 	}
+	*/
 }

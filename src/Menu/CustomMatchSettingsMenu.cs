@@ -6,15 +6,15 @@ namespace MMXOnline;
 
 [ProtoContract]
 public class CustomMatchSettings {
-	[ProtoMember(2)] public int startCurrency;
-	[ProtoMember(5)] public int healthModifier;
-	[ProtoMember(9)] public int startETanks;
-	[ProtoMember(10)] public int startWTanks;
-	[ProtoMember(11)] public int maxETanks;
-	[ProtoMember(12)] public int maxWTanks;
-	[ProtoMember(15)] public int currencyGain;
-	[ProtoMember(16)] public int respawnTime;
-	[ProtoMember(17)] public bool pickupItems;
+	[ProtoMember(1)] public int startCurrency;
+	[ProtoMember(2)] public int healthModifier;
+	[ProtoMember(3)] public int startETanks;
+	[ProtoMember(4)] public int startWTanks;
+	[ProtoMember(5)] public int maxETanks;
+	[ProtoMember(6)] public int maxWTanks;
+	[ProtoMember(7)] public int currencyGain;
+	[ProtoMember(8)] public int respawnTime;
+	[ProtoMember(9)] public bool pickupItems;
 
 	[JsonIgnore] public bool hyperModeMatch;
 	[JsonIgnore] public int startHeartTanks;

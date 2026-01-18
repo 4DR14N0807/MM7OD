@@ -460,9 +460,11 @@ public class DWrapBigBubble : Actor, IDamagable {
 	) {
 		netOwner = victim;
 		character = victim.character;
-		character?.stopMoving();
-		character?.grounded = false;
-		character?.canBeGrounded = false;
+		if (character != null) {
+			character.stopMoving();
+			character.grounded = false;
+			character.canBeGrounded = false;
+		}
 		useGravity = false;
 		canBeLocal = false;
 

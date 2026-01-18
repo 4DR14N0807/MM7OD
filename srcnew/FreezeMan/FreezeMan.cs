@@ -162,20 +162,18 @@ public class FreezeMan : Character {
 		int? weaponIndex, int? projId
 	) {
 		if (isGuarding) {
+			
+			// Return if not owned.
+			if (!ownedByLocalPlayer || fDamage <= 0) {
+				return;
+			}
 			// Apply mastery level before any reduction.
-			if (attacker != null && attacker != player &&
-				attacker != Player.stagePlayer
-			) {
+			if (attacker != null && attacker != player && attacker != Player.stagePlayer) {
 				if (fDamage < Damager.ohkoDamage) {
 					mastery.addDefenseExp(fDamage);
 					attacker.mastery.addDamageExp(fDamage, true);
 				}
 			}
-			// Return if not owned.
-			if (!ownedByLocalPlayer || fDamage <= 0) {
-				return;
-			}
-
 			decimal damage = decimal.Parse(fDamage.ToString());
 			decimal originalDamage = damage;
 			decimal originalHP = health;

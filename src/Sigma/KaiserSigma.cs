@@ -367,7 +367,7 @@ public partial class KaiserSigma : Character {
 	public override bool isPushImmune() {
 		return true;
 	}
-	
+	/*
 	public override void onDeath() {
 		base.onDeath();
 		player.lastDeathWasSigmaHyper = true;
@@ -415,4 +415,5 @@ public partial class KaiserSigma : Character {
 		anim.xDir = lastHyperSigmaXDir;
 		anim.frameSpeed = 0;
 	}
+	*/
 }

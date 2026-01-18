@@ -17,30 +17,48 @@ public class Chip {
 
 	// Delegates.
 	public delegate void GenericLink(Character chara);
+	public delegate bool BoolLink(Character chara, bool trackVal);
+	public delegate bool DeathLink(
+		Character chara, Player? killer,
+		Actor? damager, Character? enemyChar, bool trackVal
+	);
+	public delegate bool KillLink(
+		Character chara, bool isAssist, Player? enemy,
+		Actor? damager, Character? enemyChar
+	);
 	public delegate float AttackLink(
-		Character chara, float val, float trackVal, Actor? damager, Character? enemyChar
+		Character chara, float val, Actor? damager,
+		Player enemyPlayer, Character? enemyChar, float trackVal
 	);
 	public delegate void CreateLink(Character chara, Projectile proj);
 
 	// Function calls. Only use what's needed.
-	public GenericLink onRunning;
-	public AttackLink onDeath;
-	public GenericLink onRespawn;
-	public CreateLink onAttack;
-	public CreateLink onMelee;
-	public CreateLink onShoot;
-	public AttackLink onJump;
-	public AttackLink onDamage;
-	public AttackLink onApplyDamage;
-	public AttackLink onFlinch;
-	public AttackLink onApplyFlinch;
-	public AttackLink onStun;
-	public AttackLink onApplyStun;
-	public AttackLink onHealing;
-	public AttackLink onApplyHeal;
+	public GenericLink? onRunning;
+	public DeathCAct? preDeath;
+	public DeathCAct? onDeath;
+	public GenericLink? onRespawn;
+	public CreateLink? onAttack;
+	public CreateLink? onMelee;
+	public CreateLink? onShoot;
+	public GenericLink? onJump;
+	public AttackLink? onDamage;
+	public AttackLink? onApplyDamage;
+	public AttackLink? onFlinch;
+	public AttackLink? onApplyFlinch;
+	public AttackLink? onStun;
+	public AttackLink? onApplyStun;
+	public AttackLink? onHealing;
+	public AttackLink? onApplyHeal;
+	public KillLink? onKill;
 
 	public static string[] functionNames = [
 		"onRunning",
+		"preDeath",
+		"onDeath",
+		"onRespawn",
+		"onAttack",
+		"onMelee",
+		"onShoot",
 		"onJump",
 		"onDamage",
 		"onApplyDamage",
@@ -50,11 +68,7 @@ public class Chip {
 		"onApplyStun",
 		"onHealing",
 		"onApplyHeal",
-		"onDeath",
-		"onRespawn",
-		"onAttack",
-		"onMelee",
-		"onShoot",
+		"onKill"
 	];
 
 	public virtual void preUpdate(Character chara) {}
@@ -74,11 +88,39 @@ public class GenericCAct : SortedList<ChipId, Chip.GenericLink> {
 	}
 }
 
+public class BoolCAct : SortedList<ChipId, Chip.BoolLink> {
+	public bool Invoke(Character chara) {
+		bool trackVal = false;
+		foreach (Chip.BoolLink action in Values) {
+			trackVal = action(chara, trackVal);
+		}
+		return trackVal;
+	}
+}
+
+public class DeathCAct : SortedList<ChipId, Chip.DeathLink> {
+	public bool Invoke(Character chara, Player? killer, Actor? damager, Character? enemyChar) {
+		bool trackVal = false;
+		foreach (Chip.DeathLink action in Values) {
+			trackVal = action(chara, killer, damager, enemyChar, trackVal);
+		}
+		return trackVal;
+	}
+}
+
+public class KillCAct : SortedList<ChipId, Chip.KillLink> {
+	public void Invoke(Character chara, bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
+		foreach (Chip.KillLink action in Values) {
+			action(chara, isAssist, enemy, damager, enemyChar);
+		}
+	}
+}
+
 public class AttackCAct : SortedList<ChipId, Chip.AttackLink> {
-	public float Invoke(Character chara, float val, Actor damager, Character enemyChar) {
+	public float Invoke(Character chara, float val, Actor? damager, Player? enemyPlayer, Character? enemyChar) {
 		float trackVal = val;
 		foreach (Chip.AttackLink action in Values) {
-			trackVal = action(chara, val, trackVal, damager, enemyChar);
+			trackVal = action(chara, val, damager, enemyPlayer, enemyChar, trackVal);
 		}
 		return trackVal;
 	}

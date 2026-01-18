@@ -1100,7 +1100,7 @@ public class RideArmor : Actor, IDamagable {
 			}
 			*/
 
-			killer.awardCurrency();
+			killer.awardKillExp();
 			//killer.currency += 10;
 		}
 
@@ -1109,6 +1109,7 @@ public class RideArmor : Actor, IDamagable {
 			//assister.addKill();
 			//assister.awardCurrency(false);
 			//killer.currency += 5;
+			assister.awardKillExp(false);
 		}
 
 		if (ownedByLocalPlayer) {

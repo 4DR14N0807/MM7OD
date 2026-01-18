@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace MMXOnline;
 
@@ -167,21 +168,43 @@ public partial class Level {
 	}
 
 	public Point getGroundPos(Point pos, float depth = 60) {
-		var hit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> { typeof(Wall) });
-		if (hit == null) return pos;
-		return hit.hitData.hitPoint.Value.addxy(0, -1);
+		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone)
+		]);
+		return hit?.hitData.hitPoint?.addxy(0, -1) ?? pos;
 	}
 
 	public Point? getGroundPosNoKillzone(Point pos, float depth = 60) {
-		var hit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> {
-			typeof(Wall), typeof(Ladder), typeof(SandZone)
-		});
-		if (hit == null) return null;
+		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (hit?.gameObject is KillZone) {
+			return null;
+		}
+		return hit?.hitData.hitPoint?.addxy(0, -1);
+	}
 
-		var kzHit = Global.level.raycast(pos, pos.addxy(0, depth), new List<Type> { typeof(KillZone) });
-		if (kzHit != null) return null;
-
-		return hit.hitData.hitPoint.Value.addxy(0, -1);
+	public bool checkKillZone(Point pos) {
+		float depth = 160;
+		CollideData? collideData = Global.level.raycast(pos.addxy(0, -1), pos.addxy(0, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (collideData != null && collideData.gameObject is not KillZone) {
+			return false;
+		}
+		collideData = Global.level.raycast(pos.addxy(-10, -1), pos.addxy(-8, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (collideData != null && collideData.gameObject is not KillZone) {
+			return false;
+		}
+		collideData = Global.level.raycast(pos.addxy(10, -1), pos.addxy(8, depth), [
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+		]);
+		if (collideData != null && collideData.gameObject is not KillZone) {
+			return false;
+		}
+		return true;
 	}
 
 	public Point? getGroundPosWithNull(Point pos, float depth = 60) {

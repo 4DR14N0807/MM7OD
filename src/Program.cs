@@ -18,6 +18,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using static SFML.Window.Keyboard;
+using WindowsAPI;
 
 namespace MMXOnline;
 
@@ -30,7 +31,7 @@ class Program {
 
 		if (args.Length > 0 && args[0] == "-relay") {
 		#if WINDOWS
-			AllocConsole();
+			WinApi.AllocConsole();
 		#endif
 			RelayServer.ServerMain(args);
 		} else {
@@ -55,18 +56,6 @@ class Program {
 		}
 		Environment.Exit(0);
 	}
-
-#if WINDOWS
-	[DllImport("kernel32.dll", SetLastError = true)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool AllocConsole();
-
-	[DllImport("user32.dll", SetLastError = true)]
-	public static extern UInt32 GetWindowLong(IntPtr hwnd, int index);
-
-	[DllImport("user32.dll")]
-	public static extern int SetWindowLong(IntPtr hwnd, int index, UInt32 newStyle);
-#endif
 
 	static void GameMain(string[] args, int mode) {
 		try {
@@ -474,6 +463,7 @@ class Program {
 	}
 
 	private static void onWindowResized(object? sender, SizeEventArgs e) {
+		Thread.Sleep(2000);
 		// Compares the aspect ratio of the window to the aspect ratio of the view,
 		// and sets the view's viewport accordingly in order to archieve a letterbox effect.
 		float windowRatio = Global.window.Size.X / (float)Global.window.Size.Y;
@@ -1332,17 +1322,20 @@ class Program {
 				}
 				// Reload levels. And mess checksum.
 				if (Global.level == null) {
-					if (Keyboard.IsKeyPressed(Key.F2) && Keyboard.IsKeyPressed(Key.F1)) {
+					if (IsKeyPressed(Key.F2) && IsKeyPressed(Key.F1)) {
 						if (f12Released) {
 							Global.destroyChecksum();
 							Global.levelDatas.Clear();
 							loadLevels();
+							loadImages();
+							loadSprites();
+							f12Released = false;
 						}
 					} else {
 						f12Released = true;
 					}
 				} else {
-					f12Released = false;
+					f12Released = true;
 				}
 			}
 			if (!(deltaTime >= 1)) {

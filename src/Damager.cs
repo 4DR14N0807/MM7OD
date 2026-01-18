@@ -24,14 +24,14 @@ public class Damager {
 
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
 		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
-		{ (int)BluesProjIds.LemonAngled, 60 * 2},
+		{ (int)BluesProjIds.LemonAOverdrive, 60 * 2},
 		{ (int)BluesProjIds.SparkShock, 100},
 		{ (int)BluesProjIds.ProtoLandPush, 60 * 1},
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
-		//{ (int)BluesProjIds.LemonAngled, 3 },
-		{ (int)BluesProjIds.LemonOverdrive, 3 },
+		{ (int)BluesProjIds.LemonAngled, 4 },
+		{ (int)BluesProjIds.LemonAOverdrive, 3 },
 	};
 	
 	public static Dictionary<int, int> gfxCooldown = new() {
@@ -128,7 +128,7 @@ public class Damager {
 		if (damagable.isInvincible(owner, projId) && damage > 0) {
 			victim.playSound("ding");
 			if (Helpers.randomRange(0, 50) == 10) {
-				victim.addDamageText("Bloqueo! Por 48 horas!", 1);
+				victim.addDamageText("Bloqueo! Por 48 horas!", (int)FontType.WhiteMini);
 			}
 			return true;
 		}

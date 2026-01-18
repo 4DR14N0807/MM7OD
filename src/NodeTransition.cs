@@ -89,6 +89,17 @@ public class ClimbLadderNTP : NodeTransitionPhase {
 
 	public override void update() {
 		base.update();
+		// Try to walk to stair pos.
+		if (findPlayer.prevNode != null &&
+			MathF.Abs(character.pos.y - findPlayer.prevNode.pos.y) > 2
+		) {
+			float nodeDist = findPlayer.prevNode.pos.x - character.abstractedActor().pos.x;
+			if (nodeDist > 0) {
+				player.press(Control.Right);
+			} else {
+				player.press(Control.Left);
+			}
+		}
 		if (yDir == -1) {
 			player.press(Control.Up);
 		} else {
@@ -143,7 +154,7 @@ public class JumpToPlatformNTP : NodeTransitionPhase {
 		base.update();
 		if (character == null) return;
 		if (state == 0) {
-			ai.doJump(1);
+			ai.doJump();
 			if (platformJumpDir >= 1) {
 				var rightWall = Global.level.checkTerrainCollisionOnce(character, platformJumpDirDist, 0);
 				if (rightWall != null && rightWall.gameObject is Wall) {
@@ -206,7 +217,7 @@ public class JumpToMovingPlatformNTP : NodeTransitionPhase {
 			distThreshold = (currentPlatformMoveDir == 0 ? xDistThreshold : xDistThreshold * 1.5f);
 		}
 		if (MathF.Abs(distToNextNode) < distThreshold) {
-			ai.doJump(1);
+			ai.doJump();
 			if (distToNextNode > 0 && currentPlatformMoveDir >= 0) {
 				player.press(Control.Right);
 			} else if (distToNextNode < 0 && currentPlatformMoveDir <= 0) {

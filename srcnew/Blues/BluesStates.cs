@@ -347,13 +347,13 @@ public class BluesSpreadShoot : CharState {
 			);
 			// This way lemons and mid charge shot sounds wont conflict.
 			if (type == 0) {
-				blues.playSound("buster", sendRpc: true);
-			}
-			if (type == 1){
-				blues.addCoreAmmo(1f);
 				blues.playSound("protoLemon", sendRpc: true);
 			}
-			if (type == 2){
+			if (type == 1) {
+				blues.addCoreAmmo(1f);
+				blues.playSound("buster2X1", sendRpc: true);
+			}
+			if (type == 2) {
 				blues.addCoreAmmo(-0.5f, resetCooldown: true);
 				blues.playSound("buster3", sendRpc: true);
 			}
@@ -650,7 +650,7 @@ public class BluesRevive : CharState {
 		character.removeRenderEffect(RenderEffectType.Flash);
 		blues.overdrive = true;
 		blues.overheating = false;
-		blues.invulnTime = 12;
+		blues.invulnTime = 30;
 	}
 }
 

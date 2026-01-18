@@ -78,7 +78,7 @@ public struct Shape {
 	public bool intersectsLine(Line line) {
 		var lines = getLines();
 		foreach (var myLine in lines) {
-			if (myLine.getIntersectPoint(line) != null) {
+			if (myLine.getIntersectPoint(line, true) != null) {
 				return true;
 			}
 		}
@@ -91,7 +91,7 @@ public struct Shape {
 		var normals = getNormals();
 		for (var i = 0; i < lines.Count; i++) {
 			var myLine = lines[i];
-			var point = myLine.getIntersectPoint(line);
+			var point = myLine.getIntersectPoint(line, true);
 			if (point != null) {
 				var normal = normals[i];
 				var collideData = new CollideData(null, null, null, false, null, new HitData(normal, new List<Point>() { point.Value }, new List<Line>() { myLine }));
@@ -198,7 +198,7 @@ public struct Shape {
 		var intersections = new List<Point>();
 		var pointLine = new Line(point, point.add(dir));
 		foreach (var line in getLines()) {
-			var intersectPoint = line.getIntersectPoint(pointLine);
+			var intersectPoint = line.getIntersectPoint(pointLine, true);
 			if (intersectPoint != null) {
 				intersections.Add((Point)intersectPoint);
 			}

@@ -185,6 +185,7 @@ public partial class Character : Actor, IDamagable {
 	public float rootTime;
 	public Dictionary<int, float> rootCooldown = new();
 	public Anim? rootAnim;
+	public Anim? slowdownAnim;
 
 	public float burnEffectTime;
 	public float burnHurtCooldown;
@@ -223,6 +224,7 @@ public partial class Character : Actor, IDamagable {
 	public float inCombatCooldown;
 	public float inCombatTime;
 	public float outOfCombatTime;
+	public float displayHpTime;
 
 	// Ctrl data
 	public int altCtrlsLength = 1;
@@ -504,7 +506,7 @@ public partial class Character : Actor, IDamagable {
 			shaders.Add(player.burnStateShader);
 		}
 		if (player.evilEnergyStacks > 0 && player.evilEnergyShader != null && this is Bass) {
-			player.evilEnergyShader.SetUniform("stacks", player.evilEnergyStacks / 2f);
+			player.evilEnergyShader.SetUniform("stacks", player.evilEnergyStacks / 8f);
 			shaders.Add(player.evilEnergyShader);
 		}
 		return shaders;
@@ -818,12 +820,15 @@ public partial class Character : Actor, IDamagable {
 		// Other timers.
 		Helpers.decrementTime(ref limboRACheckCooldown);
 		Helpers.decrementTime(ref dropFlagCooldown);
+		Helpers.decrementFrames(ref displayHpTime);
 		if (!ownedByLocalPlayer) {
 			return;
 		}
 		// Local only starts here.
 		debuffCooldowns();
 		genericPuppetControl();
+		updateAttackCooldowns();
+		Helpers.decrementFrames(ref eTankHealTime);
 		if (grounded && !isDashing) {
 			dashedInAir = 0;
 		}
@@ -884,6 +889,25 @@ public partial class Character : Actor, IDamagable {
 				}
 			}
 		}
+		if (rootTime > 0) {
+			if (rootAnim == null || rootAnim.destroyed) {
+				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+			}
+		}
+		else if (rootAnim != null) {
+			if (!rootAnim.destroyed) {
+				rootAnim.destroySelf();
+			}
+			rootAnim = null;
+		}
+		if (slowdownTime > 0) {
+			if (slowdownAnim == null || slowdownAnim.destroyed) {
+				slowdownAnim = new Anim(getCenterPos(), "ra_elec", 1, null, true, host: this);
+			}
+		} else if (slowdownAnim != null) {
+			slowdownAnim?.destroySelf();
+			slowdownAnim = null;
+		}
 	}
 
 	public void debuffCooldowns() {
@@ -918,8 +942,8 @@ public partial class Character : Actor, IDamagable {
 				vaccineTime = 0;
 			}
 		}
-		Helpers.decrementTime(ref virusTime);
-		Helpers.decrementTime(ref oilTime);
+		Helpers.decrementFrames(ref virusTime);
+		Helpers.decrementFrames(ref oilTime);
 
 		if (acidTime > 0) {
 			acidTime -= Global.spf;
@@ -961,34 +985,17 @@ public partial class Character : Actor, IDamagable {
 				removeBurn();
 			}
 		}
-		if (rootTime > 0) {
-			Helpers.decrementFrames(ref rootTime);
-			if (rootAnim == null || rootAnim.destroyed) {
-				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
-			}
-			if (rootTime <= 0) {
-				rootTime = 0;
-				if (rootAnim != null) {
-					rootAnim.destroySelf();
-					rootAnim = null;
-				}
-			}
-		} else {
-			if (rootAnim?.destroyed == false) {
-				rootAnim.destroySelf();
-			}
-		}
-		
+		Helpers.decrementFrames(ref rootTime);
 		Helpers.decrementFrames(ref flattenedTime);
-		Helpers.decrementTime(ref slowdownTime);
+		Helpers.decrementFrames(ref slowdownTime);
 		igFreezeRecoveryCooldown += speedMul;
 		if (igFreezeRecoveryCooldown > 12) {
 			igFreezeRecoveryCooldown = 0;
 			igFreezeProgress = Helpers.clampMin0(igFreezeProgress - 1);
 		}
-		Helpers.decrementTime(ref crystalizeInvulnTime);
-		Helpers.decrementTime(ref grabInvulnTime);
-		Helpers.decrementTime(ref darkHoldInvulnTime);
+		Helpers.decrementFrames(ref crystalizeInvulnTime);
+		Helpers.decrementFrames(ref grabInvulnTime);
+		Helpers.decrementFrames(ref darkHoldInvulnTime);
 		
 		if (burnStunStacks > 0) {
 			if (burningRecoveryCooldown <= 0) {
@@ -1665,7 +1672,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		freezeTime = time;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 
@@ -1697,7 +1704,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		burnStunTime = time;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 
@@ -1730,7 +1737,7 @@ public partial class Character : Actor, IDamagable {
 		stopMoving();
 		charState.canStopJump = false;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 		// Hud stuff.
@@ -1757,7 +1764,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		paralyzedTime = time;
 		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null) {
+		if (enemyPlayer != null && enemyPlayer != player) {
 			enemyPlayer.mastery.addSupportExp(time / 30f, true);
 		}
 
@@ -2323,20 +2330,23 @@ public partial class Character : Actor, IDamagable {
 				shouldDrawHealthBar = true;
 			}
 		}
-
-		if (shouldDrawHealthBar || Global.overrideDrawHealth) {
-			//drawHealthBar();
-			drawHealthBarEX(health, maxHealth, 1);
+		if (!shouldDrawHealthBar) {
+			shouldDrawHealthBar = displayHpTime > 0;
 		}
-		if (shouldDrawName || Global.overrideDrawName && overrideName != "") {
-			drawName(overrideName, overrideColor);
+
+		Point barOffset = pos.round().addxy(-getMiniLifebarLength(), -44);
+
+		if (shouldDrawHealthBar && visible && !sprite.name.EndsWith("die")) {
+			barOffset = renderMiniHUD(barOffset);
+		}
+		if (shouldDrawName && visible && !sprite.name.EndsWith("die")) {
+			barOffset = renderPlayerName(barOffset, !shouldDrawHealthBar);
 		}
 
 		if (!hideNoShaderIcon()) {
 			float dummy = 0;
 			getHealthNameOffsets(out bool shieldDrawn, ref dummy);
 		}
-		
 		bool drewETankHealing = (
 			usedEtank?.drawHealing(this) == true || usedWtank?.drawHealing(this) == true
 		);
@@ -2365,7 +2375,7 @@ public partial class Character : Actor, IDamagable {
 			if (!drewETankHealing && hyperProgress > 0) {
 				float healthBarInnerWidth = 30;
 
-				float progress = Math.Max(hyperProgress, 1);
+				float progress = Math.Min(hyperProgress, 1);
 				float width = progress * healthBarInnerWidth;
 
 				getHealthNameOffsets(out bool shieldDrawn, ref progress);
@@ -2468,6 +2478,8 @@ public partial class Character : Actor, IDamagable {
 							).Count == 0
 						) {
 							text += ", but excluded";
+						} else {
+							text += $", {ai.jumpZoneCooldown} {ai.jumpTime}";
 						}
 						Fonts.drawText(
 							FontType.WhiteMini,
@@ -2628,12 +2640,11 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool hideHealthAndName() {
-		if (isWarpIn()) return true;
-		if (sprite.name.EndsWith("warp_beam")) return true;
-		if (!player.readyTextOver) return true;
-		if (isDeathOrReviveSprite()) return true;
-		if (Global.level.is1v1() && !Global.level.gameMode.isTeamMode && !Global.level.mainPlayer.isSpectator) return true;
-		if (Global.showAIDebug) return true;
+		if (isWarpIn() || sprite.name.EndsWith("warp_beam") ||
+			!player.readyTextOver || isDeathOrReviveSprite()
+		) {
+			return true;
+		}
 		return false;
 	}
 
@@ -2679,18 +2690,6 @@ public partial class Character : Actor, IDamagable {
 			deductLabelY(labelHealthOffY + shieldOffY);
 		} else {
 			deductLabelY(labelHealthOffY);
-		}
-	}
-
-	public virtual void drawHealthBarEX(decimal health, decimal maxHealth, int scale) {
-		decimal hp3 = health / scale;
-		decimal maxHp = Math.Ceiling(maxHealth / scale);
-		Point drawPos = new Point(getCenterPos().x - (float)maxHp, pos.y + currentLabelY + 6);
-
-		drawBarH(hp3, maxHp, 1, drawPos);
-		if (this is Blues blues) {
-			drawPos.x = getCenterPos().x - blues.shieldMaxHP;
-			drawBarH(blues.shieldHP, blues.shieldMaxHP, 2, drawPos.addxy(0, -5));
 		}
 	}
 
@@ -2797,11 +2796,16 @@ public partial class Character : Actor, IDamagable {
 	public virtual void applyDamage(
 		float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId
 	) {
-		if (fDamage <= 0) {
+		onDamageHpDisplayActivation(fDamage, attacker, projId);
+
+		// Return if not owned.
+		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
 		}
 		// Apply mastery level before any reduction.
-		if (this is not Blues && attacker != null && attacker != player && attacker != Player.stagePlayer) {
+		if (this is not Blues && attacker != null &&
+			attacker != player && attacker != Player.stagePlayer
+		) {
 			if (fDamage < Damager.ohkoDamage) {
 				mastery.addDefenseExp(fDamage);
 				attacker.mastery.addDamageExp(fDamage, true);
@@ -2809,14 +2813,9 @@ public partial class Character : Actor, IDamagable {
 					mastery.addMapExp(fDamage * 2);
 				}
 			}
-			if (ownedByLocalPlayer && !Damager.isDot(projId)) {
-				usedEtank = null;
-				usedWtank = null;
+			if (!Damager.isDot(projId)) {
+				enterCombat();
 			}
-		}
-		// Return if not owned.
-		if (!ownedByLocalPlayer) {
-			return;
 		}
 		// For Dark Hold break.
 		if (fDamage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
@@ -2832,7 +2831,7 @@ public partial class Character : Actor, IDamagable {
 
 		// Chip stuff.
 		Character? enemyChar = (actor as Projectile)?.ownerActor as Character ?? attacker?.character;
-		fDamage = chips.onDamage.Invoke(this, fDamage, actor, enemyChar);
+		fDamage = chips.onDamage.Invoke(this, fDamage, actor, attacker, enemyChar);
 
 		// Default values.
 		decimal damage = decimal.Parse(fDamage.ToString());
@@ -2931,9 +2930,18 @@ public partial class Character : Actor, IDamagable {
 				player.trainingDpsTotalDamage = 0;
 				player.trainingDpsStartTime = 0;
 			}
-			killPlayer(attacker, null, weaponIndex, projId);
+			killPlayer(attacker, actor, enemyChar, weaponIndex, projId);
 			alive = false;
-			chips.onDeath.Invoke(this, fDamage, actor, enemyChar);
+		}
+	}
+
+	public void onDamageHpDisplayActivation(float damage, Player attacker, int? projId) {
+		if (damage > 0 && !Damager.isDot(projId) &&
+			Global.level.mainPlayer == attacker &&
+			player != attacker &&
+			player.alliance != attacker.alliance
+		) {
+			displayHpTime = 60 * 2;
 		}
 	}
 
@@ -2958,99 +2966,103 @@ public partial class Character : Actor, IDamagable {
 		usedWtank?.stop(this);
 	}
 
-	public void killPlayer(Player? killer, Player? assister, int? weaponIndex, int? projId) {
+	public void killPlayer(
+		Player? killer, Actor? damager, Character? enemyChar,
+		int? weaponIndex, int? projId, Player? assister = null
+	) {
 		health = 0;
 		alive = false;
 		int? assisterProjId = null;
 		int? assisterWeaponId = null;
-		if (charState is not Die || !ownedByLocalPlayer) {
-			player.lastDeathCanRevive = true;
-			if (ownedByLocalPlayer) {
-				changeState(new Die(), true);
-			}
-			if (ownedByLocalPlayer) {
-				getKillerAndAssister(player, ref killer, ref assister, ref weaponIndex, ref assisterProjId, ref assisterWeaponId);
-			}
+		player.lastDeathCanRevive = true;
 
-			if (killer != null && killer != player && killer != Player.stagePlayer) {
-				killer.addKill();
-				if (Global.level.gameMode is TeamDeathMatch) {
-					if (Global.isHost) {
-						if (killer.alliance != player.alliance) {
-							Global.level.gameMode.teamPoints[killer.alliance]++;
-							Global.level.gameMode.syncTeamScores();
-						}
-					}
-				}
-				killer.awardKillExp();
-				killer.onKillEffects(false);
-				//killer.currency += 10;
-			} else if (Global.level.gameMode.level.is1v1()) {
-				// In 1v1 the other player should always be considered a killer to prevent suicide
-				var otherPlayer = Global.level.nonSpecPlayers().Find(p => p.id != player.id);
-				if (otherPlayer != null) {
-					otherPlayer.addKill();
-				}
-			}
-
-			if (assister != null && assister != player && assister != Player.stagePlayer) {
-				assister.addAssist();
-				assister.addKill();
-
-				assister.awardKillExp(false);
-				assister.onKillEffects(true);
-			}
-			player.addDeath();
-
-			Global.level.gameMode.addKillFeedEntry(
-				new KillFeedEntry(killer, assister, player, weaponIndex)
+		if (ownedByLocalPlayer) {
+			getKillerAndAssister(
+				player, ref killer, ref assister,
+				ref weaponIndex, ref assisterProjId, ref assisterWeaponId
 			);
-			if (ownedByLocalPlayer && Global.level.isNon1v1Elimination() &&
-				player.deaths >= Global.level.gameMode.playingTo
-			) {
-				Global.level.gameMode.addKillFeedEntry(
-					new KillFeedEntry(player.name + " was eliminated.", GameMode.blueAlliance),
-					sendRpc: true
-				);
-			}
+		}
 
-			if (killer?.ownedByLocalPlayer == true)
-				if (killer.character is Axl axl && killer.copyShotDamageEvents.Any(c => c.character == this)) {
-					axl.addDNACore(this);
-				}
+		// Allows to stop death before a RPC is send or a kill is added.
+		if (ownedByLocalPlayer && preDeath(killer, damager, enemyChar)) {
+			addDamageText("Rebirth!", (int)FontType.Golden);
+			return;
+		}
 
-			if (assister?.ownedByLocalPlayer == true) {
-				if (assister.character is Axl axl && assister.copyShotDamageEvents.Any(c => c.character == this)) {
-					axl.addDNACore(this);
-				}
-			}
-
-			if (ownedByLocalPlayer) {
-				var victimPlayerIdBytes = BitConverter.GetBytes((ushort)player.id);
-
-				if (weaponIndex != null && killer != null) {
-					var bytes = new List<byte>()
-					{
-							1,
-							(byte)killer.id,
-							assister == null ? (byte)killer.id : (byte)assister.id,
-							victimPlayerIdBytes[0],
-							victimPlayerIdBytes[1],
-							(byte)weaponIndex
-						};
-
-					if (projId != null) {
-						byte[] projIdBytes = BitConverter.GetBytes((ushort)projId.Value);
-						bytes.Add(projIdBytes[0]);
-						bytes.Add(projIdBytes[1]);
+		if (killer != null && killer != player && killer != Player.stagePlayer) {
+			killer.addKill();
+			if (Global.level.gameMode is TeamDeathMatch) {
+				if (Global.isHost) {
+					if (killer.alliance != player.alliance) {
+						Global.level.gameMode.teamPoints[killer.alliance]++;
+						Global.level.gameMode.syncTeamScores();
 					}
-
-					Global.serverClient?.rpc(RPC.killPlayer, bytes.ToArray());
-				} else {
-					Global.serverClient?.rpc(RPC.killPlayer, 0, 0, 0, victimPlayerIdBytes[0], victimPlayerIdBytes[1]);
 				}
+			}
+			killer.awardKillExp();
+			killer.onKillEffects(false, player, damager, this);
+			//killer.currency += 10;
+		} else if (Global.level.gameMode.level.is1v1()) {
+			// In 1v1 the other player should always be considered a killer to prevent suicide
+			var otherPlayer = Global.level.nonSpecPlayers().Find(p => p.id != player.id);
+			if (otherPlayer != null) {
+				otherPlayer.addKill();
 			}
 		}
+
+		if (assister != null && assister != player && assister != Player.stagePlayer) {
+			assister.addAssist();
+			assister.addKill();
+
+			assister.awardKillExp(false);
+			assister.onKillEffects(false, player, damager, this);
+		}
+		player.addDeath();
+
+		Global.level.gameMode.addKillFeedEntry(
+			new KillFeedEntry(killer, assister, player, weaponIndex)
+		);
+
+		// Local only starts here.
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+
+		if (Global.level.isNon1v1Elimination() &&
+			player.deaths >= Global.level.gameMode.playingTo
+		) {
+			Global.level.gameMode.addKillFeedEntry(
+				new KillFeedEntry(player.name + " was eliminated.", GameMode.blueAlliance),
+				sendRpc: true
+			);
+		}
+		byte[] victimPlayerIdBytes = BitConverter.GetBytes((ushort)player.id);
+
+		if (weaponIndex != null && killer != null) {
+			List<byte> bytes = [
+				1,
+				(byte)killer.id,
+				assister == null ? (byte)killer.id : (byte)assister.id,
+				victimPlayerIdBytes[0],
+				victimPlayerIdBytes[1],
+				(byte)weaponIndex
+			];
+			if (projId != null) {
+				byte[] projIdBytes = BitConverter.GetBytes((ushort)projId.Value);
+				bytes.Add(projIdBytes[0]);
+				bytes.Add(projIdBytes[1]);
+			}
+
+			Global.serverClient?.rpc(RPC.killPlayer, bytes.ToArray());
+		} else {
+			Global.serverClient?.rpc(RPC.killPlayer, 0, 0, 0, victimPlayerIdBytes[0], victimPlayerIdBytes[1]);
+		}
+
+		// Go to death state if not stoped.
+		if (onDeath(killer, damager, enemyChar) || charState is Die) {
+			return;
+		}
+		changeState(new Die(), true);
 	}
 
 	public void addHealth(float amount) {
@@ -3073,8 +3085,6 @@ public partial class Character : Actor, IDamagable {
 		healAmount += (float)Math.Ceiling(maxHealth);
 		onHealing(Math.Ceiling(maxHealth));
 	}
-
-	public virtual void onHealing(decimal amount) { }
 
 	public virtual void addAmmo(float amount) {
 		currentWeapon?.addAmmoHeal(amount);
@@ -3178,8 +3188,27 @@ public partial class Character : Actor, IDamagable {
 		charState?.onExit(null);
 	}
 
-	public virtual void onDeath() {
+	// If true cancels the death itself and the kill reward.
+	public virtual bool preDeath(Player? killer, Actor? damager, Character? enemyChar) {
+		return chips.preDeath.Invoke(this, killer, damager, enemyChar);
+	}
 
+	// If true cancels the death state.
+	public virtual bool onDeath(Player? killer, Actor? damager, Character? enemyChar) {
+		return chips.preDeath.Invoke(this, killer, damager, enemyChar);
+	}
+
+	public virtual void onHealing(decimal amount) {
+
+	}
+
+	public virtual void onEnemyDamage(float amount) {
+
+	}
+
+	// If true cancels the death state.
+	public virtual void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
+		chips.onKill.Invoke(this, isAssist, enemy, damager, enemyChar);
 	}
 
 	public void cleanupBeforeTransform() {
@@ -3322,7 +3351,9 @@ public partial class Character : Actor, IDamagable {
 		player.getNextActorNetId(), true, true);
 		bigBubble.attacker = attacker;
 		dwrapStart();
-		attacker.mastery.addSupportExp(2, true);
+		if (attacker != player) {
+			attacker.mastery.addSupportExp(2, true);
+		}
 	}
 
 	public void removeBubble(bool ejected) {
@@ -3511,24 +3542,6 @@ public partial class Character : Actor, IDamagable {
 		renderLifebar(offset, position);
 		renderAmmo(offset, position);
 		renderBuffs(offset, position);
-
-		bool shouldDrawHealthBar = false;
-		if (!hideHealthAndName()) {
-			if (Global.level.mainPlayer.isSpectator) {
-				shouldDrawHealthBar = true;
-			} 
-			// Basic case, drawing alliance of teammates in team modes
-			else if (
-				!player.isMainPlayer && player.alliance == Global.level.mainPlayer.alliance &&
-				Global.level.gameMode.isTeamMode
-			) {
-				shouldDrawHealthBar = true;
-			}
-		}
-
-		/* if (shouldDrawHealthBar || Global.overrideDrawHealth) {
-			drawHealthBarEX(health, maxHealth, 1);
-		} */
 	}
 
 	public virtual void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
@@ -3556,9 +3569,8 @@ public partial class Character : Actor, IDamagable {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-
 		// Evil Energy.
-		if (player.evilEnergyStacks > 0) {
+		if (this is Bass && player.evilEnergyStacks > 0) {
 			drawBuff(
 				drawPos, player.evilEnergyTime / player.evilEnergyMaxTime,
 				"hud_weapon_icon_bass", 14
@@ -3566,7 +3578,6 @@ public partial class Character : Actor, IDamagable {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-
 		foreach (Buff buff in buffList) {
 			drawBuff(
 				drawPos, buff.time / buff.maxTime,
@@ -3575,7 +3586,6 @@ public partial class Character : Actor, IDamagable {
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
-
 		foreach (AttackCooldown at in attacksCooldown.Values) {
 			if (at.cooldown <= 0) continue;
 			float cd = at.cooldown;
@@ -3675,6 +3685,131 @@ public partial class Character : Actor, IDamagable {
 			ammo, 0, maxAmmo, false, fullBarName, baseBarName,
 			ammoDisplayScale: renderWeapon.ammoDisplayScale
 		);
+	}
+
+	public virtual Point renderMiniHUD(Point offset) {
+		// Values.
+		float scale = getMiniHudScale();
+		int maxBarAmmo = getMiniWeaponLength();
+		float hp = (float)health / scale;
+		float mHp = (float)maxHealth / scale;
+		Color? color = Color.White;
+		if (Global.level.gameMode.isTeamMode &&
+			player.alliance < Global.level.teamNum &&
+			player.alliance < Global.level.gameMode.teamColors.Length
+		) {
+			color = Global.level.gameMode.teamColors[player.alliance];
+		}
+		// Weapon.
+		if (maxBarAmmo > 0) {
+			// Border.
+			DrawWrappers.DrawRect(
+				offset.x + 1, offset.y - 4, offset.x + maxBarAmmo * 2, offset.y - 1,
+				true, new Color(49, 49, 49), 1, ZIndex.HUD - 100, outlineColor: new Color(0, 0, 0)
+			);
+			// Weapon.
+			if (currentWeapon != null && currentWeapon.drawAmmo) {
+				float displayAmmo = currentWeapon.ammo / currentWeapon.ammoDisplayScale / scale;
+				float displayMaxAmmo = currentWeapon.maxAmmo / currentWeapon.ammoDisplayScale / scale;
+				renderMiniHudBorder(offset, color, maxBarAmmo);
+				offset = renderMiniAmmo(offset, 2, displayAmmo, displayMaxAmmo);
+			} else {
+				renderMiniHudBorder(offset, color, maxBarAmmo);
+				offset = renderMiniAmmo(offset, 3, maxBarAmmo, maxBarAmmo);
+			}
+		}
+		// Health.
+		renderMiniHudBorder(offset, color, mHp);
+		offset = renderMiniAmmo(offset, 1, hp, mHp);
+		// Return offset.
+		return new Point(offset.x, offset.y);
+	}
+
+	
+	public virtual void renderMiniHudBorder(Point offset, Color? color, float ammo) {
+		if (color == null) {
+			return;
+		}
+		DrawWrappers.DrawRect(
+			offset.x, offset.y - 5, offset.x + 1 + ammo * 2, offset.y,
+			false, color.Value, 1, ZIndex.HUD - 101
+		);
+		DrawWrappers.DrawRect(
+			offset.x - 1, offset.y - 6, offset.x + 2 + ammo * 2, offset.y + 1,
+			false, Color.Black, 1, ZIndex.HUD - 102
+		);
+	}
+
+	public virtual Point renderMiniAmmo(Point offset, int color, float ammo, float maxAmmo) {
+		float cAmmo = MathF.Ceiling(ammo);
+		float fAmmo = MathF.Floor(ammo);
+		float aAlpha = ammo - fAmmo;
+		float mAmmo = MathF.Floor(maxAmmo);
+		if (ammo == maxAmmo) {
+			fAmmo = mAmmo;
+		}
+		Point lpos = offset.addxy(0, -5);
+		for (int i = 0; i < mAmmo; i++) {
+			int id = i < fAmmo ? color : 0;
+			Global.sprites["hud_bar_small_h"].draw(
+				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 100
+			);
+			if (i >= fAmmo && i < cAmmo) {
+				Global.sprites["hud_bar_small_h"].draw(
+					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, ZIndex.HUD - 100
+				);
+			}
+			lpos.x += 1;
+		}
+
+		return offset.addxy(0, -4);
+	}
+
+	public virtual int getMiniLifebarLength() {
+		int max = MathInt.Ceiling(maxHealth / (decimal)getMiniHudScale());
+		return Math.Max(getMiniWeaponLength(), max);
+	}
+
+	public virtual int getMiniWeaponLength() {
+		int max = 0;
+		foreach(Weapon weapon in weapons) {
+			if (weapon.drawAmmo) {
+				max = Math.Max(
+					MathInt.Ceiling(weapon.maxAmmo / weapon.ammoDisplayScale), max
+				);
+			}
+		}
+		return MathInt.Ceiling(max / getMiniHudScale());
+	}
+
+	public virtual float getMiniHudScale() {
+		float scale = 2;
+		if (Global.customSettings != null) {
+			float mod = Global.customSettings.healthModifier / 8f;
+			if (mod > 1) {
+				return scale * (Global.customSettings.healthModifier / 8f);
+			}
+		}
+		return scale;
+	}
+
+	public virtual Point renderPlayerName(Point offset, bool useColor = false) {
+		string playerName = player.name;
+		Color nameColor = Color.White;
+		if (useColor &&
+			Global.level.gameMode.isTeamMode &&
+			player.alliance < Global.level.teamNum &&
+			player.alliance < Global.level.gameMode.teamColors.Length
+		) {
+			nameColor = Global.level.gameMode.teamColors[player.alliance];
+		}
+		Point textPos = offset.addxy(0, -7);
+
+		Fonts.drawText(
+			FontType.WhiteMini, playerName, textPos.x, textPos.y,
+			Alignment.Left, true, depth: ZIndex.HUD, color: nameColor
+		);
+		return offset.addxy(0, -12);
 	}
 
 	public int getRandomWeaponIndex() {

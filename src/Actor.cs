@@ -354,11 +354,10 @@ public partial class Actor : GameObject {
 			frameTime = 0;
 			animTime = 0;
 		} else {
-			frameIndex = oldFrameIndex;
+			sprite.trueFrameIndex = oldFrameIndex;
 			frameSeconds = oldFrameTime;
 			animSeconds = oldAnimTime;
 		}
-
 		if (frameIndex >= sprite.totalFrameNum) {
 			frameIndex = 0;
 			frameTime = 0;
@@ -1256,7 +1255,11 @@ public partial class Actor : GameObject {
 		commonHealLogic(healer, (decimal)healAmount, (decimal)currentHealth, (decimal)maxHealth, drawHealText);
 	}
 
-	public void commonHealLogic(Player healer, decimal healAmount, decimal currentHealth, decimal maxHealth, bool drawHealText) {
+	public void commonHealLogic(
+		Player healer, decimal healAmount,
+		decimal currentHealth, decimal maxHealth,
+		bool drawHealText
+	) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -1283,7 +1286,7 @@ public partial class Actor : GameObject {
 		float reportDamage = Helpers.clampMax(damage, maxHealth);
 		if (attacker.isMainPlayer || ownedByLocalPlayer) {
 			if (damage == Damager.ohkoDamage && damage >= maxHealth) {
-				addDamageText("Instakill!", (int)FontType.RedishOrange);
+				addDamageText("Instakill!", (int)FontType.OrangeSmall);
 			} else {
 				addDamageText(reportDamage);
 			}
@@ -1669,7 +1672,7 @@ public partial class Actor : GameObject {
 	}
 
 	public void addAttackCooldown(int id, AttackCooldown cooldown) {
-		attacksCooldown.Add(id, cooldown);
+		attacksCooldown[id] = cooldown;
 	}
 
 	public void triggerCooldown(int id, float? overrideNewCooldown = null) {
@@ -1677,7 +1680,10 @@ public partial class Actor : GameObject {
 	}
 
 	public bool isCooldownOver(int id) {
-		return attacksCooldown[id].cooldown <= 0;
+		if (attacksCooldown.ContainsKey(id)) {
+			return attacksCooldown[id].cooldown <= 0;
+		}
+		return true;
 	}
 
 	public void turnToPos(Point lookPos) {

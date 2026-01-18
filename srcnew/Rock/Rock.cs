@@ -271,7 +271,7 @@ public class Rock : Character {
 			hyperProgress = 0;
 			return;
 		}
-		if (hyperProgress < 1) {
+		if (hyperProgress < 1 || !charState.normalCtrl) {
 			hyperProgress += Global.spf;
 			return;
 		}

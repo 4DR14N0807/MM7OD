@@ -1263,10 +1263,10 @@ public class GameMode {
 			} else if (i < MathInt.Ceiling(health) + damageSavings) {
 				Global.sprites["hud_health_full"].drawToHUD(4, baseX, baseY);
 			}
-			//Evil Energy lost HP
+			// Evil Energy lost HP
 			else if (i >= trueHP && player.character != null && !player.character.destroyed) {
 				float t = player.evilEnergyTime / 10f;
-				int color = Global.frameCount % t <= 10 ? 1 : 2;
+				int color = Global.floorFrameCount % t <= 10 ? 1 : 2;
 				Global.sprites["hud_energy_full"].drawToHUD(color, baseX, baseY);
 			} else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
@@ -1348,39 +1348,6 @@ public class GameMode {
 		if (player.character != null) {
 			weapon = player.weapon;
 			player.lastHudWeapon = weapon;
-		}
-		if (player.character is Bass bass && bass.isSuperBass) {
-			int energy = bass.evilEnergy[0];
-			int energy2 = bass.evilEnergy[1];
-			int maxEnergy = Bass.MaxEvilEnergy;
-			int stacks = player.pendingEvilEnergyStacks;
-			bool charging = bass.charState is EnergyCharge or EnergyIncrease;
-
-			// Level 1 Evil Energy Bar.
-			int color = energy >= maxEnergy ? 3 : 1;
-			color = Global.frameCount % 6 >= 3 ? 4 : color;
-
-			renderAmmo(
-				baseX, baseY, -3, color, MathF.Ceiling(energy),
-				maxAmmo: maxEnergy, barSprite: "hud_energy_full"
-			);
-
-			//Bar Base skull eyes
-			if ((charging || energy2 >= maxEnergy) && Global.frameCount % 3 == 0) {
-				Global.sprites["hud_energy_eyes"].drawToHUD(stacks, baseX, baseY + 25);
-			}
-
-			//Level 2 Evil Energy Bar.
-			if (energy2 > 0) {
-				int yPos = MathInt.Ceiling(9 + baseY);
-				int color2 = energy2 >= maxEnergy ? 7 : 5;
-				color2 = Global.frameCount % 6 >= 3 ? 8 : color2;
-
-				for (int i = 0; i < energy2; i++) {
-					Global.sprites["hud_energy_full"].drawToHUD(color2, baseX, yPos);
-					yPos -= 2;
-				}
-			}
 		}
 
 		// Return if there is no weapon to render.

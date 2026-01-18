@@ -81,10 +81,10 @@ public class BassMovelistMenu : MovelistMenu {
 					spriteName, 16, "FLIGHT", Control.Jump, "MID-AIR AFTER\nDOUBJE JUMPING"
 				),
 				new MovelistItem(
-					spriteName, 17, "KICK", Control.Special1, "ON GROUND"
+					spriteName, 17, "KICK", Control.Up + " + " + Control.Special1, "ON GROUND"
 				),
 				new MovelistItem(
-					spriteName, 18, "SONIC CRUSHER", Control.Special1, "MID-AIR\nHOLD " + Control.Special1 + " TO\nKEEP FLYING"
+					spriteName, 18, "SONIC CRUSHER", Control.Special1, "HOLD " + Control.Special1 + " TO\nKEEP FLYING"
 				),
 				new MovelistItem(
 					spriteName, 19, "SWEEPING LASER", Control.Down + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"

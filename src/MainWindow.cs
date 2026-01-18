@@ -4,6 +4,7 @@ using System.IO;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using WindowsAPI;
 
 namespace MMXOnline;
 
@@ -77,22 +78,34 @@ public partial class Global {
 		if (!fullscreen) {
 			window = new RenderWindow(new VideoMode(windowW, windowH), "MM7 Online: Deathmatch");
 			window.SetVerticalSyncEnabled(options.vsync);
-			if (Global.hideMouse) window.SetMouseCursorVisible(false);
+			if (Global.hideMouse) {
+				window.SetMouseCursorVisible(false);
+			}
 		} else {
 			uint desktopWidth = VideoMode.DesktopMode.Width;
 			uint desktopHeight = VideoMode.DesktopMode.Height;
-			window = new RenderWindow(new VideoMode(desktopWidth, desktopHeight), "MM7 Online: Deathmatch", Styles.None);
+			Styles style = Styles.None;
+			#if WINDOWS
+				style = Styles.Default;
+			#endif
+			window = new RenderWindow(
+				new VideoMode(desktopWidth, desktopHeight), "MM7 Online: Deathmatch", style
+			);
+			#if WINDOWS
+				// Fixes bordeless on AMD and NVidia cards.
+				// Intels are f-ed up OpenGL. So this does not work on them.
+				// TODO: To fix this render final render result in GDI... maybe.
+				// Or check how the hell Snes9x OpenGL render avoids this bug.
+				WinApi.ReplaceWindowStyle(
+					window, WinApi.WS.VISIBLE | WinApi.WS.SYSMENU |
+					WinApi.WS.CLIPCHILDREN | WinApi.WS.CLIPSIBLINGS
+				);
+				WinApi.SetWindowExStyle(window, WinApi.WSEX.APPWINDOW, true);
+			#endif
 			window.SetVerticalSyncEnabled(options.vsync);
 			window.Position = new Vector2i(0, 0);
 			window.Size = new Vector2u(desktopWidth, desktopHeight);
 			viewPort = getFullScreenViewPort();
-			#if WINDOWS
-				IntPtr handle = window.SystemHandle;
-				const int GWL_STYLE = -16;
-				const uint WS_POPUP = 0x80000000;
-				uint currentStyle = Program.GetWindowLong(handle, GWL_STYLE);
-				Program.SetWindowLong(handle, GWL_STYLE, currentStyle & ~(WS_POPUP));
-			#endif
 		}
 
 		if (!File.Exists(Global.assetPath + "assets/menu/icon.png")) {

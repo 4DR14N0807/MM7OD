@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static MMXOnline.GameMode;
-using SFML.Graphics;
 using System.Numerics;
+using SFML.Graphics;
 using SFML.System;
+using static MMXOnline.GameMode;
 
 namespace MMXOnline;
 
@@ -63,8 +63,9 @@ public class Blues : Character {
 
 	// AI variables.
 	public float aiSpecialUseTimer = 0;
+	public float aiSlideTimer = 0;
 	public bool aiActivateShieldOnLand;
-	public bool aiJumpedOnFrame;
+	public float aiJumpedOnFrame;
 	public float aiLemonCooldown;
 	public bool aiCoreCooldownMode;
 
@@ -636,7 +637,7 @@ public class Blues : Character {
 			hyperProgress = 0;
 			return;
 		}
-		if (hyperProgress < 1 || charState.normalCtrl) {
+		if (hyperProgress < 1 || !charState.normalCtrl) {
 			hyperProgress += Global.spf;
 			return;
 		}
@@ -830,7 +831,11 @@ public class Blues : Character {
 				new ProtoBusterProj(
 					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
 				);
-				playSound("buster", sendRpc: true);
+				if (overheating) {
+					playSound("buster", sendRpc: true);
+				} else {
+					playSound("protoLemon", sendRpc: true);
+				}
 			} else {
 				float shootAngle = xDir == 1 ? 0 : 128;
 				shootAngle += Helpers.randomRange(-2, 2);
@@ -840,7 +845,6 @@ public class Blues : Character {
 				playSound("buster2X1", sendRpc: true);
 				addCoreAmmo(0.75f);
 			}
-			playSound("protoLemon", sendRpc: true);
 			lemonCooldown = 8;
 			unchargedLemonCooldown[lemonNum] = 40;
 			if (oldShootAnimTime <= 0.25f) {
@@ -1149,11 +1153,11 @@ public class Blues : Character {
 
 	public bool canUseBreakman() {
 		if (isBreakMan) {
-			Global.level.gameMode.setHUDDebugWarning("test");
+			//Global.level.gameMode.setHUDDebugWarning("test");
 			return false;
 		}
 		if (currency >= reviveCost) {
-			Global.level.gameMode.setHUDDebugWarning("test2");
+			//Global.level.gameMode.setHUDDebugWarning("test2");
 			return true;
 		}
 		return false;
@@ -1163,21 +1167,23 @@ public class Blues : Character {
 		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
-		if (fDamage <= 0) {
-			return;
-		}
-		// Apply mastery level before any reduction.
-		if (attacker != null && attacker != player &&
-			attacker != Player.stagePlayer
-		) {
-			if (fDamage < Damager.ohkoDamage) {
-				mastery.addDefenseExp(fDamage);
-				attacker.mastery.addDamageExp(fDamage, true);
-			}
-		}
+		onDamageHpDisplayActivation(fDamage, attacker, projId);
 		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
+		}
+		// Apply mastery level before any reduction.
+		if (attacker != null && attacker != player && attacker != Player.stagePlayer) {
+			if (fDamage < Damager.ohkoDamage) {
+				mastery.addDefenseExp(fDamage);
+				attacker.mastery.addDamageExp(fDamage, true);
+				if (flag != null) {
+					mastery.addMapExp(fDamage * 2);
+				}
+			}
+			if (!Damager.isDot(projId)) {
+				enterCombat();
+			}
 		}
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
@@ -1293,7 +1299,6 @@ public class Blues : Character {
 					playSound("danger_wrap_explosion", sendRpc: true);
 					new Anim(pos.addxy(xDir * 20, -20), "generic_explosion", xDir, player.getNextActorNetId(), true, true);
 				}
-				
 			}
 		}
 		// Back shield block check.
@@ -1366,11 +1371,10 @@ public class Blues : Character {
 	}
 
 	public override void aiUpdate(Actor? target) {
-		if (charState.normalCtrl && shieldHP > 0 && grounded && !aiJumpedOnFrame && !isShieldActive) {
+		if (charState.normalCtrl && shieldHP > 0 && grounded && aiJumpedOnFrame <= 0 && !isShieldActive) {
 			isShieldActive = true;
-			isDashing = false;
 		}
-		aiJumpedOnFrame = false;
+		Helpers.decrementFrames(ref aiJumpedOnFrame);
 		if (target == null) {
 			player.hold(Control.Shoot, 1);
 		}
@@ -1395,6 +1399,7 @@ public class Blues : Character {
 			aiCoreCooldownMode = false;
 		}
 		Helpers.decrementFrames(ref aiSpecialUseTimer);
+		Helpers.decrementFrames(ref aiSlideTimer);
 		Helpers.decrementFrames(ref aiLemonCooldown);
 
 		if (!aiCoreCooldownMode && (!isFacing(target) || aiLemonCooldown > 0)) {
@@ -1421,6 +1426,7 @@ public class Blues : Character {
 		if (isFacing(target) && target.pos.distanceTo(pos) > 96 && grounded &&
 			charState.normalCtrl && charState is not BluesSlide
 		) {
+			aiSlideTimer = 60;
 			changeState(new BluesSlide());
 			return;
 		}
@@ -1578,7 +1584,7 @@ public class Blues : Character {
 		float baseY = hudHealthPosition.y + offset.y;
 
 		int coreAmmoColor = 0;
-		if ((overheating || overdrive) && Global.frameCount % 6 >= 3) {
+		if ((overheating || overdrive) && Global.floorFrameCount % 6 >= 3) {
 			coreAmmoColor = 2;
 		}
 		if (Options.main.coreHeatDisplay == 1) return;
@@ -1590,11 +1596,11 @@ public class Blues : Character {
 		if (overdrive) {
 			int yPos = MathInt.Ceiling(baseY - 16);
 			int overdriveColor = 1;
-			if (Global.frameCount % 6 >= 3) {
+			if (Global.floorFrameCount % 6 >= 3) {
 				overdriveColor = 3;
 			}
 			float alpha = 1;
-			if (Global.frameCount % 4 >= 2) {
+			if (Global.floorFrameCount % 4 >= 2) {
 				alpha = 0.25f;
 			}
 			for (var i = 0; i < overdriveAmmo; i++) {
@@ -1671,6 +1677,41 @@ public class Blues : Character {
 			drawBarHHUD(lengthP, maxLength, 1, barPos);
 			drawBarHHUD(length, maxLength, 2, barPos, false);
 		}
+	}
+
+	public override Point renderMiniHUD(Point offset) {
+		// Values.
+		float scale = getMiniHudScale();
+		float hp = (float)health / scale;
+		float mHp = (float)maxHealth / scale;
+		Color color = Color.White;
+		if (Global.level.gameMode.isTeamMode &&
+			player.alliance < Global.level.teamNum &&
+			player.alliance < Global.level.gameMode.teamColors.Length
+		) {
+			color = Global.level.gameMode.teamColors[player.alliance];
+		}
+		// Ammo.
+		renderMiniHudBorder(offset, color, coreMaxAmmo / scale);
+		offset = renderMiniAmmo(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
+		if (overdrive) {
+			renderMiniAmmo(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
+		}
+		// Shield.
+		Point shieldOffset = offset.addxy(mHp * 2, 0);
+		renderMiniHudBorder(shieldOffset, color, shieldMaxHP / scale);
+		renderMiniAmmo(shieldOffset, 5, (float)shieldHP / scale, shieldMaxHP / scale);
+		// Health.
+		renderMiniHudBorder(offset, color, mHp);
+		offset = renderMiniAmmo(offset, 1, hp, mHp);
+		// Return offset.
+		return new Point(offset.x, offset.y);
+	}
+
+	public override int getMiniLifebarLength() {
+		float scale = getMiniHudScale();
+		int max = MathInt.Ceiling((maxHealth + shieldMaxHP) / (decimal)scale);
+		return Math.Max(MathInt.Ceiling(coreMaxAmmo / scale), max);
 	}
 
 	public void renderOverdriveHUD() {

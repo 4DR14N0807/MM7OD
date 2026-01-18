@@ -73,18 +73,20 @@ public class ProtoBusterAngledProj : Projectile {
 			this.byteAngle = byteAngle;
 		}
 
-		if (type == 0) {
-			changeSprite("rock_buster_proj", true);
-			fadeSprite = "rock_buster_fade";
-			damager.damage = 0.5f;
-		} else if (type == 2) {
-			damager.flinch = Global.miniFlinch;
-			changeSprite("proto_chargeshot_yellow_proj", true);
-			fadeSprite = "proto_chargeshot_yellow_proj_fade";
-		}
-
 		if (rpc) {
 			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, (byte)type);
+		}
+		
+		if (type == 0) {
+			damager.damage = 0.5f;
+			projId = (int)BluesProjIds.LemonAngled;
+			changeSprite("rock_buster_proj", true);
+			fadeSprite = "rock_buster_fade";
+		} else if (type == 2) {
+			damager.flinch = Global.miniFlinch;
+			projId = (int)BluesProjIds.LemonAngled;
+			changeSprite("proto_chargeshot_yellow_proj", true);
+			fadeSprite = "proto_chargeshot_yellow_proj_fade";
 		}
 	}
 

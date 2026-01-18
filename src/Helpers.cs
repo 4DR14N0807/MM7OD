@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using ProtoBuf;
 using SFML.Graphics;
+using WindowsAPI;
 
 namespace MMXOnline;
 
@@ -446,43 +447,24 @@ public class Helpers {
 		return x << 16 | y;
 	}
 
-#if WINDOWS
-	[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-	public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-#endif
-
 	public static void showMessageBox(string message, string caption) {
-#if WINDOWS
-		if (Global.window != null) {
-			Global.window.SetMouseCursorVisible(true);
-		}
-		MessageBox(IntPtr.Zero, message, caption, 0);
-		if (Global.window != null && Options.main != null) {
-			Global.window.SetMouseCursorVisible(!Options.main.fullScreen);
-		}
-#else
+		#if WINDOWS
+			WinApi.ShowMessageBox(Global.window, message, caption, 0, Options.main.fullScreen);
+		#else
 			Console.WriteLine(caption + Environment.NewLine + message);
-#endif
+		#endif
 	}
 
 	public static bool showMessageBoxYesNo(string message, string caption) {
-#if WINDOWS
-		if (Global.window != null) {
-			Global.window.SetMouseCursorVisible(true);
-		}
-		int dialogResult = MessageBox(IntPtr.Zero, message, caption, 4);
-		if (Global.window != null && Options.main != null) {
-			Global.window.SetMouseCursorVisible(!Options.main.fullScreen);
-		}
-		if (dialogResult == 6) {
-			return true;
-		} else {
-			return false;
-		}
-#else
+		#if WINDOWS
+			int dialogResult = WinApi.ShowMessageBox(
+				Global.window, message, caption, 4, Options.main.fullScreen
+			);
+			return dialogResult == 6;
+		#else
 			Console.WriteLine(caption + Environment.NewLine + message);
 			return true;
-#endif
+		#endif
 	}
 
 	public static void menuUpDown(ref int val, int minVal, int maxVal, bool wrap = true, bool playSound = true) {

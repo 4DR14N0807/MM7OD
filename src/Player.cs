@@ -1036,13 +1036,14 @@ public partial class Player {
 					(byte)randomLoadout.weapon1,
 					(byte)randomLoadout.weapon2,
 					(byte)randomLoadout.weapon3,
+					(byte)loadout.bassLoadout.hypermode,
 				];
-			}	
-
+			}
 			return [
 				(byte)loadout.bassLoadout.weapon1,
 				(byte)loadout.bassLoadout.weapon2,
 				(byte)loadout.bassLoadout.weapon3,
+				(byte)loadout.bassLoadout.hypermode,
 			];
 		}
 		return [];
@@ -1121,6 +1122,7 @@ public partial class Player {
 				weapon1 = extraData[0],
 				weapon2 = extraData[1],
 				weapon3 = extraData[2],
+				hypermode = extraData[3],
 			};
 			if (isMainChar) {
 				loadout.bassLoadout = bassLoadout;

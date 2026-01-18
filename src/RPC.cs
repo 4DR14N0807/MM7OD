@@ -745,8 +745,9 @@ public class RPCActorToggle : RPC {
 			else if (actor is InfinityGigProj rpp2) rpp2.reversed = true;
 		} else if (toggleId == RPCActorToggleType.DropFlagManual) {
 			if (Global.isHost && actor is Character chr) {
-				chr.dropFlag();
-				chr.dropFlagCooldown = 1;
+				if (chr.flag != null) {
+					chr.dropFlag();
+				}
 			}
 		} else if (toggleId == RPCActorToggleType.AwardCurrency) {
 			if (actor is Character chr) {

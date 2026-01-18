@@ -1159,8 +1159,9 @@ public partial class Character : Actor, IDamagable {
 					dropFlagCooldown = 1;
 					if (Global.isHost || Global.serverClient == null) {
 						dropFlag();
+					} else {
+						RPC.actorToggle.sendRpc(netId, RPCActorToggleType.DropFlagManual);
 					}
-					RPC.actorToggle.sendRpc(netId, RPCActorToggleType.DropFlagManual);
 				}
 			} else {
 				dropFlagProgress = 0;
@@ -3198,6 +3199,7 @@ public partial class Character : Actor, IDamagable {
 		if (flag != null) {
 			flag.dropFlag();
 			flag = null;
+			dropFlagCooldown = 1;
 		}
 	}
 

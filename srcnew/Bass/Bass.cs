@@ -43,9 +43,11 @@ public class Bass : Character {
 				weapon1 = player.loadout.bassLoadout.weapon1,
 				weapon2 = player.loadout.bassLoadout.weapon2,
 				weapon3 = player.loadout.bassLoadout.weapon3,
+				hypermode = player.loadout.bassLoadout.hypermode,
 			};
 		}
 		this.loadout = loadout;
+		hyperModeNum = loadout.hypermode;
 		weapons = getLoadout();
 
 		maxHealth = (decimal)player.getMaxHealth(charId);
@@ -602,7 +604,7 @@ public class Bass : Character {
 				}
 				return false;
 			}
-			if (grounded && yInput == -1 && (phase >= 1 || isSuperBass)) {
+			if (grounded && yInput == -1) {
 				if (isCooldownOver((int)AttackIds.Kick)) {
 					changeState(new BassKick(), true);
 					return true;
@@ -881,7 +883,7 @@ public class Bass : Character {
 	}
 
 	public override bool canAirDash() {
-		return isSuperBass && dashedInAir <= 1 && phase >= 3;
+		return isSuperBass && dashedInAir <= 0 && phase >= 3;
 	}
 
 	public override bool canWallClimb() {

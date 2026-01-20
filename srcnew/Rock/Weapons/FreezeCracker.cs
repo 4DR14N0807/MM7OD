@@ -28,13 +28,13 @@ public class FreezeCracker : Weapon {
 		Player player = rock.player;
 		int input = player.input.getYDir(player);
 
-		new FreezeCrackerProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, input);
+		new FreezeCrackerRmProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, input);
 		rock.playSound("buster2", sendRpc: true);
 	}
 }
 
 
-public class FreezeCrackerProj : Projectile {
+public class FreezeCrackerRmProj : Projectile {
 
 	public int type;
 	int input;
@@ -44,7 +44,7 @@ public class FreezeCrackerProj : Projectile {
 	Actor ownChr = null!;
 
 
-	public FreezeCrackerProj(
+	public FreezeCrackerRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		int type, int input = 0, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -93,7 +93,7 @@ public class FreezeCrackerProj : Projectile {
 
 		if (type == 0 && isAnimOver() && ownedByLocalPlayer) {
 			time = 0;
-			new FreezeCrackerProj(
+			new FreezeCrackerRmProj(
 				ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 1, input, rpc: true
 			);
 			destroySelfNoEffect();
@@ -111,7 +111,7 @@ public class FreezeCrackerProj : Projectile {
 			destroySelf();
 
 			for (int i = 0; i < 6; i++) {
-				new FreezeCrackerPieceProj(
+				new FreezeCrackerPieceRmProj(
 					ownChr, pos, xDir, damager.owner.getNextActorNetId(true), i, rpc: true);
 			}
 		}
@@ -151,7 +151,7 @@ public class FreezeCrackerProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new FreezeCrackerProj(
+		return new FreezeCrackerRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
 			arg.extraData[0], altPlayer: arg.player
 		);
@@ -159,10 +159,10 @@ public class FreezeCrackerProj : Projectile {
 }
 
 
-public class FreezeCrackerPieceProj : Projectile {
+public class FreezeCrackerPieceRmProj : Projectile {
 
 
-	public FreezeCrackerPieceProj(
+	public FreezeCrackerPieceRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		int type, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -185,7 +185,7 @@ public class FreezeCrackerPieceProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new FreezeCrackerPieceProj(
+		return new FreezeCrackerPieceRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
 			arg.extraData[0], altPlayer: arg.player
 		);

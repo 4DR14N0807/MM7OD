@@ -518,7 +518,7 @@ public class Damager {
 	}
 
 	public static bool alwaysDirBlock(Actor actor, int projId) {
-		if (projId == (int)RockProjIds.ScorchWheel && actor is ScorchWheelProj) {
+		if (projId == (int)RockProjIds.ScorchWheel && actor is ScorchWheelRmProj) {
 			return true;
 		}
 		return projId switch {

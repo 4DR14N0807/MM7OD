@@ -45,7 +45,7 @@ public class NoiseCrush : Weapon {
 
 		if (charged) {
 			rock.playSound("noise_crush_charged");
-			new NoiseCrushSpawner(
+			new NoiseCrushSpawnerRm(
 				rock, this, shootPos, xDir, true, player.getNextActorNetId(), true
 			);
 			rock.hasChargedNoiseCrush = false;
@@ -53,7 +53,7 @@ public class NoiseCrush : Weapon {
 		} else {
 			rock.playSound("noise_crush", sendRpc: true);
 			addAmmo(-1, player);
-			new NoiseCrushSpawner(
+			new NoiseCrushSpawnerRm(
 				rock, this, shootPos, xDir, false, player.getNextActorNetId(), true
 			);	
 		}
@@ -61,7 +61,7 @@ public class NoiseCrush : Weapon {
 }
 
 
-public class NoiseCrushSpawner : Projectile {
+public class NoiseCrushSpawnerRm : Projectile {
 
 	float shootTime;
 	float shootMaxTime = 3;
@@ -70,9 +70,9 @@ public class NoiseCrushSpawner : Projectile {
 	bool charged;
 	Rock rock = null!;
 	NoiseCrush wep = null!;
-	public List<NoiseCrushProj> projectiles = new();
-	List<NoiseCrushChargedProj> projectilesCharged = new();
-	public NoiseCrushSpawner(
+	public List<NoiseCrushRmProj> projectiles = new();
+	List<NoiseCrushChargedRmProj> projectilesCharged = new();
+	public NoiseCrushSpawnerRm(
 		Actor owner, Weapon weapon, Point pos, int xDir, bool charged, 
 		ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -107,7 +107,7 @@ public class NoiseCrushSpawner : Projectile {
 		if (charged) {
 			int[] types = new[] { 0,0,1,2,3 };
 			projectilesCharged.Add(
-				new NoiseCrushChargedProj(
+				new NoiseCrushChargedRmProj(
 					rock, pos, xDir, types[shotCount],
 					damager.owner.getNextActorNetId(), this, true
 				) { zIndex = this.zIndex - shotCount }
@@ -115,7 +115,7 @@ public class NoiseCrushSpawner : Projectile {
 		} else {
 			int[] types = new[] { 0,0,1,1,2 };
 			projectiles.Add(
-				new NoiseCrushProj(
+				new NoiseCrushRmProj(
 					rock, pos, xDir, wep, types[shotCount],
 					damager.owner.getNextActorNetId(), this, true
 				) { zIndex = this.zIndex - shotCount }
@@ -161,16 +161,16 @@ public class NoiseCrushSpawner : Projectile {
 }
 
 
-public class NoiseCrushProj : Projectile {
+public class NoiseCrushRmProj : Projectile {
 
-	NoiseCrushSpawner spawn = null!;
+	NoiseCrushSpawnerRm spawn = null!;
 	Rock rock = null!;
 	int bounces;
 	bool charged;
 
-	public NoiseCrushProj(
+	public NoiseCrushRmProj(
 		Actor owner, Point pos, int xDir, Weapon wep,
-		int type, ushort? netId, NoiseCrushSpawner? spawn = null, 
+		int type, ushort? netId, NoiseCrushSpawnerRm? spawn = null, 
 		bool rpc = false, Player? player = null
 	) : base(
 		pos, xDir, owner, "noise_crush_top", netId, player
@@ -201,7 +201,7 @@ public class NoiseCrushProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new NoiseCrushProj(
+		return new NoiseCrushRmProj(
 			arg.owner, arg.pos, arg.xDir, 
 			NoiseCrush.netWeapon, arg.extraData[0], arg.netId
 		);
@@ -267,14 +267,14 @@ public class NoiseCrushProj : Projectile {
 }
 
 
-public class NoiseCrushChargedProj : Projectile {
+public class NoiseCrushChargedRmProj : Projectile {
 
-	NoiseCrushSpawner spawn = null!;
+	NoiseCrushSpawnerRm spawn = null!;
 
 
-	public NoiseCrushChargedProj(
+	public NoiseCrushChargedRmProj(
 		Actor owner, Point pos, int xDir, int type, 
-		ushort? netProjId, NoiseCrushSpawner? spawn = null, 
+		ushort? netProjId, NoiseCrushSpawnerRm? spawn = null, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "noise_crush_charged_top", netProjId, altPlayer
@@ -305,7 +305,7 @@ public class NoiseCrushChargedProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new NoiseCrushChargedProj(
+		return new NoiseCrushChargedRmProj(
 			arg.owner, arg.pos, arg.xDir, 
 			arg.extraData[0], arg.netId, altPlayer: arg.player
 		);

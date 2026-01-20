@@ -10,10 +10,10 @@ public class Rock : Character {
 	public float weaponCooldown;
 	public List<Actor> junkShieldProjs = new();
 	public LoopingSound? junkShieldSound;
-	public ScorchWheelSpawn? sWellSpawn;
-	public ScorchWheelProj? sWell;
-	public UnderwaterScorchWheelSpawn? sWellU;
-	public UnderwaterScorchWheelSpawn? underwaterScorchWheel;
+	public ScorchWheelSpawnRm? sWellSpawn;
+	public ScorchWheelRmProj? sWell;
+	public WaterScorchWheelSpawnRm? sWellU;
+	public WaterScorchWheelSpawnRm? underwaterScorchWheel;
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
 	public bool armless;
@@ -669,7 +669,7 @@ public class Rock : Character {
 		foreach (Weapon w in weapons) {
 			if (w is DangerWrap dw) {
 				foreach (Projectile mine in dw.dangerMines) {
-					if (mine is DangerWrapLandProj lProj) {
+					if (mine is DangerWrapLandRmProj lProj) {
 						lProj.health = 0;
 						lProj.destroySelf();
 					}

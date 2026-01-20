@@ -8,7 +8,7 @@ public class BassBuster : Weapon {
 	public int maxSteams = 4;
 	public List<float> cooldowns = [];
 	// Firerate * 6;
-	public int streamCooldown = 5 * 6;
+	public int streamCooldown = 28;
 
 	public BassBuster() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -76,7 +76,7 @@ public class BassBusterProj : Projectile {
 		fadeSprite = "bass_buster_proj_fade";
 		fadeOnAutoDestroy = true;
 
-		damager.damage = 0.75f;
+		damager.damage = 0.5f;
 
 		if (rpc) {
 			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle);

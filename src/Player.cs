@@ -1128,7 +1128,7 @@ public partial class Player {
 				loadout: bassLoadout
 			);
 		} else if (charNum == (int)CharIds.Freezeman) {
-			newChar = new FreezeMan(
+			newChar = new Freezeman(
 				this, pos.x, pos.y, xDir, 
 				true, charNetId, ownedByLocalPlayer
 			);

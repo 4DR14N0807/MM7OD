@@ -1425,7 +1425,7 @@ public class Taunt : CharState {
 	public override void update() {
 		base.update();
 
-		if (character is FreezeMan && !once && character.frameIndex == 4) {
+		if (character is Freezeman && !once && character.frameIndex == 4) {
 	
 		}
 

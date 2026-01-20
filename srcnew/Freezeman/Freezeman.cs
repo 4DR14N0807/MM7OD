@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace MMXOnline;
 
-public class FreezeMan : Character {
-
+public class Freezeman : Character {
 	float speedMod = 1f;
 	float speedModTimer;
 	Weapon? meleeWeapon = null;
@@ -13,14 +12,14 @@ public class FreezeMan : Character {
 	float freezeAmmoHeal;
 	float freezeAmmoHealTime;
 	public bool isGuarding;
-    public FreezeMan(
-        Player player, float x, float y, int xDir,
+	public Freezeman(
+		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 		bool isWarpIn = false
-    ) : base(
-        player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
-    ) {
-        charId = CharIds.Freezeman;
+	) : base(
+		player, x, y, xDir, isVisible, netId, ownedByLocalPlayer, isWarpIn
+	) {
+		charId = CharIds.Freezeman;
 		spriteFrameToSounds["freezem_run/0"] = "freezemWalk";
 		spriteFrameToSounds["freezem_run/4"] = "freezemWalk";
 
@@ -31,7 +30,7 @@ public class FreezeMan : Character {
 
 		addAttackCooldown((int)AttackIds.Attack, new AttackCooldown(1, "hud_weapon_icon", 30));
 		addAttackCooldown((int)AttackIds.Freeze, new AttackCooldown(0, "hud_debuffs", 30));
-    }
+	}
 
 	public override void update() {
 		base.update();
@@ -58,7 +57,7 @@ public class FreezeMan : Character {
 		} else {
 			Helpers.decrementFrames(ref speedModTimer);
 			if (speedModTimer <= 0) speedMod = Helpers.lerp(speedMod, 1f, 0.025f);
-		} 
+		}
 	}
 
 	public override bool attackCtrl() {
@@ -87,7 +86,7 @@ public class FreezeMan : Character {
 			changeState(new FreezeMAttackState(player.input.getInputDir(player), false), false);
 			return true;
 		}
-		
+
 		return base.attackCtrl();
 	}
 
@@ -162,7 +161,7 @@ public class FreezeMan : Character {
 		int? weaponIndex, int? projId
 	) {
 		if (isGuarding) {
-			
+
 			// Return if not owned.
 			if (!ownedByLocalPlayer || fDamage <= 0) {
 				return;
@@ -178,7 +177,7 @@ public class FreezeMan : Character {
 			decimal originalDamage = damage;
 			decimal originalHP = health;
 
-			if (damage > 0  && !Damager.isDot(projId) &&
+			if (damage > 0 && !Damager.isDot(projId) &&
 				attacker != null && attacker != player && attacker != Player.stagePlayer
 			) {
 				player.delayETank();
@@ -202,7 +201,7 @@ public class FreezeMan : Character {
 		} else {
 			base.applyDamage(fDamage, attacker, actor, weaponIndex, projId);
 		}
-		
+
 	}
 
 	void useFreezeAmmo(float amount) {
@@ -212,26 +211,26 @@ public class FreezeMan : Character {
 
 	public void breakIce() {
 		if (ownedByLocalPlayer) {
-                playSound("freezemcrystalbreak", sendRpc: true);
-            }
-            for (int i = 0; i < 7; i++) {
-                Point spawnPos = getCenterPos().addRand(12, 20);
-                int dirX = Helpers.randomRange(0,1) == 1 ? xDir : -xDir;
-                int dirY = Helpers.randomRange(0,1) == 1 ? yDir : -yDir;
-                Point vel = new Point(60 / Helpers.randomRange(1,2) * dirX, -240 / Helpers.randomRange(1,2));
-                new FreezeMCrystalPiece(
-                    spawnPos, dirX, dirY, null, vel, vel.times(0.5f), 0
-                );
-            }
-            for (int i = 0; i < 9; i++) {
-                Point spawnPos = getCenterPos().addRand(12, 20);
-                int dirX = Helpers.randomRange(0,1) == 1 ? xDir : -xDir;
-                int dirY = Helpers.randomRange(0,1) == 1 ? yDir : -yDir;
-                Point vel = new Point(60 / Helpers.randomRange(1,2), -240 / Helpers.randomRange(1,2));
-                new FreezeMCrystalPiece(
-                    spawnPos, dirX, dirY, null, vel, vel.times(0.5f), 1
-                );
-            }
+			playSound("freezemcrystalbreak", sendRpc: true);
+		}
+		for (int i = 0; i < 7; i++) {
+			Point spawnPos = getCenterPos().addRand(12, 20);
+			int dirX = Helpers.randomRange(0, 1) == 1 ? xDir : -xDir;
+			int dirY = Helpers.randomRange(0, 1) == 1 ? yDir : -yDir;
+			Point vel = new Point(60 / Helpers.randomRange(1, 2) * dirX, -240 / Helpers.randomRange(1, 2));
+			new FreezeMCrystalPiece(
+				spawnPos, dirX, dirY, null, vel, vel.times(0.5f), 0
+			);
+		}
+		for (int i = 0; i < 9; i++) {
+			Point spawnPos = getCenterPos().addRand(12, 20);
+			int dirX = Helpers.randomRange(0, 1) == 1 ? xDir : -xDir;
+			int dirY = Helpers.randomRange(0, 1) == 1 ? yDir : -yDir;
+			Point vel = new Point(60 / Helpers.randomRange(1, 2), -240 / Helpers.randomRange(1, 2));
+			new FreezeMCrystalPiece(
+				spawnPos, dirX, dirY, null, vel, vel.times(0.5f), 1
+			);
+		}
 	}
 
 	public override bool canAddAmmo() {
@@ -253,7 +252,7 @@ public class FreezeMan : Character {
 		return pos.addxy(0, -27);
 	}
 
-    public override (float, float) getGlobalColliderSize() {
+	public override (float, float) getGlobalColliderSize() {
 		return (35, 48);
 	}
 
@@ -273,7 +272,7 @@ public class FreezeMan : Character {
 		return false;
 	}
 
-    public override string getSprite(string spriteName) {
+	public override string getSprite(string spriteName) {
 		return "_" + spriteName;
 	}
 

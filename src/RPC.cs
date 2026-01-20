@@ -160,15 +160,16 @@ public class RPC {
 	}
 
 	public void sendFromServer(NetServer s_server, byte[] bytes) {
-		if (s_server.Connections.Count == 0) return;
-
-		var om = s_server.CreateMessage();
+		if (s_server.Connections.Count == 0) {
+			return;
+		}
+		NetOutgoingMessage om = s_server.CreateMessage();
 		om.Write((byte)templates.IndexOf(this));
 		if (bytes.Length > ushort.MaxValue) {
 			throw new Exception("SendFromServer RPC bytes too big, max ushort.MaxValue");
 		}
 		ushort argCount = (ushort)bytes.Length;
-		var argCountBytes = BitConverter.GetBytes(argCount);
+		byte[] argCountBytes = BitConverter.GetBytes(argCount);
 		om.Write(argCountBytes[0]);
 		om.Write(argCountBytes[1]);
 		if (bytes.Length > 0) {

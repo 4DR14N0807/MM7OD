@@ -263,10 +263,9 @@ public class Blues : Character {
 
 	public bool canShieldDash() {
 		return (
-			flag == null &&
 			(grounded || isBreakMan && dashedInAir == 0) &&
 			charState is not ShieldDash &&
-			!overheating && rootTime <= 0
+			!overheating && !isMovementLimited()
 		);
 	}
 
@@ -275,7 +274,7 @@ public class Blues : Character {
 			flag == null &&
 			grounded && vel.y >= 0 &&
 			charState is not BluesSlide &&
-			!overdrive && rootTime <= 0
+			!overdrive && !isMovementLimited()
 		);
 	}
 
@@ -324,7 +323,7 @@ public class Blues : Character {
 	public bool canUseDropSwap() {
 		return (
 			isBreakMan && !overheating &&
-			rootTime <= 0 && !isDWrapped
+			!isMovementLimited()
 		);
 	}
 
@@ -1032,18 +1031,18 @@ public class Blues : Character {
 		shootAnimTime = 0.3f;
 	}
 
-	public void addCoreAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
+	public void addCoreAmmo(float amount, bool? resetCooldown = true, bool forceAdd = false) {
 		if (!forceAdd && overheating && amount >= 0) {
 			return;
 		}
 		if (overdrive) {
-			addOvedriveAmmo(amount, resetCooldown, forceAdd);
+			addOvedriveAmmo(amount, resetCooldown);
 			return;
 		}
 		coreAmmo += amount;
 		if (coreAmmo > coreMaxAmmo) { coreAmmo = coreMaxAmmo; }
 		if (coreAmmo < 0) { coreAmmo = 0; }
-		if (resetCooldown) {
+		if (resetCooldown == true || resetCooldown == null && amount > 0) {
 			resetCoreCooldown();
 		}
 	}
@@ -1073,14 +1072,14 @@ public class Blues : Character {
 		deductLabelY(labelSubtankOffY); */
 	}
 
-	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
+	public void addOvedriveAmmo(float amount,  bool? resetCooldown = true) {
 		if (!overdrive) {
 			return;
 		}
 		overdriveAmmo += amount;
 		if (overdriveAmmo > coreMaxAmmo) { overdriveAmmo = coreMaxAmmo; }
 		if (overdriveAmmo < 0) { overdriveAmmo = 0; }
-		if (resetCooldown) {
+		if (resetCooldown == true || resetCooldown == null && amount > 0) {
 			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
 		}
 	}
@@ -1754,17 +1753,17 @@ public class Blues : Character {
 		}
 		// Ammo.
 		renderMiniHudBorder(offset, color, coreMaxAmmo / scale);
-		offset = renderMiniAmmo(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
+		offset = renderMiniBar(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
 		if (overdrive) {
-			renderMiniAmmo(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
+			renderMiniBar(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
 		}
 		// Shield.
 		Point shieldOffset = offset.addxy(mHp * 2, 0);
 		renderMiniHudBorder(shieldOffset, color, shieldMaxHP / scale);
-		renderMiniAmmo(shieldOffset, 5, (float)shieldHP / scale, shieldMaxHP / scale);
+		renderMiniBar(shieldOffset, 5, (float)shieldHP / scale, shieldMaxHP / scale);
 		// Health.
 		renderMiniHudBorder(offset, color, mHp);
-		offset = renderMiniAmmo(offset, 1, hp, mHp);
+		offset = renderMiniBar(offset, 1, hp, mHp);
 		// Return offset.
 		return new Point(offset.x, offset.y);
 	}

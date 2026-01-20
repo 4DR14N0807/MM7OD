@@ -249,9 +249,6 @@ public class FreezeMan : Character {
 		return base.getRunSpeed() * speedMod;
 	}
 
-	public override bool isFreezeImmune() {
-		return true;
-	}
 	public override Point getCenterPos() {
 		return pos.addxy(0, -27);
 	}

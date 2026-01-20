@@ -15,7 +15,7 @@ public enum PickupTypeRpc {
 
 public class Pickup : Actor {
 	public float healAmount = 0;
-	public float coreHealAmount = 0;
+	public float altHealAmount = 0;
 	public PickupType pickupType;
 	public bool teamOnly;
 
@@ -54,27 +54,6 @@ public class Pickup : Actor {
 			if (!chr.ownedByLocalPlayer) return;
 			if (teamOnly && chr.player != netOwner) return;
 			use(chr);
-
-			/* if (pickupType == PickupType.Health) {
-				if (chr.health >= chr.maxHealth) return;
-				chr.addHealth(healAmount);
-				destroySelf(doRpcEvenIfNotOwned: true);
-			} else if (pickupType == PickupType.Ammo) {
-				if (chr.canAddAmmo()) {
-					if (chr is Blues blues) {
-						blues.healCore(coreHealAmount);
-					} else {
-						chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
-						//chr.addAmmo(healAmount);
-					}
-					destroySelf(doRpcEvenIfNotOwned: true);
-				}
-			} else if (pickupType == PickupType.Bolts) {
-				if (chr.player == netOwner) {
-					chr.player.currency += (int)healAmount;
-					destroySelf(doRpcEvenIfNotOwned: true);
-				}	
-			} */
 		}
 	}
 
@@ -84,7 +63,29 @@ public class Pickup : Actor {
 }
 
 #region Health
-public class GiantHealthPickup : Pickup {
+public abstract class BaselineHealthPickup : Pickup {
+	public BaselineHealthPickup(
+		Player owner, Point pos, string sprite, ushort? netId,
+		bool ownedByLocalPlayer, NetActorCreateId netActorCreateId,
+		bool sendRpc = false
+	) : base(
+		owner, pos, sprite, netId, ownedByLocalPlayer,
+		netActorCreateId, sendRpc: sendRpc
+	) {
+		pickupType = PickupType.Health;
+		healAmount = 8;
+	}
+
+	public override void use(Character chr) {
+		if (!chr.canBeHealed()) {
+			return;
+		}
+		chr.addHealth(healAmount);
+		base.use(chr);
+	}
+}
+
+public class GiantHealthPickup : BaselineHealthPickup {
 	public GiantHealthPickup(
 		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -92,17 +93,11 @@ public class GiantHealthPickup : Pickup {
 		owner, pos, "pickup_health_giant", netId, ownedByLocalPlayer,
 		NetActorCreateId.GiantHealth, sendRpc: sendRpc
 	) {
-		pickupType = PickupType.Health;
-	}
-
-	public override void use(Character chr) {
-		if (chr.health >= chr.maxHealth) return;
-		chr.fillHealthToMax();
-		base.use(chr);
+		healAmount = 64;
 	}
 }
 
-public class LargeHealthPickup : Pickup {
+public class LargeHealthPickup : BaselineHealthPickup {
 	public LargeHealthPickup(
 		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -113,15 +108,9 @@ public class LargeHealthPickup : Pickup {
 		healAmount = 8;
 		pickupType = PickupType.Health;
 	}
-
-	public override void use(Character chr) {
-		if (chr.health >= chr.maxHealth) return;
-		chr.addHealth(healAmount);
-		base.use(chr);
-	}
 }
 
-public class SmallHealthPickup : Pickup {
+public class SmallHealthPickup : BaselineHealthPickup {
 	public SmallHealthPickup(
 		Player owner, Point pos, ushort? netId,
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -132,17 +121,54 @@ public class SmallHealthPickup : Pickup {
 		healAmount = 4;
 		pickupType = PickupType.Health;
 	}
+}
 
-	public override void use(Character chr) {
-		if (chr.health >= chr.maxHealth) return;
-		chr.addHealth(healAmount);
-		base.use(chr);
+public class MicroHealthPickup : BaselineHealthPickup {
+	public MicroHealthPickup(
+		Player owner, Point pos, ushort? netId,
+		bool ownedByLocalPlayer, bool sendRpc = false
+	) : base(
+		owner, pos, "pickup_health_micro", netId, ownedByLocalPlayer,
+		NetActorCreateId.SmallHealth, sendRpc: sendRpc
+	) {
+		healAmount = 4;
+		pickupType = PickupType.Health;
 	}
 }
 #endregion
 
 #region Ammo
-public class GiantAmmoPickup : Pickup {
+public abstract class BaselineAmmoPickup : Pickup {
+	public BaselineAmmoPickup(
+		Player owner, Point pos, string sprite, ushort? netId,
+		bool ownedByLocalPlayer, NetActorCreateId netActorCreateId,
+		bool sendRpc = false
+	) : base(
+		owner, pos, sprite, netId, ownedByLocalPlayer,
+		netActorCreateId, sendRpc: sendRpc
+	) {
+		healAmount = 50;
+		altHealAmount = 8;
+		pickupType = PickupType.Ammo;
+	}
+
+	public override void use(Character chr) {
+		if (!chr.canAddAmmo()) {
+			return;
+		}
+		if (chr is Blues blues) {
+			blues.healCore(altHealAmount);
+		} else {
+			//Adrian: Use this one instead to swap to HDM Ammo System.
+			//        (Remember to adjust the heal values too).
+			//chr.addAmmo(healAmount);
+			chr.addPercentAmmo(healAmount);
+		}
+		base.use(chr);
+	}
+}
+
+public class GiantAmmoPickup : BaselineAmmoPickup {
 	public GiantAmmoPickup(
 		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -150,24 +176,13 @@ public class GiantAmmoPickup : Pickup {
 		owner, pos, "pickup_ammo_giant", netId, ownedByLocalPlayer,
 		NetActorCreateId.GiantAmmo, sendRpc: sendRpc
 	) {
+		healAmount = 100;
+		altHealAmount = 64;
 		pickupType = PickupType.Ammo;
-	}
-
-	public override void use(Character chr) {
-		if (!chr.canAddAmmo()) return;
-		
-		if (chr is Blues blues) {
-			blues.healCore(blues.coreMaxAmmo);
-		} else {
-			foreach (Weapon w in chr.weapons) {
-				w.addAmmoPercentHeal(100);
-			}
-		}
-		base.use(chr);
 	}
 }
 
-public class LargeAmmoPickup : Pickup {
+public class LargeAmmoPickup : BaselineAmmoPickup {
 	public LargeAmmoPickup(
 		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -176,24 +191,12 @@ public class LargeAmmoPickup : Pickup {
 		NetActorCreateId.LargeAmmo, sendRpc: sendRpc
 	) {
 		healAmount = 50;
-		coreHealAmount = 8;
+		altHealAmount = 8;
 		pickupType = PickupType.Ammo;
-	}
-
-	public override void use(Character chr) {
-		if (!chr.canAddAmmo()) return;
-		
-		if (chr is Blues blues) {
-			blues.healCore(coreHealAmount);
-		} else {
-			chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
-			//chr.addAmmo(healAmount);
-		}
-		base.use(chr);
 	}
 }
 
-public class SmallAmmoPickup : Pickup {
+public class SmallAmmoPickup : BaselineAmmoPickup {
 	public SmallAmmoPickup(
 		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -202,34 +205,37 @@ public class SmallAmmoPickup : Pickup {
 		NetActorCreateId.SmallAmmo, sendRpc: sendRpc
 	) {
 		healAmount = 25;
-		coreHealAmount = 4;
+		altHealAmount = 4;
 		pickupType = PickupType.Ammo;
 	}
+}
 
-	public override void use(Character chr) {
-		if (!chr.canAddAmmo()) return;
-		
-		if (chr is Blues blues) {
-			blues.healCore(coreHealAmount);
-		} else {
-			chr.addPercentAmmo(healAmount); //Adrian: Use this one instead to swap to HDM Ammo System (Remember to adjust the heal values too).
-			//chr.addAmmo(healAmount);
-		}
-		base.use(chr);
+public class MicroAmmoPickup : BaselineAmmoPickup {
+	public MicroAmmoPickup(
+		Player owner, Point pos, ushort? netId, 
+		bool ownedByLocalPlayer, bool sendRpc = false
+	) : base(
+		owner, pos, "pickup_ammo_micro", netId, ownedByLocalPlayer, 
+		NetActorCreateId.SmallAmmo, sendRpc: sendRpc
+	) {
+		healAmount = 12.5f;
+		altHealAmount = 2;
+		pickupType = PickupType.Ammo;
 	}
 }
 #endregion
 
 #region Bolts
-public class GiantBoltPickup : Pickup {
-	public GiantBoltPickup(
-		Player owner, Point pos, ushort? netId, 
-		bool ownedByLocalPlayer, bool sendRpc = false
+public abstract class BaselineBoltPickup : Pickup {
+	public BaselineBoltPickup(
+		Player owner, Point pos, string sprite, ushort? netId,
+		bool ownedByLocalPlayer, NetActorCreateId netActorCreateId,
+		bool sendRpc = false
 	) : base(
-		owner, pos, "pickup_ammo_giant", netId, ownedByLocalPlayer,
-		NetActorCreateId.GiantBolt, sendRpc: sendRpc
+		owner, pos, sprite, netId, ownedByLocalPlayer,
+		netActorCreateId, sendRpc: sendRpc
 	) {
-		healAmount = 100;
+		healAmount = 8;
 		teamOnly = true;
 		pickupType = PickupType.Bolts;
 	}
@@ -241,7 +247,21 @@ public class GiantBoltPickup : Pickup {
 	}
 }
 
-public class LargeBoltPickup : Pickup {
+public class GiantBoltPickup : BaselineBoltPickup {
+	public GiantBoltPickup(
+		Player owner, Point pos, ushort? netId, 
+		bool ownedByLocalPlayer, bool sendRpc = false
+	) : base(
+		owner, pos, "pickup_ammo_giant", netId, ownedByLocalPlayer,
+		NetActorCreateId.GiantBolt, sendRpc: sendRpc
+	) {
+		healAmount = 32;
+		teamOnly = true;
+		pickupType = PickupType.Bolts;
+	}
+}
+
+public class LargeBoltPickup : BaselineBoltPickup {
 	public LargeBoltPickup(
 		Player owner, Point pos, ushort? netId,
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -253,15 +273,9 @@ public class LargeBoltPickup : Pickup {
 		pickupType = PickupType.Bolts;
 		teamOnly = true;
 	}
-
-	public override void use(Character chr) {	
-		chr.player.currency += (int)healAmount;
-		chr.playSound("bolt");
-		base.use(chr);
-	}
 }
 
-public class SmallBoltPickup : Pickup {
+public class SmallBoltPickup : BaselineBoltPickup {
 	public SmallBoltPickup(
 		Player owner, Point pos, ushort? netId,
 		bool ownedByLocalPlayer, bool sendRpc = false
@@ -272,12 +286,6 @@ public class SmallBoltPickup : Pickup {
 		healAmount = 2;
 		pickupType = PickupType.Bolts;
 		teamOnly = true;
-	}
-
-	public override void use(Character chr) {	
-		chr.player.currency += (int)healAmount;
-		chr.playSound("bolt");
-		base.use(chr);
 	}
 }
 #endregion

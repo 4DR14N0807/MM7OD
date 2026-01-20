@@ -663,20 +663,20 @@ public class GameMode {
 		} else if (level.mainPlayer.isSpectator && !Menu.inMenu) {
 			if (level.specPlayer == null) {
 				Fonts.drawText(
-					FontType.BlueMenu, "Now spectating: (No player to spectate)",
-					 Global.halfScreenW, 190, Alignment.Center
+					FontType.WhiteMini, "Now spectating: (No player to spectate)",
+					 Global.halfScreenW, 190, Alignment.Center, alpha: 128
 				);
 			} else {
 				string deadMsg = level.specPlayer.character == null ? " (Dead)" : "";
 				Fonts.drawText(
-					FontType.BlueMenu, "Now spectating: " + level.specPlayer.name + deadMsg,
-					Global.halfScreenW, 180, Alignment.Center
+					FontType.WhiteMini, "Now spectating: " + level.specPlayer.name + deadMsg,
+					Global.halfScreenW, 190, Alignment.Center, alpha: 128
 				);
 			}
 		} else if (level.mainPlayer.aiTakeover) {
 			Fonts.drawText(
 				FontType.WhiteMini, "AI Takeover active. Press F12 to stop.",
-				Global.halfScreenW, 180, Alignment.Center, color: Color.Red
+				Global.halfScreenW, 180, Alignment.Center, color: Color.Red, alpha: 128
 			);
 		}
 		drawDiagnostics();
@@ -752,8 +752,7 @@ public class GameMode {
 
 	void drawRadar() {
 		if (Global.level.is1v1() ||
-			Global.level.isTraining() ||
-			Global.level.mainPlayer.isSpectator
+			Global.level.isTraining()
 		) {
 			return;
 		}
@@ -1705,43 +1704,6 @@ public class GameMode {
 			var weapon = player.weapons[i];
 			var x = startX + (i * width);
 			var y = startY;
-			if (weapon is HyperCharge hb) {
-				bool canShootHyperBuster = hb.canShootIncludeCooldown(player);
-				Color lineColor = canShootHyperBuster ? Color.White : Helpers.Gray;
-
-				float slotPosX = startX + (player.hyperChargeSlot * width);
-				int yOff = -1;
-
-				// Stretch black
-				DrawWrappers.DrawRect(
-					slotPosX, y - 9 + yOff, x, y - 12 + yOff,
-					true, Color.Black, 1, ZIndex.HUD, false
-				);
-				// Right
-				DrawWrappers.DrawRect(
-					x - 1, y - 7, x + 2, y - 12 + yOff,
-					true, Color.Black, 1, ZIndex.HUD, false
-				);
-				DrawWrappers.DrawRect(
-					x, y - 8, x + 1, y - 11 + yOff,
-					true, lineColor, 1, ZIndex.HUD, false
-				);
-				// Left
-				DrawWrappers.DrawRect(
-					slotPosX - 1, y - 7, slotPosX + 2, y - 12 + yOff,
-					true, Color.Black, 1, ZIndex.HUD, false
-				);
-				DrawWrappers.DrawRect(
-					slotPosX, y - 8, slotPosX + 1, y - 11 + yOff,
-					true, lineColor, 1, ZIndex.HUD, false
-				);
-				// Stretch white
-				DrawWrappers.DrawRect(
-					slotPosX, y - 10 + yOff, x, y - 11 + yOff,
-					true, lineColor, 1, ZIndex.HUD, false
-				);
-				break;
-			}
 		}
 
 		if (player.isGridModeEnabled()) return;
@@ -2228,8 +2190,8 @@ public class GameMode {
 				p => !p.isSpectator && p.deaths < playingTo && p.alliance == alliance
 			).Count();
 		}
-		int[] rows = new int[] { pos.y, pos.y + 10, pos.y + 24 };
-		int[] cols = new int[] { pos.x, pos.x + 72, pos.x + 88, pos.x + 104 };
+		int[] rows = [pos.y, pos.y + 10, pos.y + 24];
+		int[] cols = [pos.x, pos.x + 72, pos.x + 88, pos.x + 104];
 		DrawWrappers.DrawRect(
 			pos.x + 9, pos.y + 19, pos.x + 120, pos.y + 20, true,
 			new Color(255, 255, 255, 128), 0, ZIndex.HUD, false

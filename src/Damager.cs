@@ -232,7 +232,7 @@ public class Damager {
 			if (damagerMessage?.flinch != null) flinch = damagerMessage.flinch.Value;
 			if (damagerMessage?.damage != null) damage = damagerMessage.damage.Value;
 
-			proj.onDamageEX(damagable);
+			proj?.onDamageEX(damagable);
 		}
 
 		// Character section
@@ -280,9 +280,9 @@ public class Damager {
 				case (int)BassProjIds.MagicCardFlip:
 					character.xDir *= -1;
 					break;
+				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:
-					character.vel = character.vel.times(0.5f);
-					character.slowdownTime = MathF.Max(character.slowdownTime, 20);
+					character.wince(20, 0, owner.id);
 					break;
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor is WaveBurnerUnderwaterProj wbproj) {

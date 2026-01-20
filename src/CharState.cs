@@ -681,7 +681,7 @@ public class Idle : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		if (character is not Bass bass || !bass.isSuperBass || !bass.isTrebbleBoost) {
+		if (character is not Bass bass || !bass.isSuperBass && !bass.isTrebbleBoost) {
 			hasHurtIdle = Global.sprites.ContainsKey(character.getSprite("idle_hurt"));
 		}
 		hurtIdleCheck();

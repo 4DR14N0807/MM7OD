@@ -469,7 +469,7 @@ public class EnergyCharge : CharState {
 
 		if (!player.input.isHeld(Control.Special2, player) ||
 			bass.phase >= 4 && bass.evilEnergy <= 0 ||
-			bass.phase < 4 && bass.evilEnergy >= Bass.MaxEvilEnergy
+			bass.phase < 4 && bass.evilEnergy >= bass.maxEvilEnergy
 		) {
 			bass.changeToIdleOrFall();
 			return;
@@ -571,7 +571,7 @@ public class BassFly : CharState {
 		bass.flyTime += getFlyConsume();
 
 		if (
-			bass.flyTime >= Bass.MaxFlyTime ||
+			bass.flyTime >= bass.MaxFlyTime ||
 			(player.input.isPressed(Control.Jump, player) && !character.changedStateInFrame)
 		) {
 			character.changeToIdleOrFall();
@@ -755,7 +755,7 @@ public class SonicCrusher : CharState {
 		}
 
 		bass.flyTime += 1.25f;
-		if (stateFrames >= 32 && (bass.flyTime >= Bass.MaxFlyTime || !player.input.isHeld(Control.Special1, player))) {
+		if (stateFrames >= 32 && (bass.flyTime >= bass.MaxFlyTime || !player.input.isHeld(Control.Special1, player))) {
 			character.changeToIdleFallorFly();
 		}
 	}

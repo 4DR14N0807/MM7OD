@@ -297,7 +297,7 @@ public class Server {
 			}
 		}
 
-		var syncModel = new PeriodicServerSyncModel() { players = players };
+		PeriodicServerSyncModel syncModel = new PeriodicServerSyncModel() { players = players };
 		byte[] bytes = Helpers.serialize(syncModel);
 		RPC.periodicServerSync.sendFromServer(s_server, bytes);
 	}

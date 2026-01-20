@@ -668,15 +668,15 @@ public partial class Player {
 	}
 
 	public static float getHpMod() {
-		if (Global.level.server.customMatchSettings != null) {
-			return Global.level.server.customMatchSettings.healthModifier;
+		if (Global.customSettings != null) {
+			return Global.customSettings.healthModifier / 8f;
 		}
 		return 1;
 	}
 
 	public static decimal getHpDMod() {
-		if (Global.level.server.customMatchSettings != null) {
-			return (decimal)Global.level.server.customMatchSettings.healthModifier;
+		if (Global.customSettings != null) {
+			return (decimal)(Global.customSettings.healthModifier / 8f);
 		}
 		return 1;
 	}
@@ -693,16 +693,11 @@ public partial class Player {
 
 	public static float getModifiedHealth(float health) {
 		if (Global.level.server.customMatchSettings != null) {
-			float retHp = MathF.Ceiling(health * getHealthModifier());
-			float retHpFloor = MathF.Floor(health / getHealthModifier());
-			float retHpCelling = MathF.Ceiling(health / getHealthModifier());
-			if (retHpFloor < retHpCelling) {
-				retHp = MathF.Ceiling(retHpCelling * getHealthModifier());
-			}
+			float retHp = MathF.Ceiling(health * getHpMod());
 			if (retHp < 1) {
 				retHp = 1;
 			}
-			return MathInt.Ceiling(retHp);
+			return retHp;
 		}
 		return MathInt.Ceiling(health);
 	}

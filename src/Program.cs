@@ -463,7 +463,12 @@ class Program {
 	}
 
 	private static void onWindowResized(object? sender, SizeEventArgs e) {
-		Thread.Sleep(2000);
+		if (Options.main.integerFullscreen) {
+			FloatRect fviewRect = Global.getFullScreenViewPort();
+			Global.view.Viewport = fviewRect;
+			DrawWrappers.hudView.Viewport = fviewRect;
+			return;
+		}
 		// Compares the aspect ratio of the window to the aspect ratio of the view,
 		// and sets the view's viewport accordingly in order to archieve a letterbox effect.
 		float windowRatio = Global.window.Size.X / (float)Global.window.Size.Y;

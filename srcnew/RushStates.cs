@@ -355,7 +355,9 @@ public class RushSearchState : RushState {
 	}
 
 	void getRandomItem() {
-		if (!rush.ownedByLocalPlayer) return;
+		if (!rush.ownedByLocalPlayer) {
+			return;
+		}
 		string text = "";
 		string sound = "";
 		FontType font;

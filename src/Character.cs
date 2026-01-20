@@ -200,8 +200,9 @@ public partial class Character : Actor, IDamagable {
 	public float burnStunStacks;
 	public float burnStunTime;
 
-	// Ice
+	// Wince.
 	public float slowdownTime;
+	public Dictionary<int, float> winceCooldown = new();
 
 	// Parasite.
 	public Damager? parasiteDamager;
@@ -557,14 +558,28 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canDash() {
-		if (player.isAI && charState is Dash) return false;
-		if (rideArmorPlatform != null) return false;
-		if (charState is WallSlide) return false;
-		if (charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold) return false;
-		if (isSoftLocked()) return false;
-		if (rootTime > 0) return false;
-		if (bigBubble != null) return false;
-		return flag == null;
+		if (player.isAI && charState is Dash ||
+			rideArmorPlatform != null ||
+			charState is WallSlide ||
+			charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold ||
+			!isMovementLimited()
+		) {
+			return false;
+		}
+		return true;
+	}
+
+	public virtual bool isMovementLimited() {
+		if (rideArmorPlatform != null ||
+			isSoftLocked() ||
+			rootTime > 0 ||
+			bigBubble != null ||
+			isDWrapped ||
+			flag != null
+		) {
+			return false;
+		}
+		return true;
 	}
 
 	public virtual bool canJump() {
@@ -1011,27 +1026,21 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref dwrapInvulnTime);
 		Helpers.decrementFrames(ref burnInvulnTime);
 
-		int[] rootKeys = rootCooldown.Keys.ToArray();
-		foreach(int key in rootKeys) {
-			rootCooldown[key] -= speedMul;
-			if (rootCooldown[key] <= 0) {
-				rootCooldown.Remove(key);
-			}
-		}
+		Dictionary<int, float>[] cooldownList = [
+			winceCooldown,
+			rootCooldown,
+			stunCooldown,
+			freezeCooldown,
+		];
 
-		int[] stunKeys = stunCooldown.Keys.ToArray();
-		foreach(int key in stunKeys) {
-			stunCooldown[key] -= speedMul;
-			if (stunCooldown[key] <= 0) {
-				stunCooldown.Remove(key);
-			}
-		}
+		foreach (var cdList in cooldownList) {
+			int[] keys = cdList.Keys.ToArray();
 
-		int[] freezeKeys = freezeCooldown.Keys.ToArray();
-		foreach(int key in freezeKeys) {
-			freezeCooldown[key] -= speedMul;
-			if (freezeCooldown[key] <= 0) {
-				freezeCooldown.Remove(key);
+			foreach (int key in keys) {
+				cdList[key] -= speedMul;
+				if (cdList[key] <= 0) {
+					cdList.Remove(key);
+				}
 			}
 		}
 
@@ -1669,7 +1678,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (isStunImmune() || isFreezeImmune()) { return; }
+		if (isStunImmune()) { return; }
 		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
 			return;
 		}
@@ -1792,6 +1801,37 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
+	public void wince(float time, float cooldown, int playerid) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (isSlowImmune()) {
+			return;
+		}
+		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
+			return;
+		}
+		// Apply debuff.
+		freezeCooldown[playerid] = cooldown;
+
+		if (freezeTime >= time) {
+			return;
+		}
+		freezeTime = time;
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null && enemyPlayer != player) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
+
+		// Hud stuff.
+		buffList.Add(new Buff("hud_debuffs", 0, false, time, time));
+
+		freezeTime = time;
+		if (charState is not GenericStun) {
+			changeState(new GenericStun(), true);
+		}
+	}
+
 	public virtual void chargeGfx() {
 		if (ownedByLocalPlayer) {
 			chargeEffect.stop();
@@ -1848,10 +1888,6 @@ public partial class Character : Actor, IDamagable {
 			isTrueStatusImmune() || charState.pushImmune == true ||
 			immuneToKnockback || isClimbingLadder()
 		);
-	}
-
-	public virtual bool isFreezeImmune() {
-		return false;
 	}
 
 	public virtual bool isTimeImmune() {
@@ -2823,8 +2859,8 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual bool canBeHealed(int healerAlliance) {
-		return player.alliance == healerAlliance && alive && health < maxHealth;
+	public virtual bool canBeHealed(int healerAlliance = -1) {
+		return (player.alliance == healerAlliance || healerAlliance == -1) && alive && health < maxHealth;
 	}
 
 	public virtual void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
@@ -3362,49 +3398,7 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void updateParasite() {
-		if (parasiteTime <= 0) {
-			return;
-		}
-		slowdownTime = Math.Max(slowdownTime, 0.05f);
 
-		if (charState is not ParasiteCarry && parasiteTime > 1.5f) {
-			foreach (var otherPlayer in Global.level.players) {
-				if (otherPlayer.character == null ||
-					otherPlayer == player ||
-					otherPlayer == parasiteDamager?.owner ||
-					otherPlayer.character.isDebuffImmune() ||
-					Global.level.gameMode.isTeamMode &&
-					otherPlayer.alliance != player.alliance ||
-					otherPlayer.character.getCenterPos().distanceTo(getCenterPos()) >
-					ParasiticBomb.carryRange
-				) {
-					continue;
-				}
-				Character target = otherPlayer.character;
-				changeState(new ParasiteCarry(target, true));
-				break;
-			}
-		}
-
-		if (parasiteAnim != null) {
-			if (parasiteAnim.sprite.name == "parasitebomb_latch_start" && parasiteAnim.isAnimOver()) {
-				parasiteAnim.changeSprite("parasitebomb_latch", true);
-			}
-			parasiteAnim.changePos(getParasitePos());
-		}
-
-		parasiteTime += Global.spf;
-		float mashValue = player.mashValue();
-		if (mashValue > Global.spf) {
-			parasiteMashTime += mashValue;
-		}
-		if (isDebuffImmune() || isStunImmune()) {
-			removeParasite(true, false);
-		} else if (parasiteMashTime > 5) {
-			removeParasite(true, false);
-		} else if (parasiteTime > 2 && charState is not ParasiteCarry) {
-			removeParasite(false, false);
-		}
 	}
 
 	public void removeParasite(bool ejected, bool carried) {
@@ -3775,6 +3769,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual Point renderMiniHUD(Point offset) {
 		// Values.
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
 		float scale = getMiniHudScale();
 		int maxBarAmmo = getMiniWeaponLength();
 		float hp = (float)health / scale;
@@ -3791,46 +3786,53 @@ public partial class Character : Actor, IDamagable {
 			// Border.
 			DrawWrappers.DrawRect(
 				offset.x + 1, offset.y - 4, offset.x + maxBarAmmo * 2, offset.y - 1,
-				true, new Color(49, 49, 49), 1, ZIndex.HUD - 100, outlineColor: new Color(0, 0, 0)
+				true, new Color(49, 49, 49), 1, zPos, outlineColor: new Color(0, 0, 0)
 			);
 			// Weapon.
-			if (currentWeapon != null && currentWeapon.drawAmmo) {
-				float displayAmmo = currentWeapon.ammo / currentWeapon.ammoDisplayScale / scale;
-				float displayMaxAmmo = currentWeapon.maxAmmo / currentWeapon.ammoDisplayScale / scale;
+			var wep = getMiniHudAmmo();
+			if (wep.maxAmmo != 0) {
 				renderMiniHudBorder(offset, color, maxBarAmmo);
-				offset = renderMiniAmmo(offset, 2, displayAmmo, displayMaxAmmo);
+				offset = renderMiniBar(offset, 2, wep.ammo / scale, wep.maxAmmo / scale);
 			} else {
 				renderMiniHudBorder(offset, color, maxBarAmmo);
-				offset = renderMiniAmmo(offset, 3, maxBarAmmo, maxBarAmmo);
+				offset = renderMiniBar(offset, 3, maxBarAmmo, maxBarAmmo);
+			}
+			if (this is Bass bass ) {
+				Point bpos = offset.addxy(maxBarAmmo * 2, -1);
+				Fonts.drawText(
+					FontType.WhiteMini, $"{bass.phase}", bpos.x, bpos.y,
+					Alignment.Left, true, depth: zPos + 1
+				);
 			}
 		}
 		// Health.
 		renderMiniHudBorder(offset, color, mHp);
-		offset = renderMiniAmmo(offset, 1, hp, mHp);
+		offset = renderMiniBar(offset, 1, hp, mHp);
 		// Return offset.
 		return new Point(offset.x, offset.y);
 	}
-
 	
 	public virtual void renderMiniHudBorder(Point offset, Color? color, float ammo) {
 		if (color == null) {
 			return;
 		}
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
 		DrawWrappers.DrawRect(
 			offset.x, offset.y - 5, offset.x + 1 + ammo * 2, offset.y,
-			false, color.Value, 1, ZIndex.HUD - 101
+			false, color.Value, 1, zPos - 1
 		);
 		DrawWrappers.DrawRect(
 			offset.x - 1, offset.y - 6, offset.x + 2 + ammo * 2, offset.y + 1,
-			false, Color.Black, 1, ZIndex.HUD - 102
+			false, Color.Black, 1, zPos - 2
 		);
 	}
 
-	public virtual Point renderMiniAmmo(Point offset, int color, float ammo, float maxAmmo) {
+	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo) {
 		float cAmmo = MathF.Ceiling(ammo);
 		float fAmmo = MathF.Floor(ammo);
 		float aAlpha = ammo - fAmmo;
 		float mAmmo = MathF.Floor(maxAmmo);
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
 		if (ammo == maxAmmo) {
 			fAmmo = mAmmo;
 		}
@@ -3838,11 +3840,11 @@ public partial class Character : Actor, IDamagable {
 		for (int i = 0; i < mAmmo; i++) {
 			int id = i < fAmmo ? color : 0;
 			Global.sprites["hud_bar_small_h"].draw(
-				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 100
+				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
 			);
 			if (i >= fAmmo && i < cAmmo) {
 				Global.sprites["hud_bar_small_h"].draw(
-					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, ZIndex.HUD - 100
+					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
 				);
 			}
 			lpos.x += 1;
@@ -3854,6 +3856,16 @@ public partial class Character : Actor, IDamagable {
 	public virtual int getMiniLifebarLength() {
 		int max = MathInt.Ceiling(maxHealth / (decimal)getMiniHudScale());
 		return Math.Max(getMiniWeaponLength(), max);
+	}
+
+	public virtual (float ammo, float maxAmmo) getMiniHudAmmo() {
+		if (currentWeapon == null || !currentWeapon.drawAmmo) {
+			return (0, 0);
+		}
+		return (
+			currentWeapon.ammo / currentWeapon.ammoDisplayScale,
+			currentWeapon.maxAmmo / currentWeapon.ammoDisplayScale
+		);
 	}
 
 	public virtual int getMiniWeaponLength() {
@@ -3882,6 +3894,8 @@ public partial class Character : Actor, IDamagable {
 	public virtual Point renderPlayerName(Point offset, bool useColor = false) {
 		string playerName = player.name;
 		Color nameColor = Color.White;
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
+
 		if (useColor &&
 			Global.level.gameMode.isTeamMode &&
 			player.alliance < Global.level.teamNum &&
@@ -3893,7 +3907,7 @@ public partial class Character : Actor, IDamagable {
 
 		Fonts.drawText(
 			FontType.WhiteMini, playerName, textPos.x, textPos.y,
-			Alignment.Left, true, depth: ZIndex.HUD, color: nameColor
+			Alignment.Left, true, depth: zPos, color: nameColor
 		);
 		return offset.addxy(0, -12);
 	}
@@ -3984,21 +3998,17 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)burnStunStacks);
 			boolMask[7] = true;
 		}
-		if (rootTime > 0) {
-			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
-			boolMaskB[0] = true;
-		}
-		if (player.evilEnergyStacks > 0) {
-			customData.Add((byte)MathF.Ceiling(player.evilEnergyStacks));
-			boolMaskB[1] = true;
-		}
-		if (player.evilEnergyTime > 0) {
-			customData.Add((byte)MathF.Ceiling(player.evilEnergyTime));
-			boolMaskB[2] = true;
-		}
 		if (player.evilEnergyHP > 0) {
 			customData.Add((byte)MathF.Ceiling((float)player.evilEnergyHP));
-			boolMaskB[3] = true;
+			boolMaskB[0] = true;
+		}
+		if (rootTime > 0) {
+			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
+			boolMaskB[1] = true;
+		}
+		if (slowdownTime > 0) {
+			customData.Add((byte)MathInt.Ceiling(slowdownTime / 2f));
+			boolMaskB[2] = true;
 		}
 
 		// Add the final value of the bool mask.
@@ -4089,24 +4099,19 @@ public partial class Character : Actor, IDamagable {
 			burnStunStacks = data[pos];
 			pos++;
 		}
-		rootTime = 0;
+		player.evilEnergyHP = 0;
 		if (boolMaskB[0]) {
+			player.evilEnergyHP = data[pos];
+			pos++;
+		}
+		rootTime = 0;
+		if (boolMaskB[1]) {
 			rootTime = data[pos] * 2;
 			pos++;
 		}
-		player.evilEnergyStacks = 0;
-		if (boolMaskB[1]) {
-			player.evilEnergyStacks = data[pos];
-			pos++;
-		}
-		player.evilEnergyTime = 0;
+		slowdownTime = 0;
 		if (boolMaskB[2]) {
-			player.evilEnergyTime = data[pos];
-			pos++;
-		}
-		player.evilEnergyHP = 0;
-		if (boolMaskB[3]) {
-			player.evilEnergyHP = data[pos];
+			slowdownTime = data[pos] * 2;
 			pos++;
 		}
 	}

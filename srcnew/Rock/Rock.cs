@@ -165,7 +165,7 @@ public class Rock : Character {
 			return true;
 		}
 
-		if (jumpPressed && !grounded && hasSuperAdaptor && !usedDoubleJump && flag == null) {
+		if (jumpPressed && !grounded && hasSuperAdaptor && !usedDoubleJump && !isMovementLimited()) {
 			changeState(new RockDoubleJump(), true);
 			usedDoubleJump = true;
 			return true;
@@ -665,6 +665,7 @@ public class Rock : Character {
 		sWellSpawn?.destroySelf();
 		sWell?.destroySelf();
 		sWellU?.destroySelf();
+		noiseCrushEffect?.destroy();
 		foreach (Weapon w in weapons) {
 			if (w is DangerWrap dw) {
 				foreach (Projectile mine in dw.dangerMines) {

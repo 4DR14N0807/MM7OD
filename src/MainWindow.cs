@@ -104,7 +104,11 @@ public partial class Global {
 			#endif
 			window.SetVerticalSyncEnabled(options.vsync);
 			window.Position = new Vector2i(0, 0);
-			window.Size = new Vector2u(desktopWidth, desktopHeight);
+			if (Options.main.fullScreenIntelCompat && Options.main.integerFullscreen) {
+				window.Size = new Vector2u(desktopWidth, desktopHeight + 1);
+			} else {
+				window.Size = new Vector2u(desktopWidth, desktopHeight);	
+			}
 			viewPort = getFullScreenViewPort();
 		}
 

@@ -27,7 +27,6 @@ public class FreezeMCrystalPiece : Anim {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-
         if (
             (other.gameObject is Wall || 
             other.gameObject is MovingPlatform || 
@@ -42,8 +41,7 @@ public class FreezeMCrystalPiece : Anim {
 }
 
 public class FreezeMWarpIn : CharState {
-
-    FreezeMan? freezem = null;
+    Freezeman? freezem = null;
 
     public FreezeMWarpIn() : base("warp_in") {
         useGravity = false;
@@ -54,7 +52,7 @@ public class FreezeMWarpIn : CharState {
     public override void onEnter(CharState oldState) {
         base.onEnter(oldState);
         character.changePos(character.pos.addxy(0, 1));
-        freezem = character as FreezeMan;
+        freezem = character as Freezeman;
     }
 
 	public override void update() {
@@ -84,7 +82,7 @@ public class FreezeMAttackState : CharState {
 
     Point input;
     bool freeze;
-    FreezeMan? freezem = null;
+    Freezeman? freezem = null;
 
     public FreezeMAttackState(Point input, bool freeze) : base("spritent") {
         sprite = getSprite(input);
@@ -111,7 +109,7 @@ public class FreezeMAttackState : CharState {
 		base.onEnter(oldState);
 		bool air = !character.grounded || character.vel.y < 0;
 		if (air) character.changeSpriteFromName(airSprite, true);
-        freezem = character as FreezeMan;
+        freezem = character as Freezeman;
 	}
     
 	public override void update() {
@@ -134,13 +132,13 @@ public class FreezeMAttackState : CharState {
                     character, spawnPos, character.xDir, ang, player.getNextActorNetId(), rpc: true
                 );
                 character.playSound("freezemShoot", sendRpc: true);
-                freezem?.triggerCooldown((int)FreezeMan.AttackIds.Freeze);
+                freezem?.triggerCooldown((int)Freezeman.AttackIds.Freeze);
             } else {
                 new FreezeMProj(
                     character, spawnPos, character.xDir, ang, player.getNextActorNetId(), rpc: true
                 );
                 character.playSound("buster2", sendRpc: true);
-                freezem?.triggerCooldown((int)FreezeMan.AttackIds.Attack);
+                freezem?.triggerCooldown((int)Freezeman.AttackIds.Attack);
             }
             once = true;
         }
@@ -151,7 +149,7 @@ public class FreezeMAttackState : CharState {
 
 
 public class FreezeMChargeState : CharState {
-    FreezeMan? freezem = null;
+    Freezeman? freezem = null;
     public FreezeMChargeState() : base("charge") {
         normalCtrl = true;
         attackCtrl = true;
@@ -159,7 +157,7 @@ public class FreezeMChargeState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-        freezem = character as FreezeMan ?? throw new NullReferenceException();
+        freezem = character as Freezeman ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
@@ -184,7 +182,7 @@ public class FreezeMChargeState : CharState {
 
 public class FreezeMGuardState : CharState {
 
-    FreezeMan? freezem = null;
+    Freezeman? freezem = null;
     bool hasAmmo => freezem?.freezeAmmo > 0;
 
     public FreezeMGuardState() : base("guard") {
@@ -194,7 +192,7 @@ public class FreezeMGuardState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-        freezem = character as FreezeMan;
+        freezem = character as Freezeman;
 	}
 
 	public override void update() {
@@ -209,7 +207,7 @@ public class FreezeMGuardState : CharState {
 
 public class FreezeMGuardExitState : CharState {
 
-    FreezeMan? freezem = null;
+    Freezeman? freezem = null;
     bool hasAmmo => freezem?.freezeAmmo > 0;
     public FreezeMGuardExitState() : base("guard_exit") {
         
@@ -217,7 +215,7 @@ public class FreezeMGuardExitState : CharState {
 
     public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-        freezem = character as FreezeMan;
+        freezem = character as Freezeman;
 	}
 
 	public override void update() {

@@ -562,7 +562,7 @@ public partial class Character : Actor, IDamagable {
 			rideArmorPlatform != null ||
 			charState is WallSlide ||
 			charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold ||
-			!isMovementLimited()
+			isMovementLimited()
 		) {
 			return false;
 		}
@@ -577,9 +577,9 @@ public partial class Character : Actor, IDamagable {
 			isDWrapped ||
 			flag != null
 		) {
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	public virtual bool canJump() {
@@ -2432,14 +2432,20 @@ public partial class Character : Actor, IDamagable {
 				Point topLeft = new Point(pos.x - 16, pos.y - 5 + currentLabelY - 2.5f);
 				Point botRight = new Point(pos.x + 16, pos.y + currentLabelY - 2.5f);
 
-				DrawWrappers.DrawRect(
+				/* DrawWrappers.DrawRect(
 					topLeft.x, topLeft.y, botRight.x, botRight.y,
 					true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White
 				);
 				DrawWrappers.DrawRect(
 					topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1,
 					true, Color.Yellow, 0, ZIndex.HUD - 1
-				);
+				); */
+
+				float maxProgress = 14;
+				Point barPos = getCenterPos().addxy(-14, -24);
+				renderMiniHudBorder(barPos, new Color(255,255,255), maxProgress);
+				renderMiniBar(barPos, 1, (maxProgress * progress), maxProgress);
+					
 				deductLabelY(labelCooldownOffY);
 			}
 		}

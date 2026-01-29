@@ -1706,6 +1706,11 @@ public class GameMode {
 			var y = startY;
 		}
 
+		if (mainPlayer.character is Rock rock && Options.main.rushSpecial) {
+			Weapon rushWep = rock.rushWeapon;
+			drawWeaponSlot(rushWep, 18, 97);
+		}
+
 		if (player.isGridModeEnabled()) return;
 
 		int offsetX = 0;

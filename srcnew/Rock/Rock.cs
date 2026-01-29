@@ -363,7 +363,7 @@ public class Rock : Character {
 		if (isInvulnerableAttack()) return false;
 		if (saRocketPunchProj != null) return false;
 
-		return base.canShoot() && weaponCooldown <= 0;
+		return base.canShoot() && weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0;
 	}
 
 	public override bool canClimbLadder() {

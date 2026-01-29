@@ -621,7 +621,7 @@ public class Bass : Character {
 				return false;
 			}
 			if (yInput == -1 && phase >= 1 && !grounded) {
-				if (isCooldownOver((int)AttackIds.DarkComet)) {
+				if (isCooldownOver((int)AttackIds.DarkComet) && !isMovementLimited()) {
 					changeState(new DarkCometState(), true);
 					return true;
 				}

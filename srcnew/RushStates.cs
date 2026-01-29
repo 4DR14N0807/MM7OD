@@ -285,7 +285,6 @@ public class RushSearchState : RushState {
 	bool digging;
 	int digTime;
 	Rock rock = null!;
-	Anim? pickup;
 	Point pickupPos;
 	int pickupTime;
 	int sound;
@@ -342,8 +341,7 @@ public class RushSearchState : RushState {
 					//RNG starts here.
 					dice = Helpers.randomRange(1, 1000);
 					getRandomItem();
-					player.currency -= Rock.RushSearchCost;
-					//rock.rushWeapon.addAmmo(-Rock.RushSearchCost, player);
+					rock.rushWeapon.addAmmo(-4, player);
 
 					state = 3;
 				} break;

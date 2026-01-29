@@ -298,7 +298,7 @@ public class BluesSlide : CharState {
 		blues.shieldCustomState = false;
 		blues.changeGlobalColliderOnSpriteChange(blues.sprite.name);
 
-		if (!player.isAI) {
+		if (player.isAI) {
 			normalCtrl = false;
 		}
 	}

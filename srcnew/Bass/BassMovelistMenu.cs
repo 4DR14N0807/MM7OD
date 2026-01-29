@@ -78,7 +78,7 @@ public class BassMovelistMenu : MovelistMenu {
 					spriteName, 13, "SHOOT", Control.Shoot, "CAN BE CHARGED"
 				),
 				new MovelistItem(
-					spriteName, 16, "FLIGHT", Control.Jump, "MID-AIR AFTER\nDOUBJE JUMPING"
+					spriteName, 16, "FLIGHT", Control.Jump, "MID-AIR"
 				),
 				new MovelistItem(
 					spriteName, 17, "KICK", Control.Up + " + " + Control.Special1, "ON GROUND"

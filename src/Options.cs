@@ -38,7 +38,7 @@ public class Options {
 	// Video settings
 	public bool fullScreen = false;
 	public bool integerFullscreen = true;
-	public bool fullScreenIntelCompat;
+	internal bool fullScreenIntelCompat;
 	public uint windowScale = 2;
 	public bool fastShaders;
 	public bool multithreadMode;

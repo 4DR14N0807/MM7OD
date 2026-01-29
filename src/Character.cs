@@ -147,7 +147,6 @@ public partial class Character : Actor, IDamagable {
 	public DNACore? linkedDna;
 	public Character? linkedATransChar;
 	public bool oldATrans = false;
-	public bool disguiseCoverBlown = true;
 
 	// For states with special propieties.
 	// For doublejump.
@@ -211,13 +210,6 @@ public partial class Character : Actor, IDamagable {
 	public bool hasParasite { get { return parasiteTime > 0; } }
 	public float parasiteTime;
 	public float parasiteMashTime;
-
-	// DANGER WRAP SECTION
-	public bool hasBubble => ownedByLocalPlayer ? bigBubble != null : hasBubbleNet;
-	public bool hasBubbleNet;
-	public float dWrappedTime;
-	public Damager? dWrapDamager;
-	public DWrapBigBubble? bigBubble;
 
 	// Disables status.
 	public float paralyzedTime;
@@ -800,11 +792,11 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual (float x, float y) getGlobalColliderSize() {
+	public virtual (float, float) getGlobalColliderSize() {
 		return (18, 30);
 	}
 
-	public virtual (float x, float y) getTerrainColliderSize() {
+	public virtual (float, float) getTerrainColliderSize() {
 		return (18, 30);
 	}
 
@@ -3419,6 +3411,13 @@ public partial class Character : Actor, IDamagable {
 
 	}
 
+	// DANGER WRAP SECTION
+	public bool hasBubble => ownedByLocalPlayer ? bigBubble != null : hasBubbleNet;
+	public bool hasBubbleNet;
+	public float dWrappedTime;
+	public Damager? dWrapDamager;
+	public DWrapBigBubble? bigBubble;
+	public bool disguiseCoverBlown = true;
 
 	public void addBubble(Player attacker) {
 		if (isSlowImmune() || isStunImmune()) return;

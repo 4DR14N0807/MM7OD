@@ -4,30 +4,29 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class FreezeMCrystalPiece : Anim {
-	Point bounceVel;
-	public FreezeMCrystalPiece(
-		Point pos, int xDir, int yDir, ushort? netId, Point vel, Point bounceVel, int frame
-	) : base(
-		pos, "freezem_crystal_pieces", xDir, netId, false
-	) {
-		this.yDir = yDir;
-		this.vel = vel;
-		this.bounceVel = bounceVel;
-		useGravity = true;
-		frameSpeed = 0;
-		frameIndex = frame;
-		if (collider != null) collider.wallOnly = true;
-	}
+    Point bounceVel;
+    public FreezeMCrystalPiece(
+        Point pos, int xDir, int yDir, ushort? netId, Point vel, Point bounceVel, int frame
+    ) : base(
+        pos, "freezem_crystal_pieces", xDir, netId, false
+    ) {
+        this.yDir = yDir;
+        this.vel = vel;
+        this.bounceVel = bounceVel;
+        useGravity = true;
+        frameSpeed = 0;
+        frameIndex = frame;
+        if (collider != null) collider.wallOnly = true;
+    }
 
 	public override void update() {
 		base.update();
 
-		visible = Global.isOnFrameCycle(2);
+        visible = Global.isOnFrameCycle(2);
 	}
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-        
         if (
             (other.gameObject is Wall || 
             other.gameObject is MovingPlatform || 
@@ -42,7 +41,6 @@ public class FreezeMCrystalPiece : Anim {
 }
 
 public class FreezeMWarpIn : CharState {
-
     Freezeman? freezem = null;
 
     public FreezeMWarpIn() : base("warp_in") {
@@ -150,30 +148,6 @@ public class FreezeMAttackState : CharState {
 }
 
 
-public class FreezeMChargeState : CharState {
-    Freezeman? freezem = null;
-    public FreezeMChargeState() : base("charge") {
-        normalCtrl = true;
-        attackCtrl = true;
-    }
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-        freezem = character as Freezeman ?? throw new NullReferenceException();
-	}
-
-	public override void update() {
-		base.update();
-
-        if (stateFrames > 0 && stateFrames % 15 == 0 && freezem != null &&
-			freezem?.freezeAmmo < freezem?.freezeMaxAmmo
-		) {
-			vel = bounceVel;
-			if (collider != null) collider.wallOnly = false;
-		}
-	}
-}
-
 
 public class FreezeMGuardState : CharState {
 
@@ -211,7 +185,7 @@ public class FreezeMGuardExitState : CharState {
     public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
         freezem = character as Freezeman;
-	}º
+	}
 
 	public override void update() {
 		base.update();
@@ -236,5 +210,36 @@ public class FreezeMGuardExitState : CharState {
         }
 
         if (character.isAnimOver()) character.changeToIdleOrFall();
+	}
+}
+
+public class FreezeMChargeState : CharState {
+    Freezeman? freezem = null;
+    public FreezeMChargeState() : base("charge") {
+        normalCtrl = true;
+        attackCtrl = true;
+    }
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+        freezem = character as Freezeman ?? throw new NullReferenceException();
+	}
+
+	public override void update() {
+		base.update();
+
+        if (stateFrames > 0 && stateFrames % 15 == 0 && freezem != null &&
+			freezem?.freezeAmmo < freezem?.freezeMaxAmmo 
+		) {
+            freezem.freezeAmmo += 1;
+            freezem.playSound("heal", sendRpc: true);
+        }
+
+        if (
+            (!player.input.isHeld(Control.WeaponLeft, player)) || 
+            (freezem?.freezeAmmo >= freezem?.freezeMaxAmmo && stateFrames % 15 >= 14)
+        ) {
+            character.changeToIdleOrFall(); 
+        }  
 	}
 }

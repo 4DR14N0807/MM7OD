@@ -262,6 +262,7 @@ public partial class Character : Actor, IDamagable {
 	public int secondBarOffset;
 	public List<Buff> buffList = new();
 	public Dictionary<string, DisarrayStack> disarrayStacks = new();
+	public HpShieldManager shieldManager = new();
 
 	public AltSoundIds altSoundId = AltSoundIds.None;
 	public enum AltSoundIds {
@@ -2348,7 +2349,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		renderDamageText(35);
 
-		charState?.render(x, y);
+		charState.render(x, y);
 		chargeEffect?.render(getParasitePos().add(new Point(x, y)));
 
 		if (isCrystalized) {
@@ -2367,8 +2368,8 @@ public partial class Character : Actor, IDamagable {
 
 		bool shouldDrawName = false;
 		bool shouldDrawHealthBar = false;
-		string overrideName = "";
-		FontType? overrideColor = null;
+		//string overrideName = "";
+		//FontType? overrideColor = null;
 
 		if (!hideHealthAndName()) {
 			if (Global.level.mainPlayer.isSpectator) {
@@ -2489,7 +2490,7 @@ public partial class Character : Actor, IDamagable {
 				if (ai.aiState is FindPlayer fp) {
 					string nt = "FindPlayer";
 					if (fp.nodeTransition != null) {
-						nt += $" - {fp.nodeTransition.currentPhase.ToString().RemovePrefix("MMXOnline.")}";
+						nt += $" - {fp.nodeTransition.currentPhase.GetType().Name}";
 					}
 					if (fp.nextNode != null) {
 						Point dist = (
@@ -2509,7 +2510,7 @@ public partial class Character : Actor, IDamagable {
 					}*/
 				} else  {
 					Fonts.drawText(
-						FontType.WhiteMini, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
+						FontType.WhiteMini, ai.aiState.GetType().Name.ToString(),
 						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 					);
 				}
@@ -2548,7 +2549,7 @@ public partial class Character : Actor, IDamagable {
 				}
 			} else {
 				Fonts.drawText(
-					FontType.WhiteMini, charState.GetType().ToString().RemovePrefix("MMXOnline."),
+					FontType.WhiteMini, charState.GetType().Name.ToString(),
 					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 				);
 			}
@@ -2871,6 +2872,10 @@ public partial class Character : Actor, IDamagable {
 		return (player.alliance == healerAlliance || healerAlliance == -1) && alive && health < maxHealth;
 	}
 
+	public virtual bool canBeShielded(int healerAlliance = -1) {
+		return(player.alliance == healerAlliance || healerAlliance == -1) && alive;
+	}
+
 	public virtual void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
 		if (!allowStacking && this.healAmount > 0) return;
 		if (health < maxHealth) {
@@ -2923,16 +2928,14 @@ public partial class Character : Actor, IDamagable {
 	public virtual void applyDamage(
 		float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId
 	) {
+		// To see lifebars of enemies.
 		onDamageHpDisplayActivation(fDamage, attacker, projId);
-
 		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
 		}
 		// Apply mastery level before any reduction.
-		if (this is not Blues && attacker != null &&
-			attacker != player && attacker != Player.stagePlayer
-		) {
+		if (attacker != null && attacker != player && attacker != Player.stagePlayer) {
 			if (fDamage < Damager.ohkoDamage) {
 				mastery.addDefenseExp(fDamage);
 				attacker.mastery.addDamageExp(fDamage, true);
@@ -2948,14 +2951,6 @@ public partial class Character : Actor, IDamagable {
 		if (fDamage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
 		}
-		if (Global.level.isRace() &&
-			fDamage != Damager.envKillDamage &&
-			fDamage != Damager.switchKillDamage &&
-			attacker != player
-		) {
-			fDamage = 0;
-		}
-
 		// Chip stuff.
 		Character? enemyChar = (actor as Projectile)?.ownerActor as Character ?? attacker?.character;
 		fDamage = chips.onDamage.Invoke(this, fDamage, actor, attacker, enemyChar);
@@ -2964,6 +2959,7 @@ public partial class Character : Actor, IDamagable {
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = health;
+		decimal totalHP = health + shieldManager.totalHealth;
 
 		// Pierce.
 		bool isArmorPiercing = Damager.isArmorPiercing(projId);
@@ -2994,8 +2990,8 @@ public partial class Character : Actor, IDamagable {
 		// This is to defend from overkill damage.
 		// Or at least attempt to.
 		if (damageSavings > 0 &&
-			health - damage <= 0 &&
-			(health + damageSavings) - damage > 0
+			totalHP - damage <= 0 &&
+			(totalHP + damageSavings) - damage > 0
 		) {
 			// Apply in the normal way.
 			while (damageSavings >= 1) {
@@ -3014,6 +3010,11 @@ public partial class Character : Actor, IDamagable {
 		// If somehow the damage is negative.
 		// Heals are not really applied here.
 		if (damage < 0) { damage = 0; }
+		// First pass-trough the shield.
+		if (shieldManager.totalHealth > 0) {
+			damage = shieldManager.applyDamage(damage);
+		}
+		// Then apply to HP directly.
 		health -= damage;
 		// Clamp to 0. We do not want to go into the negatives here.
 		if (health < 0) {

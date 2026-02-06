@@ -17,7 +17,7 @@ public class NullableMap<K, V> where V : class where K : notnull {
 		_internalMap = internalMap;
 	}
 
-	public V this[K key] {
+	public V? this[K key] {
 		get {
 			if (_internalMap.ContainsKey(key)) {
 				return _internalMap[key];
@@ -26,6 +26,10 @@ public class NullableMap<K, V> where V : class where K : notnull {
 			}
 		}
 		set {
+			if (value == null) {
+				_internalMap.Remove(key);
+				return;
+			}
 			_internalMap[key] = value;
 		}
 	}

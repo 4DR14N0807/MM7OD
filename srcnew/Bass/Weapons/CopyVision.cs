@@ -43,7 +43,7 @@ public class CopyVision : Weapon {
 	
 		if (ammo > 0 && !isStream && cClone?.destroyed != false) {
 			cClone = new CopyVisionClone(
-				bass, shootPos, character.xDir, character.player.getNextActorNetId(), true, true, player
+				bass, player, shootPos, character.xDir, character.player.getNextActorNetId(), true, true
 			);
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
@@ -123,7 +123,6 @@ public class CopyVisionLemonAlt : Projectile {
 	}
 }
 
-
 public class CopyVisionClone : Actor {
 	int state = 0;
 	float cloneShootTime;
@@ -132,25 +131,24 @@ public class CopyVisionClone : Actor {
 
 	// Define the rateOfFire of the clone.
 	float rateOfFire = 12;
-	Bass? bass = null!;
-	Player? player;
+	Bass? bass;
+	Player player;
 
 	public CopyVisionClone(
-		Actor owner, Point pos, int xDir, ushort? netId, bool ownedByLocalPlayer, 
-		bool rpc = false, Player? altPlayer = null
-	) : base("copy_vision_start", pos, netId, ownedByLocalPlayer, false
+		Actor? owner, Player player, Point pos, int xDir, ushort? netId, bool ownedByLocalPlayer, 
+		bool rpc = false
+	) : base(
+		"copy_vision_start", pos, netId, ownedByLocalPlayer, false
 	) {
-		if (ownedByLocalPlayer) {
-			bass = owner as Bass ?? throw new NullReferenceException();
-			player = bass.player;
-		}
+		bass = owner as Bass;
+		this.player = player;
 
 		useGravity = false;
 		this.xDir = xDir;
 
 		netActorCreateId = NetActorCreateId.CopyVisionClone;
 		if (rpc) {
-			createActorRpc(bass.player.id);
+			createActorRpc(player.id);
 		}
 	}
 
@@ -172,7 +170,7 @@ public class CopyVisionClone : Actor {
 			cloneShootTime += Global.speedMul;
 			if (cloneShootTime > rateOfFire) {
 				Point? shootPos = getFirstPOI();
-				if (shootPos != null && player != null) {
+				if (shootPos != null && bass != null) {
 					new CopyVisionLemon(bass, shootPos.Value, xDir, player.getNextActorNetId(), rpc: true);
 					cloneShootTime = 0;
 					lemons++;

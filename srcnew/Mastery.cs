@@ -172,13 +172,13 @@ public class MasteryTracker {
 }
 
 public class ExpBolts : Actor {
-	public Actor target;
+	public Actor? target;
 	public float time;
 	public bool selfDestroyed;
 	public bool hommingOnActor;
 
 	public ExpBolts(
-		Actor target, Point pos
+		Actor? target, Point pos
 	) : base(
 		"pickup_bolt_small", pos, null, true, false
 	) {
@@ -210,7 +210,7 @@ public class ExpBolts : Actor {
 				collider.isTrigger = true;
 			}
 		}
-		if (hommingOnActor) {
+		if (hommingOnActor && target != null) {
 			float distX = target.getCenterPos().x - pos.x; 
 			float distY = target.getCenterPos().y - pos.y;
 			vel = Point.zero;
@@ -222,7 +222,7 @@ public class ExpBolts : Actor {
 				vel.y = MathF.Sign(distY) * 5 * 60;
 			}
 		}
-		if (time >= 60 * 4) {
+		if (hommingOnActor && time >= 60 * 4) {
 			destroySelf();
 		}
 	}

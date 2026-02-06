@@ -162,6 +162,7 @@ public partial class Actor : GameObject {
 	public int lastNetFrame = Global.frameCount;
 
 	public NetActorCreateId netActorCreateId;
+	public CActorIds cActorId;
 	public Player? netOwner;
 	float createRpcTime;
 
@@ -291,25 +292,15 @@ public partial class Actor : GameObject {
 		return false;
 	}
 
-	public void createActorRpc(int playerId) {
-		if (netId == null) return;
-		if (!ownedByLocalPlayer) return;
-
-		byte[] xBytes = BitConverter.GetBytes(pos.x);
-		byte[] yBytes = BitConverter.GetBytes(pos.y);
-		byte[] netProjIdByte = BitConverter.GetBytes(netId.Value);
-
-		var bytes = new List<byte>()
-			{
-					(byte)netActorCreateId,
-					xBytes[0], xBytes[1], xBytes[2], xBytes[3],
-					yBytes[0], yBytes[1], yBytes[2], yBytes[3],
-					(byte)playerId,
-					netProjIdByte[0], netProjIdByte[1],
-					(byte)(xDir + 128)
-				};
-
-		Global.serverClient?.rpc(RPC.createActor, bytes.ToArray());
+	public void createActorRpc(int playerId, params byte[] extraData) {
+		if (netId == null || !ownedByLocalPlayer) {
+			return;
+		}
+		Player? sPlayer = Global.level.getPlayerById(playerId);
+		if (sPlayer == null) {
+			return;
+		}
+		RPC.createActor.sendRpc(this, pos, xDir, sPlayer, (int)netActorCreateId, netId, null, byteAngle);
 	}
 
 	public void changeSpriteIfDifferent(string spriteName, bool resetFrame) {
@@ -1283,12 +1274,12 @@ public partial class Actor : GameObject {
 	) {
 		if (attacker == null) return;
 
-		float reportDamage = Helpers.clampMax(damage, maxHealth);
+		float reportDamage = Helpers.clampMax(damage, Damager.ohkoDamage);
 		if (attacker.isMainPlayer || ownedByLocalPlayer) {
-			if (damage == Damager.ohkoDamage && damage >= maxHealth) {
+			if (damage >= Damager.ohkoDamage) {
 				addDamageText("Instakill!", (int)FontType.OrangeSmall);
 			} else {
-				addDamageText(reportDamage);
+				addDamageText(damage);
 			}
 		}
 		if (!attacker.isMainPlayer && ownedByLocalPlayer && sendRpc) {
@@ -2076,6 +2067,6 @@ public partial class Actor : GameObject {
 	}
 
 	public string getActorTypeName() {
-		return GetType().ToString().RemovePrefix("MMXOnline.");
+		return GetType().Name.ToString();
 	}
 }

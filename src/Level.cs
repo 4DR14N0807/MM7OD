@@ -1585,7 +1585,7 @@ public partial class Level {
 		for (int i = backloggedDamages.Count - 1; i >= 0; i--) {
 			BackloggedDamage bd = backloggedDamages[i];
 			// Search for actor;
-			Actor? damagerActor = Global.level.getActorByNetId(bd.actorId, true);
+			Actor? damagerActor = Global.level.getActorByNetId(bd.netId, true);
 			// Run if we find an actor.
 			// Or Run anyway if more than 1s.
 			if (damagerActor != null || bd.time >= 10) {
@@ -2835,10 +2835,10 @@ public partial class Level {
 
 	public void clearOldActors() {
 		Dictionary<ushort, Actor> destroyedActorsByIdClone = new(destroyedActorsById);
-		foreach ((ushort actorId, Actor actor) in destroyedActorsByIdClone) {
+		foreach ((ushort netId, Actor actor) in destroyedActorsByIdClone) {
 			long framesDestroyed = Global.floorFrameCount - actor.destroyedOnFrame;
 			if (framesDestroyed >= 240) {
-				destroyedActorsById.Remove(actorId);
+				destroyedActorsById.Remove(netId);
 			}
 		}
 	}

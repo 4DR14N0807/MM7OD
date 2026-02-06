@@ -1220,7 +1220,10 @@ public class Blues : Character {
 		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
-		onDamageHpDisplayActivation(fDamage, attacker, projId);
+		// To see lifebars of enemies.
+		if (attacker != null) {
+			onDamageHpDisplayActivation(fDamage, attacker, projId);
+		}
 		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
@@ -1403,7 +1406,9 @@ public class Blues : Character {
 			}
 			float damageText = float.Parse(damage.ToString());
 			addDamageText(damageText, fontColor);
-			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			if (attacker != null) {
+				RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			}
 			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
 		if (shieldDamaged || shieldHitFront) {
@@ -1413,7 +1418,9 @@ public class Blues : Character {
 			}
 			float damageText = float.Parse((ogShieldHP - shieldHP).ToString());
 			addDamageText(damageText, fontColor);
-			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			if (attacker != null) {
+				RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			}
 		}
 		// Disable L-Tanks only on external damage sources.
 		if (ogShieldHP - shieldHP > 0 && !Damager.isDot(projId) &&

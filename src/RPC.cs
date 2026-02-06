@@ -333,7 +333,7 @@ public class RPCApplyDamage : RPC {
 		bool crit = arguments[12] == 1;
 		int weaponIndex = arguments[13];
 		int weaponKillFeedIndex = arguments[14];
-		ushort actorId = BitConverter.ToUInt16(arguments[15..17]);
+		ushort netId = BitConverter.ToUInt16(arguments[15..17]);
 		ushort projId = BitConverter.ToUInt16(arguments[17..19]);
 		int linkedMeleeId = arguments[19];
 		bool isLinkedMelee = (linkedMeleeId != byte.MaxValue);
@@ -343,14 +343,14 @@ public class RPCApplyDamage : RPC {
 		Actor? actor = null;
 		// For when the projectile was a melee without a NetID.
 		if (isLinkedMelee) {
-			Actor? mainActor = Global.level.getActorByNetId(actorId, true);
+			Actor? mainActor = Global.level.getActorByNetId(netId, true);
 			if (mainActor != null) {
 				actor = searchMeleeProj(mainActor, linkedMeleeId, player, projId, damage, flinch, hitCooldown);
 			}
 		}
 		// For normal projectiles.
 		else {
-			actor = (actorId == 0 ? null : Global.level.getActorByNetId(actorId, true));
+			actor = (netId == 0 ? null : Global.level.getActorByNetId(netId, true));
 			linkedMeleeId = -1;
 		}
 		if (player == null || victim == null) {
@@ -358,9 +358,9 @@ public class RPCApplyDamage : RPC {
 		}
 
 		// Add code for delayed projectile here.
-		if (actor == null && actorId != 0) {
+		if (actor == null && netId != 0) {
 			Global.level.backloggedDamages.Add(new BackloggedDamage(
-				actorId, linkedMeleeId,
+				netId, linkedMeleeId,
 				(Actor? damagerActor, int linkedMeleeId) => {
 					if (damagerActor != null && linkedMeleeId >= 0) {
 						damagerActor = searchMeleeProj(
@@ -429,12 +429,12 @@ public class RPCApplyDamage : RPC {
 }
 
 public class BackloggedDamage {
-	public ushort actorId;
+	public ushort netId;
 	public int meleeId;
 	public Action<Actor?, int> damageAction;
 	public float time;
-	public BackloggedDamage(ushort actorId, int meleeId, Action<Actor?, int> damageAction) {
-		this.actorId = actorId;
+	public BackloggedDamage(ushort netId, int meleeId, Action<Actor?, int> damageAction) {
+		this.netId = netId;
 		this.meleeId = meleeId;
 		this.damageAction = damageAction;
 

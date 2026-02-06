@@ -32,9 +32,16 @@ public class Freezeman : Character {
 		onFreezeZone = false;
 		onIceAlt = false;
 		// Look for ice zones.
-		List<CollideData> fmzList = Global.level.getTerrainTriggerList(
-			getTerrainCollider().shape, typeof(FreezemanZone)
-		);
+		Collider? tcollider = getTerrainCollider();
+
+		List<CollideData> fmzList;
+		if (tcollider != null) {
+			fmzList = Global.level.getTerrainTriggerList(
+				tcollider.shape, typeof(FreezemanZone)
+			);
+		} else {
+			fmzList = [];
+		}
 		if (fmzList.Count > 0) {
 			onFreezeZone = true;
 			onIceAlt = true;

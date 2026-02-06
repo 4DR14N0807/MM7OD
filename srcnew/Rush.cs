@@ -9,7 +9,7 @@ namespace MMXOnline;
 public class Rush : Actor, IDamagable {
 	public Character character = null!;
 	public Rock rock = null!;
-	public Player? player;
+	public Player player;
 	public RushState rushState;
 	public bool usedCoil;
 	public int type;
@@ -19,7 +19,8 @@ public class Rush : Actor, IDamagable {
 
 	// Object initalization happens here.
 	public Rush(
-		Point pos, Player owner, int xDir, ushort netId, bool ownedByLocalPlayer, int type = 0, bool rpc = false
+		Point pos, Player owner, int xDir, ushort netId,
+		bool ownedByLocalPlayer, int type = 0, bool rpc = false
 	) : base(
 		"rush_warp_beam", pos, netId, ownedByLocalPlayer, false
 	) {
@@ -27,11 +28,13 @@ public class Rush : Actor, IDamagable {
 		// Hopefully character is not null.
 		// Character begin null only matters for the local player tho.
 		netOwner = owner;
+		player = owner;
+		this.xDir = xDir;
+
 		if (ownedByLocalPlayer) {
 			this.character = owner.character ?? throw new NullReferenceException();
 			rock = character as Rock ?? throw new NullReferenceException();
 			this.xDir = character.xDir;
-			player = owner;
 		}
 		this.type = type;
 		hasStateMachine = true;
@@ -42,9 +45,10 @@ public class Rush : Actor, IDamagable {
 		sprite = new Sprite("empty");
 		// We do this to manually call the state change.
 		// As oldState cannot be null because we do not want null crashes.
-		rushState = new RushState("empty");
-		rushState.rush = this;
-		rushState.character = character;
+		rushState = new RushState("empty") {
+			rush = this,
+			character = character
+		};
 		// Then now that we set up a dummy state we call the actual changeState.
 		// Only do this for the local player as we do not want other player to run state code.
 		if (ownedByLocalPlayer) {
@@ -174,16 +178,16 @@ public class Rush : Actor, IDamagable {
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
 		if (!ownedByLocalPlayer) { return; }
-		var chr = other.otherCollider.actor as Rock;
-		var wall = other.gameObject as Wall;
 
-		if (wall != null && rushState is RushJetState) {
-			if (other.isSideWallHit()) changeState(new RushWarpOut());
+		if (other.gameObject is Wall && rushState is RushJetState) {
+			if (other.isSideWallHit()) {
+				changeState(new RushWarpOut());
+			}
 		}
 
 		if (rushState is RushWarpIn && other.isGroundHit()) changeState(new RushIdle());
 
-		if (chr == null || chr.charState is Die) return;
+		if (other.otherCollider.actor is not Rock chr || chr.charState is Die) return;
 
 		if (chr == netOwner?.character && chr.vel.y > 0 && chr != null ) {
 			//Rush Coil detection

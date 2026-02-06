@@ -370,8 +370,9 @@ public class RushSearchState : RushState {
 			text = "FULL HEAL";
 			font = FontType.Blue;
 
-			new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
+			new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+				vel = pickupVel
+			};
 		}
 		// Full Ammo refill. 
 		else if (dice > 97) {
@@ -379,8 +380,9 @@ public class RushSearchState : RushState {
 			text = "FULL AMMO REFILL";
 			font = FontType.Green;
 
-			new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };	
+			new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+				vel = pickupVel
+			};	
 		}
 		// 100 bolts 
 		else if (dice > 95.5) {
@@ -388,8 +390,9 @@ public class RushSearchState : RushState {
 			text = "100 BOLTS!!!";
 			font = FontType.Yellow;
 
-			new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };	
+			new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+				vel = pickupVel
+			};	
 		}
 		// Bomb
 		else if (dice > 94) {
@@ -405,8 +408,9 @@ public class RushSearchState : RushState {
 			text = "BIG HEALTH CAPSULE!";
 			font = FontType.Blue;
 
-			new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
+			new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+				vel = pickupVel
+			};
 		}
 		// Big ammo 
 		else if (dice > 78) {
@@ -414,8 +418,9 @@ public class RushSearchState : RushState {
 			text = "BIG AMMO CAPSULE!";
 			font = FontType.Green;
 
-			new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
+			new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+				vel = pickupVel
+			};
 		} 
 		// 40 Bolts
 		else if (dice > 70) {
@@ -425,7 +430,7 @@ public class RushSearchState : RushState {
 
 			for (int i = 0; i < 5; i++) {
 				new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
+				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2) };
 			}
 		}
 		// Small HP 
@@ -434,8 +439,9 @@ public class RushSearchState : RushState {
 			text = "SMALL HEALTH CAPSULE";
 			font = FontType.Blue;
 
-			new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
+			new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+				vel = pickupVel
+			};
 		}
 		//Small ammo
 		else if (dice > 40) {
@@ -443,8 +449,9 @@ public class RushSearchState : RushState {
 			text = "SMALL AMMO CAPSULE";
 			font = FontType.Green;
 
-			new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
+			new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+				vel = pickupVel
+			};
 		}
 		// 10 Bolts
 		else if (dice > 25) {
@@ -454,7 +461,7 @@ public class RushSearchState : RushState {
 
 			for (int i = 0; i < 5; i++) {
 				new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
+				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2) };
 			}
 		}
 		// Trash

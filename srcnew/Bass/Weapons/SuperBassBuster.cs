@@ -535,7 +535,6 @@ public class SweepingLaserProj : Projectile {
 
 
 public class DarkCometUpProj : Projectile {
-
 	Actor? actor;
 	Anim? anim;
 	bool hitWall;
@@ -554,11 +553,10 @@ public class DarkCometUpProj : Projectile {
 		vel.y = -240;
 		yDir *= -1;
 
-		if (ownedByLocalPlayer && owner != null) actor = owner;
-
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+		actor = owner;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

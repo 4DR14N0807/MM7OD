@@ -147,7 +147,6 @@ public partial class Character : Actor, IDamagable {
 	public DNACore? linkedDna;
 	public Character? linkedATransChar;
 	public bool oldATrans = false;
-	public bool disguiseCoverBlown = true;
 
 	// For states with special propieties.
 	// For doublejump.
@@ -211,13 +210,6 @@ public partial class Character : Actor, IDamagable {
 	public bool hasParasite { get { return parasiteTime > 0; } }
 	public float parasiteTime;
 	public float parasiteMashTime;
-
-	// DANGER WRAP SECTION
-	public bool hasBubble => ownedByLocalPlayer ? bigBubble != null : hasBubbleNet;
-	public bool hasBubbleNet;
-	public float dWrappedTime;
-	public Damager? dWrapDamager;
-	public DWrapBigBubble? bigBubble;
 
 	// Disables status.
 	public float paralyzedTime;
@@ -571,7 +563,7 @@ public partial class Character : Actor, IDamagable {
 			rideArmorPlatform != null ||
 			charState is WallSlide ||
 			charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold ||
-			!isMovementLimited()
+			isMovementLimited()
 		) {
 			return false;
 		}
@@ -586,9 +578,9 @@ public partial class Character : Actor, IDamagable {
 			isDWrapped ||
 			flag != null
 		) {
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	public virtual bool canJump() {
@@ -801,11 +793,11 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual (float x, float y) getGlobalColliderSize() {
+	public virtual (float, float) getGlobalColliderSize() {
 		return (18, 30);
 	}
 
-	public virtual (float x, float y) getTerrainColliderSize() {
+	public virtual (float, float) getTerrainColliderSize() {
 		return (18, 30);
 	}
 
@@ -2441,14 +2433,20 @@ public partial class Character : Actor, IDamagable {
 				Point topLeft = new Point(pos.x - 16, pos.y - 5 + currentLabelY - 2.5f);
 				Point botRight = new Point(pos.x + 16, pos.y + currentLabelY - 2.5f);
 
-				DrawWrappers.DrawRect(
+				/* DrawWrappers.DrawRect(
 					topLeft.x, topLeft.y, botRight.x, botRight.y,
 					true, Color.Black, 0, ZIndex.HUD - 1, outlineColor: Color.White
 				);
 				DrawWrappers.DrawRect(
 					topLeft.x + 1, topLeft.y + 1, topLeft.x + 1 + width, botRight.y - 1,
 					true, Color.Yellow, 0, ZIndex.HUD - 1
-				);
+				); */
+
+				float maxProgress = 14;
+				Point barPos = getCenterPos().addxy(-14, -24);
+				renderMiniHudBorder(barPos, new Color(255,255,255), maxProgress);
+				renderMiniBar(barPos, 1, (maxProgress * progress), maxProgress);
+					
 				deductLabelY(labelCooldownOffY);
 			}
 		}
@@ -3414,6 +3412,13 @@ public partial class Character : Actor, IDamagable {
 
 	}
 
+	// DANGER WRAP SECTION
+	public bool hasBubble => ownedByLocalPlayer ? bigBubble != null : hasBubbleNet;
+	public bool hasBubbleNet;
+	public float dWrappedTime;
+	public Damager? dWrapDamager;
+	public DWrapBigBubble? bigBubble;
+	public bool disguiseCoverBlown = true;
 
 	public void addBubble(Player attacker) {
 		if (isSlowImmune() || isStunImmune()) return;
@@ -3829,7 +3834,7 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo) {
+	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo, bool drawFullBar = true) {
 		float cAmmo = MathF.Ceiling(ammo);
 		float fAmmo = MathF.Floor(ammo);
 		float aAlpha = ammo - fAmmo;
@@ -3840,19 +3845,63 @@ public partial class Character : Actor, IDamagable {
 		}
 		Point lpos = offset.addxy(0, -5);
 		for (int i = 0; i < mAmmo; i++) {
-			int id = i < fAmmo ? color : 0;
-			Global.sprites["hud_bar_small_h"].draw(
-				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
-			);
-			if (i >= fAmmo && i < cAmmo) {
+			if (i < fAmmo) {
 				Global.sprites["hud_bar_small_h"].draw(
-					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
+					color, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
 				);
+			} else {
+				if (i < cAmmo) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+					Global.sprites["hud_bar_small_h"].draw(
+						color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
+					);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+				}
 			}
+			
 			lpos.x += 1;
 		}
 
 		return offset.addxy(0, -4);
+	}
+
+	public virtual void renderMiniBar2(Point offset, int color, float ammo, float maxAmmo, bool drawFullBar = true) {
+		float cAmmo = MathF.Ceiling(ammo);
+		float fAmmo = MathF.Floor(ammo);
+		float aAlpha = ammo - fAmmo;
+		float mAmmo = MathF.Floor(maxAmmo);
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
+		if (ammo == maxAmmo) {
+			fAmmo = mAmmo;
+		}
+		Point lpos = offset.addxy(0, -5);
+		for (int i = 0; i < mAmmo; i++) {
+			if (i < fAmmo) {
+				Global.sprites["hud_bar_small_h"].draw(
+					color, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+				);
+			} else {
+				if (i < cAmmo) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+					Global.sprites["hud_bar_small_h"].draw(
+						color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
+					);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+				}
+			}
+			
+			lpos.x += 1;
+		}
 	}
 
 	public virtual int getMiniLifebarLength() {

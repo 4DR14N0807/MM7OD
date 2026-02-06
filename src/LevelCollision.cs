@@ -864,18 +864,16 @@ public partial class Level {
 
 	public CollideData? checkTerrainCollisionOnce(
 		Actor actor, float incX, float incY, Point? vel = null, bool autoVel = false,
-		bool checkPlatforms = false, bool checkQuicksand = false,
-		Func<GameObject, bool>? condition = null
+		bool checkPlatforms = false, bool checkQuicksand = false
 	) {
 		return checkTerrainCollision(
-			actor, incX, incY, vel, autoVel, true, checkPlatforms, checkQuicksand, condition
+			actor, incX, incY, vel, autoVel, true, checkPlatforms, checkQuicksand
 		).FirstOrDefault();
 	}
 
 	public List<CollideData> checkTerrainCollision(
 		Actor actor, float incX, float incY, Point? vel = null, bool autoVel = false,
-		bool returnOne = false, bool checkPlatforms = false, bool checkQuicksand = false,
-		Func<GameObject, bool>? condition = null
+		bool returnOne = false, bool checkPlatforms = false, bool checkQuicksand = false
 	) {
 		List<CollideData> collideDatas = new List<CollideData>();
 		// Use custom terrain collider by default.
@@ -903,15 +901,11 @@ public partial class Level {
 			}
 			if (isTrigger) continue;
 			HitData? hitData = actorShape.intersectsShape(go.collider.shape, vel);
-			if (hitData == null) {
-				continue;
-			}
-			if (condition != null && !condition(go)) {
-				continue;
-			}
-			collideDatas.Add(new CollideData(terrainCollider, go.collider, vel, isTrigger, go, hitData));
-			if (returnOne) {
-				return collideDatas;
+			if (hitData != null) {
+				collideDatas.Add(new CollideData(terrainCollider, go.collider, vel, isTrigger, go, hitData));
+				if (returnOne) {
+					return collideDatas;
+				}
 			}
 		}
 

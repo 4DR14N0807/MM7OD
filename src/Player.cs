@@ -450,6 +450,7 @@ public partial class Player {
 	public ShaderWrapper breakManShader = Helpers.cloneGenericPaletteShader("blues_hyperpalette");
 	public ShaderWrapper bluesScarfShader = Helpers.cloneGenericPaletteShader("blues_palette_texture");
 	public ShaderWrapper bassPaletteShader = Helpers.cloneGenericPaletteShader("bass_palette_texture");
+	public ShaderWrapper superBassPaletteShader = Helpers.cloneGenericPaletteShader("bass_superadaptor_palette");
 
 	// Character specific data populated on RPC request
 	//public ushort? charNetId;

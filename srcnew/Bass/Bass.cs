@@ -621,7 +621,7 @@ public class Bass : Character {
 				return false;
 			}
 			if (yInput == -1 && phase >= 1 && !grounded) {
-				if (isCooldownOver((int)AttackIds.DarkComet)) {
+				if (isCooldownOver((int)AttackIds.DarkComet) && !isMovementLimited()) {
 					changeState(new DarkCometState(), true);
 					return true;
 				}
@@ -976,6 +976,13 @@ public class Bass : Character {
 		//We don't apply palette shader on hypermode.
 		if (palette != null && !isSuperBass && !isTrebbleBoost) {
 			shaders.Add(palette);
+		} else if (isSuperBass || isTrebbleBoost) {
+			ShaderWrapper? palette2 = null;
+			palette2 = player.superBassPaletteShader;
+			
+			palette2?.SetUniform("palette", phase);
+			palette2?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+			if (palette2 != null) shaders.Add(palette2);
 		}
 		shaders.AddRange(baseShaders);
 

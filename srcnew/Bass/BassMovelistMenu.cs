@@ -18,35 +18,8 @@ public class BassMovelistMenu : MovelistMenu {
 		this.hasSuperAdaptor = hasSuperAdaptor;
 		ogTitle = title;
 
-		if (hasSuperAdaptor) {
-			moves = new() {
-				new MovelistItem(
-					spriteName, 13, "SHOOT", Control.Shoot, "CAN BE CHARGED"
-				),
-				new MovelistItem(
-					spriteName, 14, "DASH", Control.Dash
-				),
-				new MovelistItem(
-					spriteName, 15, "DOUBLE JUMP", Control.Jump, "MID-AIR"
-				),
-				new MovelistItem(
-					spriteName, 16, "FLIGHT", Control.Jump, "MID-AIR AFTER\nDOUBJE JUMPING"
-				),
-				new MovelistItem(
-					spriteName, 17, "KICK", Control.Special1, "ON GROUND"
-				),
-				new MovelistItem(
-					spriteName, 18, "SONIC CRUSHER", Control.Special1, "MID-AIR"
-				),
-				new MovelistItem(
-					spriteName, 19, "SWEEPING LASER", Control.Down + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
-				),
-				new MovelistItem(
-					spriteName, 20, "DARK COMET", Control.Up + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
-				)
-			};
-		} else {
-			moves = new() {
+		if (!hasSuperAdaptor) {
+			moves.AddRange(new List<MovelistItem>() {
 				//Base Bass
 				new MovelistItem(
 					spriteName, 0, "SHOOT", Control.Shoot
@@ -73,27 +46,39 @@ public class BassMovelistMenu : MovelistMenu {
 				new MovelistItem(
 					"empty", 0, "", ""
 				),
-				//Super Bass
-				new MovelistItem(
-					spriteName, 13, "SHOOT", Control.Shoot, "CAN BE CHARGED"
-				),
-				new MovelistItem(
-					spriteName, 16, "FLIGHT", Control.Jump, "MID-AIR AFTER\nDOUBJE JUMPING"
-				),
-				new MovelistItem(
-					spriteName, 17, "KICK", Control.Up + " + " + Control.Special1, "ON GROUND"
-				),
-				new MovelistItem(
-					spriteName, 18, "SONIC CRUSHER", Control.Special1, "HOLD " + Control.Special1 + " TO\nKEEP FLYING"
-				),
-				new MovelistItem(
-					spriteName, 19, "SWEEPING LASER", Control.Down + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
-				),
-				new MovelistItem(
-					spriteName, 20, "DARK COMET", Control.Up + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
-				)
-			};
-		}	
+			});
+		}
+
+		// Super Bass
+		moves.AddRange( new List<MovelistItem>() {
+			new MovelistItem(
+				spriteName, 13, "SHOOT", Control.Shoot, "CAN BE CHARGED"
+			),
+			new MovelistItem(
+				spriteName, 14, "DASH", Control.Dash
+			),
+			new MovelistItem(
+				spriteName, 15, "DOUBLE JUMP", Control.Jump, "MID-AIR"
+			),
+			new MovelistItem(
+				spriteName, 16, "FLIGHT", Control.Jump, "MID-AIR"
+			),
+			new MovelistItem(
+				spriteName, 17, "KICK", Control.Special1, "ON GROUND"
+			),
+			new MovelistItem(
+				spriteName, 18, "SONIC CRUSHER", Control.Special1, "HOLD " + Control.Special1 + " TO\nKEEP FLYING"
+			),
+			new MovelistItem(
+				spriteName, 19, "SWEEPING LASER", Control.Down + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
+			),
+			new MovelistItem(
+				spriteName, 20, "DARK COMET", Control.Up + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
+			),
+			new MovelistItem(
+				spriteName, 21, "ENERGY DECREASE", Control.Special2 + " + " + Control.Down, "ON GROUND\nREDUCES 1 EVIL ENERGY LEVEL\nCAN'T BE USED AT MAX LEVEL"
+			)}
+		);	
 	}
 
 	public override void update() {

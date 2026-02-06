@@ -146,7 +146,7 @@ public class ChatMenu : IMainMenu {
 
 	public void render() {
 		int topLeftX = 6;
-		int chatLineHeight = 8;
+		int chatLineHeight = Options.main.smallerChatFont ? 8 : 10;
 		int typedChatY = 203;
 		int messageHistoryY = 202 - chatLineHeight - 2;
 		int mainTeam = !Global.level.mainPlayer.isSpectator ? Global.level.mainPlayer.alliance : -100;
@@ -168,7 +168,7 @@ public class ChatMenu : IMainMenu {
 			}
 			//WhiteMini
 			Fonts.drawText(
-				FontType.WhiteMini, chat.getDisplayMessage(),
+				Options.main.smallerChatFont ? FontType.WhiteMini : FontType.White, chat.getDisplayMessage(),
 				topLeftX, messageHistoryY - (i * chatLineHeight), Alignment.Left,
 				color: color
 			);
@@ -183,7 +183,12 @@ public class ChatMenu : IMainMenu {
 				outlineColor = Color.Black;
 			}
 			//WhiteMini
-			int width = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteMini), chatDisplay);
+			int width = Fonts.measureText(
+				Fonts.getFontSrt(
+					Options.main.smallerChatFont ? FontType.WhiteMini : FontType.White
+				), 
+				chatDisplay
+			);
 
 			int bgWidth = width + 4;
 			if (bgWidth < 77) {
@@ -201,11 +206,11 @@ public class ChatMenu : IMainMenu {
 				new Color(255, 255, 255)
 			);
 			//WhiteMini
-			Fonts.drawText(FontType.WhiteMini, chatDisplay, topLeftX, typedChatY);
+			Fonts.drawText(Options.main.smallerChatFont ? FontType.WhiteMini : FontType.White, chatDisplay, topLeftX, typedChatY);
 
 			if (chatBlinkTime >= 0.5f) {
 				//WhiteMini
-				Fonts.drawText(FontType.WhiteMini, "|", topLeftX + width - 1, typedChatY);
+				Fonts.drawText(Options.main.smallerChatFont ? FontType.WhiteMini : FontType.White, "|", topLeftX + width - 1, typedChatY);
 			}
 		}
 	}

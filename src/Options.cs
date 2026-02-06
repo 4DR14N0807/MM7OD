@@ -18,6 +18,7 @@ public class Options {
 	public bool showSysReqPrompt = true;
 	public bool enableDeveloperConsole;
 	public bool disableChat;
+	public bool smallerChatFont;
 	public int fpsMode = 0;
 	public bool cheatWarningShown;
 	public bool disableDoubleDash;

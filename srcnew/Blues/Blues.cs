@@ -1707,7 +1707,8 @@ public class Blues : Character {
 		if (destroyed || charState is Die) return;
 
 		float pAmmo = getChargeShotCorePendingAmmo();
-		Point barPos = pos.addxy(-12, -44);
+		Point barPos = getCenterPos().addxy(-14, -24);
+		if (hyperProgress > 0) barPos = barPos.addxy(0, -8);
 		int maxLength = 14;
 		// Core ammo
 		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0 ) && Options.main.coreHeatDisplay >= 1) {
@@ -1720,8 +1721,11 @@ public class Blues : Character {
 			decimal lengthP = (maxLength * (decimal)pendAmmo) / (decimal)coreMaxAmmo;
 			decimal length = (maxLength * (decimal)coreAmmo) / (decimal)coreMaxAmmo;
 
-			drawBarHHUD(lengthP, maxLength, 1, barPos);
-			drawBarHHUD(length, maxLength, 3, barPos, false);
+			//drawBarHHUD(lengthP, maxLength, 1, barPos);
+			//drawBarHHUD(length, maxLength, 3, barPos, false);
+			renderMiniHudBorder(barPos, Color.White, maxLength);
+			renderMiniBar2(barPos, 1, (float)lengthP, maxLength);
+			renderMiniBar2(barPos, 4, (float)length, maxLength, false);
 		}
 
 		//Overdrive ammo

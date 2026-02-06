@@ -68,7 +68,7 @@ public class NeutralEnemy : Actor, IDamagable {
 		// Sprites.
 		string oldSprite = sprite.name;
 		string newSprite = getSprite(sprite.name);
-		if (newSprite != "" && Global.sprites.ContainsKey(newSprite)) {
+		if (newSprite != "" && Global.sprites.ContainsKey(getSprite(newState.sprite))) {
 			changeSprite(getSprite(newState.sprite), true);
 		}
 		// Exit/Enter shenanigans.

@@ -252,10 +252,10 @@ public class GiantBoltPickup : BaselineBoltPickup {
 		Player owner, Point pos, ushort? netId, 
 		bool ownedByLocalPlayer, bool sendRpc = false
 	) : base(
-		owner, pos, "pickup_ammo_giant", netId, ownedByLocalPlayer,
+		owner, pos, "pickup_bolt_giant", netId, ownedByLocalPlayer,
 		NetActorCreateId.GiantBolt, sendRpc: sendRpc
 	) {
-		healAmount = 32;
+		healAmount = 100;
 		teamOnly = true;
 		pickupType = PickupType.Bolts;
 	}

@@ -10,6 +10,7 @@ public enum NetActorCreateId {
 	DWrapBigBubble,
 	Rush,
 	CopyVisionClone,
+	Met,
 	ChillPenguin,
 	SparkMandrill,
 	ArmoredArmadillo,
@@ -88,6 +89,9 @@ public class RPCCreateActor : RPC {
 				break;
 			case (int)NetActorCreateId.CopyVisionClone:
 				new CopyVisionClone(actor, pos, xDir, netProjByte, false, altPlayer: player);
+				break;
+			case (int)NetActorCreateId.Met:
+				new Met(pos, xDir, player, netProjByte, false);
 				break;
 			case (int)NetActorCreateId.GiantHealth:
 				new GiantHealthPickup(player, pos, netProjByte, false);

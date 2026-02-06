@@ -3833,7 +3833,7 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo) {
+	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo, bool drawFullBar = true) {
 		float cAmmo = MathF.Ceiling(ammo);
 		float fAmmo = MathF.Floor(ammo);
 		float aAlpha = ammo - fAmmo;
@@ -3844,19 +3844,63 @@ public partial class Character : Actor, IDamagable {
 		}
 		Point lpos = offset.addxy(0, -5);
 		for (int i = 0; i < mAmmo; i++) {
-			int id = i < fAmmo ? color : 0;
-			Global.sprites["hud_bar_small_h"].draw(
-				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
-			);
-			if (i >= fAmmo && i < cAmmo) {
+			if (i < fAmmo) {
 				Global.sprites["hud_bar_small_h"].draw(
-					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
+					color, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
 				);
+			} else {
+				if (i < cAmmo) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+					Global.sprites["hud_bar_small_h"].draw(
+						color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
+					);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+				}
 			}
+			
 			lpos.x += 1;
 		}
 
 		return offset.addxy(0, -4);
+	}
+
+	public virtual void renderMiniBar2(Point offset, int color, float ammo, float maxAmmo, bool drawFullBar = true) {
+		float cAmmo = MathF.Ceiling(ammo);
+		float fAmmo = MathF.Floor(ammo);
+		float aAlpha = ammo - fAmmo;
+		float mAmmo = MathF.Floor(maxAmmo);
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
+		if (ammo == maxAmmo) {
+			fAmmo = mAmmo;
+		}
+		Point lpos = offset.addxy(0, -5);
+		for (int i = 0; i < mAmmo; i++) {
+			if (i < fAmmo) {
+				Global.sprites["hud_bar_small_h"].draw(
+					color, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+				);
+			} else {
+				if (i < cAmmo) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+					Global.sprites["hud_bar_small_h"].draw(
+						color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
+					);
+				} else if (drawFullBar) {
+					Global.sprites["hud_bar_small_h"].draw(
+						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					);
+				}
+			}
+			
+			lpos.x += 1;
+		}
 	}
 
 	public virtual int getMiniLifebarLength() {

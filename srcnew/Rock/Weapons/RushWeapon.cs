@@ -31,7 +31,6 @@ public class RushWeapon : Weapon {
 
 		if (player.character is Rock) {
 			if (!rock.canCallRush(type)) return;
-			if (type < 2 && ammo <= 0) return;
 			if (rock.rush != null) {
 				rock.rush.changeState(new RushWarpOut());
 			} else {

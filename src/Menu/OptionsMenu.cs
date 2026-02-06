@@ -585,6 +585,27 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Set to Yes to disable sending and receiving\nchat messages in online matches."
 				),
+				new MenuOption(
+					30, startY, 
+					() => {
+						if (Global.input.isHeldMenu(Control.MenuLeft)) {
+							Options.main.smallerChatFont = false;
+						} else if (Global.input.isHeldMenu(Control.MenuRight)) {
+							Options.main.smallerChatFont = true;
+						}
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText, "SMALLER CHAT FONT:",
+ 							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.smallerChatFont),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Set to Yes to use a smaller font for chat messages."
+				),
 				// Double dash
 				new MenuOption(
 					30, startY,

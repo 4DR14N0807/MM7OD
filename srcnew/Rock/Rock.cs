@@ -376,7 +376,7 @@ public class Rock : Character {
 		if (isInvulnerableAttack() ||
 			hasSuperAdaptor ||
 			//(type == 2 && player.currency < RushSearchCost) ||
-			flag != null
+			flag != null || rushWeapon.ammo <= 0
 		) {
 			return false;
 		}

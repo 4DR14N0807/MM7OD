@@ -431,6 +431,10 @@ public enum RobotMastersProjIds {
 
 }
 
+public enum NeutralEnemyProjIds {
+	MetLemon = 1000,
+}
+
 public enum ProjIds {
 
 	// Adrián: Some of Rock projectiles IDs have to be here because GM moment

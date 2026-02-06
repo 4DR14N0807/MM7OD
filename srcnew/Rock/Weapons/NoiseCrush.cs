@@ -92,7 +92,7 @@ public class NoiseCrushSpawnerRm : Projectile {
 		base.update();
 
 		Helpers.decrementFrames(ref shootTime);
-		if (shootTime <= 0 && shotCount < shotMaxCount) {
+		if (shootTime <= 0 && shotCount < shotMaxCount && !destroyed) {
 			shootProj();
 			shotCount++;
 			shootTime = shootMaxTime;
@@ -146,10 +146,10 @@ public class NoiseCrushSpawnerRm : Projectile {
 	public void destroyProjs(Point fadePos) {
 		if (!ownedByLocalPlayer) return;
 
-		foreach (var proj in projectiles) {
+		foreach (NoiseCrushRmProj proj in projectiles) {
 			proj.destroySelf();
 		}
-		foreach (var projC in projectilesCharged) {
+		foreach (NoiseCrushChargedRmProj projC in projectilesCharged) {
 			projC.destroySelf();
 		}
 		projectiles.Clear();

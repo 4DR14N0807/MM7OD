@@ -99,18 +99,17 @@ public partial class RPCCreateActor : RPC {
 		}
 
 		switch (cActorId) {
-			switch (createId) {
 			case (int)NetActorCreateId.DWrapBigBubble:
-				new DWrapBigBubble(pos, player, xDir, netProjByte, false);
+				new DWrapBigBubble(pos, player, xDir, netIdByte, false);
 				break;
 			case (int)NetActorCreateId.Rush:
-				new Rush(pos, player, xDir, netProjByte, false);
+				new Rush(pos, player, xDir, netIdByte, false);
 				break;
 			case (int)NetActorCreateId.CopyVisionClone:
-				new CopyVisionClone(null, pos, xDir, netProjByte, false, altPlayer: player);
+				new CopyVisionClone(null, player, pos, xDir, netIdByte, false);
 				break;
 			case (int)NetActorCreateId.Met:
-				new Met(pos, xDir, player, netProjByte, false);
+				new Met(pos, xDir, player, netIdByte, false);
 				break;
 		}
 	}
@@ -238,70 +237,3 @@ public enum NetActorCreateId {
 	DrDoppler,
 	RideChaser,
 }
-
-public class RPCCreateActor : RPC {
-	public RPCCreateActor() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered; 
-		isPreUpdate = true;
-	}
-
-	public override void invoke(params byte[] arguments) {
-		int createId = arguments[0];
-		float xPos = BitConverter.ToSingle(new byte[] { arguments[1], arguments[2], arguments[3], arguments[4] }, 0);
-		float yPos = BitConverter.ToSingle(new byte[] { arguments[5], arguments[6], arguments[7], arguments[8] }, 0);
-		var playerId = arguments[9];
-		var netProjByte = BitConverter.ToUInt16(new byte[] { arguments[10], arguments[11] }, 0);
-		int xDir = arguments[12] - 128;
-
-		var player = Global.level.getPlayerById(playerId);
-		if (player == null) return;
-
-		Actor? actor = Global.level.getActorByNetId(netProjByte);
-		if (actor != null && (int)actor.netActorCreateId == createId) return;
-		if (Global.level.recentlyDestroyedNetActors.ContainsKey(netProjByte)) return;
-		Point pos = new Point(xPos, yPos);
-
-		switch (createId) {
-			case (int)NetActorCreateId.DWrapBigBubble:
-				new DWrapBigBubble(pos, player, xDir, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.Rush:
-				new Rush(pos, player, xDir, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.CopyVisionClone:
-				new CopyVisionClone(actor, pos, xDir, netProjByte, false, altPlayer: player);
-				break;
-			case (int)NetActorCreateId.Met:
-				new Met(pos, xDir, player, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.GiantHealth:
-				new GiantHealthPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.LargeHealth:
-				new LargeHealthPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.SmallHealth:
-				new SmallHealthPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.GiantAmmo:
-				new GiantAmmoPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.LargeAmmo:
-				new LargeAmmoPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.SmallAmmo:
-				new SmallAmmoPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.GiantBolt:
-				new GiantBoltPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.LargeBolt:
-				new LargeBoltPickup(player, pos, netProjByte, false);
-				break;
-			case (int)NetActorCreateId.SmallBolt:
-				new SmallBoltPickup(player, pos, netProjByte, false);
-				break;
-		}
-	}
-}
-

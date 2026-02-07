@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
-
+/*
 public class FreezeMCrystalPiece : Anim {
     Point bounceVel;
     public FreezeMCrystalPiece(
@@ -243,3 +243,4 @@ public class FreezeMChargeState : CharState {
         }  
 	}
 }
+*/

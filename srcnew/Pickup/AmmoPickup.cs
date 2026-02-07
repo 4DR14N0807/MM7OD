@@ -54,8 +54,8 @@ public class TankAmmoPickup : BaselineAmmoPickup {
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
 		bool sendRpc = false, bool teamOnly = false
 	) : base(
-		owner, pos, "pickup_etank", netId, ownedByLocalPlayer, 
-		CActorIds.LargeAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		owner, pos, "pickup_wtank", netId, ownedByLocalPlayer, 
+		CActorIds.TankAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 16;
 	}
@@ -106,20 +106,20 @@ public class SmallAmmoPickup : BaselineAmmoPickup {
 	}
 }
 
-public class MicroAmmoPickup : BaselineAmmoPickup {
-	public MicroAmmoPickup(
+public class MiniAmmoPickup : BaselineAmmoPickup {
+	public MiniAmmoPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
 		bool sendRpc = false, bool teamOnly = false
 	) : base(
-		owner, pos, "pickup_ammo_micro", netId, ownedByLocalPlayer, 
-		CActorIds.SmallAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		owner, pos, "pickup_ammo_mini", netId, ownedByLocalPlayer, 
+		CActorIds.MiniAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 12.5f;
 		altHealAmount = 2;
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
-		return new MicroAmmoPickup(
+		return new MiniAmmoPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
 		);
 	}

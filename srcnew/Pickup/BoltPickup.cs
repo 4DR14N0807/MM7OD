@@ -1,4 +1,4 @@
-namespace MMXOnline;
+﻿namespace MMXOnline;
 
 public abstract class BaselineBoltPickup : Pickup {
 	public BaselineBoltPickup(
@@ -25,10 +25,10 @@ public class GiantBoltPickup : BaselineBoltPickup {
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
 		bool sendRpc = false, bool teamOnly = false
 	) : base(
-		owner, pos, "pickup_ammo_giant", netId, ownedByLocalPlayer,
+		owner, pos, "pickup_bolt_giant", netId, ownedByLocalPlayer,
 		CActorIds.GiantBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
-		healAmount = 32;
+		healAmount = 100;
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

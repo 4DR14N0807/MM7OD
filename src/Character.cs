@@ -849,6 +849,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		// Local only starts here.
+		shieldManager.update(this);
 		debuffCooldowns();
 		genericPuppetControl();
 		updateAttackCooldowns();
@@ -1063,6 +1064,7 @@ public partial class Character : Actor, IDamagable {
 
 		for (int i = buffList.Count - 1; i >= 0; i--) {
 			buffList[i].time -= speedMul;
+			buffList[i].update?.Invoke(buffList[i]);
 			if (buffList[i].time <= 0) {
 				buffList.RemoveAt(i);
 			}
@@ -3017,7 +3019,8 @@ public partial class Character : Actor, IDamagable {
 		// Heals are not really applied here.
 		if (damage < 0) { damage = 0; }
 		// First pass-trough the shield.
-		if (shieldManager.totalHealth > 0) {
+		decimal totalShield = shieldManager.totalHealth;
+		if (totalShield > 0) {
 			damage = shieldManager.applyDamage(damage);
 		}
 		// Then apply to HP directly.
@@ -3637,14 +3640,15 @@ public partial class Character : Actor, IDamagable {
 		if (position == GameMode.HUDHealthPosition.Right) {
 			drawDir = -1;
 		}
-		Point drawPos = GameMode.getHUDBuffPosition(position) + offset; 
+		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+		drawPos.x += secondBarOffset;
 
 		// Disarray.
 		if (disarrayStacks.Count >= 2) {
 			DisarrayStack lowerStack = disarrayStacks.MinBy(
 				(KeyValuePair <string, DisarrayStack> kvp) => kvp.Value.time
 			).Value;
-			drawBuff(
+			drawDebuff(
 				drawPos, lowerStack.time / lowerStack.maxTime,
 				"hud_buffs", 0
 			);
@@ -3659,7 +3663,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Evil Energy.
 		if (this is Bass && player.evilEnergyStacks > 0) {
-			drawBuff(
+			drawDebuff(
 				drawPos, player.evilEnergyTime / player.evilEnergyMaxTime,
 				"hud_weapon_icon_bass", 14
 			);
@@ -3667,8 +3671,14 @@ public partial class Character : Actor, IDamagable {
 			drawPos.x += 18 * drawDir;
 		}
 		foreach (Buff buff in buffList) {
-			drawBuff(
-				drawPos, buff.time / buff.maxTime,
+			float percent = buff.time / buff.maxTime;
+			var dfunct = drawDebuff;
+			if (buff.isBuff) {
+				percent = 1 - percent;
+				dfunct = drawBuff;
+			}
+			dfunct(
+				drawPos, percent,
 				buff.iconName, buff.iconIndex
 			);
 			secondBarOffset += 18 * drawDir;
@@ -3681,7 +3691,7 @@ public partial class Character : Actor, IDamagable {
 			int icon = at.iconIndex;
 			string sprite = at.sprite;
 
-			drawBuff(drawPos, cd / maxCd, sprite, icon);
+			drawDebuff(drawPos, cd / maxCd, sprite, icon);
 
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
@@ -3689,6 +3699,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void drawBuff(Point pos, float cooldown, string sprite, int index) {
+		Global.sprites[sprite].drawToHUD(index, pos.x, pos.y);
+		GameMode.drawWeaponSlotCooldownR(pos.x, pos.y, cooldown);
+	}
+	public void drawDebuff(Point pos, float cooldown, string sprite, int index) {
 		Global.sprites[sprite].drawToHUD(index, pos.x, pos.y);
 		GameMode.drawWeaponSlotCooldown(pos.x, pos.y, cooldown);
 	}
@@ -3724,11 +3738,15 @@ public partial class Character : Actor, IDamagable {
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
 		float fhpAlpha = (float)(floatCurHP - curHP);
-		decimal savings = curHP + (damageSavings / modifier);
+		decimal shield = (shieldManager.totalHealth / modifier);
+		decimal savings = Math.Max(curHP, shield) + (damageSavings / modifier);
 
 		for (var i = 0; i < Math.Ceiling(maxHP); i++) {
 			// Draw HP
-			if (i < curHP) {
+			if (i < shield && i < savings) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY);
+			}
+			else if (i < curHP) {
 				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
 			}
 			else if (i < savings) {
@@ -3738,6 +3756,9 @@ public partial class Character : Actor, IDamagable {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 				if (i < ceilCurHP) {
 					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
+				}
+				if (i < shield) {
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, 0.5f);
 				}
 			}
 			baseY -= 2;
@@ -3805,7 +3826,7 @@ public partial class Character : Actor, IDamagable {
 				renderMiniHudBorder(offset, color, maxBarAmmo);
 				offset = renderMiniBar(offset, 3, maxBarAmmo, maxBarAmmo);
 			}
-			if (this is Bass bass ) {
+			if (this is Bass bass && (bass.isTrebbleBoost || bass.isSuperBass)) {
 				Point bpos = offset.addxy(maxBarAmmo * 2, -1);
 				Fonts.drawText(
 					FontType.WhiteMini, $"{bass.phase}", bpos.x, bpos.y,
@@ -4191,6 +4212,7 @@ public class Buff {
 	public float time;
 	public string iconName;
 	public int iconIndex;
+	public Action<Buff>? update;
 
 	public Buff(string iconName, int iconIndex, bool isBuff, float time, float maxTime) {
 		this.iconName = (iconName ?? "");

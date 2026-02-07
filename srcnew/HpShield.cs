@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +6,7 @@ namespace MMXOnline;
 
 public class HpShieldManager() {
 	public List<HpShield> shields = [];
+	public Dictionary<ShieldIds, HpShield> shieldsById = [];
 
 	public decimal totalHealth {
 		get {
@@ -26,19 +27,25 @@ public class HpShieldManager() {
 
 	public void shortShields() {
 		shields = shields.Where(s => !s.destroyed).OrderBy(s => s.piority).ToList();
+		shieldsById = shieldsById.Where(kvp => !kvp.Value.destroyed).ToDictionary();
 	}
 
 	public decimal applyDamage(decimal damage) {
 		shortShields();
 		int i = shields.Count - 1;
 
-		while (i > 0 && damage > 0) {
+		while (i >= 0 && damage > 0) {
 			damage = shields[i].applyDamage(damage);
 			if (shields[i].health <= 0) {
+				shieldsById.Remove(shields[i].id);
 				shields.RemoveAt(i);
 			}
 		}
 		return damage;
+	}
+
+	public void addShield(float health, int time, ShieldIds id) {
+		addShield((decimal)health, time, id);
 	}
 
 	public void addShield(decimal health, int time, ShieldIds id) {
@@ -49,11 +56,13 @@ public class HpShieldManager() {
 			}
 			return;
 		}
-		shields.Add(new HpShield() {
+		var newShield = new HpShield() {
 			health = health,
 			time = time,
 			id = id
-		});
+		};
+		shields.Add(newShield);
+		shieldsById[id] = newShield;
 		shortShields();
 	}
 }

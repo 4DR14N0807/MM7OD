@@ -595,7 +595,7 @@ public class GameMode {
 					FontType.WhiteSmall,
 					" " + drawPlayer.currency.ToString(), basePos.x + 40, basePos.y, Alignment.Right
 				);
-				Global.sprites["pickup_bolt_small"].drawToHUD(0, basePos.x + 4, basePos.y + 4);
+				Global.sprites["hud_scrap"].drawToHUD(0, basePos.x, basePos.y);
 			}
 			if (drawPlayer.character is CmdSigma cmdSigma) {
 				int xStart = 11;
@@ -1706,11 +1706,6 @@ public class GameMode {
 			var y = startY;
 		}
 
-		if (mainPlayer.character is Rock rock && Options.main.rushSpecial) {
-			Weapon rushWep = rock.rushWeapon;
-			drawWeaponSlot(rushWep, 18, 97);
-		}
-
 		if (player.isGridModeEnabled()) return;
 
 		int offsetX = 0;
@@ -1872,6 +1867,56 @@ public class GameMode {
 		}
 
 		var slices = new List<List<Point>>(points.Count);
+		for (int i = 0; i < points.Count; i++) {
+			Point nextPoint = i + 1 >= points.Count ? points[0] : points[i + 1];
+			slices.Add(new List<Point>() { new Point(x, y), points[i], nextPoint });
+		}
+
+		for (int i = 0; i < (int)(val * slices.Count); i++) {
+			DrawWrappers.DrawPolygon(slices[i], new Color(0, 0, 0, 164), true, ZIndex.HUD, false);
+		}
+	}
+
+
+	public static void drawWeaponSlotCooldownR(float x, float y, float val) {
+		if (val <= 0) return;
+		val = Helpers.clamp01(val);
+
+		int sliceStep = Options.main.particleQuality switch {
+			0 => 4,
+			1 => 2,
+			_ => 1
+		};
+		int gridLen = 16 / sliceStep;
+		List<Point> points = new List<Point>(gridLen * 4);
+		int startX = 0;
+		int startY = -8;
+		int xDir = 1;
+		int yDir = 0;
+
+		for (int i = 0; i < gridLen * 4; i++) {
+			points.Add(new Point(x + startX, y + startY));
+			startX += sliceStep * xDir;
+			startY += sliceStep * yDir;
+			if (xDir == 1 && startX == 8) {
+				xDir = 0;
+				yDir = 1;
+			}
+			if (yDir == 1 && startY == 8) {
+				yDir = 0;
+				xDir = -1;
+			}
+			if (xDir == -1 && startX == -8) {
+				xDir = 0;
+				yDir = -1;
+			}
+			if (yDir == -1 && startY == -8) {
+				xDir = 1;
+				yDir = 0;
+			}
+		}
+
+		List<List<Point>> slices = new List<List<Point>>(points.Count);
 		for (int i = 0; i < points.Count; i++) {
 			Point nextPoint = i + 1 >= points.Count ? points[0] : points[i + 1];
 			slices.Add(new List<Point>() { new Point(x, y), points[i], nextPoint });

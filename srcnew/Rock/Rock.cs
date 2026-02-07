@@ -771,6 +771,22 @@ public class Rock : Character {
 		}
 	}
 
+	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		if (Global.level.mainPlayer.character == this && !weapons.Contains(rushWeapon)) {
+			int drawDir = 1;
+			if (position == GameMode.HUDHealthPosition.Right) {
+				drawDir = -1;
+			}
+			Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+			drawBuffAlt(
+				drawPos, rushWeapon.ammo / rushWeapon.maxAmmo,
+				rushWeapon.iconSprite, rushWeapon.weaponSlotIndex
+			);
+			secondBarOffset += 18 * drawDir;
+		}
+		base.renderBuffs(offset, position);
+	}
+
 	public override List<byte> getCustomActorNetData() {
 		// Get base arguments.
 		List<byte> customData = base.getCustomActorNetData();

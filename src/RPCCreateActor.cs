@@ -11,13 +11,13 @@ public enum CActorIds {
 	TankHealthPickup,
 	LargeHealthPickup,
 	SmallHealthPickup,
-	MicroHealthPickup,
+	MiniHealthPickup,
 	// Ammo
 	GiantAmmoPickup,
-	WTankAmmoPickup,
+	TankAmmoPickup,
 	LargeAmmoPickup,
 	SmallAmmoPickup,
-	MicroAmmoPickup,
+	MiniAmmoPickup,
 	// Bolts
 	GiantBoltPickup,
 	LargeBoltPickup,
@@ -26,12 +26,12 @@ public enum CActorIds {
 	TankShieldPickup,
 	LargeShieldPickup,
 	SmallShieldPickup,
-	MicroShieldPickup,
+	MiniShieldPickup,
 	// Super.
-	STankSuperPickup,
+	TankSuperPickup,
 	LargeSuperPickup,
 	SmallSuperPickup,
-	MicroSuperPickup,
+	MiniSuperPickup,
 }
 
 public partial class RPCCreateActor : RPC {

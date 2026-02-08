@@ -1710,38 +1710,22 @@ public class Blues : Character {
 	}
 
 	public void renderCoreAlt() {
-		if (destroyed || charState is Die) return;
-
-		float pAmmo = getChargeShotCorePendingAmmo();
-		Point barPos = pos.addxy(-12, -44);
-		int maxLength = 14;
-		// Core ammo
-		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0 ) && Options.main.coreHeatDisplay >= 1) {
-
-			float pendAmmo = coreAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = coreMaxAmmo;
-			}
-
-			decimal lengthP = (maxLength * (decimal)pendAmmo) / (decimal)coreMaxAmmo;
-			decimal length = (maxLength * (decimal)coreAmmo) / (decimal)coreMaxAmmo;
-
-			drawBarHHUD(lengthP, maxLength, 1, barPos);
-			drawBarHHUD(length, maxLength, 3, barPos, false);
+		if (Options.main.coreHeatDisplay == 0 || destroyed ||
+			!player.isMainPlayer || charState is Die || !alive ||
+			Global.level.mainPlayer.character != this ||
+			Global.level.mainPlayer.isSpectator ||
+			displayHpTime > 0 ||
+			coreAmmo <= 0 && (!overdrive || overdriveAmmo <= 0)
+		) {
+			return;
 		}
-
-		//Overdrive ammo
-		if (player.isMainPlayer && Options.main.coreHeatDisplay >= 1 && overdriveAmmo > 0 && overdrive) {
-			float pendAmmo = overdriveAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = coreMaxAmmo;
-			}
-
-			decimal lengthP = (maxLength * (decimal)pendAmmo) / (decimal)coreMaxAmmo;
-			decimal length = (maxLength * (decimal)coreAmmo) / (decimal)coreMaxAmmo;
-
-			drawBarHHUD(lengthP, maxLength, 1, barPos);
-			drawBarHHUD(length, maxLength, 2, barPos, false);
+		float scale = 2;
+		Point offset = pos.round().addxy(
+			-MathInt.Ceiling(coreMaxAmmo / scale), -44
+		);
+		renderMiniBar(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
+		if (overdrive) {
+			renderMiniBar(offset, 2, overdriveAmmo / scale, overdriveAmmo / scale);
 		}
 	}
 

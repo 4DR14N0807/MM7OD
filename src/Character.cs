@@ -2432,6 +2432,16 @@ public partial class Character : Actor, IDamagable {
 				deductLabelY(labelCooldownOffY);
 			}
 			if (!drewETankHealing && hyperProgress > 0) {
+				if (this is Blues bl &&
+					Options.main.coreHeatDisplay != 0 && !destroyed &&
+					player.isMainPlayer && charState is not Die && alive &&
+					Global.level.mainPlayer.character == this &&
+					!Global.level.mainPlayer.isSpectator &&
+					displayHpTime <= 0 &&
+					(bl.coreAmmo > 0 || bl.overdrive && bl.overdriveAmmo > 0)
+				) {
+					deductLabelY(4);
+				}
 				float healthBarInnerWidth = 30;
 
 				float progress = Math.Min(hyperProgress, 1);

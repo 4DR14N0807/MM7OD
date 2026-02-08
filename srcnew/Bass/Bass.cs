@@ -908,7 +908,7 @@ public class Bass : Character {
 	}
 
 	public override bool canAirDash() {
-		return isSuperBass && dashedInAir <= 0 && phase >= 3 && !isMovementLimited();
+		return (isSuperBass || isTrebbleBoost) && dashedInAir <= 0 && phase >= 3 && !isMovementLimited();
 	}
 
 	public override bool canWallClimb() {

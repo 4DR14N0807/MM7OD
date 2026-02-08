@@ -31,5 +31,7 @@ public partial class RPCCreateActor : RPC {
 		{ (int)CActorIds.LargeSuperPickup, LargeSuperPickup.rpcInvoke },
 		{ (int)CActorIds.SmallSuperPickup, SmallSuperPickup.rpcInvoke },
 		{ (int)CActorIds.MiniSuperPickup, MiniSuperPickup.rpcInvoke },
+		// Enemies.
+		{ (int)CActorIds.Met, Met.rpcInvoke },
 	};
 }

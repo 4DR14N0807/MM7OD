@@ -59,9 +59,23 @@ public class JoinLateResponseModel {
 	[ProtoMember(1)] public List<PlayerPB> players;
 	[ProtoMember(2)] public ServerPlayer newPlayer;
 	[ProtoMember(3)] public List<ControlPointResponseModel> controlPoints;
-	[ProtoMember(4)] public List<MagnetMineResponseModel> magnetMines;
-	[ProtoMember(5)] public List<TurretResponseModel> turrets;
+	[ProtoMember(4)] public List<ActorRpcResponse> lateActors;
 	public JoinLateResponseModel() { }
+}
+
+[ProtoContract]
+public struct ActorRpcResponse {
+	[ProtoMember(1)] public bool isProj;
+	[ProtoMember(2)] public int actorId;
+	[ProtoMember(3)] public Player player;
+	[ProtoMember(4)] public Actor owner;
+	[ProtoMember(5)] public Point pos;
+	[ProtoMember(6)] public int xDir;
+	[ProtoMember(7)] public int playerId;
+	[ProtoMember(8)] public ushort netId;
+	[ProtoMember(9)] public float byteAngle;
+	[ProtoMember(10)] public byte[] extraData;
+	public ActorRpcResponse() { }
 }
 
 [ProtoContract]

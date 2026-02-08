@@ -341,7 +341,7 @@ public class RushSearchState : RushState {
 					//RNG starts here.
 					dice = Helpers.randomRange(1, 1000);
 					getRandomItem();
-					rock.rushWeapon.addAmmo(-5, player);
+					rock.rushWeapon.addAmmo(-4, player);
 
 					state = 3;
 				} break;

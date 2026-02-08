@@ -601,7 +601,7 @@ public class Bass : Character {
 				currentWeapon?.canShoot(0, this) == true &&
 				currentWeapon?.shootCooldown <= 0 && canShoot()
 			) {
-				if (!isSuperBass) {
+				if (!isSuperBass && !isTrebbleBoost) {
 					shoot(getChargeLevel());
 				} else {
 					shootSuper(getChargeLevel());
@@ -614,14 +614,14 @@ public class Bass : Character {
 			int yInput = player.input.getYDir(player);
 
 			if (yInput == 1 && phase >= 3 && !grounded) {
-				if (!isMovementLimited() && isCooldownOver((int)AttackIds.SweepingLaser)) {
+				if (isCooldownOver((int)AttackIds.SweepingLaser)) {
 					changeState(new SweepingLaserState(), true);
 					return true;
 				}
 				return false;
 			}
 			if (yInput == -1 && phase >= 1 && !grounded) {
-				if (isCooldownOver((int)AttackIds.DarkComet) && !isMovementLimited()) {
+				if (isCooldownOver((int)AttackIds.DarkComet)) {
 					changeState(new DarkCometState(), true);
 					return true;
 				}

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -1064,7 +1063,7 @@ public partial class Character : Actor, IDamagable {
 
 		for (int i = buffList.Count - 1; i >= 0; i--) {
 			buffList[i].time -= speedMul;
-			buffList[i].update?.Invoke(buffList[i]);
+			buffList[i].update?.Invoke(buffList[i], this);
 			if (buffList[i].time <= 0) {
 				buffList.RemoveAt(i);
 			}
@@ -3013,8 +3012,7 @@ public partial class Character : Actor, IDamagable {
 		// Heals are not really applied here.
 		if (damage < 0) { damage = 0; }
 		// First pass-trough the shield.
-		decimal totalShield = shieldManager.totalHealth;
-		if (totalShield > 0) {
+		if (shieldManager.totalHealth > 0) {
 			damage = shieldManager.applyDamage(damage);
 		}
 		// Then apply to HP directly.
@@ -3752,7 +3750,8 @@ public partial class Character : Actor, IDamagable {
 					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
 				}
 				if (i < shield) {
-					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, 0.5f);
+					float alpha = (float)(shield % 1);
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, alpha);
 				}
 			}
 			baseY -= 2;
@@ -3820,6 +3819,7 @@ public partial class Character : Actor, IDamagable {
 				renderMiniHudBorder(offset, color, maxBarAmmo);
 				offset = renderMiniBar(offset, 3, maxBarAmmo, maxBarAmmo);
 			}
+			// TODO: Move this to bass.cs
 			if (this is Bass bass && (bass.isTrebbleBoost || bass.isSuperBass)) {
 				Point bpos = offset.addxy(maxBarAmmo * 2, -1);
 				Fonts.drawText(
@@ -3850,10 +3850,7 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual Point renderMiniBar(
-		Point offset, int color, float ammo, float maxAmmo,
-		bool drawFullBar = true
-	) {
+	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo) {
 		float cAmmo = MathF.Ceiling(ammo);
 		float fAmmo = MathF.Floor(ammo);
 		float aAlpha = ammo - fAmmo;
@@ -3864,23 +3861,14 @@ public partial class Character : Actor, IDamagable {
 		}
 		Point lpos = offset.addxy(0, -5);
 		for (int i = 0; i < mAmmo; i++) {
-			if (i < fAmmo) {
+			int id = i < fAmmo ? color : 0;
+			Global.sprites["hud_bar_small_h"].draw(
+				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+			);
+			if (i >= fAmmo && i < cAmmo) {
 				Global.sprites["hud_bar_small_h"].draw(
-					color, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
 				);
-			} else {
-				if (i < cAmmo) {
-					Global.sprites["hud_bar_small_h"].draw(
-						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
-					);
-					Global.sprites["hud_bar_small_h"].draw(
-						color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
-					);
-				} else if (drawFullBar) {
-					Global.sprites["hud_bar_small_h"].draw(
-						0, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
-					);
-				}
 			}
 			lpos.x += 1;
 		}
@@ -4174,7 +4162,7 @@ public class Buff {
 	public float time;
 	public string iconName;
 	public int iconIndex;
-	public Action<Buff>? update;
+	public Action<Buff, Character>? update;
 
 	public Buff(string iconName, int iconIndex, bool isBuff, float time, float maxTime) {
 		this.iconName = (iconName ?? "");

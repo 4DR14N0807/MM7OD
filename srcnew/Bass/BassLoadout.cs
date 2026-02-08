@@ -52,8 +52,8 @@ public class BassLoadout {
 			weapon2 = 1;
 			weapon3 = 2;
 		}
-		if (hypermode > 0) {
-			hypermode = 0;
+		if (hypermode > 1) {
+			hypermode = 1;
 		}
 	}
 
@@ -142,7 +142,7 @@ public class BassWeaponMenu : IMainMenu {
 			Global.playSound("menu");
 		} 
 
-		Helpers.menuUpDown(ref cursorRow, 0, 2);
+		Helpers.menuUpDown(ref cursorRow, 0, 3);
 		if (cursorRow < 3) {
 			Helpers.menuLeftRightInc(ref sWeapons[cursorRow], 0, specialWeapons.Length - 1, true, playSound: true);
 		} else {

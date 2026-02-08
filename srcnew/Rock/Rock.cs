@@ -171,8 +171,9 @@ public class Rock : Character {
 			return true;
 		}
 
-		if (grounded) usedDoubleJump = false;
-
+		if (grounded) {
+			usedDoubleJump = false;
+		}
 		return base.normalCtrl();
 	}
 

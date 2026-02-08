@@ -841,7 +841,6 @@ public class SonicCrusher : CharState {
 }
 
 public class SweepingLaserState : CharState {
-
 	Projectile? laser;
 	public SweepingLaserState() : base("sweeping_laser") {
 		useGravity = false;
@@ -851,7 +850,7 @@ public class SweepingLaserState : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
-		if (!character.grounded && oldState is not BassFly) {
+		if (!character.isMovementLimited() && !character.grounded && oldState is not BassFly) {
 			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
 		}
 
@@ -882,8 +881,12 @@ public class SweepingLaserState : CharState {
 			once = true;
 		}
 
-		if (once) character.move(new Point(300 * character.xDir, 0));
-		if (stateFrames >= 45) character.changeToIdleFallorFly();
+		if (once && !character.isMovementLimited()) {
+			character.move(new Point(300 * character.xDir, 0));
+		}
+		if (stateFrames >= 45) {
+			character.changeToIdleFallorFly();
+		}
 	}
 }
 
@@ -919,6 +922,8 @@ public class DarkCometState : CharState {
 			once = true;
 		}
 
-		if (stateFrames >= 25) character.changeToIdleFallorFly();
+		if (stateFrames >= 25) {
+			character.changeToIdleFallorFly();
+		}
 	}
 }

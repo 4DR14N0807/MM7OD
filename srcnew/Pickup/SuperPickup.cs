@@ -23,7 +23,12 @@ public abstract class BaselineSuperPickup : Pickup {
 		}
 		if (chr.canBeShielded()) {
 			float shield = Math.Max(healAmount - 2, 2);
-			chr.shieldManager.addShield(shield, 60 * 4, ShieldIds.Pickup);
+			chr.playSound("subtank_fill");
+			int time = 60 * 6;
+			chr.buffList.Add(new Buff("hud_buffs", 1, true, time, time) {
+				update = BaselineShieldPickup.buffUpdate
+			});
+			chr.shieldManager.addShield(shield, time, ShieldIds.Pickup);
 			used = true;
 		}
 		if (chr.canAddAmmo()) {

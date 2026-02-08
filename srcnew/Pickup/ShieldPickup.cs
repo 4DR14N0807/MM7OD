@@ -18,15 +18,15 @@ public abstract class BaselineShieldPickup : Pickup {
 		}
 		chr.playSound("subtank_fill");
 		int time = 60 * 6;
-		chr.buffList.Add(new Buff("hud_buffs", 1, true, time, time) {
-			update = (self) => {
-				if (!chr.shieldManager.shieldsById.ContainsKey(ShieldIds.Pickup)) {
-					self.time = 0;
-				}
-			}
-		});
-		chr.shieldManager.addShield((decimal)healAmount, time, ShieldIds.Pickup);
+		chr.buffList.Add(new Buff("hud_buffs", 1, true, time, time) { update = buffUpdate });
+		chr.shieldManager.addShield(healAmount, time, ShieldIds.Pickup);
 		base.use(chr);
+	}
+
+	public static void buffUpdate(Buff self, Character chara) {
+		if (!chara.shieldManager.shieldsById.ContainsKey(ShieldIds.Pickup)) {
+			self.time = 0;
+		}
 	}
 }
 

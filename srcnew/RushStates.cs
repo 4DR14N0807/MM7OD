@@ -431,7 +431,7 @@ public class RushSearchState : RushState {
 			else if (altDice == 2) {
 				sound = "upgrade";
 				text = "S-TANK!";
-				font = FontType.Golden;
+				font = FontType.Yellow;
 
 				new TankSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
 					vel = pickupVel
@@ -480,7 +480,7 @@ public class RushSearchState : RushState {
 			} else if (altDice == 2) {
 				sound = "upgrade";
 				text = "SUPER CAPSULE!";
-				font = FontType.Golden;
+				font = FontType.Yellow;
 
 				new LargeSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
 					vel = pickupVel
@@ -558,7 +558,7 @@ public class RushSearchState : RushState {
 			} else if (altDice == 2) {
 				sound = "rush_search_end";
 				text = "MINI SUPER CAPSULE";
-				font = FontType.Golden;
+				font = FontType.Yellow;
 
 				new MiniSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
 					vel = pickupVel

@@ -54,7 +54,7 @@ public class TankSuperPickup : BaselineSuperPickup {
 		CActorIds.TankSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 8;
-		altHealAmount = 75;
+		altHealAmount = 50;
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -73,7 +73,7 @@ public class LargeSuperPickup : BaselineSuperPickup {
 		CActorIds.LargeSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 6;
-		altHealAmount = 50;
+		altHealAmount = 37.5f;
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

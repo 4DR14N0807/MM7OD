@@ -57,7 +57,8 @@ public class TankAmmoPickup : BaselineAmmoPickup {
 		owner, pos, "pickup_wtank", netId, ownedByLocalPlayer, 
 		CActorIds.TankAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
-		healAmount = 16;
+		healAmount = 75;
+		altHealAmount = 16;
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

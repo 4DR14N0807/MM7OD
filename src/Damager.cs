@@ -280,9 +280,9 @@ public class Damager {
 				case (int)BassProjIds.MagicCardFlip:
 					character.xDir *= -1;
 					break;
-				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:
-					character.wince(20, 0, owner.id);
+					character.vel = character.vel.times(0.5f);
+					character.slowdownTime = MathF.Max(character.slowdownTime, 20);
 					break;
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor is WaveBurnerUnderwaterProj wbproj) {

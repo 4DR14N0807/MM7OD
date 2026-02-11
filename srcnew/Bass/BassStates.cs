@@ -387,7 +387,7 @@ public class SuperBassSquare : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		Point center = chr.getCenterPos().addxy(chr.xDir * 3, -4);
+		Point center = pos.addxy(xDir * 3, -4);
 		Point[] points = new Point[4];
 		Color color = new Color(255, 255, 255, (byte)t);
 

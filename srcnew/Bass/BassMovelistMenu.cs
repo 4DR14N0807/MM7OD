@@ -5,7 +5,6 @@ namespace MMXOnline;
 
 
 public class BassMovelistMenu : MovelistMenu {
-
 	bool hasSuperAdaptor;
 	string spriteName = "menu_movelist_bass";
 	string ogTitle;
@@ -19,66 +18,82 @@ public class BassMovelistMenu : MovelistMenu {
 		ogTitle = title;
 
 		if (!hasSuperAdaptor) {
-			moves.AddRange(new List<MovelistItem>() {
-				//Base Bass
+			moves.AddRange([
+				// Base Bass
 				new MovelistItem(
-					spriteName, 0, "SHOOT", Control.Shoot
+					spriteName, 0, "Shoot", Control.Shoot
 				),
 				new MovelistItem(
-					spriteName, 1, "DASH", Control.Dash
+					spriteName, 1, "Dash", Control.Dash
 				),
 				new MovelistItem(
-					spriteName, 2, "DOUBLE JUMP", Control.Jump, "MID-AIR"
+					spriteName, 2, "Double jump", Control.Jump, "Mid-air"
 				),
 				new MovelistItemAnimated(
-					spriteName, new [] {4,5,6,7,8,9,10,11,12}, 
-					"SWITCH WEAPON", Control.WeaponLeft + " or " + Control.WeaponRight
+					spriteName, [4, 5, 6, 7, 8, 9, 10, 11, 12], "Switch weapon",
+					$"{Control.WeaponLeft} or {Control.WeaponRight}"
 				),
 				new MovelistItem(
-					spriteName, 3, "ACTIVATE T.BOOST", Control.Special2, "COSTS " + Bass.TrebleBoostCost + " " + Global.nameCoins
+					spriteName, 3, "Trebble Boost", Control.Special2,
+					$"Costs {Bass.TrebleBoostCost} {Global.nameCoins}"
 				),
-				new MovelistItem(
-					"empty", 0, "", ""
-				),
-				new MovelistItem(
-					"empty", 0, "", ""
-				),
-				new MovelistItem(
-					"empty", 0, "", ""
-				),
-			});
+				new MovelistItem("", 0, "", ""),
+				new MovelistItem("", 0, "", ""),
+				new MovelistItem("", 0, "", ""),
+			]);
 		}
-
 		// Super Bass
-		moves.AddRange( new List<MovelistItem>() {
+		moves.AddRange([
 			new MovelistItem(
-				spriteName, 13, "SHOOT", Control.Shoot, "CAN BE CHARGED"
+				spriteName, 13, "Shoot", Control.Shoot, "",
+				"Can be charged.\nCan be used\nwhile walking."
 			),
 			new MovelistItem(
-				spriteName, 14, "DASH", Control.Dash
+				spriteName, 14, "Dash", Control.Dash,
+				"Grounded."
 			),
 			new MovelistItem(
-				spriteName, 15, "DOUBLE JUMP", Control.Jump, "MID-AIR"
+				spriteName, 16, "Flight", Control.Jump,
+				"Mid-air."
 			),
 			new MovelistItem(
-				spriteName, 16, "FLIGHT", Control.Jump, "MID-AIR"
+				spriteName, 18, "Sonic Crusher", Control.Special1, "",
+				$"Hold {Control.Special1} to\nkeep flying."
 			),
 			new MovelistItem(
-				spriteName, 17, "KICK", Control.Special1, "ON GROUND"
+				spriteName, 17, "Booster Kick", Control.Special1,
+				"Needs Lv2\nOn Ground."
 			),
 			new MovelistItem(
-				spriteName, 18, "SONIC CRUSHER", Control.Special1, "HOLD " + Control.Special1 + " TO\nKEEP FLYING"
+				spriteName, 20, "Dark Comet", Control.Up + " + " + Control.Special1,
+				"Needs Lv3\nMid-air."
 			),
 			new MovelistItem(
-				spriteName, 19, "SWEEPING LASER", Control.Down + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
+				spriteName, 14, "Airdash", Control.Dash,
+				"Needs Lv3\nMid-air."
 			),
 			new MovelistItem(
-				spriteName, 20, "DARK COMET", Control.Up + " + " + Control.Special1, "MID-AIR\nNEEDS EVIL ENERGY"
+				spriteName, 19, "Sweeping Laser", Control.Down + " + " + Control.Special1,
+				"Needs Lv3\nMid-air."
 			),
 			new MovelistItem(
-				spriteName, 21, "ENERGY DECREASE", Control.Special2 + " + " + Control.Down, "ON GROUND\nREDUCES 1 EVIL ENERGY LEVEL\nCAN'T BE USED AT MAX LEVEL"
-			)}
-		);	
+				spriteName, 24, "Evil charge", Control.Special2, "",
+				"Adds evil energy.\nReduces on LV5."
+			),
+			new MovelistItem(
+				spriteName, 21, "Evil Release",
+				$"{Control.Special2} + {Control.Down}", "Under Lv5\nOn Ground",
+				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV."
+			),
+			new MovelistItem(
+				spriteName, 22, "Evil Unison", "Auto: on max Evil", "Under Lv5",
+				"Heals 2 HP.\nAdds 2 Max HP.\nIncreases LV.\nDamage Immune.", true
+			),
+			new MovelistItem(
+				spriteName, 23, "Evil Overload", "Auto: on max Evil", "At Lv5",
+				"Heals 2 HP.\nStuns the user.", true
+			),
+		]);	
 	}
 
 	public override void update() {

@@ -809,7 +809,7 @@ public class Blues : Character {
 			}
 		}
 
-		if (shootPressed && downHeld && !grounded) {
+		if (shootPressed && downHeld) {
 			changeState(new BluesSpreadShoot(), true);
 			return true;
 		}

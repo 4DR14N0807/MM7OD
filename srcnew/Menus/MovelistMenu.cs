@@ -21,23 +21,28 @@ public class MovelistMenuHandler {
 }
 
 public class MovelistItem {
-
 	public string spriteName = "";
 	public int frameIndex;
 	public string moveName = "";
 	public string moveInput = "";
-	public string? moveRequirement = null;
+	public string moveRequirement = "";
+	public string moveDesc = "";
 	public float time;
+	public bool customCond;
 
 	public MovelistItem(
-		string spriteName, int frameIndex, string moveName, 
-		string moveInput, string? moveRequirement = null
+		string spriteName, int frameIndex, string moveName,
+		string moveInput, string moveRequirement = "",
+		string moveDesc = "",
+		bool customCond = false
 	) {
 		this.spriteName = spriteName;
 		this.frameIndex = frameIndex;
 		this.moveName = moveName;
 		this.moveInput = controlText(moveInput);
-		if (moveRequirement != null) this.moveRequirement = controlText(moveRequirement);
+		this.moveRequirement = controlText(moveRequirement);
+		this.moveDesc = controlText(moveDesc);
+		this.customCond = customCond;
 	}
 
 	public virtual void update() {
@@ -47,52 +52,72 @@ public class MovelistItem {
 		time = 0;
 	}
 	public virtual void render(Point renderPos) {
-		Global.sprites[spriteName].drawToHUD(frameIndex, renderPos.x, renderPos.y);
+		if (spriteName == "" || spriteName == "empty") {
+			return;
+		}
+		DrawWrappers.DrawRect(
+			renderPos.x - 32, renderPos.y - 1,
+			renderPos.x + 32, renderPos.y + 65,
+			true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
+		);
+		Global.sprites[spriteName].drawToHUD(frameIndex, renderPos.x, renderPos.y + 56);
 
 		if (string.IsNullOrEmpty(moveName) && string.IsNullOrEmpty(moveInput)) return;
 
-		float renderX = renderPos.x + 40;
-		float renderY1 = renderPos.y - 32;
-		float renderY2 = renderY1 + 9;
-		float renderY3 = renderY2 + 9;
-		string input = "INPUT: " + moveInput;
-		
-		Point size  = getSquareSize(new() { moveName, input, moveRequirement ?? ""});
+		float renderX = renderPos.x + 37;
+		float renderY = renderPos.y - 1;
+		string input = customCond ? moveInput : "Input: " + moveInput;
+
+		List<string> textList = [moveName];
+		if (moveInput != "") { textList.Add(input); }
+		if (moveRequirement != "") { textList.Add(moveRequirement); }
+		if (moveDesc != "") { textList.Add(moveDesc); }
+		Point size = getSquareSize(textList);
 		DrawWrappers.DrawRect(
-			renderX - 1, renderY1, renderX - 1 + size.x, renderY1 + size.y,
+			renderX - 1, renderY, renderX + 95, renderY + size.y + 1,
 			true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
 		);
 
-		Fonts.drawText(FontType.WhiteSmall, moveName, renderX, renderY1);
-		Fonts.drawText(FontType.BlueSmall, input, renderX, renderY2);
-		if (moveRequirement != null) Fonts.drawText(FontType.RedSmall, moveRequirement, renderX, renderY3);	
+		Fonts.drawText(FontType.WhiteSmall, moveName, renderX, renderY);
+		renderY += 8;
+		if (moveInput != "") {
+			Fonts.drawText(FontType.BlueSmall, input, renderX, renderY);
+			renderY += (moveInput.Count(f => f == '\n') + 1) * 8;
+		}
+		if (moveRequirement != "") {
+			Fonts.drawText(FontType.GreenSmall, moveRequirement, renderX, renderY);
+			renderY += (moveRequirement.Count(f => f == '\n') + 1) * 8;
+		}
+		if (moveDesc != "") {
+			Fonts.drawText(FontType.YellowSmall, moveDesc, renderX, renderY);
+		}
 	}
 
 	Point getSquareSize(List<string> descriptions) {
-		string longestString = "";
-		foreach (string str in descriptions) {
-			float currentLength = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteSmall), longestString);
-			float nextLength = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteSmall), str);
+		string fullString = "";
 
-			if (currentLength < nextLength) longestString = str;
+		for (int i = 0; i < descriptions.Count; i++) {
+			fullString += descriptions[i];
+			if (i != descriptions.Count - 1) {
+				fullString += "\n";
+			}
 		}
+		float x = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteSmall), fullString) + 2;
 
-		float x = Fonts.measureText(Fonts.getFontSrt(FontType.WhiteSmall), longestString) + 2;
+		int lines = fullString.Count(f => f == '\n') + 1;
+		if (lines < 3) { lines = 3; }
+		float y = lines * 8;
 
-		int lines = 2;
-		int reqLines = 0;
-		int extra = 0;
-		if (moveRequirement != null) {
-			reqLines += moveRequirement.Split("\n").Length;
-			extra = 1;
-		} 
-		float y = (lines * 9) + (reqLines * 10) - extra;
-
-		return new Point(x,y);
+		return new Point(x, y);
 	}
 
 	string controlText(string text, bool isController = false) {
-		if (isController) isController = Control.isJoystick();
+		if (text == "") {
+			return text;
+		}
+		if (isController) {
+			isController = Control.isJoystick();
+		}
 		// Menu keys.
 		text = text.Replace(Control.MenuConfirm, Control.getKeyOrButtonName(Control.MenuConfirm, isController));
 		text = text.Replace(Control.MenuAlt, Control.getKeyOrButtonName(Control.MenuAlt, isController));
@@ -125,7 +150,7 @@ public class MovelistItemAnimated : MovelistItem {
 
 	public MovelistItemAnimated(
 		string spriteName, int[] frames, string moveName,
-		string moveInput, string? moveRequirement = null
+		string moveInput, string moveRequirement = ""
 	) : base(
 		spriteName, frames[0], moveName, moveInput, moveRequirement
 	) {
@@ -198,17 +223,18 @@ public class MovelistMenu : IMainMenu {
 
 		if (moves.Count <= 0) {
 			Fonts.drawText(
-				inGame ? FontType.BlueMenu : FontType.OrangeMenu, title, Global.halfScreenW, 20, Alignment.Center
+				inGame ? FontType.BlueMenu : FontType.OrangeMenu, title,
+				Global.halfScreenW, 20, Alignment.Center
 			);
 			return;
-		} 
+		}
 
 		int index = minIndex;
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < itemsPerIndex; j++) {
-				
+
 				if (index >= moves.Count) break;
-				Point renderPos = new Point(58 + (i * 175), 80 + (j * 91));
+				Point renderPos = new Point(58 + (i * 168), 32 + (j * 80));
 				moves[index].render(renderPos);
 
 				index++;
@@ -216,9 +242,10 @@ public class MovelistMenu : IMainMenu {
 		}
 
 		Fonts.drawText(
-			inGame ? FontType.BlueMenu : FontType.OrangeMenu, title, Global.halfScreenW, 20, Alignment.Center
+			inGame ? FontType.BlueMenu : FontType.OrangeMenu,
+			title, Global.halfScreenW, 12, Alignment.Center
 		);
-	
+
 		float arrowPosY = Global.halfScreenH - 9;
 		if (Global.floorFrameCount % 60 < 30 && getMaxScroll() > 0) {
 			Fonts.drawText(

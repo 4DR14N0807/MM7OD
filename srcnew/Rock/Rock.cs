@@ -17,7 +17,7 @@ public class Rock : Character {
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
 	public bool armless;
-	public ChargeEffect noiseCrushEffect;
+	public ChargeEffect? noiseCrushEffect;
 	public bool hasChargedNoiseCrush = false;
 	public float noiseCrushAnimTime;
 	public LoopingSound? chargedNoiseCrushSound;
@@ -110,7 +110,7 @@ public class Rock : Character {
 			}
 		} else if (chargedNoiseCrushSound != null) {
 			chargedNoiseCrushSound.stop();
-			chargedNoiseCrushSound = null!;
+			chargedNoiseCrushSound = null;
 		}
 
 		//Junk Shield soundloop.
@@ -121,7 +121,7 @@ public class Rock : Character {
 
 		} else if (junkShieldSound != null) {
 			junkShieldSound.stop();
-			junkShieldSound = null!;
+			junkShieldSound = null;
 		}
 
 		// For the shooting animation.
@@ -292,9 +292,9 @@ public class Rock : Character {
 
 	public void drawChargedNoiseCrush(float x, float y) {
 		addRenderEffect(RenderEffectType.NCrushCharge, 3, 5);
-		noiseCrushEffect.character = this;
-		noiseCrushEffect.update(2, 2);
-		noiseCrushEffect.render(getCenterPos());
+		noiseCrushEffect?.character = this;
+		noiseCrushEffect?.update(2, 2);
+		noiseCrushEffect?.render(getCenterPos());
 	}
 
 	public bool isUsingRushJet() {
@@ -664,9 +664,18 @@ public class Rock : Character {
 
 	public void removeLastingProjs() {
 		sWellSpawn?.destroySelf();
+		sWellSpawn = null;
 		sWell?.destroySelf();
+		sWell = null;
 		sWellU?.destroySelf();
+		sWellU = null;
 		noiseCrushEffect?.destroy();
+		noiseCrushEffect = null;
+		chargedNoiseCrushSound?.stop();
+		chargedNoiseCrushSound = null;
+		junkShieldSound?.stop();
+		junkShieldSound = null;
+
 		foreach (Weapon w in weapons) {
 			if (w is DangerWrap dw) {
 				foreach (Projectile mine in dw.dangerMines) {

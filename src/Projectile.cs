@@ -81,7 +81,7 @@ public class Projectile : Actor {
 	List<Point> dests = new();
 	int? destIndex;
 	float initWallCooldown;
-	public Point currentWallDest;
+	public Point? currentWallDest;
 	public float dirToDestByteAngle;
 
 	public HashSet<int> uniqueHits = new();
@@ -99,9 +99,7 @@ public class Projectile : Actor {
 		useGravity = false;
 		damager = new Damager(player, damage, flinch, hitCooldown);
 		this.xDir = xDir;
-		if ((Global.level.gameMode.isTeamMode && Global.level.mainPlayer != player) &&
-			this is not NapalmPartProj or FlameBurnerProj
-		) {
+		if ((Global.level.gameMode.isTeamMode && Global.level.mainPlayer != player)) {
 			RenderEffectType? allianceEffect = player.alliance switch {
 				0 => RenderEffectType.BlueShadow,
 				1 => RenderEffectType.RedShadow,
@@ -137,9 +135,7 @@ public class Projectile : Actor {
 		damager = new Damager(ownerPlayer, 0, 0, 0);
 		ownerActor = owner;
 		this.xDir = xDir;
-		if (Global.level.gameMode.isTeamMode && Global.level.mainPlayer != ownerPlayer &&
-			this is not NapalmPartProj or FlameBurnerProj
-		) {
+		if (Global.level.gameMode.isTeamMode && Global.level.mainPlayer != ownerPlayer) {
 			RenderEffectType? allianceEffect = ownerPlayer.alliance switch {
 				0 => RenderEffectType.BlueShadow,
 				1 => RenderEffectType.RedShadow,

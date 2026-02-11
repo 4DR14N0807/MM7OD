@@ -3314,7 +3314,10 @@ public partial class Character : Actor, IDamagable {
 		bool disableRpc = false, bool doRpcEvenIfNotOwned = false,
 		bool favorDefenderProjDestroy = false
 	) {
-		base.destroySelf(spriteName, fadeSound, disableRpc, doRpcEvenIfNotOwned);
+		base.destroySelf(
+			spriteName, fadeSound, disableRpc,
+			doRpcEvenIfNotOwned, favorDefenderProjDestroy
+		);
 
 		player.removeOwnedGrenades();
 		player.removeOwnedIceStatues();

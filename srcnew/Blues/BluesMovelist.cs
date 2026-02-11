@@ -58,7 +58,8 @@ public class BluesMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteNameBreakMan, 25, "SHIELD STOMP", 
-				Control.Down + " + " + Control.WeaponLeft + " or " + Control.WeaponRight,
+				Control.Down + " + " + Control.WeaponLeft +
+				"\nOr: " + Control.Down + " + " + Control.WeaponRight,
 				"NEEDS SHIELD HP"
 			),
 			new MovelistItem(

@@ -282,7 +282,7 @@ public class Damager {
 					break;
 				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:
-					character.wince(20, 0, owner.id);
+					character.wince(20, 0, projId, owner.id);
 					break;
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor is WaveBurnerUnderwaterProj wbproj) {

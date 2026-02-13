@@ -24,7 +24,9 @@ public abstract class BaselineShieldPickup : Pickup {
 	}
 
 	public static void buffUpdate(Buff self, Character chara) {
-		if (!chara.shieldManager.shieldsById.ContainsKey(ShieldIds.Pickup)) {
+		if (chara.shieldManager.shieldsById.TryGetValue(ShieldIds.Pickup, out HpShield? value)) {
+			self.time = value.time;
+		} else {
 			self.time = 0;
 		}
 	}

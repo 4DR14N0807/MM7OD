@@ -183,7 +183,7 @@ public partial class Character : Actor, IDamagable {
 
 	//Spark Shock root
 	public float rootTime;
-	public Dictionary<int, float> rootCooldown = new();
+	public Dictionary<string, float> rootCooldown = new();
 	public Anim? rootAnim;
 	public Anim? slowdownAnim;
 
@@ -191,18 +191,18 @@ public partial class Character : Actor, IDamagable {
 	public float burnHurtCooldown;
 
 	// Generic stun.
-	public Dictionary<int, float> stunCooldown = new();
+	public Dictionary<string, float> stunCooldown = new();
 
 	// Freeze.
 	public float freezeTime;
-	public Dictionary<int, float> freezeCooldown = new();
+	public Dictionary<string, float> freezeCooldown = new();
 	// Burn Stun
 	public float burnStunStacks;
 	public float burnStunTime;
 
 	// Wince.
 	public float slowdownTime;
-	public Dictionary<int, float> winceCooldown = new();
+	public Dictionary<string, float> winceCooldown = new();
 
 	// Parasite.
 	public Damager? parasiteDamager;
@@ -1035,7 +1035,7 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref dwrapInvulnTime);
 		Helpers.decrementFrames(ref burnInvulnTime);
 
-		Dictionary<int, float>[] cooldownList = [
+		Dictionary<string, float>[] cooldownList = [
 			winceCooldown,
 			rootCooldown,
 			stunCooldown,
@@ -1043,9 +1043,9 @@ public partial class Character : Actor, IDamagable {
 		];
 
 		foreach (var cdList in cooldownList) {
-			int[] keys = cdList.Keys.ToArray();
+			string[] keys = cdList.Keys.ToArray();
 
-			foreach (int key in keys) {
+			foreach (string key in keys) {
 				cdList[key] -= speedMul;
 				if (cdList[key] <= 0) {
 					cdList.Remove(key);
@@ -1689,7 +1689,8 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		if (isStunImmune()) { return; }
-		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
+		string cdId = $"{playerid}";
+		if (freezeCooldown.GetValueOrDefault(cdId) > 0) {
 			return;
 		}
 		// Cooldown.
@@ -1698,7 +1699,7 @@ public partial class Character : Actor, IDamagable {
 		time = MathF.Floor(time * disarrayReduction);
 		disarrayStacks[$"{playerid}_freeze"] = new DisarrayStack(cooldown);
 		// Apply debuff.
-		freezeCooldown[playerid] = cooldown;
+		freezeCooldown[cdId] = cooldown;
 
 		if (freezeTime >= time) {
 			return;
@@ -1753,7 +1754,11 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (rootCooldown.GetValueOrDefault(playerid) > 0) {
+		if (isSlowImmune() || isStunImmune()) {
+			return;
+		}
+		string cdId = $"{playerid}";
+		if (rootCooldown.GetValueOrDefault(cdId) > 0) {
 			return;
 		}
 		// Disarray mechanic.
@@ -1761,7 +1766,7 @@ public partial class Character : Actor, IDamagable {
 		time = MathF.Floor(time * disarrayReduction);
 		disarrayStacks[$"{playerid}_root"] = new DisarrayStack(cooldown);
 		// Apply debuff.
-		rootCooldown[playerid] = time + 60;
+		rootCooldown[cdId] = time + 60;
 		
 		if (rootTime < time) {
 			rootTime = time;
@@ -1781,7 +1786,11 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (stunCooldown.GetValueOrDefault(playerid) > 0) {
+		if (isStunImmune()) {
+			return;
+		}
+		string cdId = $"{playerid}";
+		if (stunCooldown.GetValueOrDefault(cdId) > 0) {
 			return;
 		}
 		// Cooldown.
@@ -1790,7 +1799,7 @@ public partial class Character : Actor, IDamagable {
 		time = MathF.Floor(time * disarrayReduction);
 		disarrayStacks[$"{playerid}_paralize"] = new DisarrayStack(cooldown);
 		// Apply debuff.
-		stunCooldown[playerid] = cooldown;
+		stunCooldown[cdId] = cooldown;
 
 		if (paralyzedTime >= time) {
 			return;
@@ -1811,35 +1820,26 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void wince(float time, float cooldown, int playerid) {
+	public void wince(float time, float cooldown, int projId, int playerId) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
 		if (isSlowImmune()) {
 			return;
 		}
-		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
-			return;
+		// Check cooldown.
+		if (cooldown > 0) {
+			if (winceCooldown[$"{projId}_{playerId}"] > 0) {
+				return;
+			}
+			winceCooldown[$"projId_playerId"] = cooldown;
 		}
 		// Apply debuff.
-		freezeCooldown[playerid] = cooldown;
-
-		if (freezeTime >= time) {
-			return;
+		if (slowdownTime < time) {
+			slowdownTime = time;
 		}
-		freezeTime = time;
-		Player? enemyPlayer = Global.level.getPlayerById(playerid);
-		if (enemyPlayer != null && enemyPlayer != player) {
-			enemyPlayer.mastery.addSupportExp(time / 30f, true);
-		}
-
 		// Hud stuff.
-		buffList.Add(new Buff("hud_debuffs", 0, false, time, time));
-
-		freezeTime = time;
-		if (charState is not GenericStun) {
-			changeState(new GenericStun(), true);
-		}
+		buffList.Add(new Buff("hud_debuffs", 4, false, time, time));
 	}
 
 	public virtual void chargeGfx() {

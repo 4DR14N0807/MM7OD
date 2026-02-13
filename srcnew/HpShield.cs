@@ -54,6 +54,9 @@ public class HpShieldManager() {
 			if (shield.health < health) {
 				shield.health = health;
 			}
+			if (shield.time < time) {
+				shield.time = time;
+			}
 			return;
 		}
 		var newShield = new HpShield() {
@@ -68,6 +71,7 @@ public class HpShieldManager() {
 }
 
 public class HpShield {
+	public (string name, int index) sprite = ("hud_buffs" , 1);
 	public decimal health;
 	public float time;
 	public int piority;

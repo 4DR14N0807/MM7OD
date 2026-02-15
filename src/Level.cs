@@ -1032,7 +1032,7 @@ public partial class Level {
 		return false;
 	}
 
-	public void joinedLateSyncPlayers(List<PlayerPB> hostPlayers) {
+	public void joinedLateSyncPlayers(PlayerPB[] hostPlayers) {
 		if (hostPlayers == null) {
 			return;
 		}
@@ -1042,12 +1042,12 @@ public partial class Level {
 			if (player == null) continue;
 			if (player.ownedByLocalPlayer) continue;
 
-			player.alliance = hostPlayer.serverPlayer.alliance;
+			player.alliance = hostPlayer.alliance;
 			player.newAlliance = hostPlayer.newAlliance;
 			player.kills = hostPlayer.serverPlayer.kills;
 			player.deaths = hostPlayer.serverPlayer.deaths;
-			player.charNum = hostPlayer.currentCharNum ?? hostPlayer.serverPlayer.charNum;
 			player.newCharNum = hostPlayer.newCharNum;
+			player.charNum = hostPlayer.currentCharNum ?? player.newCharNum;
 			player.curMaxNetId = hostPlayer.curMaxNetId;
 			player.warpedInOnce = hostPlayer.warpedIn;
 			player.readyTime = hostPlayer.readyTime;
@@ -1059,25 +1059,29 @@ public partial class Level {
 			) {
 				int targetCharNum = hostPlayer.currentCharNum.Value;
 				LoadoutData currentLoadout = player.loadout;
-				if (player.atransLoadout != null) {
-					currentLoadout = player.atransLoadout;
+				if (hostPlayer.atransLoadout != null) {
+					currentLoadout = hostPlayer.atransLoadout;
 				}
 				player.spawnCharAtPoint(
-					targetCharNum, player.getCharSpawnData(targetCharNum, false, currentLoadout),
+					targetCharNum, player.getCharSpawnData(targetCharNum, loadout: currentLoadout),
 					new Point(hostPlayer.charXPos, hostPlayer.charYPos),
-					hostPlayer.charXDir, (ushort)hostPlayer.charNetId, false
+					hostPlayer.charXDir, hostPlayer.charNetId.Value,
+					sendRpc: false
 				);
-			} else {
-				player.atransLoadout = null;
 			}
 		}
 	}
 
-	public void joinedLateSyncControlPoints(List<ControlPointResponseModel> controlPointResponseModels) {
+	public void joinedLateSyncControlPoints(ControlPointResponseModel[] controlPointResponseModels) {
 		if (controlPointResponseModels == null) return;
 
 		foreach (var controlPointResponseModel in controlPointResponseModels) {
-			var controlPoint = controlPoints.Where(c => c.num == controlPointResponseModel.num).FirstOrDefault();
+			ControlPoint? controlPoint = controlPoints.FirstOrDefault(
+				c => c.num == controlPointResponseModel.num
+			);
+			if (controlPoint == null) {
+				continue;
+			}
 			controlPoint.alliance = controlPointResponseModel.alliance;
 			controlPoint.num = controlPointResponseModel.num;
 			controlPoint.locked = controlPointResponseModel.locked;
@@ -1108,15 +1112,20 @@ public partial class Level {
 		}
 	}
 
-	public void joinedLateSyncActors(List<ActorRpcResponse> ActorRpcResponses) {
-		foreach (var response in ActorRpcResponses) {
+	public void joinedLateSyncActors(ActorRpcResponse[] ActorRpcResponses) {
+		// Iterate over the whole list.
+		foreach (ActorRpcResponse response in ActorRpcResponses) {
+			// Ignore actors that already exist.
 			if (getActorByNetId(response.netId) != null) {
 				continue;
 			}
+			// Skip if the owner playeris not there anymore.
+			// As would be no one to update them if they are localOnly.
 			Player? player = getPlayerById(response.playerId);
 			if (player == null) {
 				continue;
 			}
+			// When is projectile.
 			if (response.isProj) {
 				ProjParameters args = new() {
 					projId = response.actorId,
@@ -1131,7 +1140,9 @@ public partial class Level {
 				};
 				byte[] byteArgs = RPC.createProj.getSendBytes(args);
 				RPC.createProj.invoke(byteArgs);
-			} else {
+			}
+			// When is not a projectile.
+			else {
 				ActorRpcParameters args = new() {
 					actorId = response.actorId,
 					pos = response.pos,
@@ -1217,7 +1228,7 @@ public partial class Level {
 
 		var player = new Player(
 			serverPlayer.name, serverPlayer.id,
-			serverPlayer.charNum, playerData, isBot,
+			serverPlayer.spawnCharNum, playerData, isBot,
 			ownedByLocalPlayer, serverPlayer.alliance, input, serverPlayer
 		);
 		if (joinedLate) {

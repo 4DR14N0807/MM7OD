@@ -56,8 +56,8 @@ public class TurretResponseModel {
 
 [ProtoContract]
 public class JoinLateResponseModel {
-	[ProtoMember(1)] public PlayerPB[] players;
-	[ProtoMember(2)] public ServerPlayer newPlayer;
+	[ProtoMember(1)] public ServerPlayer newPlayer;
+	[ProtoMember(2)] public PlayerPB[] players;
 	[ProtoMember(3)] public ControlPointResponseModel[] controlPoints;
 	[ProtoMember(4)] public ActorRpcResponse[] lateActors;
 	public JoinLateResponseModel() { }

@@ -16,6 +16,7 @@ public class RPCJoinLateRequest : RPC {
 		var serverPlayer = Helpers.deserialize<ServerPlayer>(arguments);
 		Global.level.addPlayer(serverPlayer, true);
 
+		// Get all currently active control points.
 		List<ControlPointResponseModel> controlPoints = [];
 		foreach (var cp in Global.level.controlPoints) {
 			controlPoints.Add(new ControlPointResponseModel() {
@@ -52,14 +53,15 @@ public class RPCJoinLateRequest : RPC {
 			lateActors.Add(serial.Value);
 		}
 
-		var joinLateResponseModel = new JoinLateResponseModel() {
+		// Create the actual response.
+		JoinLateResponseModel joinLateResponseModel = new() {
 			players = Global.level.players.Select(p => new PlayerPB(p)).ToArray(),
 			newPlayer = serverPlayer,
 			controlPoints = controlPoints.ToArray(),
 			lateActors = lateActors.ToArray()
 		};
 
-		Global.serverClient?.rpc(RPC.joinLateResponse, Helpers.serialize(joinLateResponseModel));
+		Global.serverClient?.rpc(joinLateResponse, Helpers.serialize(joinLateResponseModel));
 	}
 }
 
@@ -71,21 +73,7 @@ public class RPCJoinLateResponse : RPC {
 	}
 
 	public override void invoke(params byte[] arguments) {
-		JoinLateResponseModel? joinLateResponseModel = null;
-		try {
-			joinLateResponseModel = Helpers.deserialize<JoinLateResponseModel>(arguments);
-		} catch {
-			try {
-				Logger.logEvent(
-					"error",
-					"Bad joinLateResponseModel bytes. name: " +
-					Options.main.playerName + ", match: " + Global.level?.server?.name +
-					", bytes: " + arguments.ToString()
-				);
-				//Console.Write(message); 
-			} catch { }
-			throw;
-		}
+		JoinLateResponseModel joinLateResponseModel = Helpers.deserialize<JoinLateResponseModel>(arguments);
 
 		// Original requester
 		if (Global.serverClient?.serverPlayer.id == joinLateResponseModel.newPlayer.id) {

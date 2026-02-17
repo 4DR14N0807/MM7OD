@@ -32,8 +32,6 @@ public enum CActorIds {
 	LargeSuperPickup,
 	SmallSuperPickup,
 	MiniSuperPickup,
-	// Enemies.
-	Met,
 }
 
 public partial class RPCCreateActor : RPC {
@@ -110,6 +108,9 @@ public partial class RPCCreateActor : RPC {
 			case (int)NetActorCreateId.CopyVisionClone:
 				new CopyVisionClone(null, player, pos, xDir, netIdByte, false);
 				break;
+			case (int)NetActorCreateId.Met:
+				new Met(pos, xDir, player, netIdByte, false);
+				break;
 		}
 	}
 
@@ -135,37 +136,9 @@ public partial class RPCCreateActor : RPC {
 				$"Attempt to create RPC of projectile type {actor.getActorTypeName()} without a owner player."
 			);
 		}
-		if (netId == null) {
+		if (netId == null || cActorId == (int)CActorIds.Default) {
 			throw new Exception(
 				$"Attempt to create RPC of projectile type {actor.getActorTypeName()} with null ID"
-			);
-		}
-		if (cActorId == (int)CActorIds.Default) {
-			throw new Exception(
-				$"Attempt to create RPC of projectile type {actor.getActorTypeName()} with default CID"
-			);
-		}
-
-		sendRpc(getSendBytes(
-			pos, xDir, player.id, cActorId, netId,
-			owner, byteAngle, extraData
-		));
-	}
-
-	public byte[] getSendBytes(ActorRpcParameters args) {
-		return getSendBytes(
-			args.pos, args.xDir, args.player.id, args.actorId, args.netId,
-			args.owner, args.byteAngle, args.extraData
-		);
-	}
-
-	public byte[] getSendBytes(
-		Point pos, int xDir, int playerId, int cActorId, ushort? netId,
-		Actor? owner = null, float? byteAngle = null, byte[]? extraData = null
-	) {
-		if (netId == null) {
-			throw new Exception(
-				$"Attempt to create RPC of projectile with null ID"
 			);
 		}
 		byte[] cActorIdBytes = BitConverter.GetBytes((ushort)cActorId);
@@ -182,7 +155,7 @@ public partial class RPCCreateActor : RPC {
 
 		// Create byte list.
 		List<byte> bytes = [
-			dataInf, (byte)playerId,
+			dataInf, (byte)player.id,
 			cActorIdBytes[0], cActorIdBytes[1],
 			xBytes[0], xBytes[1], xBytes[2], xBytes[3],
 			yBytes[0], yBytes[1], yBytes[2], yBytes[3],
@@ -190,7 +163,7 @@ public partial class RPCCreateActor : RPC {
 			netDir
 		];
 		if (byteAngle != null && byteAngle != 0) {
-			bytes.Add((byte)(Math.Round(byteAngle.Value) % 256));
+			bytes.Add((byte)(Math.Round(actor.byteAngle) % 256));
 		}
 		if (owner?.netId != null) {
 			bytes.AddRange(BitConverter.GetBytes(owner.netId.Value));
@@ -198,11 +171,7 @@ public partial class RPCCreateActor : RPC {
 		if (extraData != null && extraData.Length > 0) {
 			bytes.AddRange(extraData);
 		}
-		return bytes.ToArray();
-	}
-
-	public void sendRpc(byte[] args) {
-		Global.serverClient?.rpc(createActor, args);
+		Global.serverClient?.rpc(createActor, bytes.ToArray());
 	}
 }
 
@@ -229,6 +198,7 @@ public enum NetActorCreateId {
 	DWrapBigBubble,
 	Rush,
 	CopyVisionClone,
+	Met,
 	ChillPenguin,
 	SparkMandrill,
 	ArmoredArmadillo,

@@ -402,10 +402,6 @@ public class Helpers {
 	public static float byteToDegree(byte angleByte) {
 		return angleByte * 1.40625f % 360;
 	}
-	
-	public static float byteToDegree(float angleByte) {
-		return angleByte * 1.40625f % 360;
-	}
 
 	public static byte dirToByte(int dir) {
 		return (byte)(dir + 128);

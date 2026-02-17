@@ -164,7 +164,7 @@ public partial class Actor : GameObject {
 	public NetActorCreateId netActorCreateId;
 	public CActorIds cActorId;
 	public Player? netOwner;
-	public bool syncOnLateJoin;
+	float createRpcTime;
 
 	public bool splashable;
 	private Anim _waterWade = null!;
@@ -293,25 +293,14 @@ public partial class Actor : GameObject {
 	}
 
 	public void createActorRpc(int playerId, params byte[] extraData) {
-		if (netId == null || !ownedByLocalPlayer || netActorCreateId == 0) {
+		if (netId == null || !ownedByLocalPlayer) {
 			return;
 		}
 		Player? sPlayer = Global.level.getPlayerById(playerId);
 		if (sPlayer == null) {
 			return;
 		}
-		RPC.createActor.sendRpc(
-			this, pos, xDir, sPlayer, (int)netActorCreateId, netId, null, byteAngle,
-			extraData: extraData
-		);
-	}
-
-	public virtual byte[] getActorSerialExtra() {
-		return [];
-	}
-
-	public virtual ActorRpcResponse? getActorSerial() {
-		return null;
+		RPC.createActor.sendRpc(this, pos, xDir, sPlayer, (int)netActorCreateId, netId, null, byteAngle);
 	}
 
 	public void changeSpriteIfDifferent(string spriteName, bool resetFrame) {
@@ -605,6 +594,14 @@ public partial class Actor : GameObject {
 		if (!startMethodCalled) {
 			onStart();
 			startMethodCalled = true;
+		}
+
+		if (ownedByLocalPlayer && netOwner != null) {
+			createRpcTime += Global.spf;
+			if (createRpcTime > 1) {
+				createRpcTime = 0;
+				createActorRpc(netOwner.id);
+			}
 		}
 
 		if (!locallyControlled) {

@@ -12,20 +12,16 @@ public class NeutralEnemy : Actor, IDamagable {
 	public float wSize = 12;
 	public float hSize = 12;
 	public Action<Point>[] killDrops = new Action<Point>[0];
-	public Player ownerPlayer;
 
 	public NeutralEnemyState state;
 
 	public NeutralEnemy(
-		Point pos, int xDir, Player ownerPlayer, ushort netId,
-		int alliance = GameMode.freelanceAlliance, bool addToLevel = true
+		Point pos, ushort netId, bool isLocal,
+		int alliance = GameMode.freelanceAlliance,
+		bool addToLevel = true
 	) : base(
-		null!, pos, netId, ownerPlayer.ownedByLocalPlayer, !addToLevel
+		null!, pos, netId, isLocal, !addToLevel
 	) {
-		// Get player data.
-		this.ownerPlayer = ownerPlayer;
-		netOwner = ownerPlayer;
-		this.xDir = xDir;
 		// Forcefull change sprite to something before we crash.
 		sprite = new Sprite("empty");
 		// We do this to manually call the state change.
@@ -40,23 +36,6 @@ public class NeutralEnemy : Actor, IDamagable {
 
 		this.alliance = alliance;
 		hasStateMachine = true;
-	}
-
-	public override ActorRpcResponse? getActorSerial() {
-		if (netId == null || cActorId == 0) {
-			return null;
-		}
-		return new ActorRpcResponse() {
-			isProj = false,
-			actorId = (int)cActorId,
-			pos = pos,
-			xDir = xDir,
-			player = ownerPlayer,
-			netId = netId.Value,
-			byteAngle = byteAngle,
-			owner = null,
-			extraData = getActorSerialExtra()
-		};
 	}
 
 	public override void preUpdate() {

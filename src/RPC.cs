@@ -935,6 +935,116 @@ public class RPCReflectProj : RPC {
 	}
 }
 
+public class RPCJoinLateRequest : RPC {
+	public RPCJoinLateRequest() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isPreUpdate = true;
+		toHostOnly = true;
+	}
+
+	public override void invoke(params byte[] arguments) {
+		var serverPlayer = Helpers.deserialize<ServerPlayer>(arguments);
+
+		Global.level.addPlayer(serverPlayer, true);
+
+		/*
+		foreach (var player in Global.level.players) {
+			player.charNetId = null;
+			if (player.character != null) {
+				//player.charNetId = player.character.netId;
+				player.charXPos = player.character.pos.x;
+				player.charYPos = player.character.pos.y;
+				player.charXDir = player.character.xDir;
+				//player.charRollingShieldNetId = player.character.chargedRollingShieldProj?.netId;
+			}
+		}
+		*/
+
+		var controlPoints = new List<ControlPointResponseModel>();
+		foreach (var cp in Global.level.controlPoints) {
+			controlPoints.Add(new ControlPointResponseModel() {
+				alliance = cp.alliance,
+				num = cp.num,
+				locked = cp.locked,
+				captured = cp.captured,
+				captureTime = cp.captureTime
+			});
+		}
+
+		var magnetMines = new List<MagnetMineResponseModel>();
+		foreach (var go in Global.level.gameObjects) {
+			var magnetMine = go as MagnetMineProj;
+			if (magnetMine != null && magnetMine.netId != null && magnetMine.player != null) {
+				magnetMines.Add(new MagnetMineResponseModel() {
+					x = magnetMine.pos.x,
+					y = magnetMine.pos.y,
+					netId = magnetMine.netId.Value,
+					playerId = magnetMine.player.id
+				});
+			}
+		}
+
+		var turrets = new List<TurretResponseModel>();
+		foreach (var go in Global.level.gameObjects) {
+			var turret = go as RaySplasherTurret;
+			if (turret != null && turret.netId != null && turret.netOwner != null) {
+				turrets.Add(new TurretResponseModel() {
+					x = turret.pos.x,
+					y = turret.pos.y,
+					netId = turret.netId.Value,
+					playerId = turret.netOwner.id
+				});
+			}
+		}
+
+		var joinLateResponseModel = new JoinLateResponseModel() {
+			players = Global.level.players.Select(p => new PlayerPB(p)).ToList(),
+			newPlayer = serverPlayer,
+			controlPoints = controlPoints,
+			magnetMines = magnetMines,
+			turrets = turrets
+		};
+
+		Global.serverClient?.rpc(RPC.joinLateResponse, Helpers.serialize(joinLateResponseModel));
+	}
+}
+
+public class RPCJoinLateResponse : RPC {
+	public RPCJoinLateResponse() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		levelless = true;
+		allowBreakMtuLimit = true;
+	}
+
+	public override void invoke(params byte[] arguments) {
+		JoinLateResponseModel? joinLateResponseModel = null;
+		try {
+			joinLateResponseModel = Helpers.deserialize<JoinLateResponseModel>(arguments);
+		} catch {
+			try {
+				Logger.logEvent(
+					"error",
+					"Bad joinLateResponseModel bytes. name: " +
+					Options.main.playerName + ", match: " + Global.level?.server?.name +
+					", bytes: " + arguments.ToString()
+				);
+				//Console.Write(message); 
+			} catch { }
+			throw;
+		}
+
+		// Original requester
+		if (Global.serverClient.serverPlayer.id == joinLateResponseModel.newPlayer.id) {
+			Global.level.joinedLateSyncPlayers(joinLateResponseModel.players);
+			Global.level.joinedLateSyncControlPoints(joinLateResponseModel.controlPoints);
+			Global.level.joinedLateSyncMagnetMines(joinLateResponseModel.magnetMines);
+			Global.level.joinedLateSyncTurrets(joinLateResponseModel.turrets);
+		} else {
+			Global.level.addPlayer(joinLateResponseModel.newPlayer, true);
+		}
+	}
+}
+
 public class RPCUpdateStarted : RPC {
 	public RPCUpdateStarted() {
 		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;

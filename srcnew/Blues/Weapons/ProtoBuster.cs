@@ -129,9 +129,7 @@ public class ProtoBusterLv2Proj : Projectile {
 		}
 
 		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}
 	}
 
@@ -153,7 +151,7 @@ public class ProtoBusterLv3Proj : Projectile {
 		fadeSprite = "proto_chargeshot_purple_proj_fade";
 		fadeOnAutoDestroy = true;
 		maxTime = 23 / 60f;
-		projId = (int)BluesProjIds.BusterLV4;
+		projId = (int)BluesProjIds.BusterLV3;
 
 		vel.x = 325 * xDir;
 		damager.damage = 3;
@@ -165,9 +163,7 @@ public class ProtoBusterLv3Proj : Projectile {
 		}
 
 		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}
 	}
 
@@ -201,9 +197,7 @@ public class ProtoBusterLv4Proj : Projectile {
 		}
 
 		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir, extraArgs);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
 		}
 	}
 

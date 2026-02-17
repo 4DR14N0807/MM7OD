@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<!--Common properties-->
 	<PropertyGroup>
-		<LangVersion>preview</LangVersion>
+		<!--LangVersion>preview</LangVersion-->
 		<AssemblyName>MM7OD</AssemblyName>
 		<OutputType>WinExe</OutputType>
 		<!--Nullable>annotations</Nullable-->

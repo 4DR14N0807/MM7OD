@@ -43,12 +43,12 @@ public class WildCoil : Weapon {
 		int chargeLv = args[0];
 
 		if (chargeLv >= 2) {
-			new WildCoilChargedProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
-			new WildCoilChargedProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
+			new WildCoilChargedRmProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
+			new WildCoilChargedRmProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
 			rock.playSound("buster3", sendRpc: true);
 		} else {
-			new WildCoilProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
-			new WildCoilProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
+			new WildCoilRmProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player);
+			new WildCoilRmProj(rock, shootPos1, xDir, 1, player.getNextActorNetId(), true, player);
 			rock.playSound("buster2", sendRpc: true);
 		}
 	}
@@ -59,7 +59,7 @@ public class WildCoil : Weapon {
 	}
 }
 
-public class WildCoilProj : Projectile {
+public class WildCoilRmProj : Projectile {
 
 	public int bouncePower = 240;
 	float bounceMod = 1;
@@ -67,7 +67,7 @@ public class WildCoilProj : Projectile {
 	float projSpeed = 120;
 	int hits;
 	bool bouncedOnce;
-	public WildCoilProj(
+	public WildCoilRmProj(
 		Actor owner, Point pos, int xDir, int type, 
 		ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -97,7 +97,7 @@ public class WildCoilProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new WildCoilProj(
+		return new WildCoilRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
 			arg.netId, altPlayer: arg.player
 		);
@@ -166,7 +166,7 @@ public class WildCoilProj : Projectile {
 }
 
 
-public class WildCoilChargedProj : Projectile {
+public class WildCoilChargedRmProj : Projectile {
 
 	public int bouncePower = 330;
 	public float bounceMod = 1;
@@ -178,7 +178,7 @@ public class WildCoilChargedProj : Projectile {
 	float projSpeed = 120;
 	Player? player = null;
 
-	public WildCoilChargedProj(
+	public WildCoilChargedRmProj(
 		Actor owner, Point pos, int xDir, int type, 
 		ushort? netProjId, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -214,7 +214,7 @@ public class WildCoilChargedProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new WildCoilChargedProj(
+		return new WildCoilChargedRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
 			arg.netId, altPlayer: arg.player
 		);

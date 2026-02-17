@@ -10,14 +10,14 @@ public class Rock : Character {
 	public float weaponCooldown;
 	public List<Actor> junkShieldProjs = new();
 	public LoopingSound? junkShieldSound;
-	public ScorchWheelSpawn? sWellSpawn;
-	public ScorchWheelProj? sWell;
-	public UnderwaterScorchWheelSpawn? sWellU;
-	public UnderwaterScorchWheelSpawn? underwaterScorchWheel;
+	public ScorchWheelSpawnRm? sWellSpawn;
+	public ScorchWheelRmProj? sWell;
+	public WaterScorchWheelSpawnRm? sWellU;
+	public WaterScorchWheelSpawnRm? underwaterScorchWheel;
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
 	public bool armless;
-	public ChargeEffect noiseCrushEffect;
+	public ChargeEffect? noiseCrushEffect;
 	public bool hasChargedNoiseCrush = false;
 	public float noiseCrushAnimTime;
 	public LoopingSound? chargedNoiseCrushSound;
@@ -110,7 +110,7 @@ public class Rock : Character {
 			}
 		} else if (chargedNoiseCrushSound != null) {
 			chargedNoiseCrushSound.stop();
-			chargedNoiseCrushSound = null!;
+			chargedNoiseCrushSound = null;
 		}
 
 		//Junk Shield soundloop.
@@ -121,7 +121,7 @@ public class Rock : Character {
 
 		} else if (junkShieldSound != null) {
 			junkShieldSound.stop();
-			junkShieldSound = null!;
+			junkShieldSound = null;
 		}
 
 		// For the shooting animation.
@@ -165,14 +165,15 @@ public class Rock : Character {
 			return true;
 		}
 
-		if (jumpPressed && !grounded && hasSuperAdaptor && !usedDoubleJump && flag == null) {
+		if (jumpPressed && !grounded && hasSuperAdaptor && !usedDoubleJump && !isMovementLimited()) {
 			changeState(new RockDoubleJump(), true);
 			usedDoubleJump = true;
 			return true;
 		}
 
-		if (grounded) usedDoubleJump = false;
-
+		if (grounded) {
+			usedDoubleJump = false;
+		}
 		return base.normalCtrl();
 	}
 
@@ -291,9 +292,9 @@ public class Rock : Character {
 
 	public void drawChargedNoiseCrush(float x, float y) {
 		addRenderEffect(RenderEffectType.NCrushCharge, 3, 5);
-		noiseCrushEffect.character = this;
-		noiseCrushEffect.update(2, 2);
-		noiseCrushEffect.render(getCenterPos());
+		noiseCrushEffect?.character = this;
+		noiseCrushEffect?.update(2, 2);
+		noiseCrushEffect?.render(getCenterPos());
 	}
 
 	public bool isUsingRushJet() {
@@ -363,7 +364,7 @@ public class Rock : Character {
 		if (isInvulnerableAttack()) return false;
 		if (saRocketPunchProj != null) return false;
 
-		return base.canShoot() && weaponCooldown <= 0;
+		return base.canShoot() && weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0;
 	}
 
 	public override bool canClimbLadder() {
@@ -376,7 +377,7 @@ public class Rock : Character {
 		if (isInvulnerableAttack() ||
 			hasSuperAdaptor ||
 			//(type == 2 && player.currency < RushSearchCost) ||
-			flag != null
+			flag != null || rushWeapon.ammo <= 0
 		) {
 			return false;
 		}
@@ -663,12 +664,22 @@ public class Rock : Character {
 
 	public void removeLastingProjs() {
 		sWellSpawn?.destroySelf();
+		sWellSpawn = null;
 		sWell?.destroySelf();
+		sWell = null;
 		sWellU?.destroySelf();
+		sWellU = null;
+		noiseCrushEffect?.destroy();
+		noiseCrushEffect = null;
+		chargedNoiseCrushSound?.stop();
+		chargedNoiseCrushSound = null;
+		junkShieldSound?.stop();
+		junkShieldSound = null;
+
 		foreach (Weapon w in weapons) {
 			if (w is DangerWrap dw) {
 				foreach (Projectile mine in dw.dangerMines) {
-					if (mine is DangerWrapLandProj lProj) {
+					if (mine is DangerWrapLandRmProj lProj) {
 						lProj.health = 0;
 						lProj.destroySelf();
 					}
@@ -768,6 +779,22 @@ public class Rock : Character {
 		) {
 			changeSpriteFromName(newState.shootSprite, false);
 		}
+	}
+
+	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		if (Global.level.mainPlayer.character == this && !weapons.Contains(rushWeapon)) {
+			int drawDir = 1;
+			if (position == GameMode.HUDHealthPosition.Right) {
+				drawDir = -1;
+			}
+			Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+			drawBuffAlt(
+				drawPos, rushWeapon.ammo / rushWeapon.maxAmmo,
+				rushWeapon.iconSprite, rushWeapon.weaponSlotIndex
+			);
+			secondBarOffset += 18 * drawDir;
+		}
+		base.renderBuffs(offset, position);
 	}
 
 	public override List<byte> getCustomActorNetData() {

@@ -74,7 +74,7 @@ public class ArmoredArmadillo : Maverick {
 			drainAmmo(4);
 		} else if (state is ArmoredAGuardState) {
 			drainAmmo(1);
-		} else if (state is not ArmoredARollExitState or ArmoredAGuardState) {
+		} else if (state is not ArmoredARollExitState and not ArmoredAGuardState) {
 			rechargeAmmo(3);
 		}
 

@@ -945,7 +945,9 @@ public partial class Level {
 		}
 
 		if (joinedLate) {
-			Global.serverClient?.rpc(RPC.joinLateRequest, Helpers.serialize(Global.serverClient.serverPlayer));
+			Global.serverClient?.rpc(
+				RPC.joinLateRequest, Helpers.serialize(Global.serverClient.serverPlayer)
+			);
 		}
 
 		startGoCount = gameObjects.Count;
@@ -1030,7 +1032,7 @@ public partial class Level {
 		return false;
 	}
 
-	public void joinedLateSyncPlayers(List<PlayerPB> hostPlayers) {
+	public void joinedLateSyncPlayers(PlayerPB[] hostPlayers) {
 		if (hostPlayers == null) {
 			return;
 		}
@@ -1040,12 +1042,12 @@ public partial class Level {
 			if (player == null) continue;
 			if (player.ownedByLocalPlayer) continue;
 
-			player.alliance = hostPlayer.serverPlayer.alliance;
+			player.alliance = hostPlayer.alliance;
 			player.newAlliance = hostPlayer.newAlliance;
 			player.kills = hostPlayer.serverPlayer.kills;
 			player.deaths = hostPlayer.serverPlayer.deaths;
-			player.charNum = hostPlayer.currentCharNum ?? hostPlayer.serverPlayer.charNum;
 			player.newCharNum = hostPlayer.newCharNum;
+			player.charNum = hostPlayer.currentCharNum ?? player.newCharNum;
 			player.curMaxNetId = hostPlayer.curMaxNetId;
 			player.warpedInOnce = hostPlayer.warpedIn;
 			player.readyTime = hostPlayer.readyTime;
@@ -1057,25 +1059,29 @@ public partial class Level {
 			) {
 				int targetCharNum = hostPlayer.currentCharNum.Value;
 				LoadoutData currentLoadout = player.loadout;
-				if (player.atransLoadout != null) {
-					currentLoadout = player.atransLoadout;
+				if (hostPlayer.atransLoadout != null) {
+					currentLoadout = hostPlayer.atransLoadout;
 				}
 				player.spawnCharAtPoint(
-					targetCharNum, player.getCharSpawnData(targetCharNum, false, currentLoadout),
+					targetCharNum, player.getCharSpawnData(targetCharNum, loadout: currentLoadout),
 					new Point(hostPlayer.charXPos, hostPlayer.charYPos),
-					hostPlayer.charXDir, (ushort)hostPlayer.charNetId, false
+					hostPlayer.charXDir, hostPlayer.charNetId.Value,
+					sendRpc: false
 				);
-			} else {
-				player.atransLoadout = null;
 			}
 		}
 	}
 
-	public void joinedLateSyncControlPoints(List<ControlPointResponseModel> controlPointResponseModels) {
+	public void joinedLateSyncControlPoints(ControlPointResponseModel[] controlPointResponseModels) {
 		if (controlPointResponseModels == null) return;
 
 		foreach (var controlPointResponseModel in controlPointResponseModels) {
-			var controlPoint = controlPoints.Where(c => c.num == controlPointResponseModel.num).FirstOrDefault();
+			ControlPoint? controlPoint = controlPoints.FirstOrDefault(
+				c => c.num == controlPointResponseModel.num
+			);
+			if (controlPoint == null) {
+				continue;
+			}
 			controlPoint.alliance = controlPointResponseModel.alliance;
 			controlPoint.num = controlPointResponseModel.num;
 			controlPoint.locked = controlPointResponseModel.locked;
@@ -1090,7 +1096,9 @@ public partial class Level {
 		foreach (var magnetMine in magnetMines) {
 			var player = getPlayerById(magnetMine.playerId);
 			if (player == null) continue;
-			new MagnetMineProj(new Point(magnetMine.x, magnetMine.y), 1, player.character, player, magnetMine.netId);
+			new MagnetMineProj(
+				new Point(magnetMine.x, magnetMine.y), 1, player.character, player, magnetMine.netId
+			);
 		}
 	}
 
@@ -1101,6 +1109,67 @@ public partial class Level {
 			var player = getPlayerById(turret.playerId);
 			if (player == null) continue;
 			new RaySplasherTurret(new Point(turret.x, turret.y), player, 1, turret.netId, false, false);
+		}
+	}
+
+	public void joinedLateSyncActors(ActorRpcResponse[] responses) {
+		// First we order them by their netIDs.
+		// Then we order the responses by reverse ownerIDs, so we create the owner first.
+		responses = (responses
+			.OrderBy(r => r.netId)
+			.OrderBy(r => r.ownerId ?? 0)
+			.ToArray()
+		);
+		// Iterate over the whole list.
+		foreach (ActorRpcResponse response in responses) {
+			// Ignore actors that already exist.
+			if (getActorByNetId(response.netId) != null) {
+				continue;
+			}
+			// Skip if the owner playeris not there anymore.
+			// As would be no one to update them if they are localOnly.
+			Player? player = getPlayerById(response.playerId);
+			if (player == null) {
+				continue;
+			}
+			// Set up vars.
+			Point pos = new(response.posX, response.posY);
+			Actor? owner = null;
+			if (response.ownerId != null) {
+				owner = getActorByNetId(response.ownerId.Value);
+			}
+			// When is projectile.
+			if (response.isProj) {
+				ProjParameters args = new() {
+					projId = response.actorId,
+					pos = pos,
+					xDir = response.xDir,
+					player = player,
+					netId = response.netId,
+					angle = Helpers.byteToDegree(response.byteAngle),
+					byteAngle = response.byteAngle,
+					extraData = response.extraData,
+					owner = owner!,
+				};
+				byte[] byteArgs = RPC.createProj.getSendBytes(args);
+				RPC.createProj.invoke(byteArgs);
+			}
+			// When is not a projectile.
+			else {
+				ActorRpcParameters args = new() {
+					actorId = response.actorId,
+					pos = pos,
+					xDir = response.xDir,
+					player = player,
+					netId = response.netId,
+					angle = Helpers.byteToDegree(response.byteAngle),
+					byteAngle = response.byteAngle,
+					extraData = response.extraData,
+					owner = owner!,
+				};
+				byte[] byteArgs = RPC.createActor.getSendBytes(args);
+				RPC.createActor.invoke(byteArgs);
+			}
 		}
 	}
 
@@ -1172,7 +1241,7 @@ public partial class Level {
 
 		var player = new Player(
 			serverPlayer.name, serverPlayer.id,
-			serverPlayer.charNum, playerData, isBot,
+			serverPlayer.spawnCharNum, playerData, isBot,
 			ownedByLocalPlayer, serverPlayer.alliance, input, serverPlayer
 		);
 		if (joinedLate) {
@@ -1585,7 +1654,7 @@ public partial class Level {
 		for (int i = backloggedDamages.Count - 1; i >= 0; i--) {
 			BackloggedDamage bd = backloggedDamages[i];
 			// Search for actor;
-			Actor? damagerActor = Global.level.getActorByNetId(bd.actorId, true);
+			Actor? damagerActor = Global.level.getActorByNetId(bd.netId, true);
 			// Run if we find an actor.
 			// Or Run anyway if more than 1s.
 			if (damagerActor != null || bd.time >= 10) {
@@ -2835,10 +2904,10 @@ public partial class Level {
 
 	public void clearOldActors() {
 		Dictionary<ushort, Actor> destroyedActorsByIdClone = new(destroyedActorsById);
-		foreach ((ushort actorId, Actor actor) in destroyedActorsByIdClone) {
+		foreach ((ushort netId, Actor actor) in destroyedActorsByIdClone) {
 			long framesDestroyed = Global.floorFrameCount - actor.destroyedOnFrame;
 			if (framesDestroyed >= 240) {
-				destroyedActorsById.Remove(actorId);
+				destroyedActorsById.Remove(netId);
 			}
 		}
 	}

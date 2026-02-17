@@ -567,10 +567,18 @@ public class BrakeZone : Geometry {
 		collider.isTrigger = true;
 	}
 }
+
 public class BackwallZone : Geometry {
 	public bool isExclusion;
 	public BackwallZone(string name, List<Point> points, bool isExclusion) : base(name, points) {
 		collider.isTrigger = true;
 		this.isExclusion = isExclusion;
+	}
+}
+
+public class FreezemanZone : Geometry {
+	public bool isExclusion;
+	public FreezemanZone(string name, List<Point> points) : base(name, points) {
+		collider.isTrigger = true;
 	}
 }

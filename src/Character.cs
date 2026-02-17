@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -147,6 +146,7 @@ public partial class Character : Actor, IDamagable {
 	public DNACore? linkedDna;
 	public Character? linkedATransChar;
 	public bool oldATrans = false;
+	public bool disguiseCoverBlown = true;
 
 	// For states with special propieties.
 	// For doublejump.
@@ -183,7 +183,7 @@ public partial class Character : Actor, IDamagable {
 
 	//Spark Shock root
 	public float rootTime;
-	public Dictionary<int, float> rootCooldown = new();
+	public Dictionary<string, float> rootCooldown = new();
 	public Anim? rootAnim;
 	public Anim? slowdownAnim;
 
@@ -191,17 +191,18 @@ public partial class Character : Actor, IDamagable {
 	public float burnHurtCooldown;
 
 	// Generic stun.
-	public Dictionary<int, float> stunCooldown = new();
+	public Dictionary<string, float> stunCooldown = new();
 
 	// Freeze.
 	public float freezeTime;
-	public Dictionary<int, float> freezeCooldown = new();
+	public Dictionary<string, float> freezeCooldown = new();
 	// Burn Stun
 	public float burnStunStacks;
 	public float burnStunTime;
 
-	// Ice
+	// Wince.
 	public float slowdownTime;
+	public Dictionary<string, float> winceCooldown = new();
 
 	// Parasite.
 	public Damager? parasiteDamager;
@@ -209,6 +210,13 @@ public partial class Character : Actor, IDamagable {
 	public bool hasParasite { get { return parasiteTime > 0; } }
 	public float parasiteTime;
 	public float parasiteMashTime;
+
+	// DANGER WRAP SECTION
+	public bool hasBubble => ownedByLocalPlayer ? bigBubble != null : hasBubbleNet;
+	public bool hasBubbleNet;
+	public float dWrappedTime;
+	public Damager? dWrapDamager;
+	public DWrapBigBubble? bigBubble;
 
 	// Disables status.
 	public float paralyzedTime;
@@ -253,6 +261,7 @@ public partial class Character : Actor, IDamagable {
 	public int secondBarOffset;
 	public List<Buff> buffList = new();
 	public Dictionary<string, DisarrayStack> disarrayStacks = new();
+	public HpShieldManager shieldManager = new();
 
 	public AltSoundIds altSoundId = AltSoundIds.None;
 	public enum AltSoundIds {
@@ -557,14 +566,28 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canDash() {
-		if (player.isAI && charState is Dash) return false;
-		if (rideArmorPlatform != null) return false;
-		if (charState is WallSlide) return false;
-		if (charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold) return false;
-		if (isSoftLocked()) return false;
-		if (rootTime > 0) return false;
-		if (bigBubble != null) return false;
-		return flag == null;
+		if (player.isAI && charState is Dash ||
+			rideArmorPlatform != null ||
+			charState is WallSlide ||
+			charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold ||
+			isMovementLimited()
+		) {
+			return false;
+		}
+		return true;
+	}
+
+	public virtual bool isMovementLimited() {
+		if (rideArmorPlatform != null ||
+			isSoftLocked() ||
+			rootTime > 0 ||
+			bigBubble != null ||
+			isDWrapped ||
+			flag != null
+		) {
+			return true;
+		}
+		return false;
 	}
 
 	public virtual bool canJump() {
@@ -777,11 +800,11 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual (float, float) getGlobalColliderSize() {
+	public virtual (float x, float y) getGlobalColliderSize() {
 		return (18, 30);
 	}
 
-	public virtual (float, float) getTerrainColliderSize() {
+	public virtual (float x, float y) getTerrainColliderSize() {
 		return (18, 30);
 	}
 
@@ -825,6 +848,7 @@ public partial class Character : Actor, IDamagable {
 			return;
 		}
 		// Local only starts here.
+		shieldManager.update(this);
 		debuffCooldowns();
 		genericPuppetControl();
 		updateAttackCooldowns();
@@ -1011,27 +1035,21 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref dwrapInvulnTime);
 		Helpers.decrementFrames(ref burnInvulnTime);
 
-		int[] rootKeys = rootCooldown.Keys.ToArray();
-		foreach(int key in rootKeys) {
-			rootCooldown[key] -= speedMul;
-			if (rootCooldown[key] <= 0) {
-				rootCooldown.Remove(key);
-			}
-		}
+		Dictionary<string, float>[] cooldownList = [
+			winceCooldown,
+			rootCooldown,
+			stunCooldown,
+			freezeCooldown,
+		];
 
-		int[] stunKeys = stunCooldown.Keys.ToArray();
-		foreach(int key in stunKeys) {
-			stunCooldown[key] -= speedMul;
-			if (stunCooldown[key] <= 0) {
-				stunCooldown.Remove(key);
-			}
-		}
+		foreach (var cdList in cooldownList) {
+			string[] keys = cdList.Keys.ToArray();
 
-		int[] freezeKeys = freezeCooldown.Keys.ToArray();
-		foreach(int key in freezeKeys) {
-			freezeCooldown[key] -= speedMul;
-			if (freezeCooldown[key] <= 0) {
-				freezeCooldown.Remove(key);
+			foreach (string key in keys) {
+				cdList[key] -= speedMul;
+				if (cdList[key] <= 0) {
+					cdList.Remove(key);
+				}
 			}
 		}
 
@@ -1045,6 +1063,7 @@ public partial class Character : Actor, IDamagable {
 
 		for (int i = buffList.Count - 1; i >= 0; i--) {
 			buffList[i].time -= speedMul;
+			buffList[i].update?.Invoke(buffList[i], this);
 			if (buffList[i].time <= 0) {
 				buffList.RemoveAt(i);
 			}
@@ -1159,8 +1178,9 @@ public partial class Character : Actor, IDamagable {
 					dropFlagCooldown = 1;
 					if (Global.isHost || Global.serverClient == null) {
 						dropFlag();
+					} else {
+						RPC.actorToggle.sendRpc(netId, RPCActorToggleType.DropFlagManual);
 					}
-					RPC.actorToggle.sendRpc(netId, RPCActorToggleType.DropFlagManual);
 				}
 			} else {
 				dropFlagProgress = 0;
@@ -1655,8 +1675,9 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (isStunImmune() || isFreezeImmune()) { return; }
-		if (freezeCooldown.GetValueOrDefault(playerid) > 0) {
+		if (isStunImmune()) { return; }
+		string cdId = $"{playerid}";
+		if (freezeCooldown.GetValueOrDefault(cdId) > 0) {
 			return;
 		}
 		// Cooldown.
@@ -1665,7 +1686,7 @@ public partial class Character : Actor, IDamagable {
 		time = MathF.Floor(time * disarrayReduction);
 		disarrayStacks[$"{playerid}_freeze"] = new DisarrayStack(cooldown);
 		// Apply debuff.
-		freezeCooldown[playerid] = cooldown;
+		freezeCooldown[cdId] = cooldown;
 
 		if (freezeTime >= time) {
 			return;
@@ -1720,7 +1741,11 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (rootCooldown.GetValueOrDefault(playerid) > 0) {
+		if (isSlowImmune() || isStunImmune()) {
+			return;
+		}
+		string cdId = $"{playerid}";
+		if (rootCooldown.GetValueOrDefault(cdId) > 0) {
 			return;
 		}
 		// Disarray mechanic.
@@ -1728,7 +1753,7 @@ public partial class Character : Actor, IDamagable {
 		time = MathF.Floor(time * disarrayReduction);
 		disarrayStacks[$"{playerid}_root"] = new DisarrayStack(cooldown);
 		// Apply debuff.
-		rootCooldown[playerid] = time + 60;
+		rootCooldown[cdId] = time + 60;
 		
 		if (rootTime < time) {
 			rootTime = time;
@@ -1748,7 +1773,11 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (stunCooldown.GetValueOrDefault(playerid) > 0) {
+		if (isStunImmune()) {
+			return;
+		}
+		string cdId = $"{playerid}";
+		if (stunCooldown.GetValueOrDefault(cdId) > 0) {
 			return;
 		}
 		// Cooldown.
@@ -1757,7 +1786,7 @@ public partial class Character : Actor, IDamagable {
 		time = MathF.Floor(time * disarrayReduction);
 		disarrayStacks[$"{playerid}_paralize"] = new DisarrayStack(cooldown);
 		// Apply debuff.
-		stunCooldown[playerid] = cooldown;
+		stunCooldown[cdId] = cooldown;
 
 		if (paralyzedTime >= time) {
 			return;
@@ -1776,6 +1805,28 @@ public partial class Character : Actor, IDamagable {
 		if (charState is not GenericStun) {
 			changeState(new GenericStun(), true);
 		}
+	}
+
+	public void wince(float time, float cooldown, int projId, int playerId) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (isSlowImmune()) {
+			return;
+		}
+		// Check cooldown.
+		if (cooldown > 0) {
+			if (winceCooldown[$"{projId}_{playerId}"] > 0) {
+				return;
+			}
+			winceCooldown[$"projId_playerId"] = cooldown;
+		}
+		// Apply debuff.
+		if (slowdownTime < time) {
+			slowdownTime = time;
+		}
+		// Hud stuff.
+		buffList.Add(new Buff("hud_debuffs", 4, false, time, time));
 	}
 
 	public virtual void chargeGfx() {
@@ -1834,10 +1885,6 @@ public partial class Character : Actor, IDamagable {
 			isTrueStatusImmune() || charState.pushImmune == true ||
 			immuneToKnockback || isClimbingLadder()
 		);
-	}
-
-	public virtual bool isFreezeImmune() {
-		return false;
 	}
 
 	public virtual bool isTimeImmune() {
@@ -2290,7 +2337,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		renderDamageText(35);
 
-		charState?.render(x, y);
+		charState.render(x, y);
 		chargeEffect?.render(getParasitePos().add(new Point(x, y)));
 
 		if (isCrystalized) {
@@ -2309,8 +2356,8 @@ public partial class Character : Actor, IDamagable {
 
 		bool shouldDrawName = false;
 		bool shouldDrawHealthBar = false;
-		string overrideName = "";
-		FontType? overrideColor = null;
+		//string overrideName = "";
+		//FontType? overrideColor = null;
 
 		if (!hideHealthAndName()) {
 			if (Global.level.mainPlayer.isSpectator) {
@@ -2373,6 +2420,16 @@ public partial class Character : Actor, IDamagable {
 				deductLabelY(labelCooldownOffY);
 			}
 			if (!drewETankHealing && hyperProgress > 0) {
+				if (this is Blues bl &&
+					Options.main.coreHeatDisplay != 0 && !destroyed &&
+					player.isMainPlayer && charState is not Die && alive &&
+					Global.level.mainPlayer.character == this &&
+					!Global.level.mainPlayer.isSpectator &&
+					displayHpTime <= 0 &&
+					(bl.coreAmmo > 0 || bl.overdrive && bl.overdriveAmmo > 0)
+				) {
+					deductLabelY(4);
+				}
 				float healthBarInnerWidth = 30;
 
 				float progress = Math.Min(hyperProgress, 1);
@@ -2432,7 +2489,7 @@ public partial class Character : Actor, IDamagable {
 				if (ai.aiState is FindPlayer fp) {
 					string nt = "FindPlayer";
 					if (fp.nodeTransition != null) {
-						nt += $" - {fp.nodeTransition.currentPhase.ToString().RemovePrefix("MMXOnline.")}";
+						nt += $" - {fp.nodeTransition.currentPhase.GetType().Name}";
 					}
 					if (fp.nextNode != null) {
 						Point dist = (
@@ -2452,7 +2509,7 @@ public partial class Character : Actor, IDamagable {
 					}*/
 				} else  {
 					Fonts.drawText(
-						FontType.WhiteMini, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
+						FontType.WhiteMini, ai.aiState.GetType().Name.ToString(),
 						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 					);
 				}
@@ -2491,7 +2548,7 @@ public partial class Character : Actor, IDamagable {
 				}
 			} else {
 				Fonts.drawText(
-					FontType.WhiteMini, charState.GetType().ToString().RemovePrefix("MMXOnline."),
+					FontType.WhiteMini, charState.GetType().Name.ToString(),
 					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
 				);
 			}
@@ -2735,8 +2792,12 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual bool canBeHealed(int healerAlliance) {
-		return player.alliance == healerAlliance && alive && health < maxHealth;
+	public virtual bool canBeHealed(int healerAlliance = -1) {
+		return (player.alliance == healerAlliance || healerAlliance == -1) && alive && health < maxHealth;
+	}
+
+	public virtual bool canBeShielded(int healerAlliance = -1) {
+		return(player.alliance == healerAlliance || healerAlliance == -1) && alive;
 	}
 
 	public virtual void heal(
@@ -2796,16 +2857,14 @@ public partial class Character : Actor, IDamagable {
 	public virtual void applyDamage(
 		float fDamage, Player? attacker, Actor? actor, int? weaponIndex, int? projId
 	) {
+		// To see lifebars of enemies.
 		onDamageHpDisplayActivation(fDamage, attacker, projId);
-
 		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
 		}
 		// Apply mastery level before any reduction.
-		if (this is not Blues && attacker != null &&
-			attacker != player && attacker != Player.stagePlayer
-		) {
+		if (attacker != null && attacker != player && attacker != Player.stagePlayer) {
 			if (fDamage < Damager.ohkoDamage) {
 				mastery.addDefenseExp(fDamage);
 				attacker.mastery.addDamageExp(fDamage, true);
@@ -2821,14 +2880,6 @@ public partial class Character : Actor, IDamagable {
 		if (fDamage > 0 && charState is DarkHoldState dhs && dhs.stateFrames > 10 && !Damager.isDot(projId)) {
 			changeToIdleOrFall();
 		}
-		if (Global.level.isRace() &&
-			fDamage != Damager.envKillDamage &&
-			fDamage != Damager.switchKillDamage &&
-			attacker != player
-		) {
-			fDamage = 0;
-		}
-
 		// Chip stuff.
 		Character? enemyChar = (actor as Projectile)?.ownerActor as Character ?? attacker?.character;
 		fDamage = chips.onDamage.Invoke(this, fDamage, actor, attacker, enemyChar);
@@ -2837,6 +2888,7 @@ public partial class Character : Actor, IDamagable {
 		decimal damage = decimal.Parse(fDamage.ToString());
 		decimal originalDamage = damage;
 		decimal originalHP = health;
+		decimal totalHP = health + shieldManager.totalHealth;
 
 		// Pierce.
 		bool isArmorPiercing = Damager.isArmorPiercing(projId);
@@ -2867,8 +2919,8 @@ public partial class Character : Actor, IDamagable {
 		// This is to defend from overkill damage.
 		// Or at least attempt to.
 		if (damageSavings > 0 &&
-			health - damage <= 0 &&
-			(health + damageSavings) - damage > 0
+			totalHP - damage <= 0 &&
+			(totalHP + damageSavings) - damage > 0
 		) {
 			// Apply in the normal way.
 			while (damageSavings >= 1) {
@@ -2887,6 +2939,11 @@ public partial class Character : Actor, IDamagable {
 		// If somehow the damage is negative.
 		// Heals are not really applied here.
 		if (damage < 0) { damage = 0; }
+		// First pass-trough the shield.
+		if (shieldManager.totalHealth > 0) {
+			damage = shieldManager.applyDamage(damage);
+		}
+		// Then apply to HP directly.
 		health -= damage;
 		// Clamp to 0. We do not want to go into the negatives here.
 		if (health < 0) {
@@ -3114,6 +3171,7 @@ public partial class Character : Actor, IDamagable {
 		if (flag != null) {
 			flag.dropFlag();
 			flag = null;
+			dropFlagCooldown = 1;
 		}
 	}
 
@@ -3172,7 +3230,10 @@ public partial class Character : Actor, IDamagable {
 		bool disableRpc = false, bool doRpcEvenIfNotOwned = false,
 		bool favorDefenderProjDestroy = false
 	) {
-		base.destroySelf(spriteName, fadeSound, disableRpc, doRpcEvenIfNotOwned);
+		base.destroySelf(
+			spriteName, fadeSound, disableRpc,
+			doRpcEvenIfNotOwned, favorDefenderProjDestroy
+		);
 
 		player.removeOwnedGrenades();
 		player.removeOwnedIceStatues();
@@ -3276,62 +3337,13 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void updateParasite() {
-		if (parasiteTime <= 0) {
-			return;
-		}
-		slowdownTime = Math.Max(slowdownTime, 0.05f);
 
-		if (charState is not ParasiteCarry && parasiteTime > 1.5f) {
-			foreach (var otherPlayer in Global.level.players) {
-				if (otherPlayer.character == null ||
-					otherPlayer == player ||
-					otherPlayer == parasiteDamager?.owner ||
-					otherPlayer.character.isDebuffImmune() ||
-					Global.level.gameMode.isTeamMode &&
-					otherPlayer.alliance != player.alliance ||
-					otherPlayer.character.getCenterPos().distanceTo(getCenterPos()) >
-					ParasiticBomb.carryRange
-				) {
-					continue;
-				}
-				Character target = otherPlayer.character;
-				changeState(new ParasiteCarry(target, true));
-				break;
-			}
-		}
-
-		if (parasiteAnim != null) {
-			if (parasiteAnim.sprite.name == "parasitebomb_latch_start" && parasiteAnim.isAnimOver()) {
-				parasiteAnim.changeSprite("parasitebomb_latch", true);
-			}
-			parasiteAnim.changePos(getParasitePos());
-		}
-
-		parasiteTime += Global.spf;
-		float mashValue = player.mashValue();
-		if (mashValue > Global.spf) {
-			parasiteMashTime += mashValue;
-		}
-		if (isDebuffImmune() || isStunImmune()) {
-			removeParasite(true, false);
-		} else if (parasiteMashTime > 5) {
-			removeParasite(true, false);
-		} else if (parasiteTime > 2 && charState is not ParasiteCarry) {
-			removeParasite(false, false);
-		}
 	}
 
 	public void removeParasite(bool ejected, bool carried) {
 
 	}
 
-	// DANGER WRAP SECTION
-	public bool hasBubble => ownedByLocalPlayer ? bigBubble != null : hasBubbleNet;
-	public bool hasBubbleNet;
-	public float dWrappedTime;
-	public Damager? dWrapDamager;
-	public DWrapBigBubble? bigBubble;
-	public bool disguiseCoverBlown = true;
 
 	public void addBubble(Player attacker) {
 		if (isSlowImmune() || isStunImmune()) return;
@@ -3549,14 +3561,15 @@ public partial class Character : Actor, IDamagable {
 		if (position == GameMode.HUDHealthPosition.Right) {
 			drawDir = -1;
 		}
-		Point drawPos = GameMode.getHUDBuffPosition(position) + offset; 
+		Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+		drawPos.x += secondBarOffset;
 
 		// Disarray.
 		if (disarrayStacks.Count >= 2) {
 			DisarrayStack lowerStack = disarrayStacks.MinBy(
 				(KeyValuePair <string, DisarrayStack> kvp) => kvp.Value.time
 			).Value;
-			drawBuff(
+			drawDebuff(
 				drawPos, lowerStack.time / lowerStack.maxTime,
 				"hud_buffs", 0
 			);
@@ -3571,7 +3584,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Evil Energy.
 		if (this is Bass && player.evilEnergyStacks > 0) {
-			drawBuff(
+			drawDebuff(
 				drawPos, player.evilEnergyTime / player.evilEnergyMaxTime,
 				"hud_weapon_icon_bass", 14
 			);
@@ -3579,8 +3592,14 @@ public partial class Character : Actor, IDamagable {
 			drawPos.x += 18 * drawDir;
 		}
 		foreach (Buff buff in buffList) {
-			drawBuff(
-				drawPos, buff.time / buff.maxTime,
+			float percent = buff.time / buff.maxTime;
+			var dfunct = drawDebuff;
+			if (buff.isBuff) {
+				percent = 1 - percent;
+				dfunct = drawBuff;
+			}
+			dfunct(
+				drawPos, percent,
 				buff.iconName, buff.iconIndex
 			);
 			secondBarOffset += 18 * drawDir;
@@ -3593,7 +3612,7 @@ public partial class Character : Actor, IDamagable {
 			int icon = at.iconIndex;
 			string sprite = at.sprite;
 
-			drawBuff(drawPos, cd / maxCd, sprite, icon);
+			drawDebuff(drawPos, cd / maxCd, sprite, icon);
 
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
@@ -3601,6 +3620,10 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void drawBuff(Point pos, float cooldown, string sprite, int index) {
+		Global.sprites[sprite].drawToHUD(index, pos.x, pos.y);
+		GameMode.drawWeaponSlotCooldownR(pos.x, pos.y, cooldown);
+	}
+	public void drawDebuff(Point pos, float cooldown, string sprite, int index) {
 		Global.sprites[sprite].drawToHUD(index, pos.x, pos.y);
 		GameMode.drawWeaponSlotCooldown(pos.x, pos.y, cooldown);
 	}
@@ -3636,11 +3659,15 @@ public partial class Character : Actor, IDamagable {
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
 		float fhpAlpha = (float)(floatCurHP - curHP);
-		decimal savings = curHP + (damageSavings / modifier);
+		decimal shield = (shieldManager.totalHealth / modifier);
+		decimal savings = Math.Max(curHP, shield) + (damageSavings / modifier);
 
 		for (var i = 0; i < Math.Ceiling(maxHP); i++) {
 			// Draw HP
-			if (i < curHP) {
+			if (i < shield && i < savings) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY);
+			}
+			else if (i < curHP) {
 				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
 			}
 			else if (i < savings) {
@@ -3650,6 +3677,10 @@ public partial class Character : Actor, IDamagable {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 				if (i < ceilCurHP) {
 					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
+				}
+				if (i < shield) {
+					float alpha = (float)(shield % 1);
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, alpha);
 				}
 			}
 			baseY -= 2;
@@ -3689,6 +3720,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual Point renderMiniHUD(Point offset) {
 		// Values.
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
 		float scale = getMiniHudScale();
 		int maxBarAmmo = getMiniWeaponLength();
 		float hp = (float)health / scale;
@@ -3705,46 +3737,54 @@ public partial class Character : Actor, IDamagable {
 			// Border.
 			DrawWrappers.DrawRect(
 				offset.x + 1, offset.y - 4, offset.x + maxBarAmmo * 2, offset.y - 1,
-				true, new Color(49, 49, 49), 1, ZIndex.HUD - 100, outlineColor: new Color(0, 0, 0)
+				true, new Color(49, 49, 49), 1, zPos, outlineColor: new Color(0, 0, 0)
 			);
 			// Weapon.
-			if (currentWeapon != null && currentWeapon.drawAmmo) {
-				float displayAmmo = currentWeapon.ammo / currentWeapon.ammoDisplayScale / scale;
-				float displayMaxAmmo = currentWeapon.maxAmmo / currentWeapon.ammoDisplayScale / scale;
+			var wep = getMiniHudAmmo();
+			if (wep.maxAmmo != 0) {
 				renderMiniHudBorder(offset, color, maxBarAmmo);
-				offset = renderMiniAmmo(offset, 2, displayAmmo, displayMaxAmmo);
+				offset = renderMiniBar(offset, 2, wep.ammo / scale, wep.maxAmmo / scale);
 			} else {
 				renderMiniHudBorder(offset, color, maxBarAmmo);
-				offset = renderMiniAmmo(offset, 3, maxBarAmmo, maxBarAmmo);
+				offset = renderMiniBar(offset, 3, maxBarAmmo, maxBarAmmo);
+			}
+			// TODO: Move this to bass.cs
+			if (this is Bass bass && (bass.isTrebbleBoost || bass.isSuperBass)) {
+				Point bpos = offset.addxy(maxBarAmmo * 2, -1);
+				Fonts.drawText(
+					FontType.WhiteMini, $"{bass.phase}", bpos.x, bpos.y,
+					Alignment.Left, true, depth: zPos + 1
+				);
 			}
 		}
 		// Health.
 		renderMiniHudBorder(offset, color, mHp);
-		offset = renderMiniAmmo(offset, 1, hp, mHp);
+		offset = renderMiniBar(offset, 1, hp, mHp);
 		// Return offset.
 		return new Point(offset.x, offset.y);
 	}
-
 	
 	public virtual void renderMiniHudBorder(Point offset, Color? color, float ammo) {
 		if (color == null) {
 			return;
 		}
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
 		DrawWrappers.DrawRect(
 			offset.x, offset.y - 5, offset.x + 1 + ammo * 2, offset.y,
-			false, color.Value, 1, ZIndex.HUD - 101
+			false, color.Value, 1, zPos - 1
 		);
 		DrawWrappers.DrawRect(
 			offset.x - 1, offset.y - 6, offset.x + 2 + ammo * 2, offset.y + 1,
-			false, Color.Black, 1, ZIndex.HUD - 102
+			false, Color.Black, 1, zPos - 2
 		);
 	}
 
-	public virtual Point renderMiniAmmo(Point offset, int color, float ammo, float maxAmmo) {
+	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo) {
 		float cAmmo = MathF.Ceiling(ammo);
 		float fAmmo = MathF.Floor(ammo);
 		float aAlpha = ammo - fAmmo;
 		float mAmmo = MathF.Floor(maxAmmo);
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
 		if (ammo == maxAmmo) {
 			fAmmo = mAmmo;
 		}
@@ -3752,11 +3792,11 @@ public partial class Character : Actor, IDamagable {
 		for (int i = 0; i < mAmmo; i++) {
 			int id = i < fAmmo ? color : 0;
 			Global.sprites["hud_bar_small_h"].draw(
-				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, ZIndex.HUD - 100
+				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
 			);
 			if (i >= fAmmo && i < cAmmo) {
 				Global.sprites["hud_bar_small_h"].draw(
-					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, ZIndex.HUD - 100
+					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos
 				);
 			}
 			lpos.x += 1;
@@ -3768,6 +3808,16 @@ public partial class Character : Actor, IDamagable {
 	public virtual int getMiniLifebarLength() {
 		int max = MathInt.Ceiling(maxHealth / (decimal)getMiniHudScale());
 		return Math.Max(getMiniWeaponLength(), max);
+	}
+
+	public virtual (float ammo, float maxAmmo) getMiniHudAmmo() {
+		if (currentWeapon == null || !currentWeapon.drawAmmo) {
+			return (0, 0);
+		}
+		return (
+			currentWeapon.ammo / currentWeapon.ammoDisplayScale,
+			currentWeapon.maxAmmo / currentWeapon.ammoDisplayScale
+		);
 	}
 
 	public virtual int getMiniWeaponLength() {
@@ -3796,6 +3846,8 @@ public partial class Character : Actor, IDamagable {
 	public virtual Point renderPlayerName(Point offset, bool useColor = false) {
 		string playerName = player.name;
 		Color nameColor = Color.White;
+		long zPos = ZIndex.HUD - 200 + player.id * 5;
+
 		if (useColor &&
 			Global.level.gameMode.isTeamMode &&
 			player.alliance < Global.level.teamNum &&
@@ -3807,7 +3859,7 @@ public partial class Character : Actor, IDamagable {
 
 		Fonts.drawText(
 			FontType.WhiteMini, playerName, textPos.x, textPos.y,
-			Alignment.Left, true, depth: ZIndex.HUD, color: nameColor
+			Alignment.Left, true, depth: zPos, color: nameColor
 		);
 		return offset.addxy(0, -12);
 	}
@@ -3898,21 +3950,17 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)burnStunStacks);
 			boolMask[7] = true;
 		}
-		if (rootTime > 0) {
-			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
-			boolMaskB[0] = true;
-		}
-		if (player.evilEnergyStacks > 0) {
-			customData.Add((byte)MathF.Ceiling(player.evilEnergyStacks));
-			boolMaskB[1] = true;
-		}
-		if (player.evilEnergyTime > 0) {
-			customData.Add((byte)MathF.Ceiling(player.evilEnergyTime));
-			boolMaskB[2] = true;
-		}
 		if (player.evilEnergyHP > 0) {
 			customData.Add((byte)MathF.Ceiling((float)player.evilEnergyHP));
-			boolMaskB[3] = true;
+			boolMaskB[0] = true;
+		}
+		if (rootTime > 0) {
+			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
+			boolMaskB[1] = true;
+		}
+		if (slowdownTime > 0) {
+			customData.Add((byte)MathInt.Ceiling(slowdownTime / 2f));
+			boolMaskB[2] = true;
 		}
 
 		// Add the final value of the bool mask.
@@ -4003,24 +4051,19 @@ public partial class Character : Actor, IDamagable {
 			burnStunStacks = data[pos];
 			pos++;
 		}
-		rootTime = 0;
+		player.evilEnergyHP = 0;
 		if (boolMaskB[0]) {
+			player.evilEnergyHP = data[pos];
+			pos++;
+		}
+		rootTime = 0;
+		if (boolMaskB[1]) {
 			rootTime = data[pos] * 2;
 			pos++;
 		}
-		player.evilEnergyStacks = 0;
-		if (boolMaskB[1]) {
-			player.evilEnergyStacks = data[pos];
-			pos++;
-		}
-		player.evilEnergyTime = 0;
+		slowdownTime = 0;
 		if (boolMaskB[2]) {
-			player.evilEnergyTime = data[pos];
-			pos++;
-		}
-		player.evilEnergyHP = 0;
-		if (boolMaskB[3]) {
-			player.evilEnergyHP = data[pos];
+			slowdownTime = data[pos] * 2;
 			pos++;
 		}
 	}
@@ -4048,6 +4091,7 @@ public class Buff {
 	public float time;
 	public string iconName;
 	public int iconIndex;
+	public Action<Buff, Character>? update;
 
 	public Buff(string iconName, int iconIndex, bool isBuff, float time, float maxTime) {
 		this.iconName = (iconName ?? "");

@@ -41,13 +41,11 @@ public class GyroAttackProj : Projectile {
 	public GyroAttackProj(
 		Actor owner, Point pos, int xDir, bool air, ushort? netId, 
 		bool rpc = false, Player? altPlayer = null
-	) :
-	base(
+	) : base(
 		pos, xDir, owner, "gyro_attack_proj", netId, altPlayer
 	) {
 		maxTime = 1;
 		projId = (int)BluesProjIds.GyroAttack;
-		netOwner = altPlayer;
 		fadeOnAutoDestroy = true;
 		canBeLocal = false;
 
@@ -72,9 +70,9 @@ public class GyroAttackProj : Projectile {
 
 	public override void update() {
 		base.update();
-		int iyDir = netOwner.input.getYDir(netOwner);
+		int iyDir = ownerPlayer.input.getYDir(ownerPlayer);
 
-		if (iyDir != 0 && !changedDir && netOwner != null || time >= 35/60f && !changedDir) {
+		if (iyDir != 0 && !changedDir || time >= 35/60f && !changedDir) {
 			if (iyDir == 0) {
 				iyDir = defaultDir;
 			}

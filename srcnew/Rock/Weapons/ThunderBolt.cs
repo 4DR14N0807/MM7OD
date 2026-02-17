@@ -29,17 +29,17 @@ public class ThunderBolt : Weapon {
 		Player player = rock.player;
 		ushort netId = player.getNextActorNetId();
 
-		new ThunderBoltProj(rock, shootPos, xDir, netId, 0, false, true);
+		new ThunderBoltRmProj(rock, shootPos, xDir, netId, 0, false, true);
 		rock.playSound("thunder_bolt", sendRpc: true);
 	}
 }
-public class ThunderBoltProj : Projectile {
+public class ThunderBoltRmProj : Projectile {
 	public int type = 0;
 	float projSpeed = 300;
 	Actor ownChr = null!;
 	bool pierce;
 
-	public ThunderBoltProj(
+	public ThunderBoltRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		int type, bool pierce, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -71,7 +71,7 @@ public class ThunderBoltProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new ThunderBoltProj(
+		return new ThunderBoltRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
 			arg.extraData[0], arg.extraData[1] == 1, altPlayer: arg.player
 		);
@@ -83,7 +83,7 @@ public class ThunderBoltProj : Projectile {
 
 		if (type == 0) {
 			if (isAnimOver()) {
-				new ThunderBoltProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 1, pierce, rpc: true);
+				new ThunderBoltRmProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 1, pierce, rpc: true);
 				destroySelfNoEffect();
 			}
 		}
@@ -96,7 +96,7 @@ public class ThunderBoltProj : Projectile {
 		}
 		if (pierce) return;
 		if (type == 1) {
-			new ThunderBoltSplitProj(ownChr, pos.addxy(xDir * 24, 0), xDir, damager.owner.getNextActorNetId(true), 0, true);
+			new ThunderBoltSplitRmProj(ownChr, pos.addxy(xDir * 24, 0), xDir, damager.owner.getNextActorNetId(true), 0, true);
 		}
 	}
 
@@ -108,12 +108,12 @@ public class ThunderBoltProj : Projectile {
 	}
 }
 
-public class ThunderBoltSplitProj : Projectile {
+public class ThunderBoltSplitRmProj : Projectile {
 	public int type = 0;
 	public float sparkleTime = 0;
 	float projSpeed = 300;
 	Actor ownChr = null!;
-	public ThunderBoltSplitProj(
+	public ThunderBoltSplitRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		int type, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -149,7 +149,7 @@ public class ThunderBoltSplitProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new ThunderBoltSplitProj(
+		return new ThunderBoltSplitRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
 			arg.extraData[0], altPlayer: arg.player
 		);
@@ -167,8 +167,8 @@ public class ThunderBoltSplitProj : Projectile {
 		}
 		if (type == 0) {
 			if (isAnimOver()) {
-				new ThunderBoltSplitProj(ownChr, pos.addxy(0, -24), xDir, damager.owner.getNextActorNetId(true), 1, rpc: true);
-				new ThunderBoltSplitProj(ownChr, pos.addxy(0, 24), xDir, damager.owner.getNextActorNetId(true), 2, rpc: true);
+				new ThunderBoltSplitRmProj(ownChr, pos.addxy(0, -24), xDir, damager.owner.getNextActorNetId(true), 1, rpc: true);
+				new ThunderBoltSplitRmProj(ownChr, pos.addxy(0, 24), xDir, damager.owner.getNextActorNetId(true), 2, rpc: true);
 				//new ThunderBoltProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 0, true, true);
 				destroySelfNoEffect();
 			}

@@ -166,7 +166,7 @@ public class JunkShieldPiece : Anim {
 		for (int i = 0; i < 3; i++) {
 			//Main pices
 			float ang = 85 * i;
-			var parent = new JunkShieldProj(rock, wep, pos, xDir, ang, player.getNextActorNetId(), true, player)
+			var parent = new JunkShieldRmProj(rock, wep, pos, xDir, ang, player.getNextActorNetId(), true, player)
 			{ frameIndex = 5, isParent = true };
 
 			for (int j = 0; j < 2; j++) {
@@ -176,7 +176,7 @@ public class JunkShieldPiece : Anim {
 				int frame = small ? Helpers.randomRange(0, 1) : Helpers.randomRange(2, 4);
 				if (MathF.Ceiling(angs) % 85 == 0 || angs == 0) angs -= 12;
 
-				var son = new JunkShieldProj(rock, wep, pos, xDir, angs, player.getNextActorNetId(), true, player)
+				var son = new JunkShieldRmProj(rock, wep, pos, xDir, angs, player.getNextActorNetId(), true, player)
 				{ frameIndex = frame, smallestSon = small, alpha = small ? 0.5f : 1 };
 
 				son.parent = parent;
@@ -187,11 +187,11 @@ public class JunkShieldPiece : Anim {
 }
 
 
-public class JunkShieldProj : Projectile {
+public class JunkShieldRmProj : Projectile {
 
-	public JunkShieldProj? parent;
+	public JunkShieldRmProj? parent;
 	public bool isParent;
-	public List<JunkShieldProj?> sons = new();
+	public List<JunkShieldRmProj?> sons = new();
 	public bool smallestSon;
 	bool threw;
 	Player? player;
@@ -199,7 +199,7 @@ public class JunkShieldProj : Projectile {
 	float ang;
 	float radius = 30;
 	Weapon wep = null!;
-	public JunkShieldProj(
+	public JunkShieldRmProj(
 		Actor owner, Weapon wep, Point pos, int xDir, float ang, 
 		ushort? netProjId, bool rpc = false, Player? altPlayer = null 
 	) : base(
@@ -235,7 +235,7 @@ public class JunkShieldProj : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new JunkShieldProj(
+		return new JunkShieldRmProj(
 			arg.owner, JunkShield.netWeapon, arg.pos, arg.xDir, 
 			arg.extraData[0], arg.netId, altPlayer: arg.player
 		);
@@ -324,7 +324,7 @@ public class JunkShieldProj : Projectile {
 	public void shoot(float a) {
 		if (rock == null) return;
 
-		new JunkShieldProj2(
+		new JunkShieldRmProj2(
 			rock, pos, xDir, damager.owner.getNextActorNetId(), frameIndex, a, true
 		);
 
@@ -333,8 +333,8 @@ public class JunkShieldProj : Projectile {
 }
 
 
-public class JunkShieldProj2 : Projectile {
-	public JunkShieldProj2(
+public class JunkShieldRmProj2 : Projectile {
+	public JunkShieldRmProj2(
 		Actor owner, Point pos, int xDir, ushort? netId,
 		int fi, float ang, bool rpc = false, Player? altPlayer = null
 	) : base(
@@ -354,7 +354,7 @@ public class JunkShieldProj2 : Projectile {
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new JunkShieldProj2(
+		return new JunkShieldRmProj2(
 			arg.owner, arg.pos, arg.xDir, arg.netId,
 			arg.extraData[0], arg.extraData[1], altPlayer: arg.player
 		);

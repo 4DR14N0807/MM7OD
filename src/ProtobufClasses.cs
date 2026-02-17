@@ -56,12 +56,27 @@ public class TurretResponseModel {
 
 [ProtoContract]
 public class JoinLateResponseModel {
-	[ProtoMember(1)] public List<PlayerPB> players;
+	[ProtoMember(1)] public PlayerPB[] players;
 	[ProtoMember(2)] public ServerPlayer newPlayer;
-	[ProtoMember(3)] public List<ControlPointResponseModel> controlPoints;
-	[ProtoMember(4)] public List<MagnetMineResponseModel> magnetMines;
-	[ProtoMember(5)] public List<TurretResponseModel> turrets;
+	[ProtoMember(3)] public ControlPointResponseModel[] controlPoints;
+	[ProtoMember(4)] public ActorRpcResponse[] lateActors;
 	public JoinLateResponseModel() { }
+}
+
+[ProtoContract]
+public struct ActorRpcResponse {
+	[ProtoMember(1)] public bool isProj;
+	[ProtoMember(2)] public int playerId;
+	[ProtoMember(3)] public int actorId;
+	[ProtoMember(4)] public ushort? ownerId;
+	[ProtoMember(5)] public float posX;
+	[ProtoMember(6)] public float posY;
+	[ProtoMember(7)] public int xDir;
+	[ProtoMember(8)] public ushort netId;
+	[ProtoMember(9)] public float byteAngle;
+	[ProtoMember(10)] public byte[] extraData;
+
+	public ActorRpcResponse() { }
 }
 
 [ProtoContract]
@@ -82,7 +97,8 @@ public class PeriodicHostSyncModel {
 
 [ProtoContract]
 public class PlayerPB {
-	[ProtoMember(1)] public int newAlliance;
+	[ProtoMember(1)] public int alliance;
+	[ProtoMember(2)] public int newAlliance;
 	[ProtoMember(3)] public bool isAI;
 	[ProtoMember(4)] public int newCharNum;
 	[ProtoMember(5)] public ushort curMaxNetId;
@@ -108,6 +124,7 @@ public class PlayerPB {
 
 	public PlayerPB(Player player) {
 		serverPlayer = player.serverPlayer;
+		alliance = player.alliance;
 		newAlliance = player.newAlliance;
 		newCharNum = player.newCharNum;
 		if (player.character != null) {

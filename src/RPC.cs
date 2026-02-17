@@ -160,15 +160,16 @@ public class RPC {
 	}
 
 	public void sendFromServer(NetServer s_server, byte[] bytes) {
-		if (s_server.Connections.Count == 0) return;
-
-		var om = s_server.CreateMessage();
+		if (s_server.Connections.Count == 0) {
+			return;
+		}
+		NetOutgoingMessage om = s_server.CreateMessage();
 		om.Write((byte)templates.IndexOf(this));
 		if (bytes.Length > ushort.MaxValue) {
 			throw new Exception("SendFromServer RPC bytes too big, max ushort.MaxValue");
 		}
 		ushort argCount = (ushort)bytes.Length;
-		var argCountBytes = BitConverter.GetBytes(argCount);
+		byte[] argCountBytes = BitConverter.GetBytes(argCount);
 		om.Write(argCountBytes[0]);
 		om.Write(argCountBytes[1]);
 		if (bytes.Length > 0) {
@@ -332,7 +333,7 @@ public class RPCApplyDamage : RPC {
 		bool crit = arguments[12] == 1;
 		int weaponIndex = arguments[13];
 		int weaponKillFeedIndex = arguments[14];
-		ushort actorId = BitConverter.ToUInt16(arguments[15..17]);
+		ushort netId = BitConverter.ToUInt16(arguments[15..17]);
 		ushort projId = BitConverter.ToUInt16(arguments[17..19]);
 		int linkedMeleeId = arguments[19];
 		bool isLinkedMelee = (linkedMeleeId != byte.MaxValue);
@@ -342,14 +343,14 @@ public class RPCApplyDamage : RPC {
 		Actor? actor = null;
 		// For when the projectile was a melee without a NetID.
 		if (isLinkedMelee) {
-			Actor? mainActor = Global.level.getActorByNetId(actorId, true);
+			Actor? mainActor = Global.level.getActorByNetId(netId, true);
 			if (mainActor != null) {
 				actor = searchMeleeProj(mainActor, linkedMeleeId, player, projId, damage, flinch, hitCooldown);
 			}
 		}
 		// For normal projectiles.
 		else {
-			actor = (actorId == 0 ? null : Global.level.getActorByNetId(actorId, true));
+			actor = (netId == 0 ? null : Global.level.getActorByNetId(netId, true));
 			linkedMeleeId = -1;
 		}
 		if (player == null || victim == null) {
@@ -357,9 +358,9 @@ public class RPCApplyDamage : RPC {
 		}
 
 		// Add code for delayed projectile here.
-		if (actor == null && actorId != 0) {
+		if (actor == null && netId != 0) {
 			Global.level.backloggedDamages.Add(new BackloggedDamage(
-				actorId, linkedMeleeId,
+				netId, linkedMeleeId,
 				(Actor? damagerActor, int linkedMeleeId) => {
 					if (damagerActor != null && linkedMeleeId >= 0) {
 						damagerActor = searchMeleeProj(
@@ -428,12 +429,12 @@ public class RPCApplyDamage : RPC {
 }
 
 public class BackloggedDamage {
-	public ushort actorId;
+	public ushort netId;
 	public int meleeId;
 	public Action<Actor?, int> damageAction;
 	public float time;
-	public BackloggedDamage(ushort actorId, int meleeId, Action<Actor?, int> damageAction) {
-		this.actorId = actorId;
+	public BackloggedDamage(ushort netId, int meleeId, Action<Actor?, int> damageAction) {
+		this.netId = netId;
 		this.meleeId = meleeId;
 		this.damageAction = damageAction;
 
@@ -745,8 +746,9 @@ public class RPCActorToggle : RPC {
 			else if (actor is InfinityGigProj rpp2) rpp2.reversed = true;
 		} else if (toggleId == RPCActorToggleType.DropFlagManual) {
 			if (Global.isHost && actor is Character chr) {
-				chr.dropFlag();
-				chr.dropFlagCooldown = 1;
+				if (chr.flag != null) {
+					chr.dropFlag();
+				}
 			}
 		} else if (toggleId == RPCActorToggleType.AwardCurrency) {
 			if (actor is Character chr) {
@@ -930,116 +932,6 @@ public class RPCReflectProj : RPC {
 		angle = Helpers.to360(angle);
 		angle *= 0.5f;
 		Global.serverClient?.rpc(reflectProj, netIdBytes[0], netIdBytes[1], (byte)reflecterPlayerId, (byte)(int)(angle));
-	}
-}
-
-public class RPCJoinLateRequest : RPC {
-	public RPCJoinLateRequest() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		isPreUpdate = true;
-		toHostOnly = true;
-	}
-
-	public override void invoke(params byte[] arguments) {
-		var serverPlayer = Helpers.deserialize<ServerPlayer>(arguments);
-
-		Global.level.addPlayer(serverPlayer, true);
-
-		/*
-		foreach (var player in Global.level.players) {
-			player.charNetId = null;
-			if (player.character != null) {
-				//player.charNetId = player.character.netId;
-				player.charXPos = player.character.pos.x;
-				player.charYPos = player.character.pos.y;
-				player.charXDir = player.character.xDir;
-				//player.charRollingShieldNetId = player.character.chargedRollingShieldProj?.netId;
-			}
-		}
-		*/
-
-		var controlPoints = new List<ControlPointResponseModel>();
-		foreach (var cp in Global.level.controlPoints) {
-			controlPoints.Add(new ControlPointResponseModel() {
-				alliance = cp.alliance,
-				num = cp.num,
-				locked = cp.locked,
-				captured = cp.captured,
-				captureTime = cp.captureTime
-			});
-		}
-
-		var magnetMines = new List<MagnetMineResponseModel>();
-		foreach (var go in Global.level.gameObjects) {
-			var magnetMine = go as MagnetMineProj;
-			if (magnetMine != null && magnetMine.netId != null && magnetMine.player != null) {
-				magnetMines.Add(new MagnetMineResponseModel() {
-					x = magnetMine.pos.x,
-					y = magnetMine.pos.y,
-					netId = magnetMine.netId.Value,
-					playerId = magnetMine.player.id
-				});
-			}
-		}
-
-		var turrets = new List<TurretResponseModel>();
-		foreach (var go in Global.level.gameObjects) {
-			var turret = go as RaySplasherTurret;
-			if (turret != null && turret.netId != null && turret.netOwner != null) {
-				turrets.Add(new TurretResponseModel() {
-					x = turret.pos.x,
-					y = turret.pos.y,
-					netId = turret.netId.Value,
-					playerId = turret.netOwner.id
-				});
-			}
-		}
-
-		var joinLateResponseModel = new JoinLateResponseModel() {
-			players = Global.level.players.Select(p => new PlayerPB(p)).ToList(),
-			newPlayer = serverPlayer,
-			controlPoints = controlPoints,
-			magnetMines = magnetMines,
-			turrets = turrets
-		};
-
-		Global.serverClient?.rpc(RPC.joinLateResponse, Helpers.serialize(joinLateResponseModel));
-	}
-}
-
-public class RPCJoinLateResponse : RPC {
-	public RPCJoinLateResponse() {
-		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
-		levelless = true;
-		allowBreakMtuLimit = true;
-	}
-
-	public override void invoke(params byte[] arguments) {
-		JoinLateResponseModel? joinLateResponseModel = null;
-		try {
-			joinLateResponseModel = Helpers.deserialize<JoinLateResponseModel>(arguments);
-		} catch {
-			try {
-				Logger.logEvent(
-					"error",
-					"Bad joinLateResponseModel bytes. name: " +
-					Options.main.playerName + ", match: " + Global.level?.server?.name +
-					", bytes: " + arguments.ToString()
-				);
-				//Console.Write(message); 
-			} catch { }
-			throw;
-		}
-
-		// Original requester
-		if (Global.serverClient.serverPlayer.id == joinLateResponseModel.newPlayer.id) {
-			Global.level.joinedLateSyncPlayers(joinLateResponseModel.players);
-			Global.level.joinedLateSyncControlPoints(joinLateResponseModel.controlPoints);
-			Global.level.joinedLateSyncMagnetMines(joinLateResponseModel.magnetMines);
-			Global.level.joinedLateSyncTurrets(joinLateResponseModel.turrets);
-		} else {
-			Global.level.addPlayer(joinLateResponseModel.newPlayer, true);
-		}
 	}
 }
 

@@ -5,14 +5,17 @@ namespace MMXOnline;
 
 public class BassBuster : Weapon {
 	public static BassBuster netWeapon = new();
-	public List<BassBusterProj> lemonsOnField = new List<BassBusterProj>();
+	public int maxSteams = 4;
+	public List<float> cooldowns = [];
+	// Firerate * 6;
+	public int streamCooldown = 28;
 
 	public BassBuster() : base() {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.BassBuster;
 		displayName = "BASS BUSTER";
 		weaponSlotIndex = index;
-		fireRate = 6;
+		fireRate = 5;
 		isStream = true;
 		drawAmmo = false;
 		drawCooldown = false;
@@ -28,19 +31,18 @@ public class BassBuster : Weapon {
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
-		if (!base.canShoot(chargeLevel, player)) return false;
-		if (chargeLevel > 1) {
-			return true;
-		}
-		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
-			if (lemonsOnField[i].destroyed) {
-				lemonsOnField.RemoveAt(i);
-				continue;
-			}
-		}
-		return lemonsOnField.Count < 4;
+		return cooldowns.Count < maxSteams;
 	}
 
+	public override void update() {
+		base.update();
+		for (int i = cooldowns.Count - 1; i >= 0; i--) {
+			cooldowns[i] -= Global.speedMul;
+			if (cooldowns[i] <= 0) {
+				cooldowns.RemoveAt(i);
+			}
+		}
+	}
 
 	public override void shoot(Character character, params int[] args) {
 		if (character is not Bass bass) {
@@ -50,11 +52,11 @@ public class BassBuster : Weapon {
 		Player player = character.player;
 
 		if (!player.ownedByLocalPlayer) return;
-
-		var proj = new BassBusterProj(bass, shootPos, bass.getShootAngle(), player.getNextActorNetId(), true);
+		new BassBusterProj(bass, shootPos, bass.getShootAngle(), player.getNextActorNetId(), true);
 		new Anim(shootPos, "bass_buster_anim", character.xDir, player.getNextActorNetId(), true, true);
-		lemonsOnField.Add(proj);
 		character.playSound("bassbuster", true);
+
+		cooldowns.Add(streamCooldown);
 	}
 }
 
@@ -67,7 +69,7 @@ public class BassBusterProj : Projectile {
 	) {
 		projId = (int)BassProjIds.BassLemon;
 		byteAngle = MathF.Round(byteAngle);
-		maxTime = 0.7f;
+		maxTime = 0.5f;
 		this.byteAngle = byteAngle;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
 		destroyOnHitWall = true;

@@ -104,7 +104,11 @@ public partial class Global {
 			#endif
 			window.SetVerticalSyncEnabled(options.vsync);
 			window.Position = new Vector2i(0, 0);
-			window.Size = new Vector2u(desktopWidth, desktopHeight);
+			if (Options.main.fullScreenIntelCompat && Options.main.integerFullscreen) {
+				window.Size = new Vector2u(desktopWidth, desktopHeight + 1);
+			} else {
+				window.Size = new Vector2u(desktopWidth, desktopHeight);	
+			}
 			viewPort = getFullScreenViewPort();
 		}
 
@@ -133,17 +137,20 @@ public partial class Global {
 	}
 
 	public static FloatRect getFullScreenViewPort() {
-		float desktopWidth = VideoMode.DesktopMode.Width;
-		float desktopHeight = VideoMode.DesktopMode.Height;
-		float heightMultiple = VideoMode.DesktopMode.Height / (float)screenH;
+		float desktopWidth = window.Size.X;
+		float desktopHeight = window.Size.Y;
+		float heightMultiple = window.Size.Y / (float)screenH;
 
 		if (Options.main.integerFullscreen) {
-			heightMultiple = MathF.Floor(VideoMode.DesktopMode.Height / (float)screenH);
+			heightMultiple = MathF.Floor(window.Size.Y / (float)screenH);
 		}
 		float extraWidthPercent = (desktopWidth - screenW * heightMultiple) / desktopWidth;
 		float extraHeightPercent = (desktopHeight - screenH * heightMultiple) / desktopHeight;
 
-		return new FloatRect(extraWidthPercent / 2f, extraHeightPercent / 2f, 1f - extraWidthPercent, 1f - extraHeightPercent);
+		return new FloatRect(
+			extraWidthPercent / 2f, extraHeightPercent / 2f,
+			1f - extraWidthPercent, 1f - extraHeightPercent
+		);
 	}
 
 	public static float getDebugFontScale() {

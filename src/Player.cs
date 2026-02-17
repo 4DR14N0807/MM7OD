@@ -445,6 +445,7 @@ public partial class Player {
 	public ShaderWrapper breakManShader = Helpers.cloneGenericPaletteShader("blues_hyperpalette");
 	public ShaderWrapper bluesScarfShader = Helpers.cloneGenericPaletteShader("blues_palette_texture");
 	public ShaderWrapper bassPaletteShader = Helpers.cloneGenericPaletteShader("bass_palette_texture");
+	public ShaderWrapper superBassPaletteShader = Helpers.cloneGenericPaletteShader("bass_superadaptor_palette");
 
 	// Character specific data populated on RPC request
 	//public ushort? charNetId;
@@ -661,15 +662,15 @@ public partial class Player {
 	}
 
 	public static float getHpMod() {
-		if (Global.level.server.customMatchSettings != null) {
-			return Global.level.server.customMatchSettings.healthModifier;
+		if (Global.customSettings != null) {
+			return Global.customSettings.healthModifier / 8f;
 		}
 		return 1;
 	}
 
 	public static decimal getHpDMod() {
-		if (Global.level.server.customMatchSettings != null) {
-			return (decimal)Global.level.server.customMatchSettings.healthModifier;
+		if (Global.customSettings != null) {
+			return (decimal)(Global.customSettings.healthModifier / 8f);
 		}
 		return 1;
 	}
@@ -686,16 +687,11 @@ public partial class Player {
 
 	public static float getModifiedHealth(float health) {
 		if (Global.level.server.customMatchSettings != null) {
-			float retHp = MathF.Ceiling(health * getHealthModifier());
-			float retHpFloor = MathF.Floor(health / getHealthModifier());
-			float retHpCelling = MathF.Ceiling(health / getHealthModifier());
-			if (retHpFloor < retHpCelling) {
-				retHp = MathF.Ceiling(retHpCelling * getHealthModifier());
-			}
+			float retHp = MathF.Ceiling(health * getHpMod());
 			if (retHp < 1) {
 				retHp = 1;
 			}
-			return MathInt.Ceiling(retHp);
+			return retHp;
 		}
 		return MathInt.Ceiling(health);
 	}
@@ -1029,13 +1025,14 @@ public partial class Player {
 					(byte)randomLoadout.weapon1,
 					(byte)randomLoadout.weapon2,
 					(byte)randomLoadout.weapon3,
+					(byte)loadout.bassLoadout.hypermode,
 				];
-			}	
-
+			}
 			return [
 				(byte)loadout.bassLoadout.weapon1,
 				(byte)loadout.bassLoadout.weapon2,
 				(byte)loadout.bassLoadout.weapon3,
+				(byte)loadout.bassLoadout.hypermode,
 			];
 		}
 		return [];
@@ -1114,6 +1111,7 @@ public partial class Player {
 				weapon1 = extraData[0],
 				weapon2 = extraData[1],
 				weapon3 = extraData[2],
+				hypermode = extraData[3],
 			};
 			if (isMainChar) {
 				loadout.bassLoadout = bassLoadout;
@@ -1124,7 +1122,7 @@ public partial class Player {
 				loadout: bassLoadout
 			);
 		} else if (charNum == (int)CharIds.Freezeman) {
-			newChar = new FreezeMan(
+			newChar = new Freezeman(
 				this, pos.x, pos.y, xDir, 
 				true, charNetId, ownedByLocalPlayer
 			);

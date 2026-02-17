@@ -383,7 +383,7 @@ public class ServerClient {
 			!rpcTemplate.allowBreakMtuLimit ||
 			rpcTemplate.netDeliveryMethod == NetDeliveryMethod.Unreliable
 		)) {
-			string rcpName = rpcTemplate.GetType().ToString().RemovePrefix("MMXOnline.");
+			string rcpName = rpcTemplate.GetType().Name.ToString();
 			throw new Exception(
 				$"Error, RPC of type {rcpName} exceeds the MTU.\n" +
 				$"RPC length = {arguments.Length}"

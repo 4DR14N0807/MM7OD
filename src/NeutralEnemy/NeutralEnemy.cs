@@ -12,16 +12,20 @@ public class NeutralEnemy : Actor, IDamagable {
 	public float wSize = 12;
 	public float hSize = 12;
 	public Action<Point>[] killDrops = new Action<Point>[0];
+	public Player ownerPlayer;
 
 	public NeutralEnemyState state;
 
 	public NeutralEnemy(
-		Point pos, ushort netId, bool isLocal,
-		int alliance = GameMode.freelanceAlliance,
-		bool addToLevel = true
+		Point pos, int xDir, Player ownerPlayer, ushort netId,
+		int alliance = GameMode.freelanceAlliance, bool addToLevel = true
 	) : base(
-		null!, pos, netId, isLocal, !addToLevel
+		null!, pos, netId, ownerPlayer.ownedByLocalPlayer, !addToLevel
 	) {
+		// Get player data.
+		this.ownerPlayer = ownerPlayer;
+		netOwner = ownerPlayer;
+		this.xDir = xDir;
 		// Forcefull change sprite to something before we crash.
 		sprite = new Sprite("empty");
 		// We do this to manually call the state change.
@@ -36,6 +40,24 @@ public class NeutralEnemy : Actor, IDamagable {
 
 		this.alliance = alliance;
 		hasStateMachine = true;
+	}
+
+	public override ActorRpcResponse? getActorSerial() {
+		if (netId == null || cActorId == 0) {
+			return null;
+		}
+		return new ActorRpcResponse() {
+			isProj = false,
+			actorId = (int)cActorId,
+			posX = pos.x,
+			posY = pos.y,
+			xDir = xDir,
+			playerId = ownerPlayer.id,
+			netId = netId.Value,
+			byteAngle = byteAngle,
+			ownerId = null,
+			extraData = getActorSerialExtra()
+		};
 	}
 
 	public override void preUpdate() {
@@ -67,9 +89,12 @@ public class NeutralEnemy : Actor, IDamagable {
 		newState.chara = this;
 		// Sprites.
 		string oldSprite = sprite.name;
-		string newSprite = getSprite(sprite.name);
+		string newSprite = getSprite(newState.sprite);
 		if (newSprite != "" && Global.sprites.ContainsKey(newSprite)) {
-			changeSprite(getSprite(newState.sprite), true);
+			changeSprite(newSprite, true);
+		}
+		if (oldSprite == newState.sprite) {
+			sprite.restart();
 		}
 		// Exit/Enter shenanigans.
 		NeutralEnemyState oldState = state;

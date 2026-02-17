@@ -60,7 +60,7 @@ public class BluesUpgradeMenu : IMainMenu {
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 		if (selectArrowPosY > getMaxIndex() - 1) selectArrowPosY = getMaxIndex() - 1;
 
-		if (Global.input.isPressedMenu(Control.MenuConfirm) && mainPlayer.character != null) {
+		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 
 			//LTANKS SECTION
 			if (selectArrowPosX == 0) {

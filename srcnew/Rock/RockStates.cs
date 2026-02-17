@@ -250,9 +250,10 @@ public class RockDoubleJump : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		//character.vel = new Point(jumpSpeedX * character.xDir, jumpSpeedY);
-		anim = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);
-		//Global.playSound("super_adaptor_jump");
+		anim = new Anim(
+			character.pos, "sa_double_jump_effect", character.xDir, 
+			player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1
+		);
 	}
 
 	public override void onExit(CharState? oldState) {
@@ -267,10 +268,6 @@ public class RockDoubleJump : CharState {
 
 		if (anim != null) anim.changePos(character.pos);
 
-		/* CollideData? collideData = Global.level.checkTerrainCollisionOnce(character, character.xDir, 0);
-		if (collideData != null && character.ownedByLocalPlayer) {
-			character.move(new Point(0, jumpSpeedY));
-		} */
 		character.move(new Point(character.xDir * jumpSpeedX, 0));
 		character.move(new Point(0, jumpSpeedY));
 

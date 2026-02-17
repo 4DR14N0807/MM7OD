@@ -157,7 +157,7 @@ public class IceWallProj : Projectile, IDamagable {
 	}
 
 	public override bool canBePlatform(GameObject other) {
-		if (other is RemoteMineProj or RemoteMineLandProj or DangerWrapLandProj or DangerWrapMineProj) {
+		if (other is RemoteMineProj or RemoteMineLandProj or DangerWrapLandRmProj or DangerWrapMineRmProj) {
 			return true;
 		}
 		return (

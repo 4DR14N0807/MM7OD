@@ -52,7 +52,7 @@ public class BassLoadout {
 			weapon2 = 1;
 			weapon3 = 2;
 		}
-		if (hypermode > 1) {
+		if (hypermode > 0) {
 			hypermode = 0;
 		}
 	}
@@ -98,7 +98,7 @@ public class BassWeaponMenu : IMainMenu {
 		[0, 1, 2, 3, 4, 5, 6, 7, 8]
 	];
 	public string[] categoryNames = [
-		"Slot 1", "Slot 2", "Slot 3", "Hypermode"
+		"Slot 1", "Slot 2", "Slot 3"
 	];
 
 	public string[] hypermodeNames = [
@@ -142,7 +142,7 @@ public class BassWeaponMenu : IMainMenu {
 			Global.playSound("menu");
 		} 
 
-		Helpers.menuUpDown(ref cursorRow, 0, 3);
+		Helpers.menuUpDown(ref cursorRow, 0, 2);
 		if (cursorRow < 3) {
 			Helpers.menuLeftRightInc(ref sWeapons[cursorRow], 0, specialWeapons.Length - 1, true, playSound: true);
 		} else {

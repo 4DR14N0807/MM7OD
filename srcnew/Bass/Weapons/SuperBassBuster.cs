@@ -36,8 +36,7 @@ public class SBassBuster : Weapon {
 					() => {
 						new SBassShot(
 							bass, shootPos.addxy(11 * xDir, 0), xDir,
-							player.getNextActorNetId(), true,
-							superBass: bass.isSuperBass || bass.isTrebbleBoost
+							player.getNextActorNetId(), true, superBass: true
 						);
 						character.playSound("buster2", sendRpc: true);
 						shootCooldown = fireRate;
@@ -139,7 +138,7 @@ public class SBassLemon : Projectile {
 		if (xDir < 0) byteAngle = -byteAngle + 128;
 		vel = Point.createFromByteAngle(byteAngle).times(360);
 		damager.damage = 1;
-		damager.hitCooldown = 9;
+		damager.hitCooldown = 5;
 		fadeSprite = "bass_buster_proj_fade";
 		fadeOnAutoDestroy = true;
 
@@ -157,7 +156,6 @@ public class SBassLemon : Projectile {
 }
 
 public class SBassShot : Projectile {
-
 	public SBassShot(
 		Actor owner, Point pos, int xDir, ushort? netId,
 		bool rpc = false, Player? altPlayer = null, bool superBass = false
@@ -535,7 +533,6 @@ public class SweepingLaserProj : Projectile {
 
 
 public class DarkCometUpProj : Projectile {
-
 	Actor? actor;
 	Anim? anim;
 	bool hitWall;
@@ -554,11 +551,10 @@ public class DarkCometUpProj : Projectile {
 		vel.y = -240;
 		yDir *= -1;
 
-		if (ownedByLocalPlayer && owner != null) actor = owner;
-
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+		actor = owner;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

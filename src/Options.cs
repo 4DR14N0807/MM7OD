@@ -18,6 +18,7 @@ public class Options {
 	public bool showSysReqPrompt = true;
 	public bool enableDeveloperConsole;
 	public bool disableChat;
+	public bool smallerChatFont = true;
 	public int fpsMode = 0;
 	public bool cheatWarningShown;
 	public bool disableDoubleDash;
@@ -38,6 +39,7 @@ public class Options {
 	// Video settings
 	public bool fullScreen = false;
 	public bool integerFullscreen = true;
+	public bool fullScreenIntelCompat;
 	public uint windowScale = 2;
 	public bool fastShaders;
 	public bool multithreadMode;
@@ -131,7 +133,6 @@ public class Options {
 
 	private static Options _main = null!;
 	public int? detectedGraphicsPreset;
-
 	public static Options main {
 		get {
 			if (_main == null) {

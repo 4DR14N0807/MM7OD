@@ -55,6 +55,9 @@ public class Fonts {
 			fontDefaultWidth = baseFontData[fontStr][2];
 			fontSpaceWidth = fontDefaultWidth;
 			fontSpacing = baseFontData[fontStr][3];
+			if (baseFontData[fontStr].Length >= 5) {
+				newLineSpacing = baseFontData[fontStr][4];
+			}
 		}
 		// Set up drawing texture.
 		Texture bitmapFontTexture = Global.fontTextures[fontStr];
@@ -154,7 +157,7 @@ public class Fonts {
 		int fontGridSpacing = 1;
 		int fontDefaultWidth = 7;
 		int fontSpacing = 1;
-		int newLineSpacing = 10;
+		int newLineSpacing = 2;
 		int fontSpaceWidth = 8;
 		if (baseFontData.ContainsKey(fontStr)) {
 			fontTextureSize = baseFontData[fontStr][0];
@@ -162,6 +165,9 @@ public class Fonts {
 			fontDefaultWidth = baseFontData[fontStr][2];
 			fontSpaceWidth = fontDefaultWidth;
 			fontSpacing = baseFontData[fontStr][3];
+			if (baseFontData[fontStr].Length >= 5) {
+				newLineSpacing = baseFontData[fontStr][4];
+			}
 		}
 		// Set up drawing texture.
 		Texture bitmapFontTexture = Global.fontTextures[fontStr];

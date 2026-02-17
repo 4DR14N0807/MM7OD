@@ -128,7 +128,10 @@ public class WaveBurnerProj : Projectile {
 			reduceSpeed();
 			new BubbleAnim(pos, "bubbles") { vel = new Point(0, -60) };
 			Global.level.delayedActions.Add(
-				new DelayedAction(() => { new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) }; }, 0.1f)
+					new DelayedAction(() => {
+						new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) };
+					}, 0.1f
+				)
 			);
 		}
 	}
@@ -142,7 +145,10 @@ public class WaveBurnerProj : Projectile {
 		if (inWater) {
 			return;
 		}
-		vel *= 0.6f;
+		if (uniqueHitCount == 0) {
+			uniqueHitCount = 1;
+		}
+		vel *= 0.8f;
 		inWater = true;
 	}
 

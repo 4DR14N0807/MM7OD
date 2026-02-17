@@ -53,7 +53,6 @@ public class HardKnuckleProj : Projectile {
 		destroyOnHit = false;
 		spawnPointX = pos.x;
 		canBeLocal = false;
-		netOwner = altPlayer;
 
 		vel.x = 0.25f * 60 * xDir;
 		damager.damage = 2;
@@ -91,9 +90,8 @@ public class HardKnuckleProj : Projectile {
 			bounceCooldowns[key] = Helpers.clampMin0(bounceCooldowns[key]) - Global.speedMul;
 		}
 		int inputYDir = 0;
-		if (netOwner != null) {
-			inputYDir = netOwner.input.getYDir(netOwner);
-		}
+		inputYDir = ownerPlayer.input.getYDir(ownerPlayer);
+		
 		vel.y = 60 * inputYDir;
 		if (ownedByLocalPlayer && (inputYDir != 0 || bouncing)) {
 			forceNetUpdateNextFrame = true;

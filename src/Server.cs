@@ -219,7 +219,7 @@ public class Server {
 		if (isBot) {
 			serverPlayer = serverPlayer.clone();
 			serverPlayer.isHost = false;
-			serverPlayer.charNum = overrideCharNum ?? Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Bass);
+			serverPlayer.spawnCharNum = overrideCharNum ?? Helpers.randomRange((int)CharIds.Rock, (int)CharIds.Bass);
 			serverPlayer.preferredAlliance = overrideAlliance;
 		}
 
@@ -297,7 +297,7 @@ public class Server {
 			}
 		}
 
-		var syncModel = new PeriodicServerSyncModel() { players = players };
+		PeriodicServerSyncModel syncModel = new PeriodicServerSyncModel() { players = players };
 		byte[] bytes = Helpers.serialize(syncModel);
 		RPC.periodicServerSync.sendFromServer(s_server, bytes);
 	}

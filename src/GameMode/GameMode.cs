@@ -595,7 +595,7 @@ public class GameMode {
 					FontType.WhiteSmall,
 					" " + drawPlayer.currency.ToString(), basePos.x + 40, basePos.y, Alignment.Right
 				);
-				Global.sprites["pickup_bolt_small"].drawToHUD(0, basePos.x + 4, basePos.y + 4);
+				Global.sprites["hud_scrap"].drawToHUD(0, basePos.x, basePos.y);
 			}
 			if (drawPlayer.character is CmdSigma cmdSigma) {
 				int xStart = 11;
@@ -663,20 +663,20 @@ public class GameMode {
 		} else if (level.mainPlayer.isSpectator && !Menu.inMenu) {
 			if (level.specPlayer == null) {
 				Fonts.drawText(
-					FontType.BlueMenu, "Now spectating: (No player to spectate)",
-					 Global.halfScreenW, 190, Alignment.Center
+					FontType.WhiteMini, "Now spectating: (No player to spectate)",
+					 Global.halfScreenW, 190, Alignment.Center, alpha: 128
 				);
 			} else {
 				string deadMsg = level.specPlayer.character == null ? " (Dead)" : "";
 				Fonts.drawText(
-					FontType.BlueMenu, "Now spectating: " + level.specPlayer.name + deadMsg,
-					Global.halfScreenW, 180, Alignment.Center
+					FontType.WhiteMini, "Now spectating: " + level.specPlayer.name + deadMsg,
+					Global.halfScreenW, 190, Alignment.Center, alpha: 128
 				);
 			}
 		} else if (level.mainPlayer.aiTakeover) {
 			Fonts.drawText(
 				FontType.WhiteMini, "AI Takeover active. Press F12 to stop.",
-				Global.halfScreenW, 180, Alignment.Center, color: Color.Red
+				Global.halfScreenW, 180, Alignment.Center, color: Color.Red, alpha: 128
 			);
 		}
 		drawDiagnostics();
@@ -752,8 +752,7 @@ public class GameMode {
 
 	void drawRadar() {
 		if (Global.level.is1v1() ||
-			Global.level.isTraining() ||
-			Global.level.mainPlayer.isSpectator
+			Global.level.isTraining()
 		) {
 			return;
 		}
@@ -1705,43 +1704,6 @@ public class GameMode {
 			var weapon = player.weapons[i];
 			var x = startX + (i * width);
 			var y = startY;
-			if (weapon is HyperCharge hb) {
-				bool canShootHyperBuster = hb.canShootIncludeCooldown(player);
-				Color lineColor = canShootHyperBuster ? Color.White : Helpers.Gray;
-
-				float slotPosX = startX + (player.hyperChargeSlot * width);
-				int yOff = -1;
-
-				// Stretch black
-				DrawWrappers.DrawRect(
-					slotPosX, y - 9 + yOff, x, y - 12 + yOff,
-					true, Color.Black, 1, ZIndex.HUD, false
-				);
-				// Right
-				DrawWrappers.DrawRect(
-					x - 1, y - 7, x + 2, y - 12 + yOff,
-					true, Color.Black, 1, ZIndex.HUD, false
-				);
-				DrawWrappers.DrawRect(
-					x, y - 8, x + 1, y - 11 + yOff,
-					true, lineColor, 1, ZIndex.HUD, false
-				);
-				// Left
-				DrawWrappers.DrawRect(
-					slotPosX - 1, y - 7, slotPosX + 2, y - 12 + yOff,
-					true, Color.Black, 1, ZIndex.HUD, false
-				);
-				DrawWrappers.DrawRect(
-					slotPosX, y - 8, slotPosX + 1, y - 11 + yOff,
-					true, lineColor, 1, ZIndex.HUD, false
-				);
-				// Stretch white
-				DrawWrappers.DrawRect(
-					slotPosX, y - 10 + yOff, x, y - 11 + yOff,
-					true, lineColor, 1, ZIndex.HUD, false
-				);
-				break;
-			}
 		}
 
 		if (player.isGridModeEnabled()) return;
@@ -1905,6 +1867,56 @@ public class GameMode {
 		}
 
 		var slices = new List<List<Point>>(points.Count);
+		for (int i = 0; i < points.Count; i++) {
+			Point nextPoint = i + 1 >= points.Count ? points[0] : points[i + 1];
+			slices.Add(new List<Point>() { new Point(x, y), points[i], nextPoint });
+		}
+
+		for (int i = 0; i < (int)(val * slices.Count); i++) {
+			DrawWrappers.DrawPolygon(slices[i], new Color(0, 0, 0, 164), true, ZIndex.HUD, false);
+		}
+	}
+
+
+	public static void drawWeaponSlotCooldownR(float x, float y, float val) {
+		if (val <= 0) return;
+		val = Helpers.clamp01(val);
+
+		int sliceStep = Options.main.particleQuality switch {
+			0 => 4,
+			1 => 2,
+			_ => 1
+		};
+		int gridLen = 16 / sliceStep;
+		List<Point> points = new List<Point>(gridLen * 4);
+		int startX = 0;
+		int startY = -8;
+		int xDir = 1;
+		int yDir = 0;
+
+		for (int i = 0; i < gridLen * 4; i++) {
+			points.Add(new Point(x + startX, y + startY));
+			startX += sliceStep * xDir;
+			startY += sliceStep * yDir;
+			if (xDir == 1 && startX == 8) {
+				xDir = 0;
+				yDir = 1;
+			}
+			if (yDir == 1 && startY == 8) {
+				yDir = 0;
+				xDir = -1;
+			}
+			if (xDir == -1 && startX == -8) {
+				xDir = 0;
+				yDir = -1;
+			}
+			if (yDir == -1 && startY == -8) {
+				xDir = 1;
+				yDir = 0;
+			}
+		}
+
+		List<List<Point>> slices = new List<List<Point>>(points.Count);
 		for (int i = 0; i < points.Count; i++) {
 			Point nextPoint = i + 1 >= points.Count ? points[0] : points[i + 1];
 			slices.Add(new List<Point>() { new Point(x, y), points[i], nextPoint });
@@ -2228,8 +2240,8 @@ public class GameMode {
 				p => !p.isSpectator && p.deaths < playingTo && p.alliance == alliance
 			).Count();
 		}
-		int[] rows = new int[] { pos.y, pos.y + 10, pos.y + 24 };
-		int[] cols = new int[] { pos.x, pos.x + 72, pos.x + 88, pos.x + 104 };
+		int[] rows = [pos.y, pos.y + 10, pos.y + 24];
+		int[] cols = [pos.x, pos.x + 72, pos.x + 88, pos.x + 104];
 		DrawWrappers.DrawRect(
 			pos.x + 9, pos.y + 19, pos.x + 120, pos.y + 20, true,
 			new Color(255, 255, 255, 128), 0, ZIndex.HUD, false

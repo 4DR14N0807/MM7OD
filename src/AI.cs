@@ -384,7 +384,9 @@ public class AI {
 	}
 	public int getRandomWeaponIndex() {
 		if (player.weapons.Count == 0) return 0;
-		List<Weapon> weapons = player.weapons.FindAll(w => w is not DNACore or IceGattling or BlastLauncher).ToList();
+		List<Weapon> weapons = player.weapons.FindAll(
+			w => w is not DNACore
+		).ToList();
 		return weapons.IndexOf(weapons.GetRandomItem());                                         // removing IceGattling until know the bug
 	}
 	public void changeState(AIState newState, bool forceChange = false) {
@@ -416,7 +418,7 @@ public class AI {
 	public void randomlyChangeStuff() {
 		float stuckTime = (aiState as FindPlayer)?.stuckTime ?? 0;
 		bool inNodeTransition = (aiState as FindPlayer)?.nodeTransition != null;
-		if (player.weapon != null && player.weapon.ammo <= 0 && player.weapon is not XBuster or AxlBullet) {
+		if (player.weapon != null && player.weapon.ammo <= 0 && player.weapon is not XBuster and not AxlBullet) {
 			player.changeWeaponSlot(getRandomWeaponIndex());
 		}
 		if (aiState.randomlyChangeState && character != null) {
@@ -822,7 +824,7 @@ public class InJumpZone : AIState {
 
 		//Check if out of zone
 		if (character != null && character.abstractedActor().collider != null && character.grounded) {
-			if (!character.abstractedActor().collider.isCollidingWith(jumpZone.collider)) {
+			if (!character.abstractedActor().collider?.isCollidingWith(jumpZone.collider) != true) {
 				ai.changeState(new FindPlayer(character));
 			}
 		}

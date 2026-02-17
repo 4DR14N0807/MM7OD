@@ -104,8 +104,9 @@ public class SearchSnakeProj : Projectile {
 		if (startAngleDrawing && currentWallDest != null) {
 			byteAngle = dirToDestByteAngle;
 			if (xDir < 0) byteAngle = -byteAngle + 128;
-			if (currentWallDest.y != 0 && xDir < 0) byteAngle += 128;
-
+			if (currentWallDest.Value.y != 0 && xDir < 0) {
+				byteAngle += 128;
+			}
 			//if (currentWallDest.y != 0 && currentWallDest.x == 0 && xDir < 0) byteAngle = -192;
 			//else if (xDir < 0) byteAngle += 128;
 		}

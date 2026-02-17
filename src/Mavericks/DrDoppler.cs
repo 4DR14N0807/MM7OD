@@ -113,7 +113,7 @@ public class DrDoppler : Maverick {
 	public override void aiUpdate() {
 		base.aiUpdate();
 		if (controlMode == MaverickModeId.Summoner && Helpers.randomRange(0, 10) == 1 &&
-			ammo >= 8 && state is not DrDopplerAbsorbState or DrDopplerDashState && health < maxHealth) {
+			ammo >= 8 && state is not DrDopplerAbsorbState and not DrDopplerDashState && health < maxHealth) {
 			foreach (GameObject gameObject in getCloseActors(64, true, false, false)) {
 				if (gameObject is Projectile proj &&
 					proj.damager.owner.alliance != player.alliance &&

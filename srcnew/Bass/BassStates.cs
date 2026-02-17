@@ -319,10 +319,11 @@ public class SuperBassStart : CharState {
 					character.playSound("super_bass_aura", sendRpc: true);
 					bass.frameSpeed = 1;
 
-					aura = new Anim(
+					/* aura = new Anim(
 						bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 						false, true, zIndex: ZIndex.Character - 10
-					);
+					); */
+					aura = new SuperBassAura(bass, bass.pos, bass.xDir, player.getNextActorNetId(), true);
 
 					phase = 6;
 				}
@@ -357,7 +358,7 @@ public class SuperBassSquare : Projectile {
 	) {
 		projId = (int)BassProjIds.SuperBassSquare;
 		maxTime = 2;
-		chr = owner;
+		if (ownedByLocalPlayer) chr = owner;
 		canBeLocal = false;
 
 		if (rpc) {
@@ -373,7 +374,7 @@ public class SuperBassSquare : Projectile {
 
 	public override void update() {
 		base.update();
-		changePos(chr.getCenterPos());
+		if (ownedByLocalPlayer) changePos(chr.getCenterPos());
 
 		s -= 1f;
 		a += 4;
@@ -386,7 +387,7 @@ public class SuperBassSquare : Projectile {
 
 	public override void render(float x, float y) {
 		base.render(x, y);
-		Point center = chr.getCenterPos().addxy(chr.xDir * 3, -4);
+		Point center = pos.addxy(xDir * 3, -4);
 		Point[] points = new Point[4];
 		Color color = new Color(255, 255, 255, (byte)t);
 
@@ -397,6 +398,78 @@ public class SuperBassSquare : Projectile {
 		}
 
 		DrawWrappers.DrawPolygon(points.ToList(), color, true, ZIndex.Foreground + 10);
+	}
+}
+
+public class SuperBassAura : Anim {
+	Bass? bass = null;
+	public SuperBassAura(
+		Bass bass, Point pos, int xDir, ushort? netId, bool rpc = false
+	) : base(
+		pos, "sbass_aura", xDir, netId, false, rpc
+	) {
+		this.bass = bass;
+		zIndex = ZIndex.Character - 10;
+	}
+
+	public override void update() {
+		base.update();
+		if (bass == null || !bass.alive) {
+			destroySelf();
+			return;
+		}
+
+		changePos(bass.pos);
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper>? baseShaders = base.getShaders();
+		ShaderWrapper? palette = null;
+	
+		palette = bass?.player.superBassPaletteShader;
+			
+		palette?.SetUniform("palette", bass?.phase ?? 0);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) shaders.Add(palette);
+		
+		shaders.AddRange(baseShaders ?? new List<ShaderWrapper>());
+
+		return shaders;
+	}
+}
+
+
+public class SuperBassExhaust : Anim {
+	Bass? bass = null;
+	public SuperBassExhaust(Bass bass) : base(
+		bass.pos, "sbass_exhaust", bass.xDir, bass.player.getNextActorNetId(), false, true
+	) {
+		zIndex = ZIndex.Character - 10;
+		this.bass = bass;
+	}
+
+	public override void update() {
+		base.update();
+		
+		changePos(bass?.pos ?? pos);
+		xDir = bass?.xDir ?? xDir;
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper>? baseShaders = base.getShaders();
+		ShaderWrapper? palette = null;
+	
+		palette = bass?.player.superBassPaletteShader;
+			
+		palette?.SetUniform("palette", bass?.phase ?? 0);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) shaders.Add(palette);
+		
+		shaders.AddRange(baseShaders ?? new List<ShaderWrapper>());
+
+		return shaders;
 	}
 }
 
@@ -444,10 +517,11 @@ public class EnergyCharge : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
-		aura = new Anim(
+		/* aura = new Anim(
 			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 			false, true, zIndex: ZIndex.Character - 10
-		);
+		); */
+		aura = new SuperBassAura(bass, bass.pos, bass.xDir, player.getNextActorNetId(), true);
 		bass.stopMoving();
 		bass.gravityModifier = 0.1f;
 		bass.frameIndex = 3;
@@ -469,12 +543,12 @@ public class EnergyCharge : CharState {
 
 		if (!player.input.isHeld(Control.Special2, player) ||
 			bass.phase >= 4 && bass.evilEnergy <= 0 ||
-			bass.phase < 4 && bass.evilEnergy >= Bass.MaxEvilEnergy
+			bass.phase < 4 && bass.evilEnergy >= bass.maxEvilEnergy
 		) {
 			bass.changeToIdleOrFall();
 			return;
 		}
-		aura?.changePos(bass.pos);
+		//aura?.changePos(bass.pos);
 
 		if (ammoTimer == 0) {
 			bass.playSound("heal");
@@ -503,7 +577,7 @@ public class EnergyIncrease : CharState {
 
 	public override void update() {
 		base.update();
-		aura?.changePos(bass.pos);
+		//aura?.changePos(bass.pos);
 
 		if (stateFrames >= 30) {
 			if (player.input.isHeld(Control.Special2, player)) {
@@ -518,10 +592,11 @@ public class EnergyIncrease : CharState {
 		base.onEnter(oldState);
 		bass = character as Bass ?? throw new NullReferenceException();
 		character.stopMoving();
-		aura = new Anim(
+		/* aura = new Anim(
 			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 			false, true, zIndex: ZIndex.Character - 10
-		);
+		); */
+		aura = new SuperBassAura(bass, bass.pos, bass.xDir, player.getNextActorNetId(), true);
 		character.gravityModifier = 0.1f;
 		bass.playSound("super_bass_aura", sendRpc: true);
 	}
@@ -540,6 +615,7 @@ public class BassFly : CharState {
 	float flyVelMaxSpeed = 200;
 	public float fallY;
 	Bass bass = null!;
+	Anim? anim;
 
 	public BassFly() : base("fly", "fly_shoot") {
 		exitOnLanding = true;
@@ -571,7 +647,7 @@ public class BassFly : CharState {
 		bass.flyTime += getFlyConsume();
 
 		if (
-			bass.flyTime >= Bass.MaxFlyTime ||
+			bass.flyTime >= bass.MaxFlyTime ||
 			(player.input.isPressed(Control.Jump, player) && !character.changedStateInFrame)
 		) {
 			character.changeToIdleOrFall();
@@ -619,6 +695,8 @@ public class BassFly : CharState {
 		bass = character as Bass ?? throw new NullReferenceException();
 		bass.canRefillFly = false;
 
+		anim = new SuperBassExhaust(bass);
+
 		float flyVelX = 0;
 		if (character.isDashing && character.deltaPos.x != 0) {
 			flyVelX = character.xDir * character.getDashSpeed() * 0.5f;
@@ -650,6 +728,7 @@ public class BassFly : CharState {
 			character.yPushVel = getFlightMove().y / 60;
 		}
 		bass.canRefillFly = true;
+		anim?.destroySelf();
 	}
 }
 
@@ -755,14 +834,13 @@ public class SonicCrusher : CharState {
 		}
 
 		bass.flyTime += 1.25f;
-		if (stateFrames >= 32 && (bass.flyTime >= Bass.MaxFlyTime || !player.input.isHeld(Control.Special1, player))) {
+		if (stateFrames >= 32 && (bass.flyTime >= bass.MaxFlyTime || !player.input.isHeld(Control.Special1, player))) {
 			character.changeToIdleFallorFly();
 		}
 	}
 }
 
 public class SweepingLaserState : CharState {
-
 	Projectile? laser;
 	public SweepingLaserState() : base("sweeping_laser") {
 		useGravity = false;
@@ -772,7 +850,7 @@ public class SweepingLaserState : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
-		if (!character.grounded && oldState is not BassFly) {
+		if (!character.isMovementLimited() && !character.grounded && oldState is not BassFly) {
 			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
 		}
 
@@ -803,8 +881,12 @@ public class SweepingLaserState : CharState {
 			once = true;
 		}
 
-		if (once) character.move(new Point(300 * character.xDir, 0));
-		if (stateFrames >= 45) character.changeToIdleFallorFly();
+		if (once && !character.isMovementLimited()) {
+			character.move(new Point(300 * character.xDir, 0));
+		}
+		if (stateFrames >= 45) {
+			character.changeToIdleFallorFly();
+		}
 	}
 }
 
@@ -840,6 +922,8 @@ public class DarkCometState : CharState {
 			once = true;
 		}
 
-		if (stateFrames >= 25) character.changeToIdleFallorFly();
+		if (stateFrames >= 25) {
+			character.changeToIdleFallorFly();
+		}
 	}
 }

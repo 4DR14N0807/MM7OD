@@ -298,7 +298,7 @@ public class BluesSlide : CharState {
 		blues.shieldCustomState = false;
 		blues.changeGlobalColliderOnSpriteChange(blues.sprite.name);
 
-		if (!player.isAI) {
+		if (player.isAI) {
 			normalCtrl = false;
 		}
 	}
@@ -354,7 +354,7 @@ public class BluesSpreadShoot : CharState {
 				blues.playSound("buster2X1", sendRpc: true);
 			}
 			if (type == 2) {
-				blues.addCoreAmmo(-0.5f, resetCooldown: true);
+				blues.addCoreAmmo(-0.5f);
 				blues.playSound("buster3", sendRpc: true);
 			}
 			shotAngle -= 16;

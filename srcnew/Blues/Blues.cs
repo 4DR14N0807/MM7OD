@@ -259,10 +259,9 @@ public class Blues : Character {
 
 	public bool canShieldDash() {
 		return (
-			flag == null &&
 			(grounded || isBreakMan && dashedInAir == 0) &&
 			charState is not ShieldDash &&
-			!overheating && rootTime <= 0
+			!overheating && !isMovementLimited()
 		);
 	}
 
@@ -271,7 +270,7 @@ public class Blues : Character {
 			flag == null &&
 			grounded && vel.y >= 0 &&
 			charState is not BluesSlide &&
-			!overdrive && rootTime <= 0
+			!overdrive && !isMovementLimited()
 		);
 	}
 
@@ -319,8 +318,7 @@ public class Blues : Character {
 
 	public bool canUseDropSwap() {
 		return (
-			isBreakMan && !overheating &&
-			rootTime <= 0 && !isDWrapped
+			isBreakMan && !overheating
 		);
 	}
 
@@ -778,7 +776,7 @@ public class Blues : Character {
 			}
 		}
 
-		if (shootPressed && downHeld && !grounded) {
+		if (shootPressed && downHeld) {
 			changeState(new BluesSpreadShoot(), true);
 			return true;
 		}
@@ -999,18 +997,18 @@ public class Blues : Character {
 		shootAnimTime = 0.3f;
 	}
 
-	public void addCoreAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
+	public void addCoreAmmo(float amount, bool? resetCooldown = true, bool forceAdd = false) {
 		if (!forceAdd && overheating && amount >= 0) {
 			return;
 		}
 		if (overdrive) {
-			addOvedriveAmmo(amount, resetCooldown, forceAdd);
+			addOvedriveAmmo(amount, resetCooldown);
 			return;
 		}
 		coreAmmo += amount;
 		if (coreAmmo > coreMaxAmmo) { coreAmmo = coreMaxAmmo; }
 		if (coreAmmo < 0) { coreAmmo = 0; }
-		if (resetCooldown) {
+		if (resetCooldown == true || resetCooldown == null && amount > 0) {
 			resetCoreCooldown();
 		}
 	}
@@ -1019,14 +1017,14 @@ public class Blues : Character {
 		coreHealAmount = amount;
 	}
 
-	public void addOvedriveAmmo(float amount, bool resetCooldown = true, bool forceAdd = false) {
+	public void addOvedriveAmmo(float amount, bool? resetCooldown = null) {
 		if (!overdrive) {
 			return;
 		}
 		overdriveAmmo += amount;
 		if (overdriveAmmo > coreMaxAmmo) { overdriveAmmo = coreMaxAmmo; }
 		if (overdriveAmmo < 0) { overdriveAmmo = 0; }
-		if (resetCooldown) {
+		if (resetCooldown == true || resetCooldown == null && amount > 0) {
 			overdriveAmmoDecreaseCooldown = overdriveAmmoMaxCooldown;
 		}
 	}
@@ -1167,7 +1165,10 @@ public class Blues : Character {
 		float fDamage, Player? attacker, Actor? actor,
 		int? weaponIndex, int? projId
 	) {
-		onDamageHpDisplayActivation(fDamage, attacker, projId);
+		// To see lifebars of enemies.
+		if (attacker != null) {
+			onDamageHpDisplayActivation(fDamage, attacker, projId);
+		}
 		// Return if not owned.
 		if (!ownedByLocalPlayer || fDamage <= 0) {
 			return;
@@ -1350,7 +1351,9 @@ public class Blues : Character {
 			}
 			float damageText = float.Parse(damage.ToString());
 			addDamageText(damageText, fontColor);
-			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			if (attacker != null) {
+				RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			}
 			resetCoreCooldown(coreAmmoDamageCooldown);
 		}
 		if (shieldDamaged || shieldHitFront) {
@@ -1360,7 +1363,9 @@ public class Blues : Character {
 			}
 			float damageText = float.Parse((ogShieldHP - shieldHP).ToString());
 			addDamageText(damageText, fontColor);
-			RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			if (attacker != null) {
+				RPC.addDamageText.sendRpc(attacker.id, netId, damageText, fontColor);
+			}
 		}
 		// Disable L-Tanks only on external damage sources.
 		if (ogShieldHP - shieldHP > 0 && !Damager.isDot(projId) &&
@@ -1644,38 +1649,22 @@ public class Blues : Character {
 	}
 
 	public void renderCoreAlt() {
-		if (destroyed || charState is Die) return;
-
-		float pAmmo = getChargeShotCorePendingAmmo();
-		Point barPos = pos.addxy(-12, -44);
-		int maxLength = 14;
-		// Core ammo
-		if (player.isMainPlayer && (coreAmmo > 0 || pAmmo > 0 ) && Options.main.coreHeatDisplay >= 1) {
-
-			float pendAmmo = coreAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = coreMaxAmmo;
-			}
-
-			decimal lengthP = (maxLength * (decimal)pendAmmo) / (decimal)coreMaxAmmo;
-			decimal length = (maxLength * (decimal)coreAmmo) / (decimal)coreMaxAmmo;
-
-			drawBarHHUD(lengthP, maxLength, 1, barPos);
-			drawBarHHUD(length, maxLength, 3, barPos, false);
+		if (Options.main.coreHeatDisplay == 0 || destroyed ||
+			!player.isMainPlayer || charState is Die || !alive ||
+			Global.level.mainPlayer.character != this ||
+			Global.level.mainPlayer.isSpectator ||
+			displayHpTime > 0 ||
+			coreAmmo <= 0 && (!overdrive || overdriveAmmo <= 0)
+		) {
+			return;
 		}
-
-		//Overdrive ammo
-		if (player.isMainPlayer && Options.main.coreHeatDisplay >= 1 && overdriveAmmo > 0 && overdrive) {
-			float pendAmmo = overdriveAmmo + pAmmo;
-			if (pendAmmo > coreMaxAmmo) {
-				pendAmmo = coreMaxAmmo;
-			}
-
-			decimal lengthP = (maxLength * (decimal)pendAmmo) / (decimal)coreMaxAmmo;
-			decimal length = (maxLength * (decimal)coreAmmo) / (decimal)coreMaxAmmo;
-
-			drawBarHHUD(lengthP, maxLength, 1, barPos);
-			drawBarHHUD(length, maxLength, 2, barPos, false);
+		float scale = 2;
+		Point offset = pos.round().addxy(
+			-MathInt.Ceiling(coreMaxAmmo / scale), -44
+		);
+		renderMiniBar(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
+		if (overdrive) {
+			renderMiniBar(offset, 2, overdriveAmmo / scale, overdriveAmmo / scale);
 		}
 	}
 
@@ -1693,17 +1682,17 @@ public class Blues : Character {
 		}
 		// Ammo.
 		renderMiniHudBorder(offset, color, coreMaxAmmo / scale);
-		offset = renderMiniAmmo(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
+		offset = renderMiniBar(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
 		if (overdrive) {
-			renderMiniAmmo(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
+			renderMiniBar(offset.addxy(0, 4), 2, overdriveAmmo / scale, overdriveAmmo / scale);
 		}
 		// Shield.
 		Point shieldOffset = offset.addxy(mHp * 2, 0);
 		renderMiniHudBorder(shieldOffset, color, shieldMaxHP / scale);
-		renderMiniAmmo(shieldOffset, 5, (float)shieldHP / scale, shieldMaxHP / scale);
+		renderMiniBar(shieldOffset, 5, (float)shieldHP / scale, shieldMaxHP / scale);
 		// Health.
 		renderMiniHudBorder(offset, color, mHp);
-		offset = renderMiniAmmo(offset, 1, hp, mHp);
+		offset = renderMiniBar(offset, 1, hp, mHp);
 		// Return offset.
 		return new Point(offset.x, offset.y);
 	}

@@ -28,7 +28,7 @@ public class Chip {
 	);
 	public delegate float AttackLink(
 		Character chara, float val, Actor? damager,
-		Player enemyPlayer, Character? enemyChar, float trackVal
+		Player? enemyPlayer, Character? enemyChar, float trackVal
 	);
 	public delegate void CreateLink(Character chara, Projectile proj);
 

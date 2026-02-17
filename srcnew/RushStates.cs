@@ -285,7 +285,6 @@ public class RushSearchState : RushState {
 	bool digging;
 	int digTime;
 	Rock rock = null!;
-	Anim? pickup;
 	Point pickupPos;
 	int pickupTime;
 	int sound;
@@ -342,118 +341,268 @@ public class RushSearchState : RushState {
 					//RNG starts here.
 					dice = Helpers.randomRange(1, 1000);
 					getRandomItem();
-					player.currency -= Rock.RushSearchCost;
-					//rock.rushWeapon.addAmmo(-Rock.RushSearchCost, player);
+					rock.rushWeapon.addAmmo(-4, player);
 
 					state = 3;
 				} break;
 
 			default:
-				if (rush.isAnimOver()) rush.changeState(new RushWarpOut());
+				if (rush.isAnimOver()) {
+					rush.changeState(new RushWarpOut());
+				}
 				break;
 		}
 	}
 
-	void getRandomItem() {
-		if (!rush.ownedByLocalPlayer) return;
+	public void getRandomItem() {
+		if (!rush.ownedByLocalPlayer) {
+			return;
+		}
 		string text = "";
 		string sound = "";
-		FontType font;
+		FontType font = FontType.Blue;
 		Point pickupVel = new Point(0, -300);
-		dice /= 10;
-
-		// Full Heal.
-		if (dice > 98.5){
-			sound = "upgrade";
-			text = "FULL HEAL";
-			font = FontType.Blue;
-
-			new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
+		int mainDice = Helpers.randomRange(0, 100);
+		// For easy view of RNG.
+		// The sum of values should not exceed 100.
+		int[] chances = [
+			5, 8, 16, 28, 12, 12, 12, 7
+		];
+		for (int i = 1; i < chances.Length; i++) {
+			chances[i] += chances[i-1];
 		}
-		// Full Ammo refill. 
-		else if (dice > 97) {
-			sound = "upgrade";
-			text = "FULL AMMO REFILL";
-			font = FontType.Green;
+		// Giant drops.
+		if (mainDice <= chances[0]) {
+			int altDice = Helpers.randomRange(0, 2);
+			if (altDice == 0) {
+				sound = "upgrade";
+				text = "FULL HEAL!!!";
+				font = FontType.Blue;
 
-			new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };	
-		}
-		// 100 bolts 
-		else if (dice > 95.5) {
-			sound = "upgrade";
-			text = "100 BOLTS!!!";
-			font = FontType.Yellow;
+				new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else if (altDice == 1) {
+				sound = "upgrade";
+				text = "FULL AMMO REFILL!!!";
+				font = FontType.Green;
 
-			new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };	
+				new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else {
+				sound = "upgrade";
+				text = "100 BOLTS!!!";
+				font = FontType.Yellow;
+
+				new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			}
 		}
-		// Bomb
-		else if (dice > 94) {
+		// Large drops.
+		else if (mainDice <= chances[1]) {
+			int altDice = Helpers.randomRange(0, 4);
+			if (altDice == 0) {
+				sound = "upgrade";
+				font = FontType.Blue;
+
+				var pickup = new TankHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+				text = pickup.type switch {
+					1 => "Yashichi!",
+					2 => "M-Tank!",
+					3 => "L-Tank!",
+					4 => "AE-Tank!",
+					_ => "E-Tank!"
+				};
+				text = text.ToUpper();
+			}
+			else if (altDice == 1) {
+				sound = "upgrade";
+				text = "W-TANK!";
+				font = FontType.Green;
+
+				new TankAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			}
+			else if (altDice == 2) {
+				sound = "upgrade";
+				text = "S-TANK!";
+				font = FontType.Yellow;
+
+				new TankSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			}
+			else if (altDice == 3) {
+				sound = "rush_search_end";
+				text = "A-TANK!";
+				font = FontType.Purple;
+
+				new TankShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else {
+				sound = "upgrade";
+				text = "40 BOLTS!";
+				font = FontType.Yellow;
+
+				for (int i = 0; i < 5; i++) {
+					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
+					};
+				}
+			}
+		}
+		// Regular drops.
+		else if (mainDice <= chances[2]) {
+			int altDice = Helpers.randomRange(0, 4);
+			if (altDice == 0) {
+				sound = "upgrade";
+				text = "HEALTH CAPSULE!";
+				font = FontType.Blue;
+
+				new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			}
+			else if (altDice == 1) {
+				sound = "upgrade";
+				text = "AMMO CAPSULE!";
+				font = FontType.Green;
+
+				new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else if (altDice == 2) {
+				sound = "upgrade";
+				text = "SUPER CAPSULE!";
+				font = FontType.Yellow;
+
+				new LargeSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else if (altDice == 3) {
+				sound = "rush_search_end";
+				text = "SHIELD CAPSULE!";
+				font = FontType.Purple;
+
+				new LargeShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else {
+				sound = "upgrade";
+				text = "24 BOLTS!";
+				font = FontType.Yellow;
+
+				for (int i = 0; i < 3; i++) {
+					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
+					};
+				}
+			}
+		}
+		// Small drops.
+		else if (mainDice <= chances[3]) {
+			int altDice = Helpers.randomRange(0, 2);
+			if (altDice == 0) {
+				sound = "rush_search_end";
+				text = "SMALL HEALTH CAPSULE";
+				font = FontType.Blue;
+
+				new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else if (altDice == 1) {
+				sound = "rush_search_end";
+				text = "SMALL AMMO CAPSULE";
+				font = FontType.Green;
+
+				new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else {
+				sound = "rush_search_end";
+				text = "10 BOLTS";
+				font = FontType.Yellow;
+
+				for (int i = 0; i < 5; i++) {
+					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
+					};
+				}
+			}
+		}
+		// Mini drops.
+		else if (mainDice <= chances[4]) {
+			int altDice = Helpers.randomRange(0, 4);
+			if (altDice == 0) {
+				sound = "rush_search_end";
+				text = "MINI HEALTH CAPSULE";
+				font = FontType.Blue;
+
+				new MiniHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else if (altDice == 1) {
+				sound = "rush_search_end";
+				text = "MINI AMMO CAPSULE";
+				font = FontType.Green;
+
+				new MiniAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else if (altDice == 2) {
+				sound = "rush_search_end";
+				text = "MINI SUPER CAPSULE";
+				font = FontType.Yellow;
+
+				new MiniSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else if (altDice == 3) {
+				sound = "rush_search_end";
+				text = "MINI SHIELD CAPSULE";
+				font = FontType.Purple;
+
+				new MiniShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+					vel = pickupVel
+				};
+			} else {
+				sound = "rush_search_end";
+				text = "4 BOLTS";
+				font = FontType.Yellow;
+
+				for (int i = 0; i < 2; i++) {
+					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
+						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
+					};
+				}
+			}
+		}
+		// Enemies.
+		else if (mainDice <= chances[5]) {
+			sound = "error";
+			text = "MET!";
+			font = FontType.Red;
+
+			new Met(
+				pickupPos.addxy(0, 16), rush.xDir, Global.level.mainPlayer,
+				player.getNextActorNetId(), sendRpc: true
+			) {
+				vel = pickupVel
+			};
+		}
+		// Explosions.
+		else if (mainDice <= chances[6]) {
 			sound = "rush_search_end";
 			text = "KA-BOOM!!!";
 			font = FontType.Red;
 
 			new RSBombProj(rock, pickupPos, 1, rush.player?.getNextActorNetId(), true, rush.player);
-		}
-		// Big HP
-		else if (dice > 86) {
-			sound = "upgrade";
-			text = "BIG HEALTH CAPSULE!";
-			font = FontType.Blue;
-
-			new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
-		}
-		// Big ammo 
-		else if (dice > 78) {
-			sound = "upgrade";
-			text = "BIG AMMO CAPSULE!";
-			font = FontType.Green;
-
-			new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
-		} 
-		// 40 Bolts
-		else if (dice > 70) {
-			sound = "upgrade";
-			text = "40 BOLTS!";
-			font = FontType.Yellow;
-
-			for (int i = 0; i < 5; i++) {
-				new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
-			}
-		}
-		// Small HP 
-		else if (dice > 55) {
-			sound = "rush_search_end";
-			text = "SMALL HEALTH CAPSULE";
-			font = FontType.Blue;
-
-			new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
-		}
-		//Small ammo
-		else if (dice > 40) {
-			sound = "rush_search_end";
-			text = "SMALL AMMO CAPSULE";
-			font = FontType.Green;
-
-			new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-			{ vel = pickupVel, teamOnly = true };
-		}
-		// 10 Bolts
-		else if (dice > 25) {
-			sound = "rush_search_end";
-			text = "10 BOLTS";
-			font = FontType.Yellow;
-
-			for (int i = 0; i < 5; i++) {
-				new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) 
-				{ xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2), teamOnly = true };
-			}
 		}
 		// Trash
 		else {
@@ -464,7 +613,9 @@ public class RushSearchState : RushState {
 			new Trash(pickupPos, player.getNextActorNetId(), true, true);
 		}
 
-		rush.playSound(sound, true);
+		if (sound != "") {
+			rush.playSound(sound, true);
+		}
 		Global.level.gameMode.setHUDErrorMessage(
 			player, text, false, overrideFont: font
 		);

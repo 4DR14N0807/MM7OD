@@ -39,10 +39,9 @@ public class RPCJoinLateRequest : RPC {
 		}
 
 		var joinLateResponseModel = new JoinLateResponseModel() {
-			players = Global.level.players.Select(p => new PlayerPB(p)).ToArray(),
+			players = Global.level.players.Select(p => new PlayerPB(p)).ToList(),
 			newPlayer = serverPlayer,
-			controlPoints = controlPoints.ToArray(),
-			lateActors = lateActors.ToArray()
+			controlPoints = controlPoints,
 		};
 
 		Global.serverClient?.rpc(RPC.joinLateResponse, Helpers.serialize(joinLateResponseModel));

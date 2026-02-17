@@ -4,27 +4,36 @@ using System.Collections.Generic;
 namespace MMXOnline;
 
 public class Met : NeutralEnemy {
-	
 	public float maxCooldown = 60;
 	public float cooldown = 60;
 	public float distance = 80;
 	public int shotCount;
+
 	public Met(
-		Point pos, int xDir, Player player, ushort netId, bool isLocal, 
-		int alliance = GameMode.stageAlliance, bool rpc = false, bool addToLevel = true
+		Point pos, int xDir, Player ownerPlayer, ushort netId,
+		int alliance = GameMode.stageAlliance, bool sendRpc = false, bool addToLevel = true
 	) : base(
-		pos, netId, isLocal, alliance, addToLevel
+		pos, xDir, ownerPlayer, netId, alliance, addToLevel 
 	) {
-		netOwner = player;
 		base.xDir = xDir;
 		maxHealth = 3;
 		health = maxHealth;
 		changeState(new MetIdle());
 
-		netActorCreateId = NetActorCreateId.Met;
-		if (rpc) {
-			createActorRpc(netOwner.id);
+		cActorId = CActorIds.Met;
+		if (sendRpc) {
+			RPC.createActor.sendRpc(this, ownerPlayer, null, getActorSerialExtra());
 		}
+	}
+
+	public static Actor rpcInvoke(ActorRpcParameters arg) {
+		return new Met(
+			arg.pos, arg.xDir, arg.player, arg.netId, arg.extraData[0]
+		);
+	}
+
+	public override byte[] getActorSerialExtra() {
+		return [(byte)alliance];
 	}
 
 	public override string getSprite(string spriteName) {
@@ -52,13 +61,15 @@ public class Met : NeutralEnemy {
 		} else {
 			changeState(new MetShoot());
 			for (int i = 0; i < 3; i++) {
-				new MetLemon(this, pos.addxy(xDir * 13, -3), xDir, i, Player.stagePlayer.getNextActorNetId(), true);
+				new MetLemon(
+					this, pos.addxy(xDir * 13, -3), xDir, i, Player.stagePlayer.getNextActorNetId(), true
+				);
 			}
 			shotCount++;
 			playSound("buster", sendRpc: true);
 		}
 
-		
+
 	}
 
 	public override void onDestroy() {
@@ -71,7 +82,6 @@ public class Met : NeutralEnemy {
 }
 
 public class MetIdle : NeutralEnemyState {
-
 	Met? met;
 	public MetIdle() : base("idle") {
 		normalCtrl = true;
@@ -94,7 +104,7 @@ public class MetIdle : NeutralEnemyState {
 			if (target != null) {
 				met.turnToPos(target.pos);
 				met.shoot();
-			} 
+			}
 		}
 	}
 
@@ -107,7 +117,7 @@ public class MetShoot : NeutralEnemyState {
 
 	Met? met;
 	public MetShoot() : base("idle") {
-		
+
 	}
 
 	public override void onEnter(NeutralEnemyState oldState) {
@@ -133,7 +143,7 @@ public class MetShoot : NeutralEnemyState {
 	}
 }
 
-	
+
 public class MetLemon : Projectile {
 	public MetLemon(
 		Actor owner, Point pos, int xDir, int type,
@@ -153,7 +163,7 @@ public class MetLemon : Projectile {
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
 
-		
+
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
 
@@ -163,8 +173,8 @@ public class MetLemon : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MetLemon(
-			arg.owner, arg.pos, arg.xDir, 
+			arg.owner, arg.pos, arg.xDir,
 			arg.extraData[0], arg.netId, player: arg.player
 		);
 	}
-}	
+}

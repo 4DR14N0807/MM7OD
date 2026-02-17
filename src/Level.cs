@@ -945,7 +945,9 @@ public partial class Level {
 		}
 
 		if (joinedLate) {
-			Global.serverClient?.rpc(RPC.joinLateRequest, Helpers.serialize(Global.serverClient.serverPlayer));
+			Global.serverClient?.rpc(
+				RPC.joinLateRequest, Helpers.serialize(Global.serverClient.serverPlayer)
+			);
 		}
 
 		startGoCount = gameObjects.Count;
@@ -1090,7 +1092,9 @@ public partial class Level {
 		foreach (var magnetMine in magnetMines) {
 			var player = getPlayerById(magnetMine.playerId);
 			if (player == null) continue;
-			new MagnetMineProj(new Point(magnetMine.x, magnetMine.y), 1, player.character, player, magnetMine.netId);
+			new MagnetMineProj(
+				new Point(magnetMine.x, magnetMine.y), 1, player.character, player, magnetMine.netId
+			);
 		}
 	}
 
@@ -1101,6 +1105,47 @@ public partial class Level {
 			var player = getPlayerById(turret.playerId);
 			if (player == null) continue;
 			new RaySplasherTurret(new Point(turret.x, turret.y), player, 1, turret.netId, false, false);
+		}
+	}
+
+	public void joinedLateSyncActors(List<ActorRpcResponse> ActorRpcResponses) {
+		foreach (var response in ActorRpcResponses) {
+			if (getActorByNetId(response.netId) != null) {
+				continue;
+			}
+			Player? player = getPlayerById(response.playerId);
+			if (player == null) {
+				continue;
+			}
+			if (response.isProj) {
+				ProjParameters args = new() {
+					projId = response.actorId,
+					pos = response.pos,
+					xDir = response.xDir,
+					player = player,
+					netId = response.netId,
+					angle = Helpers.byteToDegree(response.byteAngle),
+					byteAngle = response.byteAngle,
+					extraData = response.extraData,
+					owner = response.owner,
+				};
+				byte[] byteArgs = RPC.createProj.getSendBytes(args);
+				RPC.createProj.invoke(byteArgs);
+			} else {
+				ActorRpcParameters args = new() {
+					actorId = response.actorId,
+					pos = response.pos,
+					xDir = response.xDir,
+					player = player,
+					netId = response.netId,
+					angle = Helpers.byteToDegree(response.byteAngle),
+					byteAngle = response.byteAngle,
+					extraData = response.extraData,
+					owner = response.owner,
+				};
+				byte[] byteArgs = RPC.createActor.getSendBytes(args);
+				RPC.createActor.invoke(byteArgs);
+			}
 		}
 	}
 

@@ -1113,6 +1113,10 @@ public partial class Level {
 	}
 
 	public void joinedLateSyncActors(ActorRpcResponse[] responses) {
+		// Return if it's 0.
+		if (responses.Length == 0) {
+			return;
+		}
 		// First we order them by their netIDs.
 		// Then we order the responses by reverse ownerIDs, so we create the owner first.
 		responses = (responses

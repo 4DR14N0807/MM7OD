@@ -27,15 +27,29 @@ public class RPCJoinLateRequest : RPC {
 			});
 		}
 
+		// For actors that persist much like players.
 		List<ActorRpcResponse> lateActors = [];
 		foreach (GameObject go in Global.level.gameObjects) {
+			// Skip if has not the correct flag or is not an actor.
 			if (go is not Actor { syncOnLateJoin: true } actor) {
 				continue;
 			}
-			ActorRpcResponse? serial = actor.getActorSerial();
-			if (serial != null) {
-				lateActors.Add(serial.Value);
+			// We crash if has the flag but a null NetId.
+			if (actor.netId == null) {
+				throw new Exception(
+					$"Error, lateSync actor with type {actor.GetType().Name} has a null NetID."
+				);
 			}
+			// Get the serialized version of the object.
+			ActorRpcResponse? serial = actor.getActorSerial();
+			// We crash if has the flag but a null Serial.
+			if (serial == null) {
+				throw new Exception(
+					$"Error, lateSync actor with type {actor.GetType().Name} has a null Serial."
+				);
+			}
+			// If everithing goes well we add it's serialized version.
+			lateActors.Add(serial.Value);
 		}
 
 		var joinLateResponseModel = new JoinLateResponseModel() {

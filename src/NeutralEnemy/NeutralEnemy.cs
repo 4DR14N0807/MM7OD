@@ -40,6 +40,7 @@ public class NeutralEnemy : Actor, IDamagable {
 
 		this.alliance = alliance;
 		hasStateMachine = true;
+		syncOnLateJoin = true;
 	}
 
 	public override ActorRpcResponse? getActorSerial() {

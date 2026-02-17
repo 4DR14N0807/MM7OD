@@ -66,15 +66,16 @@ public class JoinLateResponseModel {
 [ProtoContract]
 public struct ActorRpcResponse {
 	[ProtoMember(1)] public bool isProj;
-	[ProtoMember(2)] public int actorId;
-	[ProtoMember(3)] public Player player;
-	[ProtoMember(4)] public Actor owner;
-	[ProtoMember(5)] public Point pos;
-	[ProtoMember(6)] public int xDir;
-	[ProtoMember(7)] public int playerId;
+	[ProtoMember(2)] public int playerId;
+	[ProtoMember(3)] public int actorId;
+	[ProtoMember(4)] public ushort? ownerId;
+	[ProtoMember(5)] public float posX;
+	[ProtoMember(6)] public float posY;
+	[ProtoMember(7)] public int xDir;
 	[ProtoMember(8)] public ushort netId;
 	[ProtoMember(9)] public float byteAngle;
 	[ProtoMember(10)] public byte[] extraData;
+
 	public ActorRpcResponse() { }
 }
 

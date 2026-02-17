@@ -26,21 +26,27 @@ public class HpShieldManager() {
 	}
 
 	public void shortShields() {
-		shields = shields.Where(s => !s.destroyed).OrderBy(s => s.piority).ToList();
+		// We removed the destroyed ones.
+		// And after we order them by ID.
+		shields = shields.Where(s => !s.destroyed).OrderBy(s => s.id).ToList();
+		// Then we save them by ID.
 		shieldsById = shieldsById.Where(kvp => !kvp.Value.destroyed).ToDictionary();
 	}
 
 	public decimal applyDamage(decimal damage) {
+		// Order shields by ID.
+		// So the effects are deterministic.
 		shortShields();
-		int i = shields.Count - 1;
-
-		while (i >= 0 && damage > 0) {
+		// Iterate shields until all are gone or HP is 0.
+		// Stops at whoever happens first.
+		for (int i = shields.Count - 1; i >= 0 && damage > 0; i--) {
 			damage = shields[i].applyDamage(damage);
 			if (shields[i].health <= 0) {
 				shieldsById.Remove(shields[i].id);
 				shields.RemoveAt(i);
 			}
 		}
+		// Then we return the leftovers.
 		return damage;
 	}
 
@@ -74,7 +80,6 @@ public class HpShield {
 	public (string name, int index) sprite = ("hud_buffs" , 1);
 	public decimal health;
 	public float time;
-	public int piority;
 	public ShieldIds id;
 	public bool destroyed;
 

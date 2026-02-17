@@ -49,12 +49,13 @@ public class NeutralEnemy : Actor, IDamagable {
 		return new ActorRpcResponse() {
 			isProj = false,
 			actorId = (int)cActorId,
-			pos = pos,
+			posX = pos.x,
+			posY = pos.y,
 			xDir = xDir,
-			player = ownerPlayer,
+			playerId = ownerPlayer.id,
 			netId = netId.Value,
 			byteAngle = byteAngle,
-			owner = null,
+			ownerId = null,
 			extraData = getActorSerialExtra()
 		};
 	}

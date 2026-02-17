@@ -1112,9 +1112,16 @@ public partial class Level {
 		}
 	}
 
-	public void joinedLateSyncActors(ActorRpcResponse[] ActorRpcResponses) {
+	public void joinedLateSyncActors(ActorRpcResponse[] responses) {
+		// First we order them by their netIDs.
+		// Then we order the responses by reverse ownerIDs, so we create the owner first.
+		responses = (responses
+			.OrderBy(r => r.netId)
+			.OrderBy(r => r.ownerId ?? 0)
+			.ToArray()
+		);
 		// Iterate over the whole list.
-		foreach (ActorRpcResponse response in ActorRpcResponses) {
+		foreach (ActorRpcResponse response in responses) {
 			// Ignore actors that already exist.
 			if (getActorByNetId(response.netId) != null) {
 				continue;
@@ -1125,18 +1132,24 @@ public partial class Level {
 			if (player == null) {
 				continue;
 			}
+			// Set up vars.
+			Point pos = new(response.posX, response.posY);
+			Actor? owner = null;
+			if (response.ownerId != null) {
+				owner = getActorByNetId(response.ownerId.Value);
+			}
 			// When is projectile.
 			if (response.isProj) {
 				ProjParameters args = new() {
 					projId = response.actorId,
-					pos = response.pos,
+					pos = pos,
 					xDir = response.xDir,
 					player = player,
 					netId = response.netId,
 					angle = Helpers.byteToDegree(response.byteAngle),
 					byteAngle = response.byteAngle,
 					extraData = response.extraData,
-					owner = response.owner,
+					owner = owner!,
 				};
 				byte[] byteArgs = RPC.createProj.getSendBytes(args);
 				RPC.createProj.invoke(byteArgs);
@@ -1145,14 +1158,14 @@ public partial class Level {
 			else {
 				ActorRpcParameters args = new() {
 					actorId = response.actorId,
-					pos = response.pos,
+					pos = pos,
 					xDir = response.xDir,
 					player = player,
 					netId = response.netId,
 					angle = Helpers.byteToDegree(response.byteAngle),
 					byteAngle = response.byteAngle,
 					extraData = response.extraData,
-					owner = response.owner,
+					owner = owner!,
 				};
 				byte[] byteArgs = RPC.createActor.getSendBytes(args);
 				RPC.createActor.invoke(byteArgs);

@@ -29,7 +29,7 @@ public class Pickup : Actor {
 		sprite, pos, netId, ownedByLocalPlayer, false
 	) {
 		this.teamOnly = teamOnly;
-		canBeLocal = true;
+		canBeLocal = false;
 		netOwner = owner;
 		ownerPlayer = owner;
 

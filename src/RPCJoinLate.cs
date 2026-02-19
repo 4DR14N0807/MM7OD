@@ -79,7 +79,10 @@ public class RPCJoinLateResponse : RPC {
 		if (Global.serverClient?.serverPlayer.id == joinLateResponseModel.newPlayer.id) {
 			Global.level.joinedLateSyncPlayers(joinLateResponseModel.players);
 			Global.level.joinedLateSyncControlPoints(joinLateResponseModel.controlPoints);
-			Global.level.joinedLateSyncActors(joinLateResponseModel.lateActors);
+			// Because Protobuff just plain sucks.
+			if (joinLateResponseModel.lateActors != null) {
+				Global.level.joinedLateSyncActors(joinLateResponseModel.lateActors);
+			}
 		} else {
 			Global.level.addPlayer(joinLateResponseModel.newPlayer, true);
 		}

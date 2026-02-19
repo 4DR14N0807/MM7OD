@@ -23,7 +23,7 @@ public partial class Global {
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "89862C01DAAFD7B611A70E5936152D04";
+	private const string assetChecksum = "C56B5CF1918A1C3E1EADB717538EC453";
 
 	// Use this to make sure the checksum varies.
 	public const string checksumPrefix = "[7OD]";

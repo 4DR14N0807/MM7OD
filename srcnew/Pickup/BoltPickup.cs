@@ -48,6 +48,11 @@ public class LargeBoltPickup : BaselineBoltPickup {
 		CActorIds.LargeBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 8;
+
+		if (teamOnly) {
+			xPushVel = Helpers.randomRange(-2, 2) * 0.5f;
+			vel = rsVel;
+		}
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -66,6 +71,11 @@ public class SmallBoltPickup : BaselineBoltPickup {
 		CActorIds.SmallBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 2;
+
+		if (teamOnly) {
+			xPushVel = Helpers.randomRange(-2, 2) * 0.5f;
+			vel = rsVel;
+		}
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

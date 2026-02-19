@@ -1125,15 +1125,18 @@ public partial class Level {
 			.ToArray()
 		);
 		// Iterate over the whole list.
+		int i = 0;
 		foreach (ActorRpcResponse response in responses) {
 			// Ignore actors that already exist.
 			if (getActorByNetId(response.netId) != null) {
+				i++;
 				continue;
 			}
 			// Skip if the owner playeris not there anymore.
 			// As would be no one to update them if they are localOnly.
 			Player? player = getPlayerById(response.playerId);
 			if (player == null) {
+				i++;
 				continue;
 			}
 			// Set up vars.
@@ -1141,6 +1144,10 @@ public partial class Level {
 			Actor? owner = null;
 			if (response.ownerId != null) {
 				owner = getActorByNetId(response.ownerId.Value);
+			}
+			// Because Protobuff just plain sucks.
+			if (responses[i].extraData == null) {
+				responses[i].extraData = [];
 			}
 			// When is projectile.
 			if (response.isProj) {
@@ -1174,6 +1181,7 @@ public partial class Level {
 				byte[] byteArgs = RPC.createActor.getSendBytes(args);
 				RPC.createActor.invoke(byteArgs);
 			}
+			i++;
 		}
 	}
 

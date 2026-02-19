@@ -42,7 +42,7 @@ public class RPCJoinLateRequest : RPC {
 				);
 			}
 			// Get the serialized version of the object.
-			ActorRpcResponse? serial = actor.getActorSerial();
+			ActorRpcResponse? serial = actor.getSerialData();
 			// We crash if has the flag but a null Serial.
 			if (serial == null) {
 				throw new Exception(

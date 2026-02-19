@@ -41,7 +41,7 @@ public class Pickup : Actor {
 		this.cActorId = cActorId;
 
 		if (sendRpc) {
-			RPC.createActor.sendRpc(this, owner, null, (byte)(teamOnly ? 1 : 0));
+			RPC.createActor.sendRpc(this, ownerPlayer, null, getSerialExtra());
 		}
 	}
 
@@ -76,4 +76,9 @@ public class Pickup : Actor {
 	public virtual void use(Character chr) {
 		destroySelf(doRpcEvenIfNotOwned: true);
 	}
+
+	// Net data.
+	public override int getSerialPlayerID() => ownerPlayer.id;
+	public override int getSerialCID() => (int)cActorId;
+	public override byte[] getSerialExtra() => [(byte)(teamOnly ? 1 : 0)];
 }

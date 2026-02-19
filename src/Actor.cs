@@ -306,12 +306,34 @@ public partial class Actor : GameObject {
 		);
 	}
 
-	public virtual byte[] getActorSerialExtra() {
+	public virtual byte[] getSerialExtra() {
 		return [];
 	}
+	public virtual ushort? getSerialOnwerID() => null;
+	public virtual int getSerialPlayerID() => netOwner?.id ?? int.MaxValue;
+	public virtual int getSerialCID() => (int)cActorId;
 
-	public virtual ActorRpcResponse? getActorSerial() {
-		return null;
+	public virtual ActorRpcResponse? getSerialData(ushort? customNetId = null) {
+		ushort? ownerId = getSerialOnwerID();
+		int playerId = getSerialPlayerID();
+		int creationId = getSerialCID();
+		ushort? newNetId = customNetId ?? netId;
+		// We just throw null if cannot be serialized.
+		if (newNetId == null || creationId == 0 || playerId == int.MaxValue) {
+			return null;
+		}
+		return new ActorRpcResponse() {
+			isProj = false,
+			actorId = creationId,
+			posX = pos.x,
+			posY = pos.y,
+			xDir = xDir,
+			playerId = playerId,
+			netId = newNetId.Value,
+			byteAngle = byteAngle,
+			ownerId = ownerId,
+			extraData = getSerialExtra()
+		};
 	}
 
 	public void changeSpriteIfDifferent(string spriteName, bool resetFrame) {

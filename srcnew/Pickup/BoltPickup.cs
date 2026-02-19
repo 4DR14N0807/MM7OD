@@ -11,6 +11,7 @@ public abstract class BaselineBoltPickup : Pickup {
 	) {
 		pickupType = PickupType.Bolts;
 		healAmount = 8;
+		syncOnLateJoin = true;
 	}
 
 	public override void use(Character chr) {	

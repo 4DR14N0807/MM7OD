@@ -13,6 +13,7 @@ public abstract class BaselineSuperPickup : Pickup {
 	) {
 		healAmount = 8;
 		altHealAmount = 50;
+		syncOnLateJoin = true;
 	}
 
 	public override void use(Character chr) {

@@ -22,7 +22,7 @@ public class Met : NeutralEnemy {
 
 		cActorId = CActorIds.Met;
 		if (sendRpc) {
-			RPC.createActor.sendRpc(this, ownerPlayer, null, getActorSerialExtra());
+			RPC.createActor.sendRpc(this, ownerPlayer, null, getSerialExtra());
 		}
 	}
 
@@ -32,7 +32,7 @@ public class Met : NeutralEnemy {
 		);
 	}
 
-	public override byte[] getActorSerialExtra() {
+	public override byte[] getSerialExtra() {
 		return [(byte)alliance];
 	}
 

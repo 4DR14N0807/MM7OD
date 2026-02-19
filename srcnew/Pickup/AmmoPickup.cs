@@ -12,6 +12,7 @@ public abstract class BaselineAmmoPickup : Pickup {
 		pickupType = PickupType.Ammo;
 		healAmount = 50;
 		altHealAmount = 8;
+		syncOnLateJoin = true;
 	}
 
 	public override void use(Character chr) {

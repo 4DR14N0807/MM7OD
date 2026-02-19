@@ -83,6 +83,7 @@ public class LargeHealthPickup : BaselineHealthPickup {
 		CActorIds.LargeHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 8;
+		syncOnLateJoin = true;
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

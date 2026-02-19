@@ -10,6 +10,7 @@ public abstract class BaselineShieldPickup : Pickup {
 		cActorId, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 10;
+		syncOnLateJoin = true;
 	}
 
 	public override void use(Character chr) {

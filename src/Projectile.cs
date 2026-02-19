@@ -27,7 +27,18 @@ public class Projectile : Actor {
 	public int reflectCount;
 	public bool shouldShieldBlock = true;
 	public bool neverReflect = false;
-	public int projId;
+	public int trueProjId;
+	public int hitProjId;
+	// Awfull hack to make the projId be the first assinged.
+	public int projId {
+		get => hitProjId;
+		set {
+			if (trueProjId == 0) {
+				trueProjId = value;
+			}
+			hitProjId = value;
+		}
+	}
 	public float speed;
 	public float healAmount;
 	public bool isShield;
@@ -220,6 +231,10 @@ public class Projectile : Actor {
 		}
 		*/
 	}
+
+	public override ushort? getSerialOnwerID() => ownerActor?.netId;
+	public override int getSerialPlayerID() => ownerPlayer.id;
+	public override int getSerialCID() => trueProjId;
 
 	public void reflect(Player player, bool sendRpc = false) {
 		if (neverReflect) {
@@ -659,8 +674,13 @@ public class Projectile : Actor {
 		int xDirOrAngle, bool isAngle, Actor? owner,
 		params byte[] extraData
 	) {
+		// Save for later.
+		trueProjId = projId;
 		if (netProjId == null) {
 			throw new Exception($"Attempt to create RPC of projectile type {getActorTypeName()} with null ID");
+		}
+		if (Global.serverClient == null) {
+			return;
 		}
 		byte[] projIdBytes = BitConverter.GetBytes((ushort)projId);
 		byte[] xBytes = BitConverter.GetBytes(pos.x);

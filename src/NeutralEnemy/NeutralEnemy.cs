@@ -43,24 +43,6 @@ public class NeutralEnemy : Actor, IDamagable {
 		syncOnLateJoin = true;
 	}
 
-	public override ActorRpcResponse? getActorSerial() {
-		if (netId == null || cActorId == 0) {
-			return null;
-		}
-		return new ActorRpcResponse() {
-			isProj = false,
-			actorId = (int)cActorId,
-			posX = pos.x,
-			posY = pos.y,
-			xDir = xDir,
-			playerId = ownerPlayer.id,
-			netId = netId.Value,
-			byteAngle = byteAngle,
-			ownerId = null,
-			extraData = getActorSerialExtra()
-		};
-	}
-
 	public override void preUpdate() {
 		base.preUpdate();
 		updateProjectileCooldown();
@@ -159,6 +141,10 @@ public class NeutralEnemy : Actor, IDamagable {
 	public bool isPlayableDamagable() {
 		return true;
 	}
+
+	// Net data.
+	public override int getSerialPlayerID() => ownerPlayer.id;
+	public override int getSerialCID() => (int)cActorId;
 
 	// Sends net data to update.
 	public override List<byte> getCustomActorNetData() {

@@ -624,7 +624,7 @@ public partial class Player {
 				etCount = altEtCount;
 			}
 			for (int i = 0; i < etCount; i++) {
-				eTanksMap[key].Add(new ETank(getMaxHealth((CharIds)key)));
+				eTanksMap[key].Add(new ETank());
 				lTanksMap[key].Add(new LTank(getMaxHealth((CharIds.Blues))));
 			}
 		}

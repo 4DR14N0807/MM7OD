@@ -654,6 +654,7 @@ public partial class Character : Actor, IDamagable {
 		if (invulnTime > 0) return false;
 		if (flag != null) return false;
 		if (isWarpIn()) return false;
+		if (charState.specialId == SpecialStateIds.WarpIdle) return false;
 		return charState is not Die;
 	}
 

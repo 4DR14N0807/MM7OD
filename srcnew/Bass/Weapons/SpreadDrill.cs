@@ -47,9 +47,9 @@ public class SpreadDrill : Weapon {
 public class SpreadDrillProj : Projectile {
 	public float timeToSplit;
 	public float selectedDir;
-	public Bass? bass;
 	public Point addPos;
 	public Sprite exaustData = new Sprite("spread_drill_effect");
+	Actor ownChr;
 
 	public SpreadDrillProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
@@ -57,7 +57,7 @@ public class SpreadDrillProj : Projectile {
 	) : base(
 		pos, xDir, owner, "spread_drill_proj", netProjId, altPlayer
 	) {
-		maxTime = 2f;
+		maxTime = 1;
 		projId = (int)BassProjIds.SpreadDrill;
 		destroyOnHit = false;
 	
@@ -69,6 +69,8 @@ public class SpreadDrillProj : Projectile {
 		vel.x = 100 * xDir;
 		damager.damage = 2;
 		damager.hitCooldown = 60;
+
+		ownChr = owner;
 
 		canBeLocal = false;
 
@@ -103,7 +105,7 @@ public class SpreadDrillProj : Projectile {
 		}
 		if (timeToSplit >= 40 ||
 			ownerPlayer.input.isPressed(Control.Shoot, ownerPlayer) &&
-			bass?.currentWeapon is SpreadDrill
+			(ownChr as Character)?.currentWeapon is SpreadDrill
 		) {
 			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), true, rpc: true);
 			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), false, rpc: true);

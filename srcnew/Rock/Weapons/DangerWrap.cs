@@ -516,7 +516,6 @@ public class DWrapBigBubble : Actor, IDamagable {
 		if (character != null) {
 			changePos(character.getCenterPos());
 			if (character.isDWrapped) {
-				character.grounded = true;
 				if (bubbleFrames is <= 60 or >= 150) {
 					if (character.vel.y > -60) character.vel.y -= 5;
 					if (Math.Abs(character.vel.x) < 30 && bubbleFrames <= 60) character.vel.x += 3 * character.xDir;

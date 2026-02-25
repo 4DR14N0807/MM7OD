@@ -204,7 +204,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new WaveBurnerUnderwaterProj(
-			arg.owner, arg.pos, arg.byteAngle, arg.extraData[1],
+			arg.owner, arg.pos, arg.byteAngle, arg.byteAngle,
 			arg.extraData[0], arg.netId, altPlayer: arg.player
 		);
 	}

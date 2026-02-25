@@ -171,7 +171,8 @@ public class UpgradeMenu : IMainMenu {
 				if (mainPlayer.ETanks.Count <= selectArrowPosY) {
 					if (mainPlayer.ETanks.Count < getMaxETanks() && mainPlayer.currency >= eTankCost) {
 						mainPlayer.currency -= eTankCost;
-						mainPlayer.ETanks.Add(new ETank(mainPlayer.maxHealth));
+						mainPlayer.ETanks.Add(new ETank());
+						mainPlayer.fuseETanks();
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ETanks.InRange(selectArrowPosY)) {
 						if (canUseETankInMenu(mainPlayer.canUseEtank(mainPlayer.ETanks[selectArrowPosY]))) {

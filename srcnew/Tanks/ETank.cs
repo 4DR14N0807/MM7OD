@@ -4,8 +4,8 @@ namespace MMXOnline;
 public class ETank : Tank {
 	public bool inUse;
 
-	public ETank(float maxHealth) {
-		this.maxHealth = maxHealth;
+	public ETank() {
+		maxHealth = 24;
 		health = maxHealth;
 	}
 

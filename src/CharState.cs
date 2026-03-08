@@ -577,6 +577,8 @@ public class WarpIdle : CharState {
 		if (character.ownedByLocalPlayer) {
 			character.invulnTime = firstSpawn ? 20 : 60;
 		}
+
+		player.warpedInOnce = true;
 	}
 }
 

@@ -693,7 +693,7 @@ public partial class Player {
 	}
 
 	public static float getModifiedHealth(float health) {
-		if (Global.level.server.customMatchSettings != null) {
+		if (Global.level.server?.customMatchSettings != null) {
 			float retHp = MathF.Ceiling(health * getHpMod());
 			if (retHp < 1) {
 				retHp = 1;

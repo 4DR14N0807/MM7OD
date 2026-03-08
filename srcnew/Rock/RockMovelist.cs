@@ -55,10 +55,10 @@ public class RockMovelistMenu : MovelistMenu {
 					spriteName, 3, "RUSH JET", Control.Up + " + " + Control.Special1, "COSTS AMMO"
 				),
 				new MovelistItem(
-					spriteName, 4, "RUSH SEARCH", Control.Down + " + " + Control.Special1, "COSTS " + Rock.RushSearchCost + " " + Global.nameCoins
+					spriteName, 4, "RUSH SEARCH", Control.Down + " + " + Control.Special1, "COSTS AMMO"
 				),
 				new MovelistItem(
-					spriteName, 14, "ACTIVATE ADAPTOR", Control.Special2, "COSTS " + Rock.SuperAdaptorCost + " " + Global.nameCoins
+					spriteName, 14, "SUPER ADAPTOR", Control.Special2, "COSTS " + Rock.SuperAdaptorCost + " " + Global.nameCoins
 				),
 				new MovelistItem(
 					"empty", 0, "", ""

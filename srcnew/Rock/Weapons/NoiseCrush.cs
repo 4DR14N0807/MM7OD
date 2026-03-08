@@ -146,12 +146,21 @@ public class NoiseCrushSpawnerRm : Projectile {
 	public void destroyProjs(Point fadePos) {
 		if (!ownedByLocalPlayer) return;
 
-		foreach (NoiseCrushRmProj proj in projectiles) {
+		/* foreach (NoiseCrushRmProj proj in projectiles) {
 			proj.destroySelf();
 		}
 		foreach (NoiseCrushChargedRmProj projC in projectilesCharged) {
 			projC.destroySelf();
+		} */
+
+		for (int i = 0; i < projectiles.Count; i++) {
+			projectiles[i].destroySelf();
 		}
+
+		for (int i = 0; i < projectilesCharged.Count; i++) {
+			projectilesCharged[i].destroySelf();
+		}
+
 		projectiles.Clear();
 		projectilesCharged.Clear();
 

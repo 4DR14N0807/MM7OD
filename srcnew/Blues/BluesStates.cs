@@ -5,10 +5,27 @@ using SFML.Graphics;
 
 namespace MMXOnline;
 
-public class BluesShootAlt : CharState {
+public class BluesState : CharState {
+	public Blues blues = null!;
+
+	public BluesState(
+		string sprite, string shootSprite = "", string attackSprite = "",
+		string transitionSprite = "", string transShootSprite = ""
+	) : base(
+		sprite, shootSprite, attackSprite,
+		transitionSprite, transShootSprite
+	) {
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		blues = character as Blues ?? throw new NullReferenceException();
+	}
+}
+
+public class BluesShootAlt : BluesState {
 	Weapon stateWeapon;
 	bool fired;
-	Blues blues = null!;
 
 	public BluesShootAlt(Weapon wep) : base("shoot2") {
 		airMove = true;
@@ -29,7 +46,6 @@ public class BluesShootAlt : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		bool air = !blues.grounded || blues.vel.y < 0;
 
 		landSprite = "shoot2";
@@ -49,12 +65,11 @@ public class BluesShootAlt : CharState {
 	}
 }
 
-public class BluesShootAltLadder : CharState {
+public class BluesShootAltLadder : BluesState {
 	Weapon stateWeapon;
 	bool fired;
 	Ladder ladder;
-	float midX; 
-	Blues blues = null!;
+	float midX;
 
 	public BluesShootAltLadder(Weapon wep, Ladder ladder) : base("ladder_shoot2") {
 		normalCtrl = false;
@@ -64,7 +79,6 @@ public class BluesShootAltLadder : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.stopMoving();
 		blues.useGravity = false;
 		midX = ladder.collider.shape.getRect().center().x;
@@ -89,9 +103,7 @@ public class BluesShootAltLadder : CharState {
 	}
 }
 
-public class BluesShieldSwapAir : CharState {
-	Blues blues = null!;
-
+public class BluesShieldSwapAir : BluesState {
 	public BluesShieldSwapAir() : base("swapfall") {
 	}
 
@@ -114,7 +126,6 @@ public class BluesShieldSwapAir : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = true;
 	}
 
@@ -124,9 +135,7 @@ public class BluesShieldSwapAir : CharState {
 	}
 }
 
-public class BluesShieldSwapLand : CharState {
-	Blues blues = null!;
-
+public class BluesShieldSwapLand : BluesState {
 	public BluesShieldSwapLand() : base("swapland") {
 	}
 
@@ -139,7 +148,6 @@ public class BluesShieldSwapLand : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = true;
 		new StrikeAttackPushProj(blues.pos, 3, blues.xDir, blues, player.getNextActorNetId(), true);
 		blues.playSound("crash");
@@ -152,11 +160,10 @@ public class BluesShieldSwapLand : CharState {
 	}
 }
 
-public class ShieldDash : CharState {
+public class ShieldDash : BluesState {
 	bool soundPlayed;
 	int initialXDir;
 	float dustTimer = 4;
-	Blues blues = null!;
 
 	public ShieldDash() : base("dash") {
 		normalCtrl = true;
@@ -215,7 +222,6 @@ public class ShieldDash : CharState {
 	}
 
 	public override void onEnter(CharState oldState) {
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = blues.isShieldActive;
 		base.onEnter(oldState);
 		initialXDir = character.xDir;
@@ -234,11 +240,10 @@ public class ShieldDash : CharState {
 	}
 }
 
-public class BluesSlide : CharState {
+public class BluesSlide : BluesState {
 	public float slideTime = 0;
 	public int initialSlideDir;
 	public int particles = 3;
-	Blues blues = null!;
 	Anim? dust;
 	public bool locked;
 
@@ -294,7 +299,6 @@ public class BluesSlide : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		initialSlideDir = character.xDir;
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.shieldCustomState = false;
 		blues.changeGlobalColliderOnSpriteChange(blues.sprite.name);
 
@@ -304,11 +308,10 @@ public class BluesSlide : CharState {
 	}
 }
 
-public class BluesSpreadShoot : CharState {
+public class BluesSpreadShoot : BluesState {
 	int shotAngle = 64;
 	int shotNum = 0;
 	int shotLastFrame = 10;
-	Blues blues = null!;
 
 	public BluesSpreadShoot() : base("spreadshoot_air") {
 		canJump = true;
@@ -320,7 +323,6 @@ public class BluesSpreadShoot : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.inCustomShootAnim = true;
 		blues.shieldCustomState = false;
 		if (!blues.grounded) blues.changeSpriteFromName(airSprite, true);
@@ -369,7 +371,6 @@ public class BluesSpreadShoot : CharState {
 
 public class ProtoGenericShotState : CharState {
 	bool fired;
-	Blues blues = null!;
 	Weapon weapon;
 
 	public ProtoGenericShotState(Weapon weapon) : base("chargeshot") {
@@ -383,14 +384,13 @@ public class ProtoGenericShotState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
 		base.update();
 
 		if (!fired && character.frameIndex == 3) {
-			weapon.shoot(blues, 0);
+			weapon.shoot(character, 0);
 			fired = true;
 		}
 		if (character.isAnimOver()) {
@@ -399,8 +399,7 @@ public class ProtoGenericShotState : CharState {
 	}
 }
 
-public class ProtoStrike : CharState {
-	Blues blues = null!;
+public class ProtoStrike : BluesState {
 	float startTime;
 	bool fired;
 	float coreCooldown = 60;
@@ -410,7 +409,6 @@ public class ProtoStrike : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
@@ -449,8 +447,7 @@ public class ProtoStrike : CharState {
 }
 
 
-public class RedStrike : CharState {
-	Blues blues = null!;
+public class RedStrike : BluesState {
 	float startTime;
 	bool fired;
 
@@ -459,7 +456,6 @@ public class RedStrike : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
@@ -490,9 +486,7 @@ public class RedStrike : CharState {
 }
 
 
-public class OverheatShutdownStart : CharState {
-	Blues blues = null!;
-
+public class OverheatShutdownStart : BluesState {
 	public OverheatShutdownStart() : base("hurt") {
 		superArmor = true;
 		stunImmune = true;
@@ -512,7 +506,6 @@ public class OverheatShutdownStart : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.coreAmmo = blues.coreMaxAmmo;
 		blues.coreAmmoDecreaseCooldown = 10;
 		blues.playSound("danger_wrap_explosion", sendRpc: true);
@@ -521,9 +514,7 @@ public class OverheatShutdownStart : CharState {
 	}
 }
 
-public class OverheatShutdown : CharState {
-	Blues blues = null!;
-
+public class OverheatShutdown : BluesState {
 	public OverheatShutdown() : base("shutdown") {
 		superArmor = true;
 		stunImmune = true;
@@ -538,11 +529,9 @@ public class OverheatShutdown : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 	}
 }
 public class Recover : CharState {
-	Blues blues = null!;
 
 	public Recover() : base("recover") {
 		superArmor = true;
@@ -557,16 +546,14 @@ public class Recover : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 	}
 }
 
-public class BluesRevive : CharState {
+public class BluesRevive : BluesState {
 	float radius = 200;
 	float healTime = -50;
 	bool fullHP;
 	bool fullCore;
-	Blues blues = null!;
 
 	public BluesRevive() : base("revive") {
 		invincible = true;
@@ -631,7 +618,6 @@ public class BluesRevive : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.isBreakMan = true;
 		blues.playSound("whistle", true, true);
 		blues.frameSpeed = 0;

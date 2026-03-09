@@ -54,19 +54,11 @@ public class ArrowSlashProj : Projectile {
 	}
 }
 
-public class SAArrowSlashState : CharState {
-
+public class SAArrowSlashState : RockState {
 	bool fired;
-	Rock rock = null!;
 
-	public SAArrowSlashState() : base("sa_arrowslash", "", "", "") {
+	public SAArrowSlashState() : base("sa_arrowslash") {
 		airMove = true;
-	}
-
-	
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		rock = character as Rock ?? throw new NullReferenceException();
 	}
 
 	public override void onExit(CharState? newState) {

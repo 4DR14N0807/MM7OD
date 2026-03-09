@@ -77,7 +77,7 @@ public class HpShieldManager() {
 }
 
 public class HpShield {
-	public (string name, int index) sprite = ("hud_buffs" , 1);
+	public (string name, int index) sprite = ("hud_shields" , 0);
 	public decimal health;
 	public float time;
 	public ShieldIds id;

@@ -29,82 +29,69 @@ public class ThunderBolt : Weapon {
 		Player player = rock.player;
 		ushort netId = player.getNextActorNetId();
 
-		new ThunderBoltRmProj(rock, shootPos, xDir, netId, 0, false, true);
+		new ThunderBoltRmProj(rock, shootPos, xDir, netId, false, true);
 		rock.playSound("thunder_bolt", sendRpc: true);
 	}
 }
 public class ThunderBoltRmProj : Projectile {
-	public int type = 0;
-	float projSpeed = 300;
-	Actor ownChr = null!;
-	bool pierce;
+	public bool pierce;
 
 	public ThunderBoltRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
-		int type, bool pierce, bool rpc = false, Player? altPlayer = null
+		bool pierce, bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "thunder_bolt_start", netProjId, altPlayer
+		pos, xDir, owner, "thunder_bolt_proj", netProjId, altPlayer
 	) {
-
 		projId = (int)RockProjIds.ThunderBolt;
-		maxTime = pierce ? 0.25f : 0.45f;
+		maxTime = 0.45f;
 		fadeSound = "thunder_bolt_hit";
 		fadeSprite = "thunder_bolt_fade2";
 		destroyOnHit = !pierce;
 		fadeOnAutoDestroy = true;
-		this.type = type;
 		this.pierce = pierce;
 		damager.damage = 2;
 		damager.hitCooldown = 30;
-		ownChr = owner;
 
-		if (type == 1) {
-			base.vel.x = projSpeed * xDir;
-			changeSprite("thunder_bolt_proj", true);
-		}
+		vel.x = 300 * xDir;
 
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type, Helpers.boolToByte(pierce) };
-
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ThunderBoltRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
-			arg.extraData[0], arg.extraData[1] == 1, altPlayer: arg.player
+			arg.extraData[1] == 1, altPlayer: arg.player
 		);
 	}
 
-	public override void update() {
-		base.update();
-		if (!ownedByLocalPlayer) return;
-
-		if (type == 0) {
-			if (isAnimOver()) {
-				new ThunderBoltRmProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 1, pierce, rpc: true);
-				destroySelfNoEffect();
-			}
-		}
+	public override void onStart() {
+		base.onStart();
+		new Anim(pos, "thunder_bolt_start", xDir, null, true);
 	}
 
 	public void onHit() {
-		if (!ownedByLocalPlayer) {
-			destroySelfNoEffect();
+		if (!ownedByLocalPlayer || pierce || ownerActor == null) {
 			return;
 		}
-		if (pierce) return;
-		if (type == 1) {
-			new ThunderBoltSplitRmProj(ownChr, pos.addxy(xDir * 24, 0), xDir, damager.owner.getNextActorNetId(true), 0, true);
-		}
+		new ThunderBoltSplitRmProj(
+			ownerActor, pos.addxy(xDir * 24, 0),
+			xDir, ownerPlayer.getNextActorNetId(true), 0, true
+		);
 	}
-
 
 	public override void onDamageEX(IDamagable damagable) {
 		base.onDamageEX(damagable);
 		onHit();
-		destroySelf();
+	}
+
+	public override void onHitWall(CollideData other) {
+		base.onHitWall(other);
+		if (ownedByLocalPlayer) {
+			onHit();
+			destroySelf();
+		}
 	}
 }
 
@@ -112,14 +99,13 @@ public class ThunderBoltSplitRmProj : Projectile {
 	public int type = 0;
 	public float sparkleTime = 0;
 	float projSpeed = 300;
-	Actor ownChr = null!;
+
 	public ThunderBoltSplitRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		int type, bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "thunder_bolt_fade", netProjId, altPlayer
 	) {
-
 		projId = (int)RockProjIds.ThunderBoltSplit;
 		maxTime = 0.75f;
 		this.type = type;
@@ -127,7 +113,6 @@ public class ThunderBoltSplitRmProj : Projectile {
 		damager.damage = 2;
 		damager.flinch = Global.miniFlinch;
 		damager.hitCooldown = 30;
-		ownChr = owner;
 
 		if (type >= 1) {
 			var sprite = "thunder_bolt_divide_proj";
@@ -162,16 +147,22 @@ public class ThunderBoltSplitRmProj : Projectile {
 			sparkleTime += Global.spf;
 			if (sparkleTime > 0.05) {
 				sparkleTime = 0;
-				new Anim(pos, "thunder_bolt_divide_trail", 1, damager.owner.getNextActorNetId(), true, true);
+				new Anim(pos, "thunder_bolt_divide_trail", 1, ownerPlayer.getNextActorNetId(), true, true);
 			}
 		}
-		if (type == 0) {
-			if (isAnimOver()) {
-				new ThunderBoltSplitRmProj(ownChr, pos.addxy(0, -24), xDir, damager.owner.getNextActorNetId(true), 1, rpc: true);
-				new ThunderBoltSplitRmProj(ownChr, pos.addxy(0, 24), xDir, damager.owner.getNextActorNetId(true), 2, rpc: true);
-				//new ThunderBoltProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 0, true, true);
-				destroySelfNoEffect();
-			}
+
+		if (type != 0 || !isAnimOver()) {
+			return;
 		}
+		if (ownerActor != null) {
+			new ThunderBoltSplitRmProj(
+				ownerActor, pos.addxy(0, -24), xDir,
+				ownerPlayer.getNextActorNetId(true), 1, rpc: true);
+			new ThunderBoltSplitRmProj(
+				ownerActor, pos.addxy(0, 24), xDir,
+				ownerPlayer.getNextActorNetId(true), 2, rpc: true
+			);
+		}
+		destroySelfNoEffect();
 	}
 }

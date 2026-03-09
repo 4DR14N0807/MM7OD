@@ -68,7 +68,7 @@ public class LightningBoltSpawn : Anim {
 	}
 }
 
-public class LightningBoltState : CharState {
+public class LightningBoltState : BassState {
 	int phase = 0;
 	Anim? aim;
 	Anim? anim;
@@ -77,7 +77,6 @@ public class LightningBoltState : CharState {
 	Point lightningPos;
 	float endLagFrames = 0;
 	float overrideDamage;
-	Bass bass = null!;
 	float minTime = 6;
 	float maxTime = 60;
 	float chargeTime = 30;
@@ -90,7 +89,6 @@ public class LightningBoltState : CharState {
 		base.onEnter(oldState);
 		Point startAimPos = new Point(character.pos.x + 5 * character.xDir, getSpawnYPos());
 		animOffset = new Point(3 * character.xDir, -23);
-		bass = character as Bass ?? throw new NullReferenceException();
 
 		character.useGravity = false;
 		if (character.vel.y < 0) {
@@ -128,7 +126,6 @@ public class LightningBoltState : CharState {
 
 	public override void update() {
 		base.update();
-
 		anim?.changePos(character.pos.add(animOffset));
 
 		if (phase == 0) {
@@ -179,7 +176,6 @@ public class LightningBoltState : CharState {
 		if (endLagFrames >= 45) {
 			character.changeToIdleOrFall();
 		}
-		
 	}
 
 	public override void onExit(CharState? newState) {
@@ -269,13 +265,11 @@ public class LightningBoltProj : Projectile {
 		}
 
 		if (collider == null) return;
-		
 		List<Point> points = new() {
 			new Point(collider.shape.getRect().x1, pos.y - getHeight()),
 			new Point(collider.shape.getRect().x2, pos.y - getHeight()),
 			new Point(collider.shape.getRect().x2, pos.y),
 			new Point(collider.shape.getRect().x1, pos.y),
-			
 		};
 		globalCollider = new Collider(points, true, null!, false, false, 0, Point.zero);
 	}
@@ -327,7 +321,7 @@ public class LightningBoltProj : Projectile {
 			float sVelY = Helpers.randomRange(60, 90);
 			if (i % 2 == 0) sVelY *= -1;
 
-			new Anim(sparkPos, "lightning_bolt_spark", Math.Sign(sVelX), null!, true) 
+			new Anim(sparkPos, "lightning_bolt_spark", Math.Sign(sVelX), null, true) 
 			{ xPushVel = sVelX / 60, yPushVel = sVelY / 60 };
 		}
 	}

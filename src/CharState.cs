@@ -491,7 +491,7 @@ public class WarpIn : CharState {
 			warpAnim.destroySelf();
 		}
 		player.warpedInOnce = true;
-		character.invulnTime = 60;
+		character.invulnTime = player.warpedInOnce ? 0 : 60;
 	}
 }
 
@@ -599,7 +599,7 @@ public class WarpIdle : CharState {
 		character.splashable = true;
 		specialId = SpecialStateIds.None;
 		if (character.ownedByLocalPlayer) {
-			character.invulnTime = firstSpawn ? 20 : 60;
+			character.invulnTime = firstSpawn ? 0 : 60;
 		}
 
 		player.warpedInOnce = true;

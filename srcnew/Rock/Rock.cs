@@ -10,10 +10,6 @@ public class Rock : Character {
 	public float weaponCooldown;
 	public List<Actor> junkShieldProjs = new();
 	public LoopingSound? junkShieldSound;
-	public ScorchWheelSpawnRm? sWellSpawn;
-	public ScorchWheelRmProj? sWell;
-	public WaterScorchWheelSpawnRm? sWellU;
-	public WaterScorchWheelSpawnRm? underwaterScorchWheel;
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
 	public bool armless;
@@ -354,9 +350,7 @@ public class Rock : Character {
 
 	public override bool canShoot() {
 		if (isSlideColliding) return false;
-		if (sWell != null) return false;
-		if (sWellSpawn != null) return false;
-		if (sWellU != null) return false;
+		if (sWheel != null) return false;
 		if (charState is Slide)
 			return (currentWeapon is RockBuster || currentWeapon is WildCoil) && getChargeLevel() == 2;
 		if (charState is CallDownRush) return false;
@@ -394,7 +388,7 @@ public class Rock : Character {
 		if (isWarpIn()) return false;
 		if (invulnTime > 0) return false;
 		if (junkShieldProjs.Count > 0) return false;
-		if (sWell != null) return false;
+		if (sWheel != null) return false;
 
 		return base.canCharge();
 	}
@@ -659,16 +653,13 @@ public class Rock : Character {
 	}
 
 	public virtual float getSlideSpeed() {
-		return 3.5f * getRunDebuffs();
+		return 3f * getRunDebuffs();
 	}
 
 	public void removeLastingProjs() {
-		sWellSpawn?.destroySelf();
-		sWellSpawn = null;
-		sWell?.destroySelf();
-		sWell = null;
-		sWellU?.destroySelf();
-		sWellU = null;
+		sWheel?.destroySelf();
+		sWheel = null;
+		sWheel?.destroySelf();
 		noiseCrushEffect?.destroy();
 		noiseCrushEffect = null;
 		chargedNoiseCrushSound?.stop();

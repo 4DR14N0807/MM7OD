@@ -4,10 +4,10 @@ public abstract class BaselineBoltPickup : Pickup {
 	public BaselineBoltPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
 	) {
 		pickupType = PickupType.Bolts;
 		healAmount = 8;

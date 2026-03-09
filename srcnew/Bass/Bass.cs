@@ -264,7 +264,7 @@ public class Bass : Character {
 		if (refillFly()) {
 			Helpers.decrementFrames(ref flyTime);
 		}
-		armless = sbRocketPunch != null;
+		armless = sbRocketPunch?.destroyed == false;
 		if (flyTime > MaxFlyTime) {
 			flyTime = MaxFlyTime;
 		}
@@ -562,6 +562,7 @@ public class Bass : Character {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
 						lowerPhase(phase - 1);
 						playSound("super_bass_aura", sendRpc: true);
+						addHealth(1);
 						changeState(new BottomlessPitWarpIn());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}
@@ -870,7 +871,7 @@ public class Bass : Character {
 
 	public override bool canShoot() {
 		if (weaponCooldown > 0 ||
-			sbRocketPunch != null
+			sbRocketPunch?.destroyed == false
 		) {
 			return false;
 		}
@@ -889,8 +890,9 @@ public class Bass : Character {
 		if ((isSuperBass || isTrebbleBoost) && phase >= 2) return 3;
 		return 2;
 	}
+
 	public override float getDashSpeed() {
-		return 3.45f * getRunDebuffs();
+		return 3.25f * getRunDebuffs();
 	}
 
 	public override float getFallSpeed(bool checkUnderwater = true) {

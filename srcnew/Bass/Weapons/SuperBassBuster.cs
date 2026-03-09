@@ -105,7 +105,7 @@ public class SBassRP : Weapon {
 				));
 			}
 		} else if (chargeLevel == 2) {
-			new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			bass.sbRocketPunch = new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("super_adaptor_punch", sendRpc: true);
 		} else if (chargeLevel == 1) {
 			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
@@ -215,9 +215,7 @@ public class ChamoBuster : Projectile {
 	}
 }
 
-
 public class SuperBassRP : Projectile {
-	Bass bass = null!;
 	Player player;
 	float maxReverseTime;
 	bool reversed;
@@ -231,14 +229,9 @@ public class SuperBassRP : Projectile {
 		pos, xDir, owner, "sb_rocket_punch", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassRocketPunch;
-		if (ownedByLocalPlayer) {
-			bass = owner as Bass ?? throw new NullReferenceException();
-			if (bass != null) bass.sbRocketPunch = this;
-		}
 
 		maxReverseTime = 0.5f;
 		this.player = ownerPlayer;
-
 
 		vel.x = projSpeed * xDir;
 		damager.damage = 3;
@@ -262,15 +255,16 @@ public class SuperBassRP : Projectile {
 	public override void update() {
 		base.update();
 		if (!locallyControlled) return;
+		if (!ownedByLocalPlayer) return;
 
-		if (ownedByLocalPlayer && (bass == null || bass.destroyed)) {
+		if (ownerActor?.destroyed != false) {
 			destroySelf("generic_explosion");
 			return;
 		}
 
-		var targets = Global.level.getTargets(bass.pos, player.alliance, true);
+		var targets = Global.level.getTargets(ownerActor.pos, player.alliance, true);
 		foreach (var t in targets) {
-			if (bass.isFacing(t) && MathF.Abs(t.pos.y - bass.pos.y) < 80) {
+			if (ownerActor.isFacing(t) && MathF.Abs(t.pos.y - ownerActor.pos.y) < 80) {
 				target = t;
 				break;
 			}
@@ -291,17 +285,17 @@ public class SuperBassRP : Projectile {
 
 		if (reversed) {
 			vel = new Point(0, 0);
-			if (pos.x > bass.pos.x) xDir = -1;
+			if (pos.x > ownerActor.pos.x) xDir = -1;
 			else xDir = 1;
 
-			Point returnPos = bass.getCenterPos();
-			if (bass.sprite.name == "rock_rocket_punch") {
-				Point poi = bass.pos;
-				var pois = bass.sprite.getCurrentFrame()?.POIs;
+			Point returnPos = ownerActor.getCenterPos();
+			if (ownerActor.sprite.name == "rock_rocket_punch") {
+				Point poi = ownerActor.pos;
+				var pois = ownerActor.sprite.getCurrentFrame()?.POIs;
 				if (pois != null && pois.Length > 0) {
 					poi = pois[0];
 				}
-				returnPos = bass.pos.addxy(poi.x * bass.xDir, poi.y);
+				returnPos = ownerActor.pos.addxy(poi.x * ownerActor.xDir, poi.y);
 			}
 
 			move(pos.directionToNorm(returnPos).times(projSpeed));
@@ -313,34 +307,35 @@ public class SuperBassRP : Projectile {
 	}
 
 	public void followOwner() {
-		if (bass != null) {
-			float targetPosX = bass.getCenterPos().x;
-			float targetPosY = bass.getCenterPos().y;
-			float moveSpeed = speed;
+		if (ownerActor == null) {
+			return;
+		}
+		float targetPosX = ownerActor.getCenterPos().x;
+		float targetPosY = ownerActor.getCenterPos().y;
+		float moveSpeed = speed;
 
-			// X axis follow.
-			if (pos.x < targetPosX) {
-				move(new Point(moveSpeed, 0));
-				if (pos.x > targetPosX) {
-					changePos(targetPosX, pos.y);
-				}
-			} else if (pos.x > targetPosX) {
-				move(new Point(-moveSpeed, 0));
-				if (pos.x < targetPosX) {
-					changePos(targetPosX, pos.y);
-				}
+		// X axis follow.
+		if (pos.x < targetPosX) {
+			move(new Point(moveSpeed, 0));
+			if (pos.x > targetPosX) {
+				changePos(targetPosX, pos.y);
 			}
-			// Y axis follow.
+		} else if (pos.x > targetPosX) {
+			move(new Point(-moveSpeed, 0));
+			if (pos.x < targetPosX) {
+				changePos(targetPosX, pos.y);
+			}
+		}
+		// Y axis follow.
+		if (pos.y < targetPosY) {
+			move(new Point(0, moveSpeed));
+			if (pos.y > targetPosY) {
+				changePos(pos.x, targetPosY);
+			}
+		} else if (pos.y > targetPosY) {
+			move(new Point(0, -moveSpeed));
 			if (pos.y < targetPosY) {
-				move(new Point(0, moveSpeed));
-				if (pos.y > targetPosY) {
-					changePos(pos.x, targetPosY);
-				}
-			} else if (pos.y > targetPosY) {
-				move(new Point(0, -moveSpeed));
-				if (pos.y < targetPosY) {
-					changePos(pos.x, targetPosY);
-				}
+				changePos(pos.x, targetPosY);
 			}
 		}
 	}
@@ -392,17 +387,10 @@ public class SuperBassRP : Projectile {
 			reversed = true;
 		}
 	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-		if (bass != null) bass.sbRocketPunch = null;
-	}
 }
 
 
 public class SweepingLaserProj : Projectile {
-
 	int startHeight;
 	Sprite? bodySprite;
 	int spriteHeight;
@@ -413,9 +401,9 @@ public class SweepingLaserProj : Projectile {
 	Anim? bodyAnim;
 	Anim? bottomAnim;
 	bool ground;
-	Bass bass = null!;
 	int groundTime;
 	int lastGroundTime;
+
 	public SweepingLaserProj(
 		Actor owner, Point pos, int xDir, ushort? netId, 
 		bool rpc = false, Player? player = null
@@ -430,10 +418,6 @@ public class SweepingLaserProj : Projectile {
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 30;
 		canBeLocal = false;
-
-		if (ownedByLocalPlayer) {
-			bass = owner as Bass ?? throw new NullReferenceException();
-		}
 		start();
 
 		if (rpc) {
@@ -462,7 +446,9 @@ public class SweepingLaserProj : Projectile {
 		base.update();
 		if (!ownedByLocalPlayer) return;
 
-		changePos(bass.getShootPos());
+		if (ownerActor is Character chara) {
+			changePos(chara.getShootPos());
+		}
 		checkGround();
 		if (ground) groundTime++;
 
@@ -502,7 +488,9 @@ public class SweepingLaserProj : Projectile {
 	}
 
 	void checkGround() {
-		var hits = Global.level.raycast(pos, pos.addxy(0, (maxPieces * spriteHeight) + startHeight), new List<Type>() { typeof(Wall) });
+		CollideData? hits = Global.level.raycast(
+			pos, pos.addxy(0, (maxPieces * spriteHeight) + startHeight), new List<Type>() { typeof(Wall) }
+		);
 		if (hits != null) {
 			endPos = hits.getHitPointSafe();
 			ground = true;
@@ -512,12 +500,12 @@ public class SweepingLaserProj : Projectile {
 		}
 
 		List<Point> points = new List<Point>() {
-			new Point(pos.x - 6, pos.y),
-			new Point(pos.x + 7, pos.y),
-			new Point(pos.x + 7, endPos.y),
-			new Point(pos.x - 6, endPos.y),
+			new Point(6, 0),
+			new Point(6, 0),
+			new Point(6, endPos.y - pos.y),
+			new Point(6, endPos.y - pos.y),
 		};
-		globalCollider = new Collider(points, true, null!, false, false, 0, Point.zero);
+		globalCollider = new Collider(points, true, this, false, false, 0, Point.zero);
 	}
 
 	public override List<byte> getCustomActorNetData() {
@@ -530,7 +518,6 @@ public class SweepingLaserProj : Projectile {
 		pieces = data[0];
 	}
 }
-
 
 public class DarkCometUpProj : Projectile {
 	Actor? actor;
@@ -599,7 +586,6 @@ public class DarkCometUpProj : Projectile {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (damagedOnce || !ownedByLocalPlayer || hitWall) return;
-
 		createProjs();
 	}
 
@@ -617,7 +603,6 @@ public class DarkCometUpProj : Projectile {
 
 
 public class DarkCometDownProj : Projectile {
-
 	Anim? anim;
 
 	public DarkCometDownProj(

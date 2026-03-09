@@ -167,12 +167,10 @@ public partial class Actor : GameObject {
 	public bool syncOnLateJoin;
 
 	public bool splashable;
-	private Anim _waterWade = null!;
+	private Anim? _waterWade = null;
 	public Anim waterWade {
 		get {
-			if (_waterWade == null) {
-				_waterWade = new Anim(pos, "splash", 1, null, false); //"wade"
-			}
+			_waterWade ??= new Anim(pos, "splash", 1, null, false); //"wade"
 			return _waterWade;
 		}
 	}
@@ -306,12 +304,10 @@ public partial class Actor : GameObject {
 		);
 	}
 
-	public virtual byte[] getSerialExtra() {
-		return [];
-	}
-	public virtual ushort? getSerialOnwerID() => null;
-	public virtual int getSerialPlayerID() => netOwner?.id ?? int.MaxValue;
 	public virtual int getSerialCID() => (int)cActorId;
+	public virtual int getSerialPlayerID() => netOwner?.id ?? int.MaxValue;
+	public virtual ushort? getSerialOnwerID() => null;
+	public virtual byte[] getSerialExtra() => [];
 
 	public virtual ActorRpcResponse? getSerialData(ushort? customNetId = null) {
 		ushort? ownerId = getSerialOnwerID();

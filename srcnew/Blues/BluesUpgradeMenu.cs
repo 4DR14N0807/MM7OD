@@ -75,13 +75,17 @@ public class BluesUpgradeMenu : IMainMenu {
 						mainPlayer.ltanks.Add(new LTank(mainPlayer.maxHealth));
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ltanks.InRange(selectArrowPosY)) {
-						if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY]))) {
+						if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY])) &&
+							mainPlayer.character != null
+						) {
 							mainPlayer.ltanks[selectArrowPosY - 1].use(mainPlayer, mainPlayer.character);
 						}
 					}
 				}
 				else if (mainPlayer.ltanks.InRange(selectArrowPosY)) {
-					if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY]))) {
+					if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY])) &&
+						mainPlayer.character != null
+					) {
 						mainPlayer.ltanks[selectArrowPosY].use(mainPlayer, mainPlayer.character);
 					}
 				}

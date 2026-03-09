@@ -2,14 +2,31 @@
 
 namespace MMXOnline;
 
-public class Slide : CharState {
+public class RockState : CharState {
+	public Rock rock = null!;
+
+	public RockState(
+		string sprite, string shootSprite = "", string attackSprite = "",
+		string transitionSprite = "", string transShootSprite = ""
+	) : base(
+		sprite, shootSprite, attackSprite,
+		transitionSprite, transShootSprite
+	) {
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		rock = character as Rock ?? throw new NullReferenceException();
+	}
+}
+
+public class Slide : RockState {
 	public float slideTime = 0;
 	public string initialSlideButton;
 	public int initialSlideDir;
 	public bool stop;
 	public int particles = 3;
 	Anim? dust;
-	Rock rock = null!;
 
 	public Slide(string initialSlideButton) : base("slide", "", "") {
 		enterSound = "slide";
@@ -23,7 +40,6 @@ public class Slide : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		rock = character as Rock ?? throw new NullReferenceException();
 		initialSlideDir = character.xDir;
 	}
 
@@ -102,8 +118,7 @@ public class SlideEnd : CharState {
 	}
 }
 
-public class ShootAltRock : CharState {
-	Rock rock = null!;
+public class ShootAltRock : RockState {
 	Weapon stateWeapon;
 	bool fired;
 	int chargeLv;
@@ -125,7 +140,6 @@ public class ShootAltRock : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		rock = character as Rock ?? throw new NullReferenceException();
 		if (character.isUnderwater() && stateWeapon is ScorchWheel) {
 			character.changeSpriteFromName("shoot_swell", true);
 		}
@@ -180,12 +194,11 @@ public class ShootAltRock : CharState {
 }
 
 
-public class ShootAltLadder : CharState {
+public class ShootAltLadder : RockState {
 	Weapon ladderWeapon;
 	bool fired;
 	int chargeLv;
 	Ladder ladder;
-	Rock rock = null!;
 
 	//Adrián: This is used for weapons with different shoot anims (Wild Coil, Junk Shield, etc) while being in a ladder.
 	public ShootAltLadder(Ladder ladder, Weapon ladderWeapon, int chargeLv, bool underwater = false) : 
@@ -200,7 +213,6 @@ public class ShootAltLadder : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.useGravity = false;
-		rock = character as Rock ?? throw new NullReferenceException();
 	}
 	public override void update() {
 		base.update();
@@ -286,7 +298,7 @@ public class CallDownRush : CharState {
 	float jumpTime = 0;
 	bool isXAllign;
 
-	public CallDownRush() : base("sa_activate", "", "", "") {
+	public CallDownRush() : base("sa_activate") {
 		invincible = true;
 		normalCtrl = false;
 		attackCtrl = false;
@@ -419,8 +431,7 @@ public class CoilJump : CharState {
 
 
 public class RushJetRide : CharState {
-	
-	Rock rock = null!;
+
 	public RushJetRide() : base("idle", "shoot") {
 		normalCtrl = false;
 		attackCtrl = true;
@@ -428,7 +439,6 @@ public class RushJetRide : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		rock = character as Rock ?? throw new NullReferenceException();
 		//float rushPosX = rock.rush.getCenterPos().x;
 		//character.changePos(new Point(rushPosX, rock.rush.pos.y - 16));
 	}

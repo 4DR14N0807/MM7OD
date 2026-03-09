@@ -213,11 +213,10 @@ public class TenguBladeMelee : GenericMeleeProj {
 	}
 }
 
-public class TenguBladeDash : CharState {
+public class TenguBladeDash : BassState {
 	int startXDir;
 	int inputXDir;
 	Anim? dashSpark;
-	Bass bass = null!;
 	public TenguBladeDash() : base("tblade_dash") {
 		normalCtrl = true;
 		attackCtrl = false;
@@ -227,7 +226,6 @@ public class TenguBladeDash : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		bass = character as Bass ?? throw new NullReferenceException();
 		character.isDashing = true;
 		dashSpark = new Anim(
 			character.getDashSparkEffectPos(character.xDir),

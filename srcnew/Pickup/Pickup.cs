@@ -24,7 +24,7 @@ public class Pickup : Actor {
 	public Pickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
 	) : base(
 		sprite, pos, netId, ownedByLocalPlayer, false
 	) {
@@ -39,10 +39,16 @@ public class Pickup : Actor {
 		}
 
 		this.cActorId = cActorId;
+		if (spawnUp) {
+			vel.y -= 5 * 60;
+		}
 
 		if (sendRpc) {
-			RPC.createActor.sendRpc(this, ownerPlayer, null, getSerialExtra());
+			RPC.createActor.sendRpc(
+				this, ownerPlayer, null, Helpers.boolArrayToByte([teamOnly, spawnUp])
+			);
 		}
+		syncOnLateJoin = true;
 	}
 
 	public override void update() {
@@ -80,5 +86,5 @@ public class Pickup : Actor {
 	// Net data.
 	public override int getSerialPlayerID() => ownerPlayer.id;
 	public override int getSerialCID() => (int)cActorId;
-	public override byte[] getSerialExtra() => [(byte)(teamOnly ? 1 : 0)];
+	public override byte[] getSerialExtra() => [Helpers.boolArrayToByte([teamOnly, false])];
 }

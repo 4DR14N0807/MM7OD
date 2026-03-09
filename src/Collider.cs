@@ -26,7 +26,10 @@ public class Collider {
 	public bool isAttack() { return flag == (int)HitboxFlag.Hitbox || flag == (int)HitboxFlag.HitAndHurt; }
 	public bool isHurtBox() { return flag == (int)HitboxFlag.Hurtbox || flag == (int)HitboxFlag.HitAndHurt; }
 
-	public Collider(List<Point> points, bool isTrigger, Actor actor, bool isClimbable, bool isStatic, HitboxFlag flag, Point offset) {
+	public Collider(
+		List<Point> points, bool isTrigger, Actor actor,
+		bool isClimbable, bool isStatic, HitboxFlag flag, Point offset
+	) {
 		_shape = new Shape(points);
 		this.isTrigger = isTrigger;
 		this.actor = actor;

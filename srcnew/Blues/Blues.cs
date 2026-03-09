@@ -186,7 +186,7 @@ public class Blues : Character {
 	}
 
 	public float getSlideSpeed() {
-		float slideSpeed = 3;
+		float slideSpeed = 2.5f;
 		if (overheating) {
 			slideSpeed = 2.125f;
 		}

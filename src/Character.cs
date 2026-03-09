@@ -98,7 +98,8 @@ public partial class Character : Actor, IDamagable {
 	public bool isCrystalized;
 	public bool isDWrapped;
 	public bool insideCharacter;
-	public float invulnTime = 0;
+	public float invulnTime;
+	public float maxInvulnTime = -1;
 
 	public List<Trail> lastFiveTrailDraws = new List<Trail>();
 	public LoopingSound chargeSound;
@@ -290,7 +291,7 @@ public partial class Character : Actor, IDamagable {
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 		bool isWarpIn = true, int? heartTanks = null, bool isATrans = false
 	) : base(
-		null!, new Point(x, y), netId, ownedByLocalPlayer, addToLevel: true
+		"", new Point(x, y), netId, ownedByLocalPlayer, addToLevel: true
 	) {
 		hasStateMachine = true;
 		slideOnIce = true;
@@ -937,9 +938,13 @@ public partial class Character : Actor, IDamagable {
 	public void debuffCooldowns() {
 		if (Global.level.mainPlayer.readyTextOver) {
 			if (invulnTime > 0) {
+				if (maxInvulnTime <= 0) {
+					maxInvulnTime = invulnTime;
+				}
 				invulnTime -= Global.speedMul;
 				if (invulnTime <= 0) {
 					invulnTime = 0;
+					maxInvulnTime = -1;
 					chips.onRespawn.Invoke(this);
 				}
 			}
@@ -2336,7 +2341,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		currentLabelY = -getLabelOffY();
 		float? savedAlpha = null;
-		if (invulnTime > 0 || isWarpIn()) {
+		if (invulnTime > 0) {
 			savedAlpha = alpha;
 			if (Global.level.frameCount % 4 < 2) {
 				alpha *= 0.15f;
@@ -3653,7 +3658,7 @@ public partial class Character : Actor, IDamagable {
 			DisarrayStack lowerStack = disarrayStacks.MinBy(
 				(KeyValuePair <string, DisarrayStack> kvp) => kvp.Value.time
 			).Value;
-			drawDebuff(
+			drawBuff(
 				drawPos, lowerStack.time / lowerStack.maxTime,
 				"hud_buffs", 0
 			);
@@ -3663,6 +3668,12 @@ public partial class Character : Actor, IDamagable {
 					drawPos.x + 1, drawPos.y - 9
 				);
 			}
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
+		// Spawn invul.
+		if (invulnTime > 0) {
+			drawBuff(drawPos, invulnTime / maxInvulnTime, "hud_buffs", 1);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
@@ -3679,7 +3690,6 @@ public partial class Character : Actor, IDamagable {
 			float percent = buff.time / buff.maxTime;
 			var dfunct = drawDebuff;
 			if (buff.isBuff) {
-				percent = 1 - percent;
 				dfunct = drawBuff;
 			}
 			dfunct(

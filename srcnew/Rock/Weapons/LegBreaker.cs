@@ -13,16 +13,15 @@ public class LegBreaker : Weapon {
 }
 
 
-public class LegBreakerState : CharState {
-
+public class LegBreakerState : RockState {
 	public string initialSlideButton;
 	public int initialSlideDir;
 	bool isColliding;
 	Anim? dust;
 	Anim? effect;
 	int particles = 3;
-	Rock rock = null!;
-	public LegBreakerState(string initialSlideButton) : base("sa_legbreaker", "", "", "") {
+
+	public LegBreakerState(string initialSlideButton) : base("sa_legbreaker") {
 		enterSound = "slide";
 		this.initialSlideButton = initialSlideButton;
 		accuracy = 10;
@@ -33,9 +32,11 @@ public class LegBreakerState : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		rock = character as Rock ?? throw new NullReferenceException();
 		initialSlideDir = character.xDir;
-		effect = new Anim(character.pos, "sa_double_jump_effect", character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1);
+		effect = new Anim(
+			character.pos, "sa_double_jump_effect",
+			character.xDir, player.getNextActorNetId(), false, true, zIndex: ZIndex.Character - 1
+		);
 	}
 
 	public override void onExit(CharState? oldState) {

@@ -244,7 +244,7 @@ public class Anim : Actor {
 
 	public static void createGibEffect(
 		string spriteName, Point centerPos,
-		Player player, GibPattern gibPattern = GibPattern.Radial,
+		Player? player, GibPattern gibPattern = GibPattern.Radial,
 		float randVelStart = 100, float randVelEnd = 200,
 		float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false,
 		long? zIndex= null, int pieceOverdive = 0, bool blink = false, float alpha = 1f

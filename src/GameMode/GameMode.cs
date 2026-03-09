@@ -1879,8 +1879,8 @@ public class GameMode {
 
 
 	public static void drawWeaponSlotCooldownR(float x, float y, float val) {
-		if (val <= 0) return;
 		val = Helpers.clamp01(val);
+		val = 1 - val;
 
 		int sliceStep = Options.main.particleQuality switch {
 			0 => 4,

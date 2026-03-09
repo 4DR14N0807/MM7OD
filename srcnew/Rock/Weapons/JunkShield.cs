@@ -57,26 +57,25 @@ public class JunkShield : Weapon {
 }
 
 public class JunkShieldMagnet : Anim {
-
-	Rock rock = null!;
+	Rock? rock;
 	float timer;
 	float startAng;
 	float ang;
 	float radius;
 	bool once;
-	Weapon wep = null!;
+	Weapon? wep;
 
 	public JunkShieldMagnet(
-		Weapon wep, Point pos, int xDir, Rock character, ushort? netId, float ang
+		Weapon wep, Point pos, int xDir, Rock rock, ushort? netId, float ang
 	) : base(
 		pos, "junk_shield_magnet", xDir, netId, false, true
 	) {
-		if (ownedByLocalPlayer) {
-			rock = character;
+		this.rock = rock;
+
+		this.wep = wep;
+		if (rock.ownedByLocalPlayer) {
 			rock.junkShieldProjs.Add(this);
-			this.wep = wep;
 		}
-		
 		this.ang = ang;
 		startAng = ang;
 	}
@@ -91,37 +90,40 @@ public class JunkShieldMagnet : Anim {
 		timer += Global.speedMul;
 		if (timer >= 15 && !once && startAng == 0) {
 			once = true;
-			for (int i = 0; i < 8; i++) {
-				new JunkShieldPiece(
-					wep, rock.getCenterPos(), rock.xDir, rock,
-					rock.player.getNextActorNetId(), i * 32, this
-				);
-			};
-		} else if (timer >= 30) destroySelf();
+			if (wep != null) {
+				for (int i = 0; i < 8; i++) {
+					new JunkShieldPiece(
+						wep, rock.getCenterPos(), rock.xDir, rock,
+						rock.player.getNextActorNetId(), i * 32, this
+					);
+				};
+			}
+		} else if (timer >= 30) {
+			destroySelf();
+		}
 	}
 
 	public override void postUpdate() {
 		base.postUpdate();
 		if (rock == null) return;
-		
+
 		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang % 256).times(radius)));
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
-		rock.junkShieldProjs.Remove(this);
+		rock?.junkShieldProjs.Remove(this);
 	}
 }
 
 public class JunkShieldPiece : Anim {
-
-	Rock rock = null!;
+	Rock? rock;
 	Anim magnet;
 	float startAng;
 	float ang;
 	float radius = 80;
-	Weapon wep = null!;
+	Weapon? wep;
 	public JunkShieldPiece(
 		Weapon wep, Point pos, int xDir, Character character, ushort? netId, float ang, Anim magnet
 	) : base(
@@ -129,13 +131,15 @@ public class JunkShieldPiece : Anim {
 	) {
 		frameSpeed = 0;
 		frameIndex = Helpers.randomRange(0, 3);
-		this.rock = character as Rock ?? throw new NullReferenceException();
-		rock.junkShieldProjs.Add(this);
+		rock = character as Rock;
 		this.magnet = magnet;
 		startAng = ang;
 		this.ang = ang;
 		this.wep = wep;
-		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+		if (rock != null) {
+			rock.junkShieldProjs.Add(this);
+			changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+		}
 	}
 
 	public override void update() {
@@ -148,16 +152,19 @@ public class JunkShieldPiece : Anim {
 
 		if (radius > 30) radius -= 4;
 		ang += 5;
-		changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+		if (rock != null) {
+			changePos(rock.getCenterPos().add(Point.createFromByteAngle(ang).times(radius)));
+		}
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-		
+		if (!ownedByLocalPlayer || startAng != 0 ||
+			rock == null || wep == null
+		) {
+			return;
+		}
 		rock.junkShieldProjs.Remove(this);
-
-		if (startAng != 0) return;
 
 		Point pos = rock.getCenterPos();
 		int xDir = rock.xDir;
@@ -198,7 +205,7 @@ public class JunkShieldRmProj : Projectile {
 	Rock? rock;
 	float ang;
 	float radius = 30;
-	Weapon wep = null!;
+	Weapon? wep;
 	public JunkShieldRmProj(
 		Actor owner, Weapon wep, Point pos, int xDir, float ang, 
 		ushort? netProjId, bool rpc = false, Player? altPlayer = null 
@@ -264,7 +271,7 @@ public class JunkShieldRmProj : Projectile {
 			rock.currentWeapon is not JunkShield
 		) {
 			shootProjs();
-			wep.shootCooldown = JunkShield.cooldown;
+			wep?.shootCooldown = JunkShield.cooldown;
 			rock.weaponCooldown = 20;
 		}
 	}
@@ -280,9 +287,15 @@ public class JunkShieldRmProj : Projectile {
 		if (!ownedByLocalPlayer || rock == null) return;
 
 		if (!smallestSon && !threw) new Anim(pos, "generic_explosion", xDir, null, true, true);
-		if (!threw) new Anim(pos, sprite.name, xDir, null!, false, true)
-		{ useGravity = true, vel = new Point(0, -180), ttl = 1.25f, frameSpeed = 0, frameIndex = this.frameIndex };
-		
+		if (!threw) {
+			new Anim(pos, sprite.name, xDir, null, false, true) {
+				useGravity = true,
+				vel = new Point(0, -180),
+				ttl = 1.25f,
+				frameSpeed = 0,
+				frameIndex = frameIndex
+			};
+		}
 		rock.junkShieldProjs.Remove(this);
 		if (!smallestSon && !threw) playSound("danger_wrap_explosion", sendRpc: true);
 	}

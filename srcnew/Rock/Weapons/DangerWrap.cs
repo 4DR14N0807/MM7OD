@@ -74,7 +74,6 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 	public float health = 1;
 	public float heightMultiplier = 1f;
 	Anim? bomb;
-	Actor ownChr = null!;
 
 	public DangerWrapBubbleRmProj(
 		Actor owner, Point pos, int xDir, int type,
@@ -128,9 +127,9 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		if (type == 0 && isAnimOver()) {
 
 			time = 0;
-			if (ownedByLocalPlayer) {
+			if (ownerActor != null) {
 				new DangerWrapBubbleRmProj(
-					ownChr, pos, xDir, 1, damager.owner.getNextActorNetId(true),
+					ownerActor, pos, xDir, 1, damager.owner.getNextActorNetId(true),
 					input, rpc: true, damager.owner
 				);
 

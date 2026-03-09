@@ -64,7 +64,9 @@ public class RockBuster : Weapon {
 				if (rock.grounded && rock.charState is not BaseRun) {
 					rock.changeState(new SARocketPunchState(), true);
 				} else {
-					new SARocketPunchProj(rock, shootPos, xDir, player.getNextActorNetId(), true, player);
+					rock.saRocketPunchProj = new SARocketPunchProj(
+						rock, shootPos, xDir, player.getNextActorNetId(), true, player
+					);
 				}
 				rock.playSound("super_adaptor_punch", sendRpc: true);
 				rock.setShootAnim();
@@ -72,12 +74,12 @@ public class RockBuster : Weapon {
 				if (rock.grounded && rock.charState is not BaseRun) {
 					rock.changeState(new RockChargeShotState(rock.grounded), true);
 				} else {
-					new RockBusterChargedProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
+					new RockBusterChargedProj(rock, shootPos, xDir, player.getNextActorNetId(), true);
 					rock.playSound("buster3", sendRpc: true);
 				} 
 			}
 		} else if (chargeLevel == 1) {
-			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
+			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), true);
 			rock.playSound("buster2", sendRpc: true);
 		} else {
 			var proj = new RockBusterProj(rock, this, shootPos, xDir, netId, true);
@@ -89,9 +91,6 @@ public class RockBuster : Weapon {
 
 
 public class RockBusterProj : Projectile {
-
-	RockBuster wep = null!;
-
 	public RockBusterProj(
 		Actor owner, RockBuster wep, Point pos, int xDir, ushort? netProjId,
 		bool rpc = false, Player? altPlayer = null
@@ -107,10 +106,6 @@ public class RockBusterProj : Projectile {
 		vel.x = 240 * xDir;
 		reflectable = true;
 
-		if (ownedByLocalPlayer) {
-			this.wep = wep;
-		}
-
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
@@ -122,138 +117,83 @@ public class RockBusterProj : Projectile {
 			arg.xDir, arg.netId, altPlayer: arg.player
 		);
 	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-		if (wep.lemonsOnField.Contains(this)) {
-			wep.lemonsOnField.Remove(this);
-		} 
-	}
 }
 
 public class RockBusterMidChargeProj : Projectile {
-
-	public int type;
-	float projSpeed = 300;
-	Actor ownChr = null!;
-
 	public RockBusterMidChargeProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
-		int type, bool rpc = false, Player? altPlayer = null
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "rock_buster1_start", netProjId, altPlayer
+		pos, xDir, owner, "rock_buster1_proj", netProjId, altPlayer
 	) {
-
 		projId = (int)RockProjIds.RockBusterMid;
 		maxTime = 0.5f;
 		fadeSprite = "rock_buster1_fade";
 		damager.damage = 2;
 		fadeOnAutoDestroy = true;
-		ownChr = owner;
 
-		if (type == 1) {
-			changeSprite("rock_buster1_proj", false);
-			reflectable = true;
-			vel.x = projSpeed * xDir;
+		reflectable = true;
+		vel.x = 300 * xDir;
+
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
-		this.type = type;
+	}
 
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
-		}
+	public override void onStart() {
+		base.onStart();
+		new Anim(pos, "rock_buster1_start", xDir, null, true);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RockBusterMidChargeProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
-			arg.extraData[0], altPlayer: arg.player
+			altPlayer: arg.player
 		);
-	}
-
-	public override void update() {
-		base.update();
-
-		if (!ownedByLocalPlayer) return;
-		
-		if (type == 0) {
-			if (isAnimOver()) {
-				time = 0;
-				new RockBusterMidChargeProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), 1, true);
-				destroySelfNoEffect();
-			}
-		}
-		
 	}
 }
 
 public class RockBusterChargedProj : Projectile {
-
-	public int type;
-	float projSpeed = 340;
-	Actor ownChr = null!;
-
 	public RockBusterChargedProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
-		int type, bool rpc = false, Player? altPlayer = null
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "rock_buster1_start", netProjId, altPlayer
+		pos, xDir, owner, "rock_buster2_proj", netProjId, altPlayer
 	) {
-
 		projId = (int)RockProjIds.RockBusterCharged;
 		maxTime = 0.48f;
 		fadeOnAutoDestroy = true;
 		fadeSprite = "rock_buster2_fade";
-		this.type = type;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
-		ownChr = owner;
 
-		if (type == 1) {
-			string? sprite = "rock_buster2_proj";
-			changeSprite(sprite, false);
-			reflectable = true;
-			vel.x = projSpeed * xDir;
-		}
+		reflectable = true;
+		vel.x = 300 * xDir;
 
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new RockBusterChargedProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
-			arg.extraData[0], altPlayer: arg.player
+			altPlayer: arg.player
 		);
 	}
 
-	public override void update() {
-		base.update();
-
-		if (!ownedByLocalPlayer) return;
-
-		if (type == 0) {
-			if (isAnimOver()) {
-				time = 0;
-				new RockBusterChargedProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 1, rpc: true);
-				destroySelfNoEffect();
-			}
-		}
+	public override void onStart() {
+		base.onStart();
+		new Anim(pos, "rock_buster1_start", xDir, null, true);
 	}
 }
 
 
 public class RockChargeShotState : CharState {
-
 	bool fired;
 	bool grounded;
 
-	public RockChargeShotState(bool grounded) : base(grounded ? "chargeshot" : "", "", "", "") {
+	public RockChargeShotState(bool grounded) : base(grounded ? "chargeshot" : "") {
 		this.grounded = grounded;
 		normalCtrl = true;
 		attackCtrl = true;
@@ -265,12 +205,10 @@ public class RockChargeShotState : CharState {
 		base.update();
 
 		if (!fired && grounded) {
-
 			fired = true;
-			var poi = character.currentFrame.POIs;
 			new RockBusterChargedProj(
 				character, character.getShootPos(), character.getShootXDir(), 
-				player.getNextActorNetId(), 0, true
+				player.getNextActorNetId(), true
 			);
 			character.playSound("buster3", sendRpc: true);
 		} else if (!fired) {
@@ -278,7 +216,7 @@ public class RockChargeShotState : CharState {
 			fired = true;
 			new RockBusterChargedProj(
 				character, character.getShootPos(), character.getShootXDir(), 
-				player.getNextActorNetId(), 0, true
+				player.getNextActorNetId(), true
 			);
 			character.playSound("buster3", sendRpc: true);
 		}

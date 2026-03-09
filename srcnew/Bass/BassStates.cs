@@ -5,9 +5,25 @@ using SFML.Graphics;
 
 namespace MMXOnline;
 
-public class BassShoot : CharState {
-	Bass bass = null!;
+public class BassState : CharState {
+	public Bass bass = null!;
 
+	public BassState(
+		string sprite, string shootSprite = "", string attackSprite = "",
+		string transitionSprite = "", string transShootSprite = ""
+	) : base(
+		sprite, shootSprite, attackSprite,
+		transitionSprite, transShootSprite
+	) {
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		bass = character as Bass ?? throw new NullReferenceException();
+	}
+}
+
+public class BassShoot : BassState {
 	public BassShoot() : base("not_a_real_sprite") {
 		attackCtrl = true;
 		airMove = true;
@@ -34,8 +50,6 @@ public class BassShoot : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		bass = character as Bass ?? throw new NullReferenceException();
-
 		sprite = getShootSprite(
 			bass.getShootYDir(true, true),
 			bass.currentWeapon ?? throw new NullReferenceException()
@@ -107,11 +121,10 @@ public class BassShoot : CharState {
 }
 
 
-public class BassShootLadder : CharState {
-
-	Bass bass = null!;
+public class BassShootLadder : BassState {
 	public Ladder ladder;
 	float midX;
+
 	public BassShootLadder(Ladder ladder) : base("ladder_shoot") {
 		normalCtrl = false;
 		attackCtrl = true;
@@ -122,7 +135,6 @@ public class BassShootLadder : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		bass = character as Bass ?? throw new NullReferenceException();
 		bass.useGravity = false;
 
 		sprite = getShootSprite(
@@ -171,7 +183,6 @@ public class BassShootLadder : CharState {
 	}
 }
 
-
 public class DashEnd : CharState {
 	public DashEnd() : base("dash_end") {
 		normalCtrl = true;
@@ -189,10 +200,7 @@ public class DashEnd : CharState {
 	}
 }
 
-
-public class SuperBassStart : CharState {
-
-	Bass bass = null!;
+public class SuperBassStart : BassState {
 	Anim? treble;
 	Anim? aura;
 	int phase;
@@ -221,8 +229,7 @@ public class SuperBassStart : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		landPos = character.pos;
-		bass = character as Bass ?? throw new NullReferenceException();
-		bass.frameSpeed = 0;
+		character.frameSpeed = 0;
 
 		//Spawns Treble.
 		spawnPos = character.pos.addxy(character.xDir * -32, -200);
@@ -235,9 +242,9 @@ public class SuperBassStart : CharState {
 
 		character.playSound("warpin", sendRpc: true);
 
-		if (bass.grounded) {
-			bass.grounded = false;
-			bass.yPushVel = -2f;
+		if (character.grounded) {
+			character.grounded = false;
+			character.yPushVel = -2f;
 		}
 	}
 
@@ -345,11 +352,11 @@ public class SuperBassStart : CharState {
 }
 
 public class SuperBassSquare : Projectile {
-	Actor chr = null!;
 	float s = 112; // Square size
 	float a; // Square rotation
 	float t = 0; // Square opacity
 	float tIncrease = 7;
+
 	public SuperBassSquare(
 		Actor owner, Point pos, int xDir, ushort? netId,
 		bool rpc = false, Player? player = null
@@ -358,7 +365,6 @@ public class SuperBassSquare : Projectile {
 	) {
 		projId = (int)BassProjIds.SuperBassSquare;
 		maxTime = 2;
-		if (ownedByLocalPlayer) chr = owner;
 		canBeLocal = false;
 
 		if (rpc) {
@@ -374,7 +380,9 @@ public class SuperBassSquare : Projectile {
 
 	public override void update() {
 		base.update();
-		if (ownedByLocalPlayer) changePos(chr.getCenterPos());
+		if (ownerActor != null) {
+			changePos(ownerActor.getCenterPos());
+		}
 
 		s -= 1f;
 		a += 4;
@@ -504,9 +512,8 @@ public class SuperBassPilar : Effect {
 }
 
 
-public class EnergyCharge : CharState {
+public class EnergyCharge : BassState {
 	public float ammoTimer = 8;
-	Bass bass = null!;
 	Anim? aura;
 
 	public EnergyCharge() : base("enter") {
@@ -515,9 +522,7 @@ public class EnergyCharge : CharState {
 	}
 
 	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		bass = character as Bass ?? throw new NullReferenceException();
-		/* aura = new Anim(
+		base.onEnter(oldState);		/* aura = new Anim(
 			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 			false, true, zIndex: ZIndex.Character - 10
 		); */
@@ -562,9 +567,7 @@ public class EnergyCharge : CharState {
 	}
 }
 
-
-public class EnergyIncrease : CharState {
-	Bass bass = null!;
+public class EnergyIncrease : BassState {
 	Anim? aura;
 
 	public EnergyIncrease() : base("enter") {
@@ -589,9 +592,7 @@ public class EnergyIncrease : CharState {
 	}
 
 	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		bass = character as Bass ?? throw new NullReferenceException();
-		character.stopMoving();
+		base.onEnter(oldState);		character.stopMoving();
 		/* aura = new Anim(
 			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 			false, true, zIndex: ZIndex.Character - 10
@@ -609,12 +610,11 @@ public class EnergyIncrease : CharState {
 }
 
 
-public class BassFly : CharState {
+public class BassFly : BassState {
 	public Point flyVel;
 	float flyVelAcc = 500;
 	float flyVelMaxSpeed = 200;
 	public float fallY;
-	Bass bass = null!;
 	Anim? anim;
 
 	public BassFly() : base("fly", "fly_shoot") {
@@ -634,7 +634,10 @@ public class BassFly : CharState {
 			return;
 		}
 
-		if (Global.level.checkTerrainCollisionOnce(character, 0, -character.getYMod()) != null && character.vel.y * character.getYMod() < 0) {
+		if (Global.level.checkTerrainCollisionOnce(
+			character, 0, -character.getYMod()) != null &&
+			character.vel.y * character.getYMod() < 0
+		) {
 			character.vel.y = 0;
 		}
 
@@ -691,9 +694,7 @@ public class BassFly : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		player.delayETank();
-		bass = character as Bass ?? throw new NullReferenceException();
-		bass.canRefillFly = false;
+		player.delayETank();		bass.canRefillFly = false;
 
 		anim = new SuperBassExhaust(bass);
 
@@ -784,10 +785,7 @@ public class BassKick : CharState {
 	}
 }
 
-
-public class SonicCrusher : CharState {
-
-	Bass bass = null!;
+public class SonicCrusher : BassState {
 	Point speed;
 	Point oldSpeed = Point.zero;
 
@@ -801,7 +799,6 @@ public class SonicCrusher : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		bass = character as Bass ?? throw new NullReferenceException();
 		bass.canRefillFly = false;
 
 		speed.x = Math.Max(oldSpeed.x, 180);

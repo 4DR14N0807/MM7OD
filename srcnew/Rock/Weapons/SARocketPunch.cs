@@ -51,13 +51,17 @@ public class SARocketPunch : Weapon {
 		Point shootPos = rock.getShootPos();
 
 		if (chargeLevel >= 2) {
-			if (rock.grounded && rock.charState is not BaseRun) rock.changeState(new SARocketPunchState(), true);
-			else new SARocketPunchProj(rock, shootPos, xDir, player.getNextActorNetId(), true, player);
+			if (rock.grounded && rock.charState is not BaseRun) {
+				rock.changeState(new SARocketPunchState(), true);
+			} else {
+				rock.saRocketPunchProj = new SARocketPunchProj(
+					rock, shootPos, xDir, player.getNextActorNetId(), true, player
+				);
+			}
 			rock.playSound("super_adaptor_punch", sendRpc: true);
 			rock.setShootAnim();
-
 		} else if (chargeLevel == 1) {
-			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, true);
+			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), true);
 			rock.playSound("buster2", sendRpc: true);
 
 		} /* else {
@@ -69,18 +73,13 @@ public class SARocketPunch : Weapon {
 	}
 }
 
-
 public class SARocketPunchProj : Projectile {
-
 	public bool reversed;
 	public bool returned;
-	Character shooter = null!;
-	Player? player;
-	Rock rock = null!;
 	public float maxReverseTime;
 	public float minTime;
 	public Actor? target;
-	public SARocketPunch? saRocketPunch;
+	public Rock? rock;
 	float projSpeed = 240;
 
 	public SARocketPunchProj(
@@ -93,14 +92,8 @@ public class SARocketPunchProj : Projectile {
 		projId = (int)RockProjIds.SARocketPunch;
 		minTime = 0.2f;
 
-		if (ownedByLocalPlayer) {
-			rock = owner as Rock ?? throw new NullReferenceException();
-			rock.saRocketPunchProj = this;
+		rock = ownerActor as Rock;
 
-			this.player = ownerPlayer;
-			shooter = owner as Character ?? throw new NullReferenceException();
-		}
-		
 		maxReverseTime = 0.5f;
 		destroyOnHit = false;
 		canBeLocal = false;
@@ -124,16 +117,16 @@ public class SARocketPunchProj : Projectile {
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer || player == null) return;
+		if (!ownedByLocalPlayer) return;
 
-		if (ownedByLocalPlayer && (shooter == null || shooter.destroyed)) {
+		if (rock?.destroyed != false) {
 			destroySelf("generic_explosion");
 			return;
 		}
 
-		var targets = Global.level.getTargets(shooter.pos, player.alliance, false);
+		var targets = Global.level.getTargets(rock.pos, ownerPlayer.alliance, false);
 		foreach (var t in targets) {
-			if (shooter.isFacing(t) && MathF.Abs(t.pos.y - shooter.pos.y) < 80) {
+			if (rock.isFacing(t) && MathF.Abs(t.pos.y - rock.pos.y) < 80) {
 				target = t;
 				break;
 			}
@@ -154,17 +147,17 @@ public class SARocketPunchProj : Projectile {
 
 		if (reversed) {
 			vel = new Point(0, 0);
-			if (pos.x > shooter.pos.x) xDir = -1;
+			if (pos.x > rock.pos.x) xDir = -1;
 			else xDir = 1;
 
-			Point returnPos = shooter.getCenterPos();
-			if (shooter.sprite.name == "rock_rocket_punch") {
-				Point poi = shooter.pos;
-				var pois = shooter.sprite.getCurrentFrame()?.POIs;
+			Point returnPos = rock.getCenterPos();
+			if (rock.sprite.name == "rock_rocket_punch") {
+				Point poi = rock.pos;
+				var pois = rock.sprite.getCurrentFrame()?.POIs;
 				if (pois != null && pois.Length > 0) {
 					poi = pois[0];
 				}
-				returnPos = shooter.pos.addxy(poi.x * shooter.xDir, poi.y);
+				returnPos = rock.pos.addxy(poi.x * rock.xDir, poi.y);
 			}
 
 			move(pos.directionToNorm(returnPos).times(projSpeed));
@@ -187,28 +180,16 @@ public class SARocketPunchProj : Projectile {
 			//RPC.actorToggle.sendRpc(netId, RPCActorToggleType.ReverseRocketPunch);
 		}
 	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (rock != null && ownedByLocalPlayer) rock.saRocketPunchProj = null;
-	}
 }
 
 
-public class SARocketPunchState : CharState {
-
+public class SARocketPunchState : RockState {
 	bool fired;
-	Rock rock = null!;
 
 	public SARocketPunchState() : base("rocket_punch", "rocket_punch", "", "") {
 		normalCtrl = true;
 		attackCtrl = true;
 		airMove = true;
-	}
-
-	public override void onEnter(CharState oldState) {
-		base.onEnter(oldState);
-		rock = character as Rock ?? throw new NullReferenceException();
 	}
 
 	public override void update() {
@@ -219,9 +200,12 @@ public class SARocketPunchState : CharState {
 
 			var poi = character.currentFrame.POIs;
 			Point? shootPos = character.getFirstPOI();
-			if (shootPos != null) new SARocketPunchProj(
-				rock, shootPos.Value, rock.getShootXDir(), player.getNextActorNetId(true), true, player
-			);
+			if (shootPos != null) {
+				rock.saRocketPunchProj = new SARocketPunchProj(
+					rock, shootPos.Value, rock.getShootXDir(),
+					player.getNextActorNetId(true), true, player
+				);
+			}
 		}
 
 		if (character.isAnimOver()) {

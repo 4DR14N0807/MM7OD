@@ -8,7 +8,7 @@ public class RushState {
 	public string defaultSprite;
 	public string transitionSprite;
 	public Rush rush = null!;
-	public Character character = null!;
+	public Rock? rock => rush.rock;
 	public float stateTime;
 	public float stateSeconds => stateTime / Global.secondsFrameDuration;
 
@@ -57,7 +57,6 @@ public class RushState {
 public class RushWarpIn : RushState {
 	public Point destY;
 	public Point rockPos;
-	public Anim warpAnim = null!;
 	bool landed;
 
 	public RushWarpIn(bool addInvulnFrames = true) : base("rush_warp_beam") { }
@@ -76,7 +75,7 @@ public class RushWarpIn : RushState {
 		if (rush.netOwner?.character != null) {
 			rockPos = rush.netOwner.character.pos;
 		}
-		Point? checkGround = Global.level.getGroundPosNoKillzone(character.pos);
+		//Point? checkGround = Global.level.getGroundPosNoKillzone(rock.pos);
 		//rush.pos = checkGround.GetValueOrDefault();
 		//warpAnim = new Anim(new Point(rush.pos.x, rush.pos.y - 200), "rush_warp_beam", 1, null, false);
 	}
@@ -204,7 +203,6 @@ public class RushCoil : RushState {
 }
 
 public class RushJetState : RushState {
-	Rock rock = null!;
 	public float jetSpeedX;
 	public float jetSpeedY;
 	int decAmmoCooldown = 30;
@@ -222,7 +220,6 @@ public class RushJetState : RushState {
 		rush.useGravity = false;
 		rush.grounded = false;
 		rush.canBeGrounded = false;
-		rock = rush.character as Rock ?? throw new NullReferenceException();
 		Global.level.modifyObjectGridGroups(rush, isActor: true, isTerrain: true);
 	}
 
@@ -236,7 +233,7 @@ public class RushJetState : RushState {
 	public override void update() {
 		base.update();
 
-		if (rock.isUsingRushJet()) {
+		if (rock?.isUsingRushJet() == true) {
 			if (!once) {
 				rush.changeSprite("rush_jet", true);
 				rush.playSound("rush_jet", true);
@@ -267,28 +264,26 @@ public class RushJetState : RushState {
 			decAmmoCooldown--;
 		}
 		if (decAmmoCooldown <= 0) {
-			rock.rushWeapon.addAmmo(-1, player);
+			rock?.rushWeapon.addAmmo(-1, player);
 			decAmmoCooldown = maxDecAmmoCooldown;
 		}
 
 		if (rock?.rushWeapon.ammo <= 0) {
 			rush.changeState(new RushWarpOut());
-			rush.character.changeToIdleOrFall();
+			rush.rock?.changeToIdleOrFall();
 		} 
 	}
 }
 
 
 public class RushSearchState : RushState {
-
 	public int state;
 	bool digging;
 	int digTime;
-	Rock rock = null!;
 	Point pickupPos;
 	int pickupTime;
 	int sound;
-	string soundStr = null!;
+	string soundStr = "";
 	double dice;
 	public RushSearchState() : base("rush_dig_start", "rush_smell") {
 
@@ -296,7 +291,6 @@ public class RushSearchState : RushState {
 
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
-		rock = rush.character as Rock ?? throw new NullReferenceException();
 		pickupPos = new Point(rush.pos.x + (rush.xDir * 10), rush.pos.y - 16);
 		sound = Helpers.randomRange(0, 1);
 		soundStr = sound == 0 ? "rush_search_searching1" : "rush_search_searching2";
@@ -341,7 +335,7 @@ public class RushSearchState : RushState {
 					//RNG starts here.
 					dice = Helpers.randomRange(1, 1000);
 					getRandomItem();
-					rock.rushWeapon.addAmmo(-4, player);
+					rock?.rushWeapon.addAmmo(-4, player);
 
 					state = 3;
 				} break;
@@ -602,7 +596,11 @@ public class RushSearchState : RushState {
 			text = "KA-BOOM!!!";
 			font = FontType.Red;
 
-			new RSBombProj(rock, pickupPos, 1, rush.player?.getNextActorNetId(), true, rush.player);
+			new RSBombProj(
+				rock != null ? rock : rush,
+				pickupPos, 1, rush.player?.getNextActorNetId(),
+				true, rush.player
+			);
 		}
 		// Trash
 		else {
@@ -639,10 +637,10 @@ public class RushHurt : RushState {
 
 	public override void update() {
 		base.update();
-		
+
 		if (hurtMoveSpeed != 0) {
 			hurtMoveSpeed = Helpers.toZero(hurtMoveSpeed, 400 * Global.spf, hurtDir);
-			rush.move(new Point(-hurtMoveSpeed, -character.getJumpPower() * 0.125f));
+			rush.move(new Point(-hurtMoveSpeed, -Physics.JumpSpeed * 0.125f));
 		}
 
 		if (stateTime >= 36) rush.changeState(new RushWarpOut());
@@ -651,10 +649,8 @@ public class RushHurt : RushState {
 
 
 public class RushWarpOut : RushState {
-
 	int time;
 	bool beam;
-	Rock? rock;
 
 	public RushWarpOut() : base("rush_warp_beam", "rush_warp_out") {
 		
@@ -662,7 +658,6 @@ public class RushWarpOut : RushState {
 
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
-		rock = rush.character as Rock;
 		//rush.physicsCollider = null;
 		rush.globalCollider = null;
 	}
@@ -681,10 +676,9 @@ public class RushWarpOut : RushState {
 		}
 
 		if (beam) time++;
-		
+
 		if (time >= 60) {
 			rush.destroySelf();
-			//if (rock != null) rock.rush = null!;
 		} 
 	}
 }

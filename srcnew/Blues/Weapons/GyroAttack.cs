@@ -96,6 +96,6 @@ public class GyroAttackProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		Anim.createGibEffect("gyro_attack_pieces", pos, null!, zIndex: zIndex);
+		Anim.createGibEffect("gyro_attack_pieces", pos, null, zIndex: zIndex);
 	}
 }

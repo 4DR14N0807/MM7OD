@@ -430,12 +430,11 @@ public class RedStrikeExplosionProj : Projectile {
 	}
 }
 
-public class BigBangStrikeStart : CharState {
+public class BigBangStrikeStart : BluesState {
 	float shieldLossCD = 3;
 	float coreHeatCD = 2;
 	float shootTimer = 120;
-	Blues blues = null!;
-	BigBangStrikeBackwall bgEffect = null!;
+	BigBangStrikeBackwall? bgEffect;
 
 	public BigBangStrikeStart() : base("idle_charge") {
 		superArmor = true;
@@ -474,23 +473,22 @@ public class BigBangStrikeStart : CharState {
 	}
 
 	public override void onEnter(CharState oldState) {
-		blues = character as Blues ?? throw new NullReferenceException();
+		base.onEnter(oldState);
 		character.stopMoving();
 		bgEffect = new BigBangStrikeBackwall(character.pos, character);
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		if (bgEffect.effectTime < 2) {
+		if (bgEffect?.effectTime < 2) {
 			bgEffect.effectTime = 2;
 		}
 		blues.isShieldActive = false;
 	}
 }
 
-public class BigBangStrikeState : CharState {
-	bool fired;
-	Blues blues = null!;
+public class BigBangStrikeState : BluesState {
+	private bool fired;
 
 	public BigBangStrikeState() : base("strikeattack") {
 		superArmor = true;
@@ -515,10 +513,6 @@ public class BigBangStrikeState : CharState {
 		if (stateFrames >= 60) {
 			character.changeState(new OverheatShutdownStart(), true);
 		}
-	}
-
-	public override void onEnter(CharState oldState) {
-		blues = character as Blues ?? throw new NullReferenceException();
 	}
 }
 

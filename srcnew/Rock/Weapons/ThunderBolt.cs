@@ -85,6 +85,14 @@ public class ThunderBoltRmProj : Projectile {
 		base.onDamageEX(damagable);
 		onHit();
 	}
+
+	public override void onHitWall(CollideData other) {
+		base.onHitWall(other);
+		if (ownedByLocalPlayer) {
+			onHit();
+			destroySelf();
+		}
+	}
 }
 
 public class ThunderBoltSplitRmProj : Projectile {

@@ -90,22 +90,15 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		this.input = input;
 		damager.hitCooldown = 30;
 
-		if (type == 1) {
-			vel.x = 60 * xDir;
-			changeSprite("danger_wrap_bubble", false);
-			fadeSprite = "generic_explosion";
+		vel.x = 60 * xDir;
+		fadeSprite = "generic_explosion";
 
-			if (input == -1) {
-				vel.x /= 7.5f;
-				heightMultiplier = 1.6f;
-			} else if (input == 2) {
-				vel.x *= 3f;
-				heightMultiplier = 0.65f;
-			}
-
-			if (ownedByLocalPlayer && ownerPlayer != null) {
-				bomb = new Anim(pos, "danger_wrap_bomb", xDir, ownerPlayer.getNextActorNetId(), true, true);
-			}
+		if (input == -1) {
+			vel.x /= 7.5f;
+			heightMultiplier = 1.6f;
+		} else if (input == 2) {
+			vel.x *= 3f;
+			heightMultiplier = 0.65f;
 		}
 
 		if (rpc && ownerPlayer != null) {
@@ -122,27 +115,17 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 
 	public override void update() {
 		base.update();
+
+		if (sprite.isAnimOver() && sprite.name == "danger_wrap_start") {
+			changeSprite("danger_wrap_bubble", true);
+			bomb = new Anim(pos, "danger_wrap_bomb", xDir, null, false);
+		}
+		bomb?.changePos(pos);
 		if (!ownedByLocalPlayer) return;
 
-		if (type == 0 && isAnimOver()) {
-
-			time = 0;
-			if (ownerActor != null) {
-				new DangerWrapBubbleRmProj(
-					ownerActor, pos, xDir, 1, damager.owner.getNextActorNetId(true),
-					input, rpc: true, damager.owner
-				);
-
-			}
-			destroySelfNoEffect();
-		}
-
-		if (type == 1) {
-			vel.y -= Global.spf * (100 * heightMultiplier);
-			if (Math.Abs(vel.x) > 25) {
-				vel.x -= Global.spf * (75 * xDir);
-			}
-			bomb?.changePos(pos);
+		vel.y -= Global.spf * (100 * heightMultiplier);
+		if (Math.Abs(vel.x) > 25) {
+			vel.x -= Global.spf * (75 * xDir);
 		}
 	}
 
@@ -150,11 +133,10 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		base.onHitWall(other);
 		destroySelf();
 	}
+
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-
-		if (type == 1) bomb?.destroySelf();
+		bomb?.destroySelf();
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {

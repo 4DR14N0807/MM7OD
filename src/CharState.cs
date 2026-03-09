@@ -425,7 +425,7 @@ public class WarpIn : CharState {
 				character.grounded = true;
 				character.changePos(destX, destY);
 				if (!player.warpedInOnce || Global.level.joinedLate) {
-					character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate));
+					character.changeState(new WarpIdle(true));
 				} else {
 					if (character is Blues) {
 						character.changeToIdleOrFall("swap");
@@ -484,7 +484,7 @@ public class WarpIn : CharState {
 			warpAnim.destroySelf();
 		}
 		player.warpedInOnce = true;
-		character.invulnTime = 60;
+		character.invulnTime = player.warpedInOnce ? 0 : 60;
 	}
 }
 
@@ -575,7 +575,7 @@ public class WarpIdle : CharState {
 		character.splashable = true;
 		specialId = SpecialStateIds.None;
 		if (character.ownedByLocalPlayer) {
-			character.invulnTime = firstSpawn ? 20 : 60;
+			character.invulnTime = firstSpawn ? 0 : 60;
 		}
 
 		player.warpedInOnce = true;

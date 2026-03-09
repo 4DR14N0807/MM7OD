@@ -64,7 +64,7 @@ public class FreezeCrackerRmProj : Projectile {
 			destroyOnHit = true;
 			int dir = input * 32;
 			float ang = xDir > 0 ? dir : -dir + 128;
-			base.vel = Point.createFromByteAngle(ang) * projSpeed;
+			vel = Point.createFromByteAngle(ang) * projSpeed;
 		}
 
 		if (sendRpc) {
@@ -120,6 +120,7 @@ public class FreezeCrackerRmProj : Projectile {
 			return;
 		}
 		onHit();
+		destroySelf();
 	}
 
 	// Do effect only.
@@ -161,8 +162,6 @@ public class FreezeCrackerRmProj : Projectile {
 
 
 public class FreezeCrackerPieceRmProj : Projectile {
-
-
 	public FreezeCrackerPieceRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		int type, bool rpc = false, Player? altPlayer = null

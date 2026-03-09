@@ -20,6 +20,7 @@ public class Pickup : Actor {
 	public float altHealAmount = 0;
 	public PickupType pickupType = PickupType.None;
 	public bool teamOnly;
+	public Point rsVel = new Point(0, -300);
 
 	public Pickup(
 		Player owner, Point pos, string sprite, ushort? netId,
@@ -41,6 +42,10 @@ public class Pickup : Actor {
 		this.cActorId = cActorId;
 		if (spawnUp) {
 			vel.y -= 5 * 60;
+		}
+
+		if (teamOnly) {
+			vel = rsVel;
 		}
 
 		if (sendRpc) {
@@ -73,7 +78,7 @@ public class Pickup : Actor {
 			return;
 		}
 		if (other.gameObject is Character chr && chr.ownedByLocalPlayer) {
-			if (!teamOnly || chr.player.teamAlliance == ownerPlayer.teamAlliance) {
+			if (!teamOnly || chr.player.alliance == ownerPlayer.alliance) {
 				use(chr);
 			}
 		}

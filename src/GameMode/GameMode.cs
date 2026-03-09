@@ -519,6 +519,7 @@ public class GameMode {
 				if (Global.level.gameMode.teamPoints[i] > lastScore) {
 					winningAlliance = i;
 					closeMatch = false;
+					lastScore = Global.level.gameMode.teamPoints[i];
 					if (Global.level.gameMode.teamPoints[i] - 1 == lastScore) {
 						closeMatch = true;
 					}

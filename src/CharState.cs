@@ -477,13 +477,14 @@ public class WarpIn : CharState {
 		startY = character.pos.y; 
 	}
 
-	public override void onExit(CharState newState) {
+	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.visible = true;
 		if (warpAnim != null) {
 			warpAnim.destroySelf();
 		}
 		player.warpedInOnce = true;
+		character.invulnTime = 60;
 	}
 }
 
@@ -576,6 +577,8 @@ public class WarpIdle : CharState {
 		if (character.ownedByLocalPlayer) {
 			character.invulnTime = firstSpawn ? 20 : 60;
 		}
+
+		player.warpedInOnce = true;
 	}
 }
 
@@ -1548,6 +1551,7 @@ public class BottomlessPitState : CharState {
 	public Point lastGroundPos;
 	public bool changedAnim;
 	public bool warpBack;
+	bool shutdown;
 
 	public BottomlessPitState() : base("hurt") {
 		useGravity = false;
@@ -1577,7 +1581,13 @@ public class BottomlessPitState : CharState {
 		if (stateFrames >= 20 || warpBack) {
 			character.visible = true;
 			character.grounded = true;
-			character.changeState(new BottomlessPitWarpIn());
+
+			if (!shutdown) {
+				character.changeState(new BottomlessPitWarpIn());
+			} else {
+				character.changeState(new OverheatShutdown(), true); 
+			}
+			
 			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 32);
 
 			if (warpInPos == null) {
@@ -1594,6 +1604,7 @@ public class BottomlessPitState : CharState {
 		character.stopMoving();
 		character.canBeGrounded = false;
 		lastGroundPos = character.lastGroundedPos;
+		shutdown = oldState is OverheatShutdownStart;
 	}
 
 	public override void onExit(CharState? newState) {
@@ -1604,6 +1615,7 @@ public class BottomlessPitState : CharState {
 
 
 public class BottomlessPitWarpIn : CharState {
+
 	public BottomlessPitWarpIn() : base("recall_in") {
 	}
 
@@ -1613,8 +1625,7 @@ public class BottomlessPitWarpIn : CharState {
 
 		if (character.isAnimOver()) {
 			character.grounded = true;
-			if (character is Blues {overheating: true} ) character.changeState(new OverheatShutdown(), true);
-			else character.changeToIdleOrFall();
+			character.changeToIdleOrFall();
 		}
 	}
 }

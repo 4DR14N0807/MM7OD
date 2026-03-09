@@ -77,20 +77,20 @@ public class BassMovelistMenu : MovelistMenu {
 				"Needs Lv3\nMid-air."
 			),
 			new MovelistItem(
-				spriteName, 24, "Evil charge", Control.Special2, "",
+				spriteName, 22, "Evil charge", Control.Special2, "",
 				"Adds evil energy.\nReduces on LV5."
 			),
 			new MovelistItem(
 				spriteName, 21, "Evil Release",
 				$"{Control.Special2} + {Control.Down}", "Under Lv5\nOn Ground",
-				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV."
+				"Minus 2 Max HP.\nReduces LV."
 			),
 			new MovelistItem(
-				spriteName, 22, "Evil Unison", "Auto: on max Evil", "Under Lv5",
+				spriteName, 23, "Evil Unison", "Auto: on max Evil", "Under Lv5",
 				"Heals 2 HP.\nAdds 2 Max HP.\nIncreases LV.\nDamage Immune.", true
 			),
 			new MovelistItem(
-				spriteName, 23, "Evil Overload", "Auto: on max Evil", "At Lv5",
+				spriteName, 24, "Evil Overload", "Auto: on max Evil", "At Lv5",
 				"Heals 2 HP.\nStuns the user.", true
 			),
 		]);	

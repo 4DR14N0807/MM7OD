@@ -437,7 +437,7 @@ public class Bass : Character {
 	
 		Global.sprites["hud_energy_top"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 
-		if (player.isMainPlayer && (charState is BassFly || flyTime > 0)) {
+		if (player.isMainPlayer && (charState is BassFly || flyTime > 0) && alive) {
 			decimal maxLength = 14;
 			decimal length = (maxLength * (decimal)(MaxFlyTime - flyTime)) / (decimal)MaxFlyTime;
 			int color = 4;

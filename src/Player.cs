@@ -624,7 +624,7 @@ public partial class Player {
 				etCount = altEtCount;
 			}
 			for (int i = 0; i < etCount; i++) {
-				eTanksMap[key].Add(new ETank(getMaxHealth((CharIds)key)));
+				eTanksMap[key].Add(new ETank());
 				lTanksMap[key].Add(new LTank(getMaxHealth((CharIds.Blues))));
 			}
 		}
@@ -693,7 +693,7 @@ public partial class Player {
 	}
 
 	public static float getModifiedHealth(float health) {
-		if (Global.level.server.customMatchSettings != null) {
+		if (Global.level.server?.customMatchSettings != null) {
 			float retHp = MathF.Ceiling(health * getHpMod());
 			if (retHp < 1) {
 				retHp = 1;

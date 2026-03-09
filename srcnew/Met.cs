@@ -43,12 +43,11 @@ public class Met : NeutralEnemy {
 	public override void update() {
 		base.update();
 
-		invincibleFlag = state is MetIdle;
-
 		if (!ownedByLocalPlayer) return;
 
-		Helpers.decrementFrames(ref cooldown);
+		invincibleFlag = state is MetIdle;
 
+		Helpers.decrementFrames(ref cooldown);
 	}
 
 	public void shoot() {
@@ -79,6 +78,16 @@ public class Met : NeutralEnemy {
 		new Anim(pos, "generic_explosion", xDir, Player.stagePlayer.getNextActorNetId(), true, true);
 		playSound("danger_wrap_explosion", sendRpc: true);
 	}
+
+	public override List<byte> getCustomActorNetData() {
+		return [
+			Helpers.boolToByte(invincibleFlag)
+		];
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		invincibleFlag = Helpers.byteToBool(data[0]);
+	} 
 }
 
 public class MetIdle : NeutralEnemyState {

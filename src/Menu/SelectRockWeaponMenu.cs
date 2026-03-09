@@ -44,6 +44,7 @@ public class RockWeaponMenu : IMainMenu {
 	int latestIndex = 0;
 	int latestRow;
 	int descIndex = 0;
+	string error = "";
 
 	public RockWeaponMenu(IMainMenu prevMenu, bool inGame) {
 		this.prevMenu = prevMenu;
@@ -60,6 +61,13 @@ public class RockWeaponMenu : IMainMenu {
 		bool okPressed = Global.input.isPressedMenu(Control.MenuConfirm);
 		bool backPressed = Global.input.isPressedMenu(Control.MenuBack);
 		bool commandPressed = Global.input.isPressedMenu(Control.Special2);
+
+		if (!string.IsNullOrEmpty(error)) {
+			if (okPressed) {
+				error = "";
+			}
+			return;
+		}
 
 		if (commandPressed) {
 			descIndex++;
@@ -97,11 +105,14 @@ public class RockWeaponMenu : IMainMenu {
 
 		if (okPressed || backPressed && !inGame) {
 			bool isChanged = false;
-			if (!duplicateWeapons()) {
+			if (!duplicateWeapons() && differentLoadout()) {
 				targetLoadout.weapon1 = sWeapons[0];
 				targetLoadout.weapon2 = sWeapons[1];
 				targetLoadout.weapon3 = sWeapons[2];
 				isChanged = true;
+			} else if (duplicateWeapons()) {
+				error = "Cannot select same weapon more than once!";
+				return;
 			}
 			if (isChanged) {
 				if (inGame && Global.level != null) {
@@ -133,13 +144,49 @@ public class RockWeaponMenu : IMainMenu {
 		sWeapons[0] == sWeapons[2];
 	}
 
+	bool differentLoadout() {
+		return sWeapons[0] != targetLoadout.weapon1 || 
+		sWeapons[1] != targetLoadout.weapon2 || 
+		sWeapons[2] != targetLoadout.weapon3;
+	}
+
+	void drawTitleSquare(FontType font, string text, bool error) {
+		int size = (Fonts.measureText(font, text)) / 2;
+		DrawWrappers.DrawRect(
+			Global.halfScreenW - size - 3, 22, Global.halfScreenW + size + 2 + (error ? 0 : 1), 38, 
+			true, new Color(0, 0, 0, 150), 1, ZIndex.HUD, false, 
+			outlineColor: error ? Color.White : Helpers.LoadoutBorderColor
+		);
+	}
+
 	public void render() {
+		int titleYPos = 24;
+
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["loadoutbackground"], 0, 0);
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenuload"], 0, 0);
 		}
-		Fonts.drawText(FontType.BlueMenu, "Rock Loadout", Global.screenW * 0.5f, 24, Alignment.Center);
+		if (!string.IsNullOrEmpty(error)) {
+			DrawWrappers.DrawRect(
+				23 - (inGame ? 7 : 0), 16, Global.screenW - 23 + (inGame ? 7 : 0), Global.screenH - 16, true,
+				new Color(0, 0, 0, 224), 0, ZIndex.HUD, false
+			);
+			string errorTitle = "ERROR";
+			FontType errorFont = FontType.RedMenu;
+			drawTitleSquare(errorFont, errorTitle, true);
+			Fonts.drawText(errorFont, errorTitle, Global.screenW / 2, titleYPos, alignment: Alignment.Center);
+			Fonts.drawText(FontType.Red, error.ToUpper(), Global.screenW / 2, Global.halfScreenH - 16, alignment: Alignment.Center);
+			Fonts.drawTextEX(
+				FontType.WhiteSmall, Helpers.controlText("Press [OK] to continue"),
+				Global.screenW / 2, Global.halfScreenH + 16, alignment: Alignment.Center
+			);
+			return;
+		}
+		string title = "Rock Loadout";
+		FontType font = FontType.BlueMenu;
+		drawTitleSquare(font, title, false);
+		Fonts.drawText(font, title, Global.screenW * 0.5f, titleYPos, Alignment.Center);
 
 		int startY = 55;
 		int startX = 30;

@@ -118,7 +118,6 @@ public class RSBombProj : Projectile {
 
 
 public class RSBombExplosionProj : Projectile {
-
 	int radius;
 	float maxRadius = 64;
 	public RSBombExplosionProj(

@@ -83,7 +83,7 @@ public class BassMovelistMenu : MovelistMenu {
 			new MovelistItem(
 				spriteName, 21, "Evil Release",
 				$"{Control.Special2} + {Control.Down}", "Under Lv5\nOn Ground",
-				"Minus 2 Max HP.\nReduces LV."
+				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV."
 			),
 			new MovelistItem(
 				spriteName, 23, "Evil Unison", "Auto: on max Evil", "Under Lv5",

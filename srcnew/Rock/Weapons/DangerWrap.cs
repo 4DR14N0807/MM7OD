@@ -186,7 +186,6 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 public class DangerWrapMineRmProj : Projectile, IDamagable {
 	public bool landed;
 	public float health = 1;
-	public Actor ownChr;
 	public Weapon? wep;
 	Player player;
 
@@ -202,7 +201,6 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 		useGravity = true;
 		damager.damage = 3;
 		damager.hitCooldown = 30;
-		ownChr = owner;
 		canBeGrounded = true;
 		canBeLocal = false;
 		this.player = ownerPlayer;
@@ -237,10 +235,12 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 			landed = true;
 			destroySelf();
 
-			var mine = new DangerWrapLandRmProj(
-				ownChr, pos, xDir, player.getNextActorNetId(), true, player
-			);
-			(wep as DangerWrap)?.dangerMines.Add(mine);
+			if (ownerActor != null) {
+				var mine = new DangerWrapLandRmProj(
+					ownerActor, pos, xDir, player.getNextActorNetId(), true, player
+				);
+				(wep as DangerWrap)?.dangerMines.Add(mine);
+			}
 		}
 	}
 
@@ -275,7 +275,6 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 
 public class DangerWrapLandRmProj : Projectile, IDamagable {
 	public float health = 1;
-	public Actor ownChr;
 	Point collideDir;
 
 	public DangerWrapLandRmProj(
@@ -299,7 +298,6 @@ public class DangerWrapLandRmProj : Projectile, IDamagable {
 		damager.damage = 3;
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
-		ownChr = owner;
 		canBeLocal = false;
 
 		if (rpc) {
@@ -335,22 +333,19 @@ public class DangerWrapLandRmProj : Projectile, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || health < 1 || ownerActor == null) {
 			return;
 		}
-		if (health >= 1) {
-			for (int i = 0; i < 6; i++) {
-				float x = Helpers.cosd(i * 60) * 180;
-				float y = Helpers.sind(i * 60) * 180;
-				new Anim(pos, "generic_explosion", 1, damager.owner.getNextActorNetId(), false, true) {
-					vel = new Point(x, y),
-					ttl = 0.2f
-				};
-			}
-
-			playSound("danger_wrap_explosion", sendRpc: true);
-			new DangerWrapExplosionRmProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), true);
+		for (int i = 0; i < 6; i++) {
+			float x = Helpers.cosd(i * 60) * 180;
+			float y = Helpers.sind(i * 60) * 180;
+			new Anim(pos, "generic_explosion", 1, damager.owner.getNextActorNetId(), false, true) {
+				vel = new Point(x, y),
+				ttl = 0.2f
+			};
 		}
+		playSound("danger_wrap_explosion", sendRpc: true);
+		new DangerWrapExplosionRmProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {

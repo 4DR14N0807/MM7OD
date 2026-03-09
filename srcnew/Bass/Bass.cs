@@ -562,6 +562,7 @@ public class Bass : Character {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
 						lowerPhase(phase - 1);
 						playSound("super_bass_aura", sendRpc: true);
+						addHealth(1);
 						changeState(new BottomlessPitWarpIn());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}
@@ -889,7 +890,7 @@ public class Bass : Character {
 		if ((isSuperBass || isTrebbleBoost) && phase >= 2) return 3;
 		return 2;
 	}
-	
+
 	public override float getDashSpeed() {
 		return 3.25f * getRunDebuffs();
 	}

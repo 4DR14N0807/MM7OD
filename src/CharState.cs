@@ -395,6 +395,7 @@ public class WarpIn : CharState {
 	public bool addInvulnFrames;
 	public bool refillHP;
 	public bool sigma2Once;
+	bool altAnim;
 
 	public WarpIn(bool addInvulnFrames = true, bool refillHP = false) : base("warp_in") {
 		this.addInvulnFrames = addInvulnFrames;
@@ -425,7 +426,7 @@ public class WarpIn : CharState {
 				character.grounded = true;
 				character.changePos(destX, destY);
 				if (!player.warpedInOnce || Global.level.joinedLate) {
-					character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate));
+					character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate, altAnim));
 				} else {
 					if (character is Blues) {
 						character.changeToIdleOrFall("swap");
@@ -474,7 +475,13 @@ public class WarpIn : CharState {
 		character.frameSpeed = 0;
 		destY = character.pos.y;
 		destX = character.pos.x;
-		startY = character.pos.y; 
+		startY = character.pos.y;
+
+		if (character is Rock && Helpers.randomRange(1,1) == 1 && (!player.warpedInOnce || Global.level.joinedLate)) {
+			sprite = "warp_in2";
+			character.changeSpriteFromName(sprite, true);
+			altAnim = true;
+		} 
 	}
 
 	public override void onExit(CharState? newState) {
@@ -493,12 +500,14 @@ public class WarpIdle : CharState {
 	public bool fullHP;
 	public bool fullAlt;
 	float healTime = -4;
+	bool altAnim;
 
-	public WarpIdle(bool firstSpawn = false) : base("win") {
+	public WarpIdle(bool firstSpawn = false, bool altAnim = false) : base("win") {
 		invincible = true;
 		immortal = true;
 		useGravity = false;
 		this.firstSpawn = firstSpawn;
+		this.altAnim = altAnim;
 	}
 
 	public override void update() {
@@ -508,6 +517,16 @@ public class WarpIdle : CharState {
 			refillBlues(blues);
 		} else {
 			refillNormal();
+		}
+
+		if (altAnim && !once && character.frameIndex == 4) {
+			for (int i = 0; i < 14; i++) {
+				new WarpIdleParticle(
+					character.pos.add(character.currentFrame.POIs[i]), i <= 3 || (i >= 7 && i <= 10) ? -1 : 1, i < 8 ? 0 : 1
+				);
+			}
+
+			once = true;
 		}
 
 		if ((character.isAnimOver() || character.sprite.loopCount >= 1) && fullHP && fullAlt) {
@@ -567,6 +586,11 @@ public class WarpIdle : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		specialId = SpecialStateIds.WarpIdle;
+
+		if (altAnim) {
+			sprite = "warp_idle2";
+			character.changeSpriteFromName(sprite, true);
+		}
 	}
 
 	public override void onExit(CharState? newState) {
@@ -579,6 +603,32 @@ public class WarpIdle : CharState {
 		}
 
 		player.warpedInOnce = true;
+	}
+}
+
+public class WarpIdleParticle : Anim {
+	float startVelX;
+	float startVelY;
+	public WarpIdleParticle(Point pos, int xDir, int frameIndex) : base(pos, "rock_warpin_particle", xDir, null, false) {
+		this.frameIndex = frameIndex;
+		frameSpeed = 0;
+		vel.x = Helpers.randomRange(15, 30) * xDir;
+		vel.y = Helpers.randomRange(90, 180) * -1;
+		startVelX = vel.x;
+		startVelY = vel.y;
+		useGravity = true;
+		collider?.wallOnly = true;
+		ttl = 0.5f;
+	}
+
+	public override void onCollision(CollideData other) {
+		base.onCollision(other);
+
+		if (other.gameObject is Wall) {
+			startVelX *= 0.75f;
+			startVelY *= 0.9f;
+			vel = new Point(startVelX, startVelY);
+		}
 	}
 }
 

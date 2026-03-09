@@ -782,7 +782,7 @@ public class Rock : Character {
 	}
 
 	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
-		if (Global.level.mainPlayer.character == this && !weapons.Contains(rushWeapon)) {
+		if (Global.level.mainPlayer.character == this && !weapons.Contains(rushWeapon) && !hasSuperAdaptor) {
 			int drawDir = 1;
 			if (position == GameMode.HUDHealthPosition.Right) {
 				drawDir = -1;

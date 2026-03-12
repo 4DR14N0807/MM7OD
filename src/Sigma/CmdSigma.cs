@@ -56,8 +56,8 @@ public class CmdSigma : BaseSigma {
 		}
 		// For ladder and slide attacks.
 		if (isAttacking() && charState is WallSlide or LadderClimb && !isSigmaShooting()) {
-			if (isAnimOver() && charState != null && charState is not SigmaSlashStateGround 
-			and not SigmaSlashStateDash and not SigmaSlashStateAir
+			if (isAnimOver() && charState != null && charState is not SigmaSlashStateGround
+				and not SigmaSlashStateDash and not SigmaSlashStateAir
 			) {
 				changeSprite(getSprite(charState.defaultSprite), true);
 				if (charState is WallSlide && sprite != null) {
@@ -159,7 +159,8 @@ public class CmdSigma : BaseSigma {
 		return (MeleeIds)id switch {
 			MeleeIds.Guard => new GenericMeleeProj(
 				SigmaSlashWeapon.netWeapon, pos, ProjIds.SigmaSwordBlock, player,
-				0, 0, 0, isDeflectShield: true, addToLevel: addToLevel
+				0, 0, 0, isDeflectShield: true, isShield: true,
+				addToLevel: addToLevel
 			) {
 				highPiority = true
 			},
@@ -171,7 +172,7 @@ public class CmdSigma : BaseSigma {
 			},
 			MeleeIds.GenericSlash => new GenericMeleeProj(
 				SigmaSlashWeapon.netWeapon, pos, ProjIds.SigmaSlash, player, 3, 0,
-				addToLevel: addToLevel
+				addToLevel: addToLevel, clashTier: ClashTier.Strong
 			),
 			_ => null
 		};
@@ -217,7 +218,7 @@ public class CmdSigma : BaseSigma {
 			if (mw.maverick != null) {
 				changeState(new CallDownMaverick(mw.maverick, true, false), true);
 			}
-			mw.summon(player, pos.addxy(0, -112), pos, xDir);
+			mw.summon(player, pos, xDir);
 			player.changeToSigmaSlot();
 		}
 		if (charState is not LadderClimb) {

@@ -43,11 +43,12 @@ public class CharState {
 	public bool pushImmune;
 	public bool slowImmune;
 	public bool statusEffectImmune;
-	public int accuracy;
 	public bool isGrabbedState;
-	public bool immortal;
+	public bool immuneToAll;
 	public bool invulnerable;
+	public bool immortal;
 
+	public int accuracy;
 	public bool wasVileHovering;
 	public bool wasDashing;
 
@@ -377,7 +378,7 @@ public class CharState {
 			character.changePos(lerpPos);
 		}
 	}
- }
+}
 
 public class WarpIn : CharState {
 	public bool warpSoundPlayed;
@@ -643,6 +644,7 @@ public class WarpOut : CharState {
 
 	public WarpOut(bool is1v1MaverickStart = false) : base("warp_beam") {
 		this.is1v1MaverickStart = is1v1MaverickStart;
+		useGravity = false;
 	}
 
 	public override void update() {
@@ -660,7 +662,7 @@ public class WarpOut : CharState {
 
 		warpAnim.incPos(0, -16 * character.speedMul);
 
-		if (character.pos.y <= destY) {
+		if (warpAnim.pos.y <= destY) {
 			warpAnim.destroySelf();
 			warpAnim = null;
 		}
@@ -674,7 +676,10 @@ public class WarpOut : CharState {
 		destY = character.pos.y - yOffset;
 		startY = character.pos.y;
 		if (!is1v1MaverickStart) {
-			warpAnim = new Anim(character.pos, character.getSprite("warp_beam"), character.xDir, player.getNextActorNetId(), false, sendRpc: true);
+			warpAnim = new Anim(
+				character.pos, character.getSprite("warp_beam"),
+				character.xDir, player.getNextActorNetId(), false, sendRpc: true
+			);
 			warpAnim.splashable = false;
 		}
 	}
@@ -712,6 +717,19 @@ public class Idle : CharState {
 			}
 		}
 
+		if (Global.customSettings?.universalGuard == true) {
+			if (character is not Zero and not BaseSigma) {
+				if (!player.input.isLeftOrRightHeld(player)) {
+					if (player.input.isHeld(Control.Up, player)) {
+						attackCtrl = false;
+						character.changeSpriteFromName("block", true);
+					}
+					else if (character.sprite.name == character.getSprite("block")) {
+						character.changeToIdleOrFall();
+					}
+				}
+			}
+		}
 		if (Global.level.gameMode.isOver) {
 			if (Global.level.gameMode.playerWon(player)) {
 				character.changeState(new Win(), true);
@@ -863,7 +881,7 @@ public class SwordBlock : CharState {
 		if (!isHoldingGuard && !player.isAI) {
 			character.changeToIdleOrFall();
 			return;
-		} else if (player.isAI && stateTime >= 32f/60f) {
+		} else if (player.isAI && stateTime >= 32f / 60f) {
 			character.changeToIdleOrFall();
 		}
 		if (Global.level.gameMode.isOver) {
@@ -879,28 +897,34 @@ public class SwordBlock : CharState {
 }
 
 public class ZeroClang : CharState {
+	public bool once;
 	public int hurtDir;
-	public float hurtSpeed;
 
-	public ZeroClang(int dir) : base("clang") {
+	public ZeroClang(int dir) : base("") {
 		hurtDir = dir;
-		hurtSpeed = dir * 100;
 	}
 
 	public override void update() {
 		base.update();
-		if (hurtSpeed != 0) {
-			hurtSpeed = Helpers.toZero(hurtSpeed, 400 * Global.spf, hurtDir);
-			character.move(new Point(hurtSpeed, 0));
+		if (!once && stateFrames >= 6) {
+			once = true;
+			character.changeSpriteFromName(sprite, true);
 		}
-		/*
-		if (this.character.isAnimOver()) {
-			this.character.changeToIdleOrFall();
-		}
-		*/
-		if (hurtSpeed == 0) {
+		if (stateFrames >= 20) {
 			character.changeToIdleOrFall();
 		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.xFlinchPushVel = 1.5f * hurtDir;
+
+		if (!Global.sprites.ContainsKey(character.getSprite("clang"))) {
+			defaultSprite = "dash_end";
+		} else {
+			defaultSprite = "clang";
+		}
+		sprite = defaultSprite;
 	}
 }
 
@@ -982,7 +1006,7 @@ public class Dash : CharState {
 	public string initialDashButton;
 	public int dashDir;
 	public bool stop;
-	public Anim dashSpark;
+	public Anim? dashSpark;
 	public bool isColliding;
 
 	public Dash(string initialDashButton) : base("dash") {
@@ -999,7 +1023,6 @@ public class Dash : CharState {
 
 	public override void update() {
 		base.update();
-
 		if (!player.isAI && !stop && !player.input.isHeld(initialDashButton, player)) {
 			dashTime = 900;
 		}
@@ -1009,6 +1032,7 @@ public class Dash : CharState {
 		if (!stop && dashTime > 30) {
 			dashTime = 0;
 			stop = true;
+			defaultSprite = "dash_end";
 			sprite = "dash_end";
 			shootSprite = "dash_end_shoot";
 			character.changeSpriteFromName(character.shootAnimTime > 0 ? shootSprite : sprite, true);
@@ -1063,6 +1087,7 @@ public class Dash : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		dashDir = character.xDir;
+		initialDashDir = dashDir;
 		character.isDashing = true;
 		dashSpeed = 1.5f;
 		maxDashSpeed = character.getDashSpeed();
@@ -1736,11 +1761,9 @@ public class GenericGrabbedState : CharState {
 		}
 
 		grabTime -= player.mashValue();
+
 		if (grabTime <= 0) {
 			character.changeToIdleOrFall();
-		}
-		if (character is Axl axl) {
-			axl.stealthRevealTime = Axl.maxStealthRevealTime;
 		}
 	}
 

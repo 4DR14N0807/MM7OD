@@ -79,8 +79,6 @@ public class Weapon {
 	public string iconSprite = "hud_weapon_icon";
 
 	// Axl Custom Setting Reload
-	public float rechargeAmmoCustomSettingAxl;
-	public float rechargeAmmoCustomSettingAxl2;
 	public float rechargeAmmoCooldown;
 	public float altRechargeAmmoCooldown;
 
@@ -312,7 +310,7 @@ public class Weapon {
 
 	}
 
-	public virtual void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public virtual void vileShoot(Vile vile) {
 	}
 
 	// For melee / zero weapons, etc.
@@ -478,5 +476,21 @@ public class Weapon {
 
 	public virtual float getFireRate(Character character, int chargeLevel, int[] args) {
 		return fireRate;
+	}
+
+	public virtual bool customShootCondition(Character character) {
+		return false;
+	}
+}
+
+public class EmptyWeapon : Weapon {
+	public EmptyWeapon() {
+		displayName = "Null Driver";
+		drawCooldown = false;
+		drawAmmo = false;
+	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
 	}
 }

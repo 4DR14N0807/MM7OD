@@ -600,14 +600,6 @@ public class Damager {
 		return null;
 	}
 
-
-	public static bool canDamageFrostShield(int projId) {
-		if (CrackedWall.canDamageCrackedWall(1, null) != 0) {
-			return true;
-		}
-		return true;
-	}
-
 	public static bool isBoomerang(int? projId) {
 		if (projId == null) return false;
 		return projId switch {

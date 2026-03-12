@@ -9,10 +9,10 @@ public class DrDoppler : Maverick {
 	public int ballType;
 	public float targetTime;
 	public DrDoppler(
-		Player player, Point pos, Point destPos, int xDir,
-		ushort? netId, bool ownedByLocalPlayer, bool sendRpc = false
+		Player player, Point pos, int xDir, ushort? netId,
+		bool ownedByLocalPlayer, bool sendRpc = false
 	) : base(
-		player, pos, destPos, xDir, netId, ownedByLocalPlayer
+		player, pos, xDir, netId, ownedByLocalPlayer
 	) {
 		stateCooldowns = new() {
 			{ typeof(MShoot), new(45, true) },
@@ -144,7 +144,7 @@ public class DrDoppler : Maverick {
 				player, player.getNextActorNetId(), rpc: true
 			);
 
-		}, null!);
+		}, "");
 		if (isAI) {
 			mshoot.consecutiveData = new MaverickStateConsecutiveData(0, 5, 0f);
 		}

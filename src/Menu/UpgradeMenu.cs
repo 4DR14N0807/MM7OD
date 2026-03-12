@@ -133,7 +133,7 @@ public class UpgradeMenu : IMainMenu {
 
 			if (mainPlayer.realCharNum == 0) {
 				if (mainPlayer.canUpgradeXArmor()) {		
-					UpgradeArmorMenu.xGame = 1;
+					UpgradeArmorMenu.xGame = 3;
 					Menu.change(new UpgradeArmorMenu(this));
 					onUpgradeMenu = false;
 					return;

@@ -129,13 +129,15 @@ public partial class Level {
 	public const ushort cp1NetId = 14;
 	public const ushort cp2NetId = 15;
 
-	public ShaderWrapper backgroundShader;
+	public ShaderWrapper? backgroundShader;
 	public Texture backgroundShaderImage;
-	public ShaderWrapper parallaxShader;
+	public ShaderWrapper? parallaxShader;
 	public Texture parallaxShaderImage;
-	public ShaderWrapper backwallShader;
+	public ShaderWrapper? altBackwallShader => backwallShader ?? backgroundShader;
+	public ShaderWrapper? backwallShader;
 	public Texture backwallShaderImage;
-	public ShaderWrapper foregroundShader;
+	public ShaderWrapper? altForegroundShader => foregroundShader ?? backgroundShader;
+	public ShaderWrapper? foregroundShader;
 	public Texture foregroundShaderImage;
 
 	public float mapVersion;
@@ -162,7 +164,7 @@ public partial class Level {
 	}
 	public Player camPlayer {
 		get {
-			if (mainPlayer.isSpectator) {
+			if (mainPlayer.isSpectator || mainPlayer.altSpectator) {
 				if (!Global.level.players.Contains(specPlayer)) {
 					// Player left match: immediately get next spectate target, and if none, return null
 					specPlayer = getNextSpecPlayer(1);
@@ -189,7 +191,9 @@ public partial class Level {
 	}
 
 	public List<Player> spectatablePlayers() {
-		return players.Where(p => p != mainPlayer && !p.isSpectator).OrderBy(p => p.name).ToList();
+		return players.Where(
+			p => p != mainPlayer && !p.isSpectator && p.elimAlive
+		).OrderBy(p => p.name).ToList();
 	}
 
 	public List<Player> nonSpecPlayers() {
@@ -349,7 +353,9 @@ public partial class Level {
 			gameMode = new KingOfTheHill(this, server.timeLimit);
 		} else if (server.gameMode == GameMode.Race) {
 			gameMode = new Race(this);
-		}
+		} else if (server.gameMode == GameMode.TeamElimAlt) {
+			gameMode = new TeamElimAlt(this, server.playTo, server.timeLimit);
+		} 
 
 		// Radar dimensions
 		float maxDim = 50f;
@@ -370,10 +376,10 @@ public partial class Level {
 		scaledH = 26;
 
 		Global.radarRenderTexture = new RenderTexture(
-			(uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH)
+			((uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH))
 		);
 		Global.radarRenderTextureB = new RenderTexture(
-			(uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH)
+			((uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH))
 		);
 		Global.radarRenderTextureC = new RenderTexture(
 			(uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH)
@@ -837,7 +843,7 @@ public partial class Level {
 			addGameObject(actor);
 		}
 
-		if (Global.isHost && isNon1v1Elimination()) {
+		if (Global.isHost) {
 			var neutralSpawns = spawnPoints.Where((spawnPoint) => {
 				return spawnPoint.alliance == -1;
 			}).ToList();
@@ -850,7 +856,7 @@ public partial class Level {
 
 		controlPoints.Sort((cp1, cp2) => cp1.num - cp2.num);
 		foreach (var navMeshNode in navMeshNodes) {
-			navMeshNode.setNeighbors(navMeshNodes, getGameObjectArray());
+			navMeshNode.setNeighbors(navMeshNodes, gameObjects.ToList());
 		}
 
 		// Dynamically assign nodes based on their proximity
@@ -1054,10 +1060,11 @@ public partial class Level {
 			player.readyTextOver = true;
 			player.loadout = hostPlayer.loadoutData;
 
-			if (hostPlayer.currentCharNum != null && hostPlayer.charNetId != null &&
-				hostPlayer.charNetId != 0 && player.character == null
+			if (hostPlayer.currentCharNum != -1 &&
+				hostPlayer.charNetId != ushort.MaxValue &&
+				player.character == null
 			) {
-				int targetCharNum = hostPlayer.currentCharNum.Value;
+				int targetCharNum = hostPlayer.currentCharNum;
 				LoadoutData currentLoadout = player.loadout;
 				if (hostPlayer.atransLoadout != null) {
 					currentLoadout = hostPlayer.atransLoadout;
@@ -1065,7 +1072,7 @@ public partial class Level {
 				player.spawnCharAtPoint(
 					targetCharNum, player.getCharSpawnData(targetCharNum, loadout: currentLoadout),
 					new Point(hostPlayer.charXPos, hostPlayer.charYPos),
-					hostPlayer.charXDir, hostPlayer.charNetId.Value,
+					hostPlayer.charXDir, hostPlayer.charNetId,
 					sendRpc: false
 				);
 			}
@@ -1498,8 +1505,7 @@ public partial class Level {
 			go.update();
 			if (go.hasStateMachine) { go.stateUpdate(); }
 			go.physicsUpdate();
-			if (isNon1v1Elimination() &&
-				gameMode.virusStarted > 0 && go is Actor actor &&
+			if (gameMode.virusStarted > 0 && go is Actor actor &&
 				actor.ownedByLocalPlayer && go is IDamagable damagable
 			) {
 				var szRect = gameMode.safeZoneRect;
@@ -1515,10 +1521,10 @@ public partial class Level {
 						if (!damagable.projectileCooldown.ContainsKey("sigmavirus")) {
 							damagable.projectileCooldown["sigmavirus"] = 0;
 						}
-						if (damagable.projectileCooldown["sigmavirus"] == 0) {
+						if (damagable.projectileCooldown["sigmavirus"] <= 0) {
 							actor.playSound("hit");
-							actor.addRenderEffect(RenderEffectType.Hit, 3, 5);
-							damagable.applyDamage(2, null, null, null, null);
+							actor.addRenderEffect(RenderEffectType.Hit, 3, 6);
+							damagable.applyDamage(1, Player.stagePlayer, null, null, null);
 							damagable.projectileCooldown["sigmavirus"] = 60;
 						}
 					}
@@ -2032,7 +2038,7 @@ public partial class Level {
 		srt.Clear(Global.level?.levelData?.bgColor ?? new Color(0, 0, 0, 0));
 		srt.Display();
 
-		if (isNon1v1Elimination() && gameMode.virusStarted > 0) {
+		if (gameMode.virusStarted > 0) {
 			drawSigmaVirus();
 		}
 
@@ -2121,7 +2127,7 @@ public partial class Level {
 
 		// If a backwall wasn't set, the background becomes the backwall.
 		if (level.backwallSprites != null) {
-			DrawWrappers.DrawMapTiles(level.backwallSprites, 0, 0, srt, level.backgroundShader);
+			DrawWrappers.DrawMapTiles(level.backwallSprites, 0, 0, srt, level.altBackwallShader);
 		} else {
 			DrawWrappers.DrawMapTiles(level.backgroundSprites, 0, 0, srt, level.backgroundShader);
 		}
@@ -2135,7 +2141,7 @@ public partial class Level {
 
 		level.drawKeyRange(keys, ZIndex.Background, ZIndex.Foreground, srt, walDrawObjects);
 
-		DrawWrappers.DrawMapTiles(level.foregroundSprites, 0, 0, srt, level.foregroundShader);
+		DrawWrappers.DrawMapTiles(level.foregroundSprites, 0, 0, srt, level.altForegroundShader);
 
 		level.drawKeyRange(keys, ZIndex.Foreground, long.MaxValue, srt, walDrawObjects);
 
@@ -2678,7 +2684,7 @@ public partial class Level {
 			}
 		}
 
-		if (isNon1v1Elimination() && gameMode.virusStarted > 0) {
+		if (gameMode.virusStarted > 0) {
 			return spawnPoints[gameMode.safeZoneSpawnIndex];
 		}
 
@@ -2806,7 +2812,12 @@ public partial class Level {
 			originPoint = mainChar.pos;
 		} else if (mainMaverick != null) {
 			originPoint = mainMaverick.pos;
-		} else if (mainChar == null && Global.level.mainPlayer != null && Global.level.mainPlayer.lastDeathPos != null && !Global.level.mainPlayer.isSpectator) {
+		} else if (
+			mainChar == null && Global.level.mainPlayer != null &&
+			Global.level.mainPlayer.lastDeathPos != null &&
+			!Global.level.mainPlayer.isSpectator &&
+			!Global.level.mainPlayer.altSpectator
+		) {
 			originPoint = Global.level.mainPlayer.lastDeathPos.Value;
 		}
 

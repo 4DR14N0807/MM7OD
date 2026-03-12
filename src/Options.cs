@@ -75,8 +75,9 @@ public class Options {
 	// Zero
 	public bool swapAirAttacks;
 	public bool showGigaAttackCooldown;
+	public bool slashGroundSprite = true;
 	public ZeroLoadout zeroLoadout = new ZeroLoadout();
-	public bool altZeroSpinCtrl;
+	public bool altZeroSpinCtrl; //this is never used
 
 	// Vile
 	public int weaponOrderingVile;
@@ -130,6 +131,7 @@ public class Options {
 	
 	// Punchy Zero
 	public PZeroLoadout pzeroLoadout = new PZeroLoadout();
+	public BZeroLoadout bzeroLoadout = new BZeroLoadout();
 
 	private static Options _main = null!;
 	public int? detectedGraphicsPreset;

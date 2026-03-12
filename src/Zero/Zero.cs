@@ -512,7 +512,9 @@ public class Zero : Character {
 		int yDir = player.input.getYDir(player);
 		// Giga attacks.
 		if (yDir == 1 && specialPressed) {
-			if (gigaAttack.shootCooldown <= 0 && gigaAttack.ammo >= gigaAttack.getAmmoUsage(0)) {
+			if (flag == null && gigaAttack.shootCooldown <= 0 &&
+				gigaAttack.ammo >= gigaAttack.getAmmoUsage(0)
+			) {
 				gigaAttack.shoot(this, []);
 				return true;
 			}
@@ -539,6 +541,7 @@ public class Zero : Character {
 			}
 			dashAttackCooldown = 60;
 			slideVel = xDir * getDashSpeed();
+			
 			if (specialPressTime > shootPressTime) {
 				changeState(new ZeroShippuugaState(), true);
 				return true;
@@ -609,11 +612,7 @@ public class Zero : Character {
 			if (charState is WallSlide wallSlide) {
 				changeState(new ZeroMeleeWall(wallSlide.wallDir, wallSlide.wallCollider), true);
 			} else {
-				if (Options.main.swapAirAttacks == false) {
-					changeState(new ZeroAirSlashState(), true);
-				} else if (kuuenzanCooldown <= 0) {
-					changeState(new ZeroRollingSlashtate(), true);
-				}
+				changeState(new ZeroAirSlashState(), true);
 			}
 			return true;
 		}
@@ -798,29 +797,29 @@ public class Zero : Character {
 			// Ground
 			(int)MeleeIds.HuSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaber1, player, 2, 0, 15, isReflectShield: true,
-				isZSaberEffect2: true, isZSaberClang: true,
+				isZSaberEffect2: true, clashTier: ClashTier.Weak,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.HaSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaber2, player, 2, 0, 15, isReflectShield: true,
-				isZSaberEffect2B: true, isZSaberClang: true,
+				isZSaberEffect2B: true, clashTier: ClashTier.Weak,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.HuhSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaber3, player,
 				3, Global.defFlinch, 15, isReflectShield: true,
-				isZSaberEffect: true, isZSaberClang: true,
+				isZSaberEffect: true, clashTier: ClashTier.Weak,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.CrouchSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaberCrouch, player, 3, 0, 15, isReflectShield: true,
-				isZSaberEffect: true, isZSaberClang: true,
+				isZSaberEffect: true, clashTier: ClashTier.Weak,
 				addToLevel: addToLevel
 			),
 			// Dash
 			(int)MeleeIds.DashSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaberDash, player, 2, 0, 15, isReflectShield: true,
-				isZSaberEffect: true, isZSaberClang: true,
+				isZSaberEffect: true, clashTier: ClashTier.Weak,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.Shippuuga => new GenericMeleeProj(
@@ -831,13 +830,13 @@ public class Zero : Character {
 			// Air
 			(int)MeleeIds.AirSlash => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.ZSaberAir, player, 2, 0, 15, isReflectShield: true,
-				isZSaberEffect: true, isZSaberClang: true,
+				isZSaberEffect: true, clashTier: ClashTier.Weak,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.RollingSlash => new GenericMeleeProj(
 				KuuenzanWeapon.staticWeapon, projPos, ProjIds.ZSaberRollingSlash, player,
 				1, 0, 8, isDeflectShield: true,
-				isZSaberEffect2: true, isZSaberClang: true,
+				isZSaberEffect2: true, clashTier: ClashTier.Weak,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.Hyoroga => new GenericMeleeProj(
@@ -898,14 +897,15 @@ public class Zero : Character {
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.Gokumonken => new GenericMeleeProj(
-				meleeWeapon, projPos, ProjIds.SwordBlock, player, 0, 0, 0, isDeflectShield: true,
+				meleeWeapon, projPos, ProjIds.SwordBlock, player, 0, 0, 0,
+				isDeflectShield: true, isShield: true,
 				addToLevel: addToLevel
 			) {
 				highPiority = true
 			},
 			(int)MeleeIds.Hadangeki => new GenericMeleeProj(
 				saberSwingWeapon, projPos, ProjIds.ZSaberProjSwing, player,
-				3, Global.defFlinch, 30, isReflectShield: true,
+				3, Global.defFlinch, 30, isReflectShield: true, clashTier: ClashTier.Medium,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.AwakenedAura => new GenericMeleeProj(

@@ -261,7 +261,7 @@ public partial class Actor : GameObject {
 		else colliderHeight = globalCollider.shape.maxY - globalCollider.shape.minY;
 
 		// May need a new overridable method to get "visual" height for situations like these
-		if (sprite?.name?.StartsWith("sigma2_viral_") == true) {
+		if (this is ViralSigma) {
 			colliderHeight = 50;
 		}
 
@@ -442,6 +442,7 @@ public partial class Actor : GameObject {
 		}
 	}
 
+	public bool useAngleOnFade;
 	public float angle {
 		get {
 			return _byteAngle * 1.40625f;
@@ -675,7 +676,7 @@ public partial class Actor : GameObject {
 			}
 			gHoldTime++;
 		}
-		
+
 		bool wading = isWading();
 		bool underwater = isUnderwater();
 
@@ -1295,16 +1296,17 @@ public partial class Actor : GameObject {
 	) {
 		if (attacker == null) return;
 
-		float reportDamage = Helpers.clampMax(damage, Damager.ohkoDamage);
-		if (attacker.isMainPlayer || ownedByLocalPlayer) {
-			if (damage >= Damager.ohkoDamage) {
-				addDamageText("Instakill!", (int)FontType.OrangeSmall);
+		if (damage >= Damager.ohkoDamage && damage >= maxHealth) {
+			if (Helpers.randomRange(0, 20) != 10) {
+				addDamageText("Instakill!", (int)FontType.RedishOrange);
 			} else {
 				addDamageText(damage);
 			}
+		} else if (attacker.isMainPlayer) {
+			addDamageText(damage);
 		}
-		if (!attacker.isMainPlayer && ownedByLocalPlayer && sendRpc) {
-			RPC.addDamageText.sendRpc(attacker.id, netId, reportDamage);
+		if (ownedByLocalPlayer && sendRpc) {
+			RPC.addDamageText.sendRpc(attacker.id, netId, damage);
 		}
 	}
 
@@ -1464,7 +1466,12 @@ public partial class Actor : GameObject {
 		if (!String.IsNullOrEmpty(spriteName)) {
 			var anim = new Anim(getCenterPos(), spriteName, xDir, null, true);
 			if (angleSet) {
-				anim.byteAngle = byteAngle;
+				if (useAngleOnFade) {
+					anim.byteAngle = byteAngle;
+				}
+				else if (byteAngle > 64 && byteAngle < 256 - 64) {
+					anim.xDir *= -1;
+				}
 			}
 			anim.xScale = xScale;
 			anim.yScale = yScale;
@@ -1548,6 +1555,9 @@ public partial class Actor : GameObject {
 
 
 	public SoundWrapper? playSound(string soundKey, bool forcePlay = false, bool sendRpc = false) {
+		if (soundKey == "") {
+			return null;
+		}
 		soundKey = soundKey.ToLowerInvariant();
 		if (!Global.soundBuffers.ContainsKey(soundKey)) {
 			throw new Exception($"Attempted playing missing sound with name \"{soundKey}\"");

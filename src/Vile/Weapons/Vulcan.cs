@@ -14,12 +14,12 @@ public class VileVulcan : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		killFeedIndex = 62;
 		weaponSlotIndex = 44;
+		isStream = true;
 	}
 
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
-		if (shootCooldown > 0 || vile.energy.ammo < vileAmmoUsage) {
-			return;
-		}
+	public override void vileShoot(Vile vile) {
+		if (shootCooldown > 0 || vile.energy.ammo < vileAmmoUsage) return;
+		if (vile.charState is VileMK2GrabState) return;
 		vile.vulcanLingerTime = fireRate > 9 ? fireRate : 9;
 		vile.changeSpriteFromName(vile.charState.shootSpriteEx, false);
 		ladderVoid(vile);

@@ -70,7 +70,7 @@ public class RollingShieldProj : Projectile {
 		fadeSound = "";
 		useGravity = true;
 		if (collider != null) {
-			collider.wallOnly = true;
+			collider?.wallOnly = true;
 		}
 		vel.x = 0;
 		canBeLocal = false;
@@ -110,7 +110,7 @@ public class RollingShieldProj : Projectile {
 	}
 
 	public override void onHitDamagable(IDamagable damagable) {
-		if (damagable is not TorpedoProjX and not TorpedoProjChargedX and not 
+		if (damagable is not TorpedoProjX and not TorpedoProjChargedX and not
 			TorpedoProjChargedOcto and not TorpedoProjMech
 		) {
 			base.onHitDamagable(damagable);

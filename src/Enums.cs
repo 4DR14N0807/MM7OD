@@ -298,6 +298,7 @@ public enum WeaponIds {
 	Sigma3KaiserStomp,
 	RideChaserGun,
 	RideChaserHit,
+	VileWeaponSystem,
 	DNACore,
 }
 
@@ -624,6 +625,7 @@ public enum ProjIds {
 	FlameRoundWallProj,
 	FlameRoundFlameProj,
 	VileMK2Grab,
+	VileMK2GrabStart,
 	NecroBurst,
 	NecroBurstShrapnel,
 	RisingSpecter,
@@ -867,14 +869,17 @@ public enum ProjIds {
 	PZeroParryAttack,
 	PZeroHadangeki,
 
-	// Dark Zero buster.
+	// Buster Zero buster.
 	DZBuster,
 	DZBuster2,
 	DZBuster3,
 	DZBuster4,
 	DZMelee,
 	DZHadangeki,
-	
+	DZShinHadangeki,
+	DZShinBuster,
+	DZShinGetsurin,
+
 	//7OD stuff
 	SlashClaw,
 	SlashClaw2,
@@ -894,6 +899,7 @@ public enum ProjIds {
 	// Special damage types.
 	SelfDmg = 30000,
 	SelfTrueDmg,
+	ViralPosession,
 
 	// Enviroment effect shenanigans.
 	KillZone = 32000,
@@ -901,8 +907,6 @@ public enum ProjIds {
 	// Close to the int16 max value.
 	// Do not add things bellow this.
 	SelfDestruct = 32700,
-
-	
 }
 
 public enum WeaponSlotsIds

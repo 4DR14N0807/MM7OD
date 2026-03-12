@@ -8,9 +8,9 @@ public class BlizzardBuffalo : Maverick {
 	public static Weapon netWeapon = new Weapon(WeaponIds.BBuffaloGeneric, 151);
 
 	public BlizzardBuffalo(
-		Player player, Point pos, Point destPos, int xDir, ushort? netId, bool ownedByLocalPlayer, bool sendRpc = false
+		Player player, Point pos, int xDir, ushort? netId, bool ownedByLocalPlayer, bool sendRpc = false
 	) : base(
-		player, pos, destPos, xDir, netId, ownedByLocalPlayer
+		player, pos, xDir, netId, ownedByLocalPlayer
 	) {
 		stateCooldowns = new() {
 			{ typeof(MShoot), new(45, true) },
@@ -185,7 +185,7 @@ public class BBuffaloIceProj : Projectile {
 		float speedModifier = Helpers.clamp((shootFramesHeld + 3) / 10f, 0.5f, 1.5f);
 		vel = new Point(unitDir.x * 200 * speedModifier, unitDir.y * 250 * speedModifier);
 
-		if (collider != null) { collider.wallOnly = true; }
+		collider?.wallOnly = true;
 		destroyOnHit = true;
 
 		if (sendRpc) {
@@ -323,18 +323,13 @@ public class BBuffaloIceProjGround : Projectile, IDamagable {
 		}
 	}
 
-	public bool canBeHealed(int healerAlliance) { return false; }
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
 		return damagerAlliance != owner.alliance;
 	}
-	public bool isInvincible(Player attacker, int? projId) {
-		if (projId == null) {
-			return true;
-		}
-		return !Damager.canDamageFrostShield(projId.Value);
-	}
-	public bool isPlayableDamagable() { return false; }
+	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+	public bool canBeHealed(int healerAlliance) => false;
+	public bool isInvincible(Player attacker, int? projId) => false;
+	public bool isPlayableDamagable() => false;
 
 	public override void onDestroy() {
 		base.onDestroy();
@@ -414,7 +409,7 @@ public class BBuffaloBeamProj : Projectile {
 
 	public void setStartPos(Point startPos) {
 		this.startPos = startPos;
-		globalCollider = new Collider(getPoints(), true, null!, false, false, 0, Point.zero);
+		globalCollider = new Collider(getPoints(), true, null, false, false, 0, Point.zero);
 	}
 
 	public List<Point> getPoints() {
@@ -461,7 +456,7 @@ public class BBuffaloBeamProj : Projectile {
 }
 #region states
 public class BuffaloMState : MaverickState {
-	public BlizzardBuffalo FrozenBuffalio = null!;
+	public BlizzardBuffalo frozenBuffalio = null!;
 	public BuffaloMState(
 		string sprite, string transitionSprite = ""
 	) : base(
@@ -471,7 +466,7 @@ public class BuffaloMState : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		FrozenBuffalio = maverick as BlizzardBuffalo ?? throw new NullReferenceException();
+		frozenBuffalio = maverick as BlizzardBuffalo ?? throw new NullReferenceException();
 
 	}
 }
@@ -503,7 +498,7 @@ public class BBuffaloShootBeamState : BuffaloMState {
 		if (muzzle?.destroyed == true && proj == null && shootPos != null) {
 			proj = new BBuffaloBeamProj(
 				shootPos.Value.addxy(maverick.xDir * 20, 0), maverick.xDir, 
-				FrozenBuffalio, FrozenBuffalio, player, player.getNextActorNetId(), rpc: true
+				frozenBuffalio, frozenBuffalio, player, player.getNextActorNetId(), rpc: true
 			);
 		}
 
@@ -583,7 +578,7 @@ public class BBuffaloDashState : BuffaloMState {
 		*/
 
 		new BBuffaloCrashProj(
-			maverick.pos, maverick.xDir, FrozenBuffalio,
+			maverick.pos, maverick.xDir, frozenBuffalio,
 			player, player.getNextActorNetId(), rpc: true
 		);
 		maverick.playSound("crashX3", sendRpc: true);
@@ -652,11 +647,11 @@ public class BBuffaloShootAI : BuffaloMState {
 			once = true;
 			new BBuffaloIceProjAI(
 				shootPos.Value, maverick.xDir, 0,
-				FrozenBuffalio, player.getNextActorNetId(), sendRpc: true
+				frozenBuffalio, player.getNextActorNetId(), sendRpc: true
 			);
 			new BBuffaloIceProjAI(
 				shootPos.Value, maverick.xDir, 1,
-				FrozenBuffalio, player.getNextActorNetId(), sendRpc: true
+				frozenBuffalio, player.getNextActorNetId(), sendRpc: true
 			);
 			maverick.playSound("bbuffaloShoot", sendRpc: true);
 		}
@@ -664,15 +659,15 @@ public class BBuffaloShootAI : BuffaloMState {
 			once = true;
 			new BBuffaloIceProjAIStriker(
 				shootPos.Value, maverick.xDir, 0,
-				FrozenBuffalio, player.getNextActorNetId(), sendRpc: true
+				frozenBuffalio, player.getNextActorNetId(), sendRpc: true
 			);
 			new BBuffaloIceProjAIStriker(
 				shootPos.Value, maverick.xDir, 1,
-				FrozenBuffalio, player.getNextActorNetId(), sendRpc: true
+				frozenBuffalio, player.getNextActorNetId(), sendRpc: true
 			);
 			new BBuffaloIceProjAIStriker(
 				shootPos.Value, maverick.xDir, 2,
-				FrozenBuffalio, player.getNextActorNetId(), sendRpc: true
+				frozenBuffalio, player.getNextActorNetId(), sendRpc: true
 			);
 			maverick.playSound("bbuffaloShoot", sendRpc: true);
 		}
@@ -699,7 +694,7 @@ public class BBuffaloIceProjAI : Projectile {
 		this.type = type;
 		if (type == 0) vel = new Point(Helpers.randomRange(150,210) * owner.xDir, -Helpers.randomRange(250,300));
 		else if (type == 1) vel = new Point(Helpers.randomRange(210,250) * owner.xDir, -Helpers.randomRange(300,350));
-		if (collider != null) { collider.wallOnly = true; }
+		collider?.wallOnly = true;
 		destroyOnHit = true;
 
 		if (sendRpc) {
@@ -780,7 +775,7 @@ public class BBuffaloIceProjAIStriker : Projectile {
 		if (type == 0) vel = new Point(Helpers.randomRange(50,90), -Helpers.randomRange(270,300));
 		else if (type == 1) vel = new Point(Helpers.randomRange(140,180), -Helpers.randomRange(300,350));
 		else if (type == 2) vel = new Point(Helpers.randomRange(230,270), -Helpers.randomRange(300,350));
-		if (collider != null) { collider.wallOnly = true; }
+		collider?.wallOnly = true;
 		destroyOnHit = true;
 
 		if (sendRpc) {

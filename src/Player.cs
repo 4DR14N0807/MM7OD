@@ -30,8 +30,7 @@ public partial class Player {
 			-1, GameMode.neutralAlliance, "NULL", null, 0
 		)
 	);
-	
-	
+
 	public SpawnPoint? firstSpawn;
 	public Input input;
 	public Character? character;
@@ -42,6 +41,7 @@ public partial class Player {
 	public float fgMoveMaxAmmo = 1920;
 	public bool isDefenderFavoredNonOwner;
 	public Character? lastDamagedCharacter;
+	public bool elimAlive => character?.alive == true && spawnedOnce;
 
 	public bool isDefenderFavored {
 		get {
@@ -85,7 +85,6 @@ public partial class Player {
 		return ping.Value;
 	}
 
-	public Character? preTransformedChar;
 	public bool isDisguisedAxl => character?.isATrans == true;
 	public List<Weapon> savedDNACoreWeapons = new List<Weapon>();
 	public int axlBulletType;
@@ -286,6 +285,9 @@ public partial class Player {
 			else serverPlayer.isSpectator = value;
 		}
 	}
+	public bool altSpectator => (
+		!elimAlive && !Global.level.gameMode.canRespawn() && respawnTime <= 0 && character == null
+	);
 	private bool isOfflineSpectator;
 	public bool is1v1Combatant;
 
@@ -579,6 +581,7 @@ public partial class Player {
 		this.name = name;
 		this.id = id;
 		curMaxNetId = getFirstAvailableNetId();
+		curATransNetId = getStartNetId();
 		this.alliance = alliance;
 		newAlliance = alliance;
 		this.isAI = isAI;
@@ -956,18 +959,25 @@ public partial class Player {
 	}
 
 	public bool shouldRespawn() {
-		if (character != null) return false;
-		if (respawnTime > 0) return false;
-		if (!ownedByLocalPlayer) return false;
-		if (isSpectator) return false;
-		if (eliminated()) return false;
-		if (isAI) return true;
-		if (Global.level.is1v1()) return true;
-		if (!readyTextOver) return false;
+		if (character != null ||
+			!ownedByLocalPlayer || isSpectator ||
+			eliminated() || !readyTextOver ||
+			!Global.level.gameMode.canRespawn()
+		) {
+			return false;
+		}
 		if (!spawnedOnce) {
 			spawnedOnce = true;
 			return true;
 		}
+		if (Global.level.gameMode.forceRespawn()) { return true; }
+		if (respawnTime > 0) {
+			return false;
+		}
+		if (isAI) { return true; }
+		if (Global.level.is1v1()) { return true; }
+		
+
 		if (!Menu.inMenu && input.isPressedMenu(Control.MenuConfirm)) {
 			return true;
 		}
@@ -1048,7 +1058,8 @@ public partial class Player {
 	public Character? spawnCharAtPoint(
 		int spawnCharNum, byte[] extraData,
 		Point pos, int xDir, ushort charNetId, bool sendRpc,
-		bool isMainChar = true, bool forceSpawn = false, bool isWarpIn = true
+		bool isMainChar = true, bool forceSpawn = false,
+		bool isWarpIn = true, bool addToLevel = true
 	) {
 		if (sendRpc) {
 			RPC.spawnCharacter.sendRpc(spawnCharNum, extraData, pos, xDir, id, charNetId);
@@ -1206,8 +1217,10 @@ public partial class Player {
 		input.possessedControlHeld[Control.Down] = Global.input.isHeld(Control.Down, Global.level.mainPlayer);
 		input.possessedControlHeld[Control.Jump] = Global.input.isHeld(Control.Jump, Global.level.mainPlayer);
 		input.possessedControlHeld[Control.Dash] = Global.input.isHeld(Control.Dash, Global.level.mainPlayer);
+		input.possessedControlHeld[Control.Shoot] = Global.input.isHeld(Control.Shoot, Global.level.mainPlayer);
+		input.possessedControlHeld[Control.Special1] = Global.input.isHeld(Control.Special1, Global.level.mainPlayer);
 		input.possessedControlHeld[Control.Taunt] = Global.input.isHeld(Control.Taunt, Global.level.mainPlayer);
-
+		
 		byte inputHeldByte = Helpers.boolArrayToByte(new bool[] {
 				input.possessedControlHeld[Control.Left],
 				input.possessedControlHeld[Control.Right],
@@ -1215,8 +1228,10 @@ public partial class Player {
 				input.possessedControlHeld[Control.Down],
 				input.possessedControlHeld[Control.Jump],
 				input.possessedControlHeld[Control.Dash],
-				input.possessedControlHeld[Control.Taunt],
-				false,
+				input.possessedControlHeld[Control.Shoot],
+				input.possessedControlHeld[Control.Special1],
+				//input.possessedControlHeld[Control.Taunt],
+				//false,
 		});
 
 		// Pressed section
@@ -1227,6 +1242,9 @@ public partial class Player {
 		input.possessedControlPressed[Control.Jump] = Global.input.isPressed(Control.Jump, Global.level.mainPlayer);
 		input.possessedControlPressed[Control.Dash] = Global.input.isPressed(Control.Dash, Global.level.mainPlayer);
 		input.possessedControlPressed[Control.Taunt] = Global.input.isPressed(Control.Taunt, Global.level.mainPlayer);
+		input.possessedControlPressed[Control.Taunt] = Global.input.isPressed(Control.Taunt, Global.level.mainPlayer);
+		input.possessedControlPressed[Control.Shoot] = Global.input.isPressed(Control.Shoot, Global.level.mainPlayer);
+		input.possessedControlPressed[Control.Special1] = Global.input.isPressed(Control.Special1, Global.level.mainPlayer);
 
 		byte inputPressedByte = Helpers.boolArrayToByte(new bool[] {
 				input.possessedControlPressed[Control.Left],
@@ -1235,8 +1253,10 @@ public partial class Player {
 				input.possessedControlPressed[Control.Down],
 				input.possessedControlPressed[Control.Jump],
 				input.possessedControlPressed[Control.Dash],
-				input.possessedControlPressed[Control.Taunt],
-				false,
+				input.possessedControlPressed[Control.Shoot],
+				input.possessedControlPressed[Control.Special1],
+				//input.possessedControlPressed[Control.Taunt],
+				//false,
 		});
 
 		//RPC.syncPossessInput.sendRpc(id, inputHeldByte, inputPressedByte);
@@ -1439,6 +1459,9 @@ public partial class Player {
 		) {
 			return Global.level.server.customMatchSettings.respawnTime;
 		}
+		if (Global.level.gameMode is TeamElimAlt) {
+			return 4;
+		}
 		if (Global.level.isTraining() || Global.level.isRace()) {
 			return 2;
 		}
@@ -1511,15 +1534,16 @@ public partial class Player {
 	public void reviveSigma(int form, Point spawnPoint) {
 		currency -= reviveSigmaCost;
 		hyperSigmaRespawn = true;
-		respawnTime = 0;
+		respawnTime = 2;
 		if (character is not BaseSigma sigma) {
 			return;
 		}
+		//explodeDieEnd();
 		if (character?.destroyed == false) {
 			destroyCharacter(true);
 		}
-		//explodeDieEnd();
 		ushort newNetId = getNextATransNetId();
+
 		if (form == 0) {
 			WolfSigma wolfSigma = new WolfSigma(
 				this, spawnPoint.x, spawnPoint.y, sigma.xDir, true,
@@ -1528,7 +1552,7 @@ public partial class Player {
 			character = wolfSigma;
 		} else if (form == 1) {
 			ViralSigma viralSigma = new ViralSigma(
-				this, spawnPoint.x, spawnPoint.y, sigma.xDir, true,
+				this, spawnPoint.x, spawnPoint.y - 16, sigma.xDir, true,
 				newNetId, true
 			);
 			character = viralSigma;
@@ -1543,19 +1567,35 @@ public partial class Player {
 	}
 
 	public void reviveSigmaNonOwner(int form, Point spawnPoint, ushort sigmaNetId) {
+		if (form == 0) {
+			WolfSigma WolfSigma = new WolfSigma(
+				this, spawnPoint.x, spawnPoint.y, character?.xDir ?? 1, true,
+				sigmaNetId, false
+			);
+			character = WolfSigma;
+			character.changeSprite("sigma_wolf_head", true);
+		}
+		if (form == 1) {
+			ViralSigma ViralSigma = new ViralSigma(
+				this, spawnPoint.x, spawnPoint.y - 16, character?.xDir ?? 1, true,
+				sigmaNetId, false
+			);
+			character = ViralSigma;
+			character.changeSprite("viralsigma_enter", true);
+		}
+		
 		if (form >= 2) {
 			KaiserSigma kaiserSigma = new KaiserSigma(
 				this, spawnPoint.x, spawnPoint.y, character?.xDir ?? 1, true,
 				sigmaNetId, false
 			);
 			character = kaiserSigma;
-
 			character.changeSprite("kaisersigma_enter", true);
 		}
 	}
 
 	public void reviveX() {
-		if (character == null) {
+		if (character == null || !ownedByLocalPlayer) {
 			return;
 		}
 		currency -= reviveXCost;
@@ -1578,8 +1618,11 @@ public partial class Player {
 	public void reviveXNonOwner() {
 	}
 
-	public void destroySigmaEffect() {
-		ExplodeDieEffect.createFromActor(this, character, 25, 2, false);
+	public void explodeDieEnd() {
+		if (explodeDieEffect?.destroyed == false) {
+			explodeDieEffect.destroySelf();
+		}
+		explodeDieEffect = null;
 	}
 
 	public void destroyCharacter(bool sendRpc = false) {
@@ -1662,18 +1705,23 @@ public partial class Player {
 
 	public void forceKill() {
 		if (maverick1v1 != null && Global.level.is1v1()) {
-			//character?.applyDamage(null, null, 1000, null);
 			currentMaverick?.applyDamage(Damager.forceKillDamage, this, character, null, null);
+			character?.applyDamage(Damager.forceKillDamage, this, character, null, null);
 			return;
 		}
-
 		if (currentMaverick != null && currentMaverick.controlMode == MaverickModeId.TagTeam) {
-			destroyCharacter(true);
-		} else {
-			character?.applyDamage(Damager.forceKillDamage, this, character, null, null);
+			Point newPos = currentMaverick.pos;
+			currentMaverick.changeState(new MExit(currentMaverick.pos, false));
+			character?.changeState(new Idle());
+			character?.visible = true;
+			character?.changePos(newPos);
 		}
-		foreach (var maverick in mavericks) {
-			maverick.applyDamage(Damager.forceKillDamage, this, character, null, null);
+		character?.applyDamage(Damager.forceKillDamage, this, character, null, null);
+		
+		foreach (Maverick maverick in mavericks) {
+			if (maverick.state is not MExit && !maverick.destroyed) {
+				maverick.changeState(new MExit(maverick.pos, false));
+			}
 		}
 	}
 

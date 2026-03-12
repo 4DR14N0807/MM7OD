@@ -146,12 +146,19 @@ public class Doppma : BaseSigma {
 	}
 
 	public override Projectile? getMeleeProjById(int id, Point pos, bool addToLevel = true) {
-		return id switch {
-			(int)MeleeIds.Shield or (int)MeleeIds.ShieldGuard => new GenericMeleeProj(
+		return (MeleeIds)id switch {
+			MeleeIds.Shield => new GenericMeleeProj(
 				new Weapon(), pos, ProjIds.Sigma3ShieldBlock, player,
 				damage: 0, flinch: 0, hitCooldown: 60,
-				isDeflectShield: true, isShield: true,
-				isReflectShield: id == (int)MeleeIds.ShieldGuard,
+				isDeflectShield: true,
+				addToLevel: addToLevel
+			) {
+				highPiority = true
+			},
+			MeleeIds.ShieldGuard => new GenericMeleeProj(
+				new Weapon(), pos, ProjIds.Sigma3ShieldBlock, player,
+				damage: 0, flinch: 0, hitCooldown: 60,
+				isDeflectShield: true, isReflectShield: true, isShield: true,
 				addToLevel: addToLevel
 			) {
 				highPiority = true
@@ -189,7 +196,7 @@ public class Doppma : BaseSigma {
 			if (mw.maverick != null) {
 				changeState(new CallDownMaverick(mw.maverick, true, false), true);
 			}
-			mw.summon(player, pos.addxy(0, -112), pos, xDir);
+			mw.summon(player, pos, xDir);
 			player.changeToSigmaSlot();
 		}
 		if (charState is not LadderClimb) {

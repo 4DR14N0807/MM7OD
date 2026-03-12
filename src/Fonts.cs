@@ -91,9 +91,11 @@ public class Fonts {
 
 				var textSprite = new SFML.Graphics.Sprite(
 					bitmapFontTexture, new IntRect(
-						(rx * fontTextureSize) + ((rx + 1) * fontGridSpacing),
-						(ry * fontTextureSize) + ((ry + 1) * fontGridSpacing),
-						fontTextureSize, fontTextureSize
+						(
+							(rx * fontTextureSize) + ((rx + 1) * fontGridSpacing),
+							(ry * fontTextureSize) + ((ry + 1) * fontGridSpacing)
+						),
+						(fontTextureSize, fontTextureSize)
 					)
 				);
 				if (alpha != null) {
@@ -136,7 +138,7 @@ public class Fonts {
 				DrawWrappers.walDrawObjects[depth] = new DrawLayer();
 			}
 			drawLayer = DrawWrappers.walDrawObjects[depth];
-			drawLayer.oneOffs.Add(new DrawableWrapper(null, batchDrawable, drawColor));
+			drawLayer.oneOffs.Add(new DrawableWrapper([], batchDrawable, drawColor));
 		} else {
 			if (!deferred) {
 				DrawWrappers.drawToHUD(batchDrawable);

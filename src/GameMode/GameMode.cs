@@ -16,15 +16,18 @@ public class GameMode {
 	public const string TeamElimination = "Team Elimination";
 	public const string KingOfTheHill = "King Of The Hill";
 	public const string Race = "Race";
+	public const string TeamElimAlt = "Elimination Alt";
+
 	public static List<string> allGameModes = new List<string>() {
 		Deathmatch, TeamDeathmatch, CTF, KingOfTheHill,
-		ControlPoint, Elimination, TeamElimination
+		ControlPoint, Elimination, TeamElimination, TeamElimAlt
 	};
 
 	public const int blueAlliance = 0;
 	public const int redAlliance = 1;
 	public const int neutralAlliance = 50;
 	public const int stageAlliance = 52;
+	public const int nullAlliance = 54;
 	public const int freelanceAlliance = 60;
 
 	public bool isTeamMode = false;
@@ -35,6 +38,8 @@ public class GameMode {
 	public float? startTimeLimit;
 	public int playingTo;
 	public bool drawingScoreboard;
+	public float drawTime;
+	public float drawMaxTime = 60;
 
 	public bool noContest;
 
@@ -83,9 +88,12 @@ public class GameMode {
 	public float eliminationTime;
 	public float localElimTimeInc;  // Used to "client side predict" the elimination time increase.
 	public byte virusStarted;
+	public float? finalZoneTime;
+	public float finalZoneMaxTime1 = 60;
+	public float finalZoneMaxTime2 = 300;
 	public byte safeZoneSpawnIndex;
 
-	bool loggedStatsOnce;
+	bool loggedStatsOnce = true;
 	float goTime;
 
 	public Player mainPlayer { get { return level.mainPlayer; } }
@@ -144,28 +152,22 @@ public class GameMode {
 			if (virusStarted == 0) {
 				return new Rect(0, 0, level.width, level.height);
 			} else if (virusStarted == 1) {
-				float t = eliminationTime - (startTimeLimit ?? eliminationTime);
+				float t = finalZoneTime ?? 0;
 				if (t < 0) t = 0;
-				float timePct = t / 60;
+				float timePct = 1 - (t / finalZoneMaxTime1);
 				return new Rect(
-					timePct * (safeZonePoint.x - 150),
-					timePct * (safeZonePoint.y - 112),
-					level.width - (timePct * (level.width - (safeZonePoint.x + 150))),
-					level.height - (timePct * (level.height - (safeZonePoint.y + 112)))
+					timePct * (safeZonePoint.x - 192),
+					timePct * (safeZonePoint.y - 128),
+					level.width - (timePct * (level.width - (safeZonePoint.x + 192))),
+					level.height - (timePct * (level.height - (safeZonePoint.y + 128)))
 				);
-			} else if (virusStarted == 2) {
-				float t = eliminationTime - (startTimeLimit ?? eliminationTime) - 60;
-				if (t < 0) t = 0;
-				float timePct = t / 300;
-				return new Rect(
-					(safeZonePoint.x - 150) + (timePct * 150),
-					(safeZonePoint.y - 112) + (timePct * 112),
-					(safeZonePoint.x + 150) - (timePct * 150),
-					(safeZonePoint.y + 112) - (timePct * 112)
-				);
-			} else {
-				return new Rect(safeZonePoint.x, safeZonePoint.y, safeZonePoint.x, safeZonePoint.y);
 			}
+			return new Rect(
+				safeZonePoint.x - 192,
+				safeZonePoint.y - 128,
+				safeZonePoint.x + 192,
+				safeZonePoint.y + 128
+			);
 		}
 	}
 
@@ -174,6 +176,7 @@ public class GameMode {
 			selectedGameMode == TeamDeathmatch ||
 			selectedGameMode == ControlPoint ||
 			selectedGameMode == TeamElimination ||
+			selectedGameMode == TeamElimAlt ||
 			selectedGameMode == KingOfTheHill ||
 			selectedGameMode.StartsWith("tm_")
 		) {
@@ -190,6 +193,7 @@ public class GameMode {
 		else if (mode == TeamElimination) return "t.elim";
 		else if (mode == KingOfTheHill) return "koth";
 		else if (mode == Race) return "race";
+		else if (mode == TeamElimAlt) return "elim.alt";
 		else return "dm";
 	}
 
@@ -267,11 +271,15 @@ public class GameMode {
 		Helpers.decrementTime(ref hudErrorMsgTime);
 
 		if (Global.isHost) {
-			if (level.isNon1v1Elimination() && remainingTime != null && remainingTime.Value <= 0) {
+			if (finalZoneTime != null && finalZoneTime.Value <= 0) {
 				if (virusStarted < 3) {
 					virusStarted++;
-					if (virusStarted == 1) remainingTime = 60;
-					else if (virusStarted == 2) remainingTime = 300;
+					if (virusStarted == 1) {
+						finalZoneTime = finalZoneMaxTime1;
+					}
+					else if (virusStarted == 2) {
+						finalZoneTime = finalZoneMaxTime2;
+					}
 				}
 			}
 		} else {
@@ -282,7 +290,7 @@ public class GameMode {
 				}
 
 				float phase1Time = (startTimeLimit ?? 0);
-				float phase2Time = (startTimeLimit ?? 0) + 60;
+				float phase2Time = (startTimeLimit ?? 0) + finalZoneMaxTime1;
 
 				if (eliminationTime <= phase1Time) virusStarted = 0;
 				else if (eliminationTime >= phase1Time && eliminationTime < phase2Time) virusStarted = 1;
@@ -298,7 +306,7 @@ public class GameMode {
 			if (voteKickCooldown < 0) voteKickCooldown = 0;
 		}
 
-		if (level.mainPlayer.isSpectator && !Menu.inMenu) {
+		if ((level.mainPlayer.isSpectator || level.mainPlayer.altSpectator) && !Menu.inMenu) {
 			if (Global.input.isPressedMenu(Control.Left)) {
 				level.specPlayer = level.getNextSpecPlayer(-1);
 			} else if (Global.input.isPressedMenu(Control.Right)) {
@@ -338,7 +346,6 @@ public class GameMode {
 					Global.serverClient?.rpc(RPC.syncSetupTime, 0, 0);
 				}
 			}
-
 			if (setupTime > 0 && Global.isHost) {
 				int time = MathInt.Round(setupTime.Value);
 				byte[] timeBytes = BitConverter.GetBytes((ushort)time);
@@ -353,7 +360,9 @@ public class GameMode {
 					Global.serverClient?.rpc(RPC.syncSetupTime, timeBytes);
 				}
 				lastSetupTimeInt = MathInt.Floor(setupTime.Value);
-			} else if (remainingTime != null && Global.isHost) {
+				return;
+			}
+			if (remainingTime != null && Global.isHost) {
 				int time = MathInt.Round(remainingTime.Value);
 				byte[] timeBytes = BitConverter.GetBytes((ushort)time);
 				int elimTime = MathInt.Round(eliminationTime);
@@ -361,23 +370,47 @@ public class GameMode {
 
 				if (remainingTime > 0) {
 					remainingTime -= Global.spf;
-					eliminationTime += Global.spf;
 					if (remainingTime <= 0) {
 						remainingTime = 0;
-						if (elimTime > 0) Global.serverClient?.rpc(RPC.syncGameTime, 0, 0, elimTimeBytes[0], elimTimeBytes[1]);
-						else Global.serverClient?.rpc(RPC.syncGameTime, 0, 0);
+						if (elimTime > 0) {
+							Global.serverClient?.rpc(
+								RPC.syncGameTime,
+								0, 0, elimTimeBytes[0], elimTimeBytes[1]
+							);
+						}
+						else {
+							Global.serverClient?.rpc(RPC.syncGameTime, 0, 0);
+						}
 					}
 				}
 
 				if (remainingTime.Value < lastTimeInt) {
 					if (remainingTime.Value <= 10) Global.playSound("text");
-					if (elimTime > 0) Global.serverClient?.rpc(RPC.syncGameTime, timeBytes[0], timeBytes[1], elimTimeBytes[0], elimTimeBytes[1]);
-					else Global.serverClient?.rpc(RPC.syncGameTime, timeBytes[0], timeBytes[1]);
+					if (elimTime > 0) {
+						Global.serverClient?.rpc(
+							RPC.syncGameTime, timeBytes[0], timeBytes[1],
+							elimTimeBytes[0], elimTimeBytes[1]
+						);
+					}
+					else {
+						Global.serverClient?.rpc(RPC.syncGameTime, timeBytes[0], timeBytes[1]);
+					}
 				}
 
 				lastTimeInt = MathInt.Floor(remainingTime.Value);
-			} else if (level.isNon1v1Elimination() && !Global.isHost) {
+			}
+
+			if (finalZoneTime != null && Global.isHost) {
+				if (finalZoneTime > 0) {
+					eliminationTime += Global.spf;
+					finalZoneTime -= Global.spf;
+					if (finalZoneTime < 0) { finalZoneTime = 0; }
+				}
+			}
+
+			if (!Global.isHost) {
 				remainingTime -= Global.spf;
+				finalZoneTime -= Global.spf;
 			}
 		}
 
@@ -455,7 +488,7 @@ public class GameMode {
 
 				if (noContest) {
 					matchOverResponse = new RPCMatchOverResponse() {
-						winningAlliances = new HashSet<int>() { },
+						winningAlliances = [nullAlliance],
 						winMessage = "No contest!",
 						loseMessage = "No contest!",
 						loseMessage2 = "Host ended match."
@@ -513,19 +546,22 @@ public class GameMode {
 			}
 		}
 		if (winningAlliance == -1 && remainingTime <= 0) {
-			int lastScore = 0;
+			byte[] orderedPoints = Global.level.gameMode.teamPoints.Order().ToArray();
+			int score1st = orderedPoints[^1];
+			int score2nd = orderedPoints[^2];
 			bool closeMatch = false;
-			for (int i = 0; i < Global.level.teamNum; i++) {
-				if (Global.level.gameMode.teamPoints[i] > lastScore) {
-					winningAlliance = i;
-					closeMatch = false;
-					lastScore = Global.level.gameMode.teamPoints[i];
-					if (Global.level.gameMode.teamPoints[i] - 1 == lastScore) {
-						closeMatch = true;
+
+			if (score1st - 1 == score2nd) {
+				closeMatch = true;
+				winningAlliance = -2;
+			} else if (score1st == score2nd) {
+				winningAlliance = -3;
+			} else {
+				for (int i = 0; i < Global.level.teamNum; i++) {
+					if (Global.level.gameMode.teamPoints[i] == score1st) {
+						winningAlliance = i;
+						closeMatch = false;
 					}
-				} else if (Global.level.gameMode.teamPoints[i] == lastScore) {
-					winningAlliance = -2;
-					closeMatch = true;
 				}
 			}
 			if (this is CTF && closeMatch) {
@@ -536,22 +572,25 @@ public class GameMode {
 					return;
 				}
 			}
+			if (this is TeamElimAlt && closeMatch) {
+				return;
+			}
 		}
 		if (winningAlliance == -3) {
 			matchOverResponse = new RPCMatchOverResponse() {
-				winningAlliances = new HashSet<int>() { },
+				winningAlliances = [],
 				winMessage = "Draw!",
 				loseMessage = "Draw!"
 			};
 		} else if (winningAlliance == -2) {
 			matchOverResponse = new RPCMatchOverResponse() {
-				winningAlliances = new HashSet<int>() { },
+				winningAlliances = [],
 				winMessage = "Stalemate!",
 				loseMessage = "Stalemate!"
 			};
 		} else if (winningAlliance >= 0) {
 			matchOverResponse = new RPCMatchOverResponse() {
-				winningAlliances = new HashSet<int>() { winningAlliance },
+				winningAlliances = [winningAlliance],
 				winMessage = "Victory!",
 				winMessage2 = $"{teamNames[winningAlliance]} team wins",
 				loseMessage = "You lost!",
@@ -567,7 +606,7 @@ public class GameMode {
 		}
 
 		Player? drawPlayer = null;
-		if (!Global.level.mainPlayer.isSpectator) {
+		if (!Global.level.mainPlayer.isSpectator && !Global.level.mainPlayer.altSpectator) {
 			drawPlayer = Global.level.mainPlayer;
 		} else {
 			drawPlayer = level.specPlayer;
@@ -2343,14 +2382,16 @@ public class GameMode {
 		};
 	}
 
-	public Color getTimeColor() {
+	public Color getTimeColor(float? altTime = null) {
+		altTime ??= finalZoneTime ?? remainingTime;
 		if (remainingTime <= 10) {
 			return Color.Red;
 		}
 		return Color.White;
 	}
 
-	public void drawTimeIfSet(int yPos) {
+	public void drawTimeIfSet(int yPos, float? altTime = null) {
+		altTime ??= finalZoneTime ?? remainingTime;
 		FontType fontColor = FontType.WhiteSmall;
 		string timeStr = "";
 		if (setupTime > 0) {
@@ -2361,13 +2402,13 @@ public class GameMode {
 			goTime += Global.spf;
 			timeStr = "GO!";
 			fontColor = FontType.RedSmall;
-		} else if (remainingTime != null) {
-			if (remainingTime <= 10) {
+		} else if (altTime != null) {
+			if (altTime <= 10) {
 				fontColor = FontType.OrangeSmall;
 			}
-			var timespan = new TimeSpan(0, 0, MathInt.Ceiling(remainingTime.Value));
+			var timespan = new TimeSpan(0, 0, MathInt.Ceiling(altTime.Value));
 			timeStr = timespan.ToString(@"m\:ss");
-			if (!level.isNon1v1Elimination() || virusStarted >= 2) {
+			if (virusStarted >= 2) {
 				timeStr += " Left";
 			}
 			if (isOvertime()) {
@@ -2393,9 +2434,9 @@ public class GameMode {
 	}
 
 	public void drawVirusTime(int yPos) {
-		var timespan = new TimeSpan(0, 0, MathInt.Ceiling(remainingTime ?? 0));
+		var timespan = new TimeSpan(0, 0, MathInt.Ceiling(finalZoneTime ?? 0));
 		string timeStr = "Roboenza: " + timespan.ToString(@"m\:ss");
-		Fonts.drawText(FontType.PurpleSmall, timeStr, Global.screenW - 8, yPos, Alignment.Right);
+		Fonts.drawText(FontType.PurpleSmall, timeStr, 5, yPos, Alignment.Left);
 	}
 
 	public void drawWinScreen() {
@@ -2459,7 +2500,12 @@ public class GameMode {
 	}
 
 	public void drawRespawnHUD() {
-		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver && level.mainPlayer.canReviveBlues()) {
+		string respawnStr = (
+			(level.mainPlayer.respawnTime > 0) ?
+			"Respawn in " + Math.Round(level.mainPlayer.respawnTime).ToString() :
+			Helpers.controlText("Press [OK] to respawn")
+		);
+		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver) {
 			Fonts.drawTextEX(
 				FontType.Red, Helpers.controlText(
 						$"[CMD]: Revive as Breakman ({Blues.reviveCost} {Global.nameCoins})"
@@ -2471,82 +2517,58 @@ public class GameMode {
 		if (level.mainPlayer.randomTip == null) return;
 		if (level.mainPlayer.isSpectator) return;
 
-		if (level.mainPlayer.character == null && level.mainPlayer.readyTextOver) {
-			string respawnStr = (
-				(level.mainPlayer.respawnTime > 0) ?
-				"Respawn in " + Math.Round(level.mainPlayer.respawnTime).ToString() :
-				Helpers.controlText("Press [OK] to respawn")
-			);
+		bool drawTip = true;
+		bool drawMainBg = false;
+		FontType respawnFont = FontType.BlueMenu;
 
+		if (!canRespawn()) {
+			if (level.mainPlayer.respawnTime > 0) {
+				respawnStr = "Defeated";
+				respawnFont = FontType.Red;
+				drawMainBg = true;
+			} else {
+				respawnStr = "";
+				drawTip = false;
+			}
+		}
+
+		if (level.mainPlayer.character == null && level.mainPlayer.readyTextOver) {
 			if (level.mainPlayer.eliminated()) {
 				Fonts.drawText(
 					FontType.Red, "You were eliminated!",
 					Global.screenW / 2, -15 + Global.screenH / 2, Alignment.Center
 				);
 				Fonts.drawText(
-					FontType.BlueMenu, "Spectating in " + Math.Round(level.mainPlayer.respawnTime).ToString(),
-					Global.screenW / 2, Global.screenH / 2, Alignment.Center
-				);
-			} else if (level.mainPlayer.canReviveVile()) {
-				if (level.mainPlayer.lastDeathWasVileMK2) {
-					Fonts.drawText(
-						FontType.BlueMenu, respawnStr,
-						Global.screenW / 2, -10 + Global.screenH / 2, Alignment.Center
-					);
-					string reviveText = Helpers.controlText(
-						$"[SPC]: Revive as Vile V (5 {Global.nameCoins})"
-					);
-					Fonts.drawText(
-						FontType.Green, reviveText,
-						Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
-					);
-				} else {
-					Fonts.drawText(
-						FontType.BlueMenu, respawnStr,
-						Global.screenW / 2, -10 + Global.screenH / 2, Alignment.Center
-					);
-					string reviveText = Helpers.controlText(
-						$"[SPC]: Revive as MK-II (5 {Global.nameCoins})"
-					);
-					Fonts.drawText(
-						FontType.DarkBlue, reviveText,
-						Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
-					);
-					string reviveText2 = Helpers.controlText(
-						$"[CMD]: Revive as Vile V (5 {Global.nameCoins})"
-					);
-					Fonts.drawText(
-						FontType.Green, reviveText2,
-						Global.screenW / 2, 22 + Global.screenH / 2, Alignment.Center
-					);
-				}
-			} else if (level.mainPlayer.canReviveSigma(out _, 2)) {
-				Fonts.drawText(
-					FontType.BlueMenu, respawnStr,
-					Global.screenW / 2, -10 + Global.screenH / 2, Alignment.Center
-				);
-				string hyperType = "Kaiser";
-				string reviveText = (
-					$"[CMD]: Revive as {hyperType} Sigma ({Player.reviveSigmaCost.ToString()} {Global.nameCoins})"
-				);
-				Fonts.drawTextEX(
-					FontType.Green, reviveText,
-					Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
-				);
-			} else {
-				Fonts.drawText(
-					FontType.BlueMenu, respawnStr,
+					FontType.BlueMenu, "Spectating in " + Math.Round(level.mainPlayer.respawnTime),
 					Global.screenW / 2, Global.screenH / 2, Alignment.Center
 				);
 			}
 
-			if (!Menu.inMenu) {
-				DrawWrappers.DrawRect(0, Global.halfScreenH + 40, Global.screenW, Global.halfScreenH + 40 + (14 * level.mainPlayer.randomTip.Length), true, new Color(0, 0, 0, 224), 0, ZIndex.HUD, false);
+			if (drawMainBg) {
+				DrawWrappers.DrawRect(
+					-20, Global.halfScreenH - 14,
+					Global.screenW + 20, Global.halfScreenH + 1,
+					true, new Color(0, 0, 0, 128), 1, ZIndex.HUD, false, new Color(255, 255, 255, 128)
+				);
+			}
+
+			if (respawnStr != "") {
+				Fonts.drawText(
+					respawnFont, respawnStr,
+					Global.screenW / 2, -10 + Global.screenH / 2, Alignment.Center
+				);
+			}
+			if (!Menu.inMenu && drawTip) {
+				DrawWrappers.DrawRect(
+					0, Global.halfScreenH + 40, Global.screenW,
+					Global.halfScreenH + 40 + (14 * level.mainPlayer.randomTip.Length),
+					true, new Color(0, 0, 0, 224), 0, ZIndex.HUD, false
+				);
 				for (int i = 0; i < level.mainPlayer.randomTip.Length; i++) {
 					var line = level.mainPlayer.randomTip[i];
 					if (i == 0) line = "Tip: " + line;
 					Fonts.drawText(
-						FontType.WhiteSmall, line,
+						FontType.BlueMenu, line,
 						Global.screenW / 2, (Global.screenH / 2) + 45 + (12 * i), Alignment.Center
 					);
 				}
@@ -2555,8 +2577,11 @@ public class GameMode {
 	}
 
 	public bool playerWon(Player player) {
-		if (!isOver) return false;
-		if (matchOverResponse.winningAlliances == null) return false;
+		if (!isOver ||
+			matchOverResponse?.winningAlliances == null
+		) {
+			return false;
+		}
 		return matchOverResponse.winningAlliances.Contains(player.alliance);
 	}
 
@@ -2820,5 +2845,13 @@ public class GameMode {
 		if (Global.isHost) {
 			Global.serverClient?.rpc(RPC.syncTeamScores, Global.level.gameMode.teamPoints);
 		}
+	}
+
+	public virtual bool canRespawn() {
+		return true;
+	}
+
+	public virtual bool forceRespawn() {
+		return false;
 	}
 }

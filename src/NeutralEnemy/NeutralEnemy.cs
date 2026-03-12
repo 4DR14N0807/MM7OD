@@ -20,7 +20,7 @@ public class NeutralEnemy : Actor, IDamagable {
 		Point pos, int xDir, Player ownerPlayer, ushort netId,
 		int alliance = GameMode.freelanceAlliance, bool addToLevel = true
 	) : base(
-		null!, pos, netId, ownerPlayer.ownedByLocalPlayer, !addToLevel
+		"", pos, netId, ownerPlayer.ownedByLocalPlayer, !addToLevel
 	) {
 		// Get player data.
 		this.ownerPlayer = ownerPlayer;

@@ -41,7 +41,7 @@ public partial class Player {
 	public float fgMoveMaxAmmo = 1920;
 	public bool isDefenderFavoredNonOwner;
 	public Character? lastDamagedCharacter;
-	public bool elimAlive => character?.alive == true && spawnedOnce;
+	public bool elimAlive => character?.alive == true;
 
 	public bool isDefenderFavored {
 		get {

@@ -490,8 +490,8 @@ public class WarpIn : CharState {
 		if (warpAnim != null) {
 			warpAnim.destroySelf();
 		}
+		character.invulnTime = player.warpedInOnce ? 60 : 0;
 		player.warpedInOnce = true;
-		character.invulnTime = 60;
 	}
 }
 

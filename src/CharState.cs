@@ -491,7 +491,7 @@ public class WarpIn : CharState {
 			warpAnim.destroySelf();
 		}
 		player.warpedInOnce = true;
-		character.invulnTime = player.warpedInOnce ? 0 : 60;
+		character.invulnTime = 60;
 	}
 }
 

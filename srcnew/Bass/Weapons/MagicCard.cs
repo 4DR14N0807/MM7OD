@@ -32,6 +32,15 @@ public class MagicCard : Weapon {
 		// Once in a blue moon.
 		"Bunny Met!",
 	];
+	
+	//Meanwhile we code all the other effects.
+	string[] effectsTextOld = [
+		"FLIP!",
+		"AMMO REFILL!",
+		"DOUBLE SHOT!",
+		"MULTU-SHOT!!!",
+	];
+	
 	string[] effectsSounds = [
 		"",
 		"magiccard1",
@@ -96,9 +105,8 @@ public class MagicCard : Weapon {
 
 		int effect = 0;
 		cardCount--;
-		bool altCrit = Helpers.randomRange(0, 25) == 2;
 
-		if (cardCount <= 0 || altCrit) {
+		if (cardCount <= 0) {
 			cardCount += maxCardCount;
 			int[] effectChances = [
 				1, 1, 1, 1,
@@ -124,7 +132,7 @@ public class MagicCard : Weapon {
 				(int)FontType.YellowSmall,
 				(int)FontType.OrangeSmall,
 			];
-			bass.addDamageText(effectsText[effect], colors[effect]);
+			bass.addDamageText(effectsTextOld[effect], colors[effect]);
 		}
 		if (effect >= (int)MagicCardEffects.MultiShot) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 

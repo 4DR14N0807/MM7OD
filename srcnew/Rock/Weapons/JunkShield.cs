@@ -112,8 +112,8 @@ public class JunkShieldMagnet : Anim {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-		rock?.junkShieldProjs.Remove(this);
+		if (!ownedByLocalPlayer || rock == null) return;
+		rock.junkShieldProjs.Remove(this);
 	}
 }
 
@@ -159,12 +159,14 @@ public class JunkShieldPiece : Anim {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer || startAng != 0 ||
+		if (!ownedByLocalPlayer ||
 			rock == null || wep == null
 		) {
 			return;
 		}
 		rock.junkShieldProjs.Remove(this);
+
+		if (startAng != 0) { return; }
 
 		Point pos = rock.getCenterPos();
 		int xDir = rock.xDir;

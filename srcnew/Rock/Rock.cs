@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SFML.Graphics;
 
 
 namespace MMXOnline;
@@ -84,7 +85,7 @@ public class Rock : Character {
 		if (!ownedByLocalPlayer) return;
 
 		Helpers.decrementFrames(ref weaponCooldown);
-		armless = saRocketPunchProj != null;
+		armless = saRocketPunchProj?.destroyed == false;
 		if (rushWeaponSpecial) {
 			rushWeapon.update();
 			rushWeapon.charLinkedUpdate(this, true);
@@ -350,13 +351,13 @@ public class Rock : Character {
 
 	public override bool canShoot() {
 		if (isSlideColliding) return false;
-		if (sWheel != null) return false;
+		if (sWheel?.destroyed == false) return false;
 		if (charState is Slide)
 			return (currentWeapon is RockBuster || currentWeapon is WildCoil) && getChargeLevel() == 2;
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (isInvulnerableAttack()) return false;
-		if (saRocketPunchProj != null) return false;
+		if (saRocketPunchProj?.destroyed == false) return false;
 
 		return base.canShoot() && weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0;
 	}
@@ -388,7 +389,7 @@ public class Rock : Character {
 		if (isWarpIn()) return false;
 		if (invulnTime > 0) return false;
 		if (junkShieldProjs.Count > 0) return false;
-		if (sWheel != null) return false;
+		if (sWheel?.destroyed == false) return false;
 
 		return base.canCharge();
 	}

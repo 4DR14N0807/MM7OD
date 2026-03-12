@@ -13,7 +13,7 @@ public class FreezeCracker : Weapon {
 		weaponBarBaseIndex = (int)RockWeaponBarIds.FreezeCracker;
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.FreezeCracker;
-		fireRate = 30;
+		fireRate = 45;
 		maxAmmo = 20;
 		ammo = maxAmmo;
 		descriptionV2 = [
@@ -99,15 +99,8 @@ public class FreezeCrackerRmProj : Projectile {
 			return;
 		}
 		didSplit = true;
-		playSound("ding", true, true);
+		
 
-		if (ownerActor == null) {
-			return;
-		}
-		for (int i = 0; i < 6; i++) {
-			new FreezeCrackerPieceRmProj(
-				ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(true), i, rpc: true);
-		}
 	}
 
 	public override void onHitWall(CollideData other) {
@@ -120,6 +113,16 @@ public class FreezeCrackerRmProj : Projectile {
 			return;
 		}
 		onHit();
+		playSound("ding", true, true);
+
+		if (ownerActor == null) {
+			return;
+		}
+		for (int i = 0; i < 6; i++) {
+			new FreezeCrackerPieceRmProj(
+				ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(true), i, rpc: true);
+		}
+
 		destroySelf();
 	}
 

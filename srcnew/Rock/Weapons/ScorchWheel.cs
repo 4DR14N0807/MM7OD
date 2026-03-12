@@ -280,6 +280,7 @@ public class ScorchWheelRmProj : Projectile {
 				new BubbleAnim(pos, "bubbles_small") { vel = new Point(0, -60) };
 			}, 0.1f)
 		);
+		destroySelf();
 	}
 
 	public override void onDestroy() {

@@ -2342,7 +2342,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		currentLabelY = -getLabelOffY();
 		float? savedAlpha = null;
-		if (invulnTime > 0) {
+		if (invulnTime > 0 || isWarpIn()) {
 			savedAlpha = alpha;
 			if (Global.level.frameCount % 4 < 2) {
 				alpha *= 0.15f;

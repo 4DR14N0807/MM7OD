@@ -53,6 +53,14 @@ public class GameMode {
 		"Yellow",
 		"Orange"
 	};
+	public string[] teamInitals = {
+		"B",
+		"R",
+		"G",
+		"P",
+		"Y",
+		"O"
+	};
 	public FontType[] teamFontsSmall = {
 		FontType.BlueSmall,
 		FontType.RedSmall,
@@ -2505,14 +2513,6 @@ public class GameMode {
 			"Respawn in " + Math.Round(level.mainPlayer.respawnTime).ToString() :
 			Helpers.controlText("Press [OK] to respawn")
 		);
-		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver) {
-			Fonts.drawTextEX(
-				FontType.Red, Helpers.controlText(
-						$"[CMD]: Revive as Breakman ({Blues.reviveCost} {Global.nameCoins})"
-					),
-				Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
-			);
-		}
 
 		if (level.mainPlayer.randomTip == null) return;
 		if (level.mainPlayer.isSpectator) return;
@@ -2520,6 +2520,17 @@ public class GameMode {
 		bool drawTip = true;
 		bool drawMainBg = false;
 		FontType respawnFont = FontType.BlueMenu;
+
+		if (level.mainPlayer.character != null && level.mainPlayer.readyTextOver &&
+			!level.mainPlayer.character.alive && level.mainPlayer.canReviveBlues()
+		) {
+			Fonts.drawTextEX(
+				FontType.Red, Helpers.controlText(
+						$"[CMD]: Revive as Breakman ({Blues.reviveCost} {Global.nameCoins})"
+					),
+				Global.screenW / 2, 10 + Global.screenH / 2, Alignment.Center
+			);
+		}
 
 		if (!canRespawn()) {
 			if (level.mainPlayer.respawnTime > 0) {
@@ -2539,7 +2550,7 @@ public class GameMode {
 					Global.screenW / 2, -15 + Global.screenH / 2, Alignment.Center
 				);
 				Fonts.drawText(
-					FontType.BlueMenu, "Spectating in " + Math.Round(level.mainPlayer.respawnTime),
+					FontType.Blue, "Spectating in " + Math.Round(level.mainPlayer.respawnTime),
 					Global.screenW / 2, Global.screenH / 2, Alignment.Center
 				);
 			}
@@ -2568,7 +2579,7 @@ public class GameMode {
 					var line = level.mainPlayer.randomTip[i];
 					if (i == 0) line = "Tip: " + line;
 					Fonts.drawText(
-						FontType.BlueMenu, line,
+						FontType.WhiteSmall, line,
 						Global.screenW / 2, (Global.screenH / 2) + 45 + (12 * i), Alignment.Center
 					);
 				}

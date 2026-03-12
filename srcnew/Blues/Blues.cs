@@ -1384,7 +1384,9 @@ public class Blues : Character {
 		} else {
 			if (charState is not Hurt { stateFrames: 0 }) {
 				playSound("ding", sendRpc: true);
-				if (actor is Projectile proj) proj.onBlock();
+				if (actor is Projectile proj) {
+					proj.onBlock();
+				}
 			}
 			if (shieldHitBack && !bodyPierced) {
 				backShieldDamaged = true;
@@ -1802,10 +1804,15 @@ public class Blues : Character {
 				new Vertex((Global.halfScreenW, Global.halfScreenH) + offsets[i], colors[2]),
 				new Vertex((0, Global.halfScreenH)  + offsets[i], colors[3]),
 			];
+			
+			Vertex[] triangleHud = [
+				rectHud[0], rectHud[1], rectHud[3],
+				rectHud[3], rectHud[2], rectHud[1],
+			];
 			if (i == 1 || i == 3) {
 				rectHud.Reverse();
 			}
-			DrawWrappers.drawToHUD(rectHud, PrimitiveType.Quads);
+			DrawWrappers.drawToHUD(triangleHud, PrimitiveType.Triangles);
 		}
 		DrawWrappers.DrawRect(
 			0, 0, Global.screenW, 12, true, bgColor, 0, ZIndex.HUD, false

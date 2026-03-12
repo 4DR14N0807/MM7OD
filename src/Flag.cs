@@ -391,7 +391,7 @@ public class FlagPedestal : Actor {
 			}
 			Global.level.gameMode.syncTeamScores();
 		}
-		chr.player.currency += 5;
+		chr.mastery.addMapExp(90, true);
 		RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
 	}
 }

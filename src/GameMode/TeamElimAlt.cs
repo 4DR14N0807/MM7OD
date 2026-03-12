@@ -111,15 +111,20 @@ public class TeamElimAlt : GameMode {
 		}
 		int maxTeams = Global.level.teamNum;
 		Player mainPlayer = Global.level.mainPlayer;
+		float mapOffset = shouldDrawRadar() ? 0 : 48;
 
-		string teamText = $"{teamNames[teamSide]}: {teamPoints[teamSide]}";
-		Fonts.drawText(teamFonts[teamSide], teamText, 5, 5);
+		string teamText = $"{teamInitals[teamSide]}: {teamPoints[teamSide]}";
+		Fonts.drawText(
+			teamFontsSmall[teamSide], teamText,
+			Global.screenW - 56 + mapOffset, 7, Alignment.Right
+		);
+		int textSize = Fonts.measureText(FontType.WhiteSmall, teamText);
 
 		int leaderTeam = 0;
 		int leaderScore = -1;
 		bool moreThanOneLeader = false;
 		for (int i = 0; i < Global.level.teamNum; i++) {
-			if (teamPoints[0] >= leaderScore) {
+			if (teamPoints[i] >= leaderScore) {
 				leaderTeam = i;
 				if (leaderScore == teamPoints[i]) {
 					moreThanOneLeader = true;
@@ -128,19 +133,26 @@ public class TeamElimAlt : GameMode {
 			}
 		}
 		if (!moreThanOneLeader) {
-			Fonts.drawText(teamFonts[leaderTeam], $"Leader: {leaderScore}", 5, 15);
+			Fonts.drawText(
+				teamFontsSmall[leaderTeam], $"L: {leaderScore} ",
+				Global.screenW - 56 + mapOffset - textSize, 7, Alignment.Right
+			);
 		} else {
-			Fonts.drawText(FontType.Grey, $"Leader: {leaderScore}", 5, 15);
+			Fonts.drawText(
+				FontType.WhiteSmall, $"L: {leaderScore} ",
+				Global.screenW - 56 + mapOffset - textSize, 7, Alignment.Right
+			);
 		}
 		// Draw lives.
 		Player[] playersAlive = level.players.Where(p => !p.isSpectator && p.elimAlive).ToArray();
 		Player[] alliesAlive = playersAlive.Where(p => p.alliance == mainPlayer.alliance).ToArray();
 
 		Fonts.drawText(
-			FontType.RedishOrange, $"Alive: {alliesAlive.Length} / {playersAlive.Length}", 5, 25
+			FontType.WhiteSmall, $"Alive: {alliesAlive.Length} / {playersAlive.Length}",
+			Global.screenW - 56 + mapOffset, 17, Alignment.Right
 		);
 
-		drawTimeIfSet(35, finalZoneTime);
+		drawTimeIfSet(37, finalZoneTime);
 	}
 
 	public override void checkIfWinLogic() {
@@ -172,9 +184,11 @@ public class TeamElimAlt : GameMode {
 		foreach (Player player in level.players) {
 			if (player.teamAlliance != null &&
 				player.teamAlliance >= 0 && player.teamAlliance < level.teamNum &&
-				!player.isSpectator && player.elimAlive
+				!player.isSpectator
 			) {
-				if (teamsAlive[player.teamAlliance.Value] != true) {
+				if (player.elimAlive &&
+					teamsAlive[player.teamAlliance.Value] != true
+				) {
 					teamsAlive[player.teamAlliance.Value] = true;
 					teamsAliveHash.Add(player.teamAlliance.Value);
 					teamNumAlive++;
@@ -258,14 +272,10 @@ public class TeamElimAlt : GameMode {
 			if (player.isSpectator || !result.winningAlliances.Contains(player.alliance)) {
 				continue;
 			}
-			player.awardCurrency();
-			player.awardCurrency();
-			player.awardCurrency();
-			player.awardCurrency();
-			player.awardCurrency();
+			player.mastery.addMapExp(150, true);
 
 			if (player.character != null) {
-				player.character.addHealth(player.character.maxHealth, false);
+				player.character.addHealth(player.character.maxHealth);
 				player.character.addPercentAmmo(100);
 			}
 		}

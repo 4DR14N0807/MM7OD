@@ -302,11 +302,11 @@ public class KaiserSigmaFallState : KaiserSigmaBaseState {
 				return;
 			}
 		} else if (player.input.isPressed(Control.Dash, player)) {
-			if (UpgradeMenu.subtankDelay > 0) {
+			/*if (UpgradeMenu.subtankDelay > 0) {
 				Global.level.gameMode.setHUDErrorMessage(player, "Cannot become Virus in battle");
 			} else {
 				character.changeState(new KaiserSigmaVirusState(), true);
-			}
+			}*/
 			return;
 		}
 

@@ -6,7 +6,7 @@ public class GenericMeleeProj : Projectile {
 	public GenericMeleeProj(
 		Weapon weapon, Point pos, ProjIds projId, Player player,
 		float? damage = null, int? flinch = null, float? hitCooldown = null,
-		Actor? owningActor = null, bool isShield = false,
+		Actor? ownerActor = null, bool isShield = false,
 		bool isDeflectShield = false, bool isReflectShield = false,
 		bool addToLevel = false, float? hitCooldownSeconds = null,
 		bool isZSaberEffect = false, bool isZSaberEffect2 = false, bool isZSaberEffect2B = false,
@@ -32,8 +32,8 @@ public class GenericMeleeProj : Projectile {
 		if (hitCooldownSeconds == null && damager.hitCooldown <= 0) {
 			damager.hitCooldown = 30;
 		}
-		this.ownerActor = ownerActor;
-		this.xDir = ownerActor?.xDir ?? player.character?.xDir ?? 1;
+		this.ownerActor = base.ownerActor;
+		this.xDir = base.ownerActor?.xDir ?? player.character?.xDir ?? 1;
 		this.isShield = isShield;
 		this.isDeflectShield = isDeflectShield;
 		this.isReflectShield = isReflectShield;

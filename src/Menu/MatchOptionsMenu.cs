@@ -48,7 +48,7 @@ public class MatchOptionsMenu : IMainMenu {
 				(Point pos, int index) => {
 					Fonts.drawText(
 						canSuicide() ? FontType.Red : FontType.Grey, "Suicide",
-						pos.x, pos.y, Alignment.Center, selected: selectY == index
+						pos.x, pos.y, Alignment.Right, selected: selectY == index
 					);
 				}
 			),// Spectate

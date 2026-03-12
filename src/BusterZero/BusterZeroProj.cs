@@ -251,7 +251,7 @@ public class DZShinHadangekiProj : Projectile {
 		fadeOnAutoDestroy = true;
 		fadeSprite = "zsaber_shot_fade";
 		projId = (int)ProjIds.DZShinHadangeki;
-		genericShader = ownerPlayer.zeroAzPaletteShader;
+		//genericShader = ownerPlayer.zeroAzPaletteShader;
 		maxTime = 0.55f;
 		
 		if (sendRpc) {

@@ -87,7 +87,7 @@ public class WinApi {
 	}
 
 	public static void SetWindowStyle(RenderWindow window, WS ws, bool enable) {
-		IntPtr handle = window.SystemHandle;
+		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.STYLE);
 		uint uws = (uint)ws;
 		if (!enable) {
@@ -97,12 +97,12 @@ public class WinApi {
 	}
 
 	public static void ReplaceWindowStyle(RenderWindow window, WS ws) {
-		IntPtr handle = window.SystemHandle;
+		IntPtr handle = window.NativeHandle;
 		SetWindowLong(handle, GWL.STYLE, (uint)ws);
 	}
 
 	public static void SetWindowExStyle(RenderWindow window, WSEX ws, bool enable) {
-		IntPtr handle = window.SystemHandle;
+		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.EXSTYLE);
 		uint uws = (uint)ws;
 		if (!enable) {
@@ -113,7 +113,7 @@ public class WinApi {
 	}
 
 	public static void ReplaceWindowExStyle(RenderWindow window, WSEX ws) {
-		IntPtr handle = window.SystemHandle;
+		IntPtr handle = window.NativeHandle;
 		uint uws = (uint)ws;
 		SetWindowLong(handle, GWL.EXSTYLE, uws);
 	}
@@ -121,7 +121,7 @@ public class WinApi {
 
 	public static void SetPosClientArea(Window window, Vector2u pos, Vector2u size) {
 		window.Size = size;
-		nint handle = window.SystemHandle;
+		nint handle = window.NativeHandle;
 		WinRect rcClient = new(), rcWind = new();
 		GetClientRect(handle, ref rcClient);
 		GetWindowRect(handle, ref rcWind);
@@ -134,7 +134,7 @@ public class WinApi {
 	}
 
 	public static void PrintWindowStyles(RenderWindow window) {
-		IntPtr handle = window.SystemHandle;
+		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.STYLE);
 		WS[] wsl = Enum.GetValues(typeof(WS)) as WS[] ?? [];
 		wsl = wsl.Distinct().ToArray();
@@ -146,7 +146,7 @@ public class WinApi {
 	}
 
 	public static bool CheckWindowStyle(RenderWindow window, WS ws) {
-		IntPtr handle = window.SystemHandle;
+		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.STYLE);
 		return (currentStyle & (uint)ws) != 0;
 	}

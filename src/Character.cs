@@ -2484,15 +2484,9 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (Global.showAIDebug) {
-			float textPosX = pos.x;// (pos.x - Global.level.textPosY -= offY,camX) / Global.viewSize;
+			float textPosX = pos.x;// (pos.x - Global.level.camX) / Global.viewSize;
 			float textPosY = pos.y - 50;// (pos.y - 50 - Global.level.camY) / Global.viewSize;
-			if (player.isMainPlayer) {
-				textPosX = (Global.screenW * 0.5f + Global.level.camX);
-				textPosY = (Global.screenH * 0.25f + Global.level.camY);
-			}
-			
 			Color outlineColor = player.alliance == GameMode.blueAlliance ? Helpers.DarkBlue : Helpers.DarkRed;
-			int offY = 8;
 
 			//DrawWrappers.DrawText(
 			//	"Possessing...", pos.x, pos.y - 15 + currentLabelY,
@@ -2501,13 +2495,13 @@ public partial class Character : Actor, IDamagable {
 			//);
 
 			Fonts.drawText(
-				FontType.WhiteMini, player.name + " " + getActorTypeName(), textPosX, textPosY,
+				FontType.Grey, player.name + " " + getActorTypeName(), textPosX, textPosY,
 				Alignment.Center, true, depth: ZIndex.HUD
 			);
 			if (ai != null) {
 				Fonts.drawText(
-					FontType.WhiteMini, $"{prev} {next} {dest}",
-					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.Grey, "dest:" + ai.aiState.getDestNodeName(),
+					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
 				);
 				Fonts.drawText(
 					FontType.Grey, "next:" + ai.aiState.getNextNodeName(), textPosX, textPosY -= 10,
@@ -2523,74 +2517,20 @@ public partial class Character : Actor, IDamagable {
 				);
 				if (ai.target is Character charTarget) {
 					Fonts.drawText(
-						FontType.WhiteMini, "target:" + charTarget?.name, textPosX, textPosY -= offY,
+						FontType.Grey, "target:" + charTarget?.name, textPosX, textPosY -= 10,
 						Alignment.Center, true, depth: ZIndex.HUD
 					);
-				}
-				if (ai.aiState is FindPlayer fp) {
-					string nt = "FindPlayer";
-					if (fp.nodeTransition != null) {
-						nt += $" - {fp.nodeTransition.currentPhase.GetType().Name}";
-					}
-					if (fp.nextNode != null) {
-						Point dist = (
-							fp.nextNode.pos - abstractedActor().getCenterPos()
-						);
-						nt += $" | {MathF.Round(dist.x)}, {MathF.Round(dist.y)}";
-					}
-					Fonts.drawText(
-						FontType.WhiteMini, nt,
-						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
-					);
-					/*if (fp.stuckTime > 0) {
+					if (ai.aiState is FindPlayer fp) {
 						Fonts.drawText(
-							FontType.WhiteMini, "stuck:" + fp.stuckTime, textPosX, textPosY -= offY,
-							Alignment.Center, true, depth: ZIndex.HUD
-						);
-					}*/
-				} else  {
-					Fonts.drawText(
-						FontType.WhiteMini, ai.aiState.GetType().Name.ToString(),
-						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
-					);
-				}
-				if (ai.jumpTime > 0) {
-					bool jumpPress = player.input.isPressed(Control.Jump, player);
-					bool jumpHeld = player.input.isHeld(Control.Jump, player);
-					Fonts.drawText(
-						FontType.WhiteMini,
-						$"JP: {ai.jumpTime}, {jumpPress} {jumpHeld}",
-						textPosX, textPosY -= offY,
-						Alignment.Center, true, depth: ZIndex.HUD
-					);
-				}
-				else {
-					List<CollideData> jumpZones = Global.level.getTerrainTriggerList(
-						abstractedActor(), Point.zero, typeof(JumpZone)
-					);
-					string text = "Inside jump zone";
-					if (jumpZones.Count > 0) {
-						if (ai.aiState is FindPlayer fp2 &&
-							jumpZones.FindAll(
-								j => fp2.neighbor?.isJumpZoneExcluded(j.gameObject.name) != true
-							).Count == 0
-						) {
-							text += ", but excluded";
-						} else {
-							text += $", {ai.jumpZoneCooldown} {ai.jumpTime}";
-						}
-						Fonts.drawText(
-							FontType.WhiteMini,
-							$"{text}.",
-							textPosX, textPosY -= offY,
+							FontType.Grey, "stuck:" + fp.stuckTime, textPosX, textPosY -= 10,
 							Alignment.Center, true, depth: ZIndex.HUD
 						);
 					}
 				}
 			} else {
 				Fonts.drawText(
-					FontType.WhiteMini, charState.GetType().Name.ToString(),
-					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.Grey, charState.GetType().ToString().RemovePrefix("MMXOnline."),
+					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
 				);
 				Fonts.drawText(
 					FontType.Grey, sprite.name,

@@ -93,7 +93,7 @@ public class ClimbLadderNTP : NodeTransitionPhase {
 		if (findPlayer.prevNode != null &&
 			MathF.Abs(character.pos.y - findPlayer.prevNode.pos.y) > 2
 		) {
-			float nodeDist = findPlayer.prevNode.pos.x - character.abstractedActor().pos.x;
+			float nodeDist = findPlayer.prevNode.pos.x - character.abstractedActor.pos.x;
 			if (nodeDist > 0) {
 				player.press(Control.Right);
 			} else {

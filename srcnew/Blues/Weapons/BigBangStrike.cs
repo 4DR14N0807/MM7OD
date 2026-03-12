@@ -95,7 +95,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		foreach (var gameObject in Global.level.getGameObjectArray()) {
+		foreach (var gameObject in getCloseActors(200)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
@@ -173,7 +173,7 @@ public class ProtoStrikeProj : Projectile {
 			changePos(ownerChar.getShootPos());
 		}
 
-		foreach (var gameObject in Global.level.getGameObjectArray()) {
+		foreach (var gameObject in getCloseActors(200)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
@@ -268,7 +268,7 @@ public class StrikeAttackPushProj : Projectile {
 		if (isAnimOver()) {
 			destroySelf(doRpcEvenIfNotOwned: true);
 		}
-		foreach (var gameObject in Global.level.getGameObjectArray()) {
+		foreach (var gameObject in getCloseActors(200)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
@@ -399,7 +399,7 @@ public class RedStrikeExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		foreach (var gameObject in Global.level.getGameObjectArray()) {
+		foreach (var gameObject in getCloseActors(200)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 

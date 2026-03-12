@@ -56,11 +56,12 @@ public class BusterZero : Character {
 		this.loadout = loadout;
 		altSoundId = AltSoundIds.X3;
 		hyperMode = loadout.hyperMode;
-		
+		/*
 		if (Global.customSettings?.busterZeroGiga == true) {
 			gigaAttackSelected = loadout.gigaAttack;
 			gigaAttack = new RekkohaWeapon();
 		}
+		*/
 	}
 
 	public override CharState getTauntState() => new BZeroTaunt();

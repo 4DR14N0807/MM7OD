@@ -1343,7 +1343,6 @@ class Program {
 					/*
 					if (Keyboard.IsKeyPressed(Key.F7)) {
 						if (f7Released) {
-							/*
 							Options.main.fpsMode = Options.main.fpsMode switch {
 								0 => 1,
 								1 => 2,
@@ -1352,11 +1351,11 @@ class Program {
 							Options.main.updateFpsMode();
 							Options.main.showFPS = true;
 							f7Released = false;
-							*/
 						}
 					} else {
 						f7Released = true;
-					} */
+					}
+					*/
 				}
 				// Reload levels. And mess checksum.
 				if (Global.level == null) {

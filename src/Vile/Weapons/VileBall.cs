@@ -189,20 +189,12 @@ public class BallAttacks : VileState {
 			character.changeSpriteFromName(sprite, true);
 			character.useGravity = false;
 			character.vel = new Point();
-			
 		}
-		
 	}
+
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
-		if (Global.level.server.customMatchSettings != null || Global.level.server?.customMatchSettings?.vileAirDashReset == true) {
-			if (vile.canAirDashReset){
-			vile.dashedInAir = 0;
-			vile.airDashReset = 0;
-			vile.canAirDashReset = false;
-			}
-		}
 	}
 }
 #endregion

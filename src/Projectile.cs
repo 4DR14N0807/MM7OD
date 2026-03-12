@@ -1131,4 +1131,8 @@ public class Projectile : Actor {
 			destroySelf();
 		}
 	}
+
+	public virtual void onBlock() {
+		
+	}
 }

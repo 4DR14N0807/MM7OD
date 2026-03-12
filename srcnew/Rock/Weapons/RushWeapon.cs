@@ -152,7 +152,7 @@ public class RSBombExplosionProj : Projectile {
 		else destroySelf();
 
 		if (isRunByLocalPlayer()) {
-			foreach (var go in Global.level.getGameObjectArray()) {
+			foreach (var go in getCloseActors(200)) {
 				var chr = go as Character;
 				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
 					&& chr.pos.distanceTo(pos) <= radius) {

@@ -115,7 +115,7 @@ public class Fonts {
 				// Text spacing.
 				if (char.IsWhiteSpace(letter) ||
 					pos >= textLines[line].Length - 1 ||
-					Char.IsWhiteSpace(textLines[line][pos + 1])
+					char.IsWhiteSpace(textLines[line][pos + 1])
 				) {
 					currentXOff += fontSpaceWidth;
 				} else {
@@ -161,6 +161,7 @@ public class Fonts {
 		int fontSpacing = 1;
 		int newLineSpacing = 2;
 		int fontSpaceWidth = 8;
+		// Basic data goes like: Size, GridSize, Width, SpaceWidth, Spacing.
 		if (baseFontData.ContainsKey(fontStr)) {
 			fontTextureSize = baseFontData[fontStr][0];
 			fontGridSpacing = baseFontData[fontStr][1];
@@ -191,9 +192,11 @@ public class Fonts {
 
 				var textSprite = new SFML.Graphics.Sprite(
 					bitmapFontTexture, new IntRect(
-						(rx * fontTextureSize) + ((rx + 1) * fontGridSpacing),
-						(ry * fontTextureSize) + ((ry + 1) * fontGridSpacing),
-						fontTextureSize, fontTextureSize
+						(
+							(rx * fontTextureSize) + ((rx + 1) * fontGridSpacing),
+							(ry * fontTextureSize) + ((ry + 1) * fontGridSpacing)
+						),
+						(fontTextureSize, fontTextureSize)
 					)
 				);
 				// Transparency.
@@ -248,9 +251,9 @@ public class Fonts {
 					fontWidth = fontSizes[fontStr][charInt];
 					fontSpaceWidth = fontWidth;
 				}
-				if (Char.IsWhiteSpace(letter) ||
+				if (char.IsWhiteSpace(letter) ||
 					pos >= textLines[line].Length - 1 ||
-					Char.IsWhiteSpace(textLines[line][pos + 1])
+					char.IsWhiteSpace(textLines[line][pos + 1])
 				) {
 					tempSize += fontSpaceWidth;
 				} else {

@@ -115,6 +115,7 @@ public class PlayerPB {
 	[ProtoMember(16)] public LoadoutData atransLoadout;
 	[ProtoMember(17)] public int currentCharNum;
 	[ProtoMember(18)] public int preAtransCharId;
+	[ProtoMember(19)] public int alliance;
 
 	[ProtoMember(19)] public ServerPlayer serverPlayer;
 

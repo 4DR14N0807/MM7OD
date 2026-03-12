@@ -521,9 +521,11 @@ public class WarpIdle : CharState {
 		}
 
 		if (altAnim && !once && character.frameIndex == 4) {
-			for (int i = 0; i < 14; i++) {
+			for (int i = 0; i < character.currentFrame.POIs.Length; i++) {
 				new WarpIdleParticle(
-					character.pos.add(character.currentFrame.POIs[i]), i <= 3 || (i >= 7 && i <= 10) ? -1 : 1, i < 8 ? 0 : 1
+					character.pos.add(
+						character.currentFrame.POIs[i]
+					), i <= 3 || (i >= 7 && i <= 10) ? -1 : 1, i < 8 ? 0 : 1
 				);
 			}
 
@@ -714,20 +716,6 @@ public class Idle : CharState {
 				if (player.input.isHeld(Control.Left, player)) character.xDir = -1;
 				if (player.input.isHeld(Control.Right, player)) character.xDir = 1;
 				if (character.canMove()) character.changeState(character.getRunState());
-			}
-		}
-
-		if (Global.customSettings?.universalGuard == true) {
-			if (character is not Zero and not BaseSigma) {
-				if (!player.input.isLeftOrRightHeld(player)) {
-					if (player.input.isHeld(Control.Up, player)) {
-						attackCtrl = false;
-						character.changeSpriteFromName("block", true);
-					}
-					else if (character.sprite.name == character.getSprite("block")) {
-						character.changeToIdleOrFall();
-					}
-				}
 			}
 		}
 		if (Global.level.gameMode.isOver) {
@@ -1087,7 +1075,6 @@ public class Dash : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		dashDir = character.xDir;
-		initialDashDir = dashDir;
 		character.isDashing = true;
 		dashSpeed = 1.5f;
 		maxDashSpeed = character.getDashSpeed();

@@ -382,7 +382,7 @@ public partial class Level {
 			((uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH))
 		);
 		Global.radarRenderTextureC = new RenderTexture(
-			(uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH)
+			((uint)Math.Ceiling(scaledW), (uint)Math.Ceiling(scaledH))
 		);
 		Global.input.lastUpdateTime = 0;
 
@@ -1053,7 +1053,7 @@ public partial class Level {
 			player.kills = hostPlayer.serverPlayer.kills;
 			player.deaths = hostPlayer.serverPlayer.deaths;
 			player.newCharNum = hostPlayer.newCharNum;
-			player.charNum = hostPlayer.currentCharNum ?? player.newCharNum;
+			player.charNum = hostPlayer.currentCharNum != -1 ? hostPlayer.currentCharNum : player.newCharNum;
 			player.curMaxNetId = hostPlayer.curMaxNetId;
 			player.warpedInOnce = hostPlayer.warpedIn;
 			player.readyTime = hostPlayer.readyTime;

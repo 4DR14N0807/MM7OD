@@ -123,8 +123,8 @@ public class WolfSigma : Character {
 	public override bool isPushImmune() {
 		return true;
 	}
-	
 
+	/*
 	public override void onDeath() {
 		base.onDeath();
 		player.lastDeathWasSigmaHyper = true;

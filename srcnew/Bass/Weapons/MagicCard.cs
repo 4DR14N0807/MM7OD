@@ -35,12 +35,13 @@ public class MagicCard : Weapon {
 	
 	//Meanwhile we code all the other effects.
 	string[] effectsTextOld = [
+		"",
 		"FLIP!",
 		"AMMO REFILL!",
 		"DOUBLE SHOT!",
-		"MULTU-SHOT!!!",
+		"MULTI-SHOT!!!",
 	];
-	
+
 	string[] effectsSounds = [
 		"",
 		"magiccard1",

@@ -597,7 +597,7 @@ public class FindPlayer : AIState {
 			}
 		}
 
-		Point nodeDist = nextNode.pos - character.abstractedActor().getCenterPos();
+		Point nodeDist = nextNode.pos - character.abstractedActor.getCenterPos();
 		bool isOnPit = false;
 		bool pitFront = false;
 		int nodeDir = MathF.Sign(nodeDist.x);

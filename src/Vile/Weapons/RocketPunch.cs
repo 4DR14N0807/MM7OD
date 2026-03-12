@@ -158,19 +158,6 @@ public class RocketPunchAttack : VileState {
 		bool RightHeld = player.input.isHeld(Control.Right, player);
 		Helpers.decrementFrames(ref specialPressTime);
 
-		// This is vanilla's Air Grounded moves Glitch Exploit recreated	
-		if (Global.customSettings?.jumpMoveGlitch == true &&
-			stateTime < 0.2f && !jumped &&
-			player.input.isPressed(Control.Jump, player)
-		) {
-			character.vel.y = -character.getJumpPower();
-			character.playSound("airdashupX3", sendRpc: true);
-			new Anim(
-				character.pos.addxy(0, -10), "dash_sparks_up",
-				character.xDir, player.getNextActorNetId(), true, sendRpc: true
-			);
-			jumped = true;	
-		}
 		// Allow to cancel the state by stopping holding special.
 		// This mostly simulates a easier-to-do version of a vanilla bug.
 		if (stateFrames > 6 && !player.input.isHeld(Control.Special1, player)) {

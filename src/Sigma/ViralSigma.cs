@@ -240,7 +240,7 @@ public class ViralSigma : Character {
 		if (sprite.name.Contains("_enter")) {
 			paletteNum = 0;
 		}
-		palette = player.viralSigmaShader;
+		//palette = player.viralSigmaShader;
 		palette?.SetUniform("palette", paletteNum);
 		palette?.SetUniform("paletteTexture", Global.textures["paletteViralSigma"]);
 
@@ -280,7 +280,7 @@ public class ViralSigma : Character {
 	public override Point getCamCenterPos(bool ignoreZoom = false) {
 		return pos.round().addxy(camOffsetX, 25);
 	}
-
+	/*
 	public override void onDeath() {
 		base.onDeath();
 		player.lastDeathWasSigmaHyper = true;

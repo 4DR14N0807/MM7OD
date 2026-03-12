@@ -222,8 +222,8 @@ public class ShieldDash : BluesState {
 	}
 
 	public override void onEnter(CharState oldState) {
-		blues.shieldCustomState = blues.isShieldActive;
 		base.onEnter(oldState);
+		blues.shieldCustomState = blues.isShieldActive;
 		initialXDir = character.xDir;
 		character.vel.y = 0;
 		if (!blues.isShieldActive) {

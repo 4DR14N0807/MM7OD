@@ -69,7 +69,7 @@ public class BassBusterProj : Projectile {
 	) {
 		projId = (int)BassProjIds.BassLemon;
 		byteAngle = MathF.Round(byteAngle);
-		maxTime = 0.5f;
+		maxTime = 40 / 60f;
 		this.byteAngle = byteAngle;
 		vel = Point.createFromByteAngle(byteAngle) * 240;
 		destroyOnHitWall = true;

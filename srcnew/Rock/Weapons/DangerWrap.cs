@@ -15,7 +15,7 @@ public class DangerWrap : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.DangerWrap;
 		killFeedIndex = 0;
-		fireRate = 75;
+		fireRate = 60;
 		switchCooldown = 45;
 		maxAmmo = 12;
 		ammo = maxAmmo;
@@ -60,9 +60,14 @@ public class DangerWrap : Weapon {
 		}
 		if (input == 1) {
 			dangerMines.Add(
-				new DangerWrapMineRmProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player, weapon: this));
+				new DangerWrapMineRmProj(
+					rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player, weapon: this
+				)
+			);
+			fireRate = 45;
 		} else {
 			new DangerWrapBubbleRmProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), input, true);
+			fireRate = 60;
 		}
 		rock.playSound("buster2", sendRpc: true);
 	}
@@ -84,11 +89,13 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		projId = (int)RockProjIds.DangerWrap;
 		maxTime = 1.5f;
 		fadeOnAutoDestroy = true;
+		destroyOnHit = false;
+		destroyOnDamage = true;
 		useGravity = false;
 		canBeLocal = false;
 		this.type = type;
 		this.input = input;
-		damager.hitCooldown = 30;
+		damager.hitCooldown = 4 * 60;
 
 		vel.x = 60 * xDir;
 		fadeSprite = "generic_explosion";
@@ -146,7 +153,7 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return sprite.name != "danger_wrap_start" && damager.owner.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -529,7 +536,6 @@ public class DWrapBigBubble : Actor, IDamagable {
 			character.bigBubble = null;
 			//character.removeBubble(true);
 			character.dwrapEnd();
-			character.dwrapInvulnTime = 3;
 			character.canBeGrounded = true;
 		}
 		if (bomb != null) bomb.destroySelf();

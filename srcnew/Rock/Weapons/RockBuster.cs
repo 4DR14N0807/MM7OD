@@ -99,7 +99,7 @@ public class RockBusterProj : Projectile {
 	) {
 
 		projId = (int)RockProjIds.RockBuster;
-		maxTime = 0.6f;
+		maxTime = 29 / 60f;
 		fadeSprite = "rock_buster_fade";
 
 		damager.damage = 1;

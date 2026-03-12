@@ -68,10 +68,22 @@ public class HpShieldManager() {
 		var newShield = new HpShield() {
 			health = health,
 			time = time,
+			maxTime = time,
 			id = id
 		};
 		shields.Add(newShield);
 		shieldsById[id] = newShield;
+		shortShields();
+	}
+
+	public void addShield(HpShield newShield) {
+		HpShield? oldShield = shields.FirstOrDefault(shield => shield.id == newShield.id);
+		if (oldShield != null) {
+			shields.Remove(oldShield);
+		}
+		shields.Add(newShield);
+
+		shieldsById[newShield.id] = newShield;
 		shortShields();
 	}
 }
@@ -79,11 +91,16 @@ public class HpShieldManager() {
 public class HpShield {
 	public (string name, int index) sprite = ("hud_shields" , 0);
 	public decimal health;
-	public float time;
+	public float maxTime = -1;
+	public float time = -1;
 	public ShieldIds id;
 	public bool destroyed;
 
-	public decimal applyDamage(decimal damage) {
+	public HpShield() {
+
+	}
+
+	public virtual decimal applyDamage(decimal damage) {
 		if (damage > health) {
 			decimal retDamage = damage - health;
 			health = 0;
@@ -94,7 +111,7 @@ public class HpShield {
 		return 0;
 	}
 
-	public void update(Character chara) {
+	public virtual void update(Character chara) {
 		if (time < 0) {
 			return;
 		}
@@ -111,4 +128,5 @@ public class HpShield {
 public enum ShieldIds {
 	None,
 	Pickup,
+	RmJunk,
 }

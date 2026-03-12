@@ -1779,6 +1779,14 @@ public class GameMode {
 				text = "?";
 			}
 		}
+		else if (weapon is NoiseCrush noiseCrush && 
+			!Global.level.mainPlayer.isSpectator &&
+			Global.level.mainPlayer?.character is Rock rockNC
+		) {
+			if (rockNC.chargedNoiseCrush > 0) {
+				text = rockNC.chargedNoiseCrush.ToString();
+			}
+		}
 		
 		if (weapon.ammo < weapon.maxAmmo && weapon.drawAmmo) {
 			drawWeaponSlotAmmo(x, y, weapon.ammo / weapon.maxAmmo);

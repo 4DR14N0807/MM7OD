@@ -26,9 +26,6 @@ public class NoiseCrush : Weapon {
 	}
 
 	public override bool canShoot(int chargeLevel, Player player) {
-		if (player.character is Rock rock && rock.hasChargedNoiseCrush) {
-			return true;
-		}
 		return base.canShoot(chargeLevel, player);
 	}
 
@@ -48,7 +45,7 @@ public class NoiseCrush : Weapon {
 			new NoiseCrushSpawnerRm(
 				rock, this, shootPos, xDir, true, player.getNextActorNetId(), true
 			);
-			rock.hasChargedNoiseCrush = false;
+			rock.chargedNoiseCrush--;
 			rock.noiseCrushAnimTime = 0;
 		} else {
 			rock.playSound("noise_crush", sendRpc: true);
@@ -116,6 +113,7 @@ public class NoiseCrushSpawnerRm : Projectile {
 
 	public void bounce() {
 		int i = 0;
+		shotCount = 5;
 
 		foreach (NoiseCrushRmProj proj in projectiles) {
 			if (proj.destroyed) {
@@ -128,11 +126,21 @@ public class NoiseCrushSpawnerRm : Projectile {
 		}
 	}
 
-	public void destroyProjs(Point fadePos) {
+	public void destroyProjs() {
 		if (!ownedByLocalPlayer) return;
+		shotCount = 5;
 
+		int j = 0;
 		for (int i = 0; i < projectiles.Count; i++) {
-			projectiles[i].destroySelf();
+			if (projectiles[i].destroyed) {
+				continue;
+			}
+			if (j == 0) {
+				projectiles[i].destroySelf();
+			} else {
+				projectiles[i].despawnTimer = j * 2;
+			}
+			j++;
 		}
 		projectiles.Clear();
 		if (!destroyed) {
@@ -147,6 +155,7 @@ public class NoiseCrushRmProj : Projectile {
 	public bool charged;
 	public bool bouncing;
 	public float bounceTimer;
+	public float despawnTimer;
 	NoiseCrushSpawnerRm? spawn;
 	Rock? rock;
 
@@ -218,11 +227,19 @@ public class NoiseCrushRmProj : Projectile {
 			chargeRockNoiseCrush();
 		}
 
-		if (bounceTimer >= 0) {
+		if (bounceTimer >= 0 && bouncing) {
 			bounceTimer -= speedMul;
 			if (bounceTimer <= 10 && bouncing) {
 				bouncing = false;
 				bounce();
+			}
+		}
+
+		if (despawnTimer > 0) {
+			despawnTimer -= speedMul;
+			if (despawnTimer <= 0) {
+				despawnTimer = 0;
+				destroySelf();
 			}
 		}
 	}
@@ -255,12 +272,21 @@ public class NoiseCrushRmProj : Projectile {
 	}
 
 	public void chargeRockNoiseCrush() {
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || rock == null || spawn?.netId == null) {
+			return;
+		}
+		destroySelf();
+		if (rock.chargedNoiseCrushCd.GetValueOrDefault(spawn.netId.Value) > 0) {
 			return;
 		}
 		charged = true;
-		rock?.hasChargedNoiseCrush = true;
-		destroySelf();
+		rock.chargedNoiseCrush += 1;
+		rock.chargedNoiseCrushCd[spawn.netId.Value] = 60;
+		foreach (Weapon weapon in rock.weapons) {
+			if (weapon is NoiseCrush) {
+				weapon.shootCooldown = 0;
+			}
+		}
 	}
 
 	public void bounceOnEnemy() {
@@ -285,62 +311,13 @@ public class NoiseCrushRmProj : Projectile {
 
 	public override void onDamageEX(IDamagable damagable) {
 		base.onDamageEX(damagable);
-		if (!ownedByLocalPlayer || destroyOnHit) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (destroyOnHit) {
+			spawn?.destroyProjs();
 			return;
 		}
 		spawn?.bounce();
-	}
-}
-
-
-public class NoiseCrushChargedRmProj : Projectile {
-	NoiseCrushSpawnerRm? spawn;
-
-	public NoiseCrushChargedRmProj(
-		Actor owner, Point pos, int xDir, int type,
-		ushort? netProjId, NoiseCrushSpawnerRm? spawn = null,
-		bool rpc = false, Player? altPlayer = null
-	) : base(
-		pos, xDir, owner, "noise_crush_charged_top", netProjId, altPlayer
-	) {
-
-		projId = (int)RockProjIds.NoiseCrushCharged;
-		maxTime = 1f;
-
-		vel.x = 240 * xDir;
-		damager.damage = 2;
-		damager.hitCooldown = 20;
-
-		if (type == 1) changeSprite("noise_crush_charged_middle", true);
-		else if (type == 2) changeSprite("noise_crush_charged_middle2", true);
-		else if (type == 3) {
-			changeSprite("noise_crush_charged_bottom", true);
-		}
-
-		if (ownedByLocalPlayer) {
-			this.spawn = spawn;
-		}
-
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
-		}
-	}
-
-	public static Projectile rpcInvoke(ProjParameters arg) {
-		return new NoiseCrushChargedRmProj(
-			arg.owner, arg.pos, arg.xDir,
-			arg.extraData[0], arg.netId, altPlayer: arg.player
-		);
-	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-
-		if (damagedOnce) {
-			spawn?.destroyProjs(pos);
-		}
 	}
 }

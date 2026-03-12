@@ -11,7 +11,7 @@ public class PowerStone : Weapon {
 		descriptionV2 = [
 			[ "Summons three stones that spiral around.\nCan be used behind the shield." ],
 		];
-		defaultAmmoUse = 4;
+		defaultAmmoUse = 5;
 
 		index = (int)BluesWeaponIds.PowerStone;
 		fireRate = 55;
@@ -63,6 +63,7 @@ public class PowerStoneProj : Projectile {
 
 		damager.damage = 2;
 		damager.flinch = Global.miniFlinch;
+		damager.hitCooldown = 12;
 		
 		origin = pos;
 		if (ownedByLocalPlayer) {

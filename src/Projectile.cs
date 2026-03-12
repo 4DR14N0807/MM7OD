@@ -20,7 +20,7 @@ public class Projectile : Actor {
 
 	public Weapon weapon;
 	public bool destroyOnHit = true;
-	public bool excludeSameHit = false;
+	public bool destroyOnDamage = false;
 	public bool destroyOnHitWall = false;
 	public bool reflectable = false;
 	public bool reflectableFBurner = false;
@@ -628,7 +628,11 @@ public class Projectile : Actor {
 		}
 	}
 
-	public virtual void afterDamage(IDamagable damagable, bool wasHit) { }
+	public virtual void afterDamage(IDamagable damagable, bool wasHit) {
+		if (!destroyed && wasHit && destroyOnDamage) {
+			destroySelf();
+		}
+	}
 
 	// Can be used in lieu of the on<PROJ>Damage() method
 	// in damager method with caveat that this causes issues

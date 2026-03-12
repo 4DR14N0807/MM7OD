@@ -287,7 +287,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.ScorchWheelUnderwaterSpawn, WaterScorchWheelSpawnRm.rpcInvoke},
 		{ (int)RockProjIds.ScorchWheelUnderwaterProj, WaterScorchWheelProjRm.rpcInvoke},
 		{ (int)RockProjIds.NoiseCrush, NoiseCrushRmProj.rpcInvoke },
-		{ (int)RockProjIds.NoiseCrushCharged, NoiseCrushChargedRmProj.rpcInvoke },
+		{ (int)RockProjIds.NoiseCrushCharged, NoiseCrushRmProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapMine, DangerWrapMineRmProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapMineLanded, DangerWrapLandRmProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapExplosion, DangerWrapExplosionRmProj.rpcInvoke },

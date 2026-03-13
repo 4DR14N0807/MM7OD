@@ -117,7 +117,7 @@ public class PlayerPB {
 	[ProtoMember(18)] public int preAtransCharId;
 	[ProtoMember(19)] public int alliance;
 
-	[ProtoMember(19)] public ServerPlayer serverPlayer;
+	[ProtoMember(20)] public ServerPlayer serverPlayer;
 
 	public PlayerPB() { }
 

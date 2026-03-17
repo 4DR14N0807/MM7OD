@@ -427,7 +427,7 @@ public class WarpIn : CharState {
 				character.grounded = true;
 				character.changePos(destX, destY);
 				if (!player.warpedInOnce || Global.level.joinedLate) {
-					character.changeState(new WarpIdle(player.warpedInOnce || Global.level.joinedLate, altAnim));
+					character.changeState(new WarpIdle(player.warpedInOnce && !Global.level.joinedLate, altAnim));
 				} else {
 					if (character is Blues) {
 						character.changeToIdleOrFall("swap");
@@ -461,11 +461,6 @@ public class WarpIn : CharState {
 				landOnce = false;
 				warpAnim.changePos(new Point(warpAnim.pos.x, destY));
 			}
-		}
-
-		if (character.ownedByLocalPlayer && player.warpedInOnce) {
-			character.health = character.maxHealth;
-			player.health = player.maxHealth;
 		}
 	}
 

@@ -2063,7 +2063,7 @@ public partial class Actor : GameObject {
 
 		Point checkPos = new Point(MathF.Round(pos.x), MathF.Round(pos.y));
 		Shape shape = Rect.createFromWH(
-			pos.x - halfDist, pos.y - halfDist,
+			MathInt.Round(pos.x) - halfDist, MathInt.Round(pos.y) - halfDist,
 			distance, distance
 		).getShape();
 		List<CollideData> hits = Global.level.checkCollisionsShape(shape, null);

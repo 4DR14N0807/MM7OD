@@ -12,8 +12,8 @@ public class BigBangStrikeProj : Projectile {
 		pos, xDir, owner, "big_bang_strike_proj", netId, altPlayer
 	) {
 		projId = (int)BluesProjIds.BigBangStrike;
-		damager.damage = 3;
-		damager.flinch = Global.superFlinch;
+		damager.damage = 4;
+		damager.flinch = 60;
 		damager.hitCooldown = 30;
 
 		maxTime = 0.925f;
@@ -62,7 +62,7 @@ public class BigBangStrikeProj : Projectile {
 
 public class BigBangStrikeExplosionProj : Projectile {
 	float radius = 38;
-	float absorbRadius = 140;
+	float absorbRadius = 192;
 
 	public BigBangStrikeExplosionProj(
 		Point pos, int xDir, Actor owner, ushort? netId,
@@ -76,7 +76,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 		damager.flinch = Global.miniFlinch;
 		damager.hitCooldown = 30;
 		// Etc
-		maxTime = 3f;
+		maxTime = 4f;
 		destroyOnHit = false;
 
 		if (sendRpc) {
@@ -95,7 +95,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		foreach (var gameObject in getCloseActors(200)) {
+		foreach (var gameObject in getCloseActors(250)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
@@ -245,9 +245,20 @@ public class StrikeAttackPushProj : Projectile {
 		}
 		this.type = type;
 
-		if (type == 1) {
+		// Big Bang Strike.
+		if (type == 0) {
+			damager.damage = 2;
+			damager.flinch = Global.superFlinch;
+		}
+		// Proto Strike.
+		else if (type == 1) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		}
+		// Red Strike.
+		else if (type == 2) {
+			// Nothing for now.
+		}
+		// Landing push.
 		else if (type == 3) {
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 			pushPower = 150;
@@ -364,7 +375,7 @@ public class RedStrikeProj : Projectile {
 
 public class RedStrikeExplosionProj : Projectile {
 	float radius = 38;
-	float absorbRadius = 108;
+	float absorbRadius = 256;
 
 	public RedStrikeExplosionProj(
 		Point pos, int xDir, Actor owner, ushort? netId,
@@ -399,7 +410,7 @@ public class RedStrikeExplosionProj : Projectile {
 	public override void update() {
 		base.update();
 
-		foreach (var gameObject in getCloseActors(200)) {
+		foreach (var gameObject in getCloseActors(350)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
@@ -437,9 +448,7 @@ public class BigBangStrikeStart : BluesState {
 	BigBangStrikeBackwall? bgEffect;
 
 	public BigBangStrikeStart() : base("idle_charge") {
-		superArmor = true;
-		stunImmune = true;
-		pushImmune = true;
+		statusEffectImmune = true;
 	}
 
 	public override void update() {
@@ -455,7 +464,7 @@ public class BigBangStrikeStart : BluesState {
 				blues.shieldDamageDebt = 0;
 			}
 			shieldLossCD = 3;
-			shootTimer -= 2;
+			shootTimer -= 2.5f;
 		} else {
 			shieldLossCD -= Global.speedMul;
 		}
@@ -467,6 +476,8 @@ public class BigBangStrikeStart : BluesState {
 		}
 		if (shootTimer <= 0) {
 			blues.coreAmmo = blues.coreMaxAmmo;
+			blues.shieldHP = 0;
+			blues.shieldDamageDebt = 0;
 			character.changeState(new BigBangStrikeState(), true);
 		}
 		shootTimer -= Global.speedMul;

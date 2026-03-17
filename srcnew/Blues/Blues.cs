@@ -124,15 +124,15 @@ public class Blues : Character {
 
 		addAttackCooldown((int)AttackIds.RedStrike, new AttackCooldown(3, "hud_blues_weapon_icon", 240));
 
-		if (isWarpIn && ownedByLocalPlayer) {
+		if (isWarpIn && ownedByLocalPlayer && !player.warpedInOnce) {
 			shieldHP = 0;
 			health = 0;
 			healShieldHPCooldown = 60 * 4;
 		}
-
-		if (player.warpedInOnce) {
+		else {
 			shieldHP = shieldMaxHP;
 		}
+		isShieldActive = false;
 	}
 
 	public override bool canAddAmmo() {
@@ -317,7 +317,7 @@ public class Blues : Character {
 	}
 
 	public bool canUseBigBangStrike() {
-		return grounded && overheating && overheatTime >= 6;
+		return grounded && overheating && overheatTime >= 30;
 	}
 
 	public bool canUseDropSwap() {
@@ -528,11 +528,16 @@ public class Blues : Character {
 			if (overheating) {
 				coreAmmoDecreaseCooldown = 12;
 			}
+			if (charState is OverheatShutdownStart) {
+				coreAmmoDecreaseCooldown = 8;
+			}
 		}
 
-		if (overheating && charState is not Hurt) overheatTime += Global.speedMul;
-		else overheatTime = 0;
-
+		if (overheating && charState is not Hurt) {
+			overheatTime += Global.speedMul;
+		} else {
+			overheatTime = 0;
+		}
 		bool overdriveLimit = false;
 		if (overdriveAmmoDecreaseCooldown <= 0 && overdrive && charState is not BluesRevive) {
 			overdriveAmmo--;
@@ -1771,19 +1776,23 @@ public class Blues : Character {
 		if (salpha >= 64) {
 			salpha = (byte)MathF.Abs(128 - salpha);
 		}
-		int red = MathInt.Floor((float)Global.level.frameCount * 2 % 512);
+		int red = 0;
+		int green = 0;
+		int blue = 0;
+
+		red = MathInt.Floor((float)Global.level.frameCount * 2 % 512);
 		if (red >= 256) {
 			red = Math.Abs(512 - red);
 			if (red >= 256) { red = 255; }
 		}
-		int blue = MathInt.Floor(((float)Global.level.frameCount * 2 + 128) % 512);
+		blue = MathInt.Floor(((float)Global.level.frameCount * 2 + 128) % 512);
 		if (blue >= 256) {
 			blue = Math.Abs(512 - blue);
 			if (blue >= 256) { blue = 255; }
 		}
-		Color screenColor = new Color((byte)red, 0, (byte)blue, salpha);
-		Color textColor = new Color((byte)red, 0, (byte)blue, (byte)(salpha * 2));
-		Color bgColor = new Color((byte)(red / 2), 0, (byte)(blue / 2), (byte)(salpha * 2));
+		Color screenColor = new Color((byte)red, (byte)green, (byte)blue, salpha);
+		Color textColor = new Color((byte)red, (byte)green, (byte)blue, (byte)(salpha * 2));
+		Color bgColor = new Color((byte)(red / 2), (byte)green, (byte)(blue / 2), (byte)(salpha * 2));
 
 		Vector2f[] offsets = [
 			((int)Global.halfScreenW, (int)Global.halfScreenH),
@@ -1802,16 +1811,15 @@ public class Blues : Character {
 				new Vertex((0, 0) + offsets[i], colors[0]),
 				new Vertex((Global.halfScreenW, 0) + offsets[i], colors[1]),
 				new Vertex((Global.halfScreenW, Global.halfScreenH) + offsets[i], colors[2]),
-				new Vertex((0, Global.halfScreenH)  + offsets[i], colors[3]),
-			];
-			
-			Vertex[] triangleHud = [
-				rectHud[0], rectHud[1], rectHud[3],
-				rectHud[3], rectHud[2], rectHud[1],
+				new Vertex((0, Global.halfScreenH) + offsets[i], colors[3]),
 			];
 			if (i == 1 || i == 3) {
-				rectHud.Reverse();
+				rectHud = rectHud.Reverse().ToArray();
 			}
+			Vertex[] triangleHud = [
+				rectHud[1], rectHud[0],  rectHud[3],
+				rectHud[1], rectHud[2], rectHud[3]
+			];
 			DrawWrappers.drawToHUD(triangleHud, PrimitiveType.Triangles);
 		}
 		DrawWrappers.DrawRect(

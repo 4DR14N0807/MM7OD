@@ -922,7 +922,9 @@ public partial class Player {
 						p => p.teamAlliance == teamAlliance && p.character?.alive == true
 					);
 					if (spawnPoints.Count != 0) {
-						Character randomChar = spawnPoints[Helpers.randomRange(0, spawnPoints.Count - 1)].character!;
+						Character? randomChar = spawnPoints[
+							Helpers.randomRange(0, spawnPoints.Count - 1)
+						].character!;
 						Point warpInPos = Global.level.getGroundPosNoKillzone(
 							randomChar.pos, Global.screenH
 						) ?? randomChar.pos;
@@ -938,8 +940,8 @@ public partial class Player {
 					}
 				}
 				else {
-					var spawnPoint = Global.level.getSpawnPoint(this, false);
-					if (spawnPoint == null) return;
+					SpawnPoint spawnPoint = firstSpawn ?? Global.level.getSpawnPoint(this, false);
+					firstSpawn = null;
 					int spawnPointIndex = Global.level.spawnPoints.IndexOf(spawnPoint);
 					spawnCharAtSpawnIndex(spawnPointIndex, charNetId, true);
 				}

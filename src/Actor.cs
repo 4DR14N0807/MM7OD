@@ -1298,7 +1298,7 @@ public partial class Actor : GameObject {
 
 		if (damage >= Damager.ohkoDamage && damage >= maxHealth) {
 			if (Helpers.randomRange(0, 20) != 10) {
-				addDamageText("Instakill!", (int)FontType.RedishOrange);
+				addDamageText("Instakill!", (int)FontType.OrangeSmall);
 			} else {
 				addDamageText(damage);
 			}

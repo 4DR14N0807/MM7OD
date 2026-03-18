@@ -256,9 +256,12 @@ public class RushJetState : RushState {
 			jetSpeedY = 0;
 		}
 
-		//rush.vel = new Point(jetSpeedX * rush.xDir, jetSpeedY);
-		rush.vel.x = jetSpeedX * rush.xDir;
-		rush.vel.y = jetSpeedY;
+		//rush.vel.x = jetSpeedX * rush.xDir;
+		//rush.vel.y = jetSpeedY;
+
+		// This way it won't stuck on floor or walls.
+		rush.move(new Point(jetSpeedX * rush.xDir, 0));
+		rush.move(new Point(0, jetSpeedY));
 
 		if (once) {
 			decAmmoCooldown--;

@@ -658,7 +658,7 @@ public class Rock : Character {
 	}
 
 	public virtual float getSlideSpeed() {
-		return 3f * getRunDebuffs();
+		return 3.25f * getRunDebuffs();
 	}
 
 	public void removeLastingProjs() {

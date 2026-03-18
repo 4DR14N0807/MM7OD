@@ -125,7 +125,9 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 
 		if (sprite.isAnimOver() && sprite.name == "danger_wrap_start") {
 			changeSprite("danger_wrap_bubble", true);
-			bomb = new Anim(pos, "danger_wrap_bomb", xDir, null, false);
+			if (ownedByLocalPlayer) {
+				bomb = new Anim(pos, "danger_wrap_bomb", xDir, ownerPlayer.getNextActorNetId(), false, true);
+			}
 		}
 		bomb?.changePos(pos);
 		if (!ownedByLocalPlayer) return;

@@ -105,6 +105,7 @@ public class UpgradeMenu : IMainMenu {
 
 	public void update() {
 		if (updateAdaptorUpgrades(mainPlayer)) return;
+		if (updateTBoostUpgrades(mainPlayer)) return;
 
 		eTankTargets.Clear();
 		wTankTargets.Clear();
@@ -372,6 +373,7 @@ public class UpgradeMenu : IMainMenu {
 		}
 
 		drawAdaptorUpgrades(mainPlayer, 20);
+		drawTBoostUpgrades(mainPlayer, 20);
 
 		Fonts.drawTextEX(
 			FontType.Blue, "[MUP]/[MDOWN]: Select Item",
@@ -385,7 +387,6 @@ public class UpgradeMenu : IMainMenu {
 
 	public static bool updateAdaptorUpgrades(Player mainPlayer) {
 		if (mainPlayer.character == null) return false;
-		if (mainPlayer.character.charState is NovaStrikeState) return false;
 
 		if (mainPlayer.character is not Rock rock) {
 			return false;
@@ -405,10 +406,29 @@ public class UpgradeMenu : IMainMenu {
 		}
 		return false;
 	}
+
+	bool updateTBoostUpgrades(Player mainPlayer) {
+		if (mainPlayer.character == null) return false;
+
+		if (mainPlayer.character is not Bass bass) {
+			return false;
+		}
+
+		if (Global.input.isPressedMenu(Control.Special2)) {
+			if (bass.canGoSuperBass()) {
+				if (!bass.isTrebbleBoost) {
+					mainPlayer.currency -= Bass.TrebleBoostCost;
+					bass.isTrebbleBoost = true;
+				}
+				mainPlayer.character.changeState(new SuperBassStart(), true);
+				return true;
+			} else Global.playSound("error");
+		}
+		return false;
+	}
 	
 	public static void drawAdaptorUpgrades(Player mainPlayer, int offY) {
 		if (mainPlayer.character == null) return;
-		if (mainPlayer.character is not Rock) return;
 
 		if (mainPlayer.character is not Rock rock) {
 			return;
@@ -437,16 +457,18 @@ public class UpgradeMenu : IMainMenu {
 			new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
 		);
 
+		float extraOffset = 0;
+
 		if (!string.IsNullOrEmpty(specialText)) {
 			specialText = specialText.TrimStart('\n');
 			float yOff = specialText.Contains('\n') ? -3 : 0;
 			float yPos = Global.halfScreenH + 9;
-			float extraOffset = mainPlayer.currency >= Rock.SuperAdaptorCost ? 11 : 4;
+			extraOffset = mainPlayer.currency >= Rock.SuperAdaptorCost ? 11 : 4;
 			
 			Fonts.drawText(
 				hasAdaptor ? FontType.Green : FontType.Orange,
 				Helpers.controlText(specialText).ToUpperInvariant(),
-				Global.halfScreenW, yPosb + extraOffset + yOff + offY, Alignment.Center
+				Global.halfScreenW, yPosb + extraOffset + yOff + offY + (hasAdaptor ? 6 : 0), Alignment.Center
 			);
 		}
 
@@ -457,7 +479,65 @@ public class UpgradeMenu : IMainMenu {
 			float yPos = Global.halfScreenH + 9;
 			Fonts.drawText(
 				FontType.Red, Helpers.controlText("(Not enough bolts)").ToUpperInvariant(),
-				Global.halfScreenW, yPos + 18 + yOff + offY, Alignment.Center
+				Global.halfScreenW, yPosb + extraOffset + yOff + offY + 14, Alignment.Center
+			);
+		}
+	
+	}
+
+	public static void drawTBoostUpgrades(Player mainPlayer, int offY) {
+		if (mainPlayer.character == null) return;
+
+		if (mainPlayer.character is not Bass bass) {
+			return;
+		}
+
+		bool hasAdaptor = bass.isTrebbleBoost;
+
+		string specialText = "[CMD]: Treble Boost" + 
+			$" ({Bass.TrebleBoostCost} {Global.nameCoins})";
+		if (hasAdaptor) specialText = "Treble Boost: Activated"; 
+		
+		float yPosb = Global.halfScreenH + 26;
+
+		DrawWrappers.DrawLine(
+			7, yPosb + offY, Global.screenW - 7,yPosb + offY, 
+			new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
+		);
+
+		DrawWrappers.DrawRect(
+			7, yPosb + offY, Global.screenW - 7, yPosb + 30 + offY,
+			true, Helpers.MenuBgColor, 0, ZIndex.HUD + 200, false
+		);
+
+		DrawWrappers.DrawLine(
+			7, yPosb + 30 + offY, Global.screenW - 7, yPosb + 30 + offY, 
+			new Color(232, 232, 232, 224), 1, ZIndex.HUD, false
+		);
+
+		float extraOffset = 0;
+
+		if (!string.IsNullOrEmpty(specialText)) {
+			specialText = specialText.TrimStart('\n');
+			float yOff = specialText.Contains('\n') ? -3 : 0;
+			float yPos = Global.halfScreenH + 9;
+			extraOffset = mainPlayer.currency >= Bass.TrebleBoostCost ? 11 : 4;
+			
+			Fonts.drawText(
+				hasAdaptor ? FontType.Purple : FontType.Yellow,
+				Helpers.controlText(specialText).ToUpperInvariant(),
+				Global.halfScreenW, yPosb + extraOffset + yOff + offY + (hasAdaptor ? 3 : 0), Alignment.Center
+			);
+		}
+
+		specialText.ToUpperInvariant();
+
+		if (mainPlayer.currency < Bass.TrebleBoostCost && !bass.isTrebbleBoost) {
+			float yOff = specialText.Contains('\n') ? -3 : 0;
+			float yPos = Global.halfScreenH + 9;
+			Fonts.drawText(
+				FontType.Red, Helpers.controlText("(Not enough bolts)").ToUpperInvariant(),
+				Global.halfScreenW, yPosb + extraOffset + yOff + offY + 14, Alignment.Center
 			);
 		}
 	

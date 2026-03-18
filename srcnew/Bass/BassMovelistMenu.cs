@@ -46,7 +46,7 @@ public class BassMovelistMenu : MovelistMenu {
 		moves.AddRange([
 			new MovelistItem(
 				spriteName, 13, "Shoot", Control.Shoot, "",
-				"Can be charged.\nCan be used\nwhile walking."
+				"Can be charged.\nCan be used\nwhile walking.\nGets stronger\non Lv3."
 			),
 			new MovelistItem(
 				spriteName, 14, "Dash", Control.Dash,
@@ -62,19 +62,19 @@ public class BassMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteName, 17, "Booster Kick", Control.Special1,
-				"Needs Lv2\nOn Ground."
+				"On Ground."
 			),
 			new MovelistItem(
 				spriteName, 20, "Dark Comet", Control.Up + " + " + Control.Special1,
-				"Needs Lv3\nMid-air."
+				"Needs Lv2\nMid-air."
 			),
 			new MovelistItem(
 				spriteName, 14, "Airdash", Control.Dash,
-				"Needs Lv3\nMid-air."
+				"Needs Lv4\nMid-air."
 			),
 			new MovelistItem(
 				spriteName, 19, "Sweeping Laser", Control.Down + " + " + Control.Special1,
-				"Needs Lv3\nMid-air."
+				"Needs Lv4\nMid-air."
 			),
 			new MovelistItem(
 				spriteName, 22, "Evil charge", Control.Special2, "",

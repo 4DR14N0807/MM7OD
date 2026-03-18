@@ -8,7 +8,7 @@ public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
 	public int maxCardCount = 4;
-	public int cardCount = 1;
+	public int cardCount = 4;
 	string[] effectsText = [
 		"",
 		// Common.

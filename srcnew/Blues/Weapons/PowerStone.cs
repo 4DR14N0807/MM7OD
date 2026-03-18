@@ -63,7 +63,7 @@ public class PowerStoneProj : Projectile {
 
 		damager.damage = 2;
 		damager.flinch = Global.miniFlinch;
-		damager.hitCooldown = 12;
+		damager.hitCooldown = 16;
 		
 		origin = pos;
 		if (ownedByLocalPlayer) {

@@ -135,7 +135,10 @@ public class SBassLemon : Projectile {
 		maxTime = 0.3f;
 
 		byteAngle = (type - 1) * 32;
-		if (xDir < 0) byteAngle = -byteAngle + 128;
+		if (xDir < 0) {
+			byteAngle = -byteAngle + 128;
+			xScale *= -1;
+		}
 		vel = Point.createFromByteAngle(byteAngle).times(360);
 		damager.damage = 1;
 		damager.hitCooldown = 5;

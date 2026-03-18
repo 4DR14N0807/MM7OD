@@ -462,6 +462,11 @@ public class WarpIn : CharState {
 				warpAnim.changePos(new Point(warpAnim.pos.x, destY));
 			}
 		}
+
+		if (character.ownedByLocalPlayer && player.warpedInOnce) {
+			character.health = character.maxHealth;
+			player.health = player.maxHealth;
+		}
 	}
 
 	public override void onEnter(CharState oldState) {

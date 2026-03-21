@@ -146,7 +146,7 @@ public class CharState {
 		if (oldState is VileHover) {
 			wasVileHovering = true;
 		}
-		if (oldState is BassFly) {
+		if (oldState is BassFly or SonicCrusher) {
 			wasFlying = true;
 		}
 		if (!useGravity || character.isDWrapped) {
@@ -462,6 +462,11 @@ public class WarpIn : CharState {
 				warpAnim.changePos(new Point(warpAnim.pos.x, destY));
 			}
 		}
+
+		if (character.ownedByLocalPlayer && player.warpedInOnce) {
+			character.health = character.maxHealth;
+			player.health = player.maxHealth;
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
@@ -473,7 +478,7 @@ public class WarpIn : CharState {
 		destX = character.pos.x;
 		startY = character.pos.y;
 
-		if (character is Rock && Helpers.randomRange(1,1) == 1 &&
+		if (character is Rock && Helpers.randomRange(0 ,1) == 1 &&
 			(!player.warpedInOnce || Global.level.joinedLate)
 		) {
 			sprite = "warp_in2";

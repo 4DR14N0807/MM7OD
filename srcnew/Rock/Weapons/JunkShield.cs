@@ -368,7 +368,7 @@ public class JunkShieldRmProj2 : Projectile {
 		frameIndex = fi;
 		frameSpeed = 0;
 		damager.damage = 2;
-		//damager.hitCooldown = 60;
+		damager.hitCooldown = 30;
 
 		vel = Point.createFromByteAngle(ang).times(180);
 

@@ -411,6 +411,7 @@ public class SuperBassSquare : Projectile {
 
 public class SuperBassAura : Anim {
 	Bass? bass = null;
+	int p;
 	public SuperBassAura(
 		Bass bass, Point pos, int xDir, ushort? netId, bool rpc = false
 	) : base(
@@ -427,6 +428,7 @@ public class SuperBassAura : Anim {
 			return;
 		}
 
+		p = bass.phase;
 		changePos(bass.pos);
 	}
 
@@ -437,13 +439,23 @@ public class SuperBassAura : Anim {
 	
 		palette = bass?.player.superBassPaletteShader;
 			
-		palette?.SetUniform("palette", bass?.phase ?? 0);
+		palette?.SetUniform("palette", p);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) shaders.Add(palette);
 		
 		shaders.AddRange(baseShaders ?? new List<ShaderWrapper>());
 
 		return shaders;
+	}
+
+	public override List<byte> getCustomActorNetData() {
+		return [
+			(byte)p	
+		];
+	}
+
+	public override void updateCustomActorNetData(byte[] data) {
+		p = data[0];
 	}
 }
 

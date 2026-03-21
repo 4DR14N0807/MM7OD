@@ -698,6 +698,8 @@ public class Bass : Character {
 			} else {
 				if (charState is Dash or AirDash) {
 					changeToIdleOrFall();
+				} else if (charState is SonicCrusher) {
+					changeState(new BassFly(), true);
 				}
 				string shootSprite = getSprite(charState.shootSprite);
 				if (!Global.sprites.ContainsKey(shootSprite)) {

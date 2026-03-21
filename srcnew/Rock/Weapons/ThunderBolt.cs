@@ -55,14 +55,14 @@ public class ThunderBoltRmProj : Projectile {
 		vel.x = 300 * xDir;
 
 		if (sendRpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, new byte[] { (byte)(pierce ? 1 : 0) });
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ThunderBoltRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
-			arg.extraData[1] == 1, altPlayer: arg.player
+			arg.extraData[0] == 1, altPlayer: arg.player
 		);
 	}
 

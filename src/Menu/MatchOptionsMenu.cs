@@ -47,7 +47,7 @@ public class MatchOptionsMenu : IMainMenu {
 				},
 				(Point pos, int index) => {
 					Fonts.drawText(
-						canSuicide() ? FontType.Red : FontType.Grey, "SUICIDE",
+						canSuicide() ? FontType.Red : FontType.Black, "SUICIDE",
 						pos.x, pos.y, selected: selectY == index
 					);
 				}

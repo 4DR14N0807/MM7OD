@@ -17,6 +17,7 @@ using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using WindowsAPI;
 using static SFML.Window.Keyboard;
 using WindowsAPI;
 
@@ -27,12 +28,19 @@ class Program {
 	//public static List<string> debugLogs = [];
 
 	static void Main(string[] args) {
+		// For formatting purposes.
 		setDefaultCulture();
-
+		// Set API hooks
+		NativeApi.OS targetOS = NativeApi.GetOS();
+		NativeApi.Main = targetOS switch {
+			NativeApi.OS.Windows => new WinApi(),
+			NativeApi.OS.Linux => new NativeApi(),
+			NativeApi.OS.OSX => new NativeApi(),
+			_ => new NativeApi()
+		};
+		// Continue.
 		if (args.Length > 0 && args[0] == "-relay") {
-		#if WINDOWS
-			WinApi.AllocConsole();
-		#endif
+			NativeApi.Main.AllocNewConsole();
 			RelayServer.ServerMain(args);
 		} else {
 			int mode = 0;
@@ -150,7 +158,7 @@ class Program {
 			"",
 			string.IsNullOrEmpty(Options.main.playerName) ? "User: Dr. Light" : "User: " + Options.main.playerName,
 			// Get CPU name here.
-			"CPU : " + getCpuName(),
+			"CPU : " + NativeApi.Main.GetCpuName(),
 			"Memory: " + (GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024) + "kb",
 			"",
 		];
@@ -703,10 +711,9 @@ class Program {
 
 	static string getFileBlobMD5(Dictionary<string, string> fileNamesToContents) {
 		string entireBlob = "";
-		var keys = fileNamesToContents.Keys.ToList();
+		List<string> keys = fileNamesToContents.Keys.ToList();
 		keys.Sort(Helpers.invariantStringCompare);
-
-		foreach (var key in keys) {
+		foreach (string key in keys) {
 			entireBlob += key.ToLowerInvariant() + " " + fileNamesToContents[key];
 		}
 		var md5 = System.Security.Cryptography.MD5.Create();
@@ -793,27 +800,47 @@ class Program {
 	}
 
 	static void loadSprites() {
+		// Check load location.
 		string spritePath = "assets/sprites";
 
-		string[] spriteFilePaths = Helpers.getFiles(Global.assetPath + spritePath, false, "json").ToArray();
+		// Get files, in Linux they are out of order so we need to fix this later.
+		string[] spriteFilePaths = Helpers.getFiles(Global.assetPath + spritePath, true, "json").ToArray();
 		if (spriteFilePaths.Length > 65536) {
 			throw new Exception(
 				"Exceeded max sprite limit of 65536. Fix actor.cs netUpdate() to support more sprites."
 			);
 		}
 
+		// Sort the JSONS by name. So the result is deterministic.
+		Dictionary<string, string> nameToPath = []; 
+		List<string> orderedPaths = [];
+		foreach (string fullPath in spriteFilePaths) {
+			string filename = Path.GetFileName(fullPath).ToLowerInvariant();
+			nameToPath[filename] = fullPath;
+			orderedPaths.Add(filename);
+		}
+		orderedPaths.Sort(Helpers.invariantStringCompare);
+
+		// Now we order the full paths based on this.
+		List<string> orderedSpriteFilePaths = [];
+		foreach (string shortPath in orderedPaths) {
+			orderedSpriteFilePaths.Add(nameToPath[shortPath]);
+		}
+		spriteFilePaths = orderedSpriteFilePaths.ToArray();
+
+		// Split if needed.
 		int fileSplit = MathInt.Floor(spriteFilePaths.Count() / 6.0);
 		string[][] treadedFilePaths;
 		// Use multitread if loading 20 or more sprites.
 		if (spriteFilePaths.Length >= 20) {
-			treadedFilePaths = new string[][] {
+			treadedFilePaths = [
 				spriteFilePaths[..fileSplit],
 				spriteFilePaths[(fileSplit)..(fileSplit*2)],
 				spriteFilePaths[(fileSplit*2)..(fileSplit*3)],
 				spriteFilePaths[(fileSplit*3)..(fileSplit*4)],
 				spriteFilePaths[(fileSplit*4)..(fileSplit*5)],
 				spriteFilePaths[(fileSplit*5)..],
-			};
+			];
 			// List of multithread tasks.
 			// And start a list of blobs so checksum is deterministic .
 			List<Task> tasks = new();
@@ -1458,45 +1485,6 @@ class Program {
 				window.Display();
 			}
 		}
-	}
-
-	public static string 
-	getCpuName() {
-		string cpuName = "Unknown";
-		#if WINDOWS
-			// For Windows OS.
-			cpuName = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-				@"HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
-			)?.GetValue(
-				"ProcessorNameString"
-			) as String ?? "Windows";
-		#endif
-		#if LINUX
-			if (!File.Exists("/proc/cpuinfo")) {
-				return "Unix;"
-			}
-			// Read all lines from /proc/cpuinfo
-			string[] lines = File.ReadAllLines("/proc/cpuinfo");
-			// Find the line containing "model name"
-			string? modelNameLine = lines.FirstOrDefault(
-				line => line.StartsWith("model name", StringComparison.OrdinalIgnoreCase)
-			);
-			if (modelNameLine != null) {
-				// Extract the model name part after the colon and trim whitespace
-				lines = modelNameLine.Split(':');
-				if (lines.Length >= 2) {
-					cpuName = lines[1];
-				}
-			}
-		#endif
-		#if MACOS
-			cpuName = "Darwin";
-		#endif
-		// Fix simbols.
-		cpuName = cpuName.Replace("(R)", "®");
-		cpuName = cpuName.Replace("(C)", "©");
-		cpuName = cpuName.Replace("(TM)", "©"); //Todo, implement proper trademark simbol.
-		return cpuName;
 	}
 
 	public static void loadMultiThread(List<String> loadText, RenderWindow window, Action loadFunct) {

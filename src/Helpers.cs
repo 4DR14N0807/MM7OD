@@ -455,23 +455,11 @@ public class Helpers {
 	}
 
 	public static void showMessageBox(string message, string caption) {
-		#if WINDOWS
-			WinApi.ShowMessageBox(Global.window, message, caption, 0, Options.main.fullScreen);
-		#else
-			Console.WriteLine(caption + Environment.NewLine + message);
-		#endif
+		NativeApi.Main.ShowMessageBox(message, caption);
 	}
 
 	public static bool showMessageBoxYesNo(string message, string caption) {
-		#if WINDOWS
-			int dialogResult = WinApi.ShowMessageBox(
-				Global.window, message, caption, 4, Options.main.fullScreen
-			);
-			return dialogResult == 6;
-		#else
-			Console.WriteLine(caption + Environment.NewLine + message);
-			return true;
-		#endif
+		return NativeApi.Main.ShowMessageBoxYesNo(message, caption);
 	}
 
 	public static void menuUpDown(ref int val, int minVal, int maxVal, bool wrap = true, bool playSound = true) {
@@ -912,8 +900,7 @@ public class Helpers {
 		else return 0;
 	}
 
-	// get the percentage of a value
-
+	// Get the percentage of a value
 	public static double getValueOfPercentage(float value, float percentage) {
 		return MathF.Floor(value * percentage / 100);
 	}

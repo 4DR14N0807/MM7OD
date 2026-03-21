@@ -87,24 +87,24 @@ public partial class Global {
 			var desktopWidth = VideoMode.DesktopMode.Size.X;
 			var desktopHeight = VideoMode.DesktopMode.Size.Y;
 			Styles style = Styles.None;
-			#if WINDOWS
+			if (NativeApi.Main.currentOS == NativeApi.OS.Windows) {
 				style = Styles.Default;
-			#endif
+			}
 			window = new RenderWindow(
 				new VideoMode((desktopWidth, desktopHeight)),
 				"MM7 Online: Deathmatch", style, State.Windowed
 			);
-			#if WINDOWS
+			if (NativeApi.Main is WinApi winApi) {
 				// Fixes bordeless on AMD and NVidia cards.
 				// Intels are f-ed up OpenGL. So this does not work on them.
 				// TODO: To fix this render final render result in GDI... maybe.
 				// Or check how the hell Snes9x OpenGL render avoids this bug.
-				WinApi.ReplaceWindowStyle(
+				winApi.ReplaceWindowStyle(
 					window, WinApi.WS.VISIBLE | WinApi.WS.SYSMENU |
 					WinApi.WS.CLIPCHILDREN | WinApi.WS.CLIPSIBLINGS
 				);
-				WinApi.SetWindowExStyle(window, WinApi.WSEX.APPWINDOW, true);
-			#endif
+				winApi.SetWindowExStyle(window, WinApi.WSEX.APPWINDOW, true);
+			}
 			window.SetVerticalSyncEnabled(options.vsync);
 			window.Position = new Vector2i(0, 0);
 			if (Options.main.fullScreenIntelCompat && Options.main.integerFullscreen) {

@@ -16,7 +16,7 @@ public class BusterZero : Character {
 	public int stockedBusterLv;
 	public bool stockedSaber;
 	public float stockedTime;
-	public List<DZBusterProj> zeroLemonsOnField = new();
+	public List<Projectile> zeroLemonsOnField = new();
 	public ZBusterSaber meleeWeapon = new();
 	public int lastShootPressed;
 	public float aiAttackCooldown;
@@ -38,12 +38,12 @@ public class BusterZero : Character {
 	public float donutTimer;
 	public int donutsPending;
 
-	public PZeroLoadout loadout;
+	public BZeroLoadout loadout;
 
 	public BusterZero(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
-		bool isWarpIn = true, PZeroLoadout? loadout = null,
+		bool isWarpIn = true, BZeroLoadout? loadout = null,
 		int? heartTanks = null, bool isATrans = false
 	) : base(
 		player, x, y, xDir, isVisible,
@@ -52,14 +52,14 @@ public class BusterZero : Character {
 	) {
 		charId = CharIds.BusterZero;
 		// Loadout stuff.
-		loadout ??= player.loadout.pzeroLoadout.clone();
+		//loadout ??= player.loadout.bzeroLoadout.clone();
 		this.loadout = loadout;
 		altSoundId = AltSoundIds.X3;
 		hyperMode = loadout.hyperMode;
 		/*
 		if (Global.customSettings?.busterZeroGiga == true) {
 			gigaAttackSelected = loadout.gigaAttack;
-			gigaAttack = new RekkohaWeapon();
+			gigaAttack = new RakuhouhaWeapon();
 		}
 		*/
 	}
@@ -113,12 +113,14 @@ public class BusterZero : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+		gigaAttack?.update();
+		gigaAttack?.charLinkedUpdate(this, true);
 		if (isAwakened) {
 			updateAwakenedAura();
 		}
 		// Hypermode music.
 		if (!Global.level.isHyper1v1()) {
-			if (isHyperMode && Global.level.mainPlayer == player) {
+			if (isHyperMode) {
 				if (musicSource == null) {
 					if (isAwakened) {
 						addMusicSource("XvsZeroV2_megasfc", getCenterPos(), true);
@@ -274,19 +276,6 @@ public class BusterZero : Character {
 		shootAnimTime = DefaultShootAnimTime;
 	}
 
-	public void shootDonutProj(int time) {
-		setShootAnim();
-		Point shootPos = getShootPos();
-		int xDir = getShootXDir();
-
-		new ShingetsurinProj(
-			shootPos, xDir,
-			time / 60f, this, player, player.getNextActorNetId(), rpc: true
-		);
-		playSound("shingetsurinx5", forcePlay: false, sendRpc: true);
-		shootAnimTime = DefaultShootAnimTime;
-	}
-
 	// Shoots stuff.
 	public void shoot(int chargeLevel) {
 		if (chargeLevel == 0) {
@@ -320,7 +309,7 @@ public class BusterZero : Character {
 	}
 	
 	public void shootSub(int chargeLevel, bool sfx = true, bool cd = true) {
-		if (isAwakened && chargeLevel >= 1) {
+		if (isAwakened) {
 			shootAwakened(chargeLevel, sfx, cd);
 		} else {
 			shootNormal(chargeLevel, sfx, cd);
@@ -389,7 +378,14 @@ public class BusterZero : Character {
 		string targetSound = "";
 		int? targetCooldown = null;
 
-		if (chargeLevel == 1) {
+		if (chargeLevel < 1) {
+			targetSound = "busterX3";
+			var lemon = new DZShinLemonProj(
+				shootPos, xDir, this, player, player.getNextActorNetId(), rpc: true
+			);
+			zeroLemonsOnField.Add(lemon);
+			targetCooldown = 9;
+		} else if (chargeLevel == 1) {
 			targetSound = "buster3X3";
 			new DZShinBusterProj(
 				shootPos, xDir, this, player.getNextActorNetId(), sendRpc: true
@@ -472,7 +468,7 @@ public class BusterZero : Character {
 
 	public enum MeleeIds {
 		None = -1,
-		SaberSwing,
+		SaberSwing
 	}
 
 	public override string getSprite(string spriteName) {

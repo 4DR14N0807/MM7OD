@@ -79,6 +79,8 @@ public class Weapon {
 	public string iconSprite = "hud_weapon_icon";
 
 	// Axl Custom Setting Reload
+	public float rechargeAmmoCustomSettingAxl;
+	public float rechargeAmmoCustomSettingAxl2;
 	public float rechargeAmmoCooldown;
 	public float altRechargeAmmoCooldown;
 
@@ -415,6 +417,10 @@ public class Weapon {
 	public virtual void update() {
 		Helpers.decrementFrames(ref shootCooldown);
 		Helpers.decrementFrames(ref altShotCooldown);
+
+		Helpers.decrementFrames(ref rechargeAmmoCustomSettingAxl);
+		Helpers.decrementFrames(ref rechargeAmmoCustomSettingAxl2);
+		
 		if (timeSinceLastShoot != null) {
 				timeSinceLastShoot += Global.speedMul;
 			}

@@ -184,11 +184,9 @@ public class TeamElimAlt : GameMode {
 		foreach (Player player in level.players) {
 			if (player.teamAlliance != null &&
 				player.teamAlliance >= 0 && player.teamAlliance < level.teamNum &&
-				!player.isSpectator
+				!player.isSpectator 
 			) {
-				if (player.elimAlive &&
-					teamsAlive[player.teamAlliance.Value] != true
-				) {
+				if (player.elimAlive && teamsAlive[player.teamAlliance.Value] != true) {
 					teamsAlive[player.teamAlliance.Value] = true;
 					teamsAliveHash.Add(player.teamAlliance.Value);
 					teamNumAlive++;

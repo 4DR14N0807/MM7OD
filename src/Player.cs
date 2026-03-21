@@ -40,7 +40,6 @@ public partial class Player {
 	public float shoryukenAmmo = 1920;
 	public float fgMoveMaxAmmo = 1920;
 	public bool isDefenderFavoredNonOwner;
-	public Character? lastDamagedCharacter;
 	public bool elimAlive => character?.alive == true;
 
 	public bool isDefenderFavored {
@@ -922,7 +921,7 @@ public partial class Player {
 						p => p.teamAlliance == teamAlliance && p.character?.alive == true
 					);
 					if (spawnPoints.Count != 0) {
-						Character? randomChar = spawnPoints[
+						Character randomChar = spawnPoints[
 							Helpers.randomRange(0, spawnPoints.Count - 1)
 						].character!;
 						Point warpInPos = Global.level.getGroundPosNoKillzone(
@@ -1099,6 +1098,8 @@ public partial class Player {
 			evilEnergyHP = Math.Ceiling(evilEnergyStacks * hpPerStack);
 		}
 		Character newChar;
+		bool isNonMain = !isMainChar;
+		int htCount = getHeartTanks(spawnCharNum);
 		if (charNum == (int)CharIds.Rock) {
 			RockLoadout rockLoadout = new RockLoadout {
 				weapon1 = extraData[0],
@@ -1609,7 +1610,7 @@ public partial class Player {
 		character = spawnCharAtPoint(
 			(int)CharIds.RagingChargeX, [],
 			oldChar.pos, oldChar.xDir,
-			getNextATransNetId(), true,
+			getNextATransNetId(), sendRpc: true,
 			forceSpawn: true
 		) ?? throw new Exception("Error spawning RCX.");
 		// Set the inital state.

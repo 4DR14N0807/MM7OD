@@ -1,14 +1,15 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using MMXOnline;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
 namespace WindowsAPI;
 
-#if WINDOWS
-public class WinApi {
+public class WinApi : NativeApi {
+#if !NOTWINDOWS
 	public enum GWL : int {
 		EXSTYLE = -20,
 		HINSTANCE = -6,
@@ -86,7 +87,34 @@ public class WinApi {
 		public int down;
 	}
 
-	public static void SetWindowStyle(RenderWindow window, WS ws, bool enable) {
+	// -------------------------- //
+	// Overriden hooks start here //
+	// -------------------------- //
+
+	public override void ShowMessageBox(string message, string caption) {
+		ShowMessageBox(Global.window, message, caption, 0, Options.main.fullScreen);
+	}
+
+	public override bool ShowMessageBoxYesNo(string message, string caption) {
+		bool dialogResult = ShowMessageBox(
+			Global.window, message, caption, 4, Options.main.fullScreen
+		);
+		return dialogResult;
+	}
+
+	public override bool KeyState(int keyCode) {
+		return ((ushort)GetKeyState(keyCode) & 0xffff) != 0;
+	}
+
+	public override bool AllocNewConsole() {
+		return AllocConsole();
+	}
+
+	// ------------------------ //
+	// Native things start here //
+	// ------------------------ //
+
+	public void SetWindowStyle(RenderWindow window, WS ws, bool enable) {
 		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.STYLE);
 		uint uws = (uint)ws;
@@ -96,12 +124,12 @@ public class WinApi {
 		SetWindowLong(handle, GWL.STYLE, currentStyle & uws);
 	}
 
-	public static void ReplaceWindowStyle(RenderWindow window, WS ws) {
+	public void ReplaceWindowStyle(RenderWindow window, WS ws) {
 		IntPtr handle = window.NativeHandle;
 		SetWindowLong(handle, GWL.STYLE, (uint)ws);
 	}
 
-	public static void SetWindowExStyle(RenderWindow window, WSEX ws, bool enable) {
+	public void SetWindowExStyle(RenderWindow window, WSEX ws, bool enable) {
 		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.EXSTYLE);
 		uint uws = (uint)ws;
@@ -112,14 +140,13 @@ public class WinApi {
 		}
 	}
 
-	public static void ReplaceWindowExStyle(RenderWindow window, WSEX ws) {
+	public void ReplaceWindowExStyle(RenderWindow window, WSEX ws) {
 		IntPtr handle = window.NativeHandle;
 		uint uws = (uint)ws;
 		SetWindowLong(handle, GWL.EXSTYLE, uws);
 	}
 
-
-	public static void SetPosClientArea(Window window, Vector2u pos, Vector2u size) {
+	public void SetPosClientArea(Window window, Vector2u pos, Vector2u size) {
 		window.Size = size;
 		nint handle = window.NativeHandle;
 		WinRect rcClient = new(), rcWind = new();
@@ -133,7 +160,7 @@ public class WinApi {
 		window.Position = -borderSize;
 	}
 
-	public static void PrintWindowStyles(RenderWindow window) {
+	public void PrintWindowStyles(RenderWindow window) {
 		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.STYLE);
 		WS[] wsl = Enum.GetValues(typeof(WS)) as WS[] ?? [];
@@ -145,13 +172,13 @@ public class WinApi {
 		}
 	}
 
-	public static bool CheckWindowStyle(RenderWindow window, WS ws) {
+	public bool CheckWindowStyle(RenderWindow window, WS ws) {
 		IntPtr handle = window.NativeHandle;
 		uint currentStyle = GetWindowLong(handle, GWL.STYLE);
 		return (currentStyle & (uint)ws) != 0;
 	}
 
-	public static int ShowMessageBox(
+	public bool ShowMessageBox(
 		Window? window, string message,
 		string caption, int type, bool isFullscreen
 	) {
@@ -162,25 +189,35 @@ public class WinApi {
 		if (window != null && isFullscreen) {
 			window.SetMouseCursorVisible(false);
 		}
-		return result;
+		return result == 6;
 	}
 
-	[DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool AllocConsole();
+	[DllImport(
+		"user32.dll", CharSet = CharSet.Auto,
+		ExactSpelling = true,
+		CallingConvention = CallingConvention.Winapi)
+	]
+	private static extern short GetKeyState(int keyCode);
+
+	[DllImport("kernel32.dll", SetLastError = true)]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static extern bool AllocConsole();
 
 	[DllImport("user32.dll", SetLastError = true)]
-	public static extern uint GetWindowLong(nint hwnd, GWL index);
+	private static extern uint GetWindowLong(nint hwnd, GWL index);
 
 	[DllImport("user32.dll")]
-	public static extern uint SetWindowLong(nint hwnd, GWL index, uint newStyle);
+	private static extern uint SetWindowLong(nint hwnd, GWL index, uint newStyle);
 
-	[DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool GetWindowRect(nint hWnd, ref WinRect lpRect);
+	[DllImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static extern bool GetWindowRect(nint hWnd, ref WinRect lpRect);
 
-	[DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool GetClientRect(nint hWnd, ref WinRect lpRect);
+	[DllImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static extern bool GetClientRect(nint hWnd, ref WinRect lpRect);
 
 	[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-	public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-}
+	private static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 #endif
+}

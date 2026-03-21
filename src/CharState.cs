@@ -427,7 +427,7 @@ public class WarpIn : CharState {
 				character.grounded = true;
 				character.changePos(destX, destY);
 				if (!player.warpedInOnce || Global.level.joinedLate) {
-					character.changeState(new WarpIdle(player.warpedInOnce && !Global.level.joinedLate, altAnim));
+					character.changeState(new WarpIdle(!Global.level.joinedLate, altAnim));
 				} else {
 					if (character is Blues) {
 						character.changeToIdleOrFall("swap");
@@ -473,7 +473,9 @@ public class WarpIn : CharState {
 		destX = character.pos.x;
 		startY = character.pos.y;
 
-		if (character is Rock && Helpers.randomRange(1,1) == 1 && (!player.warpedInOnce || Global.level.joinedLate)) {
+		if (character is Rock && Helpers.randomRange(1,1) == 1 &&
+			(!player.warpedInOnce || Global.level.joinedLate)
+		) {
 			sprite = "warp_in2";
 			character.changeSpriteFromName(sprite, true);
 			altAnim = true;
@@ -753,6 +755,34 @@ public class Idle : CharState {
 			}
 		}
 		hurtIdleSet = true;
+	}
+}
+
+public class CsJkUBlock : CharState {
+	public CsJkUBlock() : base("block") {
+		exitOnAirborne = true;
+		attackCtrl = true;
+		normalCtrl = true;
+		specialId = SpecialStateIds.CsJkUBlock;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (player.input.getYDir(player) != -1) {
+			character.changeToIdleOrFall();
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+
+		if (!Global.sprites.ContainsKey(character.getSprite("block"))) {
+			defaultSprite = "land";
+			sprite = defaultSprite;
+			character.changeSpriteFromName(sprite, true);
+			character.frameIndex = character.sprite.totalFrameNum - 1;
+		}
 	}
 }
 

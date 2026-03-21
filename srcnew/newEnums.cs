@@ -22,6 +22,8 @@ public enum SpecialStateIds {
 	XTeleport,
 	PZeroParry,
 	WarpIdle,
+	Block,
+	CsJkUBlock,
 }
 
 public static class ArmorParts {

@@ -10,6 +10,7 @@ using DeviceId.Encoders;
 using DeviceId.Formatters;
 using Newtonsoft.Json;
 using SFML.Graphics;
+using WindowsAPI;
 using static SFML.Window.Keyboard;
 
 namespace MMXOnline;
@@ -44,6 +45,8 @@ public partial class Global {
 	public static string nameCoins = "Bolts";
 
 	public static bool isLoading;
+
+	public static WinApi OsApi = new();
 
 	public static void promptDebugSettings() {
 		//testDocumentsInDebug = Helpers.showMessageBoxYesNo("Test documents in debug?", "Debug Settings");

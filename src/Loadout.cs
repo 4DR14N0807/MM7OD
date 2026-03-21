@@ -495,7 +495,8 @@ public class LoadoutData {
 			vileLoadout = vileLoadout.clone(),
 			axlLoadout = axlLoadout.clone(),
 			sigmaLoadout = sigmaLoadout.clone(),
-			pzeroLoadout = pzeroLoadout.clone()
+			pzeroLoadout = pzeroLoadout.clone(),
+			bzeroLoadout = bzeroLoadout.clone()
 		};
 	}
 

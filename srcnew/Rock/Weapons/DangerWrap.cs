@@ -75,7 +75,7 @@ public class DangerWrap : Weapon {
 
 public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 	public int type;
-	int input;
+	public int input;
 	public float health = 1;
 	public float heightMultiplier = 1f;
 	Anim? bomb;
@@ -92,7 +92,6 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		destroyOnHit = false;
 		destroyOnDamage = true;
 		useGravity = false;
-		canBeLocal = false;
 		this.type = type;
 		this.input = input;
 		damager.hitCooldown = 4 * 60;
@@ -109,14 +108,14 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		}
 
 		if (rpc && ownerPlayer != null) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)(type + 128));
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)(type + 128), (byte)(input + 10));
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapBubbleRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.extraData[0] - 128,
-			arg.netId, altPlayer: arg.player
+			arg.netId, altPlayer: arg.player, input: arg.extraData[1] - 10
 		);
 	}
 
@@ -125,12 +124,9 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 
 		if (sprite.isAnimOver() && sprite.name == "danger_wrap_start") {
 			changeSprite("danger_wrap_bubble", true);
-			if (ownedByLocalPlayer) {
-				bomb = new Anim(pos, "danger_wrap_bomb", xDir, ownerPlayer.getNextActorNetId(), false, true);
-			}
+			bomb = new Anim(pos, "danger_wrap_bomb", xDir, null, false);
 		}
 		bomb?.changePos(pos);
-		if (!ownedByLocalPlayer) return;
 
 		vel.y -= Global.spf * (100 * heightMultiplier);
 		if (Math.Abs(vel.x) > 25) {

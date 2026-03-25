@@ -20,6 +20,7 @@ public class Anim : Actor {
 	public string animJsonName;
 	public ShaderWrapper? fadeBlackShader;
 	public ShaderWrapper? viralSigmaShader;
+	public List<ShaderWrapper>? customShaders;
 
 	public Anim(
 		Point pos, string spriteName, int xDir, ushort? netId,
@@ -238,6 +239,9 @@ public class Anim : Actor {
 				fadeBlackShader.SetUniform("alpha", 1f);
 			}
 			return new List<ShaderWrapper>() { fadeBlackShader };
+		}
+		if (customShaders != null) {
+			return customShaders;
 		}
 		return base.getShaders();
 	}

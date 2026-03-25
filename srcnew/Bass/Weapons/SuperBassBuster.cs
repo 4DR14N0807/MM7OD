@@ -456,7 +456,13 @@ public class SweepingLaserProj : Projectile {
 		if (ground) groundTime++;
 
 		if (groundTime != lastGroundTime && groundTime % 4 == 0 && ground) {
-			new Anim(endPos, "dust_purple", xDir, damager.owner.getNextActorNetId(), true, true, zIndex: zIndex - 2) { vel = new Point(0, -60) };
+			new Anim(
+				endPos, "dust_purple", xDir, damager.owner.getNextActorNetId(),
+				true, true, zIndex: zIndex - 2
+			) {
+				vel = new Point(0, -60),
+				customShaders = getShaders()
+			};
 			lastGroundTime = groundTime;
 		}
 
@@ -466,18 +472,19 @@ public class SweepingLaserProj : Projectile {
 	public override void render(float x, float y) {
 		base.render(x, y);
 		if (bodyAnim == null || bodySprite == null) return;
+		List<ShaderWrapper> shaders = getShaders();
 
 		for (int i = 0; i < pieces; i++) {
 			bodySprite.draw(
 				bodyAnim.frameIndex, pos.x, pos.y + ((i * spriteHeight) + startHeight),
-				xDir, yDir, null, alpha, 1, 1, zIndex
+				xDir, yDir, null, alpha, 1, 1, zIndex, shaders
 			);
 		}
 
 		if (ground && bottomAnim != null) {
 			Global.sprites[bottomAnim.sprite.name].draw(
 				bottomAnim.frameIndex, pos.x + (xDir * 2), endPos.y, 
-				xDir, yDir, null, alpha, 1, 1, zIndex
+				xDir, yDir, null, alpha, 1, 1, zIndex, shaders
 			);
 		}
 	}
@@ -520,6 +527,20 @@ public class SweepingLaserProj : Projectile {
 	public override void updateCustomActorNetData(byte[] data) {
 		pieces = data[0];
 	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = base.getShaders() ?? new();
+		if (ownerActor is not Bass bass) {
+			return shaders;
+		}
+		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
+		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		return shaders;
+	}
 }
 
 public class DarkCometUpProj : Projectile {
@@ -537,6 +558,8 @@ public class DarkCometUpProj : Projectile {
 		maxTime = 0.5f;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 15;
+		destroyOnHit = false;
 
 		vel.y = -240;
 		yDir *= -1;
@@ -562,8 +585,8 @@ public class DarkCometUpProj : Projectile {
 		base.render(x,y);
 		if (anim != null) {
 			Global.sprites[anim.sprite.name].draw(
-				anim.frameIndex, pos.x, pos.y + 2, 
-				xDir, yDir, null, alpha, 1, 1, zIndex
+				anim.frameIndex, pos.x, pos.y + 2,
+				xDir, yDir, null, alpha, 1, 1, zIndex, getShaders()
 			);
 		}
 	}
@@ -580,7 +603,8 @@ public class DarkCometUpProj : Projectile {
 				pos.addxy(0, -28), "dark_comet_land",
 				xDir, damager.owner.getNextActorNetId(), true, true
 			) {
-				yScale = yScale * -1
+				yScale = yScale * -1,
+				customShaders = getShaders()
 			};
 			playSound("lightningbolt", sendRpc: true);;
 		}
@@ -602,6 +626,20 @@ public class DarkCometUpProj : Projectile {
 			);
 		}
 	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = base.getShaders() ?? new();
+		if (ownerActor is not Bass bass) {
+			return shaders;
+		}
+		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
+		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		return shaders;
+	}
 }
 
 
@@ -618,6 +656,8 @@ public class DarkCometDownProj : Projectile {
 		maxTime = 1.5f;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
+		damager.hitCooldown = 15;
+		destroyOnHit = false;
 
 		vel.y = 240;
 
@@ -646,7 +686,9 @@ public class DarkCometDownProj : Projectile {
 
 		if (floor != null && other.isGroundHit()) {
 			destroySelf();
-			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true);
+			new Anim(hitPos, "dark_comet_land", xDir, damager.owner.getNextActorNetId(), true, true) {
+				customShaders = getShaders()
+			};
 		}
 	}
 
@@ -655,10 +697,24 @@ public class DarkCometDownProj : Projectile {
 		if (anim != null) {
 			Global.sprites[anim.sprite.name].draw(
 				anim.frameIndex, pos.x, pos.y + 2, 
-				xDir, yDir, null, alpha, 1, 1, zIndex
+				xDir, yDir, null, alpha, 1, 1, zIndex, getShaders()
 			);
 		}
 	} 
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = base.getShaders() ?? new();
+		if (ownerActor is not Bass bass) {
+			return shaders;
+		}
+		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
+		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		return shaders;
+	}
 }
 
 #endregion

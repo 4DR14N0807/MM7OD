@@ -477,11 +477,9 @@ public partial class Player {
 	public int pendingEvilEnergyStacks;
 	public int evilEnergyStacks;
 	public float evilEnergyTime;
-	public float evilEnergyMaxTime = 1800;
+	public float evilEnergyMaxTime = 300;
 	public decimal hpPerStack = 2.5m;
 	public decimal evilEnergyHP;
-	public decimal evilEnergyHPToRemove;
-	public float evilEnergyHPTimer;
 	public List<GrenadeProj> grenades = new List<GrenadeProj>();
 	public List<ChillPIceStatueProj> iceStatues = new List<ChillPIceStatueProj>();
 	public List<WSpongeSpike> seeds = new List<WSpongeSpike>();
@@ -873,28 +871,19 @@ public partial class Player {
 			return;
 		}
 		// Evil Energy Timer.
-		if (character != null && !character.destroyed && character is Bass && character.alive) {
+		if (character is Bass && !character.destroyed && character.alive) {
 			Helpers.decrementFrames(ref evilEnergyTime);
-		} 
-		if (character != null && evilEnergyTime <= 0 && evilEnergyStacks > 0) {
-			evilEnergyTime = evilEnergyMaxTime;
-			evilEnergyStacks = 0;
-			evilEnergyHPTimer = 4;
-		}
-		Helpers.decrementFrames(ref evilEnergyHPTimer);
-		if (evilEnergyHPTimer <= 0 && evilEnergyHP > 0 && evilEnergyStacks <= 0) {
-			evilEnergyHPTimer = 4;
-			evilEnergyHP--;
-			if (character != null) {
+
+			if (evilEnergyTime <= 0 && evilEnergyStacks > 0) {
+				evilEnergyTime = evilEnergyMaxTime;
+				evilEnergyHP--;
 				character.maxHealth++;
 				character.heal(this, 1);
-
 				if (evilEnergyHP <= 0) {
 					evilEnergyHP = 0;
-					maxHealth = getMaxHealth((CharIds)charNum);
 				}
+				character?.playSound("heal");
 			}
-			character?.playSound("heal");
 		}
 
 		// Never spawn a character if it already exists

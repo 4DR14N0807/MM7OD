@@ -965,7 +965,7 @@ public class AnimData {
 			bitmap,
 			currentFrame.rect.x1, currentFrame.rect.y1,
 			currentFrame.rect.w(), currentFrame.rect.h(),
-			x - cx, y - cy,
+			MathInt.Round(x - cx), MathInt.Round(y - cy),
 			alpha
 		);
 	}

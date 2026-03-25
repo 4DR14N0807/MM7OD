@@ -150,6 +150,8 @@ public class Bass : Character {
 		}
 		heal(player, (float)(maxHealth - health));
 		phase = 0;
+		evilEnergy = 0;
+		maxEvilEnergy = 12 + phase;
 		player.changeWeaponSlot(0);
 		weapons.Clear();
 		weapons.Add(new SBassBuster());
@@ -164,21 +166,21 @@ public class Bass : Character {
 		if (evilEnergy >= maxEvilEnergy && isTrebbleBoost) {
 			float excessEnergy = evilEnergy - maxEvilEnergy;
 			if (phase >= 4) {
-				changeState(new BottomlessPitWarpIn());
-				heal(player, 2);
+				changeState(new BassEvilOverload());
+				slowdownTime += 60 * 2;
+				heal(player, 4);
 				playSound("super_bass_aura", sendRpc: true);
 				playSound("hurt", sendRpc: true);
-				if (Helpers.randomRange(0, 10) == 0) {
-					addDamageText("ugh...", (int)FontType.Purple);
-				} else if (Helpers.randomRange(0, 10) == 0) {
-					addDamageText("darn...", (int)FontType.Purple);
-				} else if (Helpers.randomRange(0, 10) == 0) {
-					addDamageText("this power...", (int)FontType.Purple);
-				} else if (Helpers.randomRange(0, 10) == 0) {
-					addDamageText("too much...", (int)FontType.Purple);
-				} else {
-					addDamageText("...", (int)FontType.Purple);
-				}
+				int rand = Helpers.randomRange(0, 10);
+				string text = rand switch {
+					1 => "ugh...",
+					2 => "darn...",
+					3 => "this power...",
+					4 => "too much...",
+					5 => "more...",
+					_ => "...",
+				};
+				addDamageText(text, (int)FontType.Purple);
 			} else {
 				changeState(new EnergyIncrease());
 				nextPhase(phase + 1);
@@ -206,6 +208,7 @@ public class Bass : Character {
 
 		maxHealth += hpToAdd;
 		heal(player, hpToAdd);
+		maxEvilEnergy = 12 + phase;
 
 		if (phase < 4) {
 			addDamageText("POWER\n    UP!", (int)FontType.PurpleMenu);
@@ -235,6 +238,7 @@ public class Bass : Character {
 			maxHealth -= 2;
 		}
 		health = Math.Min(health, maxHealth);
+		maxEvilEnergy = 12 + phase;
 		addDamageText("POWER\n  DOWN!", (int)FontType.PurpleMenu);
 	}
 
@@ -561,6 +565,7 @@ public class Bass : Character {
 				if (isTrebbleBoost && yDir == 1 && phase < 4) {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
 						lowerPhase(phase - 1);
+						evilEnergy = Helpers.clamp(evilEnergy - 2, 0, maxEvilEnergy - 2);
 						playSound("super_bass_aura", sendRpc: true);
 						addHealth(1);
 						changeState(new BottomlessPitWarpIn());
@@ -628,7 +633,7 @@ public class Bass : Character {
 				}
 				return false;
 			}
-			if (grounded && yInput == -1) {
+			if (grounded && yInput == -1 && phase >= 1) {
 				if (isCooldownOver((int)AttackIds.Kick)) {
 					changeState(new BassKick(), true);
 					return true;
@@ -894,7 +899,7 @@ public class Bass : Character {
 	}
 
 	public override float getDashSpeed() {
-		return 3.25f * getRunDebuffs();
+		return 3.5f * getRunDebuffs();
 	}
 
 	public override float getFallSpeed(bool checkUnderwater = true) {
@@ -981,10 +986,8 @@ public class Bass : Character {
 		if (palette != null && !isSuperBass && !isTrebbleBoost) {
 			shaders.Add(palette);
 		} else if (isSuperBass || isTrebbleBoost) {
-			ShaderWrapper? palette2 = null;
-			palette2 = player.superBassPaletteShader;
-			
-			palette2?.SetUniform("palette", phase);
+			ShaderWrapper? palette2 = player.superBassPaletteShader;
+			palette2?.SetUniform("palette", phase + 1);
 			palette2?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 			if (palette2 != null) shaders.Add(palette2);
 		}

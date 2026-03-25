@@ -439,7 +439,7 @@ public class SuperBassAura : Anim {
 	
 		palette = bass?.player.superBassPaletteShader;
 			
-		palette?.SetUniform("palette", p);
+		palette?.SetUniform("palette", p + 1);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) shaders.Add(palette);
 		
@@ -471,7 +471,7 @@ public class SuperBassExhaust : Anim {
 
 	public override void update() {
 		base.update();
-		
+
 		changePos(bass?.pos ?? pos);
 		xDir = bass?.xDir ?? xDir;
 	}
@@ -483,10 +483,10 @@ public class SuperBassExhaust : Anim {
 	
 		palette = bass?.player.superBassPaletteShader;
 			
-		palette?.SetUniform("palette", bass?.phase ?? 0);
+		palette?.SetUniform("palette", bass?.phase + 1 ?? 0);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) shaders.Add(palette);
-		
+
 		shaders.AddRange(baseShaders ?? new List<ShaderWrapper>());
 
 		return shaders;
@@ -543,7 +543,7 @@ public class EnergyCharge : BassState {
 		bass.gravityModifier = 0.1f;
 		bass.frameIndex = 3;
 		if (bass.phase >= 4) {
-			invulnerable = true;
+			invincible = true;
 		}
 	}
 
@@ -575,7 +575,7 @@ public class EnergyCharge : BassState {
 			if (bass.phase < 4) {
 				bass.addEvilness(0.5f);
 			} else {
-				bass.removeEvilness(1);
+				bass.removeEvilness(0.375f);
 			}
 			ammoTimer = 8;
 		}
@@ -703,6 +703,7 @@ public class BassFly : BassState {
 		if (hit != null && !hit.isGroundHit()) {
 			flyVel = flyVel.subtract(flyVel.project(hit.getNormalSafe()));
 		}
+		flyVel.x *= bass.getRunDebuffs();
 
 		return flyVel.addxy(0, fallY);
 	}
@@ -829,8 +830,8 @@ public class SonicCrusher : BassState {
 	public override void update() {
 		base.update();
 
-		character.move(new Point(character.xDir * speed.x, 0));
-		character.move(new Point(0, player.input.getYDir(player) * 60));
+		character.move(new Point(character.xDir * speed.x * bass.getRunDebuffs(), 0));
+		character.move(new Point(0, player.input.getYDir(player) * 60 * bass.getRunDebuffs()));
 
 		float depth = 24;
 		if (character.checkCollision(0, depth) != null && stateFrames % 6 == 0) {
@@ -863,7 +864,9 @@ public class SweepingLaserState : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		if (!character.isMovementLimited() && !character.grounded && oldState is not BassFly) {
-			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
+			character.xPushVel = (
+				character.getDashOrRunSpeed() * character.xDir * 0.8f * character.getRunDebuffs()
+			);
 		}
 
 		if (Global.level.checkTerrainCollisionOnce(
@@ -894,7 +897,7 @@ public class SweepingLaserState : CharState {
 		}
 
 		if (once && !character.isMovementLimited()) {
-			character.move(new Point(300 * character.xDir, 0));
+			character.move(new Point(300 * character.xDir * character.getRunDebuffs(), 0));
 		}
 		if (stateFrames >= 45) {
 			character.changeToIdleFallorFly();
@@ -936,6 +939,22 @@ public class DarkCometState : CharState {
 
 		if (stateFrames >= 25) {
 			character.changeToIdleFallorFly();
+		}
+	}
+}
+
+public class BassEvilOverload : CharState {
+	public BassEvilOverload() : base("overload") {
+		stunImmune = true;
+		superArmor = true;
+	}
+
+	public override void update() {
+		character.deltaPos = Point.zero;
+		base.update();
+
+		if (stateFrames >= 60) {
+			character.changeToIdleOrFall("land", "land_shoot");
 		}
 	}
 }

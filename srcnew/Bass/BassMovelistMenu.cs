@@ -45,8 +45,9 @@ public class BassMovelistMenu : MovelistMenu {
 		// Super Bass
 		moves.AddRange([
 			new MovelistItem(
-				spriteName, 13, "Shoot", Control.Shoot, "",
-				"Can be charged.\nCan be used\nwhile walking.\nGets stronger\non Lv3."
+				spriteName, 13, "Shoot", Control.Shoot,
+				"Can be used\nwhile walking.",
+				"Can be charged.\nGets stronger\non Lv3."
 			),
 			new MovelistItem(
 				spriteName, 14, "Dash", Control.Dash,
@@ -62,11 +63,11 @@ public class BassMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteName, 17, "Booster Kick", Control.Special1,
-				"On Ground."
+				"On Ground.\nNeeds Lv2."
 			),
 			new MovelistItem(
 				spriteName, 20, "Dark Comet", Control.Up + " + " + Control.Special1,
-				"Needs Lv2\nMid-air."
+				"Needs Lv3\nMid-air."
 			),
 			new MovelistItem(
 				spriteName, 14, "Airdash", Control.Dash,

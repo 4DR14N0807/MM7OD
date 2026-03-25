@@ -56,15 +56,15 @@ public class MovelistItem {
 			return;
 		}
 		DrawWrappers.DrawRect(
-			renderPos.x - 35, renderPos.y - 4,
-			renderPos.x + 135, renderPos.y + 73,
+			renderPos.x - 32, renderPos.y - 1,
+			renderPos.x + 32, renderPos.y + 65,
 			true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
 		);
 		Global.sprites[spriteName].drawToHUD(frameIndex, renderPos.x, renderPos.y + 56);
 
 		if (string.IsNullOrEmpty(moveName) && string.IsNullOrEmpty(moveInput)) return;
 
-		float renderX = renderPos.x + 39;
+		float renderX = renderPos.x + 37;
 		float renderY = renderPos.y - 1;
 		string input = customCond ? moveInput : "Input: " + moveInput;
 
@@ -73,20 +73,20 @@ public class MovelistItem {
 		if (moveRequirement != "") { textList.Add(moveRequirement); }
 		if (moveDesc != "") { textList.Add(moveDesc); }
 		Point size = getSquareSize(textList);
-		/* DrawWrappers.DrawRect(
+		DrawWrappers.DrawRect(
 			renderX - 1, renderY, renderX + 95, renderY + size.y + 1,
 			true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
-		); */
+		);
 
 		Fonts.drawText(FontType.WhiteSmall, moveName, renderX, renderY);
 		renderY += 8;
 		if (moveInput != "") {
 			Fonts.drawText(FontType.BlueSmall, input, renderX, renderY);
-			renderY += (moveInput.Count(f => f == '\n') + 1) * 9;
+			renderY += (moveInput.Count(f => f == '\n') + 1) * 8;
 		}
 		if (moveRequirement != "") {
 			Fonts.drawText(FontType.GreenSmall, moveRequirement, renderX, renderY);
-			renderY += (moveRequirement.Count(f => f == '\n') + 1) * 9;
+			renderY += (moveRequirement.Count(f => f == '\n') + 1) * 8;
 		}
 		if (moveDesc != "") {
 			Fonts.drawText(FontType.YellowSmall, moveDesc, renderX, renderY);
@@ -234,7 +234,7 @@ public class MovelistMenu : IMainMenu {
 			for (int j = 0; j < itemsPerIndex; j++) {
 
 				if (index >= moves.Count) break;
-				Point renderPos = new Point(58 + (i * 168), 34 + (j * 75));
+				Point renderPos = new Point(58 + (i * 168), 32 + (j * 80));
 				moves[index].render(renderPos);
 
 				index++;
@@ -249,21 +249,21 @@ public class MovelistMenu : IMainMenu {
 		float arrowPosY = Global.halfScreenH - 9;
 		if (Global.floorFrameCount % 60 < 30 && getMaxScroll() > 0) {
 			Fonts.drawText(
-				FontType.BlueMenu, ">", 370, arrowPosY, Alignment.Center
+				FontType.BlueMenu, ">", 360, arrowPosY, Alignment.Center
 			);
 			Fonts.drawText(
-				FontType.BlueMenu, "<", 14, arrowPosY, Alignment.Center
+				FontType.BlueMenu, "<", 24, arrowPosY, Alignment.Center
 			);
 		}
 
 		Fonts.drawTextEX(
 			FontType.Blue, "[BACK]: Back, [MLEFT]/[MRIGHT]: Scroll",
-			Global.screenW / 2, 196, Alignment.Center
+			Global.screenW / 2, 188, Alignment.Center
 		);
 
 		Fonts.drawText(
 			FontType.Blue, (scrollIndex + 1).ToString() + "/" + (getMaxScroll() + 1).ToString(),
-			Global.screenW - 21, 196, Alignment.Right
+			Global.screenW - 21, 188, Alignment.Right
 		);
 	}
 }

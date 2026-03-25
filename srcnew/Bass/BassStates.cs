@@ -542,6 +542,9 @@ public class EnergyCharge : BassState {
 		bass.stopMoving();
 		bass.gravityModifier = 0.1f;
 		bass.frameIndex = 3;
+		if (bass.phase >= 4) {
+			invulnerable = true;
+		}
 	}
 
 	public override void onExit(CharState? newState) {
@@ -572,7 +575,7 @@ public class EnergyCharge : BassState {
 			if (bass.phase < 4) {
 				bass.addEvilness(0.5f);
 			} else {
-				bass.removeEvilness(0.5f);
+				bass.removeEvilness(1);
 			}
 			ammoTimer = 8;
 		}

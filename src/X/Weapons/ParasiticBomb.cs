@@ -383,7 +383,7 @@ public class ParasiticBombProjCharged : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {

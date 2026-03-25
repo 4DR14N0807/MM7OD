@@ -6,6 +6,11 @@ namespace MMXOnline;
 
 public class Damager {
 	public Player owner;
+	public int? _alliance;
+	public int alliance {
+		set => _alliance = value;
+		get => _alliance ?? owner?.alliance ?? -100;
+	}
 	public float damage;
 	public float hitCooldownSeconds {
 		set => hitCooldown = MathF.Ceiling(value * 60f);

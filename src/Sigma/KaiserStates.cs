@@ -711,7 +711,7 @@ public class KaiserSigmaMissileProj : Projectile {
 				}
 			}
 			if (time >= 0.1 && target == null) {
-				target = Global.level.getClosestTarget(pos, damager.owner.alliance, false, aMaxDist: Global.screenW);
+				target = Global.level.getClosestTarget(pos, damager.alliance, false, aMaxDist: Global.screenW);
 			}
 
 			if (angleSet) {
@@ -735,7 +735,7 @@ public class KaiserSigmaMissileProj : Projectile {
 			destroySelf();
 		}
 	}
-	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return damager.owner.alliance != damagerAlliance; }
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return damager.alliance != damagerAlliance; }
 	public bool isInvincible(Player attacker, int? projId) { return false; }
 	public bool canBeHealed(int healerAlliance) { return false; }
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
@@ -843,7 +843,7 @@ public class KaiserSigmaMineProj : Projectile, IDamagable {
 			destroySelf();
 		}
 	}
-	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return damager.owner.alliance != damagerAlliance; }
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return damager.alliance != damagerAlliance; }
 	public bool isInvincible(Player attacker, int? projId) { return false; }
 	public bool canBeHealed(int healerAlliance) { return false; }
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }

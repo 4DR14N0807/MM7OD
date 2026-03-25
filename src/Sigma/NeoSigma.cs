@@ -262,7 +262,7 @@ public class NeoSigma : BaseSigma {
 	}
 	public override void aiDodge(Actor? target) {
 		foreach (GameObject gameObject in getCloseActors(32, true, false, false)) {
-			if (gameObject is Projectile proj && proj.damager.owner.alliance != player.alliance) {
+			if (gameObject is Projectile proj && proj.damager.alliance != player.alliance) {
 				if (gigaAttack.ammo >= 16 && gigaAttack.ammo <= 24) {
 					gigaAttack.ammo -= 16;
 					changeState(new SigmaElectricBallState(), true);

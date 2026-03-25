@@ -488,7 +488,7 @@ public class DarkHoldProj : Projectile {
 						if (timeInFrames >= 30) {
 							continue;
 						}
-						if (chara.canBeDamaged(damager.owner.alliance, damager.owner.id, null)) {
+						if (chara.canBeDamaged(damager.alliance, damager.owner.id, null)) {
 							chara.addDarkHoldTime(150 - timeInFrames, damager.owner);
 							chara.darkHoldInvulnTime = (150 - timeInFrames) * 60f;
 						}
@@ -509,7 +509,7 @@ public class DarkHoldProj : Projectile {
 							continue;
 						}
 						IDamagable? damagable = actor as IDamagable;
-						if (damagable?.canBeDamaged(damager.owner.alliance, damager.owner.id, null) != true) {
+						if (damagable?.canBeDamaged(damager.alliance, damager.owner.id, null) != true) {
 							continue;
 						}
 						if (120 - timeInFrames > 0) {

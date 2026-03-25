@@ -47,6 +47,25 @@ public class NeutralEnemy : Actor, IDamagable {
 		base.preUpdate();
 		updateProjectileCooldown();
 	}
+	public override void postUpdate() {
+		base.postUpdate();
+
+		if (Global.level.gameMode.isTeamMode) {
+			RenderEffectType? allianceEffect = alliance switch {
+				0 => RenderEffectType.BlueShadow,
+				1 => RenderEffectType.RedShadow,
+				2 => RenderEffectType.GreenShadow,
+				3 => RenderEffectType.PurpleShadow,
+				4 => RenderEffectType.YellowShadow,
+				5 => RenderEffectType.OrangeShadow,
+				_ => null
+			};
+			if (allianceEffect != null) {
+				addRenderEffect(allianceEffect.Value);
+			}
+		}
+	}
+
 	// For state update.
 	public override void statePreUpdate() {
 		state.stateTime += Global.speedMul;

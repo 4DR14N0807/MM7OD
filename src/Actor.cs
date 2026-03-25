@@ -2072,7 +2072,7 @@ public partial class Actor : GameObject {
 		if (!includeAllies) {
 			alliance = this switch {
 				Character selfChar => selfChar.player.alliance,
-				Projectile selfProj => selfProj.damager.owner.alliance,
+				Projectile selfProj => selfProj.damager.alliance,
 				Maverick selfMvrk => selfMvrk.player.alliance,
 				_ => -1
 			};

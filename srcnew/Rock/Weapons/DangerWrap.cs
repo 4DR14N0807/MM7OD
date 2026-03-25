@@ -151,7 +151,7 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return sprite.name != "danger_wrap_start" && damager.owner.alliance != damagerAlliance;
+		return sprite.name != "danger_wrap_start" && damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -239,7 +239,7 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -343,7 +343,7 @@ public class DangerWrapLandRmProj : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -400,7 +400,7 @@ public class DangerWrapExplosionRmProj : Projectile {
 		if (isRunByLocalPlayer()) {
 			foreach (var go in getCloseActors(200)) {
 				var chr = go as Character;
-				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
+				if (chr != null && chr.canBeDamaged(damager.alliance, damager.owner.id, projId)
 					&& chr.pos.distanceTo(pos) <= radius) {
 
 					damager.applyDamage(chr, false, weapon, this, projId);

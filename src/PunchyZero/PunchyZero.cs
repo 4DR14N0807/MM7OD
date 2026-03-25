@@ -891,7 +891,7 @@ public class PunchyZero : Character {
 	}
 	public override void aiDodge(Actor? target) {
 		foreach (GameObject gameObject in getCloseActors(48, true, false, false)) {
-			if (gameObject is Projectile proj && proj.damager.owner.alliance != player.alliance && charState.attackCtrl) {
+			if (gameObject is Projectile proj && proj.damager.alliance != player.alliance && charState.attackCtrl) {
 				//Projectile is not 
 				if (!(proj.projId == (int)ProjIds.RollingShieldCharged || proj.projId == (int)ProjIds.RollingShield
 					|| proj.projId == (int)ProjIds.MagnetMine || proj.projId == (int)ProjIds.FrostShield || proj.projId == (int)ProjIds.FrostShieldCharged

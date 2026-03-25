@@ -186,7 +186,7 @@ public class ShingetsurinProj : Projectile {
 			vel = new Point();
 		} else if (time >= 2) {
 			if (target == null) {
-				target = Global.level.getClosestTarget(pos, damager.owner.alliance, true);
+				target = Global.level.getClosestTarget(pos, damager.alliance, true);
 			}
 			else if (target != null) {
 				vel = pos.directionToNorm(target.getCenterPos()).times(150);

@@ -125,7 +125,7 @@ public class FrostShieldProj : Projectile, IDamagable {
 		// At least without causing clang aganist melee characters.
 	}
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 	public bool isInvincible(Player attacker, int? projId) => false;
 	public bool canBeHealed(int healerAlliance) => false;

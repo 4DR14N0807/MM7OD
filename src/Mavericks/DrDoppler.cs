@@ -116,7 +116,7 @@ public class DrDoppler : Maverick {
 			ammo >= 8 && state is not DrDopplerAbsorbState and not DrDopplerDashState && health < maxHealth) {
 			foreach (GameObject gameObject in getCloseActors(64, true, false, false)) {
 				if (gameObject is Projectile proj &&
-					proj.damager.owner.alliance != player.alliance &&
+					proj.damager.alliance != player.alliance &&
 					!proj.isMelee
 				) {
 					deductAmmo(4);

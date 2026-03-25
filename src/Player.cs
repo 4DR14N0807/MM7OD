@@ -39,6 +39,8 @@ public partial class Player {
 	public float hadoukenAmmo = 1920;
 	public float shoryukenAmmo = 1920;
 	public float fgMoveMaxAmmo = 1920;
+	
+	public Character lastDamagedCharacter;
 	public bool isDefenderFavoredNonOwner;
 	public bool elimAlive => character?.alive == true;
 

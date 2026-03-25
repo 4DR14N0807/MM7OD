@@ -159,7 +159,7 @@ public class ArmoredArmadillo : Maverick {
 		if (controlMode == MaverickModeId.Summoner && Helpers.randomRange(0, 10) == 1 &&
 			 ammo >= 10 && !state.aiAttackCtrl && state.normalCtrl) {
 			foreach (GameObject gameObject in getCloseActors(32, true, false, false)) {
-				if (gameObject is Projectile proj && proj.damager.owner.alliance != player.alliance && !proj.isMelee
+				if (gameObject is Projectile proj && proj.damager.alliance != player.alliance && !proj.isMelee
 				) {
 					changeState(new ArmoredAGuardState());
 				}

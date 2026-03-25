@@ -688,7 +688,7 @@ public class BusterZero : Character {
 		}
 		foreach (GameObject gameObject in getCloseActors(64, true, false, false)) {
 			if (gameObject is Projectile proj &&
-				proj.damager.owner.alliance != player.alliance && charState.attackCtrl
+				proj.damager.alliance != player.alliance && charState.attackCtrl
 			) {
 				if (proj.projId != (int)ProjIds.RollingShield &&
 					proj.projId != (int)ProjIds.FrostShield &&

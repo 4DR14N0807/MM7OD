@@ -17,7 +17,6 @@ using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using WindowsAPI;
 using static SFML.Window.Keyboard;
 using WindowsAPI;
 

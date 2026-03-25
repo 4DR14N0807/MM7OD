@@ -8,7 +8,7 @@ public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
 	public int maxCardCount = 4;
-	public int cardCount = 4;
+	public int cardCount = 1;
 	string[] effectsText = [
 		"",
 		// Common.
@@ -110,8 +110,8 @@ public class MagicCard : Weapon {
 		if (cardCount <= 0) {
 			cardCount += maxCardCount;
 			int[] effectChances = [
-				1, 1, 1, 1,
-				2, 2, 2, 2,
+				1, 1, 1, 1, 1, 1,
+				2, 2, 2, 2, 2,
 				3, 3, 3,
 				4, 4
 			];

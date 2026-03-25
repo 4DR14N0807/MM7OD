@@ -328,7 +328,7 @@ public class NecroBurstProj : Projectile {
 				bool isHurtSelf = chr?.player == damager.owner;
 				if (go is not Actor actor) continue;
 				if (go is not IDamagable damagable) continue;
-				if (!isHurtSelf && !damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)) continue;
+				if (!isHurtSelf && !damagable.canBeDamaged(damager.alliance, damager.owner.id, null)) continue;
 
 				float dist = actor.getCenterPos().distanceTo(pos);
 				if (dist > attackRadius) continue;

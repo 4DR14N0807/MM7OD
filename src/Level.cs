@@ -58,6 +58,7 @@ public partial class Level {
 	public List<NavMeshNode> navMeshNodes = new List<NavMeshNode>();
 	public List<ItemSpawner> itemSpawners = new List<ItemSpawner>();
 	public List<Gate> gates = new List<Gate>();
+	public List<ActorSpawner> enemySpawners = new List<ActorSpawner>();
 
 	public Flag blueFlag;
 	public Flag redFlag;
@@ -703,6 +704,12 @@ public partial class Level {
 						}
 					}
 				}
+			} else if (objectName == "Enemy Spawner") {
+				int teamNum = instance.properties?.teamNum ?? -1;
+				if (!gameMode.isTeamMode) {
+					teamNum = -1;
+				}
+				enemySpawners.Add(new ActorSpawner(pos, xDir, teamNum));
 			} else if (objectName.StartsWith("Map Sprite")) {
 				bool enabledInLargeCam = instance.properties.enabledInLargeCam ?? true;
 				int destructableFlag = instance.properties?.destructableFlag ?? 0;
@@ -1809,6 +1816,10 @@ public partial class Level {
 
 		foreach (var pickupSpawner in itemSpawners) {
 			pickupSpawner.update();
+		}
+
+		foreach (ActorSpawner enemySpawner in enemySpawners) {
+			enemySpawner.update();
 		}
 
 		// This would mostly be reliable to sync based on time.

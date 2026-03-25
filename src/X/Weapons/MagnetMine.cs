@@ -211,7 +211,7 @@ public class MagnetMineProjCharged : Projectile {
 		base.update();
 		for (int i = Global.level.chargedCrystalHunters.Count - 1; i >= 0; i--) {
 			var cch = Global.level.chargedCrystalHunters[i];
-			if (cch.pos.distanceTo(pos) < CrystalHunterCharged.radius && cch.owner.alliance != damager.owner.alliance) {
+			if (cch.pos.distanceTo(pos) < CrystalHunterCharged.radius && cch.owner.alliance != damager.alliance) {
 				cch.destroySelf(doRpcEvenIfNotOwned: true);
 				size = 11;
 				changeSprite("magnetmine_charged3", true);
@@ -254,13 +254,13 @@ public class MagnetMineProjCharged : Projectile {
 			return;
 		}
 		if (other.gameObject is Projectile proj && !proj.destroyed && proj is not MagnetMineProjCharged &&
-			(damager.owner.alliance != owner.alliance || damager.owner == owner && size < 10)
+			(damager.alliance != owner.alliance || damager.owner == owner && size < 10)
 		) {
 			if (!proj.shouldVortexSuck) { return; }
-			if (proj is MagnetMineProj magnetMine && !magnetMine.canBeSucked(damager.owner.alliance)) { return; }
+			if (proj is MagnetMineProj magnetMine && !magnetMine.canBeSucked(damager.alliance)) { return; }
 
 			if (proj.ownedByLocalPlayer && proj is MagnetMineProjCharged mineCharged) {
-				if (damager.owner.alliance != mineCharged.damager.owner.alliance &&
+				if (damager.alliance != mineCharged.damager.alliance &&
 					mineCharged.size != 0 && size <= mineCharged.size
 				) {
 					return;

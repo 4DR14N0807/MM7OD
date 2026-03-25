@@ -36,6 +36,12 @@ public class BluesLoadout {
 		}
 	}
 
+	public BluesLoadout clone() {
+		return new BluesLoadout {
+			specialWeapon = specialWeapon,
+		};
+	}
+
 	public static BluesLoadout createRandom() {
 		// Star Crash not here for AI reasons.
 		int[] weapons = { 0, 1, 2, 3, 4, 5, 6 ,7 };

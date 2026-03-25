@@ -88,7 +88,7 @@ public class GravityHoldProj : Projectile {
 			foreach (Actor actor in getCloseActors(160)) {
 				if (actor.ownedByLocalPlayer && actor is Character chara &&
 					chara.getCenterPos().distanceTo(pos) <= maxR + 20 &&
-					chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) &&
+					chara.canBeDamaged(damager.alliance, damager.owner.id, projId) &&
 					chara.projectileCooldown.GetValueOrDefault(projId + "_" + owner.id) <= 0
 				) {
 					chara.applyGHoldDamage(this, damager.owner, damager, projId, damager.hitCooldown);

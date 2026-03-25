@@ -133,7 +133,7 @@ public class NapalmBombExplosionProj : Projectile {
 		if (isRunByLocalPlayer()) {
 			foreach (var go in getCloseActors(200)) {
 				var chr = go as Character;
-				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
+				if (chr != null && chr.canBeDamaged(damager.alliance, damager.owner.id, projId)
 					&& chr.pos.distanceTo(pos) <= radius) {
 
 					damager.applyDamage(chr, false, weapon, this, projId);

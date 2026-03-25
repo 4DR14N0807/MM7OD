@@ -347,7 +347,7 @@ public class InfinityGigProj : Projectile {
 
 		if (ownedByLocalPlayer && !reversed && reflectCount == 0) {
 			if (target == null && owner.character != null) {
-				var targets = Global.level.getTargets(owner.character.pos, damager.owner.alliance, true);
+				var targets = Global.level.getTargets(owner.character.pos, damager.alliance, true);
 				foreach (var t in targets) {
 					if (isFacing(t) && MathF.Abs(t.pos.y - owner.character.pos.y) < 120) {
 						target = t;
@@ -636,7 +636,7 @@ public class RocketPunchProj : Projectile {
 			type == (int)RocketPunchType.InfinityGig
 		) {
 			if (target == null && owner.character != null) {
-				var targets = Global.level.getTargets(owner.character.pos, damager.owner.alliance, true);
+				var targets = Global.level.getTargets(owner.character.pos, damager.alliance, true);
 				foreach (var t in targets) {
 					if (isFacing(t) && MathF.Abs(t.pos.y - owner.character.pos.y) < 120) {
 						target = t;

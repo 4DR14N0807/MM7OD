@@ -145,7 +145,7 @@ public class TornadoFangProj : Projectile {
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 
-		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+		if (damagable.canBeDamaged(damager.alliance, damager.owner.id, projId)) {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {

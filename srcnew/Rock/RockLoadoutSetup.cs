@@ -42,6 +42,14 @@ public class RockLoadout {
 		return rushW[indices];
 	}
 
+	public RockLoadout clone() {
+		return new RockLoadout {
+			weapon1 = weapon1,
+			weapon2 = weapon2,
+			weapon3 = weapon3
+		};
+	}
+
 	public static RockLoadout createRandom() {
 		List<int> weapons = [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ];
 

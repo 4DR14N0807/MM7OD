@@ -87,7 +87,7 @@ public class ItemTracerProj : Projectile {
 		base.onHitDamagable(damagable);
 		if (!ownedByLocalPlayer) return;
 		var chr = damagable as Character;
-		if (scannedChar == null && chr != null && !chr.isStealthy(damager.owner.alliance)) {
+		if (scannedChar == null && chr != null && !chr.isStealthy(damager.alliance)) {
 			scannedChar = chr;
 			if (damager.owner == Global.level.mainPlayer) {
 				if (scannedChar.player.scanned) {

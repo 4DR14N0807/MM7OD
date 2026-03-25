@@ -178,10 +178,10 @@ public partial class Level {
 		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
 			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
 		]);
-		if (hit?.gameObject is KillZone) {
-			return null;
+		if (hit?.gameObject is not KillZone) {
+			return hit?.hitData.hitPoint?.addxy(0, -1);;
 		}
-		return hit?.hitData.hitPoint?.addxy(0, -1);
+		return null;
 	}
 
 	public bool checkKillZone(Point pos) {
@@ -353,7 +353,7 @@ public partial class Level {
 		}
 		*/
 		var ra = gameObject as RideArmor;
-		if (actor is ShotgunIceProjSled && ra != null && (ra.character == null || ra.character.player.alliance == (actor as ShotgunIceProjSled).damager.owner.alliance)) {
+		if (actor is ShotgunIceProjSled && ra != null && (ra.character == null || ra.character.player.alliance == (actor as ShotgunIceProjSled).damager.alliance)) {
 			return true;
 		}
 		if (actor is ShotgunIceProjSled && gameObject is Projectile) {

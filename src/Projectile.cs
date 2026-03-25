@@ -146,6 +146,9 @@ public class Projectile : Actor {
 		);
 		ownerActor = owner;
 		damager = new Damager(ownerPlayer, 0, 0, 0);
+		if (owner is NeutralEnemy ne) {
+			damager.alliance = ne.alliance;
+		}
 		ownerActor = owner;
 		this.xDir = xDir;
 		if (Global.level.gameMode.isTeamMode && Global.level.mainPlayer != ownerPlayer) {
@@ -503,7 +506,7 @@ public class Projectile : Actor {
 			(otherProj.isDeflectShield || otherProj.isReflectShield)
 		) {
 			if (otherProj.isReflectShield &&
-				reflectable && damager.owner.alliance != otherProj.damager.owner.alliance
+				reflectable && damager.alliance != otherProj.damager.alliance
 			) {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					reflect(otherProj.owner, sendRpc: true);
@@ -513,7 +516,7 @@ public class Projectile : Actor {
 			}
 
 			if (otherProj.isDeflectShield && reflectable &&
-				damager.owner.alliance != otherProj.damager.owner.alliance
+				damager.alliance != otherProj.damager.alliance
 			) {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					deflect(otherProj.owner, sendRpc: true);
@@ -525,7 +528,7 @@ public class Projectile : Actor {
 
 		if (ownedByLocalPlayer) {
 			if (otherProj != null && otherProj.isReflectShield &&
-				reflectable && damager.owner.alliance != otherProj.damager.owner.alliance
+				reflectable && damager.alliance != otherProj.damager.alliance
 			) {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					reflect(otherProj.owner, sendRpc: true);
@@ -535,7 +538,7 @@ public class Projectile : Actor {
 			}
 
 			if (otherProj != null && otherProj.isDeflectShield && reflectable &&
-				damager.owner.alliance != otherProj.damager.owner.alliance
+				damager.alliance != otherProj.damager.alliance
 			) {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					deflect(otherProj.owner, sendRpc: true);
@@ -550,7 +553,7 @@ public class Projectile : Actor {
 		var damagableActor = damagable as Actor;
 
 		if (damagable != null && !damagedOnce && other.otherCollider.isHurtBox()) {
-			bool canBeDamaged = damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId);
+			bool canBeDamaged = damagable.canBeDamaged(damager.alliance, damager.owner.id, projId);
 			bool isDamagableProj = canBeDamaged && damagable is Projectile;
 
 			if (canBeDamaged) {
@@ -577,7 +580,7 @@ public class Projectile : Actor {
 			if (ownedByLocalPlayer &&
 				(damagable != damager.owner.character || isMaverickHealProj) &&
 				/*(damagable is not Maverick || !damager.owner.mavericks.Contains(damagable)) && */
-				damagable.canBeHealed(damager.owner.alliance) && healAmount > 0
+				damagable.canBeHealed(damager.alliance) && healAmount > 0
 			) {
 				if (Global.serverClient == null || damagableActor?.ownedByLocalPlayer == true) {
 					damagable.heal(owner, healAmount, allowStacking: true, drawHealText: true);
@@ -599,7 +602,7 @@ public class Projectile : Actor {
 			} */
 
 			// Vaccination
-			if (projId == (int)ProjIds.DrDopplerBall2 && ownedByLocalPlayer && damagable is Character damagableChr && damagableChr.player.alliance == damager.owner.alliance) {
+			if (projId == (int)ProjIds.DrDopplerBall2 && ownedByLocalPlayer && damagable is Character damagableChr && damagableChr.player.alliance == damager.alliance) {
 				//playSound("drDopplerVaccine", sendRpc: true);
 				damagableChr.addVaccineTime(2);
 				RPC.actorToggle.sendRpc(damagableChr.netId, RPCActorToggleType.AddVaccineTime);

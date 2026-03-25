@@ -795,7 +795,7 @@ public class MagnaCMagnetPullProj : Projectile {
 			var chr = go as Character;
 			if (chr == null || !chr.ownedByLocalPlayer || chr.isPushImmune()) continue;
 			var damagable = go as IDamagable;
-			if (!damagable!.canBeDamaged(damager.owner.alliance, damager.owner.id, null)) continue;
+			if (!damagable!.canBeDamaged(damager.alliance, damager.owner.id, null)) continue;
 			if (chr.pos.distanceTo(pos) > radius + 15) continue;
 			if (!Global.level.noWallsInBetween(chr.getCenterPos(), pos)) continue;
 

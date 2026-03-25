@@ -99,7 +99,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
@@ -177,7 +177,7 @@ public class ProtoStrikeProj : Projectile {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
@@ -283,7 +283,7 @@ public class StrikeAttackPushProj : Projectile {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
+				damagable.canBeDamaged(damager.alliance, damager.owner.id, projId)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= radius) {
 					damager.applyDamage(damagable, false, weapon, this, projId);
@@ -414,7 +414,7 @@ public class RedStrikeExplosionProj : Projectile {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null)
+				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);

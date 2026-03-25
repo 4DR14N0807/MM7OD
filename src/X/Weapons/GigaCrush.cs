@@ -84,7 +84,7 @@ public class GigaCrushProj : Projectile {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable &&
-				damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, null) &&
+				damagable.canBeDamaged(damager.alliance, damager.owner.id, null) &&
 				actor.pos.distanceTo(pos) <= radius + 15
 			) {
 				damager.applyDamage(damagable, false, weapon, this, projId);

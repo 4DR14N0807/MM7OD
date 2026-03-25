@@ -57,6 +57,14 @@ public class BassLoadout {
 		}
 	}
 
+	public BassLoadout clone() {
+		return new BassLoadout {
+			weapon1 = weapon1,
+			weapon2 = weapon2,
+			weapon3 = weapon3
+		};
+	}
+
 	public static BassLoadout createRandom() {
 		List<int> weapons = [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ];
 

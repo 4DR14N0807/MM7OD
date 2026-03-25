@@ -266,7 +266,7 @@ public class DZShinGetsurinProj : Projectile {
 			if (time < 1) {
 				vel.x = 0;
 			} else {
-				Actor? target = Global.level.getClosestTarget(pos, damager.owner.alliance, true);
+				Actor? target = Global.level.getClosestTarget(pos, damager.alliance, true);
 				if (target != null) {
 					vel = pos.directionToNorm(target.getCenterPos()).times(250);
 					phase2 = true;
@@ -305,7 +305,7 @@ public class DZShinHadangekiProj : Projectile {
 		base.update();
 		Actor? closestEnemy = Global.level.getClosestTarget(
 			new Point (pos.x + (40 * xDir), pos.y),
-			damager.owner.alliance, false, 120
+			damager.alliance, false, 120
 		);
 		if (closestEnemy == null) {
 			return;

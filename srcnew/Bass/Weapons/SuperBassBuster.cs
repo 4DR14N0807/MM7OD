@@ -347,7 +347,7 @@ public class SuperBassRP : Projectile {
 		if (target == null) {
 			target = Global.level.getClosestTarget(
 			new Point(pos.x, pos.y),
-			damager.owner.alliance,
+			damager.alliance,
 			false, 200
 			);
 		} else {

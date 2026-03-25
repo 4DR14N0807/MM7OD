@@ -56,7 +56,7 @@ public class Met : NeutralEnemy {
 		if (shotCount >= 2) {
 			shotCount = 0;
 			changeState(new MetIdle());
-			cooldown = 30;
+			cooldown = 20;
 		} else {
 			changeState(new MetShoot());
 			for (int i = 0; i < 3; i++) {
@@ -67,8 +67,6 @@ public class Met : NeutralEnemy {
 			shotCount++;
 			playSound("buster", sendRpc: true);
 		}
-
-
 	}
 
 	public override void onDestroy() {
@@ -87,7 +85,7 @@ public class Met : NeutralEnemy {
 
 	public override void updateCustomActorNetData(byte[] data) {
 		invincibleFlag = Helpers.byteToBool(data[0]);
-	} 
+	}
 }
 
 public class MetIdle : NeutralEnemyState {
@@ -123,8 +121,10 @@ public class MetIdle : NeutralEnemyState {
 }
 
 public class MetShoot : NeutralEnemyState {
-
+	private int shootNum;
+	private bool nextHide;
 	Met? met;
+
 	public MetShoot() : base("idle") {
 
 	}
@@ -141,17 +141,23 @@ public class MetShoot : NeutralEnemyState {
 
 		if (met != null && met.cooldown <= 0) {
 			met.cooldown = met.maxCooldown;
-			Actor? target = Global.level.getClosestTarget(met.pos, met.alliance, false, met.distance);
+			Actor? target = null;
+			if (shootNum < 3) {
+				Global.level.getClosestTarget(met.pos, met.alliance, false, met.distance);
+			}
 			if (target != null) {
 				met.turnToPos(target.pos);
 				met.shoot();
+				shootNum++;
+				nextHide = false;
+			} if (!nextHide) {
+				nextHide = true;
 			} else {
 				met.changeState(new MetIdle());
 			}
 		}
 	}
 }
-
 
 public class MetLemon : Projectile {
 	public MetLemon(
@@ -170,12 +176,10 @@ public class MetLemon : Projectile {
 		damager.owner = Player.stagePlayer;
 		damager.damage = 1;
 		damager.flinch = Global.defFlinch;
-		damager.hitCooldown = 30;
-
+		damager.hitCooldown = 10;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
-
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir, extraArgs);
 		}
 	}

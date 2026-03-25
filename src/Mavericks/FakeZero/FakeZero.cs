@@ -196,7 +196,7 @@ public class FakeZero : Maverick {
 		) {
 			foreach (GameObject gameObject in getCloseActors(64, true, false, false)) {
 				if (gameObject is Projectile proj &&
-					proj.damager.owner.alliance != player.alliance &&
+					proj.damager.alliance != player.alliance &&
 					!proj.isMelee
 				) {
 					changeState(new FakeZeroGuardState());

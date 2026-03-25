@@ -156,7 +156,7 @@ public class RayGunProj : Projectile {
 		var col1 = new Color(74, 78, 221);
 		var col2 = new Color(61, 113, 255);
 		var col3 = new Color(215, 244, 255);
-		if (Global.level.gameMode.isTeamMode && damager.owner.alliance == GameMode.redAlliance) {
+		if (Global.level.gameMode.isTeamMode && damager.alliance == GameMode.redAlliance) {
 			col1 = new Color(221, 78, 74);
 			col2 = new Color(255, 113, 61);
 			col3 = new Color(255, 244, 215);
@@ -328,7 +328,7 @@ public class RayGunAltProj : Projectile {
 		var col1 = new Color(74, 78, 221);
 		var col2 = new Color(61, 113, 255);
 		var col3 = new Color(215, 244, 255);
-		if (Global.level.gameMode.isTeamMode && damager.owner.alliance == GameMode.redAlliance) {
+		if (Global.level.gameMode.isTeamMode && damager.alliance == GameMode.redAlliance) {
 			col1 = new Color(221, 78, 74);
 			col2 = new Color(255, 113, 61);
 			col3 = new Color(255, 244, 215);

@@ -1680,7 +1680,7 @@ public class BottomlessPitState : CharState {
 				character.changeState(new OverheatShutdown(), true); 
 			}
 			
-			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 32);
+			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 64);
 
 			if (warpInPos == null) {
 				SpawnPoint nearestSpawnPoint = Global.level.getClosestSpawnPoint(lastGroundPos);

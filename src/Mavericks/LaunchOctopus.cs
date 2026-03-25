@@ -373,7 +373,7 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 				}
 			}
 			if (time >= 0.15) {
-				target = Global.level.getClosestTarget(pos, damager.owner.alliance, true, aMaxDist: Global.screenW * 0.75f);
+				target = Global.level.getClosestTarget(pos, damager.alliance, true, aMaxDist: Global.screenW * 0.75f);
 			} else if (time < 0.15) {
 				//this.vel.x += this.xDir * Global.spf * 300;
 			}
@@ -425,7 +425,7 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 		}
 	}
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 	public bool isInvincible(Player attacker, int? projId) {
 		return false;

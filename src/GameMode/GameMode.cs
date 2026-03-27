@@ -983,8 +983,7 @@ public class GameMode {
 			var spriteFinal = new SFML.Graphics.Sprite(Global.radarRenderTexture.Texture);
 			spriteFinal.Position = new Vector2f(radarX, radarY);
 
-			Global.window.SetView(DrawWrappers.hudView);
-			Global.window.Draw(spriteFinal);
+			//Global.hudRenderTexture.Draw(spriteFinal);
 			sprite.Dispose();
 			sprite2.Dispose();
 			spriteFG.Dispose();

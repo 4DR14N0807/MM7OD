@@ -69,6 +69,9 @@ public partial class Global {
 		srtBuffer1S = new RenderTexture((screenW, screenH));
 		srtBuffer2S = new RenderTexture((screenW, screenH));
 
+		DrawWrappers.renderTexture = new RenderTexture((screenW, screenH));
+		DrawWrappers.renderTexture = new RenderTexture((screenW, screenH));
+
 		screenRenderTextureL = new RenderTexture((screenW * 2, screenH * 2));
 		srtBuffer1L = new RenderTexture((screenW * 2, screenH * 2));
 		srtBuffer2L = new RenderTexture((screenW * 2, screenH * 2));

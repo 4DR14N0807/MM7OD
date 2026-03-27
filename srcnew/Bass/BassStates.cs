@@ -943,6 +943,21 @@ public class DarkCometState : CharState {
 	}
 }
 
+public class BassEvilRelease : CharState {
+	public BassEvilRelease() : base("recall_in") {
+		invincible = true;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (character.isAnimOver()) {
+			character.grounded = true;
+			character.changeToIdleOrFall();
+		}
+	}
+}
+
 public class BassEvilOverload : CharState {
 	public BassEvilOverload() : base("overload") {
 		stunImmune = true;

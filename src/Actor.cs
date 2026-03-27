@@ -688,6 +688,8 @@ public partial class Actor : GameObject {
 			grounded = true;
 			if (vel.y > 0) vel.y = 0;
 		}
+
+		splashEffects();
 	}
 
 	// This code is horrible awfull confusing ugly and slow.

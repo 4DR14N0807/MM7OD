@@ -82,7 +82,7 @@ public class Bass : Character {
 		addAttackCooldown(
 			(int)AttackIds.LowerEvilness,
 			new AttackCooldown(
-				14, "hud_weapon_icon_bass", 60 * 8
+				14, "hud_weapon_icon_bass", 60 * 4
 		));
 
 		if (isWarpIn && ownedByLocalPlayer) {
@@ -151,7 +151,7 @@ public class Bass : Character {
 		heal(player, (float)(maxHealth - health));
 		phase = 0;
 		evilEnergy = 0;
-		maxEvilEnergy = 12 + phase;
+		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);
 		player.changeWeaponSlot(0);
 		weapons.Clear();
 		weapons.Add(new SBassBuster());
@@ -208,7 +208,7 @@ public class Bass : Character {
 
 		maxHealth += hpToAdd;
 		heal(player, hpToAdd);
-		maxEvilEnergy = 12 + phase;
+		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);
 
 		if (phase < 4) {
 			addDamageText("POWER\n    UP!", (int)FontType.PurpleMenu);
@@ -238,7 +238,7 @@ public class Bass : Character {
 			maxHealth -= 2;
 		}
 		health = Math.Min(health, maxHealth);
-		maxEvilEnergy = 12 + phase;
+		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);
 		addDamageText("POWER\n  DOWN!", (int)FontType.PurpleMenu);
 	}
 
@@ -567,8 +567,7 @@ public class Bass : Character {
 						lowerPhase(phase - 1);
 						evilEnergy = Helpers.clamp(evilEnergy - 2, 0, maxEvilEnergy - 2);
 						playSound("super_bass_aura", sendRpc: true);
-						addHealth(1);
-						changeState(new BottomlessPitWarpIn());
+						changeState(new BassEvilRelease());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}
 				} else if (evilEnergy >= maxEvilEnergy && isSuperBass && phase < 3) {

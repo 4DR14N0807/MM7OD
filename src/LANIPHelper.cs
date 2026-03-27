@@ -21,12 +21,11 @@ public class LANIPHelper {
 
 	public static string GetLocalIPAddress() {
 		string? localIP;
-		using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0)) {
-			socket.Connect("8.8.8.8", 0);
-			IPEndPoint? endPoint = socket.LocalEndPoint as IPEndPoint;
-			localIP = endPoint?.Address.ToString();
-			socket.Disconnect(true);
-			socket.Dispose();
+		try {
+			using WebClient wc = new();
+			localIP = wc.DownloadString("https://api.ipify.org/");
+		} catch {
+			return "127.0.0.1";
 		}
 		return localIP ?? "127.0.0.1";
 	}

@@ -412,11 +412,18 @@ class Program {
 			Global.level.render();
 		} else {
 			if (isMultiThread) {
-				renderAction = Menu.render;
+				renderAction = () => {
+					clearHudTexture();
+					Menu.render();
+					renderHudTexture();
+				};
 			} else {
+				clearHudTexture();
 				Menu.render();
+				renderHudTexture();
 			}
 		}
+
 		// TODO: Make this work for errors.
 		//if (Global.debug) {
 			//Draw debug strings
@@ -430,6 +437,20 @@ class Program {
 			Fonts.drawText(FontType.Red, Global.debugString3, 20, 40);
 			*/
 		//}
+	}
+
+	public static void clearHudTexture() {
+		DrawWrappers.renderTexture.Clear(Color.Transparent);
+		DrawWrappers.renderTexture.Display();
+	}
+
+	public static void renderHudTexture() {
+		// Render.
+		Global.window.SetView(DrawWrappers.hudView);
+		SFML.Graphics.Sprite sprite = new(DrawWrappers.renderTexture.Texture);
+		Global.window.Draw(sprite);
+		sprite.Dispose();
+		Global.window.SetView(Global.view);
 	}
 
 	/// <summary>
@@ -1542,6 +1563,7 @@ class Program {
 
 			lastUpdateTime = timeNow;
 			window.DispatchEvents();
+			renderHudTexture();
 			window.Display();
 
 			exit = (loadTread.Status >= TaskStatus.RanToCompletion);
@@ -1584,6 +1606,7 @@ class Program {
 
 			lastUpdateTime = timeNow;
 			window.DispatchEvents();
+			renderHudTexture();
 			window.Display();
 			watch.Restart();
 
@@ -1623,6 +1646,7 @@ class Program {
 		);
 
 		window.DispatchEvents();
+		renderHudTexture();
 		window.Display();
 	}
 }

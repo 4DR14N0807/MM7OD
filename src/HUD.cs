@@ -25,6 +25,7 @@ public class BatchDrawable : Transformable, IDrawable {
 // Draw wrappers and font code.
 public partial class DrawWrappers {
 	public static View hudView = null!;
+	public static RenderTexture renderTexture = null!;
 	public static List<Action> deferredTextDraws = new List<Action>();
 
 	public static void initHUD() {
@@ -34,15 +35,13 @@ public partial class DrawWrappers {
 		);
 	}
 	public static void drawToHUD(IDrawable drawable) {
-		Global.window.SetView(hudView);
-		Global.window.Draw(drawable);
-		Global.window.SetView(Global.view);
+		renderTexture.Draw(drawable);
+		renderTexture.Display();
 	}
 
 	public static void drawToHUD(Vertex[] vertices, PrimitiveType type) {
-		Global.window.SetView(hudView);
-		Global.window.Draw(vertices, type);
-		Global.window.SetView(Global.view);
+		renderTexture.Draw(vertices, type);
+		renderTexture.Display();
 	}
 
 	public static void DrawTextureHUD(

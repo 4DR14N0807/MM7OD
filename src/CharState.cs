@@ -1705,23 +1705,20 @@ public class BottomlessPitState : CharState {
 	}
 }
 
-
 public class BottomlessPitWarpIn : CharState {
-
 	public BottomlessPitWarpIn() : base("recall_in") {
 	}
 
 	public override void update() {
-		character.deltaPos = Point.zero;
+		character.moveDelta = Point.zero;
+		character.stackedMoveDelta = Point.zero;
 		base.update();
 
 		if (character.isAnimOver()) {
-			character.grounded = true;
 			character.changeToIdleOrFall();
 		}
 	}
 }
-
 
 public class GenericGrabbedState : CharState {
 	public Actor grabber;

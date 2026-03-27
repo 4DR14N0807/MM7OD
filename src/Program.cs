@@ -1550,6 +1550,7 @@ class Program {
 				continue;
 			}
 			window.Clear(clearColor);
+			clearHudTexture();
 
 			for (int i = 0; i < loadText.Count; i++) {
 				Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
@@ -1593,6 +1594,7 @@ class Program {
 				continue;
 			}
 			window.Clear(clearColor);
+			clearHudTexture();
 
 			for (int i = 0; i < loadText.Count; i++) {
 				Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
@@ -1634,6 +1636,7 @@ class Program {
 		DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
 		Color clearColor = Color.Black;
 		window.Clear(clearColor);
+		clearHudTexture();
 
 		for (int i = 0; i < loadText.Count; i++) {
 			Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);

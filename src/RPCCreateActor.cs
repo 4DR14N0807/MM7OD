@@ -218,7 +218,17 @@ public struct ActorRpcParameters {
 	public Actor owner;
 }
 
+public struct ActorLocalParameters {
+	public Point pos;
+	public int xDir;
+	public float byteAngle;
+	public Player player;
+	public ushort netId;
+	public int[] extraData;
+}
+
 public delegate Actor ActorRpcCreate(ActorRpcParameters arg);
+public delegate Actor ActorLocalCreate(ActorLocalParameters arg);
 
 
 // Old stuff.

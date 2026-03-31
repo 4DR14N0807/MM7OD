@@ -27,6 +27,7 @@ public class GameMode {
 	public const int redAlliance = 1;
 	public const int neutralAlliance = 50;
 	public const int stageAlliance = 52;
+	public const int stageEnemyAlliance = 53;
 	public const int nullAlliance = 54;
 	public const int freelanceAlliance = 60;
 

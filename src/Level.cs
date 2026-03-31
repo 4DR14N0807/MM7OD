@@ -705,11 +705,19 @@ public partial class Level {
 					}
 				}
 			} else if (objectName == "Enemy Spawner") {
+				// Partse team number. Default to -1 if null.
 				int teamNum = instance.properties?.teamNum ?? -1;
-				if (!gameMode.isTeamMode) {
+				// Make the team be neutral if not on a team match.
+				if (!gameMode.isTeamMode && teamNum >= 0) {
 					teamNum = -1;
 				}
-				enemySpawners.Add(new ActorSpawner(pos, xDir, teamNum));
+				// Parse types, default to empty if null.
+				string[] types = [""];
+				if (instance.properties?.type is string[] typeArr) {
+					types = typeArr;
+				}
+				// Then initalize the spawner.
+				enemySpawners.Add(new ActorSpawner(types, pos, xDir, teamNum));
 			} else if (objectName.StartsWith("Map Sprite")) {
 				bool enabledInLargeCam = instance.properties.enabledInLargeCam ?? true;
 				int destructableFlag = instance.properties?.destructableFlag ?? 0;

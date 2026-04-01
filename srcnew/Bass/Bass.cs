@@ -520,11 +520,11 @@ public class Bass : Character {
 				projPos, player, addToLevel: addToLevel
 			),
 			(int)MeleeIds.Kick => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.BassKick, player, 2, Global.halfFlinch, 0.75f * 60,
+				new Weapon(), projPos, ProjIds.BassKick, player, 2, Global.halfFlinch, 45,
 				addToLevel: addToLevel
 			),
 			(int)MeleeIds.SonicCrusher => new GenericMeleeProj(
-				new Weapon(), projPos, ProjIds.SonicCrusher, player, 2, Global.halfFlinch, 1 * 60,
+				new Weapon(), projPos, ProjIds.SonicCrusher, player, 2, Global.halfFlinch, 60,
 				addToLevel: addToLevel
 			),
 			_ => null
@@ -897,6 +897,9 @@ public class Bass : Character {
 		return 2;
 	}
 
+	public override float getRunSpeed() {
+		return Physics.WalkSpeed * getRunDebuffs();
+	}
 	public override float getDashSpeed() {
 		return 3.5f * getRunDebuffs();
 	}

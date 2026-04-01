@@ -180,13 +180,13 @@ public class Blues : Character {
 			}
 		}
 		else if (shieldEquipped) {
-			dashSpeed = 2.75f;
+			dashSpeed = 2.875f;
 		}
 		return dashSpeed * getRunDebuffs();
 	}
 
 	public float getSlideSpeed() {
-		float slideSpeed = 2.5f;
+		float slideSpeed = 2.625f;
 		if (overheating) {
 			slideSpeed = 2.125f;
 		}

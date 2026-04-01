@@ -279,9 +279,9 @@ public class Damager {
 					break;
 				}*/
 				case (int)ProjIds.TenguBladeDash: {
-					character.xPushVel += 3 * damagingActor?.xDir ?? 3 * -character.xDir;
+					character.xFlinchPushVel += 4 * (damagingActor?.xDir ?? -character.xDir);
 					break;
-				} 
+				}
 				case (int)BassProjIds.MagicCardFlip:
 					character.xDir *= -1;
 					break;

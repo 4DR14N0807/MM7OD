@@ -7,7 +7,7 @@ public class ActorSpawner {
 	public string[] types;
 	public ActorLocalCreate createFunct;
 	public Point pos;
-	public float respawnTime = 60 * 10;
+	public float respawnTime = 60 * 60;
 	public float time;
 	public Actor currentActor;
 	public int teamSide;
@@ -49,7 +49,7 @@ public class ActorSpawner {
 		}
 		time = respawnTime;
 
-		createFunct(new ActorLocalParameters() {
+		currentActor = createFunct(new ActorLocalParameters() {
 			pos = pos,
 			xDir = xDir,
 			byteAngle = 0,

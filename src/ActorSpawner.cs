@@ -56,7 +56,7 @@ public class ActorSpawner {
 			player = Global.level.mainPlayer,
 			netId = Global.level.mainPlayer.getNextActorNetId(),
 			extraData = [teamSide]
-		});
+		}, true);
 	}
 
 

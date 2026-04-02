@@ -27,9 +27,9 @@ public class Met : NeutralEnemy {
 	}
 
 	
-	public static Actor localInvoke(ActorLocalParameters arg) {
+	public static Actor localInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new Met(
-			arg.pos, arg.xDir, arg.player, arg.netId, arg.extraData[0]
+			arg.pos, arg.xDir, arg.player, arg.netId, arg.extraData[0], sendRpc: true
 		);
 	}
 

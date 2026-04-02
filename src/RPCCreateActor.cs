@@ -228,7 +228,7 @@ public struct ActorLocalParameters {
 }
 
 public delegate Actor ActorRpcCreate(ActorRpcParameters arg);
-public delegate Actor ActorLocalCreate(ActorLocalParameters arg);
+public delegate Actor ActorLocalCreate(ActorLocalParameters arg, bool sendRpc);
 
 
 // Old stuff.

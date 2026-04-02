@@ -517,6 +517,7 @@ public class Burning : CharState {
 	public float burnMoveSpeed;
 	public int burnDamageCooldown = 45;
 	Player attacker;
+	CharState? oldState;
 
 	public Burning(int dir, Player attacker) : base("burning") {
 		superArmor = true;
@@ -543,6 +544,7 @@ public class Burning : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		this.oldState = oldState;
 		if (!character.ownedByLocalPlayer) return;
 		if (character.vel.y < 0) character.vel.y = 0;
 		character.stopMoving();
@@ -578,7 +580,11 @@ public class Burning : CharState {
 		burningTime--;
 		if (burningTime <= 0) {
 			burningTime = 0;
-			character.changeToIdleOrFall();
+			if (oldState is OverheatShutdown or OverheatShutdownStart) {
+				character.changeState(new OverheatShutdown(), true);
+			} else {
+				character.changeToIdleOrFall();
+			}
 		}
 	}
 }

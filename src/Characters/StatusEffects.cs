@@ -105,6 +105,7 @@ public class GenericStun : CharState {
 
 	public float flinchTime;
 	public float flinchMaxTime;
+	CharState? oldState;
 
 	public GenericStun() : base("hurt") {
 
@@ -138,7 +139,11 @@ public class GenericStun : CharState {
 				);
 				return;
 			}
-			character.changeToIdleOrFall();
+			if (oldState is OverheatShutdown or OverheatShutdownStart) {
+				character.changeState(new OverheatShutdown(), true);
+			} else {
+				character.changeToIdleOrFall();
+			}	
 		}
 	}
 
@@ -230,6 +235,7 @@ public class GenericStun : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		this.oldState = oldState;
 		character.stopMoving();
 		hurtDir = -character.xDir;
 		// To continue the flinch if was flinched before the stun.

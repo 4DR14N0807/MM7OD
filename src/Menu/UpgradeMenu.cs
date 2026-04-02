@@ -418,7 +418,6 @@ public class UpgradeMenu : IMainMenu {
 			if (bass.canGoSuperBass()) {
 				if (!bass.isTrebbleBoost) {
 					mainPlayer.currency -= Bass.TrebleBoostCost;
-					bass.isTrebbleBoost = true;
 				}
 				mainPlayer.character.changeState(new SuperBassStart(), true);
 				return true;

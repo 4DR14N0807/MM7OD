@@ -54,6 +54,7 @@ public class TenguBladeStart : Projectile {
 		maxTime = 1;
 		damager.damage = 2;
 		damager.hitCooldown = 20;
+		destroyOnHit = false;
 		setIndestructableProperties();
 		canBeLocal = false;
 
@@ -82,9 +83,7 @@ public class TenguBladeStart : Projectile {
 		base.update();
 		if (!ownedByLocalPlayer) return;
 
-		
 		if (character != null) {
-			xDir = character.xDir;
 			changePos(character.getCenterPos().addxy(distance.x * xDir, distance.y));
 		}
 
@@ -101,7 +100,10 @@ public class TenguBladeStart : Projectile {
 }
 
 
-public class TenguBladeState : CharState {
+public class TenguBladeState : BassState {
+	string dashControl = Control.Dash;
+	bool queuedDash;
+	bool queuedTDash;
 	bool fired;
 
 	public TenguBladeState() : base("tblade") {
@@ -117,15 +119,39 @@ public class TenguBladeState : CharState {
 		base.update();
 		character.turnToInput(player.input, player);
 
-		if (!fired && character.currentFrame.getBusterOffset() != null) {
-			Point shootPos = character.getFirstPOI() ?? character.getShootPos();
+		if (!fired && character.frameIndex >= 2) {
+			Point shootPos = character.pos.addxy(32 * character.xDir, -26);
 			Player player = character.player;
 
 			new TenguBladeStart(character, shootPos, character.xDir, player.getNextActorNetId(), true, player);
 			fired = true;
 		}
+		if (player.dashPressed(out string tDashControl)) {
+			queuedDash = true;
+			dashControl = tDashControl;
+		}
+		if (!queuedTDash && queuedDash &&
+			player.input.isPressed(Control.Shoot, player)
+		) {
+			queuedTDash = true;
+		}
+		if (character.frameIndex >= 4) {
+			normalCtrl = true;
+			attackCtrl = true;
 
-		if (character.isAnimOver()) character.changeToIdleOrFall();
+			if (queuedDash && character.grounded && character.canDash()) {
+				if (queuedTDash && bass.canUseTBladeDash()) {
+					character.changeState(new TenguBladeDash());
+					return;
+				}
+				character.changeState(new Dash(dashControl));
+				return;
+			}
+		}
+
+		if (character.isAnimOver()) {
+			character.changeToIdleOrFall();
+		}
 	}
 }
 
@@ -147,7 +173,9 @@ public class TenguBladeProj : Projectile {
 
 		vel.x = 120 * xDir;
 		damager.damage = 2;
-		damager.hitCooldown = 30f;
+		damager.hitCooldown = 20;
+		destroyOnHit = true;
+		//destroyOnDamage = true;
 
 		canBeLocal = false;
 
@@ -197,7 +225,7 @@ public class TenguBladeProj : Projectile {
 public class TenguBladeProjMelee : GenericMeleeProj {
 	public TenguBladeProjMelee(Point pos, Player player, bool addToLevel) : base(
 		TenguBlade.netWeapon, pos, ProjIds.TenguBladeProjMelee,
-		player, 2, 0, 0.375f * 60, addToLevel: addToLevel
+		player, 2, 0, 20, addToLevel: addToLevel
 	) {
 		projId = (int)BassProjIds.TenguBladeProj;
 	}
@@ -205,10 +233,9 @@ public class TenguBladeProjMelee : GenericMeleeProj {
 
 
 public class TenguBladeMelee : GenericMeleeProj {
-	
 	public TenguBladeMelee(Point pos, Player player, bool addToLevel) : base(
 		TenguBlade.netWeapon, pos, ProjIds.TenguBladeDash,
-		player, 2, 0, 0.375f * 60, addToLevel: addToLevel
+		player, 2, 0, 30, addToLevel: addToLevel
 	) {
 	}
 }

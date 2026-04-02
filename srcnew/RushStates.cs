@@ -545,8 +545,8 @@ public class RushSearchState : RushState {
 			font = FontType.Red;
 
 			new Met(
-				pickupPos.addxy(0, 16), rush.xDir, Global.level.mainPlayer,
-				player.getNextActorNetId(), sendRpc: true
+				pickupPos.addxy(0, 16), rush.xDir, player,
+				player.getNextActorNetId(), sendRpc: true, alliance: player.alliance 
 			) {
 				vel = pickupVel
 			};

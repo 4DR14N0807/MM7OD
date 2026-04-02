@@ -54,6 +54,7 @@ public partial class Level {
 	public List<SpawnPoint> spawnPoints = new List<SpawnPoint>();
 	public List<SpawnPoint> raceStartSpawnPoints = new List<SpawnPoint>();
 	public List<NoScroll> noScrolls = new List<NoScroll>();
+	public List<CameraZone> camZone = new List<CameraZone>();
 	public List<Rect> waterRects = new List<Rect>();
 	public List<NavMeshNode> navMeshNodes = new List<NavMeshNode>();
 	public List<ItemSpawner> itemSpawners = new List<ItemSpawner>();
@@ -718,7 +719,32 @@ public partial class Level {
 				}
 				// Then initalize the spawner.
 				enemySpawners.Add(new ActorSpawner(types, pos, xDir, teamNum));
-			} else if (objectName.StartsWith("Map Sprite")) {
+			}
+			// One way platforms.
+			else if (objectName == "One Way") {
+				// Parse direction.
+				// If both are null we default to (-1, 0)
+				int? xgDir = instance.properties?.xDir;
+				int? ygDir = instance.properties?.yDir;
+				if (xgDir == null && ygDir == null) {
+					xgDir = 0;
+					ygDir = -1;
+				}
+				// Otherwise we default it to 0.
+				xgDir ??= 0;
+				ygDir ??= 0;
+				// Then we create a normal based on it.
+				Point lockDir = new(Math.Sign(xgDir.Value), Math.Sign(ygDir.Value));
+				// And initalize the object.
+				OneWay oneWay = new OneWay(instanceName, points, lockDir);
+				addGameObject(oneWay);
+			}
+			// Camera Zones.
+			else if (objectName == "Camera Zone") {
+				camZone.Add(new CameraZone(instanceName, points));
+			}
+			// Map sprites.
+			else if (objectName.StartsWith("Map Sprite")) {
 				bool enabledInLargeCam = instance.properties.enabledInLargeCam ?? true;
 				int destructableFlag = instance.properties?.destructableFlag ?? 0;
 				int repeatX = instance.properties.repeatX ?? 1;
@@ -2508,6 +2534,67 @@ public partial class Level {
 
 		float prevCamX = camX;
 		float prevCamY = camY;
+
+		if (!ignoreNoScrolls()) {
+			Actor? followActor = camPlayer.character.getFollowActor();
+			List<CameraZone> activeCamZones = [];
+
+			if (followActor != null && followActor.physicsCollider != null) {
+				Shape camCollider = followActor.physicsCollider.shape;
+				foreach (CameraZone cameraZone in camZone) {
+					Shape other = cameraZone.collider.shape;
+					if (camCollider.minX <= other.maxX &&
+						camCollider.maxX >= other.minX &&
+						camCollider.minY <= other.maxY &&
+						camCollider.maxY >= other.minY
+					) {
+						activeCamZones.Add(cameraZone);
+					}
+				}
+			}
+			float lCamX = width - scaledCanvasW;
+			float rCamX = 0;
+			float uCamY = height - scaledCanvasH;
+			float dCamY = 0;
+
+			foreach (CameraZone cameraZone in activeCamZones) {
+				Shape colShape = cameraZone.collider.shape;
+				lCamX = MathF.Min(colShape.minX, lCamX);
+				rCamX = MathF.Max(colShape.maxX, rCamX + scaledCanvasW) - scaledCanvasW;
+				uCamY = MathF.Min(colShape.minY, uCamY);
+				dCamY = MathF.Max(colShape.maxY, dCamY + scaledCanvasH) - scaledCanvasH;
+			}
+			// Check if we are not out of bounds.
+			if (activeCamZones.Count > 0) {
+				bool ajustX = false;
+				bool ajustY = false;
+				if (camX + deltaX < lCamX && deltaX <= 0 ||
+					camX + deltaX > rCamX && deltaX >= 0
+				) {
+					deltaX = 0;
+					ajustX = true;
+				}
+				if (camY + deltaY < uCamY && deltaY <= 0 ||
+					camY + deltaY > dCamY && deltaY >= 0
+				) {
+					deltaY = 0;
+					ajustY = true;
+				}
+
+				if (ajustX) {
+					int cDelta = 0;
+					if (camX < lCamX) { cDelta += MathF.Abs(camX - lCamX) >= 2 ? 2 : 1; }
+					if (camX > rCamX) { cDelta -= MathF.Abs(camX - rCamX) >= 2 ? 2 : 1; }
+					camX += cDelta;
+				}
+				if (ajustY) {
+					int cDelta = 0;
+					if (camY < uCamY) { cDelta += MathF.Abs(camY - uCamY) >= 2 ? 2 : 1; }
+					if (camY > dCamY) { cDelta -= MathF.Abs(camY - dCamY) >= 2 ? 2 : 1; }
+					camY += cDelta;
+				}
+			}
+		}
 
 		if (!dontMoveX) {
 			camX += deltaX;

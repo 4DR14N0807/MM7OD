@@ -5,10 +5,8 @@ using SFML.Graphics;
 
 namespace MMXOnline;
 
-
 public class Rush : Actor, IDamagable {
-	public Character character = null!;
-	public Rock rock = null!;
+	public Rock? rock;
 	public Player player;
 	public RushState rushState;
 	public bool usedCoil;
@@ -31,11 +29,8 @@ public class Rush : Actor, IDamagable {
 		player = owner;
 		this.xDir = xDir;
 
-		if (ownedByLocalPlayer) {
-			this.character = owner.character ?? throw new NullReferenceException();
-			rock = character as Rock ?? throw new NullReferenceException();
-			this.xDir = character.xDir;
-		}
+		rock = owner.character as Rock;
+
 		this.type = type;
 		hasStateMachine = true;
 		//syncs rush xdir with rock xdir
@@ -47,7 +42,6 @@ public class Rush : Actor, IDamagable {
 		// As oldState cannot be null because we do not want null crashes.
 		rushState = new RushState("empty") {
 			rush = this,
-			character = character
 		};
 		// Then now that we set up a dummy state we call the actual changeState.
 		// Only do this for the local player as we do not want other player to run state code.
@@ -95,7 +89,6 @@ public class Rush : Actor, IDamagable {
 		}
 		// Set the character as soon as posible.
 		newState.rush = this;
-		newState.character = character;
 
 		if (!rushState.canExit(this, newState)) {
 			return;
@@ -140,12 +133,12 @@ public class Rush : Actor, IDamagable {
 		if (!ownedByLocalPlayer) return;
 
 		if (rushState is RushWarpOut) spriteToCollider["warp_beam"] = null;
-		if (character == null || character.charState is Die || character.flag != null) {
+		if (rock == null || rock.charState is Die || rock.flag != null) {
 			changeState(new RushWarpOut());
 		}
 
 		//Rush Jet detection
-		if (rushState is RushJetState && rock.canRideRushJet() ) {
+		if (rushState is RushJetState && rock?.canRideRushJet() == true) {
 			isJetAndRide = true;
 		} else {
 			isJetAndRide = false;
@@ -226,7 +219,9 @@ public class Rush : Actor, IDamagable {
 
 	public override void onDestroy() {
 		if (!ownedByLocalPlayer) { return; }
-		if (character is Rock rock && rock.rush != null) rock.rush = null!; 
+		if (rock?.rush != null) {
+			rock.rush = null; 
+		}
 	}
 
 	public bool isPlayableDamagable() {

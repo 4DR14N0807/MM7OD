@@ -455,6 +455,15 @@ public class Ladder : Geometry {
 	}
 }
 
+public class OneWay : Geometry {
+	public Point lockDir;
+
+	public OneWay(string name, List<Point> points, Point lockDir) : base(name, points) {
+		collider.isTrigger = true;
+		this.lockDir = lockDir;
+	}
+}
+
 public class KillZone : Geometry {
 	public bool killInvuln;
 	public float damage;

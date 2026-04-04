@@ -138,10 +138,9 @@ public class HardKnuckleProj : Projectile {
 	}
 }
 
-public class HardKnuckleShoot : CharState {
+public class HardKnuckleShoot : BluesState {
 	bool fired;
 	bool effectCreated;
-	Blues blues = null!;
 
 	public HardKnuckleShoot() : base("knuckle") {
 		airSprite = "knuckle_air";
@@ -172,7 +171,6 @@ public class HardKnuckleShoot : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		character.stopMoving();
 		if (!character.grounded) {
 			character.changeSpriteFromName(airSprite, true);

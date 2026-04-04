@@ -4,12 +4,13 @@ public abstract class BaselineShieldPickup : Pickup {
 	public BaselineShieldPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
 	) {
 		healAmount = 10;
+		syncOnLateJoin = true;
 	}
 
 	public override void use(Character chr) {
@@ -18,7 +19,7 @@ public abstract class BaselineShieldPickup : Pickup {
 		}
 		chr.playSound("subtank_fill");
 		int time = 60 * 6;
-		chr.buffList.Add(new Buff("hud_buffs", 1, true, time, time) { update = buffUpdate });
+		chr.buffList.Add(new Buff("hud_shields", 0, true, time, time) { update = buffUpdate });
 		chr.shieldManager.addShield(healAmount, time, ShieldIds.Pickup);
 		base.use(chr);
 	}

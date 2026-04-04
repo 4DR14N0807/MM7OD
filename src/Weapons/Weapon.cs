@@ -312,7 +312,7 @@ public class Weapon {
 
 	}
 
-	public virtual void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public virtual void vileShoot(Vile vile) {
 	}
 
 	// For melee / zero weapons, etc.
@@ -417,6 +417,10 @@ public class Weapon {
 	public virtual void update() {
 		Helpers.decrementFrames(ref shootCooldown);
 		Helpers.decrementFrames(ref altShotCooldown);
+
+		Helpers.decrementFrames(ref rechargeAmmoCustomSettingAxl);
+		Helpers.decrementFrames(ref rechargeAmmoCustomSettingAxl2);
+		
 		if (timeSinceLastShoot != null) {
 				timeSinceLastShoot += Global.speedMul;
 			}
@@ -478,5 +482,21 @@ public class Weapon {
 
 	public virtual float getFireRate(Character character, int chargeLevel, int[] args) {
 		return fireRate;
+	}
+
+	public virtual bool customShootCondition(Character character) {
+		return false;
+	}
+}
+
+public class EmptyWeapon : Weapon {
+	public EmptyWeapon() {
+		displayName = "Null Driver";
+		drawCooldown = false;
+		drawAmmo = false;
+	}
+
+	public override float getAmmoUsage(int chargeLevel) {
+		return 0;
 	}
 }

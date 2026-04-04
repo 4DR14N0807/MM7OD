@@ -70,9 +70,6 @@ public class Hurt : CharState {
 			if (character is not BaseSigma && !character.isToughGuyHyperMode()) //Tough guy
 				character.move(new Point(hurtSpeed * 60f, 0));
 		}
-		if (character is Axl axl) {
-			axl.stealthRevealTime = Axl.maxStealthRevealTime;
-		}
 
 		if (isMiniFlinch()) {
 			character.frameSpeed = 0;
@@ -108,6 +105,7 @@ public class GenericStun : CharState {
 
 	public float flinchTime;
 	public float flinchMaxTime;
+	CharState? oldState;
 
 	public GenericStun() : base("hurt") {
 
@@ -141,7 +139,11 @@ public class GenericStun : CharState {
 				);
 				return;
 			}
-			character.changeToIdleOrFall();
+			if (oldState is OverheatShutdown or OverheatShutdownStart) {
+				character.changeState(new OverheatShutdown(), true);
+			} else {
+				character.changeToIdleOrFall();
+			}	
 		}
 	}
 
@@ -233,6 +235,7 @@ public class GenericStun : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		this.oldState = oldState;
 		character.stopMoving();
 		hurtDir = -character.xDir;
 		// To continue the flinch if was flinched before the stun.
@@ -299,10 +302,6 @@ public class KnockedDown : CharState {
 
 		if (character.canCharge() && player.input.isHeld(Control.Shoot, player)) {
 			character.increaseCharge();
-		}
-
-		if (character is Axl axl) {
-			axl.stealthRevealTime = Axl.maxStealthRevealTime;
 		}
 
 		if (stateTime >= flinchTime) {

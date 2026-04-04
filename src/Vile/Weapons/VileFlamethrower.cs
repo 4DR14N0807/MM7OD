@@ -33,7 +33,7 @@ public class WildHorseKick : VileFlamethrower {
 		effect = "Fire DOT: 0.5";
 		vileAmmoUsage = 2;
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new FlamethrowerAttacks(this), true);
@@ -65,7 +65,7 @@ public class SeaDragonRage : VileFlamethrower {
 		hitcooldown = "0.1";
 		effect = "Stack hits to freeze.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new FlamethrowerAttacks(this), true);
@@ -96,7 +96,7 @@ public class DragonsWrath : VileFlamethrower {
 		hitcooldown = "0.1";
 		effect = "None.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new FlamethrowerAttacks(this), true);
@@ -111,18 +111,12 @@ public class DragonsWrath : VileFlamethrower {
 		);
 	}
 }
-public class NoneFlamethrower : VileFlamethrower {
-	public static NoneFlamethrower netWeapon = new();
-	public NoneFlamethrower() : base() {
-		type = (int)VileFlamethrowerType.None;
-		displayName = "None";
-		killFeedIndex = 126;
-	}
-}
+
 #region States
 public class FlamethrowerAttacks : VileState {
 	public VileFlamethrower weapon;
 	public float shootTime;
+	public bool shotProj;
 	public FlamethrowerAttacks(VileFlamethrower weapon) : base("crouch_flamethrower") {
 		airSprite = "flamethrower";
 		useDashJumpSpeed = true;
@@ -138,11 +132,16 @@ public class FlamethrowerAttacks : VileState {
 		shootTime += Global.speedMul;
 		if (shootTime >= 4) {
 			character.turnToInput(player.input, player);
+			shotProj = true;
 			shootTime = 0;
 			character.playSound("flamethrower");
 			weapon.shoot(vile, []);
 		}
-
+		if (shotProj) {
+			character.stopMoving();
+			character.useGravity = false;
+			character.vel = new Point();
+		}
 		if (character.loopCount >= 5 || !player.input.isHeld(Control.Special1, player)) {
 			character.changeToIdleOrFall();
 		}
@@ -153,9 +152,6 @@ public class FlamethrowerAttacks : VileState {
 		if (!character.grounded) {
 			sprite = "flamethrower";
 			character.changeSpriteFromName(sprite, true);
-			character.stopMoving();
-			character.useGravity = false;
-			character.vel = new Point();
 		}
 	}
 	public override void onExit(CharState? newState) {

@@ -109,7 +109,6 @@ public class NapalmBombProj : Projectile {
 
 
 public class NapalmBombExplosionProj : Projectile {
-
 	int radius;
 	const int maxRadius = 48;
 	public NapalmBombExplosionProj(
@@ -132,9 +131,9 @@ public class NapalmBombExplosionProj : Projectile {
 		else destroySelf();
 
 		if (isRunByLocalPlayer()) {
-			foreach (var go in Global.level.getGameObjectArray()) {
+			foreach (var go in getCloseActors(200)) {
 				var chr = go as Character;
-				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
+				if (chr != null && chr.canBeDamaged(damager.alliance, damager.owner.id, projId)
 					&& chr.pos.distanceTo(pos) <= radius) {
 
 					damager.applyDamage(chr, false, weapon, this, projId);

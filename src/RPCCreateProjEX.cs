@@ -169,6 +169,10 @@ public partial class RPCCreateProj : RPC {
 		{ (int)ProjIds.DZBuster3, DZBuster3Proj.rpcInvoke },
 		{ (int)ProjIds.DZHadangeki, DZHadangekiProj.rpcInvoke },
 
+		{ (int)ProjIds.DZShinBuster, DZShinBusterProj.rpcInvoke },
+		{ (int)ProjIds.DZShinHadangeki, DZShinHadangekiProj.rpcInvoke },
+		{ (int)ProjIds.DZShinGetsurin, DZShinGetsurinProj.rpcInvoke },
+
 		//Sigma	
 		{ (int)ProjIds.SigmaSlash, SigmaSlashProj.rpcInvoke },
 		{ (int)ProjIds.SigmaBall, SigmaBallProj.rpcInvoke },
@@ -287,7 +291,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)RockProjIds.ScorchWheelUnderwaterSpawn, WaterScorchWheelSpawnRm.rpcInvoke},
 		{ (int)RockProjIds.ScorchWheelUnderwaterProj, WaterScorchWheelProjRm.rpcInvoke},
 		{ (int)RockProjIds.NoiseCrush, NoiseCrushRmProj.rpcInvoke },
-		{ (int)RockProjIds.NoiseCrushCharged, NoiseCrushChargedRmProj.rpcInvoke },
+		{ (int)RockProjIds.NoiseCrushCharged, NoiseCrushRmProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapMine, DangerWrapMineRmProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapMineLanded, DangerWrapLandRmProj.rpcInvoke },
 		{ (int)RockProjIds.DangerWrapExplosion, DangerWrapExplosionRmProj.rpcInvoke },

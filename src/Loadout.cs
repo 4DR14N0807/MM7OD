@@ -476,11 +476,6 @@ public class LoadoutData {
 	public static LoadoutData createRandom(int playerId) {
 		return new LoadoutData() {
 			playerId = playerId,
-			xLoadout = XLoadout.createRandom(),
-			zeroLoadout = ZeroLoadout.createRandom(),
-			vileLoadout = VileLoadout.createRandom(),
-			axlLoadout = AxlLoadout.createRandom(),
-			sigmaLoadout = SigmaLoadout.createRandom(),
 			rockLoadout = RockLoadout.createRandom(),
 			bluesLoadout = BluesLoadout.createRandom(),
 			bassLoadout = BassLoadout.createRandom(),
@@ -490,12 +485,9 @@ public class LoadoutData {
 	public LoadoutData clone(int playerId) {
 		return new LoadoutData() {
 			playerId = playerId,
-			xLoadout = xLoadout.clone(),
-			zeroLoadout = zeroLoadout.clone(),
-			vileLoadout = vileLoadout.clone(),
-			axlLoadout = axlLoadout.clone(),
-			sigmaLoadout = sigmaLoadout.clone(),
-			pzeroLoadout = pzeroLoadout.clone()
+			rockLoadout = rockLoadout.clone(),
+			bluesLoadout = bluesLoadout.clone(),
+			bassLoadout = bassLoadout.clone(),
 		};
 	}
 

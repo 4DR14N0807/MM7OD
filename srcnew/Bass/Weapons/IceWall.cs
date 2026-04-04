@@ -70,6 +70,7 @@ public class IceWallProj : Projectile, IDamagable {
 	public float health = 2;
 	float maxSpeed = 3f * 60;
 	float groundTime;
+	float soundCooldown;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
@@ -106,6 +107,9 @@ public class IceWallProj : Projectile, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+
+		Helpers.decrementFrames(ref soundCooldown);
+
 		if (sprite.name == "ice_wall_spawn" && isAnimOver()) {
 			changeSprite("ice_wall_proj", true);
 			useGravity = true;
@@ -139,12 +143,12 @@ public class IceWallProj : Projectile, IDamagable {
 		if (other is not Character chara) {
 			return false;
 		}
-		if (!chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) && chara.player != damager.owner) {
+		if (!chara.canBeDamaged(damager.alliance, damager.owner.id, projId) && chara.player != damager.owner) {
 			return false;
 		}
 
 		// Fully solid for enemies.
-		if ((chara.player == damager.owner || chara.player.alliance != damager.owner.alliance) &&
+		if ((chara.player == damager.owner || chara.player.alliance != damager.alliance) &&
 			chara.charState is not LadderClimb
 		) {
 			return true;
@@ -162,7 +166,7 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 		return (
 			other is Character chara &&
-			chara.player.alliance == damager.owner.alliance &&
+			chara.player.alliance == damager.alliance &&
 			chara.pos.y <= getTopY() + 16
 		);
 	}
@@ -176,7 +180,10 @@ public class IceWallProj : Projectile, IDamagable {
 				xDir *= -1;
 				vel.x *= -1;
 				incPos(xDir, 0);
-				playSound("icewallBounce", ownedByLocalPlayer);
+				if (soundCooldown <= 0) {
+					playSound("icewallBounce", ownedByLocalPlayer);
+					soundCooldown = 15;
+				}
 			}
 			return;
 		}
@@ -208,7 +215,7 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 	}
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return health > 0 && damagerAlliance != damager.owner.alliance && projId == (int)BassProjIds.IceWall;
+		return health > 0 && damagerAlliance != damager.alliance && projId == (int)BassProjIds.IceWall;
 	}
 	public bool isInvincible(Player attacker, int? projId) => false;
 	public bool canBeHealed(int healerAlliance) => false;

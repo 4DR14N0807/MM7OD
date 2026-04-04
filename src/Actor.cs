@@ -167,12 +167,10 @@ public partial class Actor : GameObject {
 	public bool syncOnLateJoin;
 
 	public bool splashable;
-	private Anim _waterWade = null!;
+	private Anim? _waterWade = null;
 	public Anim waterWade {
 		get {
-			if (_waterWade == null) {
-				_waterWade = new Anim(pos, "splash", 1, null, false); //"wade"
-			}
+			_waterWade ??= new Anim(pos, "splash", 1, null, false); //"wade"
 			return _waterWade;
 		}
 	}
@@ -263,7 +261,7 @@ public partial class Actor : GameObject {
 		else colliderHeight = globalCollider.shape.maxY - globalCollider.shape.minY;
 
 		// May need a new overridable method to get "visual" height for situations like these
-		if (sprite?.name?.StartsWith("sigma2_viral_") == true) {
+		if (this is ViralSigma) {
 			colliderHeight = 50;
 		}
 
@@ -306,12 +304,32 @@ public partial class Actor : GameObject {
 		);
 	}
 
-	public virtual byte[] getActorSerialExtra() {
-		return [];
-	}
+	public virtual int getSerialCID() => (int)cActorId;
+	public virtual int getSerialPlayerID() => netOwner?.id ?? int.MaxValue;
+	public virtual ushort? getSerialOnwerID() => null;
+	public virtual byte[] getSerialExtra() => [];
 
-	public virtual ActorRpcResponse? getActorSerial() {
-		return null;
+	public virtual ActorRpcResponse? getSerialData(ushort? customNetId = null) {
+		ushort? ownerId = getSerialOnwerID();
+		int playerId = getSerialPlayerID();
+		int creationId = getSerialCID();
+		ushort? newNetId = customNetId ?? netId;
+		// We just throw null if cannot be serialized.
+		if (newNetId == null || creationId == 0 || playerId == int.MaxValue) {
+			return null;
+		}
+		return new ActorRpcResponse() {
+			isProj = false,
+			actorId = creationId,
+			posX = pos.x,
+			posY = pos.y,
+			xDir = xDir,
+			playerId = playerId,
+			netId = newNetId.Value,
+			byteAngle = byteAngle,
+			ownerId = ownerId,
+			extraData = getSerialExtra()
+		};
 	}
 
 	public void changeSpriteIfDifferent(string spriteName, bool resetFrame) {
@@ -424,6 +442,7 @@ public partial class Actor : GameObject {
 		}
 	}
 
+	public bool useAngleOnFade;
 	public float angle {
 		get {
 			return _byteAngle * 1.40625f;
@@ -657,7 +676,7 @@ public partial class Actor : GameObject {
 			}
 			gHoldTime++;
 		}
-		
+
 		bool wading = isWading();
 		bool underwater = isUnderwater();
 
@@ -669,6 +688,8 @@ public partial class Actor : GameObject {
 			grounded = true;
 			if (vel.y > 0) vel.y = 0;
 		}
+
+		splashEffects();
 	}
 
 	// This code is horrible awfull confusing ugly and slow.
@@ -1277,16 +1298,17 @@ public partial class Actor : GameObject {
 	) {
 		if (attacker == null) return;
 
-		float reportDamage = Helpers.clampMax(damage, Damager.ohkoDamage);
-		if (attacker.isMainPlayer || ownedByLocalPlayer) {
-			if (damage >= Damager.ohkoDamage) {
+		if (damage >= Damager.ohkoDamage && damage >= maxHealth) {
+			if (Helpers.randomRange(0, 20) != 10) {
 				addDamageText("Instakill!", (int)FontType.OrangeSmall);
 			} else {
 				addDamageText(damage);
 			}
+		} else if (attacker.isMainPlayer) {
+			addDamageText(damage);
 		}
-		if (!attacker.isMainPlayer && ownedByLocalPlayer && sendRpc) {
-			RPC.addDamageText.sendRpc(attacker.id, netId, reportDamage);
+		if (ownedByLocalPlayer && sendRpc) {
+			RPC.addDamageText.sendRpc(attacker.id, netId, damage);
 		}
 	}
 
@@ -1446,7 +1468,12 @@ public partial class Actor : GameObject {
 		if (!String.IsNullOrEmpty(spriteName)) {
 			var anim = new Anim(getCenterPos(), spriteName, xDir, null, true);
 			if (angleSet) {
-				anim.byteAngle = byteAngle;
+				if (useAngleOnFade) {
+					anim.byteAngle = byteAngle;
+				}
+				else if (byteAngle > 64 && byteAngle < 256 - 64) {
+					anim.xDir *= -1;
+				}
 			}
 			anim.xScale = xScale;
 			anim.yScale = yScale;
@@ -1530,6 +1557,9 @@ public partial class Actor : GameObject {
 
 
 	public SoundWrapper? playSound(string soundKey, bool forcePlay = false, bool sendRpc = false) {
+		if (soundKey == "") {
+			return null;
+		}
 		soundKey = soundKey.ToLowerInvariant();
 		if (!Global.soundBuffers.ContainsKey(soundKey)) {
 			throw new Exception($"Attempted playing missing sound with name \"{soundKey}\"");
@@ -2035,7 +2065,7 @@ public partial class Actor : GameObject {
 
 		Point checkPos = new Point(MathF.Round(pos.x), MathF.Round(pos.y));
 		Shape shape = Rect.createFromWH(
-			pos.x - halfDist, pos.y - halfDist,
+			MathInt.Round(pos.x) - halfDist, MathInt.Round(pos.y) - halfDist,
 			distance, distance
 		).getShape();
 		List<CollideData> hits = Global.level.checkCollisionsShape(shape, null);
@@ -2044,7 +2074,7 @@ public partial class Actor : GameObject {
 		if (!includeAllies) {
 			alliance = this switch {
 				Character selfChar => selfChar.player.alliance,
-				Projectile selfProj => selfProj.damager.owner.alliance,
+				Projectile selfProj => selfProj.damager.alliance,
 				Maverick selfMvrk => selfMvrk.player.alliance,
 				_ => -1
 			};

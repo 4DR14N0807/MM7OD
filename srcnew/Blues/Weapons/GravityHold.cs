@@ -88,7 +88,7 @@ public class GravityHoldProj : Projectile {
 			foreach (Actor actor in getCloseActors(160)) {
 				if (actor.ownedByLocalPlayer && actor is Character chara &&
 					chara.getCenterPos().distanceTo(pos) <= maxR + 20 &&
-					chara.canBeDamaged(damager.owner.alliance, damager.owner.id, projId) &&
+					chara.canBeDamaged(damager.alliance, damager.owner.id, projId) &&
 					chara.projectileCooldown.GetValueOrDefault(projId + "_" + owner.id) <= 0
 				) {
 					chara.applyGHoldDamage(this, damager.owner, damager, projId, damager.hitCooldown);
@@ -215,8 +215,7 @@ public class GravityHoldEffect : Effect {
 	}
 }
 
-public class BluesGravityHold : CharState {
-	Blues blues = null!;
+public class BluesGravityHold : BluesState {
 	bool fired;
 
 	public BluesGravityHold() : base("shoot2") {
@@ -245,7 +244,6 @@ public class BluesGravityHold : CharState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		blues = character as Blues ?? throw new NullReferenceException();
 		blues.stopMoving();
 		if (!blues.grounded || blues.vel.y < 0) {
 			blues.changeSpriteFromName(airSprite, true);

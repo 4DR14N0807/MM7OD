@@ -169,37 +169,37 @@ public partial class Level {
 
 	public Point getGroundPos(Point pos, float depth = 60) {
 		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
-			typeof(Wall), typeof(Ladder), typeof(SandZone)
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(OneWay)
 		]);
 		return hit?.hitData.hitPoint?.addxy(0, -1) ?? pos;
 	}
 
 	public Point? getGroundPosNoKillzone(Point pos, float depth = 60) {
 		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
-			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone), typeof(OneWay)
 		]);
-		if (hit?.gameObject is KillZone) {
-			return null;
+		if (hit?.gameObject is not KillZone) {
+			return hit?.hitData.hitPoint?.addxy(0, -1);;
 		}
-		return hit?.hitData.hitPoint?.addxy(0, -1);
+		return null;
 	}
 
 	public bool checkKillZone(Point pos) {
 		float depth = 160;
 		CollideData? collideData = Global.level.raycast(pos.addxy(0, -1), pos.addxy(0, depth), [
-			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone), typeof(OneWay)
 		]);
 		if (collideData != null && collideData.gameObject is not KillZone) {
 			return false;
 		}
 		collideData = Global.level.raycast(pos.addxy(-10, -1), pos.addxy(-8, depth), [
-			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone), typeof(OneWay)
 		]);
 		if (collideData != null && collideData.gameObject is not KillZone) {
 			return false;
 		}
 		collideData = Global.level.raycast(pos.addxy(10, -1), pos.addxy(8, depth), [
-			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone)
+			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone), typeof(OneWay)
 		]);
 		if (collideData != null && collideData.gameObject is not KillZone) {
 			return false;
@@ -291,11 +291,6 @@ public partial class Level {
 		}
 	}
 
-
-	public List<GameObject> getGameObjectArray() {
-		return new List<GameObject>(gameObjects);
-	}
-
 	//Should actor collide with gameobject?
 	//Note: return true to indicate NOT to collide, and instead only trigger
 	public bool shouldTrigger(
@@ -315,6 +310,8 @@ public partial class Level {
 			return true;
 		}*/
 
+		if (actorCollider.disabled || gameObjectCollider.disabled) return false;
+
 		if (actorCollider.isTrigger == false && gameObject is Ladder) {
 			if (actor.pos.y <= gameObject.collider.shape.minY && intersection.y > 0) {
 				if (!actor.checkLadderDown) {
@@ -322,7 +319,28 @@ public partial class Level {
 				}
 			}
 		}
-		if (actorCollider.disabled || gameObjectCollider.disabled) return false;
+		if (actorCollider.isTrigger == false && gameObject is OneWay oneWay) {
+			if (oneWay.lockDir.y == -1) {
+				if (actor.pos.y <= gameObject.collider.shape.minY && intersection.y > 0) {
+					return false;
+				}
+			}
+			else if (oneWay.lockDir.y == 1) {
+				if (actor.pos.y >= gameObject.collider.shape.maxY && intersection.y < 0) {
+					return false;
+				}
+			}
+			if (oneWay.lockDir.x == -1) {
+				if (actor.pos.x <= gameObject.collider.shape.minX && intersection.x > 0) {
+					return false;
+				}
+			}
+			else if (oneWay.lockDir.y == 1) {
+				if (actor.pos.x >= gameObject.collider.shape.maxX && intersection.x < 0) {
+					return false;
+				}
+			}
+		}
 
 		if (gameObject is Actor wallActor && wallActor.isSolidWall && !gameObjectCollider.isTrigger) {
 			if (wallActor.selectiveSolididyFunc != null) {
@@ -333,7 +351,7 @@ public partial class Level {
 
 		if (actorCollider.isTrigger || gameObjectCollider.isTrigger) return true;
 
-		if (actorCollider.wallOnly && gameObject is not Wall) return true;
+		if (actorCollider.wallOnly && gameObject is not Wall and not OneWay) return true;
 
 		if (gameObject is Actor) {
 			if (gameObjectCollider.wallOnly) return true;
@@ -358,7 +376,7 @@ public partial class Level {
 		}
 		*/
 		var ra = gameObject as RideArmor;
-		if (actor is ShotgunIceProjSled && ra != null && (ra.character == null || ra.character.player.alliance == (actor as ShotgunIceProjSled).damager.owner.alliance)) {
+		if (actor is ShotgunIceProjSled && ra != null && (ra.character == null || ra.character.player.alliance == (actor as ShotgunIceProjSled).damager.alliance)) {
 			return true;
 		}
 		if (actor is ShotgunIceProjSled && gameObject is Projectile) {

@@ -35,22 +35,20 @@ public class FreezeCracker : Weapon {
 
 
 public class FreezeCrackerRmProj : Projectile {
-
 	public int type;
+	private bool framgented;
+	private bool didSplit;
 	int input;
 	public float sparkleTime = 0;
 	Anim? sparkle;
 	float projSpeed = 300;
-	Actor ownChr = null!;
-
 
 	public FreezeCrackerRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
-		int type, int input = 0, bool rpc = false, Player? altPlayer = null
+		int type, int input = 0, bool sendRpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "freeze_cracker_start", netProjId, altPlayer
 	) {
-
 		projId = (int)RockProjIds.FreezeCracker;
 		maxTime = 0.6f;
 		fadeSprite = "freeze_cracker_start";
@@ -58,25 +56,21 @@ public class FreezeCrackerRmProj : Projectile {
 		this.input = input;
 		damager.damage = 2;
 		damager.hitCooldown = 6;
-		ownChr = owner;
 
 		if (type == 1) {
-
 			canBeLocal = false;
 			changeSprite("freeze_cracker_proj", false);
 			reflectable = true;
+			destroyOnHit = true;
 			int dir = input * 32;
 			float ang = xDir > 0 ? dir : -dir + 128;
-			base.vel = Point.createFromByteAngle(ang) * projSpeed;
+			vel = Point.createFromByteAngle(ang) * projSpeed;
 		}
 
-		if (rpc) {
-			byte[] extraArgs = new byte[] { (byte)type };
-
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, [(byte)type ]);
 		}
 	}
-
 
 	public override void update() {
 		base.update();
@@ -86,67 +80,78 @@ public class FreezeCrackerRmProj : Projectile {
 			sparkleTime = 0;
 
 			if (ownedByLocalPlayer) sparkle = new Anim(
-				pos, "freeze_cracker_sparkles", 1, damager.owner.getNextActorNetId(), true
+				pos, "freeze_cracker_sparkles", 1, ownerPlayer.getNextActorNetId(), true
 			) { useGravity = true, gravityModifier = 0.5f };
 
 		}
 
-		if (type == 0 && isAnimOver() && ownedByLocalPlayer) {
+		if (type == 0 && isAnimOver() && ownedByLocalPlayer && ownerActor != null) {
 			time = 0;
 			new FreezeCrackerRmProj(
-				ownChr, pos, xDir, damager.owner.getNextActorNetId(true), 1, input, rpc: true
+				ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(true), 1, input, sendRpc: true
 			);
 			destroySelfNoEffect();
 		}
 	}
 
 	public void onHit() {
-		if (!ownedByLocalPlayer) {
-			destroySelf();
+		if (!ownedByLocalPlayer || didSplit) {
 			return;
 		}
+		didSplit = true;
+		
 
-		if (type == 1) {
-			playSound("ding", true, true);
-			destroySelf();
-
-			for (int i = 0; i < 6; i++) {
-				new FreezeCrackerPieceRmProj(
-					ownChr, pos, xDir, damager.owner.getNextActorNetId(true), i, rpc: true);
-			}
-		}
 	}
 
 	public override void onHitWall(CollideData other) {
 		base.onHitWall(other);
-		//if (!ownedByLocalPlayer) return;
-		if (other.gameObject.collider == null) return;
-		if (!other.gameObject.collider.isClimbable) return;
-		fragment();
+		if (!ownedByLocalPlayer ||
+			other.gameObject.collider == null ||
+			!other.gameObject.collider.isClimbable ||
+			destroyed
+		) {
+			return;
+		}
 		onHit();
-	}
+		playSound("ding", true, true);
 
-	public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
+		if (ownerActor == null) {
+			return;
+		}
+		for (int i = 0; i < 6; i++) {
+			new FreezeCrackerPieceRmProj(
+				ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(true), i, rpc: true);
+		}
+
 		destroySelf();
 	}
 
-	public override void onBlock() {
-		base.onBlock();
+	// Do effect only.
+	public override void onDestroy() {
+		base.onDestroy();
 		fragment();
 	}
 
-	public void fragment() {
-		if (!ownedByLocalPlayer) return;
+	// Split after dealing damage.
+	public override void afterDamage(IDamagable damagable, bool didDamage) {
+		base.afterDamage(damagable, didDamage);
+		onHit();
+	}
 
+	public void fragment() {
+		if (!ownedByLocalPlayer || framgented) {
+			return;
+		}
+		framgented = true;
 		float fTime = 1.25f;
-		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+
+		new Anim(pos, "freeze_cracker_fragments", xDir, ownerPlayer.getNextActorNetId(), false, true) 
 		{ frameSpeed = 0, frameIndex = 0, useGravity = true, vel = new Point(-xDir * 60, -120), ttl = fTime };
-		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+		new Anim(pos, "freeze_cracker_fragments", xDir, ownerPlayer.getNextActorNetId(), false, true) 
 		{ frameSpeed = 0, frameIndex = 0, useGravity = true, vel = new Point(xDir * 30, -60), ttl = fTime };
-		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+		new Anim(pos, "freeze_cracker_fragments", xDir, ownerPlayer.getNextActorNetId(), false, true) 
 		{ frameSpeed = 0, frameIndex = 1, useGravity = true, vel = new Point(xDir * 30, -180), ttl = fTime };
-		new Anim(pos, "freeze_cracker_fragments", xDir, damager.owner.getNextActorNetId(), false, true) 
+		new Anim(pos, "freeze_cracker_fragments", xDir, ownerPlayer.getNextActorNetId(), false, true) 
 		{ frameSpeed = 0, frameIndex = 1, useGravity = true, vel = new Point(-xDir * 30, -120), ttl = fTime };
 	}
 
@@ -160,8 +165,6 @@ public class FreezeCrackerRmProj : Projectile {
 
 
 public class FreezeCrackerPieceRmProj : Projectile {
-
-
 	public FreezeCrackerPieceRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
 		int type, bool rpc = false, Player? altPlayer = null
@@ -179,7 +182,6 @@ public class FreezeCrackerPieceRmProj : Projectile {
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)type };
-
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, extraArgs);
 		}
 	}

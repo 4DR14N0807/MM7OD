@@ -35,7 +35,23 @@ public class MatchOptionsMenu : IMainMenu {
 		int lineNum = 0;
 
 		menuOptions = new List<MenuOption>() {
-			// Spectate
+			// Suicide
+			new MenuOption(startX, startY + (lineH * lineNum++),
+			() => {
+				if (Global.input.isPressedMenu(Control.MenuConfirm)) {
+					if (canSuicide()) {
+						Global.level.mainPlayer.forceKill();
+						Menu.exit();
+					}
+				}
+				},
+				(Point pos, int index) => {
+					Fonts.drawText(
+						canSuicide() ? FontType.Red : FontType.Black, "SUICIDE",
+						pos.x, pos.y, selected: selectY == index
+					);
+				}
+			),// Spectate
 			new MenuOption(startX, startY + (lineH * lineNum++),
 			() => {
 				if (!canSpectate()) return;
@@ -56,23 +72,6 @@ public class MatchOptionsMenu : IMainMenu {
 					spectate, pos.x, pos.y, selected: selectY == index
 				);
 			}),
-			// Suicide
-			new MenuOption(startX, startY + (lineH * lineNum++),
-			() => {
-				if (Global.input.isPressedMenu(Control.MenuConfirm)) {
-					if (canSuicide()) {
-						Global.level.mainPlayer.forceKill();
-						Menu.exit();
-					}
-				}
-				},
-				(Point pos, int index) => {
-					Fonts.drawText(
-						canSuicide() ? FontType.Red : FontType.Black, "SUICIDE",
-						pos.x, pos.y, selected: selectY == index
-					);
-				}
-			),
 			// Change team
 			new MenuOption(startX, startY + (lineH * lineNum++),
 			() => {
@@ -508,8 +507,10 @@ public class MatchOptionsMenu : IMainMenu {
 	}
 
 	public bool canSuicide() {
-		if (Global.level.mainPlayer.isDead) return false;
-		return true;
+		return (
+			!Global.level.mainPlayer.isDead &&
+			Global.level.mainPlayer.character?.alive == true
+		);
 	}
 
 	public bool canChangeToTeam() {

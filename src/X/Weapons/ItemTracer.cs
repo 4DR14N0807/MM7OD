@@ -24,8 +24,8 @@ public class ItemTracer : Weapon {
 		MegamanX mmx = character as MegamanX ?? throw new NullReferenceException();
 
 		Character? target = null;
-		//character.playSound("itemTracer", sendRpc: true);
-		CollideData hit = Global.level.raycast(
+		character.playSound("itemTracer", sendRpc: true);
+		CollideData? hit = Global.level.raycast(
 			character.pos, character.pos.addxy(150 * character.xDir, 0), new List<Type>() { typeof(Actor) }
 		);
 		if (hit?.gameObject is Character chr && chr.player.alliance != player.alliance && !chr.player.scanned) {
@@ -87,7 +87,7 @@ public class ItemTracerProj : Projectile {
 		base.onHitDamagable(damagable);
 		if (!ownedByLocalPlayer) return;
 		var chr = damagable as Character;
-		if (scannedChar == null && chr != null && !chr.isStealthy(damager.owner.alliance)) {
+		if (scannedChar == null && chr != null && !chr.isStealthy(damager.alliance)) {
 			scannedChar = chr;
 			if (damager.owner == Global.level.mainPlayer) {
 				if (scannedChar.player.scanned) {

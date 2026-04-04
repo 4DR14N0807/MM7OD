@@ -9,20 +9,46 @@ public class MagicCard : Weapon {
 	public List<MagicCardProj> cardsOnField = new();
 	public int maxCardCount = 4;
 	public int cardCount = 1;
-	string[] effectsText = new[] {
+	string[] effectsText = [
+		"",
+		// Common.
+		"Pen!",
+		"Refill!",
+		"Flip!",
+		"Pull!",
+		"Push!",
+		// Rare.
+		"Slow!",
+		"Sleep!",
+		"Poison!", // 1 Burn.
+		"Heal!", // 1 HP only.
+		"Double shot!",
+		// Very rare.
+		"Confetti!",
+		"Pierce!",
+		"Hinder!",
+		"Root!",
+		"Multi-shot!",
+		// Once in a blue moon.
+		"Bunny Met!",
+	];
+	
+	//Meanwhile we code all the other effects.
+	string[] effectsTextOld = [
 		"",
 		"FLIP!",
 		"AMMO REFILL!",
 		"DOUBLE SHOT!",
-		"MULTU-SHOT!!!",
-	};
-	string[] effectsSounds = new[] {
+		"MULTI-SHOT!!!",
+	];
+
+	string[] effectsSounds = [
 		"",
 		"magiccard1",
 		"upgrade",
 		"magiccard3",
 		"magiccard4"
-	};
+	];
 
 	public MagicCard() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -84,8 +110,8 @@ public class MagicCard : Weapon {
 		if (cardCount <= 0) {
 			cardCount += maxCardCount;
 			int[] effectChances = [
-				1, 1, 1, 1,
-				2, 2, 2, 2,
+				1, 1, 1, 1, 1, 1,
+				2, 2, 2, 2, 2,
 				3, 3, 3,
 				4, 4
 			];
@@ -107,7 +133,7 @@ public class MagicCard : Weapon {
 				(int)FontType.YellowSmall,
 				(int)FontType.OrangeSmall,
 			];
-			bass.addDamageText(effectsText[effect], colors[effect]);
+			bass.addDamageText(effectsTextOld[effect], colors[effect]);
 		}
 		if (effect >= (int)MagicCardEffects.MultiShot) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
@@ -141,7 +167,6 @@ public class MagicCardProj : Projectile {
 	public int effect;
 	int hits;
 	float startAngle;
-	Actor ownChr = null!;
 	private Point returnPos;
 	bool duplicated;
 	int originalDir;
@@ -173,7 +198,6 @@ public class MagicCardProj : Projectile {
 		}
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
 		damager.damage = 1;
-		ownChr = owner;
 		originalDir = xDir;
 
 		canBeLocal = false;
@@ -259,7 +283,7 @@ public class MagicCardProj : Projectile {
 		}
 
 		var character = other.gameObject as Character;
-		if (reversed && character != null && character.player == damager.owner) {
+		if (reversed && character != null && character.player == ownerPlayer) {
 			if (pickup != null) {
 				pickup.changePos(character.getCenterPos());
 			}
@@ -267,12 +291,14 @@ public class MagicCardProj : Projectile {
 		}
 		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
 			var proj = other.gameObject as Projectile;
-			if (proj != null && proj.owner.alliance != damager.owner.alliance) {
+			if (proj != null && proj.owner.alliance != ownerPlayer.alliance) {
 				destroySelf();
 			}
-			new MagicCardSpecialProj(
-				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, effect, true
-			);
+			if (ownerActor != null) {
+				new MagicCardSpecialProj(
+					ownerActor, pos, originalDir, ownerPlayer.getNextActorNetId(), startAngle, effect, true
+				);
+			}
 			playSound("magiccard", true);
 			duplicated = true;
 		}
@@ -281,7 +307,7 @@ public class MagicCardProj : Projectile {
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 
-		if (damagable.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)) {
+		if (damagable.canBeDamaged(ownerPlayer.alliance, ownerPlayer.id, projId)) {
 			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
 				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
 			) {
@@ -309,9 +335,12 @@ public class MagicCardProj : Projectile {
 		}
 		if (!ownedByLocalPlayer) { return; }
 		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
-			new MagicCardSpecialProj(
-				ownChr, pos, originalDir, damager.owner.getNextActorNetId(), startAngle, effect, true
-			);
+			if (ownerActor != null) {
+				new MagicCardSpecialProj(
+					ownerActor, pos, originalDir,
+					ownerPlayer.getNextActorNetId(), startAngle, effect, true
+				);
+			}
 			playSound("magiccard", true);
 		}
 	}
@@ -334,7 +363,6 @@ public class MagicCardSpecialSpawn : Projectile {
 	float cooldown;
 	int count = 1;
 	float startAngle;
-	Actor ownChr = null!;
 
 	public MagicCardSpecialSpawn(
 		Actor owner, Point pos, int xDir, float startAngle,
@@ -346,7 +374,6 @@ public class MagicCardSpecialSpawn : Projectile {
 		setIndestructableProperties();
 		maxTime = 2;
 		this.startAngle = startAngle;
-		ownChr = owner;
 
 		if (rpc) {
 			byte[] extraArgs = new byte[] { (byte)startAngle };
@@ -376,9 +403,13 @@ public class MagicCardSpecialSpawn : Projectile {
 			} else {
 				t = MathF.Ceiling(t / 2);
 			}
-
-			new MagicCardSpecialProj(ownChr, pos, xDir,  
-				damager.owner.getNextActorNetId(), startAngle, (int)MagicCardEffects.MultiShot, true);
+			if (ownerActor != null) {
+				new MagicCardSpecialProj(
+					ownerActor, pos, xDir,  
+					ownerPlayer.getNextActorNetId(),
+					startAngle, (int)MagicCardEffects.MultiShot, true
+				);
+			}
 			playSound("magiccard", true);
 			count++;
 			cooldown = 9;
@@ -441,7 +472,7 @@ public class MagicCardSpecialProj : Projectile {
 		if (closestEnemy == null) {
 			closestEnemy = Global.level.getClosestTarget(
 			new Point (pos.x, pos.y),
-			damager.owner.alliance,
+			ownerPlayer.alliance,
 			false, 200
 			);
 		} else {

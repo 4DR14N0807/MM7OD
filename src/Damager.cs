@@ -6,6 +6,11 @@ namespace MMXOnline;
 
 public class Damager {
 	public Player owner;
+	public int? _alliance;
+	public int alliance {
+		set => _alliance = value;
+		get => _alliance ?? owner?.alliance ?? -100;
+	}
 	public float damage;
 	public float hitCooldownSeconds {
 		set => hitCooldown = MathF.Ceiling(value * 60f);
@@ -24,7 +29,6 @@ public class Damager {
 
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
 		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
-		{ (int)BluesProjIds.LemonAOverdrive, 60 * 2},
 		{ (int)BluesProjIds.SparkShock, 100},
 		{ (int)BluesProjIds.ProtoLandPush, 60 * 1},
 	};
@@ -269,9 +273,9 @@ public class Damager {
 					break;
 				}*/
 				case (int)ProjIds.TenguBladeDash: {
-					character.xPushVel += 3 * damagingActor?.xDir ?? 3 * -character.xDir;
+					character.xFlinchPushVel += 4 * (damagingActor?.xDir ?? -character.xDir);
 					break;
-				} 
+				}
 				case (int)BassProjIds.MagicCardFlip:
 					character.xDir *= -1;
 					break;
@@ -593,14 +597,6 @@ public class Damager {
 		}
 
 		return null;
-	}
-
-
-	public static bool canDamageFrostShield(int projId) {
-		if (CrackedWall.canDamageCrackedWall(1, null) != 0) {
-			return true;
-		}
-		return true;
 	}
 
 	public static bool isBoomerang(int? projId) {

@@ -31,7 +31,7 @@ public class ExplosiveRound : VileBall {
 		hitcooldown = "0.2";
 		effect = "Splits on ground.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new BallAttacks(this), true);
@@ -59,13 +59,16 @@ public class SpreadShot : VileBall {
 		damage = "1";
 		effect = "Stuns Enemies. CD: 2";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+
+	
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new BallAttacks(this), true);
 	}
 	public override void shoot(Character character, int[] args) {
 		if (character is not Vile vava) return;
+
 		vava.setVileShootTime(this);
 		vava.tryUseVileAmmo(vileAmmoUsage);
 		int num = args[0];
@@ -91,7 +94,7 @@ public class PeaceOutRoller : VileBall {
 		flinch = "6";
 		effect = "Splits on ground.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new BallAttacks(this), true);
@@ -132,7 +135,7 @@ public class BallAttacks : VileState {
 	public override void update() {
 		base.update();
 
-		if (vile.energy.ammo < weapon.vileAmmoUsage && character.isAnimOver()) {
+		if (vile.energy.ammo < weapon.vileAmmoUsage) {
 			character.changeToCrouchOrFall();
 			return;
 		}
@@ -163,6 +166,7 @@ public class BallAttacks : VileState {
 						weapon.shoot(vile, [i + 1]);
 					}
 				}
+				if (stateTime > 44f / 60f) character.changeToCrouchOrFall();
 			} else if (weapon is PeaceOutRoller && !shot) {
 				weapon.shoot(vile, []);
 				shot = true;
@@ -187,6 +191,7 @@ public class BallAttacks : VileState {
 			character.vel = new Point();
 		}
 	}
+
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;

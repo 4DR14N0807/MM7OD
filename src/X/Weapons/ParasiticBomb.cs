@@ -327,11 +327,11 @@ public class BeeCursorAnim : Anim {
 }
 
 public class ParasiticBombProjCharged : Projectile, IDamagable {
-	public Actor host;
+	public Actor? host;
 	public Point lastMoveAmount;
 	const float maxSpeed = 150;
 	public ParasiticBombProjCharged(
-		Point pos, int xDir, Actor owner, Player player, ushort? netId, Actor host, bool rpc = false
+		Point pos, int xDir, Actor owner, Player player, ushort? netId, Actor? host, bool rpc = false
 	) : base(
 		pos, xDir, owner, "parasitebomb_bee", netId, player	
 	) {
@@ -355,7 +355,7 @@ public class ParasiticBombProjCharged : Projectile, IDamagable {
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ParasiticBombProjCharged(
-			args.pos, args.xDir, args.owner, args.player, args.netId, null!
+			args.pos, args.xDir, args.owner, args.player, args.netId, null
 		);
 	}
 
@@ -368,8 +368,8 @@ public class ParasiticBombProjCharged : Projectile, IDamagable {
 		base.update();
 		if (!ownedByLocalPlayer) return;
 
-		if (!host.destroyed) {
-			Point amount = pos.directionToNorm(host.getCenterPos()).times(150);
+		if (!host?.destroyed == true) {
+			Point amount = pos.directionToNorm(host?.getCenterPos() ?? new Point (0,0)).times(150);
 			vel = Point.lerp(vel, amount, Global.spf * 4);
 			if (vel.magnitude > maxSpeed) vel = vel.normalize().times(maxSpeed);
 		} else {
@@ -383,7 +383,7 @@ public class ParasiticBombProjCharged : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {

@@ -8,7 +8,7 @@ public class RushState {
 	public string defaultSprite;
 	public string transitionSprite;
 	public Rush rush = null!;
-	public Character character = null!;
+	public Rock? rock => rush.rock;
 	public float stateTime;
 	public float stateSeconds => stateTime / Global.secondsFrameDuration;
 
@@ -57,7 +57,6 @@ public class RushState {
 public class RushWarpIn : RushState {
 	public Point destY;
 	public Point rockPos;
-	public Anim warpAnim = null!;
 	bool landed;
 
 	public RushWarpIn(bool addInvulnFrames = true) : base("rush_warp_beam") { }
@@ -76,7 +75,7 @@ public class RushWarpIn : RushState {
 		if (rush.netOwner?.character != null) {
 			rockPos = rush.netOwner.character.pos;
 		}
-		Point? checkGround = Global.level.getGroundPosNoKillzone(character.pos);
+		//Point? checkGround = Global.level.getGroundPosNoKillzone(rock.pos);
 		//rush.pos = checkGround.GetValueOrDefault();
 		//warpAnim = new Anim(new Point(rush.pos.x, rush.pos.y - 200), "rush_warp_beam", 1, null, false);
 	}
@@ -204,7 +203,6 @@ public class RushCoil : RushState {
 }
 
 public class RushJetState : RushState {
-	Rock rock = null!;
 	public float jetSpeedX;
 	public float jetSpeedY;
 	int decAmmoCooldown = 30;
@@ -222,7 +220,6 @@ public class RushJetState : RushState {
 		rush.useGravity = false;
 		rush.grounded = false;
 		rush.canBeGrounded = false;
-		rock = rush.character as Rock ?? throw new NullReferenceException();
 		Global.level.modifyObjectGridGroups(rush, isActor: true, isTerrain: true);
 	}
 
@@ -236,7 +233,7 @@ public class RushJetState : RushState {
 	public override void update() {
 		base.update();
 
-		if (rock.isUsingRushJet()) {
+		if (rock?.isUsingRushJet() == true) {
 			if (!once) {
 				rush.changeSprite("rush_jet", true);
 				rush.playSound("rush_jet", true);
@@ -259,36 +256,37 @@ public class RushJetState : RushState {
 			jetSpeedY = 0;
 		}
 
-		//rush.vel = new Point(jetSpeedX * rush.xDir, jetSpeedY);
-		rush.vel.x = jetSpeedX * rush.xDir;
-		rush.vel.y = jetSpeedY;
+		//rush.vel.x = jetSpeedX * rush.xDir;
+		//rush.vel.y = jetSpeedY;
+
+		// This way it won't stuck on floor or walls.
+		rush.move(new Point(jetSpeedX * rush.xDir, 0));
+		rush.move(new Point(0, jetSpeedY));
 
 		if (once) {
 			decAmmoCooldown--;
 		}
 		if (decAmmoCooldown <= 0) {
-			rock.rushWeapon.addAmmo(-1, player);
+			rock?.rushWeapon.addAmmo(-1, player);
 			decAmmoCooldown = maxDecAmmoCooldown;
 		}
 
 		if (rock?.rushWeapon.ammo <= 0) {
 			rush.changeState(new RushWarpOut());
-			rush.character.changeToIdleOrFall();
+			rush.rock?.changeToIdleOrFall();
 		} 
 	}
 }
 
 
 public class RushSearchState : RushState {
-
 	public int state;
 	bool digging;
 	int digTime;
-	Rock rock = null!;
 	Point pickupPos;
 	int pickupTime;
 	int sound;
-	string soundStr = null!;
+	string soundStr = "";
 	double dice;
 	public RushSearchState() : base("rush_dig_start", "rush_smell") {
 
@@ -296,7 +294,6 @@ public class RushSearchState : RushState {
 
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
-		rock = rush.character as Rock ?? throw new NullReferenceException();
 		pickupPos = new Point(rush.pos.x + (rush.xDir * 10), rush.pos.y - 16);
 		sound = Helpers.randomRange(0, 1);
 		soundStr = sound == 0 ? "rush_search_searching1" : "rush_search_searching2";
@@ -341,7 +338,7 @@ public class RushSearchState : RushState {
 					//RNG starts here.
 					dice = Helpers.randomRange(1, 1000);
 					getRandomItem();
-					rock.rushWeapon.addAmmo(-4, player);
+					rock?.rushWeapon.addAmmo(-4, player);
 
 					state = 3;
 				} break;
@@ -379,25 +376,19 @@ public class RushSearchState : RushState {
 				text = "FULL HEAL!!!";
 				font = FontType.Blue;
 
-				new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else if (altDice == 1) {
 				sound = "upgrade";
 				text = "FULL AMMO REFILL!!!";
 				font = FontType.Green;
 
-				new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else {
 				sound = "upgrade";
 				text = "100 BOLTS!!!";
 				font = FontType.Yellow;
 
-				new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			}
 		}
 		// Large drops.
@@ -407,9 +398,7 @@ public class RushSearchState : RushState {
 				sound = "upgrade";
 				font = FontType.Blue;
 
-				var pickup = new TankHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				var pickup = new TankHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 				text = pickup.type switch {
 					1 => "Yashichi!",
 					2 => "M-Tank!",
@@ -424,36 +413,28 @@ public class RushSearchState : RushState {
 				text = "W-TANK!";
 				font = FontType.Green;
 
-				new TankAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new TankAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			}
 			else if (altDice == 2) {
 				sound = "upgrade";
 				text = "S-TANK!";
 				font = FontType.Yellow;
 
-				new TankSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new TankSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			}
 			else if (altDice == 3) {
 				sound = "rush_search_end";
 				text = "A-TANK!";
 				font = FontType.Purple;
 
-				new TankShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new TankShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else {
 				sound = "upgrade";
 				text = "40 BOLTS!";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 5; i++) {
-					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
-					};
+					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 				}
 			}
 		}
@@ -465,43 +446,33 @@ public class RushSearchState : RushState {
 				text = "HEALTH CAPSULE!";
 				font = FontType.Blue;
 
-				new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			}
 			else if (altDice == 1) {
 				sound = "upgrade";
 				text = "AMMO CAPSULE!";
 				font = FontType.Green;
 
-				new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else if (altDice == 2) {
 				sound = "upgrade";
 				text = "SUPER CAPSULE!";
 				font = FontType.Yellow;
 
-				new LargeSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new LargeSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else if (altDice == 3) {
 				sound = "rush_search_end";
 				text = "SHIELD CAPSULE!";
 				font = FontType.Purple;
 
-				new LargeShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new LargeShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else {
 				sound = "upgrade";
 				text = "24 BOLTS!";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 3; i++) {
-					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
-					};
+					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 				}
 			}
 		}
@@ -513,26 +484,20 @@ public class RushSearchState : RushState {
 				text = "SMALL HEALTH CAPSULE";
 				font = FontType.Blue;
 
-				new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else if (altDice == 1) {
 				sound = "rush_search_end";
 				text = "SMALL AMMO CAPSULE";
 				font = FontType.Green;
 
-				new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else {
 				sound = "rush_search_end";
 				text = "10 BOLTS";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 5; i++) {
-					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
-					};
+					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 				}
 			}
 		}
@@ -544,42 +509,32 @@ public class RushSearchState : RushState {
 				text = "MINI HEALTH CAPSULE";
 				font = FontType.Blue;
 
-				new MiniHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new MiniHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else if (altDice == 1) {
 				sound = "rush_search_end";
 				text = "MINI AMMO CAPSULE";
 				font = FontType.Green;
 
-				new MiniAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new MiniAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else if (altDice == 2) {
 				sound = "rush_search_end";
 				text = "MINI SUPER CAPSULE";
 				font = FontType.Yellow;
 
-				new MiniSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new MiniSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else if (altDice == 3) {
 				sound = "rush_search_end";
 				text = "MINI SHIELD CAPSULE";
 				font = FontType.Purple;
 
-				new MiniShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-					vel = pickupVel
-				};
+				new MiniShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 			} else {
 				sound = "rush_search_end";
 				text = "4 BOLTS";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 2; i++) {
-					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true) {
-						xPushVel = Helpers.randomRange(-2, 2) * 0.5f, vel = new Point(0, pickupVel.y / 2)
-					};
+					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
 				}
 			}
 		}
@@ -590,8 +545,8 @@ public class RushSearchState : RushState {
 			font = FontType.Red;
 
 			new Met(
-				pickupPos.addxy(0, 16), rush.xDir, Global.level.mainPlayer,
-				player.getNextActorNetId(), sendRpc: true
+				pickupPos.addxy(0, 16), rush.xDir, player,
+				player.getNextActorNetId(), sendRpc: true, alliance: player.alliance 
 			) {
 				vel = pickupVel
 			};
@@ -602,7 +557,11 @@ public class RushSearchState : RushState {
 			text = "KA-BOOM!!!";
 			font = FontType.Red;
 
-			new RSBombProj(rock, pickupPos, 1, rush.player?.getNextActorNetId(), true, rush.player);
+			new RSBombProj(
+				rock != null ? rock : rush,
+				pickupPos, 1, rush.player?.getNextActorNetId(),
+				true, rush.player
+			);
 		}
 		// Trash
 		else {
@@ -639,10 +598,10 @@ public class RushHurt : RushState {
 
 	public override void update() {
 		base.update();
-		
+
 		if (hurtMoveSpeed != 0) {
 			hurtMoveSpeed = Helpers.toZero(hurtMoveSpeed, 400 * Global.spf, hurtDir);
-			rush.move(new Point(-hurtMoveSpeed, -character.getJumpPower() * 0.125f));
+			rush.move(new Point(-hurtMoveSpeed, -Physics.JumpSpeed * 0.125f));
 		}
 
 		if (stateTime >= 36) rush.changeState(new RushWarpOut());
@@ -651,10 +610,8 @@ public class RushHurt : RushState {
 
 
 public class RushWarpOut : RushState {
-
 	int time;
 	bool beam;
-	Rock? rock;
 
 	public RushWarpOut() : base("rush_warp_beam", "rush_warp_out") {
 		
@@ -662,7 +619,6 @@ public class RushWarpOut : RushState {
 
 	public override void onEnter(RushState oldState) {
 		base.onEnter(oldState);
-		rock = rush.character as Rock;
 		//rush.physicsCollider = null;
 		rush.globalCollider = null;
 	}
@@ -681,10 +637,9 @@ public class RushWarpOut : RushState {
 		}
 
 		if (beam) time++;
-		
+
 		if (time >= 60) {
 			rush.destroySelf();
-			//if (rock != null) rock.rush = null!;
 		} 
 	}
 }

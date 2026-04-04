@@ -46,9 +46,11 @@ public class PlasmaGun : AxlWeapon {
 	public override void axlAltShoot(Character character, int[] args) {
 		if (character is not Axl axl) return;
 		if (altShotCooldown > 0) return;
+		rechargeAmmoCustomSettingAxl2 = altRechargeAmmoCooldown;
 		if (axl.loadout.plasmaGunAlt == 0) {
 			if (!axl.grounded) return;
 			axl.voltTornadoTime = 0.2f;
+			shootCooldown = fireRate;
 			base.axlAltShoot(character, args);
 			return;
 		} else {
@@ -197,8 +199,10 @@ public class PlasmaGunAltProj : Projectile {
 		float closestAngle = float.MaxValue;
 		Character? closestEnemy = null;
 		foreach (var player in Global.level.players) {
-			Character enemy = player.character;
-			if (enemy == null) continue;
+			Character? enemy = player.character;
+			if (enemy == null) {
+				continue;
+			}
 			if (!enemy.canBeDamaged(owner.alliance, owner.id, projId)) continue;
 			if (enemy.isStealthy(owner.alliance)) continue;
 			if (bulletPos.distanceTo(enemy.getCenterPos()) > range) continue;
@@ -257,6 +261,9 @@ public class PlasmaGunAltProj : Projectile {
 
 	public List<Point> getNodes() {
 		List<Point> nodes = new List<Point>();
+		if (player.character == null) {
+			return nodes;
+		}
 		int nodeCount = 8;
 		Point origin = player.character.getCenterPos();
 		if (player.character is Axl axl) {
@@ -287,7 +294,7 @@ public class PlasmaGunAltProj : Projectile {
 		var col1 = new Color(74, 78, 221);
 		var col2 = new Color(61, 113, 255);
 		var col3 = new Color(245, 252, 255);
-		if (Global.level.gameMode.isTeamMode && damager.owner.alliance == GameMode.redAlliance) {
+		if (Global.level.gameMode.isTeamMode && damager.alliance == GameMode.redAlliance) {
 			col1 = new Color(221, 78, 74);
 			col2 = new Color(255, 113, 61);
 			col3 = new Color(255, 245, 240);

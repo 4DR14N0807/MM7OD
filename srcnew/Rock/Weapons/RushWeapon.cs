@@ -74,9 +74,6 @@ public class RushSearchWeapon : RushWeapon {
 
 
 public class RSBombProj : Projectile {
-
-	Actor ownChr = null!;
-
 	public RSBombProj( 
 		Actor owner, Point pos, int xDir, ushort? netProjId,
 		bool rpc = false, Player? altPlayer = null
@@ -92,8 +89,6 @@ public class RSBombProj : Projectile {
 		damager.hitCooldown = 60;
 		base.vel.y = -360;
 		useGravity = true;
-
-		if (ownedByLocalPlayer) ownChr = owner;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -115,15 +110,14 @@ public class RSBombProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
+		if (!ownedByLocalPlayer || ownerActor == null) return;
 
-		new RSBombExplosionProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), true, damager.owner);
+		new RSBombExplosionProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true, damager.owner);
 	}
 }
 
 
 public class RSBombExplosionProj : Projectile {
-
 	int radius;
 	float maxRadius = 64;
 	public RSBombExplosionProj(
@@ -158,9 +152,9 @@ public class RSBombExplosionProj : Projectile {
 		else destroySelf();
 
 		if (isRunByLocalPlayer()) {
-			foreach (var go in Global.level.getGameObjectArray()) {
+			foreach (var go in getCloseActors(200)) {
 				var chr = go as Character;
-				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
+				if (chr != null && chr.canBeDamaged(damager.alliance, damager.owner.id, projId)
 					&& chr.pos.distanceTo(pos) <= radius) {
 
 					damager.applyDamage(chr, false, weapon, this, projId);

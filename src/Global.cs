@@ -10,6 +10,7 @@ using DeviceId.Encoders;
 using DeviceId.Formatters;
 using Newtonsoft.Json;
 using SFML.Graphics;
+using WindowsAPI;
 using static SFML.Window.Keyboard;
 
 namespace MMXOnline;
@@ -17,18 +18,18 @@ namespace MMXOnline;
 public partial class Global {
 	public static decimal version = 20m;
 	public static string versionName = "v0.6";
-	public static string subVersionName = "Alpha 6";
-	public static string subVersionShortName = "A6";
+	public static string subVersionName = "Alpha 10";
+	public static string subVersionShortName = "A10";
 
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.
 	// This step could be automated as future improvement in build scripts.
-	private const string assetChecksum = "89862C01DAAFD7B611A70E5936152D04";
+	private const string assetChecksum = "D6586C76EFA5B7D22236542B7FE6E461";
 
 	// Use this to make sure the checksum varies.
 	public const string checksumPrefix = "[7OD]";
 	// Better to use together with "checksumPrefix" and be diferent from it.
-	public const string checksumPrefix2 = "7OD-08-02-2026-406b";
+	public const string checksumPrefix2 = "7OD-02-04-2026-6a10";
 	// Final checksum key.
 	public const string checksumKey = checksumPrefix + " " + checksumPrefix2;
 	// For displaying the name of the mod in the version string.
@@ -44,6 +45,8 @@ public partial class Global {
 	public static string nameCoins = "Bolts";
 
 	public static bool isLoading;
+
+	public static WinApi OsApi = new();
 
 	public static void promptDebugSettings() {
 		//testDocumentsInDebug = Helpers.showMessageBoxYesNo("Test documents in debug?", "Debug Settings");
@@ -209,78 +212,6 @@ public partial class Global {
 			overrideSpawnPoint = null;
 		}
 	}
-
-	public static void cheats() {
-		if (Global.level == null) return;
-
-		//if (!Global.showAIDebug && Global.input.isPressed(Key.F1)) {
-			//Global.breakpoint = true;
-			//Global.showAIDebug = true;
-			//Global.level.setMainPlayerSpectate();
-			//Global.level.mainPlayer.character.addInfectedTime(null, 8);
-			//Global.level.otherPlayer.character.addInfectedTime(null, 8);
-			//DevConsole.toggleFTD();
-		//}
-		if (Global.input.isPressed(Key.F2)) {
-			Global.showHitboxes = !Global.showHitboxes;
-		}
-		if (Global.input.isPressed(Key.F3)) {
-			Global.showGridHitboxes = !Global.showGridHitboxes;
-			//Global.showAIDebug = !Global.showAIDebug;
-		}
-		if (Global.input.isPressed(Key.F4)) {
-			Global.level.mainPlayer?.forceKill();
-			//Global.level?.mainPlayer?.character?.setHurt(1, Global.defFlinch);
-		}
-		if (Global.input.isPressed(Key.F5)) {
-			Global.showDiagnostics = !Global.showDiagnostics;
-		}
-		if (Global.input.isPressed(Key.F6)) {
-			Global.level.mainPlayer.currency = 100;
-		}
-
-		if (Global.input.isPressed(Key.F7)) {
-			DevConsole.toggleInvulnFrames(10);
-		}
-
-		//if (Global.input.isPressed(Key.F8)) {
-		//DevConsole.changeTeam();
-		//}
-
-		if (Global.input.isPressed(Key.F9)) {
-			if (AI.trainingBehavior == AITrainingBehavior.Default) AI.trainingBehavior = AITrainingBehavior.Idle;
-			else if (AI.trainingBehavior == AITrainingBehavior.Idle) AI.trainingBehavior = AITrainingBehavior.Attack;
-			else if (AI.trainingBehavior == AITrainingBehavior.Attack) AI.trainingBehavior = AITrainingBehavior.Jump;
-			else if (AI.trainingBehavior == AITrainingBehavior.Jump) AI.trainingBehavior = AITrainingBehavior.Default;
-		}
-		if (Global.input.isPressed(Key.F8)) {
-			var aiPlayer = Global.level.players[1];
-			if (aiPlayer?.character != null) {
-				if (Global.level.mainPlayer.input == Global.input) {
-					Global.level.mainPlayer.input = new Input(true);
-					aiPlayer.isAI = false;
-					aiPlayer.character.ai = null;
-					aiPlayer.input = Global.input;
-				} else {
-					Global.level.mainPlayer.input = Global.input;
-					aiPlayer.character.ai = new AI(aiPlayer.character);
-					aiPlayer.isAI = true;
-					aiPlayer.input = new Input(true);
-				}
-			}
-		}
-
-		if (Global.input.isPressed(Key.F11)) {
-			var ms = Global.level.musicSources.FirstOrDefault();
-			if (ms != null) {
-				ms.setNearEndCheat();
-			} else {
-				Global.music.setNearEndCheat();
-			}
-		}
-	}
-
-	// End debug section.
 
 	public static bool hideMouse = false;
 	public static int randomTipIndex = 0;

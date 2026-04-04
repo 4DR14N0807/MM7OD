@@ -95,7 +95,7 @@ public class MasteryTracker {
 			damageLevel++;
 			damageLevelStacks = 0;
 			if (mainCharActive) {
-				player.character?.addDamageText($"ATK L{damageLevel}!", (int)FontType.RedSmall);
+				player.character?.addDamageText($"ATK Rk{damageLevel}!", (int)FontType.RedSmall);
 			}
 		}
 		player.awardCurrency(charId, damageLvCoins);
@@ -114,7 +114,7 @@ public class MasteryTracker {
 			defenseLevel++;
 			defenseLevelStacks = 0;
 			if (mainCharActive) {
-				player.character?.addDamageText($"DEF L{defenseLevel}!", (int)FontType.BlueSmall);
+				player.character?.addDamageText($"DEF Rk{defenseLevel}!", (int)FontType.BlueSmall);
 			}
 		}
 		player.awardCurrency(charId, defenseLvCoins);
@@ -128,7 +128,7 @@ public class MasteryTracker {
 			supportLevel++;
 			supportLevelStacks = 0;
 			if (mainCharActive) {
-				player.character?.addDamageText($"SP L{supportLevel}!", (int)FontType.GreenSmall);
+				player.character?.addDamageText($"SP Rk{supportLevel}!", (int)FontType.GreenSmall);
 			}
 		}
 		player.awardCurrency(charId, supportLvCoins);
@@ -142,7 +142,7 @@ public class MasteryTracker {
 			mapLevel++;
 			mapLevelStacks = 0;
 			if (mainCharActive) {
-				player.character?.addDamageText($"MAP L{mapLevel}!", (int)FontType.PurpleSmall);
+				player.character?.addDamageText($"MAP Rk{mapLevel}!", (int)FontType.PurpleSmall);
 			}
 		}
 		player.awardCurrency(charId, mapLvCoins);

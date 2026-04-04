@@ -22,13 +22,15 @@ public enum SpecialStateIds {
 	XTeleport,
 	PZeroParry,
 	WarpIdle,
+	Block,
+	CsJkUBlock,
 }
 
 public static class ArmorParts {
-	public static readonly string[] name = {
+	public static readonly string[] name = [
 		"Leg",
 		"Body",
 		"Helm",
 		"Arm"
-	};
+	];
 }

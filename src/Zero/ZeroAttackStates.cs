@@ -112,7 +112,7 @@ public class ZeroAirSlashState : ZeroGenericMeleeState {
 
 		airMove = true;
 		canJump = true;
-		exitOnLanding = false;
+		exitOnLanding = !Options.main.slashGroundSprite;
 		useDashJumpSpeed = true;
 		canStopJump = true;
 	}
@@ -159,6 +159,8 @@ public class ZeroCrouchSlashState : ZeroGenericMeleeState {
 }
 
 public class ZeroDashSlashState : ZeroGenericMeleeState {
+	public bool SlideOnce;
+
 	public ZeroDashSlashState() : base("attack_dash") {
 		sound = "saber1";
 		soundFrame = 1;

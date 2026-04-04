@@ -36,6 +36,12 @@ public class BluesLoadout {
 		}
 	}
 
+	public BluesLoadout clone() {
+		return new BluesLoadout {
+			specialWeapon = specialWeapon,
+		};
+	}
+
 	public static BluesLoadout createRandom() {
 		// Star Crash not here for AI reasons.
 		int[] weapons = { 0, 1, 2, 3, 4, 5, 6 ,7 };
@@ -152,13 +158,27 @@ public class BluesWeaponMenu : IMainMenu {
 		}
 	}
 
+	void drawTitleSquare(FontType font, string text, bool error) {
+		int size = (Fonts.measureText(font, text)) / 2;
+		DrawWrappers.DrawRect(
+			Global.halfScreenW - size - 3, 22, Global.halfScreenW + size + 2 + (error ? 0 : 1), 38, 
+			true, new Color(0, 0, 0, 150), 1, ZIndex.HUD, false, 
+			outlineColor: error ? Color.White : Helpers.LoadoutBorderColor
+		);
+	}
+
 	public void render() {
+		int titleYPos = 24;
 		if (!inGame) {
 			DrawWrappers.DrawTextureHUD(Global.textures["loadoutbackground"], 0, 0);
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenuload"], 0, 0);
 		}
-		Fonts.drawText(FontType.RedMenu, "Protoman Loadout", Global.screenW * 0.5f, 24, Alignment.Center);
+		
+		string title = "Protoman Loadout";
+		FontType font = FontType.RedMenu;
+		drawTitleSquare(font, title, false);
+		Fonts.drawText(font, title, Global.screenW * 0.5f, titleYPos, Alignment.Center);
 
 		int startY = 55;
 		int startX = 30;

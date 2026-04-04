@@ -23,7 +23,7 @@ public class SpreadDrill : Weapon {
 		//	"Slowdown on hit, the smaller the drill the faster it is."
 		//);
 		descriptionV2 = [
-			[ "Shoots a drill that splits by pressing SHOOT button\n" +  
+			[ "Shoots a drill that splits by pressing SHOOT button\n" +
 			"The smaller the drill the faster it is." ],
 		];
 	}
@@ -47,20 +47,19 @@ public class SpreadDrill : Weapon {
 public class SpreadDrillProj : Projectile {
 	public float timeToSplit;
 	public float selectedDir;
-	public Bass? bass;
 	public Point addPos;
 	public Sprite exaustData = new Sprite("spread_drill_effect");
 
 	public SpreadDrillProj(
-		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		Actor owner, Point pos, int xDir, ushort? netProjId,
 		bool rpc = false, Player? altPlayer = null, SpreadDrill? linkedWeapon = null
 	) : base(
 		pos, xDir, owner, "spread_drill_proj", netProjId, altPlayer
 	) {
-		maxTime = 2f;
+		maxTime = 1;
 		projId = (int)BassProjIds.SpreadDrill;
 		destroyOnHit = false;
-	
+
 		if (ownedByLocalPlayer && linkedWeapon != null) {
 			linkedWeapon.drill = this;
 		}
@@ -103,7 +102,7 @@ public class SpreadDrillProj : Projectile {
 		}
 		if (timeToSplit >= 40 ||
 			ownerPlayer.input.isPressed(Control.Shoot, ownerPlayer) &&
-			bass?.currentWeapon is SpreadDrill
+			(ownerActor as Character)?.currentWeapon is SpreadDrill
 		) {
 			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), true, rpc: true);
 			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), false, rpc: true);
@@ -114,7 +113,7 @@ public class SpreadDrillProj : Projectile {
 	}
 
 	public override void render(float x, float y) {
-		base.render(x,y);
+		base.render(x, y);
 		int fi = exaustData.frameIndex;
 
 		exaustData.draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
@@ -141,7 +140,7 @@ public class SpreadDrillProj : Projectile {
 
 		Point? hitPos = sprite.getCurrentFrame().POIs[0];
 		new Anim(
-			pos.add(hitPos.Value.times(xDir)), 
+			pos.add(hitPos.Value.times(xDir)),
 			"rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true
 		);
 	}
@@ -149,7 +148,6 @@ public class SpreadDrillProj : Projectile {
 public class SpreadDrillMediumProj : Projectile {
 	public int hits;
 	public Point addPos;
-	public Actor ownChr;
 	public float projSpeed = 150;
 
 	public SpreadDrillMediumProj(
@@ -166,13 +164,12 @@ public class SpreadDrillMediumProj : Projectile {
 		yDir = upOrDown ? -1 : 1;
 		damager.damage = 1;
 		damager.hitCooldown = 30;
-		ownChr = owner;
 
 		addPos = new Point(-12 * xDir, 0 * yDir);
 		canBeLocal = false;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, new byte[] {(byte)(yDir == -1 ? 1 : 0)});
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, new byte[] { (byte)(yDir == -1 ? 1 : 0) });
 		}
 
 		//projId = (int)BassProjIds.SpreadDrill;
@@ -180,30 +177,31 @@ public class SpreadDrillMediumProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SpreadDrillMediumProj(
-			arg.owner, arg.pos, arg.xDir ,arg.netId,
+			arg.owner, arg.pos, arg.xDir, arg.netId,
 			arg.extraData[0] == 1, altPlayer: arg.player
 		);
 	}
 
 	public override void update() {
 		base.update();
-		if (ownedByLocalPlayer) {
-			if (time >= 40 / 60f ||
-				owner.input.isPressed(Control.Shoot, owner) &&
-				(ownChr as Character)?.currentWeapon is SpreadDrill
-			) {
-				new SpreadDrillSmallProj(ownChr, pos, xDir, owner.getNextActorNetId(), true, rpc: true);
-				new SpreadDrillSmallProj(ownChr, pos, xDir, owner.getNextActorNetId(), false, rpc: true);
-				destroySelf(doRpcEvenIfNotOwned: true);
-				return;
-			}
-		}
 		if (time < 0.2f && hits == 0) move(new Point(0, yDir * 120));
 
 		if (hits >= 3) destroySelfNoEffect(true, true);
-		
+
 		if (Math.Abs(vel.x) < projSpeed) vel.x += Global.speedMul * xDir * 8;
 		else if (Math.Abs(vel.x) > projSpeed) vel.x = speed * xDir;
+
+		if (!ownedByLocalPlayer || ownerActor == null) {
+			return;
+		}
+		if (time >= 40 / 60f ||
+			owner.input.isPressed(Control.Shoot, owner) &&
+			(ownerActor as Character)?.currentWeapon is not SpreadDrill
+		) {
+			new SpreadDrillSmallProj(ownerActor, pos, xDir, owner.getNextActorNetId(), true, rpc: true);
+			new SpreadDrillSmallProj(ownerActor, pos, xDir, owner.getNextActorNetId(), false, rpc: true);
+			destroySelf(doRpcEvenIfNotOwned: true);
+		}
 	}
 
 	public override void onHitDamagable(IDamagable damagable) {
@@ -223,13 +221,13 @@ public class SpreadDrillMediumProj : Projectile {
 		vel.x = xDir * -90;
 		Point? hitPos = sprite.getCurrentFrame().POIs[0];
 		new Anim(
-			pos.add(hitPos.Value.times(xDir)), 
+			pos.add(hitPos.Value.times(xDir)),
 			"rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true
 		);
 	}
 
 	public override void render(float x, float y) {
-		base.render(x,y);
+		base.render(x, y);
 		string exhaust = "spread_drill_effect";
 		int fi = Global.floorFrameCount % 2;
 
@@ -255,7 +253,7 @@ public class SpreadDrillSmallProj : Projectile {
 	float projSpeed = 200;
 
 	public SpreadDrillSmallProj(
-		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		Actor owner, Point pos, int xDir, ushort? netProjId,
 		bool upOrDown, bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "spread_drill_small_proj", netProjId, altPlayer
@@ -273,14 +271,14 @@ public class SpreadDrillSmallProj : Projectile {
 		canBeLocal = false;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, new byte[] {(byte)(yDir == -1 ? 1 : 0)});
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, new byte[] { (byte)(yDir == -1 ? 1 : 0) });
 		}
 		//projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SpreadDrillSmallProj(
-			arg.owner, arg.pos, arg.xDir, arg.netId, 
+			arg.owner, arg.pos, arg.xDir, arg.netId,
 			arg.extraData[0] == 1, altPlayer: arg.player
 		);
 	}
@@ -319,13 +317,13 @@ public class SpreadDrillSmallProj : Projectile {
 		yPushVel = yDir;
 		Point? hitPos = sprite.getCurrentFrame().POIs[0];
 		new Anim(
-			pos.add(hitPos.Value.times(xDir)), 
+			pos.add(hitPos.Value.times(xDir)),
 			"rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true
 		);
 	}
 
 	public override void render(float x, float y) {
-		base.render(x,y);
+		base.render(x, y);
 		string exhaust = "spread_drill_effect";
 		int fi = Global.floorFrameCount % 2;
 

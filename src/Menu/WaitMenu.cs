@@ -134,7 +134,7 @@ public class WaitMenu : IMainMenu {
 				Global.serverClient.disconnect("Client disconnected before starting.");
 				Global.serverClient = null;
 				Thread.Sleep(200);
-				Menu.change(new JoinMenu(false));
+				Menu.change(new JoinMenuP2P(false));
 				Program.setLastUpdateTimeAsNow();
 			}
 		}

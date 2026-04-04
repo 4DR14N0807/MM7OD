@@ -45,8 +45,9 @@ public class BassMovelistMenu : MovelistMenu {
 		// Super Bass
 		moves.AddRange([
 			new MovelistItem(
-				spriteName, 13, "Shoot", Control.Shoot, "",
-				"Can be charged.\nCan be used\nwhile walking."
+				spriteName, 13, "Shoot", Control.Shoot,
+				"Can be used\nwhile walking.",
+				"Can be charged.\nGets stronger\non Lv3."
 			),
 			new MovelistItem(
 				spriteName, 14, "Dash", Control.Dash,
@@ -62,7 +63,7 @@ public class BassMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteName, 17, "Booster Kick", Control.Special1,
-				"Needs Lv2\nOn Ground."
+				"On Ground.\nNeeds Lv2."
 			),
 			new MovelistItem(
 				spriteName, 20, "Dark Comet", Control.Up + " + " + Control.Special1,
@@ -70,14 +71,14 @@ public class BassMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteName, 14, "Airdash", Control.Dash,
-				"Needs Lv3\nMid-air."
+				"Needs Lv4\nMid-air."
 			),
 			new MovelistItem(
 				spriteName, 19, "Sweeping Laser", Control.Down + " + " + Control.Special1,
-				"Needs Lv3\nMid-air."
+				"Needs Lv4\nMid-air."
 			),
 			new MovelistItem(
-				spriteName, 24, "Evil charge", Control.Special2, "",
+				spriteName, 22, "Evil charge", Control.Special2, "",
 				"Adds evil energy.\nReduces on LV5."
 			),
 			new MovelistItem(
@@ -86,11 +87,11 @@ public class BassMovelistMenu : MovelistMenu {
 				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV."
 			),
 			new MovelistItem(
-				spriteName, 22, "Evil Unison", "Auto: on max Evil", "Under Lv5",
+				spriteName, 23, "Evil Unison", "Auto: on max Evil", "Under Lv5",
 				"Heals 2 HP.\nAdds 2 Max HP.\nIncreases LV.\nDamage Immune.", true
 			),
 			new MovelistItem(
-				spriteName, 23, "Evil Overload", "Auto: on max Evil", "At Lv5",
+				spriteName, 24, "Evil Overload", "Auto: on max Evil", "At Lv5",
 				"Heals 2 HP.\nStuns the user.", true
 			),
 		]);	

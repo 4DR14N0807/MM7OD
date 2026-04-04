@@ -20,7 +20,7 @@ public class NeutralEnemy : Actor, IDamagable {
 		Point pos, int xDir, Player ownerPlayer, ushort netId,
 		int alliance = GameMode.freelanceAlliance, bool addToLevel = true
 	) : base(
-		null!, pos, netId, ownerPlayer.ownedByLocalPlayer, !addToLevel
+		"", pos, netId, ownerPlayer.ownedByLocalPlayer, !addToLevel
 	) {
 		// Get player data.
 		this.ownerPlayer = ownerPlayer;
@@ -40,30 +40,32 @@ public class NeutralEnemy : Actor, IDamagable {
 
 		this.alliance = alliance;
 		hasStateMachine = true;
-	}
-
-	public override ActorRpcResponse? getActorSerial() {
-		if (netId == null || cActorId == 0) {
-			return null;
-		}
-		return new ActorRpcResponse() {
-			isProj = false,
-			actorId = (int)cActorId,
-			posX = pos.x,
-			posY = pos.y,
-			xDir = xDir,
-			playerId = ownerPlayer.id,
-			netId = netId.Value,
-			byteAngle = byteAngle,
-			ownerId = null,
-			extraData = getActorSerialExtra()
-		};
+		syncOnLateJoin = true;
 	}
 
 	public override void preUpdate() {
 		base.preUpdate();
 		updateProjectileCooldown();
 	}
+	public override void postUpdate() {
+		base.postUpdate();
+
+		if (Global.level.gameMode.isTeamMode) {
+			RenderEffectType? allianceEffect = alliance switch {
+				0 => RenderEffectType.BlueShadow,
+				1 => RenderEffectType.RedShadow,
+				2 => RenderEffectType.GreenShadow,
+				3 => RenderEffectType.PurpleShadow,
+				4 => RenderEffectType.YellowShadow,
+				5 => RenderEffectType.OrangeShadow,
+				_ => null
+			};
+			if (allianceEffect != null) {
+				addRenderEffect(allianceEffect.Value);
+			}
+		}
+	}
+
 	// For state update.
 	public override void statePreUpdate() {
 		state.stateTime += Global.speedMul;
@@ -158,6 +160,10 @@ public class NeutralEnemy : Actor, IDamagable {
 	public bool isPlayableDamagable() {
 		return true;
 	}
+
+	// Net data.
+	public override int getSerialPlayerID() => ownerPlayer.id;
+	public override int getSerialCID() => (int)cActorId;
 
 	// Sends net data to update.
 	public override List<byte> getCustomActorNetData() {

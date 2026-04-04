@@ -490,7 +490,10 @@ public class PunchyZero : Character {
 			return true;
 		}
 		if (yDir == 1) {
-			if (gigaAttack.shootCooldown > 0 || gigaAttack.ammo < gigaAttack.getAmmoUsage(0)) {
+			if (flag != null ||
+				gigaAttack.shootCooldown > 0 ||
+				gigaAttack.ammo < gigaAttack.getAmmoUsage(0)
+			) {
 				return false;
 			}
 			gigaAttack.shoot(this, []);
@@ -600,13 +603,12 @@ public class PunchyZero : Character {
 	public override Projectile? getMeleeProjById(int id, Point projPos, bool addToLevel = true) {
 		Projectile? proj = id switch {
 			(int)MeleeIds.Punch => new GenericMeleeProj(
-				meleeWeapon, projPos, ProjIds.PZeroPunch, player,
-				2, 0, 15,
-				addToLevel: addToLevel
+				meleeWeapon, projPos, ProjIds.PZeroPunch, player,2, 0, 15,
+				addToLevel: addToLevel, clashTier: ClashTier.Weak
 			),
 			(int)MeleeIds.Punch2 => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.PZeroPunch2, player, 2, Global.halfFlinch, 15,
-				addToLevel: addToLevel
+				addToLevel: addToLevel, clashTier: ClashTier.Weak
 			),
 			(int)MeleeIds.Spin => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.PZeroSenpuukyaku, player, 2, Global.halfFlinch,
@@ -614,7 +616,7 @@ public class PunchyZero : Character {
 			),
 			(int)MeleeIds.AirKick => new GenericMeleeProj(
 				meleeWeapon, projPos, ProjIds.PZeroAirKick, player, 3, 0, 15,
-				addToLevel: addToLevel
+				addToLevel: addToLevel, clashTier: ClashTier.Weak
 			),
 			(int)MeleeIds.Uppercut => new GenericMeleeProj(
 				ZeroShoryukenWeapon.staticWeapon, projPos, ProjIds.PZeroShoryuken, player, 4, Global.defFlinch,
@@ -647,7 +649,7 @@ public class PunchyZero : Character {
 			(int)MeleeIds.SaberSwing => new GenericMeleeProj(
 				saberSwingWeapon, projPos, ProjIds.ZSaberProjSwing, player,
 				3, Global.defFlinch, isReflectShield: true,
-				addToLevel: addToLevel
+				addToLevel: addToLevel, clashTier: ClashTier.Weak
 			),
 			_ => null
 		};
@@ -889,7 +891,7 @@ public class PunchyZero : Character {
 	}
 	public override void aiDodge(Actor? target) {
 		foreach (GameObject gameObject in getCloseActors(48, true, false, false)) {
-			if (gameObject is Projectile proj && proj.damager.owner.alliance != player.alliance && charState.attackCtrl) {
+			if (gameObject is Projectile proj && proj.damager.alliance != player.alliance && charState.attackCtrl) {
 				//Projectile is not 
 				if (!(proj.projId == (int)ProjIds.RollingShieldCharged || proj.projId == (int)ProjIds.RollingShield
 					|| proj.projId == (int)ProjIds.MagnetMine || proj.projId == (int)ProjIds.FrostShield || proj.projId == (int)ProjIds.FrostShieldCharged

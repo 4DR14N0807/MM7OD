@@ -25,7 +25,7 @@ public class Flag : Actor {
 		pos, netId, ownedByLocalPlayer, false
 	) {
 		this.alliance = alliance;
-		if (collider != null) { collider.wallOnly = true; }
+		collider?.wallOnly = true;
 		setzIndex(ZIndex.Character - 2);
 		for (int i = 0; i < 4; i++) {
 			particles.Add(getRandomParticle(i * (UpdraftParticle.maxTime * 0.25f)));
@@ -391,7 +391,7 @@ public class FlagPedestal : Actor {
 			}
 			Global.level.gameMode.syncTeamScores();
 		}
-		chr.player.currency += 5;
+		chr.mastery.addMapExp(90, true);
 		RPC.actorToggle.sendRpc(chr.netId, RPCActorToggleType.AwardCurrency);
 	}
 }

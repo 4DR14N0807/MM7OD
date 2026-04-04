@@ -15,7 +15,7 @@ public class DangerWrap : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.DangerWrap;
 		killFeedIndex = 0;
-		fireRate = 75;
+		fireRate = 60;
 		switchCooldown = 45;
 		maxAmmo = 12;
 		ammo = maxAmmo;
@@ -60,9 +60,14 @@ public class DangerWrap : Weapon {
 		}
 		if (input == 1) {
 			dangerMines.Add(
-				new DangerWrapMineRmProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player, weapon: this));
+				new DangerWrapMineRmProj(
+					rock, shootPos, xDir, 0, player.getNextActorNetId(), true, player, weapon: this
+				)
+			);
+			fireRate = 45;
 		} else {
 			new DangerWrapBubbleRmProj(rock, shootPos, xDir, 0, player.getNextActorNetId(), input, true);
+			fireRate = 60;
 		}
 		rock.playSound("buster2", sendRpc: true);
 	}
@@ -70,11 +75,10 @@ public class DangerWrap : Weapon {
 
 public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 	public int type;
-	int input;
+	public int input;
 	public float health = 1;
 	public float heightMultiplier = 1f;
 	Anim? bomb;
-	Actor ownChr = null!;
 
 	public DangerWrapBubbleRmProj(
 		Actor owner, Point pos, int xDir, int type,
@@ -85,65 +89,48 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		projId = (int)RockProjIds.DangerWrap;
 		maxTime = 1.5f;
 		fadeOnAutoDestroy = true;
+		destroyOnHit = false;
+		destroyOnDamage = true;
 		useGravity = false;
-		canBeLocal = false;
 		this.type = type;
 		this.input = input;
-		damager.hitCooldown = 30;
+		damager.hitCooldown = 4 * 60;
 
-		if (type == 1) {
-			vel.x = 60 * xDir;
-			changeSprite("danger_wrap_bubble", false);
-			fadeSprite = "generic_explosion";
+		vel.x = 60 * xDir;
+		fadeSprite = "generic_explosion";
 
-			if (input == -1) {
-				vel.x /= 7.5f;
-				heightMultiplier = 1.6f;
-			} else if (input == 2) {
-				vel.x *= 3f;
-				heightMultiplier = 0.65f;
-			}
-
-			if (ownedByLocalPlayer && ownerPlayer != null) {
-				bomb = new Anim(pos, "danger_wrap_bomb", xDir, ownerPlayer.getNextActorNetId(), true, true);
-			}
+		if (input == -1) {
+			vel.x /= 7.5f;
+			heightMultiplier = 1.6f;
+		} else if (input == 2) {
+			vel.x *= 3f;
+			heightMultiplier = 0.65f;
 		}
 
 		if (rpc && ownerPlayer != null) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)(type + 128));
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)(type + 128), (byte)(input + 10));
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DangerWrapBubbleRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.extraData[0] - 128,
-			arg.netId, altPlayer: arg.player
+			arg.netId, altPlayer: arg.player, input: arg.extraData[1] - 10
 		);
 	}
 
 	public override void update() {
 		base.update();
-		if (!ownedByLocalPlayer) return;
 
-		if (type == 0 && isAnimOver()) {
-
-			time = 0;
-			if (ownedByLocalPlayer) {
-				new DangerWrapBubbleRmProj(
-					ownChr, pos, xDir, 1, damager.owner.getNextActorNetId(true),
-					input, rpc: true, damager.owner
-				);
-
-			}
-			destroySelfNoEffect();
+		if (sprite.isAnimOver() && sprite.name == "danger_wrap_start") {
+			changeSprite("danger_wrap_bubble", true);
+			bomb = new Anim(pos, "danger_wrap_bomb", xDir, null, false);
 		}
+		bomb?.changePos(pos);
 
-		if (type == 1) {
-			vel.y -= Global.spf * (100 * heightMultiplier);
-			if (Math.Abs(vel.x) > 25) {
-				vel.x -= Global.spf * (75 * xDir);
-			}
-			bomb?.changePos(pos);
+		vel.y -= Global.spf * (100 * heightMultiplier);
+		if (Math.Abs(vel.x) > 25) {
+			vel.x -= Global.spf * (75 * xDir);
 		}
 	}
 
@@ -151,11 +138,10 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		base.onHitWall(other);
 		destroySelf();
 	}
+
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
-
-		if (type == 1) bomb?.destroySelf();
+		bomb?.destroySelf();
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
@@ -165,7 +151,7 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return sprite.name != "danger_wrap_start" && damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -187,7 +173,6 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 public class DangerWrapMineRmProj : Projectile, IDamagable {
 	public bool landed;
 	public float health = 1;
-	public Actor ownChr;
 	public Weapon? wep;
 	Player player;
 
@@ -203,7 +188,6 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 		useGravity = true;
 		damager.damage = 3;
 		damager.hitCooldown = 30;
-		ownChr = owner;
 		canBeGrounded = true;
 		canBeLocal = false;
 		this.player = ownerPlayer;
@@ -238,10 +222,12 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 			landed = true;
 			destroySelf();
 
-			var mine = new DangerWrapLandRmProj(
-				ownChr, pos, xDir, player.getNextActorNetId(), true, player
-			);
-			(wep as DangerWrap)?.dangerMines.Add(mine);
+			if (ownerActor != null) {
+				var mine = new DangerWrapLandRmProj(
+					ownerActor, pos, xDir, player.getNextActorNetId(), true, player
+				);
+				(wep as DangerWrap)?.dangerMines.Add(mine);
+			}
 		}
 	}
 
@@ -253,7 +239,7 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -276,7 +262,6 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 
 public class DangerWrapLandRmProj : Projectile, IDamagable {
 	public float health = 1;
-	public Actor ownChr;
 	Point collideDir;
 
 	public DangerWrapLandRmProj(
@@ -300,7 +285,6 @@ public class DangerWrapLandRmProj : Projectile, IDamagable {
 		damager.damage = 3;
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 30;
-		ownChr = owner;
 		canBeLocal = false;
 
 		if (rpc) {
@@ -336,22 +320,19 @@ public class DangerWrapLandRmProj : Projectile, IDamagable {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || health < 1 || ownerActor == null) {
 			return;
 		}
-		if (health >= 1) {
-			for (int i = 0; i < 6; i++) {
-				float x = Helpers.cosd(i * 60) * 180;
-				float y = Helpers.sind(i * 60) * 180;
-				new Anim(pos, "generic_explosion", 1, damager.owner.getNextActorNetId(), false, true) {
-					vel = new Point(x, y),
-					ttl = 0.2f
-				};
-			}
-
-			playSound("danger_wrap_explosion", sendRpc: true);
-			new DangerWrapExplosionRmProj(ownChr, pos, xDir, damager.owner.getNextActorNetId(), true);
+		for (int i = 0; i < 6; i++) {
+			float x = Helpers.cosd(i * 60) * 180;
+			float y = Helpers.sind(i * 60) * 180;
+			new Anim(pos, "generic_explosion", 1, damager.owner.getNextActorNetId(), false, true) {
+				vel = new Point(x, y),
+				ttl = 0.2f
+			};
 		}
+		playSound("danger_wrap_explosion", sendRpc: true);
+		new DangerWrapExplosionRmProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
@@ -362,7 +343,7 @@ public class DangerWrapLandRmProj : Projectile, IDamagable {
 	}
 
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return damager.owner.alliance != damagerAlliance;
+		return damager.alliance != damagerAlliance;
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {
@@ -417,9 +398,9 @@ public class DangerWrapExplosionRmProj : Projectile {
 		else destroySelf();
 
 		if (isRunByLocalPlayer()) {
-			foreach (var go in Global.level.getGameObjectArray()) {
+			foreach (var go in getCloseActors(200)) {
 				var chr = go as Character;
-				if (chr != null && chr.canBeDamaged(damager.owner.alliance, damager.owner.id, projId)
+				if (chr != null && chr.canBeDamaged(damager.alliance, damager.owner.id, projId)
 					&& chr.pos.distanceTo(pos) <= radius) {
 
 					damager.applyDamage(chr, false, weapon, this, projId);
@@ -516,7 +497,6 @@ public class DWrapBigBubble : Actor, IDamagable {
 		if (character != null) {
 			changePos(character.getCenterPos());
 			if (character.isDWrapped) {
-				character.grounded = true;
 				if (bubbleFrames is <= 60 or >= 150) {
 					if (character.vel.y > -60) character.vel.y -= 5;
 					if (Math.Abs(character.vel.x) < 30 && bubbleFrames <= 60) character.vel.x += 3 * character.xDir;
@@ -554,7 +534,6 @@ public class DWrapBigBubble : Actor, IDamagable {
 			character.bigBubble = null;
 			//character.removeBubble(true);
 			character.dwrapEnd();
-			character.dwrapInvulnTime = 3;
 			character.canBeGrounded = true;
 		}
 		if (bomb != null) bomb.destroySelf();

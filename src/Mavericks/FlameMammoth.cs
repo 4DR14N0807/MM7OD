@@ -6,10 +6,10 @@ public class FlameMammoth : Maverick {
 	public FlameMStompWeapon stompWeapon = new();
 
 	public FlameMammoth(
-		Player player, Point pos, Point destPos, int xDir,
-		ushort? netId, bool ownedByLocalPlayer, bool sendRpc = false
+		Player player, Point pos, int xDir, ushort? netId,
+		bool ownedByLocalPlayer, bool sendRpc = false
 	) : base(
-		player, pos, destPos, xDir, netId, ownedByLocalPlayer
+		player, pos, xDir, netId, ownedByLocalPlayer
 	) {
 		stateCooldowns = new() {
 			{ typeof(MShoot), new(30, true) },
@@ -177,7 +177,7 @@ public class FlameMFireballProj : Projectile {
 		maxTime = 0.75f;
 		useGravity = true;
 		gravityModifier = 0.5f;
-		if (collider != null) { collider.wallOnly = true; }
+		collider?.wallOnly = true;
 		if (isShort) {
 			vel.x *= 0.5f;
 		}
@@ -236,7 +236,7 @@ public class FlameMOilProj : Projectile {
 		maxTime = 0.75f;
 		useGravity = true;
 		vel.y = -150;
-		if (collider != null) { collider.wallOnly = true; }
+		collider?.wallOnly = true;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
@@ -429,7 +429,8 @@ public class FlameMStompShockwave : Projectile {
 
 #region states
 public class MammothMState : MaverickState {
-	public FlameMammoth BurninNoumander = null!;
+	public FlameMammoth burningNoumander = null!;
+
 	public MammothMState(
 		string sprite, string transitionSprite = ""
 	) : base(
@@ -439,7 +440,7 @@ public class MammothMState : MaverickState {
 
 	public override void onEnter(MaverickState oldState) {
 		base.onEnter(oldState);
-		BurninNoumander = maverick as FlameMammoth ?? throw new NullReferenceException();
+		burningNoumander = maverick as FlameMammoth ?? throw new NullReferenceException();
 	}
 }
 
@@ -458,13 +459,13 @@ public class FlameMOilState : MammothMState {
 
 	public override void update() {
 		base.update();
-		if (BurninNoumander == null) return;
+		if (burningNoumander == null) return;
 
 		if (maverick.frameIndex == 6 && !once) {
 			once = true;
 			new FlameMOilProj(
-			BurninNoumander.getFirstPOI() ?? BurninNoumander.getCenterPos(), maverick.xDir, 
-			BurninNoumander, player, player.getNextActorNetId(), rpc: true);
+			burningNoumander.getFirstPOI() ?? burningNoumander.getCenterPos(), maverick.xDir, 
+			burningNoumander, player, player.getNextActorNetId(), rpc: true);
 		}
 
 		if (maverick.isAnimOver()) {

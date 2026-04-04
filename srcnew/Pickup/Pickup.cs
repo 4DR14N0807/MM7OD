@@ -20,11 +20,12 @@ public class Pickup : Actor {
 	public float altHealAmount = 0;
 	public PickupType pickupType = PickupType.None;
 	public bool teamOnly;
+	public Point rsVel = new Point(0, -300);
 
 	public Pickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
 	) : base(
 		sprite, pos, netId, ownedByLocalPlayer, false
 	) {
@@ -39,10 +40,20 @@ public class Pickup : Actor {
 		}
 
 		this.cActorId = cActorId;
+		if (spawnUp) {
+			vel.y -= 5 * 60;
+		}
+
+		if (teamOnly) {
+			vel = rsVel;
+		}
 
 		if (sendRpc) {
-			RPC.createActor.sendRpc(this, owner, null, (byte)(teamOnly ? 1 : 0));
+			RPC.createActor.sendRpc(
+				this, ownerPlayer, null, Helpers.boolArrayToByte([teamOnly, spawnUp])
+			);
 		}
+		syncOnLateJoin = true;
 	}
 
 	public override void update() {
@@ -65,9 +76,9 @@ public class Pickup : Actor {
 		base.onCollision(other);
 		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) {
 			return;
-		}
+		} 
 		if (other.gameObject is Character chr && chr.ownedByLocalPlayer) {
-			if (!teamOnly || chr.player.teamAlliance == ownerPlayer.teamAlliance) {
+			if (!teamOnly || chr.player.alliance == ownerPlayer.alliance) {
 				use(chr);
 			}
 		}
@@ -76,4 +87,9 @@ public class Pickup : Actor {
 	public virtual void use(Character chr) {
 		destroySelf(doRpcEvenIfNotOwned: true);
 	}
+
+	// Net data.
+	public override int getSerialPlayerID() => ownerPlayer.id;
+	public override int getSerialCID() => (int)cActorId;
+	public override byte[] getSerialExtra() => [Helpers.boolArrayToByte([teamOnly, false])];
 }

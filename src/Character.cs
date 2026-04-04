@@ -98,7 +98,8 @@ public partial class Character : Actor, IDamagable {
 	public bool isCrystalized;
 	public bool isDWrapped;
 	public bool insideCharacter;
-	public float invulnTime = 0;
+	public float invulnTime;
+	public float maxInvulnTime = -1;
 
 	public List<Trail> lastFiveTrailDraws = new List<Trail>();
 	public LoopingSound chargeSound;
@@ -251,6 +252,8 @@ public partial class Character : Actor, IDamagable {
 			return (mw as MaverickWeapon)?.maverick;
 		}
 	}
+	public Actor abstractedActor => rideArmor != null ? rideArmor : this;
+
 	public bool isControllingPuppet() {
 		return currentMaverick?.controlMode == MaverickModeId.Puppeteer;
 	}
@@ -290,7 +293,7 @@ public partial class Character : Actor, IDamagable {
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
 		bool isWarpIn = true, int? heartTanks = null, bool isATrans = false
 	) : base(
-		null!, new Point(x, y), netId, ownedByLocalPlayer, addToLevel: true
+		"", new Point(x, y), netId, ownedByLocalPlayer, addToLevel: true
 	) {
 		hasStateMachine = true;
 		slideOnIce = true;
@@ -654,6 +657,7 @@ public partial class Character : Actor, IDamagable {
 		if (invulnTime > 0) return false;
 		if (flag != null) return false;
 		if (isWarpIn()) return false;
+		if (charState.specialId == SpecialStateIds.WarpIdle) return false;
 		return charState is not Die;
 	}
 
@@ -776,8 +780,7 @@ public partial class Character : Actor, IDamagable {
 
 	// For terrain collision.
 	public override Collider? getTerrainCollider() {
-		Collider? overrideGlobalCollider = null;
-		if (spriteToColliderMatch(sprite.name, out overrideGlobalCollider)) {
+		if (spriteToColliderMatch(sprite.name, out Collider? overrideGlobalCollider)) {
 			return overrideGlobalCollider;
 		}
 		if (physicsCollider == null) {
@@ -935,11 +938,21 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void debuffCooldowns() {
-		if (Global.level.mainPlayer.readyTextOver) {
+		bool matchOn = true;
+		if (Global.level.gameMode is TeamElimAlt tea) {
+			if (tea.resultTime > 0) {
+				matchOn = false;
+			}
+		}
+		if (matchOn && Global.level.mainPlayer.readyTextOver) {
 			if (invulnTime > 0) {
+				if (maxInvulnTime <= 0) {
+					maxInvulnTime = invulnTime;
+				}
 				invulnTime -= Global.speedMul;
 				if (invulnTime <= 0) {
 					invulnTime = 0;
+					maxInvulnTime = -1;
 					chips.onRespawn.Invoke(this);
 				}
 			}
@@ -1072,7 +1085,7 @@ public partial class Character : Actor, IDamagable {
 
 	public void genericPuppetControl() {
 		// Return if Sigma or if weapon is the same.
-		if (this is BaseSigma || currentWeapon == lastMaverickWeapon) {
+		if (this is BaseSigma || currentWeapon == lastMaverickWeapon && currentMaverick != null) {
 			return;
 		}
 		// Set all mavericks to follow mode.
@@ -1099,8 +1112,9 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Summon if maverick is not spawned.
 		else if (player.input.isPressed(Control.Shoot, player)) {
-			mw.summon(player, pos.addxy(0, -112), pos, xDir);
+			mw.summon(player, pos, xDir);
 		}
+
 	}
 
 	public override void update() {
@@ -1221,7 +1235,9 @@ public partial class Character : Actor, IDamagable {
 				health = Helpers.clampMax(health + 1, maxHealth);
 				if (acidTime > 0) {
 					acidTime--;
-					if (acidTime < 0) removeAcid();
+					if (acidTime < 0) {
+						removeAcid();
+					}
 				}
 				if (player == Global.level.mainPlayer || playHealSound) {
 					playSound("heal", forcePlay: true, sendRpc: true);
@@ -1252,6 +1268,7 @@ public partial class Character : Actor, IDamagable {
 		if (usedWtank != null && usedWtank.inUse) {
 			usedWtank = null;
 		}
+
 		//Max Health increase (Used for bass evil energy debuffs)
 		if (spawnHealthToAdd > 0) {
 			spawnHealthAddTime++;
@@ -1304,6 +1321,12 @@ public partial class Character : Actor, IDamagable {
 			gHolded = false;
 		}
 
+		updateCtrl();
+	}
+
+	public override void physicsUpdate() {
+		base.physicsUpdate();
+
 		// This overrides the ground checks made by Actor.update();
 		if (rideArmorPlatform != null) {
 			changePos(rideArmorPlatform.getMK5Pos().addxy(0, 1));
@@ -1314,12 +1337,6 @@ public partial class Character : Actor, IDamagable {
 				rideArmorPlatform = null;
 			}
 		}
-
-		if (isATrans) {
-			updateDisguisedAxl();
-		}
-
-		updateCtrl();
 	}
 
 	
@@ -1443,6 +1460,9 @@ public partial class Character : Actor, IDamagable {
 		if (charState.airMove && !grounded) {
 			airMove();
 		}
+		if (charState.normalCtrl) {
+			normalCtrl();
+		}
 		if (charState.canJump && (grounded || canAirJump() && flag == null)) {
 			if (player.input.isPressed(Control.Jump, player)) {
 				bool wasGrounded = grounded;
@@ -1466,9 +1486,6 @@ public partial class Character : Actor, IDamagable {
 				}
 			}
 		}
-		if (charState.normalCtrl) {
-			normalCtrl();
-		}
 		if (charState.attackCtrl && invulnTime <= 0 && undisguiseTime <= 0 && !isSoftLocked()) {
 			return attackCtrl();
 		}
@@ -1489,10 +1506,10 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Ground normal states.
 		if (grounded) {
-			if (player.input.isPressed(Control.Jump, player) && canJump()) {
+			if (player.input.isPressed(Control.Jump, player) && canJump() && !charState.canJump) {
 				vel.y = -getJumpPower();
 				isDashing = (
-					isDashing || player.dashPressed(out string dashControl) && canDash()
+					isDashing || player.dashPressed(out _) && canDash()
 				);
 				if (isDashing) {
 					dashedInAir++;
@@ -1838,8 +1855,7 @@ public partial class Character : Actor, IDamagable {
 			int chargeType = 0;
 			if (!sprite.name.Contains("ra_hide")) {
 				int level = getDisplayChargeLevel();
-				var renderGfx = RenderEffectType.ChargeBlue;
-				renderGfx = level switch {
+				RenderEffectType renderGfx = level switch {
 					1 => RenderEffectType.ChargeBlue,
 					2 => RenderEffectType.ChargeYellow,
 					3 when (chargeType == 2) => RenderEffectType.ChargeOrange,
@@ -1882,7 +1898,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual bool isPushImmune() {
 		return (
-			isTrueStatusImmune() || charState.pushImmune == true ||
+			isTrueStatusImmune() || charState.pushImmune ||
 			immuneToKnockback || isClimbingLadder()
 		);
 	}
@@ -1904,11 +1920,11 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool isTrueStatusImmune() {
-		return !alive || isInvulnerable(true) || charState.immortal;
+		return !alive || charState.immortal || charState.immuneToAll || isInvulnerable(true);
 	}
 
 	public virtual bool isNonDamageStatusImmune() {
-		return false;
+		return charState.statusEffectImmune || isStatusImmune();
 	}
 
 	public virtual bool isToughGuyHyperMode() {
@@ -1918,7 +1934,6 @@ public partial class Character : Actor, IDamagable {
 	public virtual void clenaseDmgDebuffs() {
 		removeBurn();
 		removeAcid();
-		oilTime = 0;
 		parasiteTime = 0;
 		parasiteMashTime = 0;
 		parasiteDamager = null;
@@ -1935,7 +1950,6 @@ public partial class Character : Actor, IDamagable {
 		parasiteDamager = null;
 		// Remove slows.
 		igFreezeProgress = 0;
-		virusTime = 0;
 		slowdownTime = 0;
 		xFlinchPushVel = 0;
 		// Remove stuns & grabs.
@@ -1943,6 +1957,18 @@ public partial class Character : Actor, IDamagable {
 			changeToIdleOrFall();
 			return;
 		}
+	}
+
+	public virtual void clenaseEverithing() {
+		// Remove other stuff.
+		clenaseAllDebuffs();
+		// Remove Dark Hold.
+		if (charState is DarkHoldState) {
+			changeToIdleOrFall();
+			return;
+		}
+		// Remove time effects.
+		virusTime = 0;
 	}
 
 	// If factorHyperMode = true, then invuln frames in a hyper mode won't count as "invulnerable".
@@ -1991,7 +2017,7 @@ public partial class Character : Actor, IDamagable {
 
 	public bool canBeGrabbed() {
 		return (
-			grabInvulnTime == 0 && !isGrabImmune()
+			grabInvulnTime <= 0 && !isGrabImmune()
 		);
 	}
 
@@ -2084,11 +2110,6 @@ public partial class Character : Actor, IDamagable {
 			Math.Max(rightX, headPos.x + headshotRadius),
 			headPos.y + headshotRadius
 		);
-	}
-
-	public Actor abstractedActor() {
-		if (rideArmor != null) return rideArmor;
-		return this;
 	}
 
 	public bool isClimbingLadder() {
@@ -2323,7 +2344,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		currentLabelY = -getLabelOffY();
 		float? savedAlpha = null;
-		if (invulnTime > 0 || isWarpIn()) {
+		if (invulnTime > 0) {
 			savedAlpha = alpha;
 			if (Global.level.frameCount % 4 < 2) {
 				alpha *= 0.15f;
@@ -2348,11 +2369,11 @@ public partial class Character : Actor, IDamagable {
 				0, pos.x + x, pos.y + y + yOff, xDir, 1, null, 1, 1, 1, zIndex + 1
 			);
 		}
-		List<Player> nonSpecPlayers = Global.level.nonSpecPlayers();
+		//List<Player> nonSpecPlayers = Global.level.nonSpecPlayers();
 
-		bool drawCursorChar = player.isMainPlayer && (
+		/*bool drawCursorChar = player.isMainPlayer && (
 			Global.level.is1v1() || Global.level.server.fixedCamera
-		);
+		);*/
 
 		bool shouldDrawName = false;
 		bool shouldDrawHealthBar = false;
@@ -2398,7 +2419,7 @@ public partial class Character : Actor, IDamagable {
 			usedEtank?.drawHealing(this) == true || usedWtank?.drawHealing(this) == true
 		);
 		if (!player.isDead) {
-			if (!drewETankHealing && dropFlagProgress > 0) {
+			if (!drewETankHealing && !drewWTankHealing && dropFlagProgress > 0) {
 				float healthBarInnerWidth = 30;
 
 				float progress = (dropFlagProgress);
@@ -2419,7 +2440,7 @@ public partial class Character : Actor, IDamagable {
 				);
 				deductLabelY(labelCooldownOffY);
 			}
-			if (!drewETankHealing && hyperProgress > 0) {
+			if (!drewETankHealing && !drewWTankHealing && hyperProgress > 0) {
 				if (this is Blues bl &&
 					Options.main.coreHeatDisplay != 0 && !destroyed &&
 					player.isMainPlayer && charState is not Die && alive &&
@@ -2452,15 +2473,9 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		if (Global.showAIDebug) {
-			float textPosX = pos.x;// (pos.x - Global.level.textPosY -= offY,camX) / Global.viewSize;
+			float textPosX = pos.x;// (pos.x - Global.level.camX) / Global.viewSize;
 			float textPosY = pos.y - 50;// (pos.y - 50 - Global.level.camY) / Global.viewSize;
-			if (player.isMainPlayer) {
-				textPosX = (Global.screenW * 0.5f + Global.level.camX);
-				textPosY = (Global.screenH * 0.25f + Global.level.camY);
-			}
-			
 			Color outlineColor = player.alliance == GameMode.blueAlliance ? Helpers.DarkBlue : Helpers.DarkRed;
-			int offY = 8;
 
 			//DrawWrappers.DrawText(
 			//	"Possessing...", pos.x, pos.y - 15 + currentLabelY,
@@ -2469,87 +2484,46 @@ public partial class Character : Actor, IDamagable {
 			//);
 
 			Fonts.drawText(
-				FontType.WhiteMini, player.name + " " + getActorTypeName(), textPosX, textPosY,
+				FontType.Grey, player.name + " " + getActorTypeName(), textPosX, textPosY,
 				Alignment.Center, true, depth: ZIndex.HUD
 			);
 			if (ai != null) {
-				string dest = $"Dest: {ai.aiState.getDestNodeName()}";
-				string next = $"Next: {ai.aiState.getNextNodeName()}";
-				string prev = $"Prev: {ai.aiState.getPrevNodeName()}";
 				Fonts.drawText(
-					FontType.WhiteMini, $"{prev} {next} {dest}",
-					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.Grey, "dest:" + ai.aiState.getDestNodeName(),
+					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
+				);
+				Fonts.drawText(
+					FontType.Grey, "next:" + ai.aiState.getNextNodeName(), textPosX, textPosY -= 10,
+					Alignment.Center, true, depth: ZIndex.HUD
+				);
+				Fonts.drawText(
+					FontType.Grey, "prev:" + ai.aiState.getPrevNodeName(), textPosX, textPosY -= 10,
+					Alignment.Center, true, depth: ZIndex.HUD
+				);
+				Fonts.drawText(
+					FontType.Grey, ai.aiState.GetType().ToString().RemovePrefix("MMXOnline."),
+					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
 				);
 				if (ai.target is Character charTarget) {
 					Fonts.drawText(
-						FontType.WhiteMini, "target:" + charTarget?.name, textPosX, textPosY -= offY,
+						FontType.Grey, "target:" + charTarget?.name, textPosX, textPosY -= 10,
 						Alignment.Center, true, depth: ZIndex.HUD
 					);
-				}
-				if (ai.aiState is FindPlayer fp) {
-					string nt = "FindPlayer";
-					if (fp.nodeTransition != null) {
-						nt += $" - {fp.nodeTransition.currentPhase.GetType().Name}";
-					}
-					if (fp.nextNode != null) {
-						Point dist = (
-							fp.nextNode.pos - abstractedActor().getCenterPos()
-						);
-						nt += $" | {MathF.Round(dist.x)}, {MathF.Round(dist.y)}";
-					}
-					Fonts.drawText(
-						FontType.WhiteMini, nt,
-						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
-					);
-					/*if (fp.stuckTime > 0) {
+					if (ai.aiState is FindPlayer fp) {
 						Fonts.drawText(
-							FontType.WhiteMini, "stuck:" + fp.stuckTime, textPosX, textPosY -= offY,
-							Alignment.Center, true, depth: ZIndex.HUD
-						);
-					}*/
-				} else  {
-					Fonts.drawText(
-						FontType.WhiteMini, ai.aiState.GetType().Name.ToString(),
-						textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
-					);
-				}
-				if (ai.jumpTime > 0) {
-					bool jumpPress = player.input.isPressed(Control.Jump, player);
-					bool jumpHeld = player.input.isHeld(Control.Jump, player);
-					Fonts.drawText(
-						FontType.WhiteMini,
-						$"JP: {ai.jumpTime}, {jumpPress} {jumpHeld}",
-						textPosX, textPosY -= offY,
-						Alignment.Center, true, depth: ZIndex.HUD
-					);
-				}
-				else {
-					List<CollideData> jumpZones = Global.level.getTerrainTriggerList(
-						abstractedActor(), Point.zero, typeof(JumpZone)
-					);
-					string text = "Inside jump zone";
-					if (jumpZones.Count > 0) {
-						if (ai.aiState is FindPlayer fp2 &&
-							jumpZones.FindAll(
-								j => fp2.neighbor?.isJumpZoneExcluded(j.gameObject.name) != true
-							).Count == 0
-						) {
-							text += ", but excluded";
-						} else {
-							text += $", {ai.jumpZoneCooldown} {ai.jumpTime}";
-						}
-						Fonts.drawText(
-							FontType.WhiteMini,
-							$"{text}.",
-							textPosX, textPosY -= offY,
+							FontType.Grey, "stuck:" + fp.stuckTime, textPosX, textPosY -= 10,
 							Alignment.Center, true, depth: ZIndex.HUD
 						);
 					}
 				}
 			} else {
 				Fonts.drawText(
-					FontType.WhiteMini, charState.GetType().Name.ToString(),
-					textPosX, textPosY -= offY, Alignment.Center, true, depth: ZIndex.HUD
+					FontType.Grey, charState.GetType().ToString().RemovePrefix("MMXOnline."),
+					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
+				);
+				Fonts.drawText(
+					FontType.Grey, sprite.name,
+					textPosX, textPosY -= 10, Alignment.Center, true, depth: ZIndex.HUD
 				);
 			}
 		}
@@ -2825,6 +2799,7 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
 		if (isInvulnerable()) return false;
 		if (isDeathOrReviveSprite()) return false;
+		if (charState is ViralSigmaPossess) return false;
 		if (Global.level.gameMode.setupTime > 0) return false;
 		if (Global.level.isRace()) {
 			bool isAxlSelfDamage = player.isAxl && damagerAlliance == player.alliance;
@@ -2892,6 +2867,13 @@ public partial class Character : Actor, IDamagable {
 
 		// Pierce.
 		bool isArmorPiercing = Damager.isArmorPiercing(projId);
+		// Instakills and hits while dead also ignore armor.
+		if (originalDamage == (decimal)Damager.forceKillDamage ||
+			originalDamage == (decimal)Damager.ohkoDamage ||
+			originalDamage == (decimal)Damager.envKillDamage
+		) {
+			isArmorPiercing = true;
+		}
 
 		// For fractional damage shenanigans.
 		if (damage % 1 != 0) {
@@ -3163,6 +3145,18 @@ public partial class Character : Actor, IDamagable {
 		return false;
 	}
 
+	public virtual bool hasFullAmmo() {
+		if (weapons.Count <= 0) return false;
+		else {
+			for (int i = 0; i < weapons.Count; i++) {
+				if (weapons[i].ammo < weapons[i].maxAmmo) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
 	public virtual void increaseCharge() {
 		chargeTime += Global.speedMul;
 	}
@@ -3404,7 +3398,7 @@ public partial class Character : Actor, IDamagable {
 			shape = shape.clone(0, MathF.Abs(shape.maxY) + 1);
 		}
 
-		var collision = Global.level.checkCollisionShape(shape, new List<GameObject>() { rideArmor });
+		var collision = Global.level.checkCollisionShape(shape, [rideArmor]);
 		if (collision?.gameObject is not Wall) {
 			return true;
 		}
@@ -3428,14 +3422,14 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public bool canAffordRideArmor() {
+	public virtual bool canAffordRideArmor() {
 		if (Global.level.is1v1()) {
 			return health > Math.Floor(maxHealth / 2);
 		}
 		return player.currency >= Vile.callNewMechCost;
 	}
 
-	public void buyRideArmor() {
+	public virtual void buyRideArmor() {
 		if (Global.level.is1v1()) {
 			health -= Math.Floor(maxHealth / 2);
 			return;
@@ -3475,6 +3469,9 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void addTransformAnim() {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		transformAnim = new Anim(
 			pos, "axl_transform", xDir, player.getNextActorNetId(), true, true
 		);
@@ -3569,7 +3566,7 @@ public partial class Character : Actor, IDamagable {
 			DisarrayStack lowerStack = disarrayStacks.MinBy(
 				(KeyValuePair <string, DisarrayStack> kvp) => kvp.Value.time
 			).Value;
-			drawDebuff(
+			drawBuff(
 				drawPos, lowerStack.time / lowerStack.maxTime,
 				"hud_buffs", 0
 			);
@@ -3579,6 +3576,12 @@ public partial class Character : Actor, IDamagable {
 					drawPos.x + 1, drawPos.y - 9
 				);
 			}
+			secondBarOffset += 18 * drawDir;
+			drawPos.x += 18 * drawDir;
+		}
+		// Spawn invul.
+		if (invulnTime > 0) {
+			drawBuff(drawPos, invulnTime / maxInvulnTime, "hud_buffs", 1);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
@@ -3595,7 +3598,6 @@ public partial class Character : Actor, IDamagable {
 			float percent = buff.time / buff.maxTime;
 			var dfunct = drawDebuff;
 			if (buff.isBuff) {
-				percent = 1 - percent;
 				dfunct = drawBuff;
 			}
 			dfunct(
@@ -3895,6 +3897,8 @@ public partial class Character : Actor, IDamagable {
 			player.isDefenderFavored,
 			invulnTime > 0,
 			hasBubble,
+			isUsingEtank,
+			isUsingWtank,
 		]);
 
 		customData.Add(netHP);
@@ -4000,6 +4004,8 @@ public partial class Character : Actor, IDamagable {
 		player.isDefenderFavoredNonOwner = boolData2[0];
 		invulnTime = boolData2[1] ? 60 : 0;
 		hasBubbleNet = boolData2[2];
+		isUsingEtank = boolData2[3];
+		isUsingWtank = boolData2[4];
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[7]);

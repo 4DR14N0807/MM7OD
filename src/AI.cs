@@ -147,7 +147,7 @@ public class AI {
 			}
 
 			var brakeZones = Global.level.getTerrainTriggerList(
-				character.abstractedActor(), Point.zero, typeof(BrakeZone)
+				character.abstractedActor, Point.zero, typeof(BrakeZone)
 			);
 			if ((Global.level.gameMode as Race)?.getPlace(character.player) > 1) {
 				dashTime = 100;
@@ -162,7 +162,7 @@ public class AI {
 			}
 
 			var turnZones = Global.level.getTerrainTriggerList(
-				character.abstractedActor(), Point.zero, typeof(TurnZone)
+				character.abstractedActor, Point.zero, typeof(TurnZone)
 			);
 			if (turnZones.FirstOrDefault()?.gameObject is TurnZone turnZone && turnZone.xDir != character.xDir) {
 				if (turnZone.xDir == -1) {
@@ -176,7 +176,7 @@ public class AI {
 
 			if (jumpTime == 0) {
 				var jumpZones = Global.level.getTerrainTriggerList(
-					character.abstractedActor(), Point.zero, typeof(JumpZone)
+					character.abstractedActor, Point.zero, typeof(JumpZone)
 				);
 				int jumpTurnZoneCount = turnZones.Count(turnZone => turnZone.gameObject is TurnZone tz && tz.jumpAfterTurn && tz.xDir == character.xDir);
 
@@ -275,8 +275,8 @@ public class AI {
 		}*/
 
 		if (aiState is not InJumpZone && jumpZoneCooldown <= 0) {
-			List<CollideData> jumpZones = Global.level.getTerrainTriggerList(
-				character.abstractedActor(), Point.zero, typeof(JumpZone)
+			var jumpZones = Global.level.getTerrainTriggerList(
+				character.abstractedActor, Point.zero, typeof(JumpZone)
 			);
 			NavMeshNeighbor? neighbor = (aiState as FindPlayer)?.neighbor;
 			if (neighbor != null) {
@@ -384,10 +384,8 @@ public class AI {
 	}
 	public int getRandomWeaponIndex() {
 		if (player.weapons.Count == 0) return 0;
-		List<Weapon> weapons = player.weapons.FindAll(
-			w => w is not DNACore
-		).ToList();
-		return weapons.IndexOf(weapons.GetRandomItem());                                         // removing IceGattling until know the bug
+		List<Weapon> weapons = player.weapons.FindAll(w => w is not DNACore).ToList();
+		return weapons.IndexOf(weapons.GetRandomItem());
 	}
 	public void changeState(AIState newState, bool forceChange = false) {
 		if (aiState is FindPlayer && newState is not FindPlayer && character.flag != null) {
@@ -599,7 +597,7 @@ public class FindPlayer : AIState {
 			}
 		}
 
-		Point nodeDist = nextNode.pos - character.abstractedActor().getCenterPos();
+		Point nodeDist = nextNode.pos - character.abstractedActor.getCenterPos();
 		bool isOnPit = false;
 		bool pitFront = false;
 		int nodeDir = MathF.Sign(nodeDist.x);
@@ -823,8 +821,8 @@ public class InJumpZone : AIState {
 		}
 
 		//Check if out of zone
-		if (character != null && character.abstractedActor().collider != null && character.grounded) {
-			if (!character.abstractedActor().collider?.isCollidingWith(jumpZone.collider) != true) {
+		if (character != null && character.abstractedActor.collider != null) {
+			if (!character.abstractedActor.collider.isCollidingWith(jumpZone.collider)) {
 				ai.changeState(new FindPlayer(character));
 			}
 		}

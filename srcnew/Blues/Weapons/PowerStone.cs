@@ -11,7 +11,7 @@ public class PowerStone : Weapon {
 		descriptionV2 = [
 			[ "Summons three stones that spiral around.\nCan be used behind the shield." ],
 		];
-		defaultAmmoUse = 4;
+		defaultAmmoUse = 5;
 
 		index = (int)BluesWeaponIds.PowerStone;
 		fireRate = 55;
@@ -42,7 +42,6 @@ public class PowerStone : Weapon {
 }
 
 public class PowerStoneProj : Projectile {
-	Character character = null!;
 	Point origin;
 	int stoneAngle = 120;
 	float radius = 10;
@@ -64,12 +63,12 @@ public class PowerStoneProj : Projectile {
 
 		damager.damage = 2;
 		damager.flinch = Global.miniFlinch;
-		damager.hitCooldown = 60;
+		damager.hitCooldown = 16;
 		
 		origin = pos;
 		if (ownedByLocalPlayer) {
-			character = owner as Character ?? throw new NullReferenceException();
-			origin = character.getCenterPos();
+			ownerActor = owner as Character ?? throw new NullReferenceException();
+			origin = ownerActor.getCenterPos();
 		}
 		changePos(new Point(
 			origin.x + Helpers.cosb(stoneAngle) * radius,
@@ -91,8 +90,8 @@ public class PowerStoneProj : Projectile {
 		base.update();
 		if (!ownedByLocalPlayer) return;
 
-		if (character != null) {
-			origin = character.getCenterPos();
+		if (ownerActor != null) {
+			origin = ownerActor.getCenterPos();
 		}
 		changePos(new Point(
 			origin.x + Helpers.cosb(stoneAngle) * radius,
@@ -112,6 +111,6 @@ public class PowerStoneProj : Projectile {
 
 	public override void onDestroy() {
 		base.onDestroy();
-		Anim.createGibEffect("power_stone_pieces_big", pos, null!, zIndex: zIndex);
+		Anim.createGibEffect("power_stone_pieces_big", pos, null, zIndex: zIndex);
 	}
 } 

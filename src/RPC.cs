@@ -998,7 +998,9 @@ public class RPCSyncGameTime : RPC {
 
 		int time = BitConverter.ToUInt16(new byte[] { arguments[0], arguments[1] }, 0);
 		Global.level.gameMode.remainingTime = time;
-		if (Global.level.gameMode.remainingTime.Value <= 10 && Global.level.gameMode.remainingTime.Value > 0) Global.playSound("text");
+		if (Global.level.gameMode.remainingTime.Value <= 10 && Global.level.gameMode.remainingTime.Value > 0) {
+			Global.playSound("text");
+		}
 		if (arguments.Length >= 4) {
 			int elimTime = BitConverter.ToUInt16(new byte[] { arguments[2], arguments[3] }, 0);
 			Global.level.gameMode.eliminationTime = elimTime;
@@ -1818,6 +1820,20 @@ public class RPCResetFlag : RPC {
 	}
 }
 
+public class RPCSyncEAltRound : RPC {
+	public RPCSyncEAltRound() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isString = true;
+	}
+
+	public override void invoke(string message) {
+		if (Global.level.gameMode is not TeamElimAlt tealt) {
+			return;
+		}
+		var rpcMatchOverResponse = JsonConvert.DeserializeObject<RPCMatchOverResponse>(message);
+		tealt.addResult(rpcMatchOverResponse);
+	}
+}
 
 public enum EffectIds {
 	None,

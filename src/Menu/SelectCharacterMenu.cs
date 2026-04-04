@@ -63,8 +63,30 @@ public class CharSelection {
 	public string sprite;
 	public int frameIndex;
 	public Point offset = new Point(0, 48);
+	public Point offset1v1 = new Point(0, 28);
 
 	public static int sigmaIndex => Options.main?.sigmaLoadout?.sigmaForm ?? 0;
+	public static string sigmaNames => Options.main?.sigmaLoadout?.sigmaForm switch
+	{
+		0 => "Commander Sigma",
+		1 => "Neo Sigma",
+		2 => "Dopple Sigma",
+		_ => "Error"
+	};
+	public static string sigmaSprites => Options.main?.sigmaLoadout?.sigmaForm switch
+	{
+		0 => "sigma_warp_in",
+		1 => "sigma2_warp_in",
+		2 => "sigma3_warp_in",
+		_ => "sigma_warp_in"
+	};
+	public static Point sigmaOffSet => Options.main?.sigmaLoadout?.sigmaForm switch
+	{
+		0 => new Point(4, 44),
+		1 => new Point(0, 45),
+		2 => new Point(0, 45),
+		_ => new Point(0, 44),
+	};
 
 	public static CharSelection[] selections => [
 		new CharSelection("MEGAMAN", (int)CharIds.Rock, 0, 0, "rock_idle", 0),

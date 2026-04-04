@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SFML.Graphics;
 
 
 namespace MMXOnline;
@@ -10,15 +11,12 @@ public class Rock : Character {
 	public float weaponCooldown;
 	public List<Actor> junkShieldProjs = new();
 	public LoopingSound? junkShieldSound;
-	public ScorchWheelSpawnRm? sWellSpawn;
-	public ScorchWheelRmProj? sWell;
-	public WaterScorchWheelSpawnRm? sWellU;
-	public WaterScorchWheelSpawnRm? underwaterScorchWheel;
 	public Projectile? sWheel;
 	public SARocketPunchProj? saRocketPunchProj;
 	public bool armless;
 	public ChargeEffect? noiseCrushEffect;
-	public bool hasChargedNoiseCrush = false;
+	public int chargedNoiseCrush = 0;
+	public Dictionary<int, float> chargedNoiseCrushCd = [];
 	public float noiseCrushAnimTime;
 	public LoopingSound? chargedNoiseCrushSound;
 	public bool usedDoubleJump;
@@ -82,13 +80,32 @@ public class Rock : Character {
 		}
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		int[] cooldownKeys = chargedNoiseCrushCd.Keys.ToArray();
+		foreach (int key in cooldownKeys) {
+			chargedNoiseCrushCd[key] -= speedMul;
+			if (chargedNoiseCrushCd[key] <= 0) {
+				chargedNoiseCrushCd.Remove(key);
+			}
+		}
+		for (int i = junkShieldProjs.Count -1; i >= 0; i--) {
+			if (junkShieldProjs[i].destroyed) {
+				junkShieldProjs.RemoveAt(i);
+			}
+		}
+	}
+
 	public override void update() {
 		base.update();
 
 		if (!ownedByLocalPlayer) return;
 
 		Helpers.decrementFrames(ref weaponCooldown);
-		armless = saRocketPunchProj != null;
+		armless = saRocketPunchProj?.destroyed == false;
 		if (rushWeaponSpecial) {
 			rushWeapon.update();
 			rushWeapon.charLinkedUpdate(this, true);
@@ -98,30 +115,14 @@ public class Rock : Character {
 			weaponHealAmount = 0;
 		}
 
-		//if (currentWeapon is not NoiseCrush) hasChargedNoiseCrush = false;
-
-		if (hasChargedNoiseCrush) {
-			if (chargedNoiseCrushSound == null) {
-				if (!isCharging()) {
-					chargedNoiseCrushSound = new LoopingSound("charge_start", "charge_loop", this);
-				}
-			} else {
-				chargedNoiseCrushSound.play();
-			}
+		//Junk Shield and Noise Crush soundloop.
+		if ((chargedNoiseCrush > 0 || junkShieldProjs.Count > 0) && !isCharging()) {
+			chargedNoiseCrushSound ??= new LoopingSound("charge_start", "charge_loop", this);
+			chargedNoiseCrushSound.play();
 		} else if (chargedNoiseCrushSound != null) {
 			chargedNoiseCrushSound.stop();
+			chargedNoiseCrushSound.destroy();
 			chargedNoiseCrushSound = null;
-		}
-
-		//Junk Shield soundloop.
-		if (junkShieldProjs.Count > 0) {
-			if (junkShieldSound == null) {
-				junkShieldSound = new LoopingSound("charge_start", "charge_loop", this);
-			} else junkShieldSound.play();
-
-		} else if (junkShieldSound != null) {
-			junkShieldSound.stop();
-			junkShieldSound = null;
 		}
 
 		// For the shooting animation.
@@ -222,7 +223,7 @@ public class Rock : Character {
 		if (currentWeapon.hasCustomAnim == false) {
 			setShootAnim();
 		}
-		int chargedNS = hasChargedNoiseCrush ? 1 : 0;
+		int chargedNS = chargedNoiseCrush > 0 ? 1 : 0;
 		currentWeapon.shootRock(this, chargeLevel, chargedNS);
 		currentWeapon.shootCooldown = currentWeapon.fireRate;
 		weaponCooldown = currentWeapon.fireRate;
@@ -285,7 +286,7 @@ public class Rock : Character {
 	public override void render(float x, float y) {
 		base.render(x, y);
 
-		if (hasChargedNoiseCrush) {
+		if (chargedNoiseCrush > 0) {
 			drawChargedNoiseCrush(x, y);
 		}
 	}
@@ -354,15 +355,13 @@ public class Rock : Character {
 
 	public override bool canShoot() {
 		if (isSlideColliding) return false;
-		if (sWell != null) return false;
-		if (sWellSpawn != null) return false;
-		if (sWellU != null) return false;
+		if (sWheel?.destroyed == false) return false;
 		if (charState is Slide)
 			return (currentWeapon is RockBuster || currentWeapon is WildCoil) && getChargeLevel() == 2;
 		if (charState is CallDownRush) return false;
 		if (charState is SAArrowSlashState) return false;
 		if (isInvulnerableAttack()) return false;
-		if (saRocketPunchProj != null) return false;
+		if (saRocketPunchProj?.destroyed == false) return false;
 
 		return base.canShoot() && weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0;
 	}
@@ -394,7 +393,7 @@ public class Rock : Character {
 		if (isWarpIn()) return false;
 		if (invulnTime > 0) return false;
 		if (junkShieldProjs.Count > 0) return false;
-		if (sWell != null) return false;
+		if (sWheel?.destroyed == false) return false;
 
 		return base.canCharge();
 	}
@@ -659,21 +658,20 @@ public class Rock : Character {
 	}
 
 	public virtual float getSlideSpeed() {
-		return 3.5f * getRunDebuffs();
+		return 3 * getRunDebuffs();
 	}
 
 	public void removeLastingProjs() {
-		sWellSpawn?.destroySelf();
-		sWellSpawn = null;
-		sWell?.destroySelf();
-		sWell = null;
-		sWellU?.destroySelf();
-		sWellU = null;
+		sWheel?.destroySelf();
+		sWheel = null;
+		sWheel?.destroySelf();
 		noiseCrushEffect?.destroy();
 		noiseCrushEffect = null;
 		chargedNoiseCrushSound?.stop();
+		chargedNoiseCrushSound?.destroy();
 		chargedNoiseCrushSound = null;
 		junkShieldSound?.stop();
+		junkShieldSound?.destroy();
 		junkShieldSound = null;
 
 		foreach (Weapon w in weapons) {
@@ -782,7 +780,7 @@ public class Rock : Character {
 	}
 
 	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
-		if (Global.level.mainPlayer.character == this && !weapons.Contains(rushWeapon)) {
+		if (Global.level.mainPlayer.character == this && !weapons.Contains(rushWeapon) && !hasSuperAdaptor) {
 			int drawDir = 1;
 			if (position == GameMode.HUDHealthPosition.Right) {
 				drawDir = -1;
@@ -809,7 +807,7 @@ public class Rock : Character {
 		customData.Add((byte)getChargeLevel());
 
 		customData.Add(Helpers.boolArrayToByte([
-			hasChargedNoiseCrush,
+			chargedNoiseCrush > 0,
 			hasSuperAdaptor,
 			armless
 		]));
@@ -835,7 +833,7 @@ public class Rock : Character {
 		}
 
 		bool[] boolData = Helpers.byteToBoolArray(data[3]);
-		hasChargedNoiseCrush = boolData[0];
+		chargedNoiseCrush = boolData[0] ? 1 : 0;
 		hasSuperAdaptor = boolData[1];
 		armless = boolData[2];
 	}

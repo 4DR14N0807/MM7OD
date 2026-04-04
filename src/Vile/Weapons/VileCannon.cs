@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
-using SFML.Graphics;
 namespace MMXOnline;
 
 public enum VileCannonType {
@@ -20,8 +18,20 @@ public class VileCannon : Weapon {
 		weaponBarIndex = 56;
 		killFeedIndex = 56;
 		weaponSlotIndex = 43;
+		isStream = true;
+	}
+	public override void vileShoot(Vile vile) {
+		if (shootCooldown > 0 || vile.energy.ammo < vileAmmoUsage) {
+			return;
+		}
+		if (vile.charState is Crouch) {
+			shoot(vile, []);
+			return;
+		}
+		vile.changeState(new CannonAttack(this), true);
 	}
 }
+
 public class FrontRunner : VileCannon {
 	public static FrontRunner netWeapon = new();
 	public FrontRunner() : base() {
@@ -35,30 +45,26 @@ public class FrontRunner : VileCannon {
 		vileWeight = 2;
 		effect = "None.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
-		if (shootCooldown > 0) return;
-		if (vile.energy.ammo < vileAmmoUsage) return;
-		if (!vile.missileWeapon.isCooldownPercentDone(0.8f)) return;
-		if (vile.charState is Crouch) {
-			shoot(vile, []); 
-			return;
-		}
-		vile.changeState(new CannonAttack(this), true);
-	}
+
 	public override void shoot(Character character, int[] args) {
-		if (character is not Vile vava) return;
-		Point shootVel = vava.getVileShootVel(true);
-		Point shootPos = vava.setCannonAim(new Point(shootVel.x, shootVel.y));
-		if (vava.getShootXDir() == -1) shootVel = new Point(shootVel.x * vava.getShootXDir(), shootVel.y);
+		if (character is not Vile vile) return;
+		Point shootVel = vile.getVileShootVel(true);
+		Point shootPos = vile.setCannonAim(new Point(shootVel.x, shootVel.y));
+
+		if (vile.getShootXDir() == -1) {
+			shootVel.x *= -1;
+		}
 		new FrontRunnerProj(
-			shootPos, character.xDir, MathF.Round(shootVel.byteAngle), character, character.player,
-			character.player.getNextActorNetId(), rpc: true
+			shootPos, MathF.Round(shootVel.byteAngle), vile,
+			vile.player.getNextActorNetId(), sendRpc: true
 		);
-		vava.setVileShootTime(this);
-		vava.playSound("frontrunner", sendRpc: true);
-		vava.tryUseVileAmmo(vileAmmoUsage);
+
+		vile.setVileShootTime(this);
+		vile.playSound("frontrunner", sendRpc: true);
+		vile.tryUseVileAmmo(vileAmmoUsage);
 	}
 }
+
 public class FatBoy : VileCannon {
 	public static FatBoy netWeapon = new();
 	public FatBoy() : base() {
@@ -74,30 +80,25 @@ public class FatBoy : VileCannon {
 		vileWeight = 3;
 		effect = "None.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
-		if (shootCooldown > 0) return;
-		if (vile.energy.ammo < vileAmmoUsage) return;
-		if (!vile.missileWeapon.isCooldownPercentDone(0.8f)) return;
-		if (vile.charState is Crouch) {
-			shoot(vile, []); 
-			return;
-		}
-		vile.changeState(new CannonAttack(this), true);
-	}
+
 	public override void shoot(Character character, int[] args) {
-		if (character is not Vile vava) return;
-		Point shootVel = vava.getVileShootVel(true);
-		Point shootPos = vava.setCannonAim(new Point(shootVel.x, shootVel.y));
-		if (vava.getShootXDir() == -1) shootVel = new Point(shootVel.x * vava.getShootXDir(), shootVel.y);
+		if (character is not Vile vile) { return; }
+		Point shootVel = vile.getVileShootVel(true);
+		Point shootPos = vile.setCannonAim(new Point(shootVel.x, shootVel.y));
+		if (vile.getShootXDir() == -1) {
+			shootVel.x *= -1;
+		}
 		new FatBoyProj(
-			shootPos, character.xDir, MathF.Round(shootVel.byteAngle), character, character.player,
-			character.player.getNextActorNetId(), rpc: true
+			shootPos, MathF.Round(shootVel.byteAngle), vile,
+			vile.player.getNextActorNetId(), sendRpc: true
 		);
-		vava.setVileShootTime(this);
-		vava.playSound("frontrunner", sendRpc: true);
-		vava.tryUseVileAmmo(vileAmmoUsage);
+
+		vile.setVileShootTime(this);
+		vile.playSound("frontrunner", sendRpc: true);
+		vile.tryUseVileAmmo(vileAmmoUsage);
 	}
 }
+
 public class LongShotGizmo : VileCannon {
 	public static LongShotGizmo netWeapon = new();
 	public LongShotGizmo() : base() {
@@ -112,44 +113,38 @@ public class LongShotGizmo : VileCannon {
 		vileWeight = 4;
 		effect = "Burst of 5 shots.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
-		if (shootCooldown > 0) return;
-		if (vile.energy.ammo < vileAmmoUsage) return;
-		if (!vile.missileWeapon.isCooldownPercentDone(0.8f)) return;
+	public override void vileShoot(Vile vile) {
+		if (shootCooldown > 0 || vile.energy.ammo < vileAmmoUsage) {
+			return;
+		}
 		vile.changeState(new CannonAttack(this), true);
 	}
 	public override void shoot(Character character, int[] args) {
-		if (character is not Vile vava) return;
-		Point shootVel = vava.getVileShootVel(true);
-		Point shootPos = vava.setCannonAim(new Point(shootVel.x, shootVel.y));
-		if (vava.getShootXDir() == -1) shootVel = new Point(shootVel.x * vava.getShootXDir(), shootVel.y);
+		if (character is not Vile vile) { return; }
+		Point shootVel = vile.getVileShootVel(true);
+		Point shootPos = vile.setCannonAim(new Point(shootVel.x, shootVel.y));
+		if (vile.getShootXDir() == -1) {
+			shootVel.x *= -1;
+		}
 		new LongshotGizmoProj(
-			shootPos, character.xDir, MathF.Round(shootVel.byteAngle), character, character.player,
-			character.player.getNextActorNetId(), rpc: true
+			shootPos, MathF.Round(shootVel.byteAngle), vile,
+			vile.player.getNextActorNetId(), sendRpc: true
 		);
-		vava.setVileShootTime(this);
-		vava.playSound("frontrunner", sendRpc: true);
-		vava.tryUseVileAmmo(vileAmmoUsage);
-		vava.isShootingGizmo = true;
-	}
-}
-public class NoneCannon : VileCannon {
-	public static NoneCannon netWeapon = new();
-	public NoneCannon() : base() {
-		type = (int)VileCannonType.None;
-		displayName = "None";
-		killFeedIndex = 126;
+
+		vile.setVileShootTime(this);
+		vile.playSound("frontrunner", sendRpc: true);
+		vile.tryUseVileAmmo(vileAmmoUsage);
 	}
 }
 
-#region States
 public class CannonAttack : VileState {
 	public bool shot;
 	public int shootFrame = 0;
 	public VileCannon weapon;
-	public float shootTime;
 	public int loopNum;
 	public bool lockAir => Options.main.lockInAirCannon;
+	public float shootTime;
+	
 	public CannonAttack(VileCannon weapon) : base("idle_shoot") {
 		useDashJumpSpeed = true;
 		airMove = true;
@@ -163,14 +158,17 @@ public class CannonAttack : VileState {
 	public override void update() {
 		base.update();
 		character.turnToInput(player.input, player);
-		if (vile.energy.ammo < weapon.vileAmmoUsage && !lockAir && !character.grounded) {
+
+		if (vile.energy.ammo < weapon.vileAmmoUsage && !lockAir && !character.grounded && character.isAnimOver()) {
 			character.changeToCrouchOrFall();
 			return;
 		}
+
 		if (character.frameIndex >= shootFrame && !shot) {
 			shot = true;
 			weapon.shoot(vile, []);
 		}
+
 		shootTime += Global.speedMul;
 		if (weapon is LongShotGizmo) {
 			if (shootTime == 6) {
@@ -186,6 +184,7 @@ public class CannonAttack : VileState {
 				return;
             }
         }
+
 		if (character.isAnimOver()) {
 			character.changeToIdleOrFall();
 		}
@@ -197,23 +196,23 @@ public class CannonAttack : VileState {
 			sprite = "cannon_air";
 			character.changeSpriteFromName(sprite, true);
 			if (lockAir) {
-                character.useGravity = false;
+				character.useGravity = false;
 				character.stopMoving();
-				character.vel = new Point();
 				airMove = false;
-            }
+				canStopJump = false;
+				canJump = false;
+				character.useGravity = false;
+			}
 		}
 		if (weapon is LongShotGizmo) {
 			airMove = false;	
 			if (character.grounded) sprite = "idle_gizmo";
 			else sprite = "cannon_gizmo_air";
 			character.changeSpriteFromName(sprite, true);
-			character.useGravity = false;
-			character.stopMoving();
-			character.vel = new Point();
-			canJump = false;
-        }
+			vile.isShootingGizmo = true;
+		}
 	}
+
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.useGravity = true;
@@ -223,73 +222,73 @@ public class CannonAttack : VileState {
         }
 	}
 }
-#endregion
 
-#region Projectiles
 public class FrontRunnerProj : Projectile {
 	public FrontRunnerProj(
-		Point pos, int xDir, float byteAngle,
-		Actor owner, Player player, ushort? netId, bool rpc = false
+		Point pos, float byteAngle, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "vile_mk2_proj", netId, player
+		pos, 1, owner, "vile_mk2_proj", netId, altPlayer
 	) {
 		weapon = FrontRunner.netWeapon;
-		xScale = xDir;
+		projId = (int)ProjIds.FrontRunner;
 		maxTime = 0.5f;
 		destroyOnHit = true;
 		fadeSprite = "vile_mk2_proj_fade";
 		fadeOnAutoDestroy = true;
 		damager.damage = 3;
-		projId = (int)ProjIds.FrontRunner;
-		byteAngle = byteAngle % 256;
+		byteAngle = Helpers.to256(byteAngle);
 		this.byteAngle = byteAngle;
-		vel.x = 300 * Helpers.cosb(byteAngle);
-		vel.y = 300 * Helpers.sinb(byteAngle);
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		vel = 5 * 60 * Point.createFromByteAngle(byteAngle);
+
+		if (sendRpc) {
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle);
 		}
 	}
+
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new FrontRunnerProj(
-			args.pos, args.xDir, args.byteAngle, args.owner, args.player, args.netId
+			args.pos, args.byteAngle, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 }
+
 public class FatBoyProj : Projectile {
 	public FatBoyProj(
-		Point pos, int xDir, float byteAngle,
-		Actor owner, Player player, ushort? netId, bool rpc = false
+		Point pos, float byteAngle, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "vile_mk2_fb_proj", netId, player
+		pos, 1, owner, "vile_mk2_fb_proj", netId, altPlayer
 	) {
 		weapon = FatBoy.netWeapon;
-		xScale = xDir;
+		projId = (int)ProjIds.FatBoy;
 		fadeSprite = "vile_mk2_fb_proj_fade";
 		fadeOnAutoDestroy = true;
 		damager.damage = 4;
 		damager.flinch = Global.defFlinch;
-		projId = (int)ProjIds.FatBoy;
 		maxTime = 0.35f;
-		byteAngle = byteAngle % 256;
+		byteAngle = Helpers.to256(byteAngle);
 		this.byteAngle = byteAngle;
-		vel.x = 300 * Helpers.cosb(byteAngle);
-		vel.y = 300 * Helpers.sinb(byteAngle);
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		vel = 5 * 60 * Point.createFromByteAngle(byteAngle);
+
+		if (sendRpc) {
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle);
 		}
 	}
+
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new FatBoyProj(
-			args.pos, args.xDir, args.byteAngle, args.owner, args.player, args.netId
+			args.pos, args.byteAngle, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 }
+
 public class LongshotGizmoProj : Projectile {
 	public LongshotGizmoProj(
-		Point pos, int xDir, float byteAngle,
-		Actor owner, Player player, ushort? netId, bool rpc = false
+		Point pos, float byteAngle, Actor owner, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "vile_mk2_lg_proj", netId, player
+		pos, 1, owner, "vile_mk2_lg_proj", netId, altPlayer
 	) {
 		weapon = LongShotGizmo.netWeapon;
 		xScale = xDir;
@@ -297,23 +296,21 @@ public class LongshotGizmoProj : Projectile {
 		fadeOnAutoDestroy = true;
 		damager.damage = 1;
 		projId = (int)ProjIds.LongshotGizmo;
-		maxTime = 0.5f;
-		byteAngle = byteAngle % 256;
+		maxTime = 30 / 60f;
+		byteAngle = Helpers.to256(byteAngle);
 		this.byteAngle = byteAngle;
-		vel.x = 300 * Helpers.cosb(byteAngle);
-		vel.y = 300 * Helpers.sinb(byteAngle);
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		vel = 5 * 60 * Point.createFromByteAngle(byteAngle);
+		if (sendRpc) {
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netId, byteAngle);
 		}
 	}
+
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new LongshotGizmoProj(
-			args.pos, args.xDir, args.byteAngle, args.owner, args.player, args.netId
+			args.pos, args.byteAngle, args.owner, args.netId, altPlayer: args.player
 		);
 	}
 }
-
-#endregion
 
 #region OldStuff
 /*

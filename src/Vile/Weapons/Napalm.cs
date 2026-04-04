@@ -33,7 +33,7 @@ public class RumblingBang : VileNapalm {
 		hitcooldown = "0.5";
 		effect = "None.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new NapalmAttacks(this), true);
@@ -61,7 +61,7 @@ public class FireGrenade : VileNapalm {
 		hitcooldown = "1/0.5";
 		effect = "Fire DOT: 0.5/1";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new NapalmAttacks(this), true);
@@ -89,7 +89,7 @@ public class SplashHit : VileNapalm {
 		hitcooldown = "0.5";
 		effect = "Pushes towards it.";
 	}
-	public override void vileShoot(WeaponIds weaponInput, Vile vile) {
+	public override void vileShoot(Vile vile) {
 		if (shootCooldown > 0) return;
 		if (vile.energy.ammo < vileAmmoUsage) return;
 		vile.changeState(new NapalmAttacks(this), true);
@@ -126,7 +126,7 @@ public class NapalmGrenadeProj : Projectile {
 		damager.hitCooldown = 12;
 		vel = new Point(150 * xDir, -200);
 		useGravity = true;
-		collider.wallOnly = true;
+		collider?.wallOnly = true;
 		fadeSound = "explosionX3";
 		fadeSprite = "explosion";
 		shouldShieldBlock = false;
@@ -196,7 +196,7 @@ public class NapalmPartProj : Projectile {
 		projId = (int)ProjIds.RumblingBangProj;
 		vel.y = -40;
 		useGravity = true;
-		collider.wallOnly = true;
+		collider?.wallOnly = true;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
 		gravityModifier = 0.25f;
@@ -296,7 +296,7 @@ public class MK2NapalmGrenadeProj : Projectile {
 		projId = (int)ProjIds.FlameRoundGrenade;
 		this.vel = new Point(150 * xDir, -200);
 		useGravity = true;
-		collider.wallOnly = true;
+		collider?.wallOnly = true;
 		fadeSound = "explosionX3";
 		fadeSprite = "explosion";
 		if (rpc) {
@@ -343,7 +343,7 @@ public class MK2NapalmProj : Projectile {
 		maxTime = 2;
 		projId = (int)ProjIds.FlameRoundProj;
 		useGravity = true;
-		collider.wallOnly = true;
+		collider?.wallOnly = true;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
 
@@ -367,7 +367,7 @@ public class MK2NapalmProj : Projectile {
 			new MK2NapalmFlame(pos, xDir, this, owner, owner.getNextActorNetId(), rpc: true);
 		}
 		var hit = Global.level.checkTerrainCollisionOnce(this, vel.x * Global.spf, 0, null);
-		if (hit?.gameObject is Wall && hit?.hitData?.normal != null && !(hit.hitData.normal.Value.isAngled())) {
+		if (hit?.gameObject is Wall && hit.hitData?.normal != null && hit.hitData.normal.Value.isSideways()) {
 			new MK2NapalmWallProj(pos, xDir, this, owner, owner.getNextActorNetId(), rpc: true);
 			destroySelf();
 		}
@@ -388,7 +388,7 @@ public class MK2NapalmFlame : Projectile {
 		damager.hitCooldown = 60;
 		projId = (int)ProjIds.FlameRoundFlameProj;
 		useGravity = true;
-		collider.wallOnly = true;
+		collider?.wallOnly = true;
 		destroyOnHit = true;
 		shouldShieldBlock = false;
 		gravityModifier = 0.25f;
@@ -460,7 +460,7 @@ public class SplashHitGrenadeProj : Projectile {
 		fadeSound = "explosionX3";
 		fadeSprite = "explosion";
 		useGravity = true;
-		collider.wallOnly = true;
+		collider?.wallOnly = true;
 		shouldShieldBlock = false;
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);

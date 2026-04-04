@@ -20,6 +20,7 @@ public class Anim : Actor {
 	public string animJsonName;
 	public ShaderWrapper? fadeBlackShader;
 	public ShaderWrapper? viralSigmaShader;
+	public List<ShaderWrapper>? customShaders;
 
 	public Anim(
 		Point pos, string spriteName, int xDir, ushort? netId,
@@ -65,7 +66,7 @@ public class Anim : Actor {
 			}
 			if (spriteName == "spiralmagnum_shell") {
 				if (collider != null) {
-					collider.wallOnly = true;
+					collider?.wallOnly = true;
 				}
 			}
 		}
@@ -239,12 +240,15 @@ public class Anim : Actor {
 			}
 			return new List<ShaderWrapper>() { fadeBlackShader };
 		}
+		if (customShaders != null) {
+			return customShaders;
+		}
 		return base.getShaders();
 	}
 
 	public static void createGibEffect(
 		string spriteName, Point centerPos,
-		Player player, GibPattern gibPattern = GibPattern.Radial,
+		Player? player, GibPattern gibPattern = GibPattern.Radial,
 		float randVelStart = 100, float randVelEnd = 200,
 		float randDistStart = 0, float randDistEnd = 25, bool sendRpc = false,
 		long? zIndex= null, int pieceOverdive = 0, bool blink = false, float alpha = 1f

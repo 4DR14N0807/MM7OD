@@ -4,14 +4,15 @@ public abstract class BaselineAmmoPickup : Pickup {
 	public BaselineAmmoPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
 	) {
 		pickupType = PickupType.Ammo;
 		healAmount = 50;
 		altHealAmount = 8;
+		syncOnLateJoin = true;
 	}
 
 	public override void use(Character chr) {

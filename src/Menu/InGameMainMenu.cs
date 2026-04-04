@@ -96,7 +96,7 @@ public class InGameMainMenu : IMainMenu {
 	}
 
 	public bool isSelWepDisabled() {
-		return Global.level.is1v1() || mainPlayer?.realCharNum == (int)CharIds.BusterZero;
+		return Global.level.is1v1();
 	}
 
 	public bool isSelArmorDisabled() {
@@ -199,7 +199,7 @@ public class InGameMainMenu : IMainMenu {
 	) {
 		Color outline = new Color(41, 41, 41);
 		Fonts.drawText(font, text, posX, posY);
-		Fonts.drawText(font, $"L{level}", posX + 66, posY, Alignment.Right);
+		Fonts.drawText(font, $"Rank {level}", posX + 66, posY, Alignment.Right);
 		DrawWrappers.DrawRectWH(
 			posX, posY + 9, 66, 6, true, outline, 0, ZIndex.HUD, false
 		);

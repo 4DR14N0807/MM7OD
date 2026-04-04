@@ -65,42 +65,50 @@ public partial class Global {
 
 		changeWindowSize(options.windowScale);
 
-		screenRenderTextureS = new RenderTexture(screenW, screenH);
-		srtBuffer1S = new RenderTexture(screenW, screenH);
-		srtBuffer2S = new RenderTexture(screenW, screenH);
+		screenRenderTextureS = new RenderTexture((screenW, screenH));
+		srtBuffer1S = new RenderTexture((screenW, screenH));
+		srtBuffer2S = new RenderTexture((screenW, screenH));
 
-		screenRenderTextureL = new RenderTexture(screenW * 2, screenH * 2);
-		srtBuffer1L = new RenderTexture(screenW * 2, screenH * 2);
-		srtBuffer2L = new RenderTexture(screenW * 2, screenH * 2);
+		DrawWrappers.renderTexture = new RenderTexture((screenW, screenH));
+		DrawWrappers.renderTexture = new RenderTexture((screenW, screenH));
 
-		var viewPort = new FloatRect(0, 0, 1, 1);
+		screenRenderTextureL = new RenderTexture((screenW * 2, screenH * 2));
+		srtBuffer1L = new RenderTexture((screenW * 2, screenH * 2));
+		srtBuffer2L = new RenderTexture((screenW * 2, screenH * 2));
+
+		var viewPort = new FloatRect((0, 0), (1, 1));
 
 		if (!fullscreen) {
-			window = new RenderWindow(new VideoMode(windowW, windowH), "MM7 Online: Deathmatch");
+			window = new RenderWindow(
+				new VideoMode((windowW, windowH)), "MM7 Online Deathmatch"
+			);
 			window.SetVerticalSyncEnabled(options.vsync);
 			if (Global.hideMouse) {
 				window.SetMouseCursorVisible(false);
 			}
 		} else {
-			uint desktopWidth = VideoMode.DesktopMode.Width;
-			uint desktopHeight = VideoMode.DesktopMode.Height;
+			var desktopWidth = VideoMode.DesktopMode.Size.X;
+			var desktopHeight = VideoMode.DesktopMode.Size.Y;
 			Styles style = Styles.None;
-			#if WINDOWS
+			if (NativeApi.Main.currentOS == NativeApi.OS.Windows) {
 				style = Styles.Default;
-			#endif
+			}
 			window = new RenderWindow(
-				new VideoMode(desktopWidth, desktopHeight), "MM7 Online: Deathmatch", style
+				new VideoMode((desktopWidth, desktopHeight)),
+				"MM7 Online: Deathmatch", style, State.Windowed
 			);
-			#if WINDOWS
+			#if !NOTWINDOWS
+			if (NativeApi.Main is WinApi winApi) {
 				// Fixes bordeless on AMD and NVidia cards.
 				// Intels are f-ed up OpenGL. So this does not work on them.
 				// TODO: To fix this render final render result in GDI... maybe.
 				// Or check how the hell Snes9x OpenGL render avoids this bug.
-				WinApi.ReplaceWindowStyle(
+				winApi.ReplaceWindowStyle(
 					window, WinApi.WS.VISIBLE | WinApi.WS.SYSMENU |
 					WinApi.WS.CLIPCHILDREN | WinApi.WS.CLIPSIBLINGS
 				);
-				WinApi.SetWindowExStyle(window, WinApi.WSEX.APPWINDOW, true);
+				winApi.SetWindowExStyle(window, WinApi.WSEX.APPWINDOW, true);
+			}
 			#endif
 			window.SetVerticalSyncEnabled(options.vsync);
 			window.Position = new Vector2i(0, 0);
@@ -117,7 +125,7 @@ public partial class Global {
 		}
 
 		var image = new Image(Global.assetPath + "assets/menu/icon.png");
-		window.SetIcon(image.Size.X, image.Size.Y, image.Pixels);
+		window.SetIcon((image.Size.X, image.Size.Y), image.Pixels);
 
 		view = new View(new Vector2f(0, 0), new Vector2f(screenW, screenH));
 		view.Viewport = viewPort;
@@ -137,19 +145,19 @@ public partial class Global {
 	}
 
 	public static FloatRect getFullScreenViewPort() {
-		float desktopWidth = window.Size.X;
-		float desktopHeight = window.Size.Y;
-		float heightMultiple = window.Size.Y / (float)screenH;
+		float desktopWidth = VideoMode.DesktopMode.Size.X;
+		float desktopHeight = VideoMode.DesktopMode.Size.Y;
+		float heightMultiple = VideoMode.DesktopMode.Size.Y / (float)screenH;
 
 		if (Options.main.integerFullscreen) {
-			heightMultiple = MathF.Floor(window.Size.Y / (float)screenH);
+			heightMultiple = MathF.Floor(VideoMode.DesktopMode.Size.Y / (float)screenH);
 		}
 		float extraWidthPercent = (desktopWidth - screenW * heightMultiple) / desktopWidth;
 		float extraHeightPercent = (desktopHeight - screenH * heightMultiple) / desktopHeight;
 
 		return new FloatRect(
-			extraWidthPercent / 2f, extraHeightPercent / 2f,
-			1f - extraWidthPercent, 1f - extraHeightPercent
+			(extraWidthPercent / 2f, extraHeightPercent / 2f),
+			(1f - extraWidthPercent, 1f - extraHeightPercent)
 		);
 	}
 

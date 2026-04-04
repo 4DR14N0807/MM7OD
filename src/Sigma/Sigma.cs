@@ -16,10 +16,12 @@ public class BaseSigma : Character {
 	public long framesSinceLastAttack = 1000;
 	public bool isTrueAI;
 	public bool tempAiSummoner;
+	public bool is1v1mode;
 
 	public SigmaLoadout loadout;
 	public MaverickAIBehavior currentMaverickCommand;
 	public bool summonerAttackModeActive;
+	public int sigmaWeaponSlot;
 
 	public BaseSigma(
 		Player player, float x, float y, int xDir,
@@ -42,13 +44,12 @@ public class BaseSigma : Character {
 		sigmaLoadout ??= player.loadout.sigmaLoadout.clone();
 		loadout = sigmaLoadout;
 		weapons = configureWeapons(sigmaLoadout);
-		if (ownedByLocalPlayer && weapons.Count == 3 && !isATrans) {
-			weaponSlot = Options.main.sigmaWeaponSlot;
-		}
+
 		// For 1v1 mavericks.
 		CharState intialCharState;
 		if (ownedByLocalPlayer) {
 			if (player.maverick1v1 != null) {
+				is1v1mode = true;
 				intialCharState = new WarpOut(true);
 			} else if (isWarpIn) {
 				intialCharState = new WarpIn(true, true);
@@ -90,7 +91,7 @@ public class BaseSigma : Character {
 	public override void preUpdate() {
 		base.preUpdate();
 
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || is1v1mode) {
 			return;
 		}
 
@@ -126,6 +127,7 @@ public class BaseSigma : Character {
 		bool isPuppeteer = false;
 		bool isTruePuppeter = true;
 		bool isTrueStriker = true;
+		bool isTrueSummoner = true;
 		bool canIssueAttack = false;
 		bool canIssueOrders = false;
 		if (!player.isAI) {
@@ -145,11 +147,13 @@ public class BaseSigma : Character {
 						canIssueOrders = true;
 						isPuppeteer = true;
 						isTrueStriker = false;
+						isTrueSummoner = false;
 						break;
 					}
 					case MaverickModeId.TagTeam: {
 						isTruePuppeter = false;
 						isTrueStriker = false;
+						isTrueSummoner = false;
 						break;
 					}
 					case MaverickModeId.Striker: {
@@ -159,9 +163,10 @@ public class BaseSigma : Character {
 				}
 			}
 		}
-		if (weapons.Count > 3 || isATrans) {
+		if (weapons.Count > 3 || isATrans || !weapons.Any(w => w is SigmaMenuWeapon)) {
 			isTruePuppeter = false;
 			isTrueStriker = false;
+			isTrueSummoner = false;
 		}
 
 		if (isTruePuppeter && !player.isAI && Options.main.puppeteerHoldOrToggle &&
@@ -171,7 +176,7 @@ public class BaseSigma : Character {
 			player.changeToSigmaSlot();
 		}
 
-		if (!isTrueStriker) {
+		if (!isTrueStriker && !isTrueSummoner) {
 			player.changeWeaponControls();
 		}
 
@@ -188,10 +193,10 @@ public class BaseSigma : Character {
 			foreach (Weapon weapon in weapons) {
 				if (weapon is MaverickWeapon mw && mw.maverick == null) {
 					if (mw.summonedOnce) {
-						mw.summon(player, pos.addxy(0, -112), pos, xDir);
+						mw.summon(player, pos, xDir);
 					} else if (canAffordMaverick(mw)) {
 						buyMaverick(mw);
-						mw.summon(player, pos.addxy(0, -112), pos, xDir);
+						mw.summon(player, pos, xDir);
 						mw.summonedOnce = true;
 					}
 				}
@@ -265,7 +270,6 @@ public class BaseSigma : Character {
 				}
 			}
 		}
-
 		if (player.mavericks.Count > 0 && grounded &&
 			(player.input.isHeld(Control.Right, player) || player.input.isHeld(Control.Left, player))
 			&& canIssueAttack && charState is not IssueGlobalCommand && charState is not Dash
@@ -295,7 +299,7 @@ public class BaseSigma : Character {
 		// Target weapon.
 		Weapon? targetWeapon = currentWeapon;
 		// Striker controls.
-		if (isTrueStriker && (
+		if ((isTrueStriker || isTrueSummoner) && (
 			player.input.isPressed(Control.WeaponLeft, player) ||
 			player.input.isPressed(Control.WeaponRight, player)
 		)) {
@@ -312,15 +316,17 @@ public class BaseSigma : Character {
 		if (targetWeapon is MaverickWeapon mWeapon &&
 			mWeapon.controlMode != MaverickModeId.TagTeam &&
 			(mWeapon.cooldown == 0 || mWeapon.controlMode != MaverickModeId.Striker) &&
-			(shootPressed || spcPressed || isTrueStriker && mWeapon.controlMode == MaverickModeId.Striker)
-		) {
+			(shootPressed || spcPressed ||
+			isTrueStriker && mWeapon.controlMode == MaverickModeId.Striker ||
+			isTrueSummoner && mWeapon.controlMode == MaverickModeId.Summoner
+		)) {
 			if (mWeapon.maverick == null) {
 				if (canAffordMaverick(mWeapon)) {
 					if (!charState.attackCtrl) {
 						return;
 					}
 					buyMaverick(mWeapon);
-					Maverick maverick = mWeapon.summon(player, pos.addxy(0, -112), pos, xDir);
+					Maverick maverick = mWeapon.summon(player, pos, xDir);
 					if (mWeapon.controlMode == MaverickModeId.Striker) {
 						Point inputDir = player.input.getInputDir(player);
 						if (inputDir.y == -1) {
@@ -338,6 +344,9 @@ public class BaseSigma : Character {
 					if (mWeapon.controlMode == MaverickModeId.Striker) {
 						maverick.aiCooldown = 30;
 					}
+					if (mWeapon.controlMode == MaverickModeId.Summoner) {
+						maverick.aiBehavior = currentMaverickCommand;
+					}
 					if (mWeapon.controlMode != MaverickModeId.Puppeteer) {
 						player.changeToSigmaSlot();
 					}
@@ -345,12 +354,37 @@ public class BaseSigma : Character {
 					cantAffordMaverickMessage(mWeapon);
 				}
 			} else if (mWeapon.controlMode == MaverickModeId.Summoner) {
-				if (shootPressed && mWeapon.shootCooldown == 0) {
-					mWeapon.isMenuOpened = false;
-					mWeapon.shootCooldown = MaverickWeapon.summonerCooldown;
-					changeState(new CallDownMaverick(mWeapon.maverick, false, false), true);
-					player.changeToSigmaSlot();
+				Point inputDir = player.input.getInputDir(player);
+				Maverick maverick = mWeapon.maverick;
+				if (inputDir.y == -1) {
+					if (charState.normalCtrl) {
+						changeState(new CallDownMaverick(maverick, false, true));
+					} else {
+						maverick.changeState(new MExit(pos, true));
+					}
+				} else if (inputDir.y == 1) {
+					if (maverick.aiBehavior == MaverickAIBehavior.Defend) {
+						maverick.aiBehavior = MaverickAIBehavior.Follow;
+					} else {
+						maverick.aiBehavior = MaverickAIBehavior.Defend;
+					}
+					if (charState.normalCtrl) {
+						changeState(new IssueGlobalCommand());
+					}
+				} else if (inputDir.x != 0) {
+					maverick.aiBehavior = MaverickAIBehavior.Attack;
+					maverick.attackDir = (int)inputDir.x;
+					if (charState.normalCtrl) {
+						changeState(new IssueGlobalCommand());
+					}
+				} else {
+					if (charState.normalCtrl) {
+						changeState(new CallDownMaverick(maverick, false, false));
+					} else {
+						maverick.changeState(new MExit(pos, false));
+					}
 				}
+				player.changeToSigmaSlot();
 			}
 			return;
 		}
@@ -395,10 +429,10 @@ public class BaseSigma : Character {
 			if (tagTeamSwapProgress <= 0) {
 				tagTeamSwapProgress = 0;
 				if (tagTeamSwapCase == 0) {
-					var sw = weapons.FirstOrDefault(w => w is SigmaMenuWeapon);
-					sw.shootCooldown = sw.fireRate;
-					currentMaverick.changeState(new MExit(currentMaverick.pos, true));
-					becomeSigma(currentMaverick.pos, currentMaverick.xDir);
+					Weapon? sw = weapons.FirstOrDefault(w => w is SigmaMenuWeapon);
+					sw?.shootCooldown = sw.fireRate;
+					currentMaverick?.changeState(new MExit(currentMaverick.pos, true));
+					becomeSigma(currentMaverick?.pos ?? pos, currentMaverick?.xDir ?? xDir);
 				} else {
 					if (currentWeapon is MaverickWeapon mw && mw.maverick == null) {
 						buyMaverick(mw);
@@ -411,7 +445,7 @@ public class BaseSigma : Character {
 							currentMaverick.changeState(new MExit(currentPos, true));
 						}
 
-						mw.summon(player, currentPos.addxy(0, -112), currentPos, xDir);
+						mw.summon(player, currentPos, xDir);
 						mw.maverick!.health = mw.lastHealth;
 						becomeMaverick(mw.maverick);
 					}
@@ -433,7 +467,7 @@ public class BaseSigma : Character {
 			player.maverick1v1Spawned = true;
 			var mw = weapons[0] as MaverickWeapon;
 			if (mw != null) {
-				mw.summon(player, pos.addxy(0, -112), pos, xDir);
+				mw.summon(player, pos, xDir);
 				mw.maverick!.health = mw.lastHealth;
 				becomeMaverick(mw.maverick);
 			}
@@ -608,9 +642,8 @@ public class BaseSigma : Character {
 		return new Collider(rect.getPoints(), false, this, false, false, HitboxFlag.Hurtbox, new Point(0, 0));
 	}
 
-	public override Collider getTerrainCollider() {
-		Collider? overrideGlobalCollider = null;
-		if (spriteToColliderMatch(sprite.name, out overrideGlobalCollider)) {
+	public override Collider? getTerrainCollider() {
+		if (spriteToColliderMatch(sprite.name, out Collider? overrideGlobalCollider)) {
 			return overrideGlobalCollider;
 		}
 		if (physicsCollider == null) {
@@ -733,12 +766,11 @@ public class BaseSigma : Character {
 			).Select(w => w.clone()).ToList();
 		} else if (Global.level.is1v1()) {
 			if (player.maverick1v1 != null) {
+				sigmaLoadout.commandMode = (int)MaverickModeId.TagTeam;
 				retWeapons = [
-					Weapon.getAllSigmaWeapons(
-						player, sigmaLoadout.sigmaForm
-					).Select(
+					Weapon.getAllSigmaWeapons(player).Select(
 						w => w.clone()
-					).ToList()[player.maverick1v1.Value + 1]
+					).ToList()[player.maverick1v1.Value]
 				];
 			} else if (!Global.level.isHyper1v1()) {
 				int sigmaForm = sigmaLoadout.sigmaForm;
@@ -765,11 +797,19 @@ public class BaseSigma : Character {
 			// Push the generic Sigma slot.
 			int sigmaWeaponSlot = 1;
 			// Always put the AI and enemies slot in the center.
-			if (Global.level.mainPlayer == player) {
+			//yo fix your logic here
+			/*
+			if (Global.level.mainPlayer == player &&
+				commandMode != (int)MaverickModeId.Summoner &&
+				commandMode != (int)MaverickModeId.Puppeteer
+			) {
 				sigmaWeaponSlot = Helpers.clamp(Options.main.sigmaWeaponSlot, 0, 2);
 			}
+			*/
+			sigmaWeaponSlot = Helpers.clamp(Options.main.sigmaWeaponSlot, 0, 2);
 			retWeapons.Insert(sigmaWeaponSlot, new SigmaMenuWeapon());
 			weaponSlot = sigmaWeaponSlot;
+			this.sigmaWeaponSlot = sigmaWeaponSlot;
 		}
 		// Preserve HP on death so can summon for free until they die.
 		if (!isATrans &&

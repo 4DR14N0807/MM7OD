@@ -79,9 +79,12 @@ public class ControlPoints : GameMode {
 	}
 
 	public override void checkIfWinLogic() {
+		if (matchOverResponse != null) {
+			return;
+		}
 		if (level.controlPoints.All(c => c.captured)) {
 			matchOverResponse = new RPCMatchOverResponse() {
-				winningAlliances = new HashSet<int>() { blueAlliance },
+				winningAlliances = [blueAlliance],
 				winMessage = "Victory!",
 				winMessage2 = "Blue team wins",
 				loseMessage = "You lost!",
@@ -89,7 +92,7 @@ public class ControlPoints : GameMode {
 			};
 		} else if (remainingTime <= 0 && level.controlPoints.All(c => c.captured || c.captureTime <= 0)) {
 			matchOverResponse = new RPCMatchOverResponse() {
-				winningAlliances = new HashSet<int>() { redAlliance },
+				winningAlliances = [redAlliance],
 				winMessage = "Victory!",
 				winMessage2 = "Red team wins",
 				loseMessage = "You lost!",

@@ -337,13 +337,13 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 			var maverick = other.gameObject as Maverick;
 
 			if (actor != null && actor.ownedByLocalPlayer) {
-				if (chr != null && chr.player.alliance == damager.owner.alliance) continue;
+				if (chr != null && chr.player.alliance == damager.alliance) continue;
 				if (chr != null && chr.isPushImmune()) continue;
 				if (ra != null && ra.character == null) continue;
-				if (ra != null && ra.player != null && ra.player.alliance == damager.owner.alliance) continue;
+				if (ra != null && ra.player != null && ra.player.alliance == damager.alliance) continue;
 				if (rc != null && rc.character == null) continue;
-				if (rc != null && rc.player != null && rc.player.alliance == damager.owner.alliance) continue;
-				if (maverick != null && maverick.player.alliance == damager.owner.alliance) continue;
+				if (rc != null && rc.player != null && rc.player.alliance == damager.alliance) continue;
+				if (maverick != null && maverick.player.alliance == damager.alliance) continue;
 				if (!actor.gravityWellable) continue;
 
 				if (chr != null) chr.lastGravityWellDamager = owner;

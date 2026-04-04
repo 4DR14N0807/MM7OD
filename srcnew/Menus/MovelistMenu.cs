@@ -216,7 +216,7 @@ public class MovelistMenu : IMainMenu {
 
 	public virtual void render() {
 		if (!inGame) {
-			DrawWrappers.DrawTextureHUD(Global.textures["severbrowser"], 0, 0);
+			DrawWrappers.DrawTextureHUD(Global.textures["severbrowser2"], 0, 0);
 		} else {
 			DrawWrappers.DrawTextureHUD(Global.textures["pausemenu"], 0, 0);
 		}

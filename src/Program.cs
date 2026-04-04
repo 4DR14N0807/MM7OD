@@ -27,12 +27,19 @@ class Program {
 	//public static List<string> debugLogs = [];
 
 	static void Main(string[] args) {
+		// For formatting purposes.
 		setDefaultCulture();
-
+		// Set API hooks
+		NativeApi.OS targetOS = NativeApi.GetOS();
+		NativeApi.Main = targetOS switch {
+			NativeApi.OS.Windows => new WinApi(),
+			NativeApi.OS.Linux => new NativeApi(),
+			NativeApi.OS.OSX => new NativeApi(),
+			_ => new NativeApi()
+		};
+		// Continue.
 		if (args.Length > 0 && args[0] == "-relay") {
-		#if WINDOWS
-			WinApi.AllocConsole();
-		#endif
+			NativeApi.Main.AllocNewConsole();
 			RelayServer.ServerMain(args);
 		} else {
 			int mode = 0;
@@ -150,7 +157,7 @@ class Program {
 			"",
 			string.IsNullOrEmpty(Options.main.playerName) ? "User: Dr. Light" : "User: " + Options.main.playerName,
 			// Get CPU name here.
-			"CPU : " + getCpuName(),
+			"CPU : " + NativeApi.Main.GetCpuName(),
 			"Memory: " + (GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024) + "kb",
 			"",
 		];
@@ -380,9 +387,6 @@ class Program {
 			Global.calledPerFrame = 0;
 
 			if (!Global.paused) {
-				if (Global.debug) {
-					Global.cheats();
-				}
 				if (Options.main.isDeveloperConsoleEnabled() && Menu.chatMenu != null) {
 					if (Global.input.isPressed(Key.F10)) {
 						DevConsole.toggleShow();
@@ -408,11 +412,18 @@ class Program {
 			Global.level.render();
 		} else {
 			if (isMultiThread) {
-				renderAction = Menu.render;
+				renderAction = () => {
+					clearHudTexture();
+					Menu.render();
+					renderHudTexture();
+				};
 			} else {
+				clearHudTexture();
 				Menu.render();
+				renderHudTexture();
 			}
 		}
+
 		// TODO: Make this work for errors.
 		//if (Global.debug) {
 			//Draw debug strings
@@ -426,6 +437,20 @@ class Program {
 			Fonts.drawText(FontType.Red, Global.debugString3, 20, 40);
 			*/
 		//}
+	}
+
+	public static void clearHudTexture() {
+		DrawWrappers.renderTexture.Clear(Color.Transparent);
+		DrawWrappers.renderTexture.Display();
+	}
+
+	public static void renderHudTexture() {
+		// Render.
+		Global.window.SetView(DrawWrappers.hudView);
+		SFML.Graphics.Sprite sprite = new(DrawWrappers.renderTexture.Texture);
+		Global.window.Draw(sprite);
+		sprite.Dispose();
+		Global.window.SetView(Global.view);
 	}
 
 	/// <summary>
@@ -463,7 +488,7 @@ class Program {
 	}
 
 	private static void onWindowResized(object? sender, SizeEventArgs e) {
-		if (Options.main.integerFullscreen) {
+		if (Options.main.integerFullscreen && Options.main.fullScreen) {
 			FloatRect fviewRect = Global.getFullScreenViewPort();
 			Global.view.Viewport = fviewRect;
 			DrawWrappers.hudView.Viewport = fviewRect;
@@ -491,8 +516,8 @@ class Program {
 			sizeY = windowRatio / viewRatio;
 			posY = (1f - sizeY) / 2f;
 		}
-		Global.view.Viewport = new FloatRect(posX, posY, sizeX, sizeY);
-		DrawWrappers.hudView.Viewport = new FloatRect(posX, posY, sizeX, sizeY);
+		Global.view.Viewport = new FloatRect((posX, posY), (sizeX, sizeY));
+		DrawWrappers.hudView.Viewport = new FloatRect((posX, posY), (sizeX, sizeY));
 	}
 
 	/// <summary>
@@ -552,15 +577,17 @@ class Program {
 	}
 
 	static void onMouseMove(object? sender, MouseMoveEventArgs e) {
-		Input.mouseDeltaX = e.X - Global.halfScreenW;
-		Input.mouseDeltaY = e.Y - Global.halfScreenH;
+		Input.mouseDeltaX = e.Position.X - Global.halfScreenW;
+		Input.mouseDeltaY = e.Position.Y - Global.halfScreenH;
 		Global.input.setLastUpdateTime();
 	}
 
 	static void onMousePressed(object? sender, MouseButtonEventArgs e) {
 		if (Global.debug && Global.level == null) {
 			if (e.Button == Mouse.Button.Middle) {
-				Global.debugString1 = (e.X / Options.main.windowScale) + "," + (e.Y / Options.main.windowScale);
+				Global.debugString1 = (
+					$"{e.Position.X / Options.main.windowScale}, {e.Position.Y / Options.main.windowScale}"
+				);
 			} else {
 				Global.debugString1 = "";
 			}
@@ -704,10 +731,9 @@ class Program {
 
 	static string getFileBlobMD5(Dictionary<string, string> fileNamesToContents) {
 		string entireBlob = "";
-		var keys = fileNamesToContents.Keys.ToList();
+		List<string> keys = fileNamesToContents.Keys.ToList();
 		keys.Sort(Helpers.invariantStringCompare);
-
-		foreach (var key in keys) {
+		foreach (string key in keys) {
 			entireBlob += key.ToLowerInvariant() + " " + fileNamesToContents[key];
 		}
 		var md5 = System.Security.Cryptography.MD5.Create();
@@ -794,44 +820,78 @@ class Program {
 	}
 
 	static void loadSprites() {
+		// Check load location.
 		string spritePath = "assets/sprites";
 
-		string[] spriteFilePaths = Helpers.getFiles(Global.assetPath + spritePath, false, "json").ToArray();
+		// Get files, in Linux they are out of order so we need to fix this later.
+		string[] spriteFilePaths = Helpers.getFiles(Global.assetPath + spritePath, true, "json").ToArray();
 		if (spriteFilePaths.Length > 65536) {
 			throw new Exception(
 				"Exceeded max sprite limit of 65536. Fix actor.cs netUpdate() to support more sprites."
 			);
 		}
 
+		// Sort the JSONS by name. So the result is deterministic.
+		Dictionary<string, string> nameToPath = []; 
+		List<string> orderedPaths = [];
+		foreach (string fullPath in spriteFilePaths) {
+			string filename = Path.GetFileName(fullPath).ToLowerInvariant();
+			nameToPath[filename] = fullPath;
+			orderedPaths.Add(filename);
+		}
+		orderedPaths.Sort(Helpers.invariantStringCompare);
+
+		// Now we order the full paths based on this.
+		List<string> orderedSpriteFilePaths = [];
+		foreach (string shortPath in orderedPaths) {
+			orderedSpriteFilePaths.Add(nameToPath[shortPath]);
+		}
+		spriteFilePaths = orderedSpriteFilePaths.ToArray();
+
+		// Split if needed.
 		int fileSplit = MathInt.Floor(spriteFilePaths.Count() / 6.0);
 		string[][] treadedFilePaths;
 		// Use multitread if loading 20 or more sprites.
 		if (spriteFilePaths.Length >= 20) {
-			treadedFilePaths = new string[][] {
+			treadedFilePaths = [
 				spriteFilePaths[..fileSplit],
 				spriteFilePaths[(fileSplit)..(fileSplit*2)],
 				spriteFilePaths[(fileSplit*2)..(fileSplit*3)],
 				spriteFilePaths[(fileSplit*3)..(fileSplit*4)],
 				spriteFilePaths[(fileSplit*4)..(fileSplit*5)],
 				spriteFilePaths[(fileSplit*5)..],
-			};
-			string[] fileChecksums = new string[6];
+			];
+			// List of multithread tasks.
+			// And start a list of blobs so checksum is deterministic .
 			List<Task> tasks = new();
+			string[] fileChecksums = new string[6];
+			// Start loading sprites in parallel.
 			for (int i = 0; i < treadedFilePaths.Length; i++) {
 				int j = i;
-				Task tempTask = new Task(() => { fileChecksums[j] = loadSpritesSub(treadedFilePaths[j]); });
+				// Start a task with the following function.
+				Task tempTask = new Task(() => {
+					var blob = loadSpritesSub(treadedFilePaths[j]);
+					lock (fileChecksums) { fileChecksums[j] = blob; }
+				});
+				// Add task to list.
 				tasks.Add(tempTask);
+				// Set up error handler for the task.
 				tempTask.ContinueWith(loadExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
+				// Run new thread.
 				tempTask.Start();
 			}
+			// Wait for the task to finish and if so remove from the list.
+			// If we are at 0 tasks we continue the main thread.
 			while (tasks.Count > 0) {
 				for (int i = 0; i < tasks.Count; i++) {
+					// If ran to completion or crashed we remove it.
 					if (tasks[i].Status >= TaskStatus.RanToCompletion) {
 						tasks.Remove(tasks[i]);
 						i = 0;
 					}
 				}
 			}
+			// Update the checksum blob.
 			foreach (string fileChecksum in fileChecksums) {
 				Global.fileChecksumBlob += "-" + fileChecksum;
 			}
@@ -839,29 +899,48 @@ class Program {
 			string fileChecksum = loadSpritesSub(spriteFilePaths);
 			Global.fileChecksumBlob += "-" + fileChecksum;
 		}
-		// Override sprite mods
+
+		// Set up aliases here.
+		foreach (var kvp in Global.spriteAliases) {
+			if (Global.sprites.ContainsKey(kvp.Key)) {
+				string[] pieces = kvp.Value.Split(',');
+				foreach (string piece in pieces) {
+					string tpiece = piece.Trim();
+					if (!Global.sprites.ContainsKey(tpiece)) {
+						Global.sprites[tpiece] = Global.sprites[kvp.Key].cloneAnimSlow();
+						Global.sprites[tpiece].name = tpiece;
+					}
+				}
+			}
+		}
+
+		// Override sprite mods.
 		string overrideSpriteSource = "assets/sprites_visualmods";
 		if (Options.main.shouldUseOptimizedAssets()) overrideSpriteSource = "assets/sprites_optimized";
 
 		List<string> overrideSpritePaths = Helpers.getFiles(Global.assetPath + overrideSpriteSource, false, "json");
+		List<string> visualMods = new();
 		foreach (string overrideSpritePath in overrideSpritePaths) {
 			string name = Path.GetFileNameWithoutExtension(overrideSpritePath);
 			string json = File.ReadAllText(overrideSpritePath);
 
 			AnimData sprite = new AnimData(json, name, null);
 			if (Global.sprites.ContainsKey(sprite.name)) {
+				visualMods.Add(sprite.name);
 				Global.sprites[sprite.name].overrideAnim(sprite);
 			}
 		}
-
-		// Set up aliases here
-		foreach (var spriteName in Global.sprites.Keys.ToList()) {
-			string alias = Global.spriteAliases.GetValueOrDefault(spriteName);
-			if (!string.IsNullOrEmpty(alias)) {
-				var pieces = alias.Split(',');
-				foreach (var piece in pieces) {
-					Global.sprites[piece] = Global.sprites[spriteName].cloneAnimSlow();
-					Global.sprites[piece].name = piece;
+		
+		// Set up aliases again for visualmods.
+		foreach (var kvp in Global.spriteAliases) {
+			if (visualMods.Contains(kvp.Key)) {
+				string[] pieces = kvp.Value.Split(',');
+				foreach (string piece in pieces) {
+					string tpiece = piece.Trim();
+					if (!visualMods.Contains(tpiece)) {
+						Global.sprites[tpiece] = Global.sprites[kvp.Key].cloneAnimSlow();
+						Global.sprites[tpiece].name = tpiece;
+					}
 				}
 			}
 		}
@@ -1308,9 +1387,9 @@ class Program {
 						f6Released = true;
 					}
 					// Framerate shenanigans.
+					/*
 					if (Keyboard.IsKeyPressed(Key.F7)) {
 						if (f7Released) {
-							/*
 							Options.main.fpsMode = Options.main.fpsMode switch {
 								0 => 1,
 								1 => 2,
@@ -1319,11 +1398,11 @@ class Program {
 							Options.main.updateFpsMode();
 							Options.main.showFPS = true;
 							f7Released = false;
-							*/
 						}
 					} else {
 						f7Released = true;
 					}
+					*/
 				}
 				// Reload levels. And mess checksum.
 				if (Global.level == null) {
@@ -1428,30 +1507,6 @@ class Program {
 		}
 	}
 
-	public static string 
-	getCpuName() {
-		string cpuName = "Unknown";
-		#if WINDOWS
-			// For Windows OS.
-			cpuName = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-				@"HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
-			)?.GetValue(
-				"ProcessorNameString"
-			) as String ?? "Windows";
-		#endif
-		#if LINUX
-			cpuName = "Linux";
-		#endif
-		#if MACOS
-			cpuName = "Darwin";
-		#endif
-		// Fix simbols.
-		cpuName = cpuName.Replace("(R)", "®");
-		cpuName = cpuName.Replace("(C)", "©");
-		cpuName = cpuName.Replace("(TM)", "©"); //Todo, implement proper trademark simbol.
-		return cpuName;
-	}
-
 	public static void loadMultiThread(List<String> loadText, RenderWindow window, Action loadFunct) {
 		Global.isLoading = true;
 		Task loadTread = new Task(loadFunct);
@@ -1495,6 +1550,7 @@ class Program {
 				continue;
 			}
 			window.Clear(clearColor);
+			clearHudTexture();
 
 			for (int i = 0; i < loadText.Count; i++) {
 				Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
@@ -1508,6 +1564,7 @@ class Program {
 
 			lastUpdateTime = timeNow;
 			window.DispatchEvents();
+			renderHudTexture();
 			window.Display();
 
 			exit = (loadTread.Status >= TaskStatus.RanToCompletion);
@@ -1537,6 +1594,7 @@ class Program {
 				continue;
 			}
 			window.Clear(clearColor);
+			clearHudTexture();
 
 			for (int i = 0; i < loadText.Count; i++) {
 				Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
@@ -1550,6 +1608,7 @@ class Program {
 
 			lastUpdateTime = timeNow;
 			window.DispatchEvents();
+			renderHudTexture();
 			window.Display();
 			watch.Restart();
 
@@ -1560,8 +1619,8 @@ class Program {
 				int encodeKey = ((int)textures[pos].width * 397) ^ (int)textures[pos].height;
 				if (!Global.renderTextures.ContainsKey(encodeKey)) {
 					Global.renderTextures[encodeKey] = (
-						new RenderTexture(textures[pos].width, textures[pos].height),
-						new RenderTexture(textures[pos].width, textures[pos].height)
+						new RenderTexture((textures[pos].width, textures[pos].height)),
+						new RenderTexture((textures[pos].width, textures[pos].height))
 					);
 				}
 				count++;
@@ -1577,6 +1636,7 @@ class Program {
 		DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
 		Color clearColor = Color.Black;
 		window.Clear(clearColor);
+		clearHudTexture();
 
 		for (int i = 0; i < loadText.Count; i++) {
 			Fonts.drawText(FontType.Grey, loadText[i], 8, 8 + (10 * i), isLoading: true);
@@ -1589,6 +1649,7 @@ class Program {
 		);
 
 		window.DispatchEvents();
+		renderHudTexture();
 		window.Display();
 	}
 }

@@ -225,7 +225,7 @@ public class WildCoilChargedRmProj : Projectile {
 		base.update();
 
 		if (!ownedByLocalPlayer) return;
-		if (soundCooldown > 0) Helpers.decrementTime(ref soundCooldown);
+		Helpers.decrementFrames(ref soundCooldown);
 
 		frame = bouncedOnce ? frameIndex : 3;
 	}
@@ -240,8 +240,8 @@ public class WildCoilChargedRmProj : Projectile {
 			bouncedOnce = true;
 
 			if (soundCooldown <= 0) {
-				playSound("wild_coil_bounce", true, true);
-				soundCooldown = 6f / 60f;
+				playSound("wild_coil_bounce", sendRpc: ownedByLocalPlayer);
+				soundCooldown = 6;
 			}
 			vel.y *= -1;
 			bounceCounter++;

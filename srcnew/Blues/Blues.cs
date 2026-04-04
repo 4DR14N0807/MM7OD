@@ -49,6 +49,7 @@ public class Blues : Character {
 
 	// Tanks
 	public LTank? usedLtank;
+	public bool isUsingLtank;
 	public float lTankCoreHealTime;
 
 	// Capsules.
@@ -591,6 +592,7 @@ public class Blues : Character {
 				lTankCoreHealTime = 0;
 			}
 		}
+		isUsingLtank = usedLtank != null;
 
 		if (coreHealAmount > 0 && coreHealTime <= 0) {
 			coreHealAmount--;
@@ -1063,25 +1065,12 @@ public class Blues : Character {
 		coreHealAmount = amount;
 	}
 
-	public void drawLTankHealingInner(float tankHealth, float tankAmmo) {
-		if (usedLtank == null) return;
+	public void drawLTankHealingInner() {
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_ltank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		/* float yPos = 12 * (1 - tankHealth / LTank.maxHealth);
-		DrawWrappers.DrawRect(
-			topLeftBar.x, topLeftBar.y + yPos, pos.x, botRightBar.y,
-			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
-		);
-		yPos = 12 * (1 - tankAmmo / LTank.maxAmmo);
-		DrawWrappers.DrawRect(
-			pos.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
-			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
-		);
-
-		deductLabelY(labelSubtankOffY); */
 	}
 
 	public void addOvedriveAmmo(float amount,  bool? resetCooldown = true) {
@@ -1881,7 +1870,8 @@ public class Blues : Character {
 			isShieldFront(),
 			overheating,
 			isBreakMan,
-			overdrive
+			overdrive,
+			isUsingLtank,
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
@@ -1902,5 +1892,6 @@ public class Blues : Character {
 		overheating = flags[1];
 		isBreakMan = flags[2];
 		overdrive = flags[3];
+		isUsingLtank = flags[4];
 	}
 }

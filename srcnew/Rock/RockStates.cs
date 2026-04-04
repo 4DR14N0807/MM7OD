@@ -299,10 +299,11 @@ public class CallDownRush : CharState {
 	bool isXAllign;
 
 	public CallDownRush() : base("sa_activate") {
-		invincible = true;
 		normalCtrl = false;
 		attackCtrl = false;
 		useGravity = false;
+		invincible = true;
+		immortal = true;
 	}
 
 	public override void update() {

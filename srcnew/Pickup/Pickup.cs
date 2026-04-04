@@ -76,7 +76,7 @@ public class Pickup : Actor {
 		base.onCollision(other);
 		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) {
 			return;
-		}
+		} 
 		if (other.gameObject is Character chr && chr.ownedByLocalPlayer) {
 			if (!teamOnly || chr.player.alliance == ownerPlayer.alliance) {
 				use(chr);

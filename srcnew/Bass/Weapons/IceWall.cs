@@ -70,6 +70,7 @@ public class IceWallProj : Projectile, IDamagable {
 	public float health = 2;
 	float maxSpeed = 3f * 60;
 	float groundTime;
+	float soundCooldown;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
@@ -106,6 +107,9 @@ public class IceWallProj : Projectile, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+
+		Helpers.decrementFrames(ref soundCooldown);
+
 		if (sprite.name == "ice_wall_spawn" && isAnimOver()) {
 			changeSprite("ice_wall_proj", true);
 			useGravity = true;
@@ -176,7 +180,10 @@ public class IceWallProj : Projectile, IDamagable {
 				xDir *= -1;
 				vel.x *= -1;
 				incPos(xDir, 0);
-				playSound("icewallBounce", ownedByLocalPlayer);
+				if (soundCooldown <= 0) {
+					playSound("icewallBounce", ownedByLocalPlayer);
+					soundCooldown = 15;
+				}
 			}
 			return;
 		}

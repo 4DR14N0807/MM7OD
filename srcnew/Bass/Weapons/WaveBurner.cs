@@ -83,7 +83,7 @@ public class WaveBurner : Weapon {
 		}
 		if (soundTime <= 0) {
 			soundTime = 4;
-			bass.playSound("waveburnerLoop", sendRpc: true);
+			//bass.playSound("waveburnerLoop", sendRpc: true);
 		}
 	}
 }

@@ -131,11 +131,11 @@ public class BassShootLadder : BassState {
 		canJump = true;
 		canStopJump = true;
 		this.ladder = ladder;
+		useGravity = false;
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		bass.useGravity = false;
 
 		sprite = getShootSprite(
 			bass.getShootYDir(true, true),

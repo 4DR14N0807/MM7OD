@@ -80,9 +80,10 @@ public partial class Character : Actor, IDamagable {
 	public AI? ai;
 	public int dashedInAir = 0;
 	public float healAmount = 0;
-	public ETank? usedSubtank;
 	public ETank? usedEtank;
 	public WTank? usedWtank;
+	public bool isUsingEtank;
+	public bool isUsingWtank;
 	public float netSubtankHealAmount;
 	public float netETankHealAmount;
 	public float netWTankAmmoAmount;
@@ -1223,7 +1224,6 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (currentWeapon?.ammo >= currentWeapon?.maxAmmo) {
 			currentWeapon.weaponHealAmount = 0;
-			usedWtank = null;
 		}
 
 		// HP Capsules heal
@@ -1271,16 +1271,21 @@ public partial class Character : Actor, IDamagable {
 				player.ETanks.Remove(usedEtank);
 				usedEtank = null;
 				eTankHealTime = 0;
-				//player.fuseETanks();
 			}
 
 			if (player == Global.level.mainPlayer || playHealSound) {
 				playSound("heal", forcePlay: true, sendRpc: true);
 			}
 		}
-		if (usedWtank != null && usedWtank.ammo <= 0) {
+		isUsingEtank = usedEtank != null;
+
+
+		//Wtank ammo heal
+		if (usedWtank != null && hasFullAmmo()) {
 			usedWtank = null;
 		}
+		isUsingWtank = usedWtank != null;
+
 		//Max Health increase (Used for bass evil energy debuffs)
 		if (spawnHealthToAdd > 0) {
 			spawnHealthAddTime++;
@@ -2429,8 +2434,9 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		bool drewETankHealing = drawETankHealing();
+		bool drewWTankHealing = drawWTankHealing();
 		if (!player.isDead) {
-			if (!drewETankHealing && dropFlagProgress > 0) {
+			if (!drewETankHealing && !drewWTankHealing && dropFlagProgress > 0) {
 				float healthBarInnerWidth = 30;
 
 				float progress = (dropFlagProgress);
@@ -2451,7 +2457,7 @@ public partial class Character : Actor, IDamagable {
 				);
 				deductLabelY(labelCooldownOffY);
 			}
-			if (!drewETankHealing && hyperProgress > 0) {
+			if (!drewETankHealing && !drewWTankHealing && hyperProgress > 0) {
 				if (this is Blues bl &&
 					Options.main.coreHeatDisplay != 0 && !destroyed &&
 					player.isMainPlayer && charState is not Die && alive &&
@@ -2585,77 +2591,43 @@ public partial class Character : Actor, IDamagable {
 
 	public bool drawETankHealing() {
 		if (this is Blues blues) {
-			if (blues.usedLtank != null) {
-				blues.drawLTankHealingInner(blues.usedLtank.health, blues.usedLtank.ammo);
+			if (blues.isUsingLtank) {
+				blues.drawLTankHealingInner();
 				return true;
 			}
-		} else {
-			if (ownedByLocalPlayer) {
-				if (usedEtank != null) {
-					drawETankHealingInner(usedEtank.health);
-					return true;
-				}
-			} else {
-				if (netETankHealAmount > 0) {
-					drawETankHealingInner(netETankHealAmount);
-					netETankHealAmount -= Global.spf * 20;
-					if (netETankHealAmount <= 0) netETankHealAmount = 0;
-					return true;
-				}
-			}
-		}
-		
+		} else if (isUsingEtank) {
+			drawETankHealingInner();
+			return true;
+		}	
+
 		return false;
 	}
 
 	public bool drawWTankHealing() {
-		if (ownedByLocalPlayer) {
-			if (usedWtank != null)
-				drawWTankHealingInner(usedWtank.ammo);
-				return true;
-			}
-		else {
-			if (netWTankAmmoAmount > 0) {
-				drawWTankHealingInner(netWTankAmmoAmount);
-				netWTankAmmoAmount -= Global.spf * 20;
-				if (netWTankAmmoAmount <= 0) netWTankAmmoAmount = 0;
-				return true;
-			}
+		if (isUsingWtank) {
+			drawWTankHealingInner();
+			return true;
 		}
 
 		return false;
 	}
 
-	public void drawETankHealingInner(float tankHealth) {
-		if (usedEtank == null) return;
+	public void drawETankHealingInner() {
 		
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_etank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		/* float yPos = 12 * (1 - tankHealth / usedEtank.maxHealth);
-		DrawWrappers.DrawRect(
-			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
-			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
-		);
-		
-		deductLabelY(labelSubtankOffY); */
 	}
 
-	public void drawWTankHealingInner(float tankAmmo) {
+	public void drawWTankHealingInner() {
 		Point topLeft = new Point(pos.x - 8, pos.y - 15 + currentLabelY);
 		Point topLeftBar = new Point(pos.x - 7, topLeft.y + 2);
 		Point botRightBar = new Point(pos.x + 7, topLeft.y + 14);
 
 		Global.sprites["menu_wtank"].draw(1, topLeft.x, topLeft.y, 1, 1, null, 1, 1, 1, ZIndex.HUD);
-		/* float yPos = 12 * (1 - tankAmmo / WTank.maxAmmo);
-		DrawWrappers.DrawRect(
-			topLeftBar.x, topLeftBar.y + yPos, botRightBar.x, botRightBar.y,
-			true, new Color(0, 0, 0, 200), 1, ZIndex.HUD
-		);
-	
-		deductLabelY(labelSubtankOffY); */
+
 	}
 
 	public bool drawStatusProgress() {
@@ -3226,6 +3198,18 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual bool canAddAmmo() {
 		return false;
+	}
+
+	public virtual bool hasFullAmmo() {
+		if (weapons.Count <= 0) return false;
+		else {
+			for (int i = 0; i < weapons.Count; i++) {
+				if (weapons[i].ammo < weapons[i].maxAmmo) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 
 	public virtual void increaseCharge() {
@@ -3968,6 +3952,8 @@ public partial class Character : Actor, IDamagable {
 			player.isDefenderFavored,
 			invulnTime > 0,
 			hasBubble,
+			isUsingEtank,
+			isUsingWtank,
 		]);
 
 		customData.Add(netHP);
@@ -4073,6 +4059,8 @@ public partial class Character : Actor, IDamagable {
 		player.isDefenderFavoredNonOwner = boolData2[0];
 		invulnTime = boolData2[1] ? 60 : 0;
 		hasBubbleNet = boolData2[2];
+		isUsingEtank = boolData2[3];
+		isUsingWtank = boolData2[4];
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[7]);

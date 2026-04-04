@@ -662,10 +662,10 @@ public class Bass : Character {
 		turnToInput(player.input, player);
 		if (!currentWeapon.hasCustomAnim) {
 			if (charState is LadderClimb lc) {
-				changeState(new BassShootLadder(lc.ladder), true);
+				changeState(new BassShootLadder(lc.ladder));
 			}
 			else if (charState is BassShootLadder bsl) {
-				changeState(new BassShootLadder(bsl.ladder), true);
+				changeState(new BassShootLadder(bsl.ladder));
 			}
 			else if (charState is BassFly) {
 				string shootSprite = getSprite(charState.shootSprite);
@@ -696,9 +696,9 @@ public class Bass : Character {
 		turnToInput(player.input, player);
 		if (!currentWeapon.hasCustomAnim) {
 			if (charState is LadderClimb lc) {
-				changeState(new BassShootLadder(lc.ladder), true);
+				changeState(new BassShootLadder(lc.ladder));
 			} else if (charState is BassShootLadder bsl) {
-				changeState(new BassShootLadder(bsl.ladder), true);
+				changeState(new BassShootLadder(bsl.ladder));
 			} else {
 				if (charState is Dash or AirDash) {
 					changeToIdleOrFall();

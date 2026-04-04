@@ -18,6 +18,7 @@ public class TeamElimAlt : GameMode {
 	public TeamElimAlt(Level level, int playingTo, int? timeLimit) : base(level, null) {
 		this.playingTo = playingTo;
 		isTeamMode = true;
+		spawnOnAlly = true;
 		// Time stuff.
 		finalZoneMaxTime2 = 60;
 		timeLimit ??= 1;
@@ -38,14 +39,11 @@ public class TeamElimAlt : GameMode {
 		Helpers.decrementFrames(ref respawnWindow);
 		Helpers.decrementFrames(ref resultTime);
 		Helpers.decrementTime(ref roundTime);
-		if (matchOverResponse != null) {
+		if (isOver) {
 			resultTime = 0;
-		} 
+		}
 
 		base.update();
-		if (Global.isHost) {
-			roundWinLogic();
-		}
 	}
 
 
@@ -55,7 +53,7 @@ public class TeamElimAlt : GameMode {
 	}
 
 	public void drawResult() {
-		if (resultTime <= 0 || roundResult == null) {
+		if (resultTime <= 0 || roundResult == null || isOver) {
 			return;
 		}
 		Player mainPlayer = Global.level.mainPlayer;
@@ -156,12 +154,13 @@ public class TeamElimAlt : GameMode {
 	}
 
 	public override void checkIfWinLogic() {
+		roundWinLogic();
 		checkIfWinLogicTeams();
 	}
 
 	public void roundWinLogic() {
 		// If we are respawning then we just continue.
-		if (respawnWindow > 0) {
+		if (respawnWindow > 0 || isOver) {
 			return;
 		}
 		// Stalemate if we go over the theshold.
@@ -171,7 +170,7 @@ public class TeamElimAlt : GameMode {
 				winningAlliances = [nullAlliance],
 				winMessage = "Stalemate!",
 				loseMessage = "Stalemate!"
-			});
+			}, true);
 			return;
 		}
 		// Vars.
@@ -215,7 +214,7 @@ public class TeamElimAlt : GameMode {
 				loseMessage = "Draw!",
 				winMessage2 = messageSub,
 				loseMessage2 = messageSub
-			});
+			}, true);
 			return;
 		}
 		// Save the last 2 teams for draw conditions.
@@ -246,10 +245,10 @@ public class TeamElimAlt : GameMode {
 			winMessage2 = message2,
 			loseMessage = "Defeat!",
 			loseMessage2 = message2
-		});
+		}, true);
 	}
 
-	public void addResult(RPCMatchOverResponse result) {
+	public void addResult(RPCMatchOverResponse result, bool sendRpc = false) {
 		roundResult = result;
 		resultTime = resultMaxTime;
 		respawnWindow = respawnMaxWindow;
@@ -270,7 +269,7 @@ public class TeamElimAlt : GameMode {
 			if (player.isSpectator || !result.winningAlliances.Contains(player.alliance)) {
 				continue;
 			}
-			player.mastery.addMapExp(150, true);
+			player.mastery.addMapExp(150);
 
 			if (player.character != null) {
 				player.character.addHealth(player.character.maxHealth);

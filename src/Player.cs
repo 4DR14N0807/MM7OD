@@ -907,7 +907,7 @@ public partial class Player {
 			if (shouldRespawn()) {
 				ushort charNetId = getNextATransNetId();
 
-				if (Global.level.gameMode is TeamDeathMatch or TeamElimination && warpedInOnce) {
+				if (Global.level.gameMode.spawnOnAlly && warpedInOnce) {
 					List<Player> spawnPoints = Global.level.players.FindAll(
 						p => p.teamAlliance == teamAlliance && p.character?.alive == true
 					);

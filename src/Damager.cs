@@ -29,7 +29,6 @@ public class Damager {
 
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
 		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
-		{ (int)BluesProjIds.LemonAOverdrive, 60 * 2},
 		{ (int)BluesProjIds.SparkShock, 100},
 		{ (int)BluesProjIds.ProtoLandPush, 60 * 1},
 	};

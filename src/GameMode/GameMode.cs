@@ -141,6 +141,8 @@ public class GameMode {
 	public Player? hudBotLeftPlayer;
 	public Player? hudBotRightPlayer;
 
+	public bool spawnOnAlly;
+
 	bool hudPositionsAssigned;
 	int currentLineH;
 

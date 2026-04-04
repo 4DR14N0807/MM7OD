@@ -1820,6 +1820,20 @@ public class RPCResetFlag : RPC {
 	}
 }
 
+public class RPCSyncEAltRound : RPC {
+	public RPCSyncEAltRound() {
+		netDeliveryMethod = NetDeliveryMethod.ReliableOrdered;
+		isString = true;
+	}
+
+	public override void invoke(string message) {
+		if (Global.level.gameMode is not TeamElimAlt tealt) {
+			return;
+		}
+		var rpcMatchOverResponse = JsonConvert.DeserializeObject<RPCMatchOverResponse>(message);
+		tealt.addResult(rpcMatchOverResponse);
+	}
+}
 
 public enum EffectIds {
 	None,

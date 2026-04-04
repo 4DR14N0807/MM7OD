@@ -27,17 +27,6 @@
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
 		<OutputPath>./bin/anycpu/</OutputPath>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
-		<PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win7-x86'">
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Debug2'">
 		<OutputPath>./bin/anycpu2/</OutputPath>
 	</PropertyGroup>
@@ -53,7 +42,7 @@
 
 	<!--Linux only builds-->
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFramework>net10.0-windows</TargetFramework>
 		<DefineConstants>$(DefineConstants);NOTWINDOWS</DefineConstants>
 	</PropertyGroup>
 

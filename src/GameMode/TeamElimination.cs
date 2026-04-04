@@ -7,6 +7,8 @@ public class TeamElimination : GameMode {
 	public TeamElimination(Level level, int playingTo, int? timeLimit) : base(level, timeLimit) {
 		this.playingTo = playingTo;
 		isTeamMode = true;
+		spawnOnAlly = true;
+
 		if (remainingTime == null) {
 			remainingTime = 300;
 			startTimeLimit = remainingTime;

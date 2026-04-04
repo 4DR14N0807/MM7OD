@@ -309,11 +309,13 @@ public class BluesSlide : BluesState {
 }
 
 public class BluesSpreadShoot : BluesState {
-	int shotAngle = 64;
-	int shotNum = 0;
-	int shotLastFrame = 10;
+	public int shotAngle = 64;
+	public int shotNum = 0;
+	public int shotLastFrame = -1;
 
 	public BluesSpreadShoot() : base("spreadshoot_air") {
+		normalCtrl = true;
+		attackCtrl = true;
 		canJump = true;
 		canStopJump = true;
 		airMove = true;
@@ -323,6 +325,7 @@ public class BluesSpreadShoot : BluesState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
+		blues.spreadCooldown = 12;
 		blues.inCustomShootAnim = true;
 		blues.shieldCustomState = false;
 		if (!blues.grounded) blues.changeSpriteFromName(airSprite, true);
@@ -337,29 +340,29 @@ public class BluesSpreadShoot : BluesState {
 	public override void update() {
 		base.update();
 		if (character.frameIndex != shotLastFrame && shotNum < 5) {
-			int angleOffset = 1;
+			int angleOffset = 0;
+			int spreadAng = character.grounded ? 6 : 16;
 			int shootDir = blues.getShootXDir();
 			int type = blues.overdrive ? 2 : (blues.overheating ? 0 : 1);
 			if (shootDir == -1) {
 				angleOffset = 128;
 			}
 			new ProtoBusterAngledProj(
-				blues, blues.getShootPos(), (shotAngle + angleOffset) * shootDir, 
+				blues, blues.getShootPos(), (((4 - shotNum) * spreadAng) + angleOffset) * shootDir, 
 				type, player.getNextActorNetId(), rpc: true
 			);
 			// This way lemons and mid charge shot sounds wont conflict.
 			if (type == 0) {
 				blues.playSound("protoLemon", sendRpc: true);
 			}
-			if (type == 1) {
-				blues.addCoreAmmo(1f);
+			else if (type == 1) {
+				blues.addCoreAmmo(0.75f);
 				blues.playSound("buster2X1", sendRpc: true);
 			}
-			if (type == 2) {
+			else if (type == 2) {
 				blues.addCoreAmmo(-0.5f);
 				blues.playSound("buster3", sendRpc: true);
 			}
-			shotAngle -= 16;
 			shotNum++;
 			shotLastFrame = character.frameIndex;
 		}

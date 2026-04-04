@@ -11,6 +11,7 @@ namespace MMXOnline;
 public class Blues : Character {
 	// Lemons.
 	public float lemonCooldown;
+	public float spreadCooldown;
 	// Overdrive uses max length, normal and overdrive is -1.
 	public float[] unchargedLemonCooldown = new float[3];
 
@@ -297,8 +298,11 @@ public class Blues : Character {
 	}
 
 	public override bool canShoot() {
-		if (charState is BluesSlide bsd && bsd.locked) return false;
-
+		if (charState is BluesSlide bsd && bsd.locked ||
+			charState is BluesSpreadShoot
+		) {
+			return false;
+		}
 		return base.canShoot();
 	}
 
@@ -317,7 +321,7 @@ public class Blues : Character {
 	}
 
 	public bool canUseBigBangStrike() {
-		return grounded && overheating && overheatTime >= 30;
+		return grounded && overheating && overheatTime >= 15;
 	}
 
 	public bool canUseDropSwap() {
@@ -425,6 +429,7 @@ public class Blues : Character {
 		base.preUpdate();
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
+		Helpers.decrementFrames(ref spreadCooldown);
 		Helpers.decrementFrames(ref lTankCoreHealTime);
 		Helpers.decrementFrames(ref coreHealTime);
 		Helpers.decrementFrames(ref healShieldHPCooldown);
@@ -814,9 +819,12 @@ public class Blues : Character {
 			}
 		}
 
-		if (shootPressed && downHeld) {
-			changeState(new BluesSpreadShoot(), true);
-			return true;
+		if (shootPressed && downHeld && charState is not BluesSpreadShoot) {
+			if (spreadCooldown <= 0) {
+				changeState(new BluesSpreadShoot(), true);
+				return true;
+			}
+			return false;
 		}
 
 		if (!isCharging()) {
@@ -888,7 +896,7 @@ public class Blues : Character {
 			}
 		}
 		// Proto-strike.
-		else if (chargeLevel >= 3 && player.input.isHeld(Control.Up, player) && charState is not LadderClimb) {
+		else if (chargeLevel >= 2 && player.input.isHeld(Control.Up, player) && charState is not LadderClimb) {
 			addCoreAmmo(overdrive ? 6 : 4);
 			changeState(new ProtoStrike(), true);
 		}
@@ -983,7 +991,7 @@ public class Blues : Character {
 			return;
 		}
 		// Cancel non-invincible states.
-		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide) {
+		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide or BluesSpreadShoot) {
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.

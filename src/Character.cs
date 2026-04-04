@@ -1472,6 +1472,9 @@ public partial class Character : Actor, IDamagable {
 		if (charState.airMove && !grounded) {
 			airMove();
 		}
+		if (charState.normalCtrl) {
+			normalCtrl();
+		}
 		if (charState.canJump && (grounded || canAirJump() && flag == null)) {
 			if (player.input.isPressed(Control.Jump, player)) {
 				bool wasGrounded = grounded;
@@ -1495,9 +1498,6 @@ public partial class Character : Actor, IDamagable {
 				}
 			}
 		}
-		if (charState.normalCtrl) {
-			normalCtrl();
-		}
 		if (charState.attackCtrl && invulnTime <= 0 && undisguiseTime <= 0 && !isSoftLocked()) {
 			return attackCtrl();
 		}
@@ -1518,7 +1518,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Ground normal states.
 		if (grounded) {
-			if (player.input.isPressed(Control.Jump, player) && canJump()) {
+			if (player.input.isPressed(Control.Jump, player) && canJump() && !charState.canJump) {
 				vel.y = -getJumpPower();
 				isDashing = (
 					isDashing || player.dashPressed(out _) && canDash()

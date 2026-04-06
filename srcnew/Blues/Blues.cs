@@ -1820,8 +1820,7 @@ public class Blues : Character {
 			isShieldFront(),
 			overheating,
 			isBreakMan,
-			overdrive,
-			isUsingLtank,
+			overdrive
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
@@ -1842,6 +1841,5 @@ public class Blues : Character {
 		overheating = flags[1];
 		isBreakMan = flags[2];
 		overdrive = flags[3];
-		isUsingLtank = flags[4];
 	}
 }

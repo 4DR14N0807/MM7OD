@@ -45,22 +45,7 @@ public class InGameMainMenu : IMainMenu {
 					Menu.change(new BassWeaponMenu(this, true));
 				}
 			} else if (selectY == 1) {
-				if (isSelArmorDisabled()) return;
-				if (Global.level.mainPlayer.realCharNum == 0 || Global.level.mainPlayer.realCharNum == 2) {
-					if (UpgradeMenu.onUpgradeMenu && !Global.level.server.disableHtSt) {
-						Menu.change(new UpgradeMenu(this));
-					} else if (Global.level.mainPlayer.realCharNum == 0) {
-						Menu.change(new UpgradeArmorMenu(this));						
-					} else if (Global.level.mainPlayer.realCharNum == 2) {
-						Menu.change(new SelectVileArmorMenu(this));
-					}
-				} else {
-					if (!Global.level.server.disableHtSt) {
-						if (Global.level.mainPlayer.realCharNum == (int)CharIds.Blues) {
-							Menu.change(new BluesUpgradeMenu(this));
-						} else Menu.change(new UpgradeMenu(this));
-					}
-				}
+				Menu.change(new ChipMainMenu(this));
 			} else if (selectY == 2) {
 				bool hasHypermode = (
 					mainPlayer.character is Rock { hasSuperAdaptor: true} ||

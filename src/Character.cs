@@ -480,7 +480,7 @@ public partial class Character : Actor, IDamagable {
 			igFreezeProgress = 4;
 		}
 	}
-	
+
 	public void addBurnStunStacks(float amount, Player attacker) {
 		if (burnInvulnTime > 0) return;
 		if (isStunImmune()) return;
@@ -855,7 +855,6 @@ public partial class Character : Actor, IDamagable {
 		debuffCooldowns();
 		genericPuppetControl();
 		updateAttackCooldowns();
-		Helpers.decrementFrames(ref eTankHealTime);
 		if (grounded && !isDashing) {
 			dashedInAir = 0;
 		}
@@ -920,8 +919,7 @@ public partial class Character : Actor, IDamagable {
 			if (rootAnim == null || rootAnim.destroyed) {
 				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
 			}
-		}
-		else if (rootAnim != null) {
+		} else if (rootAnim != null) {
 			if (!rootAnim.destroyed) {
 				rootAnim.destroySelf();
 			}
@@ -1033,7 +1031,7 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementFrames(ref crystalizeInvulnTime);
 		Helpers.decrementFrames(ref grabInvulnTime);
 		Helpers.decrementFrames(ref darkHoldInvulnTime);
-		
+
 		if (burnStunStacks > 0) {
 			if (burningRecoveryCooldown <= 0) {
 				burningRecoveryCooldown = 20;
@@ -1213,15 +1211,7 @@ public partial class Character : Actor, IDamagable {
 			}
 			changeState(new BottomlessPitState());
 		}
-		ETank[] eTanksArray = player.eTanks.ToArray();
-		ETank[] wTanksArray = player.wTanks.ToArray();
-	
-		foreach (ETank eTank in eTanksArray) {
-			eTank.update(this);
-		}
-		foreach (ETank eTank in eTanksArray) {
-			eTank.update(this);
-		}
+
 		if (health >= maxHealth) {
 			healAmount = 0;
 		}
@@ -1339,7 +1329,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	
+
 	public override void statePreUpdate() {
 		charState.stateFrames += 1f * Global.speedMul;
 		charState.preUpdate();
@@ -1771,7 +1761,7 @@ public partial class Character : Actor, IDamagable {
 		disarrayStacks[$"{playerid}_root"] = new DisarrayStack(cooldown);
 		// Apply debuff.
 		rootCooldown[cdId] = time + 60;
-		
+
 		if (rootTime < time) {
 			rootTime = time;
 		}
@@ -1980,8 +1970,8 @@ public partial class Character : Actor, IDamagable {
 		if (charState.immortal) return true;
 		if (charState.invulnerable) return true;
 		if (isBurnState) return true;
-		if (charState.specialId == SpecialStateIds.AxlRoll || 
-			charState.specialId == SpecialStateIds.XTeleport || 
+		if (charState.specialId == SpecialStateIds.AxlRoll ||
+			charState.specialId == SpecialStateIds.XTeleport ||
 			charState.specialId == SpecialStateIds.WarpIdle
 		) {
 			return true;
@@ -2279,7 +2269,7 @@ public partial class Character : Actor, IDamagable {
 			return false;
 		}
 		if (!charState.canExit(this, newState)) {
-			return false; 
+			return false;
 		}
 		if (!newState.canEnter(this)) {
 			return false;
@@ -2291,8 +2281,7 @@ public partial class Character : Actor, IDamagable {
 		bool hasShootAnim = newState.canUseShootAnim();
 		if (shootAnimTime > 0 && hasShootAnim) {
 			changeSprite(getSprite(newState.shootSpriteEx), true);
-		}
-		else {
+		} else {
 			string spriteName = sprite.name;
 			if (newState.sprite == newState.transitionSprite &&
 				!Global.sprites.ContainsKey(getSprite(newState.transitionSprite))
@@ -2302,8 +2291,7 @@ public partial class Character : Actor, IDamagable {
 			if (newState.sprite == newState.defaultSprite) {
 				if (newState.sprite == newState.landSprite) {
 					if (!grounded) { newState.sprite = newState.airSprite; }
-				}
-				else if (newState.sprite == newState.airSprite) {
+				} else if (newState.sprite == newState.airSprite) {
 					if (grounded) { newState.sprite = newState.landSprite; }
 				}
 			}
@@ -2419,7 +2407,7 @@ public partial class Character : Actor, IDamagable {
 			usedEtank?.drawHealing(this) == true || usedWtank?.drawHealing(this) == true
 		);
 		if (!player.isDead) {
-			if (!drewETankHealing && !drewWTankHealing && dropFlagProgress > 0) {
+			if (!drewETankHealing && !drewETankHealing && dropFlagProgress > 0) {
 				float healthBarInnerWidth = 30;
 
 				float progress = (dropFlagProgress);
@@ -2440,7 +2428,7 @@ public partial class Character : Actor, IDamagable {
 				);
 				deductLabelY(labelCooldownOffY);
 			}
-			if (!drewETankHealing && !drewWTankHealing && hyperProgress > 0) {
+			if (!drewETankHealing && !drewETankHealing && hyperProgress > 0) {
 				if (this is Blues bl &&
 					Options.main.coreHeatDisplay != 0 && !destroyed &&
 					player.isMainPlayer && charState is not Die && alive &&
@@ -2771,13 +2759,12 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual bool canBeShielded(int healerAlliance = -1) {
-		return(player.alliance == healerAlliance || healerAlliance == -1) && alive;
+		return (player.alliance == healerAlliance || healerAlliance == -1) && alive;
 	}
 
 	public virtual void heal(
 		Player healer, float healAmount,
-		bool allowStacking = true, bool drawHealText = false,
-		bool giveMastery = true
+		bool allowStacking = true, bool drawHealText = false
 	) {
 		if (!allowStacking && this.healAmount > 0) return;
 		if (health < maxHealth) {
@@ -2786,7 +2773,6 @@ public partial class Character : Actor, IDamagable {
 		commonHealLogic(healer, (decimal)healAmount, health, maxHealth, drawHealText);
 		addHealth(healAmount);
 	}
-
 
 	public virtual bool isInvincible(Player attacker, int? projId) {
 		if (ownedByLocalPlayer) {
@@ -2815,8 +2801,9 @@ public partial class Character : Actor, IDamagable {
 			return true;
 		}
 
-		if (player.alliance == damagerAlliance) return false;
-
+		if (player.alliance == damagerAlliance) {
+			return false;
+		}
 		return true;
 	}
 
@@ -2910,13 +2897,13 @@ public partial class Character : Actor, IDamagable {
 				damage -= 1;
 			}
 			// Decimal protection scenario.
-			if (damage > 0 && damageSavings > 0 && damageSavings + (1m/8m) >= damage) {
+			if (damage > 0 && damageSavings > 0 && damageSavings + (1m / 8m) >= damage) {
 				damage = 0;
 				damageSavings -= damage;
 				if (damageSavings <= 0) {
 					damageSavings = 0;
 				}
-			} 
+			}
 		}
 		// If somehow the damage is negative.
 		// Heals are not really applied here.
@@ -2940,7 +2927,7 @@ public partial class Character : Actor, IDamagable {
 			player.trainingDpsTotalDamage += (float)damage;
 		}
 		// Disable E-Tanks only on external damage sources.
-		if (damage > 0  && !Damager.isDot(projId) &&
+		if (damage > 0 && !Damager.isDot(projId) &&
 			attacker != null && attacker != player && attacker != Player.stagePlayer
 		) {
 			enterCombat();
@@ -3481,9 +3468,9 @@ public partial class Character : Actor, IDamagable {
 		if (bigBubble != null) bigBubble.destroySelf();
 	}
 
-	public virtual void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {}
+	public virtual void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) { }
 
-	public virtual void onExitState(CharState oldState, CharState newState) {}
+	public virtual void onExitState(CharState oldState, CharState newState) { }
 
 	public virtual bool chargeButtonHeld() {
 		return false;
@@ -3506,8 +3493,7 @@ public partial class Character : Actor, IDamagable {
 				shootFunct(chargeLevel);
 			}
 			stopCharge();
-		}
-		else if (!isCharging()) {
+		} else if (!isCharging()) {
 			stopCharge();
 		}
 		chargeGfx();
@@ -3564,7 +3550,7 @@ public partial class Character : Actor, IDamagable {
 		// Disarray.
 		if (disarrayStacks.Count >= 2) {
 			DisarrayStack lowerStack = disarrayStacks.MinBy(
-				(KeyValuePair <string, DisarrayStack> kvp) => kvp.Value.time
+				(KeyValuePair<string, DisarrayStack> kvp) => kvp.Value.time
 			).Value;
 			drawBuff(
 				drawPos, lowerStack.time / lowerStack.maxTime,
@@ -3668,14 +3654,11 @@ public partial class Character : Actor, IDamagable {
 			// Draw HP
 			if (i < shield && i < savings) {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY);
-			}
-			else if (i < curHP) {
+			} else if (i < curHP) {
 				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
-			}
-			else if (i < savings) {
+			} else if (i < savings) {
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(2, baseX, baseY);
-			}
-			else {
+			} else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 				if (i < ceilCurHP) {
 					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
@@ -3765,7 +3748,7 @@ public partial class Character : Actor, IDamagable {
 		// Return offset.
 		return new Point(offset.x, offset.y);
 	}
-	
+
 	public virtual void renderMiniHudBorder(Point offset, Color? color, float ammo) {
 		if (color == null) {
 			return;
@@ -3824,7 +3807,7 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual int getMiniWeaponLength() {
 		int max = 0;
-		foreach(Weapon weapon in weapons) {
+		foreach (Weapon weapon in weapons) {
 			if (weapon.drawAmmo) {
 				max = Math.Max(
 					MathInt.Ceiling(weapon.maxAmmo / weapon.ammoDisplayScale), max
@@ -3896,9 +3879,7 @@ public partial class Character : Actor, IDamagable {
 		byte stateFlag2 = Helpers.boolArrayToByte([
 			player.isDefenderFavored,
 			invulnTime > 0,
-			hasBubble,
-			isUsingEtank,
-			isUsingWtank,
+			hasBubble
 		]);
 
 		customData.Add(netHP);
@@ -4004,8 +3985,6 @@ public partial class Character : Actor, IDamagable {
 		player.isDefenderFavoredNonOwner = boolData2[0];
 		invulnTime = boolData2[1] ? 60 : 0;
 		hasBubbleNet = boolData2[2];
-		isUsingEtank = boolData2[3];
-		isUsingWtank = boolData2[4];
 
 		// Optional statuses.
 		bool[] boolMask = Helpers.byteToBoolArray(data[7]);
@@ -4013,7 +3992,7 @@ public partial class Character : Actor, IDamagable {
 
 		// For crash reports.
 		//int netCharNum = data[9];
-		
+
 		// Set pointer to last.
 		int pos = 10;
 		// Status effects.

@@ -63,7 +63,8 @@ public class Damager {
 
 		bool didDamage = applyDamage(
 			owner, newDamage, hitCooldown, newFlinch, victim.getActor,
-			weakness, weapon.index, weapon.killFeedIndex, actor, projId, sendRpc
+			weakness, weapon.index, weapon.killFeedIndex, actor, projId, sendRpc,
+			altAlliance: alliance
 		);
 		if (didDamage && actor is Projectile proj) {
 			proj.afterDamage(victim, didDamage);
@@ -74,7 +75,7 @@ public class Damager {
 	public static bool applyDamage(
 		Player owner, float damage, float hitCooldown, int flinch,
 		Actor victim, bool weakness, int weaponIndex, int weaponKillFeedIndex,
-		Actor? damagingActor, int projId, bool sendRpc = true
+		Actor? damagingActor, int projId, bool sendRpc = true, int? altAlliance = null
 	) {
 		if (owner == null) {
 			throw new Exception("Null damage player source. Use stage or self if not from another player.");
@@ -583,10 +584,7 @@ public class Damager {
 			ProjIds.SelfDmg => true,
 			_ => false
 		};
-		if (alwaysNotAssist) {
-			return true;
-		}
-		return false;
+		return alwaysNotAssist;
 	}
 
 	public static DamagerMessage? onParasiticBombDamage(IDamagable damagable, Player attacker) {

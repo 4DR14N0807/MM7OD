@@ -381,6 +381,9 @@ public class RPCApplyDamage : RPC {
 						projId,
 						sendRpc: false
 					);
+					if (didDamage && actor is Projectile proj && victim is IDamagable idmg) {
+						proj.afterDamage(idmg, didDamage);
+					}
 				}
 			));
 			return;
@@ -399,6 +402,9 @@ public class RPCApplyDamage : RPC {
 			projId,
 			sendRpc: false
 		);
+		if (didDamage && actor is Projectile proj && victim is IDamagable idmg) {
+			proj.afterDamage(idmg, didDamage);
+		}
 	}
 
 	public void sendRpc(byte[] byteArray) {

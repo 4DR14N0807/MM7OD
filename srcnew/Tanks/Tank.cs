@@ -22,9 +22,9 @@ public class BaseTank {
 	public virtual void stop(Character character) {}
 	public virtual bool isFull() => ammo == maxAmmo;
 
-	public virtual bool drawHealing(Point pos, float? customVal) {
+	public virtual bool drawHealing(Character chara, float? customVal = null) {
 		if (!inUse| customVal != null) {
-			drawHealingInner(pos, customVal ?? ammo);
+			drawHealingInner(chara.pos, customVal ?? ammo);
 			return true;
 		}
 		return false;

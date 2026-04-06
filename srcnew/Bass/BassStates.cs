@@ -642,7 +642,6 @@ public class BassFly : BassState {
 	public override void update() {
 		base.update();
 		if (player == null) return;
-		player.delayETank();
 
 		if (character.flag != null) {
 			character.changeToIdleOrFall();
@@ -710,7 +709,7 @@ public class BassFly : BassState {
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		player.delayETank();		bass.canRefillFly = false;
+		bass.canRefillFly = false;
 
 		anim = new SuperBassExhaust(bass);
 

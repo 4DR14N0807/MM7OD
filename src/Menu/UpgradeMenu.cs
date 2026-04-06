@@ -46,8 +46,8 @@ public class UpgradeMenu : IMainMenu {
 		optionPositions.Add(new Point(startX, 120));
 		optionPositions.Add(new Point(startX, 140));
 
-		if (selectArrowPosY >= Global.level.mainPlayer.eTanks.Count + 1) {
-			selectArrowPosY = Global.level.mainPlayer.eTanks.Count;
+		if (selectArrowPosY >= 1) {
+			selectArrowPosY = 0;
 		}
 
 		/* 		if (selectArrowPosY >= Global.level.mainPlayer.wtanks.Count + 1) {
@@ -55,10 +55,16 @@ public class UpgradeMenu : IMainMenu {
 		} */
 	}
 
+	public UpgradeMenu() {
+	}
+
 	public int getMaxIndex() {
+		return 0;
+		/*
 		var mainPlayer = Global.level.mainPlayer;
-		if (selectArrowPosX == 0) return Math.Clamp(1 + mainPlayer.eTanks.Count, 1, getMaxETanks());
+		if (selectArrowPosX == 0) return Math.Clamp(1 + 1, 1, getMaxETanks());
 		return Math.Clamp(1 + mainPlayer.wTanks.Count, 1, getMaxWTanks());
+		*/
 	}
 
 	public static int getHeartTankCost() {
@@ -165,7 +171,7 @@ public class UpgradeMenu : IMainMenu {
 
 		Helpers.menuUpDown(ref selectArrowPosY, 0, getMaxIndex() - 1);
 		if (selectArrowPosY > getMaxIndex() - 1) selectArrowPosY = getMaxIndex() - 1;
-
+		/*
 		if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 			//ETANKS SECTION
 			if (selectArrowPosX == 0) {
@@ -225,15 +231,16 @@ public class UpgradeMenu : IMainMenu {
 					isUsingWTank = false;
 				}
 			}
-
-			
-		} else if (Global.input.isPressedMenu(Control.MenuBack)) {
+		} else
+		*/
+		if (Global.input.isPressedMenu(Control.MenuBack)) {
 			if (isUsingWTank) isUsingWTank = false;
 			else Menu.change(prevMenu);
 		}
 	}
 
 	public void render() {
+		/*
 		var mainPlayer = Global.level.mainPlayer;
 		var gameMode = Global.level.gameMode;
 
@@ -382,6 +389,7 @@ public class UpgradeMenu : IMainMenu {
 			FontType.Blue, "[OK]: Buy/Use, [BACK]: Back",
 			Global.halfScreenW, Global.screenH - 18, Alignment.Center
 		);
+		*/
 	}
 
 	public static bool updateAdaptorUpgrades(Player mainPlayer) {

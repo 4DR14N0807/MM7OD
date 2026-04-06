@@ -390,12 +390,24 @@ public class Input {
 		return isHeld(inputName, null);
 	}
 
+	public Point getMenuDir() {
+		return new Point(getMenuXDir(), getMenuYDir());
+	}
+
 	public int getMenuXDir() {
 		int dir = 0;
 		if (isPressedMenu(Control.MenuLeft)) { dir--; }
 		if (isPressedMenu(Control.MenuRight)) { dir++; }
 		return dir;
 	}
+
+	public int getMenuYDir() {
+		int dir = 0;
+		if (isPressedMenu(Control.MenuUp)) { dir--; }
+		if (isPressedMenu(Control.MenuDown)) { dir++; }
+		return dir;
+	}
+
 
 	public Dictionary<string, int> heldFrames = new Dictionary<string, int>();
 	public bool isPressedOrHeldMenu(string inputName) {

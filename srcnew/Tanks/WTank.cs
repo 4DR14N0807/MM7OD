@@ -33,7 +33,6 @@ public class WTank : BaseTank {
 
 		if (ammo <= 0) {
 			int id = (int)character.charId;
-			player.wTanksMap[id].Remove(this);
 			ammo = 0;
 			healTime = 0;
 		}

@@ -585,8 +585,8 @@ public partial class Player {
 			int i = (int)cid;
 			heartTanksMap[i] = 0;
 			charCurrency[i] = 0;
-			eTanksMap[i] = [];
-			wTanksMap[i] = [];
+			eTanksMap[i] = new ETank();
+			wTanksMap[i] = new WTank();
 			masteryLevels[i] = new MasteryTracker(this, cid);
 		}
 		this.charNum = charNum;
@@ -620,13 +620,13 @@ public partial class Player {
 				etCount = altEtCount;
 			}
 			for (int i = 0; i < etCount; i++) {
-				eTanksMap[key].Add(new ETank());
+				eTanksMap[key] = new ETank();
 			}
 		}
 		foreach (int key in wTanksMap.Keys) {
 			int wtCount = getStartWTanks();
 			for (int i = 0; i < wtCount; i++) {
-				wTanksMap[key].Add(new WTank());
+				wTanksMap[key] = new WTank();
 			}
 		}
 		_maxHealth = getMaxHealth();

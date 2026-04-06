@@ -427,10 +427,6 @@ public class GameMode {
 
 		bool isWarpIn = level.mainPlayer.character != null && level.mainPlayer.character.isWarpIn();
 
-		Helpers.decrementTime(ref UpgradeMenu.eTankDelay);
-		Helpers.decrementTime(ref UpgradeMenu.wTankDelay);
-		Helpers.decrementFrames(ref BluesUpgradeMenu.lTankDelay);
-
 		if (!isOver) {
 			if (!Menu.inMenu && (
 				(level.mainPlayer.warpedInOnce && !isWarpIn) ||

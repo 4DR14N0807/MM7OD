@@ -243,7 +243,7 @@ public class IceWallLemon : Projectile {
 		pos, xDir, owner, "copy_vision_lemon", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.IceWallLemon;
-		maxTime = 0.525f;
+		maxTime = 34 / 60f;
 		fadeSprite = "copy_vision_lemon_fade";
 
 		vel.x = 240 * xDir;

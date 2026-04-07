@@ -204,7 +204,7 @@ public class GameMode {
 		else if (mode == TeamElimination) return "t.elim";
 		else if (mode == KingOfTheHill) return "koth";
 		else if (mode == Race) return "race";
-		else if (mode == TeamElimAlt) return "elim.alt";
+		else if (mode == TeamElimAlt) return "ta.elim";
 		else return "dm";
 	}
 

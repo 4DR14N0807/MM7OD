@@ -88,9 +88,6 @@ public class Damager {
 			return false;
 		}
 		string key = $"{projId}_{owner.id}";
-		if (projId == (int)BassProjIds.IceWallLemon) {
-			key = $"{(int)BassProjIds.BassLemon}_{owner.id}";
-		}
 		if (projId == (int)BassProjIds.RemoteMineMeleeExplosion) {
 			key = $"{(int)BassProjIds.RemoteMineExplosion}_{owner.id}";
 		}
@@ -273,10 +270,10 @@ public class Damager {
 					}
 					break;
 				}
-				/*case (int)BassProjIds.IceWallLemon: {
+				case (int)BassProjIds.IceWallLemon: {
 					character.addIgFreezeProgress(0.5f);
 					break;
-				}*/
+				}
 				case (int)ProjIds.TenguBladeDash: {
 					character.xFlinchPushVel += 4 * (damagingActor?.xDir ?? -character.xDir);
 					break;
@@ -286,8 +283,12 @@ public class Damager {
 					break;
 				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:
-					character.wince(20, 0, projId, owner.id);
+					character.wince(Global.defFlinch, 0, projId, owner.id);
 					break;
+				case (int)BluesProjIds.LemonAngled: {
+					character.wince(Global.defFlinch, 0, projId, owner.id);
+					break;
+				}
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor is WaveBurnerUnderwaterProj wbproj) {
 						character.pushEffect(new Point(wbproj.pushDir, 0));

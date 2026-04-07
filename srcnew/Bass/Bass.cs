@@ -761,9 +761,21 @@ public class Bass : Character {
 		}
 	}
 
+
+	public override Point getCamCenterPos(bool ignoreZoom = false) {
+		Point basePos = base.getCamCenterPos(ignoreZoom);
+
+		if (charState is LBoltBassCharge lstate && lstate.aim != null) {
+			return (basePos + ((lstate.aim.pos - basePos) / 2)).round();
+		}
+		if (charState is LBoltBassShoot lsstate) {
+			return (basePos + ((lsstate.shootPos - basePos) / 2)).round();
+		}
+		return basePos;
+	}
+
 	// Loadout Stuff
 	public List<Weapon> getLoadout() {
-		
 		// 1v1/Training loadout.
 		if (Global.level.isTraining() && !Global.level.server.useLoadout || Global.level.is1v1()) {
 			return getAllWeapons();

@@ -1501,8 +1501,14 @@ public partial class Level {
 		float playerY = 0;
 		if (camPlayer.character != null) {
 			camPlayer.character.stopCamUpdate = false;
-			playerX = camPlayer.character.getCamCenterPos().x;
-			playerY = camPlayer.character.getCamCenterPos().y;
+			Actor followActor = camPlayer.character.getFollowActor();
+			if (followActor != camPlayer.character) {
+				playerX = followActor.getCenterPos().round().x;
+				playerY = followActor.getCenterPos().round().y;
+			} else {
+				playerX = camPlayer.character.getCamCenterPos().round().x;
+				playerY = camPlayer.character.getCamCenterPos().round().y;
+			}
 		}
 
 		// Call net update before the frame starts.
@@ -1748,10 +1754,15 @@ public partial class Level {
 
 		if (camPlayer.character != null) {
 			if (!camPlayer.character.stopCamUpdate) {
-				Point camPos = camPlayer.character.getCamCenterPos();
-				Actor? followActor = camPlayer.character.getFollowActor();
+				Point camPos = camPlayer.character.getCamCenterPos().round();
+				Actor followActor = camPlayer.character.getFollowActor();
+
+				if (followActor != camPlayer.character) {
+					camPos = followActor.getCenterPos().round();
+				}
 
 				float extraPos = MathF.Floor(MathF.Abs(followActor.moveDelta.x));
+
 				if (extraPos >= 4) {
 					extraPos = extraPos * 16 * MathF.Sign(followActor.moveDelta.x);
 					if (lastCameraXDelta == 0 ||
@@ -1782,7 +1793,10 @@ public partial class Level {
 				float altDeltaY = fullDeltaY - camOffsetY;
 
 				if (followActor != null && followActor.grounded == false) {
-					if (altDeltaY > -46 && altDeltaY < 46 &&
+					if (followActor is not IDamagable) {
+						unlockfollow = true;
+					}
+					else if (altDeltaY > -46 && altDeltaY < 46 &&
 						camPlayer.character?.charState is
 						(not WallKick and not WallSlide and not LadderClimb)
 					) {

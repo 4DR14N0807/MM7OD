@@ -874,13 +874,17 @@ public partial class Player {
 		if (character is Bass && !character.destroyed && character.alive) {
 			Helpers.decrementFrames(ref evilEnergyTime);
 
-			if (evilEnergyTime <= 0 && evilEnergyStacks > 0) {
+			if (evilEnergyTime <= 0 && evilEnergyHP > 0) {
 				evilEnergyTime = evilEnergyMaxTime;
-				evilEnergyHP--;
-				character.maxHealth++;
-				character.heal(this, 1);
-				if (evilEnergyHP <= 0) {
+				evilEnergyStacks--;
+				int dif = (int)(evilEnergyHP - Math.Ceiling(evilEnergyStacks * hpPerStack));
+				evilEnergyHP -= dif;
+				character.maxHealth += dif;
+				character.heal(this, dif);
+				if (evilEnergyStacks <= 0) {
 					evilEnergyHP = 0;
+					evilEnergyStacks = 0;
+					character.maxHealth = (decimal)getMaxHealth(CharIds.Bass);
 				}
 				character?.playSound("heal");
 			}

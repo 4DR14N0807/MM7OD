@@ -507,7 +507,7 @@ public partial class Character : Actor, IDamagable {
 			shaders.Add(player.oilShader);
 		}
 		if (igFreezeProgress > 0 && !sprite.name.Contains("frozen") && player.igShader != null) {
-			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 6);
+			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 8);
 			shaders.Add(player.igShader);
 		}
 		if (virusTime > 0 && player.infectedShader != null) {
@@ -1026,10 +1026,12 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementFrames(ref rootTime);
 		Helpers.decrementFrames(ref flattenedTime);
 		Helpers.decrementFrames(ref slowdownTime);
-		igFreezeRecoveryCooldown += speedMul;
-		if (igFreezeRecoveryCooldown > 12) {
-			igFreezeRecoveryCooldown = 0;
-			igFreezeProgress = Helpers.clampMin0(igFreezeProgress - 1);
+		if (igFreezeProgress > 0) {
+			igFreezeRecoveryCooldown -= speedMul;
+			if (igFreezeRecoveryCooldown <= 0) {
+				igFreezeRecoveryCooldown = 30;
+				igFreezeProgress = Helpers.clampMin0(igFreezeProgress - 1);
+			}
 		}
 		Helpers.decrementFrames(ref crystalizeInvulnTime);
 		Helpers.decrementFrames(ref grabInvulnTime);

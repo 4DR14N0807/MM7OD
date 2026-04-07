@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace MMXOnline;
@@ -12,7 +13,7 @@ public class LightningBolt : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.LightningBolt;
 		displayName = "LIGHTNING BOLT";
-		maxAmmo = 10;
+		maxAmmo = 14;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
@@ -30,7 +31,7 @@ public class LightningBolt : Weapon {
 	public override void shoot(Character character, params int[] args) {
 		base.shoot(character, args);
 
-		character.changeState(new LightningBoltState(), true);
+		character.changeState(new LBoltBassCharge(), true);
 	}
 
 	public override float getAmmoUsage(int chargeLevel) {
@@ -68,29 +69,82 @@ public class LightningBoltSpawn : Anim {
 	}
 }
 
-public class LightningBoltState : BassState {
-	int phase = 0;
-	Anim? aim;
-	Anim? anim;
-	Point animOffset;
-	float spawnYPos = -162;
-	Point lightningPos;
-	float endLagFrames = 0;
-	float overrideDamage;
-	float minTime = 6;
-	float maxTime = 60;
-	float chargeTime = 30;
 
-	public LightningBoltState() : base("lbolt") {
+public class LBoltBassCharge : BassState {
+	private float minTime = 8;
+	private float maxTime = 60;
+	private Anim? anim;
+	public Anim? aim;
+	public Point? customPos;
+	public bool chargeEffect;
+	public bool chargeEffect2;
+
+	public LBoltBassCharge(Point? customPos = null) : base("lbolt_charge") {
 		enterSound = "lightningbolt";
+		useGravity = false;
+		this.customPos = customPos;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (aim != null) {
+			float moveX = character.player.input.getXDir(character.player) * 4f;
+			float moveY = character.player.input.getYDir(character.player) * 4f;
+			if (moveX != 0 || moveY != 0) {
+				aim.moveXY(moveX, moveY);
+			}
+			aim.incPos(bass.deltaPos);
+
+			if (aim.pos.x < bass.pos.x - 256) { aim.changePosX(bass.pos.x - 256); }
+			if (aim.pos.x > bass.pos.x + 256) { aim.changePosX(bass.pos.x + 256); }
+			if (aim.pos.y < bass.pos.y - 160) { aim.changePosY(bass.pos.y - 160); }
+			if (aim.pos.y > bass.pos.y + 160) { aim.changePosY(bass.pos.y + 160); }
+
+			int newDir = Math.Sign(aim.pos.x - bass.pos.x);
+			if (newDir != 0) { bass.xDir = newDir; }
+		}
+
+		if (!chargeEffect && stateFrames >= 28) {
+			chargeEffect = true;
+			new LightningBoltSpawn(
+				character.getCenterPos(), character.xDir,
+				character.player.getNextActorNetId(), true, true
+			).host = bass;;
+			anim = new Anim(
+				character.pos.addxy(3 * character.xDir, -23),
+				"lightning_bolt_anim", character.xDir,
+				character.player.getNextActorNetId(), true, sendRpc: true, host: bass
+			);
+			bass.playSound("lightningbolt", sendRpc: true);
+		}
+		if (!chargeEffect2 && stateFrames >= 56) {
+			chargeEffect2 = true;
+			new LightningBoltSpawn(
+				character.getCenterPos(), character.xDir,
+				character.player.getNextActorNetId(), true, true
+			).host = bass;
+		}
+
+		if (stateFrames >= maxTime ||
+			stateFrames >= minTime && player.input.isPressed(Control.Shoot, player)
+		) {
+			int soundDelay = MathInt.Floor(stateFrames);
+			if (stateFrames > 28) {
+				soundDelay -= 28;
+			}
+			bass.changeState(new LBoltBassShoot(
+				MathInt.Floor(stateFrames / 28f),
+				aim?.pos ?? bass.pos,
+				soundDelay >= 8
+			));
+		}
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		Point startAimPos = new Point(character.pos.x + 5 * character.xDir, getSpawnYPos());
-		animOffset = new Point(3 * character.xDir, -23);
+		Point startAimPos = customPos ?? new Point(character.pos.x + 5 * character.xDir, character.pos.y - 25);
 
-		character.useGravity = false;
 		if (character.vel.y < 0) {
 			character.yPushVel = character.vel.y / 2f / 60;
 		}
@@ -107,108 +161,81 @@ public class LightningBoltState : BassState {
 		if (oldState is Dash || oldState.wasDashing) {
 			character.xPushVel += character.xDir * character.getDashSpeed();
 		}
-		else if (player.input.getXDir(player) == character.xDir) {
+		else if (oldState.normalCtrl && player.input.getXDir(player) == character.xDir) {
 			character.xPushVel += character.xDir * character.getRunSpeed();
-		} 
+		}
 
 		character.stopMoving();
-		character.frameSpeed = 0;
-		anim = new Anim(character.pos.add(animOffset), "lightning_bolt_anim", character.xDir,
-			character.player.getNextActorNetId(), true); 
-
+		anim = new Anim(
+			character.pos.addxy(3 * character.xDir, -23),
+			"lightning_bolt_anim", character.xDir,
+			character.player.getNextActorNetId(), true, sendRpc: true, host: bass
+		);
 		aim = new Anim(
 			startAimPos, "lightning_bolt_aim", character.xDir,
-			character.player.getNextActorNetId(), true
+			character.player.getNextActorNetId(), false, zIndex: ZIndex.HUD
 		);
-		aim.frameSpeed = 0;
 		aim.alpha /= 2;
-	}
-
-	public override void update() {
-		base.update();
-		anim?.changePos(character.pos.add(animOffset));
-
-		if (phase == 0) {
-			float moveX = character.player.input.getXDir(character.player) * 4f;
-			if (aim != null) {
-				if (moveX != 0) {
-					aim.moveXY(moveX, 0);
-				}
-			}
-
-			if (stateFrames % chargeTime == 0 && stateFrames >= minTime && stateFrames != maxTime) charge();
-
-			if (stateFrames >= maxTime || stateFrames >= minTime && player.input.isPressed(Control.Shoot, player)) {
-				character.frameSpeed = 1;
-
-				float xPos = aim?.pos.x ?? character.pos.x;
-				float yPos = aim?.pos.y + 34 ?? character.pos.y;
-				yPos = Math.Min(yPos, character.pos.y + spawnYPos);
-				lightningPos = new Point(xPos, yPos);
-				aim?.destroySelf();
-				overrideDamage = MathF.Floor((stateFrames / chargeTime)) + 2;
-
-				phase = 1;
-			}
-		}
-
-		if (phase == 1) {
-			new LightningBoltProj(
-				character, lightningPos, character.xDir, 
-				character.player.getNextActorNetId(), overrideDamage, true
-			);
-			character.playSound("lightningbolt", true);
-			Weapon? bolt = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
-			if (bolt != null) {
-				bolt.addAmmo(-1, player);
-				once = true;
-			}
-			phase = 2;
-			if (bolt != null) {
-				bolt.shootCooldown = LightningBolt.cooldown;
-			}
-		}
-
-		if (phase == 2) {
-			endLagFrames += character.speedMul;
-		}
-
-		if (endLagFrames >= 45) {
-			character.changeToIdleOrFall();
-		}
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		character.stopMoving();
-		character.useGravity = true;
 		aim?.destroySelf();
-		Weapon? bolt = bass.weapons.FirstOrDefault((Weapon w) => w is LightningBolt);
-		if (bolt != null) {
-			bolt.shootCooldown = LightningBolt.cooldown;
-		}
-		if (bass.weaponCooldown <= 10) {
-			bass.weaponCooldown = 10;
-		}
-	}
-
-	void charge() {
-		new LightningBoltSpawn(
-			character.getCenterPos(), character.xDir,
-			character.player.getNextActorNetId(), true, true
-		);
-
-		anim = new Anim(character.pos.add(animOffset), "lightning_bolt_anim", character.xDir,
-			character.player.getNextActorNetId(), true, true);
-
-		character.playSound("lightningbolt", true);
-	}
-
-	float getSpawnYPos() {
-		return Math.Max(character.pos.y + spawnYPos, Global.level.camY);
 	}
 }
 
+public class LBoltBassShoot : BassState {
+	public int chargeLevel;
+	public Point shootPos;
+	public bool shotPressed;
+	private Weapon? weapon;
+	private bool playSound;
+
+	public LBoltBassShoot(int chargeLevel, Point shootPos, bool playSound = true) : base("lbolt") {
+		this.chargeLevel = chargeLevel;
+		this.shootPos = shootPos;
+		this.playSound = playSound;
+
+		useGravity = false;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (!shotPressed && weapon?.ammo > 0 && player.input.isPressed(Control.Shoot, player)) {
+			shotPressed = true;
+		}
+		if (shotPressed && stateFrames >= 45 && bass.currentWeapon is LightningBolt) {
+			character.changeState(new LBoltBassCharge(shootPos), true);
+			return;
+		}
+		if (stateFrames >= 45) {
+			bass.changeToIdleOrFall();
+		}
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		if (playSound) {
+			character.playSound("lightningbolt", true);
+		}
+		new LightningBoltProj(
+			character, shootPos.addxy(0, -112), character.xDir, 
+			character.player.getNextActorNetId(), 2 + chargeLevel, sendRpc: true
+		);
+		new Anim(
+			character.pos.addxy(3 * character.xDir, -23),
+			"lightning_bolt_anim", character.xDir,
+			character.player.getNextActorNetId(), true, sendRpc: true, host: bass
+		);
+
+		weapon = character.weapons.FirstOrDefault(w => w is LightningBolt { ammo: >0 });
+		if (weapon != null) {
+			weapon.addAmmo(-1, player);
+			weapon.shootCooldown = LightningBolt.cooldown;
+		}
+	}
+}
 
 public class LightningBoltProj : Projectile {
 	float spawnPosY;
@@ -220,7 +247,7 @@ public class LightningBoltProj : Projectile {
 
 	public LightningBoltProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
-		float? overrideDamage = 0, bool rpc = false, Player? altPlayer = null
+		float overrideDamage = 0, bool sendRpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "lightning_bolt_bottom", netProjId, altPlayer
 	) {
@@ -230,20 +257,20 @@ public class LightningBoltProj : Projectile {
 		bodySpriteHeight = bodySprite.animData.hitboxes[0].shape.getRect().h();
 		mainProjHeight = sprite.animData.frames[0].hitboxes[0].shape.getRect().h();
 
-		damager.damage = overrideDamage ?? 2;
+		damager.damage = overrideDamage > 0 ? overrideDamage : 3;
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 60;
 
 		spawnPosY = pos.y;
-		base.vel.y = 600;
+		vel.y = 600;
 		frameSpeed = 0;
 
-		if (rpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
+		if (sendRpc) rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)overrideDamage);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new LightningBoltProj(
-			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.netId, arg.extraData[0], altPlayer: arg.player
 		);
 	}
 

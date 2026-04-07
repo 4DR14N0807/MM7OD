@@ -83,7 +83,7 @@ public class WaveBurner : Weapon {
 		}
 		if (soundTime <= 0) {
 			soundTime = 4;
-			//bass.playSound("waveburnerLoop", sendRpc: true);
+			bass.playSound("waveburnerLoop", sendRpc: true);
 		}
 	}
 }
@@ -98,12 +98,12 @@ public class WaveBurnerProj : Projectile {
 	) : base(
 		pos, 1, owner, "wave_burner_proj", netProjId, altPlayer 
 	) {
-		damager.damage = 0.55f;
+		damager.damage = 0.65f;
 		damager.hitCooldown = 8;
 		maxUHitCount = 2;
 
 		projId = (int)BassProjIds.WaveBurner;
-		maxTime = 0.4f;
+		maxTime = 26 / 60f;
 		destroyOnHit = false;
 		vel = Point.createFromByteAngle(byteAngle) * 5f * 60;
 

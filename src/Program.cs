@@ -717,9 +717,23 @@ class Program {
 			Global.textures[Path.GetFileNameWithoutExtension(path)] = texture;
 		}
 
-		var mapSpriteImages = Helpers.getFiles(Global.assetPath + "assets/maps_custom", true, "png", "psd");
-		foreach (var mapSpriteImage in mapSpriteImages) {
-			var pieces = mapSpriteImage.Split("/sprites/");
+		List<string> mapSpriteImages = Helpers.getFiles(
+			Global.assetPath + "assets/maps", true, "png", "psd"
+		);
+		foreach (string mapSpriteImage in mapSpriteImages) {
+			string[] pieces = mapSpriteImage.Split("/sprites/");
+			if (pieces.Length == 2 && pieces[1].EndsWith(".png")) {
+				string spriteImageName = pieces[1].Replace(".png", "");
+				Texture texture = new Texture(mapSpriteImage);
+				string mapName = mapSpriteImage.Replace("/sprites/" + pieces[1], "").Split("/").ToList().Pop();
+				Global.textures[mapName + ":" + spriteImageName] = texture;
+			}
+		}
+ 		mapSpriteImages = Helpers.getFiles(
+			Global.assetPath + "assets/maps_custom", true, "png", "psd"
+		);
+		foreach (string mapSpriteImage in mapSpriteImages) {
+			string[] pieces = mapSpriteImage.Split("/sprites/");
 			if (pieces.Length == 2 && pieces[1].EndsWith(".png")) {
 				string spriteImageName = pieces[1].Replace(".png", "");
 				Texture texture = new Texture(mapSpriteImage);
@@ -763,6 +777,8 @@ class Program {
 		var fileChecksumDict = new Dictionary<string, string>();
 		var invertedMaps = new HashSet<string>();
 		foreach (string levelPath in levelPaths) {
+			if (levelPath.Contains("/sprites/")) continue;
+
 			string levelText = File.ReadAllText(levelPath);
 			string levelIniText = "";
 			string levelIniLocation = Path.GetDirectoryName(levelPath) + "/mapData.ini";

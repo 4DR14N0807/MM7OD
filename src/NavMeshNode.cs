@@ -22,13 +22,13 @@ public class NavMeshNode {
 		if (properties?.neighbors == null) return;
 
 		foreach (var jsonNeighbor in properties.neighbors) {
-			var node = nodeList.Where((iterNode) => {
+			var node = nodeList.FirstOrDefault((iterNode) => {
 				return iterNode.name == (string)jsonNeighbor.nodeName;
-			}).FirstOrDefault();
+			});
 
-			var ladder = gameObjects.Where((gameobject) => {
+			var ladder = gameObjects.FirstOrDefault((gameobject) => {
 				return (gameobject is Ladder) && gameobject.name == (string)jsonNeighbor.ladderName;
-			}).FirstOrDefault();
+			});
 
 			var navMeshNeighbor = new NavMeshNeighbor(this, node, jsonNeighbor);
 			neighbors.Add(navMeshNeighbor);
@@ -36,9 +36,9 @@ public class NavMeshNode {
 	}
 
 	public NavMeshNeighbor getNeighbor(NavMeshNode neighborNode) {
-		var node = neighbors.Where((neighbor) => {
+		var node = neighbors.FirstOrDefault((neighbor) => {
 			return neighbor.neighborNode == neighborNode;
-		}).FirstOrDefault();
+		});
 		return node;
 	}
 

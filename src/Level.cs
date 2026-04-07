@@ -467,22 +467,22 @@ public partial class Level {
 			if (objectName == "Collision Shape") {
 				Wall wall = new Wall(instanceName, points);
 
-				float moveX = instance?.properties?.moveX ?? 0;
+				float moveX = instance.properties?.moveX ?? 0;
 				if (mapVersion == 0) {
 					moveX /= 60;
 				}
 				wall.moveX = moveX;
 
-				if (instance?.properties?.slippery != null && instance.properties.slippery == true) {
+				if (instance.properties?.slippery != null && instance.properties.slippery == true) {
 					wall.slippery = true;
 				}
 
-				if (instance?.properties?.topWall != null && instance.properties.topWall == true) {
+				if (instance.properties?.topWall != null && instance.properties.topWall == true) {
 					wall.topWall = true;
 				}
 
 				bool isPitWall = false;
-				if (instance?.properties?.pitWall != null && instance.properties.pitWall == true) {
+				if (instance.properties?.pitWall != null && instance.properties.pitWall == true) {
 					isPitWall = true;
 					wall.collider._shape.points[2] = (
 						new Point(wall.collider._shape.points[2].x, Global.level.height + 45).round()
@@ -497,13 +497,13 @@ public partial class Level {
 					addGameObject(pitWall);
 				}
 
-				if (instance?.properties?.unclimbable != null && instance.properties.unclimbable == true) {
+				if (instance.properties?.unclimbable != null && instance.properties.unclimbable == true) {
 					wall.collider.isClimbable = false;
 				} else {
 					wall.collider.isClimbable = true;
 				}
 
-				if (instance?.properties?.boundary == true && !isPitWall) {
+				if (instance.properties?.boundary == true && !isPitWall) {
 					wall.collider.isClimbable = false;
 					var rect = wall.collider.shape.getRect();
 					var newRect = new Rect(rect.x1, rect.y1 - 1000, rect.x2, rect.y1);
@@ -526,7 +526,7 @@ public partial class Level {
 				if (isRace()) {
 					var gate = new Gate(instanceName, points);
 
-					if (instance?.properties?.unclimbable != null && instance.properties.unclimbable == true) {
+					if (instance.properties?.unclimbable != null && instance.properties.unclimbable == true) {
 						gate.collider.isClimbable = false;
 					} else {
 						gate.collider.isClimbable = true;
@@ -581,9 +581,19 @@ public partial class Level {
 				}
 			} else if (objectName == "Jump Zone") {
 				float jumpTime = instance.properties.jumpTime ?? 1;
+				string targetNode = instance.properties.targetNode as string ?? "";
+				List<string> targetNodes = [];
+				if (targetNode != "") {
+					string[] tempNodes = targetNode.Split(",");
+					foreach (string target in tempNodes) {
+						string finalStr = target.Trim();
+						if (finalStr.Length > 0) {
+							targetNodes.Add(finalStr);
+						}
+					}
+				}
 				var jumpZone = new JumpZone(
-					instanceName, points,
-					(string)instance.properties.targetNode,
+					instanceName, points, targetNodes.ToArray(),
 					Helpers.convertDynamicToDir(instance.properties.forceDir), jumpTime
 				);
 				addGameObject(jumpZone);
@@ -2929,8 +2939,8 @@ public partial class Level {
 
 		Point originPoint = new Point(Global.level.camCenterX, Global.level.camCenterY);
 
-		Character mainChar = Global.level.mainPlayer?.character;
-		Maverick mainMaverick = Global.level.mainPlayer?.currentMaverick;
+		Character? mainChar = Global.level.mainPlayer?.character;
+		Maverick? mainMaverick = Global.level.mainPlayer?.currentMaverick;
 		if (mainChar != null && mainChar.isSoundCentered()) {
 			originPoint = mainChar.pos;
 		} else if (mainMaverick != null) {
@@ -3010,17 +3020,17 @@ public partial class Level {
 
 		if (Global.level.redFlag == null || Global.level.blueFlag == null) {
 			Logger.logException(new Exception("Host tried to reset flag but they were null"), false);
-			Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Could not reset flags. Error: flags null", null, null, true), sendRpc: true);
+			Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Could not reset flags. Error: flags null", "", null, true), sendRpc: true);
 			return;
 		}
 		if (Global.level.redFlag.destroyed || Global.level.blueFlag.destroyed) {
 			Logger.logException(new Exception("Host tried to reset flag but they were destroyed"), false);
-			Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Flags were reset. Error: flags destroyed", null, null, true), sendRpc: true);
+			Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Flags were reset. Error: flags destroyed", "", null, true), sendRpc: true);
 			return;
 		}
 		if (!Global.level.gameObjects.Contains(Global.level.redFlag) || !Global.level.gameObjects.Contains(Global.level.blueFlag)) {
 			Logger.logException(new Exception("Host tried to reset flag but they were not in gameobject set"), false);
-			Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Flags were reset. Error: flags missing", null, null, true), sendRpc: true);
+			Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Flags were reset. Error: flags missing", "", null, true), sendRpc: true);
 			return;
 		}
 
@@ -3039,7 +3049,7 @@ public partial class Level {
 		Global.level.redFlag.pickupCooldown = 1;
 		Global.level.blueFlag.pickupCooldown = 1;
 
-		Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Flags were reset.", null, null, true), sendRpc: true);
+		Global.level.gameMode.chatMenu.addChatEntry(new ChatEntry("Flags were reset.", "", null, true), sendRpc: true);
 	}
 
 	public int getLeaderKills() {

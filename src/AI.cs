@@ -290,8 +290,8 @@ public class AI {
 						jumpZoneDir = character.xDir;
 					}
 				}
-				if (jumpTime <= 0 && jumpZone.targetNode == null ||
-					jumpZone.targetNode == aiState.getNextNodeName()
+				if (jumpTime <= 0 && jumpZone.targetNodes.Length == 0 ||
+					jumpZone.targetNodes.Contains(aiState.getNextNodeName())
 				) {
 					if (aiState is not FindPlayer) {
 						changeState(new InJumpZone(character, jumpZone, jumpZoneDir));
@@ -619,7 +619,7 @@ public class FindPlayer : AIState {
 			}
 			isOnPit = true;
 		}
-		if (MathF.Abs(nodeDist.x) > 16) {
+		if (MathF.Abs(nodeDist.x) > 4) {
 			if (!isOnPit && !pitFront) {
 				if (nodeDist.x > 0) {
 					player.press(Control.Right);

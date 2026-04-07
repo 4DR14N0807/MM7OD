@@ -87,7 +87,7 @@ public class LevelData {
 	public string backwallPath;
 	public string foregroundPath;
 	private List<Parallax> rawParallaxes = new List<Parallax>();
-	public string thumbnailPath;
+	public string thumbnailPath = "";
 	public int mirrorX;
 	public bool isMirrored;
 	public bool supportsMirrored;
@@ -282,13 +282,11 @@ public class LevelData {
 			supportedGameModesToMirrorSupport[gameMode] = new GameModeMirrorSupport(true, false);
 		}
 
-		if (isCustomMap) {
-			string tryPath = Global.assetPath + "assets/" + getFolderPath() + "/thumbnail.png";
-			if (File.Exists(tryPath)) {
-				thumbnailPath = tryPath;
-			} else {
-				thumbnailPath = getThumbnailPath("placeholder");
-			}
+		string tryPath = Global.assetPath + "assets/" + getFolderPath() + "/thumbnail.png";
+		if (File.Exists(tryPath)) {
+			thumbnailPath = tryPath;
+		} else if (isCustomMap) {
+			thumbnailPath = getThumbnailPath("placeholder");
 		} else {
 			string thumbnailName = this.name;
 			if (customIcon != "") {
@@ -310,9 +308,13 @@ public class LevelData {
 			string rawMapSpriteChecksumString = loadCustomMapSprites();
 			string rawChecksumString = levelJsonStr + "|" + rawMapSpriteChecksumString;
 			using (MD5 md5 = MD5.Create()) {
-				checksum = BitConverter.ToString(md5.ComputeHash(Encoding.UTF8.GetBytes(rawChecksumString))).Replace("-", String.Empty);
+				checksum = BitConverter.ToString(
+					md5.ComputeHash(Encoding.UTF8.GetBytes(rawChecksumString))
+				).Replace("-", string.Empty);
 			}
-			customMapUrl = levelJson.customMapUrl ?? null;
+			customMapUrl = levelJson.customMapUrl ?? "";
+		} else {
+			string rawMapSpriteChecksumString = loadCustomMapSprites();
 		}
 		correctMapNames();
 		validate();
@@ -320,11 +322,12 @@ public class LevelData {
 	}
 
 	public string loadCustomMapSprites() {
-		var customSpriteJsonPaths = Helpers.getFiles(
-			Global.assetPath + "assets/maps_custom/" + name + "/sprites", true, "json"
+		string path = isCustomMap ? "assets/maps_custom/" : "assets/maps/";
+		List<string> customSpriteJsonPaths = Helpers.getFiles(
+			Global.assetPath + path + name + "/sprites", true, "json"
 		);
 		var fileChecksumDict = new SortedDictionary<string, string>();
-		foreach (var customSpriteJsonPath in customSpriteJsonPaths) {
+		foreach (string customSpriteJsonPath in customSpriteJsonPaths) {
 			string fileName = Path.GetFileNameWithoutExtension(customSpriteJsonPath);
 			string spriteName = name + ":" + fileName;
 			string json = File.ReadAllText(customSpriteJsonPath);
@@ -474,16 +477,17 @@ public class LevelData {
 		var image = new Image(fullImagePath);
 
 		if (isMirrored && mirrorX != 0 && mirrorMapImages) {
-			var image2 = new Image(((uint)(1 + (mirrorX * 2)), image.Size.Y));
-			image2.Copy(image, (0, 0), new IntRect((0, 0), (mirrorX, height)));
+			int imgHeight = (int)image.Size.Y;
+			Image image2 = new Image(((uint)(mirrorX * 2), image.Size.Y));
+			image2.Copy(image, (0, 0), new IntRect((0, 0), (mirrorX, imgHeight)));
 			image.FlipHorizontally();
-			var a = (int)image.Size.X - mirrorX;
+			int a = (int)image.Size.X - mirrorX;
 			uint b = 0;
 			if (a < 0) {
 				b = (uint)Math.Abs(a);
 				a = 0;
 			}
-			image2.Copy(image, ((uint)mirrorX + b, 0), new IntRect((a, 0), (mirrorX, height)));
+			image2.Copy(image, ((uint)mirrorX + b, 0), new IntRect((a, 0), (mirrorX, imgHeight)));
 
 			image.Dispose();
 			image = image2;

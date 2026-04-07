@@ -860,15 +860,6 @@ public partial class Actor : GameObject {
 				vel.y = 0;
 
 				Wall? hitWall = collideData.gameObject as Wall;
-				if (hitWall?.isMoving == true) {
-					movePoint(hitWall.deltaMove, useDeltaTime: false);
-				} else if (hitWall != null && hitWall.moveX != 0) {
-					if (this is RideChaser rc) {
-						rc.addXMomentum(hitWall.moveX * 60);
-					} else {
-						moveXY(hitWall.moveX, 0);
-					}
-				}
 				if (isPlatform && hitActor != null) {
 					movePoint(hitActor.deltaPos, useDeltaTime: false);
 				}
@@ -896,6 +887,8 @@ public partial class Actor : GameObject {
 				grounded = false;
 				groundedIce = false;
 			}
+
+			moveWithMovingPlatform();
 		}
 		if (grounded) {
 			lastGroundedPos = pos;
@@ -1882,23 +1875,30 @@ public partial class Actor : GameObject {
 			return;
 		} */ //TODO: Add a proper exception for ice wall.
 
-		Point collideDir = overrideCollider ?? new Point(0,1);
-		List<CollideData> collideDatas = Global.level.getTerrainTriggerList(this, collideDir);
+		Point collideDir = overrideCollider ?? new Point(0, 1);
+		List<CollideData> collideDatas =  Global.level.checkTerrainCollision(
+			this, collideDir.x, collideDir.y, checkPlatforms: true, checkQuicksand: true
+		);
 		foreach (CollideData collideData in collideDatas) {
-			if (collideData.gameObject is Wall wall && wall.deltaMove != Point.zero) {
-				move(wall.deltaMove, useDeltaTime: false);
-				break;
+			if (collideData.gameObject is Wall wall) {
+				if (wall.isMoving) {
+					move(wall.deltaMove, useDeltaTime: false);
+				}
+				if (wall.moveX != 0) {
+					moveXY(wall.moveX, 0);
+				}
+				continue;
 			}
 			if (collideData.gameObject is MovingPlatform platform && platform.deltaMove != Point.zero) {
 				move(platform.deltaMove, useDeltaTime: false);
-				break;
+				continue;
 			}
 			if (collideData.gameObject is Actor actor &&
 				(actor.isSolidWall || actor.isPlatform) &&
 				actor.canBePlatform(this)
 			) {
 				move(actor.deltaPos, useDeltaTime: false);
-				break;
+				continue;
 			}
 		}
 	}

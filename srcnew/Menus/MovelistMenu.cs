@@ -56,8 +56,8 @@ public class MovelistItem {
 			return;
 		}
 		DrawWrappers.DrawRect(
-			renderPos.x - 32, renderPos.y - 1,
-			renderPos.x + 32, renderPos.y + 65,
+			renderPos.x - 35, renderPos.y - 4,
+			renderPos.x + 135, renderPos.y + 73,
 			true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
 		);
 		Global.sprites[spriteName].drawToHUD(frameIndex, renderPos.x, renderPos.y + 56);
@@ -73,10 +73,10 @@ public class MovelistItem {
 		if (moveRequirement != "") { textList.Add(moveRequirement); }
 		if (moveDesc != "") { textList.Add(moveDesc); }
 		Point size = getSquareSize(textList);
-		DrawWrappers.DrawRect(
+		/* DrawWrappers.DrawRect(
 			renderX - 1, renderY, renderX + 95, renderY + size.y + 1,
 			true, new Color(0, 0, 0, 100), 1, ZIndex.HUD, false, outlineColor: Color.White
-		);
+		); */
 
 		Fonts.drawText(FontType.WhiteSmall, moveName, renderX, renderY);
 		renderY += 8;
@@ -249,10 +249,10 @@ public class MovelistMenu : IMainMenu {
 		float arrowPosY = Global.halfScreenH - 9;
 		if (Global.floorFrameCount % 60 < 30 && getMaxScroll() > 0) {
 			Fonts.drawText(
-				FontType.BlueMenu, ">", 360, arrowPosY, Alignment.Center
+				FontType.BlueMenu, ">", 370, arrowPosY, Alignment.Center
 			);
 			Fonts.drawText(
-				FontType.BlueMenu, "<", 24, arrowPosY, Alignment.Center
+				FontType.BlueMenu, "<", 14, arrowPosY, Alignment.Center
 			);
 		}
 

@@ -202,7 +202,7 @@ public class SelectCharacterMenu : IMainMenu {
 			//Menu.change(new BluesMovelistMenu(this, isInGame, Options.main.bluesLoadout.specialWeapon, false, true));
 			Menu.change(
 				MovelistMenuHandler.getCharMovelistMenu(
-					this, false, charSelections[playerData.uiSelectedCharIndex].mappedCharNum, false, false
+					this, isInGame, charSelections[playerData.uiSelectedCharIndex].mappedCharNum, false, false
 				)
 			);
 			return;

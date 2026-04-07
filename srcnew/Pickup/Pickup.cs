@@ -20,6 +20,7 @@ public class Pickup : Actor {
 	public float altHealAmount = 0;
 	public PickupType pickupType = PickupType.None;
 	public bool teamOnly;
+	public bool spawnUp;
 	public Point rsVel = new Point(0, -300);
 
 	public Pickup(
@@ -30,6 +31,7 @@ public class Pickup : Actor {
 		sprite, pos, netId, ownedByLocalPlayer, false
 	) {
 		this.teamOnly = teamOnly;
+		this.spawnUp = spawnUp;
 		canBeLocal = true;
 		netOwner = owner;
 		ownerPlayer = owner;
@@ -50,7 +52,7 @@ public class Pickup : Actor {
 
 		if (sendRpc) {
 			RPC.createActor.sendRpc(
-				this, ownerPlayer, null, Helpers.boolArrayToByte([teamOnly, spawnUp])
+				this, ownerPlayer, null, getSerialExtra()
 			);
 		}
 		syncOnLateJoin = true;
@@ -91,5 +93,5 @@ public class Pickup : Actor {
 	// Net data.
 	public override int getSerialPlayerID() => ownerPlayer.id;
 	public override int getSerialCID() => (int)cActorId;
-	public override byte[] getSerialExtra() => [Helpers.boolArrayToByte([teamOnly, false])];
+	public override byte[] getSerialExtra() => [(byte)(teamOnly ? 1 : 0), (byte)(spawnUp ? 1 : 0)];
 }

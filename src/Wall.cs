@@ -12,6 +12,7 @@ public class Wall : Geometry {
 	public bool isCracked;
 	public bool topWall;
 	public float moveX; // i.e. conveyer belts
+	public float moveY;
 
 	public Wall() : base("", new List<Point>()) {
 	}
@@ -550,12 +551,16 @@ public class SandZone : Geometry {
 }
 
 public class JumpZone : Geometry {
-	public string targetNode;
+	public string[] targetNodes;
 	public int forceDir;
 	public float jumpTime;
-	public JumpZone(string name, List<Point> points, string targetNode, int forceDir, float jumpTime) : base(name, points) {
+	public JumpZone(
+		string name, List<Point> points, string[] targetNodes, int forceDir, float jumpTime
+	) : base(
+		name, points
+	) {
 		collider.isTrigger = true;
-		this.targetNode = targetNode;
+		this.targetNodes = targetNodes;
 		this.forceDir = forceDir;
 		this.jumpTime = jumpTime;
 	}

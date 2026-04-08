@@ -66,6 +66,7 @@ public partial class Actor : GameObject {
 	public Point moveDelta;
 	public Point vel;
 	public Point lastGroundedPos;
+	public Point lastSafeGroundedPos;
 	public float xPushVel;
 	public float xIceVel;
 	public float xSwingVel;
@@ -224,6 +225,7 @@ public partial class Actor : GameObject {
 		this.netId = netId;
 		this.ownedByLocalPlayer = ownedByLocalPlayer;
 		lastGroundedPos = pos;
+		lastSafeGroundedPos = pos;
 		vel = new Point(0, 0);
 		useGravity = true;
 		frameIndex = 0;
@@ -892,6 +894,9 @@ public partial class Actor : GameObject {
 		}
 		if (grounded) {
 			lastGroundedPos = pos;
+			if (Global.level.getGroundPosNoKillzone(lastGroundedPos)?.x == lastGroundedPos.x) {
+				lastSafeGroundedPos = pos;
+			}
 		}
 		movedUpOnFrame = false;
 	}
@@ -1886,6 +1891,9 @@ public partial class Actor : GameObject {
 				}
 				if (wall.moveX != 0) {
 					moveXY(wall.moveX, 0);
+				}
+				if (wall.moveY != 0 && this is IDamagable damagable && damagable.isPlayableDamagable()) {
+					damagable.actor().yPushVel = wall.moveY;
 				}
 				continue;
 			}

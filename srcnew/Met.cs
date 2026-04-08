@@ -11,14 +11,22 @@ public class Met : NeutralEnemy {
 
 	public Met(
 		Point pos, int xDir, Player ownerPlayer, ushort netId,
-		int alliance = GameMode.stageAlliance, bool sendRpc = false, bool addToLevel = true
+		int alliance = GameMode.stageAlliance, bool sendRpc = false,
+		bool addToLevel = true, bool isWarpIn = false
 	) : base(
 		pos, xDir, ownerPlayer, netId, alliance, addToLevel 
 	) {
 		base.xDir = xDir;
 		maxHealth = 3;
 		health = maxHealth;
-		changeState(new MetIdle());
+
+		if (ownedByLocalPlayer) {
+			if (isWarpIn) {
+				changeState(new MetSpawn());
+			} else {
+				changeState(new MetIdle());
+			}
+		}
 
 		cActorId = CActorIds.Met;
 		if (sendRpc) {
@@ -92,6 +100,20 @@ public class Met : NeutralEnemy {
 
 	public override void updateCustomActorNetData(byte[] data) {
 		invincibleFlag = Helpers.byteToBool(data[0]);
+	}
+}
+
+
+public class MetSpawn : NeutralEnemyState {
+	public MetSpawn() : base("spawn") {
+	}
+
+	public override void update() {
+		base.update();
+
+		if (chara.isAnimOver()) {
+			chara.changeState(new MetIdle());
+		}
 	}
 }
 

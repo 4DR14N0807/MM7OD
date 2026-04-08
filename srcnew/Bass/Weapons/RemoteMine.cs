@@ -286,6 +286,7 @@ public class RemoteMineLandProj : Projectile {
 		if (closeActors.Length > 0) {
 			explode();
 		}
+		moveWithMovingPlatform();
 	}
 
 	public override void render(float x, float y) {

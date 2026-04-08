@@ -335,7 +335,7 @@ public partial class Level {
 					return false;
 				}
 			}
-			else if (oneWay.lockDir.y == 1) {
+			else if (oneWay.lockDir.x == 1) {
 				if (actor.pos.x >= gameObject.collider.shape.maxX && intersection.x < 0) {
 					return false;
 				}

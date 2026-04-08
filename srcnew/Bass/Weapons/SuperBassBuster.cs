@@ -129,7 +129,7 @@ public class SBassLemon : Projectile {
 		Actor owner, Point pos, int xDir, int type, ushort? netId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "bass_buster_proj", netId, altPlayer
+		pos, xDir, owner, "sbass_buster_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassLemon;
 		maxTime = 0.3f;
@@ -142,8 +142,7 @@ public class SBassLemon : Projectile {
 		vel = Point.createFromByteAngle(byteAngle).times(360);
 		damager.damage = 1;
 		damager.hitCooldown = 5;
-		fadeSprite = "bass_buster_proj_fade";
-		fadeOnAutoDestroy = true;
+		fadeSprite = "bass_buster_proj_fade2";
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)type });
@@ -156,6 +155,20 @@ public class SBassLemon : Projectile {
 			arg.netId, altPlayer: arg.player
 		);
 	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = base.getShaders() ?? new();
+		if (ownerActor is not Bass bass) {
+			return shaders;
+		}
+		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
+		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		return shaders;
+	}
 }
 
 public class SBassShot : Projectile {
@@ -163,7 +176,7 @@ public class SBassShot : Projectile {
 		Actor owner, Point pos, int xDir, ushort? netId,
 		bool rpc = false, Player? altPlayer = null, bool superBass = false
 	) : base(
-		pos, xDir, owner, "bass_buster_proj2", netId, altPlayer
+		pos, xDir, owner, "sbass_buster2_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassShot;
 		maxTime = 0.5f;
@@ -186,6 +199,20 @@ public class SBassShot : Projectile {
 		return new SBassShot(
 			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = base.getShaders() ?? new();
+		if (ownerActor is not Bass bass) {
+			return shaders;
+		}
+		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
+		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		return shaders;
 	}
 }
 
@@ -215,6 +242,20 @@ public class ChamoBuster : Projectile {
 		return new ChamoBuster(
 			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
 		);
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = base.getShaders() ?? new();
+		if (ownerActor is not Bass bass) {
+			return shaders;
+		}
+		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
+		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		return shaders;
 	}
 }
 
@@ -389,6 +430,20 @@ public class SuperBassRP : Projectile {
 		if (isRunByLocalPlayer()) {
 			reversed = true;
 		}
+	}
+
+	public override List<ShaderWrapper> getShaders() {
+		List<ShaderWrapper> shaders = base.getShaders() ?? new();
+		if (ownerActor is not Bass bass) {
+			return shaders;
+		}
+		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
+		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
+		if (palette != null) {
+			shaders.Add(palette);
+		}
+		return shaders;
 	}
 }
 

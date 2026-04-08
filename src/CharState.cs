@@ -1679,14 +1679,16 @@ public class BottomlessPitState : CharState {
 			} else {
 				character.changeState(new OverheatShutdown(), true); 
 			}
-			
-			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 64);
 
-			if (warpInPos == null) {
+			Point warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 64) ?? lastGroundPos;
+			if (MathF.Abs(warpInPos.x - lastGroundPos.x) > 64) {
+				warpInPos = lastGroundPos;
+			}
+			/*if (warpInPos == null) {
 				SpawnPoint nearestSpawnPoint = Global.level.getClosestSpawnPoint(lastGroundPos);
 				warpInPos = Global.level.getGroundPos(nearestSpawnPoint.pos);
-			}
-			character.changePos(warpInPos.Value);
+			}*/
+			character.changePos(warpInPos);
 			character.deltaPos = Point.zero;
 		}
 	} 
@@ -1695,7 +1697,7 @@ public class BottomlessPitState : CharState {
 		base.onEnter(oldState);
 		character.stopMoving();
 		character.canBeGrounded = false;
-		lastGroundPos = character.lastGroundedPos;
+		lastGroundPos = character.lastSafeGroundedPos;
 		shutdown = oldState is OverheatShutdownStart;
 	}
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MMXOnline;
 
@@ -10,7 +11,7 @@ public class TenguBlade : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.TenguBlade;
 		displayName = "TENGU BLADE";
-		maxAmmo = 28;
+		maxAmmo = 24;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
@@ -260,13 +261,18 @@ public class TenguBladeDash : BassState {
 			true, sendRpc: true
 		);
 		startXDir = character.xDir;
-		bass.currentWeapon?.addAmmo(-1, player);
+		if (bass.currentWeapon is TenguBlade) {
+			bass.currentWeapon.addAmmo(-2, player);
+		} else {
+			Weapon? twp = bass.weapons.FirstOrDefault(w => w is TenguBlade);
+			twp?.addAmmo(-2, player);
+		}
 		bass.vel.y = 0;
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		bass.tBladeDashCooldown = 10;
+		bass.tBladeDashCooldown = 15;
 	}
 
 	public override void update() {
@@ -288,7 +294,7 @@ public class TenguBladeDash : BassState {
 			character.changeState(new TenguBladeDashEnd(), true);
 			character.xTenguPushVel = 4 * character.xDir;
 			return;
-		} 
+		}
 
 		Point move = new Point();
 		move.x = character.xDir * character.getDashSpeed() * 1.5f;

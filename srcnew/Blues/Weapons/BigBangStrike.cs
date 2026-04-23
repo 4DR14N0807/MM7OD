@@ -98,10 +98,12 @@ public class BigBangStrikeExplosionProj : Projectile {
 		foreach (var gameObject in getCloseActors(250)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
+				gameObject is IDamagable damagable && 
 				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
 			) {
-				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
+				if (gameObject is not CrackedWall &&
+					actor.getCenterPos().distanceTo(pos) <= absorbRadius
+				) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.move(new Point(direction * 60, 0));
 				}
@@ -176,10 +178,12 @@ public class ProtoStrikeProj : Projectile {
 		foreach (var gameObject in getCloseActors(200)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
+				gameObject is IDamagable damagable && 
 				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
 			) {
-				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
+				if (gameObject is not CrackedWall &&
+					actor.getCenterPos().distanceTo(pos) <= absorbRadius
+				) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.move(new Point(direction * 60, 0));
 				}
@@ -282,12 +286,14 @@ public class StrikeAttackPushProj : Projectile {
 		foreach (var gameObject in getCloseActors(200)) {
 			if (gameObject is Actor actor &&
 				actor.ownedByLocalPlayer &&
-				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
+				gameObject is IDamagable damagable && 
 				damagable.canBeDamaged(damager.alliance, damager.owner.id, projId)
 			) {
 				if (actor.getCenterPos().distanceTo(pos) <= radius) {
 					damager.applyDamage(damagable, false, weapon, this, projId);
-
+					if (gameObject is CrackedWall) {
+						continue;
+					}
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.stopMoving();
 					actor.xPushVel = xDir * pushPower / 60;
@@ -416,7 +422,9 @@ public class RedStrikeExplosionProj : Projectile {
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
 				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
 			) {
-				if (actor.getCenterPos().distanceTo(pos) <= absorbRadius) {
+				if (gameObject is not CrackedWall &&
+					actor.getCenterPos().distanceTo(pos) <= absorbRadius
+				) {
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.move(new Point(direction * 30, 0));
 				}

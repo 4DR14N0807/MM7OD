@@ -6,7 +6,8 @@ namespace MMXOnline;
 
 //Umbrella class for walls, nav meshes, ladders, etc.
 public class Geometry : GameObject {
-	public bool iDestroyed => false;
+	public bool destroyed;
+	public bool iDestroyed => destroyed;
 	public bool disabled;
 	public bool iDisabled => disabled;
 	public string name { get; set; }
@@ -95,5 +96,12 @@ public class Geometry : GameObject {
 
 	public void registerCollision(CollideData collideData) {
 		onCollision(collideData);
+	}
+
+	public virtual void destroySelf() {
+		if (!destroyed) {
+			Global.level.removeGameObject(this);
+			destroyed = true;
+		}
 	}
 }

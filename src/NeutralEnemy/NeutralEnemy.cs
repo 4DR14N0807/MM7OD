@@ -7,6 +7,7 @@ public class NeutralEnemy : Actor, IDamagable {
 	public int alliance;
 	public decimal health = 8;
 	public decimal maxHealth = 8;
+	public float damageSavings;
 	public bool invincibleFlag;
 	public int enemyId;
 	public float wSize = 12;
@@ -127,8 +128,16 @@ public class NeutralEnemy : Actor, IDamagable {
 	}
 
 	// IDamagable interface bello.
-	public void applyDamage(float damage, Player owner, Actor actor, int? weaponIndex, int? projId) {
-		health -= (decimal)damage;
+	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
+		int damageFloor = MathInt.Floor(damage);
+		float dmgFl = damage - damageFloor;
+		damageSavings += dmgFl;
+		if (damageSavings >= 1) {
+			damageSavings--;
+			damageFloor++;
+		}
+		addDamageText(damageFloor);
+		health -= damageFloor;
 		if (health <= 0) {
 			health = 0;
 			if (ownedByLocalPlayer) {
@@ -159,6 +168,12 @@ public class NeutralEnemy : Actor, IDamagable {
 
 	public bool isPlayableDamagable() {
 		return true;
+	}
+
+	// Render.
+	public override void render(float x, float y) {
+		base.render(x, y);
+		renderDamageText(16 - y);
 	}
 
 	// Net data.

@@ -21,6 +21,7 @@ public class Projectile : Actor {
 
 	public Weapon weapon;
 	public bool destroyOnHit = true;
+	public Point? destroyOnHitPos;
 	public bool destroyOnDamage = false;
 	public bool destroyOnHitWall = false;
 	public bool reflectable = false;
@@ -557,17 +558,8 @@ public class Projectile : Actor {
 			bool isDamagableProj = canBeDamaged && damagable is Projectile;
 
 			if (canBeDamaged) {
-				Point? hitPos = other.otherCollider.shape.getIntersectPoint(pos, vel);
-				if (hitPos != null && destroyOnHit) changePos(hitPos.Value);
+				destroyOnHitPos = other.otherCollider.shape.getIntersectPoint(pos, vel);
 
-				bool weakness = false;
-				if (character is MegamanX) {
-					int wi = character.currentWeapon?.weaknessIndex ?? 0;
-					if (wi > 0 && wi == weapon.index) weakness = true;
-				}
-				if (owner.ownedByLocalPlayer && projId == (int)ProjIds.CopyShot && character != null) {
-					owner.copyShotDamageEvents.Add(new CopyShotDamageEvent(character));
-				}
 				if (shouldDealDamage(damagable)) {
 					if (isNetcodeDamageOwner(damagable.actor())) {
 						damager.applyDamage(damagable, false, weapon, this, projId);
@@ -645,16 +637,23 @@ public class Projectile : Actor {
 	// Also, this runs on every hit regardless of hit cooldown, so if hit cooldown must be factored, use onDamage
 	public virtual void onHitDamagable(IDamagable damagable) {
 		if (destroyOnHit) {
-			damagedOnce = true;
-			if (isNetcodeDamageOwner(damagable.actor())) {
-				destroySelf(fadeSprite, fadeSound, doRpcEvenIfNotOwned: true);
+			if (destroyOnHitCheck(damagable)) {
+				damagedOnce = true;
+				if (isNetcodeDamageOwner(damagable.actor())) {
+					if (destroyOnHitPos != null) {
+						changePos(destroyOnHitPos.Value);
+					}
+					destroySelf(fadeSprite, fadeSound, doRpcEvenIfNotOwned: true);
+				}
+			} else {
+				destroyOnHitPos = null;
 			}
 		}
 		addUniqueHit(damagable);
 	}
 
 	public void addUniqueHit(IDamagable damagable) {
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || !destroyOnHitCheck(damagable)) {
 			return;
 		}
 		Actor damagedActor = damagable.getActor;
@@ -670,9 +669,16 @@ public class Projectile : Actor {
 	}
 
 	public virtual void afterDamage(IDamagable damagable, bool wasHit) {
-		if (!destroyed && wasHit && destroyOnDamage) {
+		if (!destroyed && wasHit && destroyOnDamage && destroyOnHitCheck(damagable)) {
 			destroySelf();
 		}
+	}
+
+	public virtual bool destroyOnHitCheck(IDamagable damagable) {
+		if (damagable is CrackedWall cwtp && cwtp.flag == 4) {
+			return false;
+		}
+		return true;
 	}
 
 	// Can be used in lieu of the on<PROJ>Damage() method

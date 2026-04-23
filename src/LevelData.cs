@@ -478,17 +478,17 @@ public class LevelData {
 
 		if (isMirrored && mirrorX != 0 && mirrorMapImages) {
 			int imgHeight = (int)image.Size.Y;
-			Image image2 = new Image(((uint)(mirrorX * 2), image.Size.Y));
-			image2.Copy(image, (0, 0), new IntRect((0, 0), (mirrorX, imgHeight)));
-			image.FlipHorizontally();
-			int a = (int)image.Size.X - mirrorX;
-			uint b = 0;
-			if (a < 0) {
-				b = (uint)Math.Abs(a);
-				a = 0;
-			}
-			image2.Copy(image, ((uint)mirrorX + b, 0), new IntRect((a, 0), (mirrorX, imgHeight)));
-
+			Image image2 = new Image(((uint)(mirrorX * 2), image.Size.Y), Color.Transparent);
+			// Calculate the minimun size.
+			// If the mirror X is bigger than the image we use the image rect.
+			int mirrorWidth = Math.Min((int)image.Size.X, mirrorX);
+			// Copy image to the mirrored variant.
+			image2.Copy(image, (0, 0), new IntRect((0, 0), (mirrorWidth, imgHeight)));
+			// Flip.
+			image2.FlipHorizontally();
+			// Then copy again once flipped.
+			image2.Copy(image, (0, 0), new IntRect((0, 0), (mirrorWidth, imgHeight)));
+			// Dispose the temporal image and replace.
 			image.Dispose();
 			image = image2;
 		}

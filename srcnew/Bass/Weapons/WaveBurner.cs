@@ -88,7 +88,6 @@ public class WaveBurner : Weapon {
 	}
 }
 
-
 public class WaveBurnerProj : Projectile {
 	public bool inWater;
 
@@ -184,7 +183,7 @@ public class WaveBurnerUnderwaterProj : Projectile {
 	) {
 		damager.damage = 0.55f;
 		damager.hitCooldown = 8;
-		rand = Helpers.randomRange(1, 4);
+		maxUHitCount = 2;
 
 		projId = (int)BassProjIds.WaveBurnerUnderwater;
 		maxTime = 0.4f;
@@ -194,6 +193,9 @@ public class WaveBurnerUnderwaterProj : Projectile {
 		this.byteAngle = drawAngle;
 		this.pushDir = pushDir;
 
+		// These are visual only.
+		// So we do not need to sync it over netcode.
+		rand = Helpers.randomRange(1, 4);
 		bubble1Spd = Point.createFromByteAngle(byteAngle + (Helpers.randomRange(-12, 12))) * spd;
 		bubble2Spd = Point.createFromByteAngle(byteAngle + (Helpers.randomRange(-12, 12))) * spd;
 

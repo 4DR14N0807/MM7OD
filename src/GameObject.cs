@@ -26,4 +26,3 @@ public interface GameObject {
 	void statePostUpdate();
 	void registerCollision(CollideData collideData);
 }
-

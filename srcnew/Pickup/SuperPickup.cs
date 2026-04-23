@@ -58,6 +58,12 @@ public class TankSuperPickup : BaselineSuperPickup {
 		altHealAmount = 50;
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new TankSuperPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new TankSuperPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -75,6 +81,12 @@ public class LargeSuperPickup : BaselineSuperPickup {
 	) {
 		healAmount = 6;
 		altHealAmount = 37.5f;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new LargeSuperPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -96,6 +108,12 @@ public class SmallSuperPickup : BaselineSuperPickup {
 		altHealAmount = 25;
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new SmallSuperPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallSuperPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -113,6 +131,12 @@ public class MiniSuperPickup : BaselineSuperPickup {
 	) {
 		healAmount = 2;
 		altHealAmount = 12.5f;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new MiniSuperPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

@@ -224,23 +224,23 @@ public class MagicCardProj : Projectile {
 
 	public override void update() {
 		base.update();
-
-		if (ownedByLocalPlayer && (shooter == null || shooter.destroyed)) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (ownedByLocalPlayer && reversed && (shooter == null || shooter.destroyed)) {
 			destroySelf();
 			return;
 		}
-
-		if (!ownedByLocalPlayer || shooter == null) return;
-
-		if (hits >= 3 || time > maxReverseTime) reversed = true;
-
+		if (hits >= 3 || time > maxReverseTime) {
+			reversed = true;
+		}
 		if (reversed) {
 			vel = new Point(0, 0);
 			frameSpeed = -2;
 			if (frameIndex == 0) frameIndex = sprite.totalFrameNum - 1;
-			returnPos = shooter.getCenterPos();
+			returnPos = shooter?.getCenterPos() ?? pos.addxy(-10 * xDir, 0);
 
-			if (shooter.sprite.name.Contains("shoot")) {
+			if (shooter?.sprite.name.Contains("shoot") == true) {
 				Point poi = shooter.pos;
 				var pois = shooter.sprite.getCurrentFrame()?.POIs;
 				if (pois != null && pois.Length > 0) {
@@ -252,7 +252,7 @@ public class MagicCardProj : Projectile {
 			move(speed);
 			byteAngle = speed.byteAngle;
 
-			if (pos.distanceTo(returnPos) < 24) {
+			if (shooter != null && pos.distanceTo(returnPos) < 24) {
 				foreach (Weapon w in shooter.weapons) {
 					if (w == wep) {
 						w.addAmmo(getAmmo(), shooter.player);
@@ -266,10 +266,9 @@ public class MagicCardProj : Projectile {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (!ownedByLocalPlayer) return;
-		if (destroyed) return;
-		if (shooter == null) return;
-
+		if (!ownedByLocalPlayer || destroyed || shooter == null) {
+			return;
+		}
 		if (other.gameObject is Pickup && pickup == null) {
 			pickup = other.gameObject as Pickup;
 			if (pickup != null) {
@@ -281,17 +280,12 @@ public class MagicCardProj : Projectile {
 				}
 			}
 		}
-
-		var character = other.gameObject as Character;
-		if (reversed && character != null && character.player == ownerPlayer) {
-			if (pickup != null) {
-				pickup.changePos(character.getCenterPos());
-			}
+		if (reversed && other.gameObject is Character character && character.player == ownerPlayer) {
+			pickup?.changePos(character.getCenterPos());
 			destroySelf();
 		}
 		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {
-			var proj = other.gameObject as Projectile;
-			if (proj != null && proj.owner.alliance != ownerPlayer.alliance) {
+			if (other.gameObject is Projectile proj && proj.owner.alliance != ownerPlayer.alliance) {
 				destroySelf();
 			}
 			if (ownerActor != null) {
@@ -304,34 +298,22 @@ public class MagicCardProj : Projectile {
 		}
 	}
 
-	public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-
-		if (damagable.canBeDamaged(ownerPlayer.alliance, ownerPlayer.id, projId)) {
-			if (damagable.projectileCooldown.ContainsKey(projId + "_" + owner.id) &&
-				damagable.projectileCooldown[projId + "_" + owner.id] >= damager.hitCooldown
-			) {
-				if (damagable is not Character chr) return;
-				else {
-					hits++;
-					if (effect == (int)MagicCardEffects.Refill) {
-						playSound("magiccard2", true);
-					}
-					/* if (hits >= 4) {
-						updateDamager(0);
-					} */
-				}
-			}
+	public override void afterDamage(IDamagable damagable, bool wasHit) {
+		base.afterDamage(damagable, wasHit);
+		if (!wasHit || !ownedByLocalPlayer) {
+			return;
 		}
+		if (effect == (int)MagicCardEffects.Refill) {
+			playSound("magiccard2", true);
+		}
+		hits++;
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 		if (pickup != null) {
 			pickup.useGravity = true;
-			if (pickup.collider != null) {
-				pickup.collider.isTrigger = false;
-			}
+			pickup.collider?.isTrigger = false;
 		}
 		if (!ownedByLocalPlayer) { return; }
 		if (effect == (int)MagicCardEffects.Duplicate && !duplicated) {

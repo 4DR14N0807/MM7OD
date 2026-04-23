@@ -217,7 +217,7 @@ public class SuperBassStart : BassState {
 	float tIncrease = 7;
 	int endTime;
 
-	public SuperBassStart() : base("lbolt") {
+	public SuperBassStart() : base("lbolt_charge") {
 		normalCtrl = false;
 		attackCtrl = false;
 		useGravity = false;
@@ -495,7 +495,6 @@ public class SuperBassExhaust : Anim {
 
 
 public class SuperBassPilar : Effect {
-
 	float time;
 	float maxTime = 40;
 
@@ -522,7 +521,6 @@ public class SuperBassPilar : Effect {
 		);
 	}
 }
-
 
 public class EnergyCharge : BassState {
 	public float ammoTimer = 8;
@@ -575,7 +573,7 @@ public class EnergyCharge : BassState {
 			if (bass.phase < 4) {
 				bass.addEvilness(0.5f);
 			} else {
-				bass.removeEvilness(0.375f);
+				bass.removeEvilness(0.75f);
 			}
 			ammoTimer = 8;
 		}
@@ -650,8 +648,8 @@ public class BassFly : BassState {
 		}
 
 		if (Global.level.checkTerrainCollisionOnce(
-			character, 0, -character.getYMod()) != null &&
-			character.vel.y * character.getYMod() < 0
+			character, 0, -character.gravityMod()) != null &&
+			character.vel.y * character.gravityMod() < 0
 		) {
 			character.vel.y = 0;
 		}
@@ -751,7 +749,7 @@ public class BassFly : BassState {
 
 
 public class BassKick : CharState {
-
+	int gravitySign;
 	bool jumped;
 	int airTime;
 
@@ -786,7 +784,7 @@ public class BassKick : CharState {
 		character.vel.x = Helpers.lerp(character.vel.x, 0, Global.spf * 5);
 
 		if (jumped) {
-			if (character.vel.y > 0) {
+			if (character.vel.y * character.gravitySign() > 0) {
 				character.stopMoving();
 				character.useGravity = false;
 			}

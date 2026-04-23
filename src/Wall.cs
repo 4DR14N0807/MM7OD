@@ -238,11 +238,18 @@ public class CrackedWall : Actor, IDamagable {
 	public bool isGlass;
 	public float glassCounter;
 	public bool glassCrackOnFrame;
+	public float? respawnTime;
 	public float respawnTimer;
+	public float damageReduction;
 	public float respawnAlpha = 100;
+	public Dictionary<string, float> damageCollisionCooldown = [];
 
-	public CrackedWall(Point pos, string crackedWallSprite, string gibSprite, int xDir, int yDir, int flag, int health, string destroyInstanceName, bool ownedByLocalPlayer) :
-		base(crackedWallSprite, pos, null, ownedByLocalPlayer, false) {
+	public CrackedWall(
+		Point pos, string crackedWallSprite, string gibSprite,
+		int xDir, int yDir, int flag, int health, string destroyInstanceName, bool ownedByLocalPlayer
+	) : base(
+		crackedWallSprite, pos, null, ownedByLocalPlayer, false
+	) {
 		this.health = health;
 		maxHealth = health;
 		isStatic = true;
@@ -260,14 +267,18 @@ public class CrackedWall : Actor, IDamagable {
 		useGravity = false;
 		useActorGrid = true;
 
+		if (collider == null) {
+			throw new Exception("Cannot create cracked wall without collider");
+		}
+
+		List<Point> rect = collider.shape.getRect().getPoints();
 		collider.flag = (int)HitboxFlag.Hurtbox;
-		var rect = collider.shape.getRect().getPoints();
-		wall = new Wall("crackedwall", new List<Point>() {
+		wall = new Wall("crackedwall", [
 			rect[0].addxy(1, 1),
 			rect[1].addxy(-1, 1),
 			rect[2].addxy(-1, -1),
 			rect[3].addxy(1, -1),
-		});
+		]);
 
 		wall.isCracked = true;
 		Global.level.addGameObject(wall);
@@ -292,6 +303,7 @@ public class CrackedWall : Actor, IDamagable {
 				visible = true;
 				health = maxHealth;
 				glassCounter = 0;
+				enableLinkedActors();
 			}
 		}
 		if (respawnAlpha < 100) {
@@ -330,20 +342,24 @@ public class CrackedWall : Actor, IDamagable {
 		Global.level.addToGrid(this);
 
 		Global.level.removeFromGrid(wall);
-		List<Point> rect = collider.shape.getRect().getPoints();
-		wall.collider._shape.points = new List<Point>() {
-			rect[0].addxy(1, 1),
-			rect[1].addxy(-1, 1),
-			rect[2].addxy(-1, -1),
-			rect[3].addxy(1, -1),
-		};
+		if (collider != null) {
+			List<Point> rect = collider.shape.getRect().getPoints();
+			wall.collider._shape.points = [
+				rect[0].addxy(1, 1),
+				rect[1].addxy(-1, 1),
+				rect[2].addxy(-1, -1),
+				rect[3].addxy(1, -1),
+			];
+		}
 		Global.level.addToGrid(wall);
 	}
 
 	// Only if 0 is returned, it can't damage it. Even if null, it still can
-	public static float? canDamageCrackedWall(float damage, CrackedWall? cw) {
-		if (cw?.flag == 3) return null;
-		return damage / 2f;
+	public static float? canDamageCrackedWall(float damage, CrackedWall? cw, Actor? actor, int? projId) {
+		if (cw == null || Damager.isArmorPiercing(projId)) {
+			return null;
+		}
+		return damage * (1 - cw.damageReduction);
 	}
 
 	public void applyDamage(float damage, Player? owner, Actor? actor, int? weaponIndex, int? projId) {
@@ -358,23 +374,29 @@ public class CrackedWall : Actor, IDamagable {
 		if (health <= 0) {
 			health = 0;
 			wallDestroy();
+			disableLinkedActors();
 			RPC.actorToggle.sendRpcDestroyCw(id);
 		}
 	}
 
 	public void resetTimer() {
 		if (isGlass) {
-			respawnTimer = 60 * 4;
-		} else {
-			respawnTimer = 60 * 12;
+			respawnTimer = respawnTime ?? 60 * 10;
+		}
+		else if (respawnTime != null) {
+			respawnTimer = respawnTime.Value;
 		}
 	}
 
 	public void wallDestroy() {
-		disabled = true;
-		visible = false;
-		wall.disabled = true;
-		resetTimer();
+		if (isGlass || respawnTime != null) {
+			disabled = true;
+			visible = false;
+			wall.disabled = true;
+			resetTimer();
+		} else {
+			destroySelf();
+		}
 		onDestroy();
 	}
 
@@ -384,7 +406,7 @@ public class CrackedWall : Actor, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (!isGlass) {
+		if (!isGlass || collider == null) {
 			return;
 		}
 		if (other.gameObject is IDamagable damagable && damagable.isPlayableDamagable() &&
@@ -398,7 +420,7 @@ public class CrackedWall : Actor, IDamagable {
 	public override void onDestroy() {
 		base.onDestroy();
 		if (destroyed) {
-			Global.level.removeGameObject(wall);
+			wall.destroySelf();
 		}
 		if (!string.IsNullOrEmpty(destroyInstanceName)) {
 			if (destroyInstanceName.StartsWith("No Scroll")) {
@@ -413,8 +435,9 @@ public class CrackedWall : Actor, IDamagable {
 			}
 		}
 
-		if (destroySilently) return;
-
+		if (destroySilently) {
+			return;
+		}
 		// Animation section
 		foreach (var poi in sprite.animData.frames[0].POIs) {
 			new Anim(pos.addxy(poi.x, poi.y), "explosion", 1, null, true);
@@ -436,6 +459,56 @@ public class CrackedWall : Actor, IDamagable {
 		}
 	}
 
+	public void disableLinkedActors() {
+		if (string.IsNullOrEmpty(destroyInstanceName)) {
+			return;
+		}
+		string linkTarget = destroyInstanceName.ToLowerInvariant().Trim();
+		if (destroyInstanceName.StartsWith("No Scroll")) {
+			return;
+		}
+		bool isDestroy = !isGlass && respawnTime == null;
+
+		var tartgetFunct = (GameObject go) => go.name.ToLowerInvariant().Trim() == linkTarget;
+		GameObject? toRemove = Global.level.gameObjects.FirstOrDefault(tartgetFunct);
+		toRemove ??= Global.level.mapSprites.FirstOrDefault(tartgetFunct);
+		if (toRemove is Actor rActor) {
+			if (!isDestroy) {
+				rActor.disabled = true;
+				rActor.visible = false;
+			} else {
+				rActor.destroySelf();
+			}
+		}
+		if (toRemove is Geometry rGeomery) {
+			if (!isDestroy) {
+				rGeomery.disabled = true;
+			} else {
+				rGeomery.destroySelf();
+			}
+		}
+	}
+
+	public void enableLinkedActors() {
+		if (string.IsNullOrEmpty(destroyInstanceName)) {
+			return;
+		}
+		string linkTarget = destroyInstanceName.ToLowerInvariant().Trim();
+		if (destroyInstanceName.StartsWith("No Scroll")) {
+			return;
+		}
+		var tartgetFunct = (GameObject go) => go.name.ToLowerInvariant().Trim() == linkTarget;
+		GameObject? toRemove = Global.level.gameObjects.FirstOrDefault(tartgetFunct);
+		toRemove ??= Global.level.mapSprites.FirstOrDefault(tartgetFunct);
+		if (toRemove is Actor rActor) {
+			rActor.disabled = false;
+			rActor.visible = true;
+		}
+		if (toRemove is Geometry rGeomery) {
+			rGeomery.disabled = false;
+		}
+	}
+
 	public override void render(float x, float y) {
 		if (isGlass && glassCounter > 0 && glassCrackOnFrame) {
 			x += Helpers.randomRange(-1, 1);
@@ -444,9 +517,9 @@ public class CrackedWall : Actor, IDamagable {
 		base.render(x, y);
 	}
 
-	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return true; }
-	public bool isInvincible(Player attacker, int? projId) { return false; }
-	public bool canBeHealed(int healerAlliance) { return false; }
+	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) => true;
+	public bool isInvincible(Player attacker, int? projId) => false;
+	public bool canBeHealed(int healerAlliance) => false;
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
 }
 
@@ -587,6 +660,22 @@ public class BackwallZone : Geometry {
 	public BackwallZone(string name, List<Point> points, bool isExclusion) : base(name, points) {
 		collider.isTrigger = true;
 		this.isExclusion = isExclusion;
+	}
+}
+
+public struct GravityZone {
+	public string name;
+	public Rect rect;
+	public float? mul;
+	public float? velX;
+	public float? velY;
+
+	public GravityZone(string name, Rect rect, float? mul, float? velX, float? velY) {
+		this.name = name;
+		this.rect = rect;
+		this.mul = mul;
+		this.velY = velX;
+		this.velX = velY;
 	}
 }
 

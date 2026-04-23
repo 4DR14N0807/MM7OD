@@ -169,6 +169,7 @@ public class ShieldDash : BluesState {
 		normalCtrl = true;
 		accuracy = 10;
 		useGravity = false;
+		attackCtrl = true;
 	}
 
 	public override void update() {
@@ -251,8 +252,8 @@ public class BluesSlide : BluesState {
 		enterSound = "slide";
 		accuracy = 10;
 		exitOnAirborne = true;
-		attackCtrl = true;
 		normalCtrl = true;
+		attackCtrl = true;
 	}
 
 	public override void update() {
@@ -341,14 +342,18 @@ public class BluesSpreadShoot : BluesState {
 		base.update();
 		if (character.frameIndex != shotLastFrame && shotNum < 5) {
 			int angleOffset = 0;
-			int spreadAng = character.grounded ? 6 : 16;
+			int spreadAng = character.grounded ? shotNum == 0 ? 8 : 6 : 16;
 			int shootDir = blues.getShootXDir();
 			int type = blues.overdrive ? 2 : (blues.overheating ? 0 : 1);
 			if (shootDir == -1) {
 				angleOffset = 128;
 			}
+			int finalAngle = (4 - shotNum) * spreadAng;
+			if (blues.yDirMod() == -1) {
+				finalAngle *= -1;
+			}
 			new ProtoBusterAngledProj(
-				blues, blues.getShootPos(), (((4 - shotNum) * spreadAng) + angleOffset) * shootDir, 
+				blues, blues.getShootPos(), (finalAngle + angleOffset) * shootDir, 
 				type, player.getNextActorNetId(), rpc: true
 			);
 			// This way lemons and mid charge shot sounds wont conflict.

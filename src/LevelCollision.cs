@@ -174,11 +174,25 @@ public partial class Level {
 		return hit?.hitData.hitPoint?.addxy(0, -1) ?? pos;
 	}
 
-	public Point? getGroundPosNoKillzone(Point pos, float depth = 60) {
+
+	public Point? getGroundPosNoKillzone(
+		Point pos, float depth = 60,
+		bool incMove = true, bool incPlat = true
+	) {
+		Type[] typeList = incPlat ? [
+			typeof(Wall), typeof(Ladder), typeof(SandZone),
+			typeof(KillZone), typeof(OneWay), typeof(MovingPlatform), typeof(CrackedWall)
+		] : [
+			typeof(Wall), typeof(Ladder), typeof(SandZone),
+			typeof(KillZone), typeof(OneWay), typeof(CrackedWall)
+		];
 		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, depth), [
 			typeof(Wall), typeof(Ladder), typeof(SandZone), typeof(KillZone), typeof(OneWay)
 		]);
 		if (hit?.gameObject is not KillZone) {
+			if (!incMove && hit?.gameObject is Wall wall && wall.moveX != 0) {
+				return null;
+			}
 			return hit?.hitData.hitPoint?.addxy(0, -1);;
 		}
 		return null;

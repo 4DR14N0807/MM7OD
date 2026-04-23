@@ -148,7 +148,7 @@ public class CrushCProj : Projectile {
 		base.onHitDamagable(damagable);
 		if (damagable is Character chr && !chr.isSlowImmune()) {
 			chr.vel = Point.lerp(chr.vel, Point.zero, Global.spf * 10);
-			chr.slowdownTime = 0.25f;
+			//chr.slowdownTime = 0.25f;
 		}
 	}
 

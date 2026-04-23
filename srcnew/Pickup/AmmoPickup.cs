@@ -43,6 +43,12 @@ public class GiantAmmoPickup : BaselineAmmoPickup {
 		altHealAmount = 64;
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new GiantAmmoPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new GiantAmmoPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -60,6 +66,12 @@ public class TankAmmoPickup : BaselineAmmoPickup {
 	) {
 		healAmount = 75;
 		altHealAmount = 16;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new TankAmmoPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -82,6 +94,12 @@ public class LargeAmmoPickup : BaselineAmmoPickup {
 		altHealAmount = 8;
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new LargeAmmoPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new LargeAmmoPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -101,6 +119,12 @@ public class SmallAmmoPickup : BaselineAmmoPickup {
 		altHealAmount = 4;
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new SmallAmmoPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallAmmoPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -118,6 +142,12 @@ public class MiniAmmoPickup : BaselineAmmoPickup {
 	) {
 		healAmount = 12.5f;
 		altHealAmount = 2;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new MiniAmmoPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

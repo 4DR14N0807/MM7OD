@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -9,11 +9,11 @@ public class ActorSpawner {
 	public Point pos;
 	public float respawnTime = 60 * 60;
 	public float time;
-	public Actor currentActor;
+	public Actor? currentActor;
 	public int teamSide;
 	public int xDir;
 
-	public ActorSpawner(string[] types, Point pos, int xDir, int teamSide) {
+	public ActorSpawner(string[] types, Point pos, int xDir, int teamSide, int? respawnTime) {
 		this.types = types;
 		this.pos = pos;
 		this.xDir = xDir;
@@ -21,6 +21,9 @@ public class ActorSpawner {
 
 		if (teamSide < 0) {
 			teamSide = GameMode.stageEnemyAlliance;
+		}
+		if (respawnTime != null) {
+			this.respawnTime = MathF.Ceiling(respawnTime.Value * 60);
 		}
 		time = 2;
 

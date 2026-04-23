@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -136,7 +136,9 @@ public class MetIdle : NeutralEnemyState {
 
 		if (met != null && met.cooldown <= 0) {
 			met.cooldown = met.maxCooldown;
-			Actor? target = Global.level.getClosestTarget(met.pos, met.alliance, false, met.distance);
+			Actor? target = Global.level.getClosestTarget(
+				met.pos.addxy(0, -8), met.alliance, true, met.distance
+			);
 			if (target != null) {
 				met.turnToPos(target.pos);
 				met.shoot();

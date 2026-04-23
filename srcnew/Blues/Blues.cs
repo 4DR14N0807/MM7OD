@@ -275,7 +275,7 @@ public class Blues : Character {
 		return (
 			flag == null &&
 			grounded && vel.y >= 0 &&
-			charState is not BluesSlide &&
+			charState is not BluesSlide and not BluesSpreadShoot &&
 			!overdrive && !isMovementLimited()
 		);
 	}
@@ -824,6 +824,7 @@ public class Blues : Character {
 		if (shootPressed && downHeld && charState is not BluesSpreadShoot) {
 			if (spreadCooldown <= 0) {
 				changeState(new BluesSpreadShoot(), true);
+				spreadCooldown = 30;
 				return true;
 			}
 			return false;
@@ -862,7 +863,10 @@ public class Blues : Character {
 			}
 		}
 		// Cancel non-invincible states.
-		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide) {
+		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide or ShieldDash) {
+			if (charState is ShieldDash) {
+				slideVel = getShieldDashSpeed() * 0.75f * this.xDir;
+			}
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.
@@ -993,7 +997,12 @@ public class Blues : Character {
 			return;
 		}
 		// Cancel non-invincible states.
-		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide or BluesSpreadShoot) {
+		if (!charState.attackCtrl && !charState.invincible ||
+			specialWeapon is not StarCrash && charState is BluesSlide or BluesSpreadShoot or ShieldDash
+		) {
+			if (charState is ShieldDash) {
+				slideVel = getShieldDashSpeed() * 0.75f * this.xDir;
+			}
 			changeToIdleOrFall();
 		}
 		// Shoot anim and vars.

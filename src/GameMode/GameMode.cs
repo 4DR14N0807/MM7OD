@@ -648,24 +648,34 @@ public class GameMode {
 				);
 				Global.sprites["hud_scrap"].drawToHUD(0, basePos.x, basePos.y);
 			}
-			if (drawPlayer.character is CmdSigma cmdSigma) {
-				int xStart = 11;
-				if (cmdSigma.leapSlashCooldown > 0) {
-					float cooldown = 1 - Helpers.progress(
-						cmdSigma.leapSlashCooldown, BaseSigma.maxLeapSlashCooldown
-					);
-					drawGigaWeaponCooldown(102, cooldown);
-				}
-			}
-			if (drawPlayer.weapons == null) {
-				return;
-			}
-			if (drawPlayer.weapons!.Count > 1) {
+			if (drawPlayer.weapons?.Count > 1) {
 				drawWeaponSwitchHUD(drawPlayer);
 			}
 		}
-		if (shouldDrawRadar() && !Menu.inMenu) {
-			drawRadar();
+		if (shouldDrawRadar()) {
+			if (!Menu.inMenu) {
+				drawRadar();
+			} else {
+				float scaledW = 42;
+				float scaledH = 24;
+				float radarX = MathF.Floor(Global.screenW - 10 - scaledW);
+				float radarY = MathF.Floor(10);
+
+				DrawWrappers.DrawRectWH(
+					radarX, radarY,
+					scaledW, scaledH,
+					true, Color.Black, 1,
+					ZIndex.HUD, isWorldPos: false,
+					outlineColor: Color.White
+				);
+				DrawWrappers.DrawRectWH(
+					radarX - 1, radarY - 1,
+					scaledW + 2, scaledH + 2,
+					true, Color.Transparent, 1,
+					ZIndex.HUD, isWorldPos: false,
+					outlineColor: Color.Black
+				);
+			}
 		}
 		navPoints.Clear();
 		if (!Global.level.is1v1()) {
@@ -919,13 +929,18 @@ public class GameMode {
 					continue;
 				}
 				Color blockColor = new Color(128, 128, 255);
-				if (gameObject is not Wall and not KillZone and not Ladder) {
+				if (gameObject is not Wall and not KillZone and not Ladder and not OneWay) {
 					continue;
 				}
-				if (gameObject is KillZone) {
+				bool extend = false;
+				if (gameObject is Wall) {
+					extend = true;
+				}
+				else if (gameObject is KillZone) {
+					extend = true;
 					blockColor = new Color(255, 64, 64);
 				}
-				if (gameObject is Ladder) {
+				else if (gameObject is Ladder) {
 					blockColor = new Color(255, 200, 0);
 				}
 				Shape shape = geometry.collider.shape;
@@ -948,14 +963,16 @@ public class GameMode {
 					pyPos -= 20;
 					myPos += 20;
 				}
-				if (pxPos + mxPos >= scaledMapW) {
-					mxPos = 1000;
-				}
-				if (pyPos + myPos >= scaledMapH) {
-					myPos = 1000;
-				}
-				if (pyPos + myPos >= scaledMapH) {
-					myPos = 1000;
+				if (extend) {
+					if (pxPos + mxPos >= scaledMapW) {
+						mxPos = 1000;
+					}
+					if (pyPos + myPos >= scaledMapH) {
+						myPos = 1000;
+					}
+					if (pyPos + myPos >= scaledMapH) {
+						myPos = 1000;
+					}
 				}
 				pxPos -= offsetX;
 				pyPos -= offsetY;

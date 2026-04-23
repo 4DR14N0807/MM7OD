@@ -26,6 +26,7 @@ public class Bass : Character {
 	public float MaxFlyTime = 240;
 	public bool canRefillFly;
 	public float sonicCrusherCooldown;
+	public float evilEnergyEffectTime;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -162,13 +163,14 @@ public class Bass : Character {
 		if (!isTrebbleBoost && phase >= 3) {
 			return;
 		}
+		evilEnergyEffectTime = 8;
 		evilEnergy += ammo;
 		if (evilEnergy >= maxEvilEnergy && isTrebbleBoost) {
 			float excessEnergy = evilEnergy - maxEvilEnergy;
 			if (phase >= 4) {
 				changeState(new BassEvilOverload());
-				slowdownTime += 60 * 2;
-				heal(player, 4);
+				slowdownTime.addTime(60 * 2);
+				heal(player, 3);
 				playSound("super_bass_aura", sendRpc: true);
 				playSound("hurt", sendRpc: true);
 				int rand = Helpers.randomRange(0, 10);
@@ -177,7 +179,7 @@ public class Bass : Character {
 					2 => "darn...",
 					3 => "this power...",
 					4 => "too much...",
-					5 => "more...",
+					5 => "need more...",
 					_ => "...",
 				};
 				addDamageText(text, (int)FontType.Purple);
@@ -204,7 +206,7 @@ public class Bass : Character {
 		phase = level;
 		player.pendingEvilEnergyStacks = level;
 		// Add HP and heal.
-		int hpToAdd = phase >= 4 ? 4 : 2;
+		int hpToAdd = phase >= 4 ? 3 : 2;
 
 		maxHealth += hpToAdd;
 		heal(player, hpToAdd);
@@ -245,7 +247,8 @@ public class Bass : Character {
 	public override void update() {
 		base.update();
 		Helpers.decrementFrames(ref sonicCrusherCooldown);
-	
+		Helpers.decrementFrames(ref evilEnergyEffectTime);
+
 		//Hypermode Music.
 		if (Global.level.enabledBreakmanMusic()) {
 			if (isSuperBass || isTrebbleBoost) {
@@ -354,11 +357,15 @@ public class Bass : Character {
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
 		float fhpAlpha = (float)(floatCurHP - curHP);
+		decimal shield = netShieldHp >= 0 ? netShieldHp : (shieldManager.totalHealth / modifier);
 		decimal savings = curHP + (damageSavings / modifier);
 
 		for (var i = 0; i < Math.Ceiling(maxHP); i++) {
 			// Draw HP
-			if (i < curHP) {
+			if (i < shield && i < savings) {
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY);
+			}
+			else if (i < curHP) {
 				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
 			}
 			else if (i < savings) {
@@ -371,6 +378,10 @@ public class Bass : Character {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
 				if (i < ceilCurHP) {
 					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
+				}
+				if (i < shield) {
+					float alpha = (float)(shield % 1);
+					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, alpha);
 				}
 			}
 			baseY -= 2;
@@ -396,8 +407,13 @@ public class Bass : Character {
 		Global.sprites["hud_energy_base"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		bool active = false;
 
-		if (charState is EnergyCharge or EnergyIncrease || phase >= 4 || isSuperBass && phase >= 3) {
+		if (evilEnergyEffectTime > 0 ||
+			charState is EnergyCharge or EnergyIncrease ||
+			phase >= 4 || isSuperBass && phase >= 3
+		) {
 			active = true;
+		}
+		if (active && Global.floorFrameCount % 4 < 2) {
 			Global.sprites["hud_energy_eyes"].drawToHUD(displayPhase, energyBarPos.x, energyBarPos.y);
 		}
 		energyBarPos.y -= 16;
@@ -406,6 +422,7 @@ public class Bass : Character {
 			[0, 1, 2],
 			[3, 4, 5],
 			[6, 7, 8],
+			[9, 10, 11],
 			[9, 10, 11]
 		];
 		int subIndex = phase % 3;
@@ -564,9 +581,13 @@ public class Bass : Character {
 				int yDir = player.input.getYDir(player);
 				if (isTrebbleBoost && yDir == 1 && phase < 4) {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
+						int ogPhase = phase;
 						lowerPhase(phase - 1);
 						evilEnergy = Helpers.clamp(evilEnergy - 2, 0, maxEvilEnergy - 2);
 						playSound("super_bass_aura", sendRpc: true);
+						if (ogPhase > 0) {
+							addHealth(1);
+						}
 						changeState(new BassEvilRelease());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}

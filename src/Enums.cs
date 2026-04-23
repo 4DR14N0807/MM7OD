@@ -346,6 +346,7 @@ public enum BassProjIds {
 	MagicCardS,
 	SuperBassLemon,
 	SuperBassShot,
+	SuperBassMShot,
 	ChamoBuster,
 	SuperBassRocketPunch,
 	BassKick,

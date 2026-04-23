@@ -121,8 +121,9 @@ public class IceWallProj : Projectile, IDamagable {
 		if (isUnderwater()) {
 			grounded = false;
 			gravityModifier = -1;
-			if (Math.Abs(vel.y) > Physics.MaxUnderwaterFallSpeed * 0.5f) {
-				vel.y = Physics.MaxUnderwaterFallSpeed * 0.5f * gravityModifier;
+			float terminalVel = Physics.MaxUnderwaterFallSpeed * 0.5f * gravityMod();
+			if (Math.Abs(vel.y) > terminalVel) {
+				vel.y = terminalVel;
 			}
 		} else {
 			gravityModifier = 1;

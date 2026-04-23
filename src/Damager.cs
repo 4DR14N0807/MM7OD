@@ -87,13 +87,12 @@ public class Damager {
 		) {
 			return false;
 		}
+		if (victim is not IDamagable damagable) {
+			return false;
+		}
 		string key = $"{projId}_{owner.id}";
 		if (projId == (int)BassProjIds.RemoteMineMeleeExplosion) {
 			key = $"{(int)BassProjIds.RemoteMineExplosion}_{owner.id}";
-		}
-
-		if (victim is not IDamagable damagable) {
-			return false;
 		}
 		if (multiHitLimit.ContainsKey(projId)) {
 			int hitLimit = multiHitLimit[projId];
@@ -115,12 +114,19 @@ public class Damager {
 		if (!damagable.projectileCooldown.ContainsKey(key)) {
 			damagable.projectileCooldown[key] = 0;
 		}
-		if (damagable.projectileCooldown[key] != 0) {
-			if (projId == (int)BassProjIds.BassLemon) {
-				damage = 0;
-			} else {
+		
+		if (damagable is CrackedWall cwtp && cwtp.flag == 4 &&
+			damagingActor is Actor dactp && dactp.netId != null
+		) {
+			string keyAlt = $"{projId}_{owner.id}_{dactp.netId}";
+			if (cwtp.damageCollisionCooldown.GetValueOrDefault(keyAlt) > 0) {
 				return false;
 			}
+			float cdAlt = hitCooldown <= 0 ? 120 : hitCooldown;
+			cwtp.damageCollisionCooldown[keyAlt] = cdAlt;
+		}
+		else if (damagable.projectileCooldown[key] != 0) {
+			return false;
 		} else {
 			damagable.projectileCooldown[key] = hitCooldown;
 		}
@@ -201,7 +207,7 @@ public class Damager {
 		}
 
 		if (damagable is CrackedWall cw) {
-			float? overrideDamage = CrackedWall.canDamageCrackedWall(damage, cw);
+			float? overrideDamage = CrackedWall.canDamageCrackedWall(damage, cw, damagingActor, projId);
 			if (overrideDamage != null && overrideDamage == 0 && damage > 0) {
 				cw.playSound("ding");
 				return true;
@@ -241,6 +247,7 @@ public class Damager {
 		if (victim is Character character) {
 			// Ride armor stomp
 			bool isStompWeapon = false;
+			bool flinchSound = false;
 			if (isStompWeapon) {
 				character.flattenedTime = 30;
 			}
@@ -271,7 +278,7 @@ public class Damager {
 					break;
 				}
 				case (int)BassProjIds.IceWallLemon: {
-					character.addIgFreezeProgress(0.5f);
+					character.addIgFreezeProgress(0.25f);
 					break;
 				}
 				case (int)ProjIds.TenguBladeDash: {
@@ -283,10 +290,10 @@ public class Damager {
 					break;
 				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:
-					character.wince(Global.defFlinch, 0, projId, owner.id);
+					flinchSound = character.wince(Global.superFlinch, 52, projId, owner.id);
 					break;
 				case (int)BluesProjIds.LemonAngled: {
-					character.wince(Global.defFlinch, 0, projId, owner.id);
+					character.wince(Global.defFlinch, 60, projId, owner.id);
 					break;
 				}
 				case (int)BassProjIds.WaveBurnerUnderwater:
@@ -339,8 +346,11 @@ public class Damager {
 					character.playAltSound("hurt", altParams: "carmor");
 					character.setHurt(hurtDir, flinch, spiked);
 				}
+				else if (flinchSound && !weakness) {
+					character.playAltSound("hurt", altParams: "carmor");
+				}
 				else if (victim is not Blues) {
-					victim?.playSound("hit");
+					character.playAltSound("hit", altParams: "carmor");
 				}
 			}
 			if (owner.ownedByLocalPlayer && damage > 0) {

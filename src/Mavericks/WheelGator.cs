@@ -296,7 +296,7 @@ public class WheelGSpinWheelProj : Projectile {
 		var chr = damagable as Character;
 		if (chr != null && chr.ownedByLocalPlayer && !chr.isSlowImmune()) {
 			chr.vel = Point.lerp(chr.vel, Point.zero, Global.spf * 10);
-			chr.slowdownTime = 0.25f;
+			//chr.slowdownTime = 0.25f;
 		}
 
 		base.onHitDamagable(damagable);

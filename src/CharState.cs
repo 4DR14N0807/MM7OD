@@ -1641,6 +1641,7 @@ public class Die : CharState {
 
 public class BottomlessPitState : CharState {
 	public Point lastGroundPos;
+	public Point lastGroundPosAlt;
 	public bool changedAnim;
 	public bool warpBack;
 	bool shutdown;
@@ -1680,15 +1681,15 @@ public class BottomlessPitState : CharState {
 				character.changeState(new OverheatShutdown(), true); 
 			}
 
-			Point warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 64) ?? lastGroundPos;
-			if (MathF.Abs(warpInPos.x - lastGroundPos.x) > 64) {
-				warpInPos = lastGroundPos;
-			}
-			/*if (warpInPos == null) {
+			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 64);
+			warpInPos ??=  Global.level.getGroundPosNoKillzone(lastGroundPosAlt, 64);
+
+			if (warpInPos == null) {
 				SpawnPoint nearestSpawnPoint = Global.level.getClosestSpawnPoint(lastGroundPos);
 				warpInPos = Global.level.getGroundPos(nearestSpawnPoint.pos);
-			}*/
-			character.changePos(warpInPos);
+			}
+			
+			character.changePos(warpInPos.Value);
 			character.deltaPos = Point.zero;
 		}
 	} 
@@ -1698,6 +1699,7 @@ public class BottomlessPitState : CharState {
 		character.stopMoving();
 		character.canBeGrounded = false;
 		lastGroundPos = character.lastSafeGroundedPos;
+		lastGroundPosAlt = character.lastSafeGroundedPosAlt;
 		shutdown = oldState is OverheatShutdownStart;
 	}
 

@@ -237,7 +237,7 @@ public class BHornetBeeProj : Projectile, IDamagable {
 	public override void onHitDamagable(IDamagable damagable) {
 		base.onHitDamagable(damagable);
 		if (damagable is Character chr && chr.ownedByLocalPlayer && !chr.isSlowImmune()) {
-			chr.slowdownTime = Math.Max(0.05f, chr.slowdownTime);
+			//chr.slowdownTime = Math.Max(0.05f, chr.slowdownTime.);
 		}
 		if (latchTarget == null) {
 			stopMoving();

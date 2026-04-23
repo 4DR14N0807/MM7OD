@@ -35,8 +35,8 @@ public class SBassBuster : Weapon {
 				Global.level.delayedActions.Add(new DelayedAction(
 					() => {
 						new SBassShot(
-							bass, shootPos.addxy(11 * xDir, 0), xDir,
-							player.getNextActorNetId(), true, superBass: true
+							bass, shootPos.addxy(11 * xDir, 0), xDir, 1,
+							player.getNextActorNetId(), true, multiShot: true
 						);
 						character.playSound("buster2", sendRpc: true);
 						shootCooldown = fireRate;
@@ -49,7 +49,9 @@ public class SBassBuster : Weapon {
 			new ChamoBuster(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("buster3", sendRpc: true);
 		} else if (chargeLevel == 1) {
-			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			for (int i = 0; i < 3; i++) {
+				new SBassShot(bass, shootPos, xDir, i, player.getNextActorNetId(), true);
+			}
 			character.playSound("buster2X1", sendRpc: true);
 		} else {
 			new SBassLemon(bass, shootPos, xDir, 0, player.getNextActorNetId(), true);
@@ -93,9 +95,8 @@ public class SBassRP : Weapon {
 				Global.level.delayedActions.Add(new DelayedAction(
 					() => {
 						new SBassShot(
-							bass, shootPos.addxy(11 * xDir, 0), xDir,
-							player.getNextActorNetId(), true,
-							superBass: bass.isSuperBass || bass.isTrebbleBoost
+							bass, shootPos.addxy(11 * xDir, 0), xDir, 1,
+							player.getNextActorNetId(), true, multiShot: true
 						);
 						character.playSound("buster2", sendRpc: true);
 						shootCooldown = fireRate;
@@ -108,7 +109,9 @@ public class SBassRP : Weapon {
 			bass.sbRocketPunch = new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
 			character.playSound("super_adaptor_punch", sendRpc: true);
 		} else if (chargeLevel == 1) {
-			new SBassShot(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			for (int i = 0; i < 3; i++) {
+				new SBassShot(bass, shootPos, xDir, i, player.getNextActorNetId(), true);
+			}
 			character.playSound("buster2X1", sendRpc: true);
 		} else {
 			new SBassLemon(bass, shootPos, xDir, 0, player.getNextActorNetId(), true);
@@ -132,14 +135,14 @@ public class SBassLemon : Projectile {
 		pos, xDir, owner, "sbass_buster_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassLemon;
-		maxTime = 0.3f;
+		maxTime = 20 / 60f;
 
 		byteAngle = (type - 1) * 32;
 		if (xDir < 0) {
 			byteAngle = -byteAngle + 128;
 			xScale *= -1;
 		}
-		vel = Point.createFromByteAngle(byteAngle).times(360);
+		vel = Point.createFromByteAngle(byteAngle).times(5.5f * 60);
 		damager.damage = 1;
 		damager.hitCooldown = 5;
 		fadeSprite = "bass_buster_proj_fade2";
@@ -173,31 +176,42 @@ public class SBassLemon : Projectile {
 
 public class SBassShot : Projectile {
 	public SBassShot(
-		Actor owner, Point pos, int xDir, ushort? netId,
-		bool rpc = false, Player? altPlayer = null, bool superBass = false
+		Actor owner, Point pos, int xDir, int type, ushort? netId,
+		bool sendRpc = false, Player? altPlayer = null, bool multiShot = false
 	) : base(
 		pos, xDir, owner, "sbass_buster2_proj", netId, altPlayer
 	) {
 		projId = (int)BassProjIds.SuperBassShot;
-		maxTime = 0.5f;
+		maxTime = 24 / 60f;
 
-		vel.x = 300 * xDir;
 		damager.damage = 2;
-		if (superBass) {
-			damager.damage = 1;
-			damager.flinch = Global.miniFlinch;
-		}
+		damager.flinch = Global.miniFlinch;
+		damager.hitCooldown = 10;
+
 		fadeSprite = "rock_buster1_fade";
 		fadeOnAutoDestroy = true;
 
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		byteAngle = (type - 1) * 8;
+		if (xDir < 0) {
+			byteAngle = -byteAngle + 128;
+			xScale *= -1;
+		}
+		vel = Point.createFromByteAngle(byteAngle).times(5.5f * 60);
+
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
+		}
+		if (multiShot) {
+			maxTime = 30 / 60f;
+			damager.damage = 1;
+			damager.hitCooldown = 0;
+			projId = (int)BassProjIds.SuperBassMShot;
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SBassShot(
-			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -227,7 +241,7 @@ public class ChamoBuster : Projectile {
 		projId = (int)BassProjIds.ChamoBuster;
 		maxTime = 0.5f;
 
-		vel.x = 360 * xDir;
+		vel.x = (5.5f * 60) * xDir;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
 		fadeSprite = "thunder_bolt_fade2";

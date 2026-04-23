@@ -27,6 +27,7 @@ public partial class Character : Actor, IDamagable {
 	// Health.
 	public decimal health;
 	public decimal maxHealth = 28;
+	public int netShieldHp = -1;
 	public int spawnHealthToAdd;
 	public float spawnHealthAddTime;
 	public bool alive = true;
@@ -198,12 +199,14 @@ public partial class Character : Actor, IDamagable {
 	// Freeze.
 	public float freezeTime;
 	public Dictionary<string, float> freezeCooldown = new();
+	// Chill
+	public Buff chillDebuff = new Buff("hud_debuffs", 0, false, 0, 30, stackTime: 60);
 	// Burn Stun
 	public float burnStunStacks;
 	public float burnStunTime;
 
 	// Wince.
-	public float slowdownTime;
+	public Buff slowdownTime = new Buff("hud_debuffs", 1, false, 0, 60);
 	public Dictionary<string, float> winceCooldown = new();
 
 	// Parasite.
@@ -480,6 +483,9 @@ public partial class Character : Actor, IDamagable {
 		if (igFreezeProgress >= 4) {
 			igFreezeProgress = 4;
 		}
+
+		// Hud stuff.
+		buffList.Add(chillDebuff);
 	}
 	
 	public void addBurnStunStacks(float amount, Player attacker) {
@@ -737,11 +743,12 @@ public partial class Character : Actor, IDamagable {
 			return 1;
 		}
 		float runSpeed = 1;
-		if (slowdownTime > 0) runSpeed *= 0.75f;
-		if (igFreezeProgress >= 3) runSpeed *= 0.25f;
-		else if (igFreezeProgress >= 2) runSpeed *= 0.75f;
-		else if (igFreezeProgress >= 1) runSpeed *= 0.5f;
-
+		if (slowdownTime.time > 0) {
+			runSpeed *= 0.5f;
+		}
+		if (igFreezeProgress > 0) {
+			runSpeed *= MathF.Min(1 - 0.25f * igFreezeProgress, 0.25f);
+		}
 		return runSpeed;
 	}
 
@@ -765,12 +772,17 @@ public partial class Character : Actor, IDamagable {
 	public virtual float getJumpModifier() {
 		float jp = 1;
 
-		if (slowdownTime > 0) jp *= 0.75f;
-		if (igFreezeProgress == 1) jp *= 0.75f;
-		if (igFreezeProgress == 2) jp *= 0.5f;
-		if (igFreezeProgress == 3) jp *= 0.25f;
+		if (slowdownTime.time > 0) {
+			jp *= 0.75f;
+		}
+		jp *= igFreezeProgress switch {
+			>3 => 0.25f,
+			2 => 0.5f,
+			1 => 0.75f,
+			_ => 1,
+		};
 
-		return jp;
+		return jp * gravitySign();
 	}
 
 	public void hook(Projectile strikeChainProj) {
@@ -788,8 +800,9 @@ public partial class Character : Actor, IDamagable {
 			return null;
 		}
 		(float xSize, float ySize) = getTerrainColliderSize();
+
 		return new Collider(
-			new Rect(0f, 0f, xSize, ySize).getPoints(),
+			new Rect(0, 0, xSize, ySize).getPoints(),
 			false, this, false, false,
 			HitboxFlag.Hurtbox, Point.zero
 		);
@@ -811,6 +824,8 @@ public partial class Character : Actor, IDamagable {
 	public virtual (float x, float y) getTerrainColliderSize() {
 		return (18, 30);
 	}
+
+	public override int yDirOffset() => yDirMod() == -1 ? -30 : 0;
 
 	public virtual Collider getDashingCollider() {
 		var rect = new Rect(0, 0, 18, 22);
@@ -848,12 +863,12 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref limboRACheckCooldown);
 		Helpers.decrementTime(ref dropFlagCooldown);
 		Helpers.decrementFrames(ref displayHpTime);
+		debuffCooldowns();
 		if (!ownedByLocalPlayer) {
 			return;
 		}
 		// Local only starts here.
 		shieldManager.update(this);
-		debuffCooldowns();
 		genericPuppetControl();
 		updateAttackCooldowns();
 		Helpers.decrementFrames(ref eTankHealTime);
@@ -928,7 +943,7 @@ public partial class Character : Actor, IDamagable {
 			}
 			rootAnim = null;
 		}
-		if (slowdownTime > 0) {
+		if (slowdownTime.time > 0) {
 			if (slowdownAnim == null || slowdownAnim.destroyed) {
 				slowdownAnim = new Anim(getCenterPos(), "ra_elec", 1, null, true, host: this);
 			}
@@ -954,7 +969,9 @@ public partial class Character : Actor, IDamagable {
 				if (invulnTime <= 0) {
 					invulnTime = 0;
 					maxInvulnTime = -1;
-					chips.onRespawn.Invoke(this);
+					if (ownedByLocalPlayer) {
+						chips.onRespawn.Invoke(this);
+					}
 				}
 			}
 		}
@@ -998,7 +1015,7 @@ public partial class Character : Actor, IDamagable {
 				);
 				new Anim(
 					getCenterPos().addxy(Helpers.randomRange(-6, 6), -20),
-					"dust", 1, player.getNextActorNetId(), true, true
+					"dust", 1, null, true
 				) {
 					vel = new Point(0, -50)
 				};
@@ -1025,7 +1042,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		Helpers.decrementFrames(ref rootTime);
 		Helpers.decrementFrames(ref flattenedTime);
-		Helpers.decrementFrames(ref slowdownTime);
+		slowdownTime.updateCooldown(this);
 		if (igFreezeProgress > 0) {
 			igFreezeRecoveryCooldown -= speedMul;
 			if (igFreezeRecoveryCooldown <= 0) {
@@ -1841,26 +1858,30 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void wince(float time, float cooldown, int projId, int playerId) {
-		if (!ownedByLocalPlayer) {
-			return;
-		}
+	public bool wince(float time, float cooldown, int projId, int playerId) {
 		if (isSlowImmune()) {
-			return;
+			return false;
 		}
 		// Check cooldown.
 		if (cooldown > 0) {
-			if (winceCooldown[$"{projId}_{playerId}"] > 0) {
-				return;
+			if (winceCooldown.GetValueOrDefault($"{projId}_{playerId}") > 0) {
+				return false;
 			}
-			winceCooldown[$"projId_playerId"] = cooldown;
+			winceCooldown[$"{projId}_{playerId}"] = cooldown;
+		}
+		if (!ownedByLocalPlayer) {
+			return false;
 		}
 		// Apply debuff.
-		if (slowdownTime < time) {
-			slowdownTime = time;
+		if (slowdownTime.time < time) {
+			slowdownTime.time = time;
+			slowdownTime.maxTime = time;
 		}
 		// Hud stuff.
-		buffList.Add(new Buff("hud_debuffs", 4, false, time, time));
+		if (!buffList.Contains(slowdownTime)) {
+			buffList.Add(slowdownTime);
+		}
+		return true;
 	}
 
 	public virtual void chargeGfx() {
@@ -1967,7 +1988,7 @@ public partial class Character : Actor, IDamagable {
 		parasiteDamager = null;
 		// Remove slows.
 		igFreezeProgress = 0;
-		slowdownTime = 0;
+		slowdownTime.time = 0;
 		xFlinchPushVel = 0;
 		// Remove stuns & grabs.
 		if (charState is Hurt or GenericStun or VileMK2Grabbed or GenericGrabbedState) {
@@ -2153,7 +2174,7 @@ public partial class Character : Actor, IDamagable {
 		if (busterOffset == null) {
 			return null;
 		}
-		return pos.addxy(busterOffset.Value.x * xDir, busterOffset.Value.y);
+		return getPoiOrigin() + getPoiDir() * new Point(busterOffset.Value.x, busterOffset.Value.y);
 	}
 
 	public void stopCharge() {
@@ -2219,7 +2240,7 @@ public partial class Character : Actor, IDamagable {
 			}
 			changeState(idleState, true);
 		} else {
-			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
+			if (vel.y * gravitySign() < 0 && charState.canStopJump && !charState.stoppedJump) {
 				CharState jumpState = getJumpState();
 				jumpState.enterSound = "";
 				changeState(jumpState, true);
@@ -2234,7 +2255,7 @@ public partial class Character : Actor, IDamagable {
 		if (grounded) {
 			landingCode(useSound);
 		} else {
-			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
+			if (vel.y * gravitySign() < 0 && charState.canStopJump && !charState.stoppedJump) {
 				CharState jumpState = getJumpState();
 				jumpState.enterSound = "";
 				changeState(jumpState, true);
@@ -2249,7 +2270,7 @@ public partial class Character : Actor, IDamagable {
 		if (grounded) {
 			changeState(getCrouchState());
 		} else {
-			if (vel.y * gravityModifier < 0 && charState.canStopJump && !charState.stoppedJump) {
+			if (vel.y * gravityMod() < 0 && charState.canStopJump && !charState.stoppedJump) {
 				CharState jumpState = getJumpState();
 				jumpState.enterSound = "";
 				changeState(jumpState, true);
@@ -2855,17 +2876,13 @@ public partial class Character : Actor, IDamagable {
 		if (isDeathOrReviveSprite()) return false;
 		if (charState is ViralSigmaPossess) return false;
 		if (Global.level.gameMode.setupTime > 0) return false;
-		if (Global.level.isRace()) {
-			bool isAxlSelfDamage = player.isAxl && damagerAlliance == player.alliance;
-			if (!isAxlSelfDamage) return false;
-		}
 
 		// Self damaging projIds can go thru alliance check
 		bool isSelfDamaging = (
 			projId == (int)RockProjIds.RSBomb ||
 			projId == (int)RockProjIds.RSBombExplosion
 		);
-		if (isSelfDamaging && damagerPlayerId == player.id) {
+		if (isSelfDamaging) {
 			return true;
 		}
 
@@ -3240,7 +3257,7 @@ public partial class Character : Actor, IDamagable {
 		if (MathF.Abs(speed.x) > MathF.Abs(xFlinchPushVel)) {
 			xFlinchPushVel = speed.x;
 		}
-		if (speed.y * gravityModifier < 0) {
+		if (speed.y * gravitySign() < 0) {
 			charState.canStopJump = false;
 		}
 	}
@@ -3716,7 +3733,7 @@ public partial class Character : Actor, IDamagable {
 		decimal ceilCurHP = Math.Ceiling(health / modifier);
 		decimal floatCurHP = health / modifier;
 		float fhpAlpha = (float)(floatCurHP - curHP);
-		decimal shield = (shieldManager.totalHealth / modifier);
+		decimal shield = netShieldHp >= 0 ? netShieldHp : (shieldManager.totalHealth / modifier);
 		decimal savings = Math.Max(curHP, shield) + (damageSavings / modifier);
 
 		for (var i = 0; i < Math.Ceiling(maxHP); i++) {
@@ -3781,6 +3798,7 @@ public partial class Character : Actor, IDamagable {
 		float scale = getMiniHudScale();
 		int maxBarAmmo = getMiniWeaponLength();
 		float hp = (float)health / scale;
+		float shp = (netShieldHp >= 0 ? netShieldHp : (float)shieldManager.totalHealth) / scale;
 		float mHp = (float)maxHealth / scale;
 		Color? color = Color.White;
 		if (Global.level.gameMode.isTeamMode &&
@@ -3816,7 +3834,8 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Health.
 		renderMiniHudBorder(offset, color, mHp);
-		offset = renderMiniBar(offset, 1, hp, mHp);
+		renderMiniBar(offset, 1, hp, mHp);
+		offset = renderMiniBar(offset, 2, shp, shp);
 		// Return offset.
 		return new Point(offset.x, offset.y);
 	}
@@ -3937,6 +3956,7 @@ public partial class Character : Actor, IDamagable {
 		// Always on values.
 		byte netHP = (byte)Math.Ceiling(health);
 		byte netMaxHP = (byte)Math.Ceiling(maxHealth);
+		byte targetShieldHp = (byte)Math.Max(0, MathInt.Floor(shieldManager.totalHealth));
 		byte netAlliance = (byte)player.alliance;
 		byte netCurrency = (byte)currency;
 
@@ -3958,12 +3978,13 @@ public partial class Character : Actor, IDamagable {
 
 		customData.Add(netHP);
 		customData.Add(netMaxHP);
+		customData.Add(targetShieldHp);
 		customData.Add(netAlliance);
 		customData.Add(netCurrency);
 		customData.Add(stateFlag);
 		customData.Add(stateFlag2);
 
-		// Bool mask. Pos 7.
+		// Bool mask. Pos 8.
 		// For things not always enabled.
 		// We also edit this later.
 		int boolMaskPos = customData.Count;
@@ -4017,8 +4038,8 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)MathF.Ceiling(rootTime / 2f));
 			boolMaskB[1] = true;
 		}
-		if (slowdownTime > 0) {
-			customData.Add((byte)MathInt.Ceiling(slowdownTime / 2f));
+		if (slowdownTime.time > 0) {
+			customData.Add((byte)MathInt.Ceiling(slowdownTime.time / 2f));
 			boolMaskB[2] = true;
 		}
 
@@ -4043,12 +4064,13 @@ public partial class Character : Actor, IDamagable {
 		// Always on values.
 		health = data[1];
 		maxHealth = data[2];
-		player.alliance = data[3];
-		currency = data[4];
+		netShieldHp = data[3] > 0 ? data[3] : -1;
+		player.alliance = data[4];
+		currency = data[5];
 
 		// Bool variables.
-		bool[] boolData = Helpers.byteToBoolArray(data[5]);
-		bool[] boolData2 = Helpers.byteToBoolArray(data[6]);
+		bool[] boolData = Helpers.byteToBoolArray(data[6]);
+		bool[] boolData2 = Helpers.byteToBoolArray(data[7]);
 
 		alive = boolData[0];
 		charState.pushImmune = boolData[1];
@@ -4063,14 +4085,14 @@ public partial class Character : Actor, IDamagable {
 		isUsingWtank = boolData2[4];
 
 		// Optional statuses.
-		bool[] boolMask = Helpers.byteToBoolArray(data[7]);
-		bool[] boolMaskB = Helpers.byteToBoolArray(data[8]);
+		bool[] boolMask = Helpers.byteToBoolArray(data[8]);
+		bool[] boolMaskB = Helpers.byteToBoolArray(data[9]);
 
 		// For crash reports.
-		//int netCharNum = data[9];
-		
+		//int netCharNum = data[10];
+
 		// Set pointer to last.
-		int pos = 10;
+		int pos = 11;
 		// Status effects.
 		acidTime = 0;
 		if (boolMask[0]) {
@@ -4122,9 +4144,9 @@ public partial class Character : Actor, IDamagable {
 			rootTime = data[pos] * 2;
 			pos++;
 		}
-		slowdownTime = 0;
+		slowdownTime.time = 0;
 		if (boolMaskB[2]) {
-			slowdownTime = data[pos] * 2;
+			slowdownTime.time = data[pos] * 2;
 			pos++;
 		}
 	}
@@ -4152,14 +4174,52 @@ public class Buff {
 	public float time;
 	public string iconName;
 	public int iconIndex;
+	public int stacks;
+	public float? stackTime;
 	public Action<Buff, Character>? update;
 
-	public Buff(string iconName, int iconIndex, bool isBuff, float time, float maxTime) {
+	public Buff(
+		string iconName, int iconIndex, bool isBuff,
+		float time, float maxTime, int stacks = 1, int? stackTime = null
+	) {
 		this.iconName = (iconName ?? "");
 		this.iconIndex = iconIndex;
 		this.time = time;
 		this.maxTime = maxTime;
 		this.isBuff = isBuff;
+		this.stacks = stacks;
+		this.stackTime = stackTime;
+	}
+
+	public void updateCooldown(Actor actor) {
+		if (time < 0 && stacks <= 1) {
+			return;
+		}
+		time -= actor.speedMul;
+		if (time <= 0) {
+			if (stacks > 1) {
+				if (stackTime != null) {
+					maxTime = stackTime.Value;
+				}
+				time = maxTime;
+				stacks--;
+			} else {
+				time = 0;
+				stacks = 1;
+			}
+		}
+	}
+
+	public void setTime(float frames, bool allowLess = false) {
+		if (allowLess || frames > time) {
+			time = frames;
+			maxTime = frames;
+		}
+	}
+	
+	public void addTime(float frames) {
+		time += frames;
+		maxTime = time;
 	}
 }
 

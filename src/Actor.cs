@@ -67,6 +67,7 @@ public partial class Actor : GameObject {
 	public Point vel;
 	public Point lastGroundedPos;
 	public Point lastSafeGroundedPos;
+	public Point lastSafeGroundedPosAlt;
 	public float xPushVel;
 	public float xIceVel;
 	public float xSwingVel;
@@ -79,6 +80,11 @@ public partial class Actor : GameObject {
 	public bool slideOnIce;
 	public bool cachedUndewater;
 	public Point cachedUndewaterPos = new Point(float.MinValue, float.MinValue);
+	public int cachedGzHits;
+	public Point cachedGzPos = new Point(float.MinValue, float.MinValue);
+	public float? cachedGzMul = null;
+	public float? cachedGzVelX = null;
+	public float? cachedGzVelY = null;
 
 	public float xFlinchPushVel = 0;
 
@@ -226,6 +232,7 @@ public partial class Actor : GameObject {
 		this.ownedByLocalPlayer = ownedByLocalPlayer;
 		lastGroundedPos = pos;
 		lastSafeGroundedPos = pos;
+		lastSafeGroundedPosAlt = pos;
 		vel = new Point(0, 0);
 		useGravity = true;
 		frameIndex = 0;
@@ -280,6 +287,56 @@ public partial class Actor : GameObject {
 		return false;
 		//if (Global.level.levelData.waterY == null) return false;
 		//if (Global.level.levelData.name == "forest2" && pos.x > 1415 && pos.x < 1888 && pos.y < 527) return false;
+	}
+
+	public (int hit, float? mul, float? velX, float? velY) getGravityZoneData() {
+		if (cachedGzPos == pos) {
+			return (cachedGzHits, cachedGzMul, cachedGzVelX, cachedGzVelX);
+		}
+		if (physicsCollider == null) {
+			return (0, null, null, null);
+		}
+		Rect colRect = physicsCollider.shape.getRect();
+
+		int hit = 0;
+		float? gzMul = null;
+		float? gzVelX = null;
+		float? gzVelY = null;
+		bool nonZeroX = false;
+		bool nonZeroY = false;
+
+		foreach (GravityZone gravityZone in Global.level.gravityZones) {
+			if (colRect.overlaps(gravityZone.rect)) {
+				hit++;
+				if (gravityZone.mul != null) {
+					gzMul ??= 1;
+					gzMul *= gravityZone.mul;
+				}
+				if (gravityZone.velX != null) {
+					gzVelX ??= 0;
+					if (gravityZone.velY != 0) { nonZeroY = true; }
+					gzVelX += gravityZone.velX;
+				}
+				if (gravityZone.velY != null) {
+					gzVelY ??= 0;
+					if (gravityZone.velY != 0) { nonZeroY = true; }
+					gzVelY += gravityZone.velY;
+				}
+			}
+		}
+		// Edge case were if the merge of zones ends up at 0.
+		// This would mean 2 zones with oposing gravity would get the player stuck.
+		// We want to avoid so we just resort to whatever is cached.
+		// Not needed with mul as is multiplicative.
+		if (nonZeroX && gzVelX == 0) {
+			gzVelX = cachedGzVelX;
+		}
+		if (nonZeroY && gzVelY == 0) {
+			gzVelY = cachedGzVelY;
+		}
+		cachedGzPos = pos;
+		(cachedGzHits, cachedGzMul, cachedGzVelX, cachedGzVelY) = (hit, gzMul, gzVelX, gzVelY);
+		return (hit, gzMul, gzVelX, gzVelY);
 	}
 
 	public bool isWading() {
@@ -604,6 +661,7 @@ public partial class Actor : GameObject {
 	public void addGravity(ref float yVar) {
 		float maxVelY = getFallSpeed();
 		float gravity = getGravity();
+		reversedGravity = gravity < 0;
 
 		if (isUnderwater()) {
 			maxVelY = Physics.MaxUnderwaterFallSpeed;
@@ -699,6 +757,7 @@ public partial class Actor : GameObject {
 	public void localUpdate(bool underwater) {
 		float grav = getGravity();
 		float terminalVelDown = getFallSpeed();
+		reversedGravity = grav < 0;
 
 		if (gravityOverride ?? useGravity && !grounded) {
 			// Water slowing down the fall.
@@ -706,7 +765,7 @@ public partial class Actor : GameObject {
 				grav *= 0.5f;
 			}
 			// Apply gravity only if bellow terminal vel.
-			// This allows some attacks to go beyond it.
+			// Clamp only if applied. This allows some attacks to go beyond it.
 			if (grav > 0 && vel.y < terminalVelDown) {
 				vel.y += grav * Global.speedMul;
 				if (vel.y > terminalVelDown) {
@@ -817,7 +876,9 @@ public partial class Actor : GameObject {
 			}
 		}
 
+		// Fallback to gravity flag.
 		float yMod = reversedGravity ? -1 : 1;
+		// Grounded checks.
 		if (physicsCollider != null && !isStatic && (canBeGrounded || (gravityOverride ?? useGravity))) {
 			float yDist = 1 * Global.gameSpeed;
 			if (grounded && vel.y * yMod >= 0 && prevPos.y >= pos.y && !movedUpOnFrame) {
@@ -894,8 +955,15 @@ public partial class Actor : GameObject {
 		}
 		if (grounded) {
 			lastGroundedPos = pos;
-			if (Global.level.getGroundPosNoKillzone(lastGroundedPos)?.x == lastGroundedPos.x) {
+			if (Global.level.getGroundPosNoKillzone(
+				lastGroundedPos, incMove: false, incPlat: false
+			)?.x == lastGroundedPos.x) {
 				lastSafeGroundedPos = pos;
+			}
+			if (Global.level.getGroundPosNoKillzone(
+				lastGroundedPos, incMove: false
+			)?.x == lastGroundedPos.x) {
+				lastSafeGroundedPosAlt = pos;
 			}
 		}
 		movedUpOnFrame = false;
@@ -968,7 +1036,7 @@ public partial class Actor : GameObject {
 	}
 
 	public float getTopY() {
-		Collider? collider = this.standartCollider;
+		Collider? collider = standartCollider;
 		if (collider == null) {
 			return pos.y;
 		}
@@ -1245,8 +1313,10 @@ public partial class Actor : GameObject {
 		if (!shouldRender(x, y)) {
 			return;
 		}
-
 		//console.log(this.pos.x + "," + this.pos.y);
+		if (yDirMod() == -1 && reversedGravity) {
+			y += yDirOffset();
+		}
 
 		float drawX = MathF.Round(pos.x) + MathF.Round(x);
 		float drawY = MathF.Round(pos.y) + MathF.Round(y);
@@ -1255,7 +1325,7 @@ public partial class Actor : GameObject {
 			renderFromAngle(x, y);
 		} else {
 			sprite.draw(
-				frameIndex, drawX, drawY, xDir, yDir,
+				frameIndex, drawX, drawY, xDir, yDirMod(),
 				getRenderEffectSet(), alpha, xScale, yScale, zIndex,
 				getShaders(), angle: angle, actor: this, useFrameOffsets: true
 			);
@@ -1777,14 +1847,17 @@ public partial class Actor : GameObject {
 		return false;
 	}
 
+	public Point getPoiDir() {
+		return new Point(xDir * xScale, yDirMod() * yScale);
+	}
+
 	public Point getPoiOrigin() {
-		if (!reversedGravity) return pos;
 		if (this is MagnaCentipede ms) return pos.addxy(0, -ms.height);
-		return pos;
+		return pos.addxy(0, yDirOffset());
 	}
 
 	public Point getPOIPos(Point poi) {
-		return getPoiOrigin().addxy(poi.x * xDir * xScale, poi.y * yScale);
+		return getPoiOrigin() + poi * getPoiDir();
 	}
 
 	public Point getFirstPOIOrDefault(int index = 0) {
@@ -1879,7 +1952,6 @@ public partial class Actor : GameObject {
 		/* if (!Global.level.hasMovingPlatforms) {
 			return;
 		} */ //TODO: Add a proper exception for ice wall.
-
 		Point collideDir = overrideCollider ?? new Point(0, 1);
 		List<CollideData> collideDatas =  Global.level.checkTerrainCollision(
 			this, collideDir.x, collideDir.y, checkPlatforms: true, checkQuicksand: true
@@ -1902,8 +1974,8 @@ public partial class Actor : GameObject {
 				continue;
 			}
 			if (collideData.gameObject is Actor actor &&
-				(actor.isSolidWall || actor.isPlatform) &&
-				actor.canBePlatform(this)
+				(actor.isSolidWall || actor.isPlatform && actor.canBePlatform(this)) &&
+				(actor.selectiveSolididyFunc == null || actor.selectiveSolididyFunc(this))
 			) {
 				move(actor.deltaPos, useDeltaTime: false);
 				continue;
@@ -2055,8 +2127,41 @@ public partial class Actor : GameObject {
 	}
 
 	public virtual float getGravity() {
-		return Global.level.gravity * gravityModifier * gHoldModifier;
+		float grav = Global.level.gravity * gravityModifier * gHoldModifier;
+		var gzData = getGravityZoneData();
+
+		// TODO: Add sideways gravity.
+		if (gzData.hit > 0) {
+			if (gzData.velY != null) { grav = gzData.velY.Value; }
+			if (gzData.mul != null) { grav *= gzData.mul.Value; }
+		}
+		return grav;
 	}
+
+	public virtual float gravityMod() {
+		float grav = 1;
+		var gzData = getGravityZoneData();
+
+		// TODO: Add sideways gravity.
+		if (gzData.hit > 0) {
+			if (gzData.velY != null) { grav = MathF.Sign(gzData.velY.Value); }
+			if (gzData.mul != null) { grav *= gzData.mul.Value; }
+		}
+		return grav * gravityModifier * gHoldModifier;
+	}
+
+	public int gravitySign() {
+		int gsign = Math.Sign(gravityMod());
+		return gsign != 0 ? gsign : 1;
+	}
+
+	public int yDirMod() {
+		int tempYDir = yDir;
+		tempYDir *= gravitySign();
+		return tempYDir;
+	}
+
+	public virtual int yDirOffset() => 0;
 
 	public virtual float getFallSpeed(bool checkUnderwater = true) {
 		if (isUnderwater() && checkUnderwater) return Physics.MaxUnderwaterFallSpeed;

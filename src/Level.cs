@@ -56,10 +56,12 @@ public partial class Level {
 	public List<NoScroll> noScrolls = new List<NoScroll>();
 	public List<CameraZone> camZone = new List<CameraZone>();
 	public List<Rect> waterRects = new List<Rect>();
+	public List<GravityZone> gravityZones = new();
 	public List<NavMeshNode> navMeshNodes = new List<NavMeshNode>();
 	public List<ItemSpawner> itemSpawners = new List<ItemSpawner>();
 	public List<Gate> gates = new List<Gate>();
 	public List<ActorSpawner> enemySpawners = new List<ActorSpawner>();
+	public List<PickupSpawner> pickupSpawners = new List<PickupSpawner>();
 
 	public Flag blueFlag;
 	public Flag redFlag;
@@ -516,8 +518,16 @@ public partial class Level {
 				}
 				addGameObject(wall);
 			} else if (objectName == "Water Zone") {
-				var waterRect = new Rect(points[0], points[2]);
+				Rect waterRect = new Rect(points[0], points[2]);
 				waterRects.Add(waterRect);
+			} else if (objectName == "Gravity Zone") {
+				gravityZones.Add(new GravityZone(
+					instanceName,
+					new Rect(points[0], points[2]),
+					(float?)instance.properties?.mul,
+					(float?)instance.properties?.velX,
+					(float?)instance.properties?.velY
+				));
 			} else if (objectName == "Ladder") {
 				Ladder ladder = new Ladder(instanceName, points);
 				addGameObject(ladder);
@@ -720,18 +730,38 @@ public partial class Level {
 				}
 			} else if (objectName == "Enemy Spawner") {
 				// Partse team number. Default to -1 if null.
-				int teamNum = instance.properties?.teamNum ?? -1;
+				int teamNum = instance.properties.teamNum ?? -1;
+				int? respawnTime = (int?)instance.properties.respawnTime;
 				// Make the team be neutral if not on a team match.
 				if (!gameMode.isTeamMode && teamNum >= 0) {
 					teamNum = -1;
 				}
 				// Parse types, default to empty if null.
 				string[] types = [""];
-				if (instance.properties?.type is string[] typeArr) {
+				if (instance.properties.type is string[] typeArr) {
 					types = typeArr;
 				}
 				// Then initalize the spawner.
-				enemySpawners.Add(new ActorSpawner(types, pos, xDir, teamNum));
+				enemySpawners.Add(new ActorSpawner(types, pos, xDir, teamNum, respawnTime));
+			} else if (objectName == "Pickup Spawner") {
+				// Parse ID, we default to that.
+				string id = (string?)instance.properties.id ?? "";
+				id = id.Trim();
+				// Skip if ID is null.
+				// Means it was not set up correctly.
+				if (id == "") { continue; }
+				// Parse types, default to empty if null.
+				string[] types = [id];
+				if (instance.properties.type is string[] typeArr) {
+					types = [id, .. typeArr];
+				}
+				for (int i = 0; i < types.Length; i++) {
+					types[i] = types[i].Trim().ToLowerInvariant();
+				}
+				// Load other stuff.
+				int? respawnTime = (int?)instance.properties.respawnTime;
+				// Then initalize the spawner.
+				pickupSpawners.Add(new PickupSpawner(types, pos, xDir, respawnTime));
 			}
 			// One way platforms.
 			else if (objectName == "One Way") {
@@ -778,8 +808,10 @@ public partial class Level {
 				var spriteHeight = Global.sprites[spriteName].frames[0].rect.h();
 
 				if (!enabledInLargeCam && server.fixedCamera) {
-				// Do not add the map sprite
-				} else if (rawParallaxIndex != null) {
+					// Do not add the map sprite if disabled in large cam.
+				}
+				// Add as parallax.
+				else if (rawParallaxIndex != null) {
 					if (Options.main.enableMapSprites) {
 						int parallaxIndex = rawParallaxIndex.Value - 1;
 						if (parallaxSprites.InRange(parallaxIndex)) {
@@ -796,7 +828,9 @@ public partial class Level {
 							}
 						}
 					}
-				} else if (destructableFlag > 0) {
+				}
+				// Add as solid wall.
+				else if (destructableFlag > 0) {
 					for (int i = 0; i < repeatY; i++) {
 						for (int j = 0; j < repeatX; j++) {
 							Point mapSpritePos = new Point
@@ -808,11 +842,23 @@ public partial class Level {
 								mapSpritePos, spriteName, gibSpriteName,
 								xDir, yDir, destructableFlag, health, destroyInstanceName, true
 							);
+							crackedWall.name = instanceName;
 							crackedWall.isGlass = instance.properties.isGlass ?? false;
+							crackedWall.respawnTime = instance.properties.respawnTime ?? null;
+							if (crackedWall.respawnTime != null) {
+								crackedWall.respawnTime *= 60;
+							}
 							crackedWall.setzIndex(zIndex);
+
+							float damageReduction =  instance.properties.damageReduction ?? 0;
+							damageReduction = damageReduction / 100f;
+							damageReduction = Helpers.clamp(damageReduction, 0, 1);
+							crackedWall.damageReduction = damageReduction;
 						}
 					}
-				} else if (Options.main.enableMapSprites) {
+				}
+				// Add as sprite.
+				else if (Options.main.enableMapSprites) {
 					for (int i = 0; i < repeatY; i++) {
 						for (int j = 0; j < repeatX; j++) {
 							Point mapSpritePos = new Point
@@ -823,6 +869,7 @@ public partial class Level {
 							var anim = new Actor(spriteName, mapSpritePos, null, true, true);
 							anim.xDir = xDir;
 							anim.yDir = yDir;
+							anim.name = instanceName;
 							anim.setzIndex(zIndex);
 							if (spriteName == "ms_dam_propeller" && !enableGiantDamPropellers()) {
 								anim.frameSpeed = 0;
@@ -1875,10 +1922,12 @@ public partial class Level {
 			player.update();
 		}
 
-		foreach (var pickupSpawner in itemSpawners) {
+		foreach (ItemSpawner itemSpawner in itemSpawners) {
+			itemSpawner.update();
+		}
+		foreach (PickupSpawner pickupSpawner in pickupSpawners) {
 			pickupSpawner.update();
 		}
-
 		foreach (ActorSpawner enemySpawner in enemySpawners) {
 			enemySpawner.update();
 		}
@@ -2598,13 +2647,21 @@ public partial class Level {
 				if (camX + deltaX < lCamX && deltaX <= 0 ||
 					camX + deltaX > rCamX && deltaX >= 0
 				) {
-					deltaX = 0;
+					if (deltaX != 0 && camX > lCamX && camX < rCamX) {
+						deltaX = MathF.Sign(deltaX);
+					} else {
+						deltaX = 0;
+					}
 					ajustX = true;
 				}
 				if (camY + deltaY < uCamY && deltaY <= 0 ||
 					camY + deltaY > dCamY && deltaY >= 0
 				) {
-					deltaY = 0;
+					if (deltaY != 0 && camY > uCamY && camY < dCamY) {
+						deltaY = MathF.Sign(deltaY);
+					} else {
+						deltaY = 0;
+					}
 					ajustY = true;
 				}
 

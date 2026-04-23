@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MMXOnline;
@@ -67,7 +67,7 @@ public class BassMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteName, 20, "Dark Comet", Control.Up + " + " + Control.Special1,
-				"Needs Lv3\nMid-air."
+				"Needs Lv2\nMid-air."
 			),
 			new MovelistItem(
 				spriteName, 14, "Airdash", Control.Dash,
@@ -84,7 +84,7 @@ public class BassMovelistMenu : MovelistMenu {
 			new MovelistItem(
 				spriteName, 21, "Evil Release",
 				$"{Control.Special2} + {Control.Down}", "Under Lv5\nOn Ground",
-				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV."
+				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV.\nDamage Immune."
 			),
 			new MovelistItem(
 				spriteName, 23, "Evil Unison", "Auto: on max Evil", "Under Lv5",
@@ -92,7 +92,7 @@ public class BassMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteName, 24, "Evil Overload", "Auto: on max Evil", "At Lv5",
-				"Heals 2 HP.\nStuns the user.", true
+				"Heals 3 HP.\nStuns the user.", true
 			),
 		]);	
 	}

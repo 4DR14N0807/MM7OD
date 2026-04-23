@@ -110,7 +110,11 @@ public class StarCrashProj : Projectile {
 
 		// Sync poses with protoman.
 		if (blues != null) {
-			changePos(blues.pos.addxy(2 * xDir, -20));
+			if (blues.getYMod() != -1) {
+				changePos(blues.pos.addxy(2 * xDir, -20));
+			} else {
+				changePos(blues.pos.addxy(2 * xDir, -10));
+			}
 			xDir = blues.xDir;
 		}
 		// Destroy if not linked with Protoman anymore.

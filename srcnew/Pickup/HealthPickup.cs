@@ -33,6 +33,12 @@ public class GiantHealthPickup : BaselineHealthPickup {
 		healAmount = 64;
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new GiantHealthPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new GiantHealthPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -67,6 +73,12 @@ public class TankHealthPickup : BaselineHealthPickup {
 		}
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new TankHealthPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new TankHealthPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -84,6 +96,12 @@ public class LargeHealthPickup : BaselineHealthPickup {
 	) {
 		healAmount = 8;
 		syncOnLateJoin = true;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new LargeHealthPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -104,6 +122,12 @@ public class SmallHealthPickup : BaselineHealthPickup {
 		healAmount = 4;
 	}
 
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new SmallHealthPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
+	}
+
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallHealthPickup(
 			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
@@ -120,6 +144,12 @@ public class MiniHealthPickup : BaselineHealthPickup {
 		CActorIds.MiniHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
 		healAmount = 2;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new MiniHealthPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

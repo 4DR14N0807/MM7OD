@@ -9,7 +9,7 @@ public abstract class BaselineShieldPickup : Pickup {
 		owner, pos, sprite, netId, ownedByLocalPlayer,
 		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
 	) {
-		healAmount = 10;
+		healAmount = 8;
 		syncOnLateJoin = true;
 	}
 
@@ -18,7 +18,7 @@ public abstract class BaselineShieldPickup : Pickup {
 			return;
 		}
 		chr.playSound("subtank_fill");
-		int time = 60 * 6;
+		int time = 60 * 15;
 		chr.buffList.Add(new Buff("hud_shields", 0, true, time, time) { update = buffUpdate });
 		chr.shieldManager.addShield(healAmount, time, ShieldIds.Pickup);
 		base.use(chr);
@@ -41,7 +41,13 @@ public class TankShieldPickup : BaselineShieldPickup {
 		owner, pos, "pickup_atank", netId, ownedByLocalPlayer, 
 		CActorIds.TankShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
-		healAmount = 10;
+		healAmount = 8;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new TankShieldPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -59,7 +65,13 @@ public class LargeShieldPickup : BaselineShieldPickup {
 		owner, pos, "pickup_shield_large", netId, ownedByLocalPlayer, 
 		CActorIds.LargeShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
-		healAmount = 8;
+		healAmount = 6;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new LargeShieldPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -77,7 +89,13 @@ public class SmallShieldPickup : BaselineShieldPickup {
 		owner, pos, "pickup_shield_small", netId, ownedByLocalPlayer, 
 		CActorIds.SmallShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
-		healAmount = 6;
+		healAmount = 4;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new SmallShieldPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
@@ -95,7 +113,13 @@ public class MiniShieldPickup : BaselineShieldPickup {
 		owner, pos, "pickup_shield_mini", netId, ownedByLocalPlayer, 
 		CActorIds.MiniShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
 	) {
-		healAmount = 4;
+		healAmount = 2;
+	}
+
+	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
+		return new MiniShieldPickup(
+			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {

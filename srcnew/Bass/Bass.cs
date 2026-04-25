@@ -1164,6 +1164,9 @@ public class Bass : Character {
 			isSuperBass,
 			armless,
 			isTrebbleBoost,
+			evilAuraActive,
+			onSpecialAttack,
+			superBassMusicTime > 0
 		];
 		customData.Add(Helpers.boolArrayToByte(flags));
 
@@ -1188,6 +1191,9 @@ public class Bass : Character {
 		isSuperBass = flags[0];
 		armless = flags[1];
 		isTrebbleBoost = flags[2];
+		evilAuraActive = flags[3];
+		onSpecialAttack = flags[4];
+		superBassMusicTime = flags[5] ? 30 : 0;
 	}
 }
 

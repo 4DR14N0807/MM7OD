@@ -692,7 +692,6 @@ public class Bass : Character {
 						evilAuraActive = false;
 						playSound("super_bass_aura", sendRpc: true);
 						changeState(new BassEvilOverload());
-						wince(60 * 2, 0, 0, player.id);
 						return true;
 					} else if (evilEnergy >= 2) {
 						evilAuraActive = true;

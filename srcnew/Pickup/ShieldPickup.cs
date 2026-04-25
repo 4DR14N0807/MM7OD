@@ -1,4 +1,6 @@
-﻿namespace MMXOnline;
+﻿using System.Linq;
+
+namespace MMXOnline;
 
 public abstract class BaselineShieldPickup : Pickup {
 	public BaselineShieldPickup(
@@ -19,7 +21,10 @@ public abstract class BaselineShieldPickup : Pickup {
 		}
 		chr.playSound("subtank_fill");
 		int time = 60 * 15;
-		chr.buffList.Add(new Buff("hud_shields", 0, true, time, time) { update = buffUpdate });
+		Buff? shieldTarget = chr.buffList.FirstOrDefault(b => b.update == buffUpdate);
+		if (shieldTarget == null) {
+			chr.buffList.Add(new Buff("hud_shields", 0, true, time, time) { update = buffUpdate });
+		}
 		chr.shieldManager.addShield(healAmount, time, ShieldIds.Pickup);
 		base.use(chr);
 	}

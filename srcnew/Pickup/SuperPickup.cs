@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Linq;
 
 namespace MMXOnline;
 
@@ -25,10 +26,13 @@ public abstract class BaselineSuperPickup : Pickup {
 		if (chr.canBeShielded()) {
 			float shield = Math.Max(healAmount - 2, 2);
 			chr.playSound("subtank_fill");
-			int time = 60 * 6;
-			chr.buffList.Add(new Buff("hud_shields", 0, true, time, time) {
-				update = BaselineShieldPickup.buffUpdate
-			});
+			int time = 60 * 15;
+			Buff? shieldTarget = chr.buffList.FirstOrDefault(b => b.update == BaselineShieldPickup.buffUpdate);
+			if (shieldTarget == null) {
+				chr.buffList.Add(new Buff("hud_shields", 0, true, time, time) {
+					update = BaselineShieldPickup.buffUpdate
+				});
+			}
 			chr.shieldManager.addShield(shield, time, ShieldIds.Pickup);
 			used = true;
 		}

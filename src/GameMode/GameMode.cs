@@ -1887,8 +1887,10 @@ public class GameMode {
 		DrawWrappers.DrawRectWH(x - 7, y - 7, 14, 14, false, new Color(0, 224, 0), 1, ZIndex.HUD, false);
 	}
 
-	public static void drawWeaponSlotAmmo(float x, float y, float val) {
-		DrawWrappers.DrawRectWH(x - 8, y - 8, 16, 16 - MathF.Floor(16 * val), true, new Color(0, 0, 0, 128), 1, ZIndex.HUD, false);
+	public static void drawWeaponSlotAmmo(float x, float y, float val, byte trans = 128) {
+		DrawWrappers.DrawRectWH(
+			x - 8, y - 8, 16, 16 - MathF.Floor(16 * val), true, new Color(0, 0, 0, trans), 1, ZIndex.HUD, false
+		);
 	}
 
 	public static void drawWeaponSlotCooldownBar(float x, float y, float val, bool isAlt = false) {
@@ -1901,7 +1903,7 @@ public class GameMode {
 		DrawWrappers.DrawLine(x - 8, y + yPos, x - 8 + (val * 16), y + yPos, Color.Yellow, 1, ZIndex.HUD, false);
 	}
 
-	public static void drawWeaponSlotCooldown(float x, float y, float val) {
+	public static void drawWeaponSlotCooldown(float x, float y, float val, byte trans = 128) {
 		if (val <= 0) return;
 		val = Helpers.clamp01(val);
 
@@ -1948,12 +1950,12 @@ public class GameMode {
 		}
 
 		for (int i = 0; i < (int)(val * slices.Count); i++) {
-			DrawWrappers.DrawPolygon(slices[i], new Color(0, 0, 0, 164), true, ZIndex.HUD, false);
+			DrawWrappers.DrawPolygon(slices[i], new Color(0, 0, 0, trans), true, ZIndex.HUD, false);
 		}
 	}
 
 
-	public static void drawWeaponSlotCooldownR(float x, float y, float val) {
+	public static void drawWeaponSlotCooldownR(float x, float y, float val, byte trans = 128) {
 		val = Helpers.clamp01(val);
 		val = 1 - val;
 
@@ -1998,7 +2000,7 @@ public class GameMode {
 		}
 
 		for (int i = 0; i < (int)(val * slices.Count); i++) {
-			DrawWrappers.DrawPolygon(slices[i], new Color(0, 0, 0, 164), true, ZIndex.HUD, false);
+			DrawWrappers.DrawPolygon(slices[i], new Color(0, 0, 0, trans), true, ZIndex.HUD, false);
 		}
 	}
 

@@ -1468,17 +1468,25 @@ public partial class Actor : GameObject {
 		frameSpeed = 1;
 	}
 
-	public void addRenderEffect(
+	public RenderEffect addRenderEffect(
 		RenderEffectType type, float flashTime = 0,
 		float time = float.MaxValue, float cycleTime = -1
 	) {
-		if (renderEffects.ContainsKey(type)) return;
-		renderEffects[type] = new RenderEffect(type, flashTime, time, cycleTime);
+		if (renderEffects.TryGetValue(type, out RenderEffect? value)) {
+			return value;
+		}
+		RenderEffect effect = new RenderEffect(type, flashTime, time, cycleTime);
+		renderEffects[type] = effect;
+		return effect;
 	}
 
-	public void addRenderEffect(RenderEffectType type) {
-		if (renderEffects.ContainsKey(type)) return;
-		renderEffects[type] = new RenderEffect(type, 0, float.MaxValue);
+	public RenderEffect addRenderEffect(RenderEffectType type) {
+		if (renderEffects.TryGetValue(type, out RenderEffect? value)) {
+			return value;
+		}
+		RenderEffect effect = new RenderEffect(type, 0, float.MaxValue);
+		renderEffects[type] = effect;
+		return effect;
 	}
 
 

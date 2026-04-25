@@ -956,18 +956,38 @@ public class BassEvilRelease : CharState {
 	}
 }
 
-public class BassEvilOverload : CharState {
-	public BassEvilOverload() : base("overload") {
+public class BassEvilOverload : BassState {
+	public float time;
+
+	public BassEvilOverload(float time = 60) : base("overload") {
+		stunImmune = true;
+		superArmor = true;
+		this.time = time;
+	}
+
+	public override void update() {
+		base.update();
+
+		if (stateFrames >= time) {
+			character.changeToIdleOrFall("land", "land_shoot");
+		}
+	}
+}
+
+
+public class BassEvilOverflow : BassState {
+	public BassEvilOverflow() : base("enter") {
+		useGravity = false;
+		invincible = true;
 		stunImmune = true;
 		superArmor = true;
 	}
 
 	public override void update() {
-		character.deltaPos = Point.zero;
 		base.update();
 
-		if (stateFrames >= 60) {
-			character.changeToIdleOrFall("land", "land_shoot");
+		if (stateFrames >= 30) {
+			character.changeToIdleOrFall();
 		}
 	}
 }

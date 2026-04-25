@@ -27,6 +27,11 @@ public class Bass : Character {
 	public bool canRefillFly;
 	public float sonicCrusherCooldown;
 	public float evilEnergyEffectTime;
+	public Sprite? evilAura;
+	public bool evilAuraActive;
+	public bool onSpecialAttack;
+	public float superBassMusicTime;
+	public float superBassMusicStacks;
 
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
@@ -169,7 +174,7 @@ public class Bass : Character {
 			float excessEnergy = evilEnergy - maxEvilEnergy;
 			if (phase >= 4) {
 				changeState(new BassEvilOverload());
-				slowdownTime.addTime(60 * 2);
+				wince(60 * 2, 0, 0, player.id);
 				heal(player, 3);
 				playSound("super_bass_aura", sendRpc: true);
 				playSound("hurt", sendRpc: true);
@@ -221,6 +226,7 @@ public class Bass : Character {
 				addDamageText("POWER\n  OVERLOAD!", (int)FontType.PurpleMenu);
 			}
 		}
+		setSuperMusicTime(60 * 10);
 	}
 
 	public void lowerPhase(int level) {
@@ -242,18 +248,59 @@ public class Bass : Character {
 		health = Math.Min(health, maxHealth);
 		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);
 		addDamageText("POWER\n  DOWN!", (int)FontType.PurpleMenu);
+		setSuperMusicTime(60 * 10);
+	}
+
+	public void setSuperMusicTime(float time) {
+		superBassMusicTime = Math.Max(superBassMusicTime, time);
+	}
+
+	public override void preUpdate() {
+		base.preUpdate();
+
+		if (evilAuraActive) {
+			evilAura ??= new Sprite("sbass_dmgaura");
+			evilAura.update();
+		} else if (evilAura != null) {
+			evilAura = null;
+		}
+
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+
+		onSpecialAttack = charState is SweepingLaserState or DarkCometState;
+
+		Helpers.decrementFrames(ref sonicCrusherCooldown);
+		Helpers.decrementFrames(ref evilEnergyEffectTime);
+		Helpers.decrementFrames(ref superBassMusicTime);
+		if (evilAuraActive && charState is not BassEvilOverflow) {
+			removeEvilness(speedMul / 20);
+			if (evilEnergy <= 0) {
+				evilAuraActive = false;
+				if (charState.normalCtrl || charState.attackCtrl || charState is Hurt or GenericStun) {
+					playSound("super_bass_aura", sendRpc: true);
+					changeState(new BassEvilOverload());
+					wince(60 * 2, 0, 0, player.id);
+				}
+			}
+		}
 	}
 
 	public override void update() {
 		base.update();
-		Helpers.decrementFrames(ref sonicCrusherCooldown);
-		Helpers.decrementFrames(ref evilEnergyEffectTime);
 
 		//Hypermode Music.
 		if (Global.level.enabledBreakmanMusic()) {
 			if (isSuperBass || isTrebbleBoost) {
 				if (musicSource == null) {
 					addMusicSource("basstheme", getCenterPos(), true);
+				} else {
+					if (phase >= 4 || superBassMusicTime > 0) {
+						if (!musicSource.isPlaying()) { musicSource.play(); }
+					} else if (musicSource.isPlaying()) {
+						musicSource.pause();
+					}
 				}
 			} else {
 				destroyMusicSource();
@@ -302,29 +349,44 @@ public class Bass : Character {
 		if (isCharging()) {
 			chargeSound.play();
 			int level = getChargeLevel();
-			RenderEffectType renderGfx = RenderEffectType.ChargeBlue;
-			renderGfx = level switch {
+			RenderEffectType renderGfx = level switch {
 				1 => RenderEffectType.ChargeBlue,
 				2 => RenderEffectType.ChargeGreenBass2,
 				3 => RenderEffectType.ChargePurpleBass,
 				_ => RenderEffectType.None,
 			};
-			addRenderEffect(renderGfx, 3, 5);
+			chargeRE = addRenderEffect(renderGfx, 3, 5);
 			chargeEffect.character = this;
 			chargeEffect.update(level, 0);
+		} else {
+			chargeRE = null;
 		}
 	}
 
 	public override void onEnemyDamage(float amount) {
+		base.onEnemyDamage(amount);
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (isSuperBass || isTrebbleBoost) {
-			addEvilness(amount / 4f);
+			addEvilness(amount / 2f);
+		}
+		if (superBassMusicTime > 0) {
+			setSuperMusicTime(60 * 4);
+			superBassMusicStacks = 0;
+		} else {
+			superBassMusicStacks += amount;
+			if (superBassMusicStacks >= 6) {
+				superBassMusicStacks = 0;
+				setSuperMusicTime(60 * 8);
+			}
 		}
 	}
 
 	public override void onKill(bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
-		if (isSuperBass || isTrebbleBoost) {
-			addEvilness(!isAssist ? 4 : 2);
-		}
+		// Not needed as Bass gain extra DMG EXP on kills anyway.
+		// if (isSuperBass || isTrebbleBoost) { addEvilness(2); }
+		setSuperMusicTime(60 * 15);
 		base.onKill(isAssist, enemy, damager, enemyChar);
 	}
 
@@ -550,6 +612,7 @@ public class Bass : Character {
 
 	public enum MeleeIds {
 		None = -1,
+		SuperAura,
 		TenguBlade,
 		TenguBladeDash,
 		Kick,
@@ -561,6 +624,31 @@ public class Bass : Character {
 		DarkComet,
 		SweepingLaser,
 		LowerEvilness,
+	}
+
+	public override Dictionary<int, Func<Projectile>> getGlobalProjs() {
+		if (evilAuraActive && globalCollider != null) {
+			Dictionary<int, Func<Projectile>> retProjs = new() {
+				[(int)ProjIds.AwakenedAura] = () => {
+					Projectile proj = new GenericMeleeProj(
+						BassBuster.netWeapon, pos,
+						ProjIds.AwakenedAura, player,
+						1, 0, 30, addToLevel: true
+					) {
+						globalCollider = new Collider(
+							new Rect(0f, 0f, 52, 58).getPoints(),
+							false, this, false, false,
+							HitboxFlag.Hitbox, Point.zero
+						),
+						meleeId = (int)MeleeIds.SuperAura,
+						ownerActor = this
+					};
+					return proj;
+				}
+			};
+			return retProjs;
+		}
+		return base.getGlobalProjs();
 	}
 
 	public bool canUseTBladeDash() {
@@ -598,6 +686,19 @@ public class Bass : Character {
 						evilEnergy = maxEvilEnergy;
 					} else {
 						evilEnergy = 0;
+					}
+				} else if (phase >= 4) {
+					if (evilAuraActive) {
+						evilAuraActive = false;
+						playSound("super_bass_aura", sendRpc: true);
+						changeState(new BassEvilOverload());
+						wince(60 * 2, 0, 0, player.id);
+						return true;
+					} else if (evilEnergy >= 2) {
+						evilAuraActive = true;
+						playSound("super_bass_aura", sendRpc: true);
+						changeState(new BassEvilOverflow());
+						return true;
 					}
 				} else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
 					changeState(new EnergyCharge(), true);
@@ -1006,6 +1107,14 @@ public class Bass : Character {
 		}
 	}
 
+	public override void render(float x, float y) {
+		base.render(x, y);
+		if (evilAura != null) {
+			float aalpha = Global.floorFrameCount % 4 < 2 ? 1 : 0.2f;
+			evilAura.drawSimple(pos.addxy(x, y + 2), xDir, zIndex - 1, aalpha, this, getShaders());
+		}
+	}
+
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = new();
 		List<ShaderWrapper> baseShaders = base.getShaders();
@@ -1025,6 +1134,14 @@ public class Bass : Character {
 			palette2?.SetUniform("palette", phase + 1);
 			palette2?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 			if (palette2 != null) shaders.Add(palette2);
+		}
+		if (player.superBassBodyShader != null && (
+			(onSpecialAttack || evilAuraActive) && Global.floorFrameCount % 4 >= 2 ||
+			getChargeLevel() > 0 && chargeRE?.isFlashing() != false
+		)) {
+			ShaderWrapper palette3 = player.superBassBodyShader;
+			palette3.SetUniform("palette", phase + 1);
+			shaders.Add(palette3);
 		}
 		shaders.AddRange(baseShaders);
 

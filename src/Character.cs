@@ -76,6 +76,7 @@ public partial class Character : Actor, IDamagable {
 	public float hyperProgress;
 
 	public ChargeEffect chargeEffect;
+	public RenderEffect? chargeRE;
 	public const float DefaultShootAnimTime = 18;
 	public float shootAnimTime = 0;
 	public AI? ai;
@@ -117,8 +118,6 @@ public partial class Character : Actor, IDamagable {
 
 	public const float maxLastAttackerTime = 5;
 
-	public float igFreezeProgress;
-	public float igFreezeRecoveryCooldown;
 	public float crystalizeInvulnTime;
 	public float dwrapInvulnTime;
 	public float grabInvulnTime;
@@ -200,13 +199,13 @@ public partial class Character : Actor, IDamagable {
 	public float freezeTime;
 	public Dictionary<string, float> freezeCooldown = new();
 	// Chill
-	public Buff chillDebuff = new Buff("hud_debuffs", 0, false, 0, 30, stackTime: 60);
+	public Buff chillDebuff = new Buff("hud_debuffs", 0, false, 0, 60, stackData: (60, 0, 3), isStatic: true);
 	// Burn Stun
 	public float burnStunStacks;
 	public float burnStunTime;
 
 	// Wince.
-	public Buff slowdownTime = new Buff("hud_debuffs", 1, false, 0, 60);
+	public Buff slowdownTime = new Buff("hud_debuffs", 1, false, 0, 60, isStatic: true);
 	public Dictionary<string, float> winceCooldown = new();
 
 	// Parasite.
@@ -474,18 +473,16 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void addIgFreezeProgress(float amount, int freezeTime = 120) {
+	public void addIgFreezeProgress(float amount) {
 		if (isSlowImmune()) {
 			return;
 		}
-		igFreezeProgress += amount;
-		igFreezeRecoveryCooldown = 30;
-		if (igFreezeProgress >= 4) {
-			igFreezeProgress = 4;
-		}
+		chillDebuff.addTime(amount);
 
 		// Hud stuff.
-		buffList.Add(chillDebuff);
+		if (!buffList.Contains(chillDebuff)) {
+			buffList.Add(chillDebuff);
+		}
 	}
 	
 	public void addBurnStunStacks(float amount, Player attacker) {
@@ -512,8 +509,8 @@ public partial class Character : Actor, IDamagable {
 			player.oilShader.SetUniform("oilFactor", 0.25f + (oilTime / 8f) * 0.75f);
 			shaders.Add(player.oilShader);
 		}
-		if (igFreezeProgress > 0 && !sprite.name.Contains("frozen") && player.igShader != null) {
-			player.igShader.SetUniform("igFreezeProgress", igFreezeProgress / 8);
+		if (chillDebuff.stacks > 0 && !sprite.name.Contains("frozen") && player.igShader != null) {
+			player.igShader.SetUniform("igFreezeProgress", chillDebuff.stacks / 8f);
 			shaders.Add(player.igShader);
 		}
 		if (virusTime > 0 && player.infectedShader != null) {
@@ -746,8 +743,8 @@ public partial class Character : Actor, IDamagable {
 		if (slowdownTime.time > 0) {
 			runSpeed *= 0.5f;
 		}
-		if (igFreezeProgress > 0) {
-			runSpeed *= MathF.Min(1 - 0.25f * igFreezeProgress, 0.25f);
+		if (chillDebuff.stacks > 0) {
+			runSpeed *= MathF.Min(1 - 0.25f * chillDebuff.stacks, 0.25f);
 		}
 		return runSpeed;
 	}
@@ -775,7 +772,7 @@ public partial class Character : Actor, IDamagable {
 		if (slowdownTime.time > 0) {
 			jp *= 0.75f;
 		}
-		jp *= igFreezeProgress switch {
+		jp *= chillDebuff.stacks switch {
 			>3 => 0.25f,
 			2 => 0.5f,
 			1 => 0.75f,
@@ -855,6 +852,7 @@ public partial class Character : Actor, IDamagable {
 	public override void preUpdate() {
 		base.preUpdate();
 		updateProjectileCooldown();
+		attackEffectCooldowns();
 		insideCharacter = false;
 		changedStateInFrame = false;
 		pushedByTornadoInFrame = false;
@@ -863,7 +861,6 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref limboRACheckCooldown);
 		Helpers.decrementTime(ref dropFlagCooldown);
 		Helpers.decrementFrames(ref displayHpTime);
-		debuffCooldowns();
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -871,6 +868,7 @@ public partial class Character : Actor, IDamagable {
 		shieldManager.update(this);
 		genericPuppetControl();
 		updateAttackCooldowns();
+		debuffCooldowns();
 		Helpers.decrementFrames(ref eTankHealTime);
 		if (grounded && !isDashing) {
 			dashedInAir = 0;
@@ -976,17 +974,6 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (inCombatCooldown > 0) {
-			inCombatCooldown -= Global.gameSpeed;
-			inCombatTime += Global.gameSpeed;
-			if (inCombatCooldown <= 0) {
-				inCombatCooldown = 0;
-				inCombatTime = 0;
-			}
-		} else {
-			outOfCombatTime += Global.gameSpeed;
-		}
-
 		if (vaccineTime > 0) {
 			oilTime = 0;
 			burnTime = 0;
@@ -1043,17 +1030,8 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementFrames(ref rootTime);
 		Helpers.decrementFrames(ref flattenedTime);
 		slowdownTime.updateCooldown(this);
-		if (igFreezeProgress > 0) {
-			igFreezeRecoveryCooldown -= speedMul;
-			if (igFreezeRecoveryCooldown <= 0) {
-				igFreezeRecoveryCooldown = 30;
-				igFreezeProgress = Helpers.clampMin0(igFreezeProgress - 1);
-			}
-		}
-		Helpers.decrementFrames(ref crystalizeInvulnTime);
-		Helpers.decrementFrames(ref grabInvulnTime);
-		Helpers.decrementFrames(ref darkHoldInvulnTime);
-		
+		chillDebuff.updateCooldown(this);
+
 		if (burnStunStacks > 0) {
 			if (burningRecoveryCooldown <= 0) {
 				burningRecoveryCooldown = 20;
@@ -1065,6 +1043,23 @@ public partial class Character : Actor, IDamagable {
 				burningRecoveryCooldown -= speedMul;
 			}
 		}
+	}
+
+	public void attackEffectCooldowns() {
+		if (inCombatCooldown > 0) {
+			inCombatCooldown -= Global.gameSpeed;
+			inCombatTime += Global.gameSpeed;
+			if (inCombatCooldown <= 0) {
+				inCombatCooldown = 0;
+				inCombatTime = 0;
+			}
+		} else {
+			outOfCombatTime += Global.gameSpeed;
+		}
+
+		Helpers.decrementFrames(ref crystalizeInvulnTime);
+		Helpers.decrementFrames(ref grabInvulnTime);
+		Helpers.decrementFrames(ref darkHoldInvulnTime);
 		Helpers.decrementTime(ref dwrapInvulnTime);
 		Helpers.decrementFrames(ref burnInvulnTime);
 
@@ -1095,9 +1090,11 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		for (int i = buffList.Count - 1; i >= 0; i--) {
-			buffList[i].time -= speedMul;
-			buffList[i].update?.Invoke(buffList[i], this);
-			if (buffList[i].time <= 0) {
+			if (!buffList[i].isStatic) {
+				buffList[i].updateCooldown(this);
+				buffList[i].update?.Invoke(buffList[i], this);
+			}
+			if (buffList[i].time <= 0 && buffList[i].stacks <= 1) {
 				buffList.RemoveAt(i);
 			}
 		}
@@ -1901,9 +1898,11 @@ public partial class Character : Actor, IDamagable {
 					_ when (chargeType == 1) => RenderEffectType.ChargeGreen,
 					_ => RenderEffectType.ChargeOrange
 				};
-				addRenderEffect(renderGfx, 3, 5);
+				chargeRE = addRenderEffect(renderGfx, 3, 5);
 			}
 			chargeEffect.update(getDisplayChargeLevel(), chargeType);
+		} else {
+			chargeRE = null;
 		}
 	}
 
@@ -1987,7 +1986,7 @@ public partial class Character : Actor, IDamagable {
 		parasiteMashTime = 0;
 		parasiteDamager = null;
 		// Remove slows.
-		igFreezeProgress = 0;
+		chillDebuff.zeroOut();
 		slowdownTime.time = 0;
 		xFlinchPushVel = 0;
 		// Remove stuns & grabs.
@@ -3120,7 +3119,7 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 
-		if (assister != null && assister != player && assister != Player.stagePlayer) {
+		if (assister != null && assister != killer && assister != player && assister != Player.stagePlayer) {
 			assister.addAssist();
 			assister.addKill();
 
@@ -3349,7 +3348,7 @@ public partial class Character : Actor, IDamagable {
 		acidTime = 0;
 		oilTime = 0;
 		player.possessedTime = 0;
-		igFreezeProgress = 0;
+		chillDebuff.zeroOut();
 		burnStunStacks = 0;
 	}
 
@@ -3668,14 +3667,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		foreach (Buff buff in buffList) {
 			float percent = buff.time / buff.maxTime;
-			var dfunct = drawDebuff;
-			if (buff.isBuff) {
-				dfunct = drawBuff;
-			}
-			dfunct(
-				drawPos, percent,
-				buff.iconName, buff.iconIndex
-			);
+			drawBuff(drawPos, buff);
 			secondBarOffset += 18 * drawDir;
 			drawPos.x += 18 * drawDir;
 		}
@@ -3704,6 +3696,55 @@ public partial class Character : Actor, IDamagable {
 	public void drawBuffAlt(Point pos, float cooldown, string sprite, int index) {
 		Global.sprites[sprite].drawToHUD(index, pos.x, pos.y);
 		GameMode.drawWeaponSlotAmmo(pos.x, pos.y, cooldown);
+	}
+
+	public void drawBuff(Point drawPos, Buff buff) {
+		Global.sprites[buff.iconName].drawToHUD(buff.iconIndex, drawPos.x, drawPos.y);
+		float maxTime = buff.stackData.time ?? buff.maxTime;
+		float cooldown = Math.Clamp(buff.time / maxTime, 0, 1);
+
+		if (buff.isBuff) {
+			GameMode.drawWeaponSlotCooldownR(drawPos.x, drawPos.y, cooldown);
+		} else {
+			GameMode.drawWeaponSlotCooldown(drawPos.x, drawPos.y, cooldown);
+		}
+		if (buff.stackData.time != null) {
+			float stack = Math.Clamp(buff.stackProgress / buff.stackData.time.Value, 0, 1);
+			int stackP = MathInt.Round((1 - stack) * 14);
+			Point drawPostA = drawPos.addxy(-7, -7);
+			Point drawPostB = drawPos.addxy(+6, -7);
+			Point drawPostC = drawPos.addxy(+7, +6);
+			if (stackP >= 14) {
+				DrawWrappers.DrawRect(
+					drawPostA.x, drawPostC.y, drawPostB.x, drawPostC.y + 1,
+					true, Color.Yellow, 0,
+					ZIndex.HUD, false
+				);
+			}
+			DrawWrappers.DrawRect(
+				drawPostA.x, drawPostA.y, drawPostA.x + 1, drawPostA.y + stackP,
+				true, Color.Yellow, 0,
+				ZIndex.HUD, false
+			);
+			DrawWrappers.DrawRect(
+				drawPostB.x, drawPostA.y, drawPostB.x + 1, drawPostB.y + stackP,
+				true, Color.Yellow, 0,
+				ZIndex.HUD, false
+			);
+			if (stackP > 0) {
+				DrawWrappers.DrawRect(
+					drawPostA.x, drawPostA.y, drawPostB.x, drawPostA.y + 1,
+					true, Color.Yellow, 0,
+					ZIndex.HUD, false
+				);
+			}
+		}
+		if (buff.stackData.max != buff.stackData.min) {
+			Fonts.drawText(
+				FontType.RedSmall, buff.stacks.ToString(),
+				drawPos.x + 1, drawPos.y - 9
+			);
+		}
 	}
 
 	public virtual (string, int) getBaseHpSprite() {
@@ -4010,8 +4051,9 @@ public partial class Character : Actor, IDamagable {
 			customData.Add((byte)MathF.Ceiling(chargeTime / 3));
 			boolMask[2] = true;
 		}
-		if (igFreezeProgress > 0) {
-			customData.Add((byte)MathF.Ceiling(igFreezeProgress * 30));
+		if (chillDebuff.stacks > 0) {
+			customData.Add((byte)chillDebuff.stacks);
+			customData.Add((byte)MathF.Ceiling(chillDebuff.time / 2));
 			boolMask[3] = true;
 		}
 		if (oilTime > 0) {
@@ -4039,7 +4081,7 @@ public partial class Character : Actor, IDamagable {
 			boolMaskB[1] = true;
 		}
 		if (slowdownTime.time > 0) {
-			customData.Add((byte)MathInt.Ceiling(slowdownTime.time / 2f));
+			customData.Add((byte)MathInt.Ceiling(slowdownTime.time * 2f));
 			boolMaskB[2] = true;
 		}
 
@@ -4109,10 +4151,10 @@ public partial class Character : Actor, IDamagable {
 			chargeTime = data[pos] * 3;
 			pos++;
 		}
-		igFreezeProgress = 0;
+		chillDebuff.zeroOut();
 		if (boolMask[3]) {
-			igFreezeProgress = data[pos] / 30f;
-			pos++;
+			chillDebuff.stacks = data[pos++];
+			chillDebuff.time = data[pos++] * 2;
 		}
 		oilTime = 0;
 		if (boolMask[4]) {
@@ -4144,7 +4186,7 @@ public partial class Character : Actor, IDamagable {
 			rootTime = data[pos] * 2;
 			pos++;
 		}
-		slowdownTime.time = 0;
+		slowdownTime.zeroOut();
 		if (boolMaskB[2]) {
 			slowdownTime.time = data[pos] * 2;
 			pos++;
@@ -4175,37 +4217,43 @@ public class Buff {
 	public string iconName;
 	public int iconIndex;
 	public int stacks;
-	public float? stackTime;
+	public float stackProgress;
+	public (float? time, int min, int max) stackData;
 	public Action<Buff, Character>? update;
+	public bool isStatic;
 
 	public Buff(
 		string iconName, int iconIndex, bool isBuff,
-		float time, float maxTime, int stacks = 1, int? stackTime = null
+		float time, float maxTime, int? stacks = null,
+		(float? time, int min, int max)? stackData = null,
+		bool isStatic = false
 	) {
 		this.iconName = (iconName ?? "");
 		this.iconIndex = iconIndex;
 		this.time = time;
 		this.maxTime = maxTime;
 		this.isBuff = isBuff;
-		this.stacks = stacks;
-		this.stackTime = stackTime;
+		this.stackData = stackData ?? (null, 1, 1);
+		this.stacks = stacks ?? this.stackData.min;
+		this.isStatic = isStatic;
 	}
 
 	public void updateCooldown(Actor actor) {
-		if (time < 0 && stacks <= 1) {
+		if (time < 0 && stacks <= stackData.min) {
 			return;
 		}
 		time -= actor.speedMul;
 		if (time <= 0) {
-			if (stacks > 1) {
-				if (stackTime != null) {
-					maxTime = stackTime.Value;
+			if (stacks > stackData.min + 1 && stackData.min != stackData.max) {
+				if (stackData.time != null) {
+					maxTime = stackData.time.Value;
 				}
 				time = maxTime;
 				stacks--;
 			} else {
 				time = 0;
-				stacks = 1;
+				stackProgress = 0;
+				stacks = stackData.min;
 			}
 		}
 	}
@@ -4216,10 +4264,37 @@ public class Buff {
 			maxTime = frames;
 		}
 	}
-	
+
 	public void addTime(float frames) {
-		time += frames;
+		if (stackData.time != null) {
+			stackProgress += frames;
+			time = maxTime;
+			calcStacks();
+		} else {
+			time += frames;
+		}
 		maxTime = time;
+		if (time > 0 && stacks <= stackData.min) {
+			stacks = Math.Min(stackData.min + 1, stackData.max);
+		}
+	}
+
+	public void calcStacks() {
+		if (stackData.time == null) {
+			return;
+		}
+		float stackTime = stackData.time.Value;
+		if (stackProgress < stackTime) {
+			return;
+		}
+		stacks += MathInt.Floor(stackProgress / stackTime);
+		stacks = Math.Min(stackData.max, stacks);
+		stackProgress = stackProgress % stackTime;
+	}
+
+	public void zeroOut() {
+		time = 0;
+		stacks = stackData.min;
 	}
 }
 

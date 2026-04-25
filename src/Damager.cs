@@ -278,7 +278,7 @@ public class Damager {
 					break;
 				}
 				case (int)BassProjIds.IceWallLemon: {
-					character.addIgFreezeProgress(0.25f);
+					character.addIgFreezeProgress(15);
 					break;
 				}
 				case (int)ProjIds.TenguBladeDash: {
@@ -290,10 +290,10 @@ public class Damager {
 					break;
 				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:
-					flinchSound = character.wince(Global.superFlinch, 52, projId, owner.id);
+					flinchSound = character.wince(35, 0, projId, owner.id);
 					break;
 				case (int)BluesProjIds.LemonAngled: {
-					character.wince(Global.defFlinch, 60, projId, owner.id);
+					character.wince(25, 60, projId, owner.id);
 					break;
 				}
 				case (int)BassProjIds.WaveBurnerUnderwater:

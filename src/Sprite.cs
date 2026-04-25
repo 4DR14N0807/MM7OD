@@ -160,11 +160,14 @@ public class Sprite {
 		);
 	}
 
-	public void drawSimple(Point pos, int xDir, long zIndex, float alpha = 1, Actor? actor = null) {
+	public void drawSimple(
+		Point pos, int xDir, long zIndex, float alpha = 1, Actor? actor = null,
+		List<ShaderWrapper>? shaders = null
+	) {
 		draw(
 			trueFrameIndex, pos.x, pos.y, xDir, 1,
 			null, alpha, 1, 1, zIndex,
-			null, 0, actor: actor, useFrameOffsets: true
+			shaders, 0, actor: actor, useFrameOffsets: true
 		);
 	}
 

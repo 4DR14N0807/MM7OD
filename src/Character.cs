@@ -199,7 +199,7 @@ public partial class Character : Actor, IDamagable {
 	public float freezeTime;
 	public Dictionary<string, float> freezeCooldown = new();
 	// Chill
-	public Buff chillDebuff = new Buff("hud_debuffs", 0, false, 0, 60, stackData: (60, 0, 3), isStatic: true);
+	public Buff chillDebuff = new Buff("hud_debuffs", 0, false, 0, 60, stackData: (60, -1, 3), isStatic: true);
 	// Burn Stun
 	public float burnStunStacks;
 	public float burnStunTime;
@@ -4052,7 +4052,7 @@ public partial class Character : Actor, IDamagable {
 			boolMask[2] = true;
 		}
 		if (chillDebuff.stacks > 0) {
-			customData.Add((byte)chillDebuff.stacks);
+			customData.Add((byte)(chillDebuff.stacks + 10));
 			customData.Add((byte)MathF.Ceiling(chillDebuff.time / 2));
 			boolMask[3] = true;
 		}
@@ -4153,7 +4153,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		chillDebuff.zeroOut();
 		if (boolMask[3]) {
-			chillDebuff.stacks = data[pos++];
+			chillDebuff.stacks = data[pos++] - 10;
 			chillDebuff.time = data[pos++] * 2;
 		}
 		oilTime = 0;

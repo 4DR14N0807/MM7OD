@@ -292,10 +292,10 @@ public class Damager {
 				case (int)BassProjIds.SpreadDrillMid:
 					flinchSound = character.wince(35, 0, projId, owner.id);
 					break;
-				/* case (int)BluesProjIds.LemonAngled: {
-					character.wince(25, 60, projId, owner.id);
+				case (int)BluesProjIds.LemonAngled: {
+					character.wince(20, 60, projId, owner.id);
 					break;
-				} */
+				}
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor is WaveBurnerUnderwaterProj wbproj) {
 						character.pushEffect(new Point(wbproj.pushDir, 0));

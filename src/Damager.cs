@@ -277,10 +277,10 @@ public class Damager {
 					}
 					break;
 				}
-				/* case (int)BassProjIds.IceWallLemon: {
-					character.addIgFreezeProgress(15);
+				case (int)BassProjIds.IceWallLemon: {
+					character.addIgFreezeProgress(10);
 					break;
-				} */
+				} 
 				case (int)ProjIds.TenguBladeDash: {
 					character.xFlinchPushVel += 4 * (damagingActor?.xDir ?? -character.xDir);
 					break;

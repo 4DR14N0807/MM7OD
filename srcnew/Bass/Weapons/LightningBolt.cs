@@ -202,7 +202,7 @@ public class LBoltBassShoot : BassState {
 	public override void update() {
 		base.update();
 
-		if (!shotPressed && weapon?.ammo > 0 && player.input.isPressed(Control.Shoot, player)) {
+		if (!shotPressed && weapon?.ammo > 0 && player.input.isPressed(Control.Shoot, player) && stateFrames >= 20) {
 			shotPressed = true;
 		}
 		if (shotPressed && stateFrames >= 45 && bass.currentWeapon is LightningBolt) {

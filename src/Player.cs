@@ -1489,7 +1489,7 @@ public partial class Player {
 			blues.charState is Die dieState &&
 			!dieState.respawnTimerOn &&
 			lastDeathCanRevive && 
-			blues.canUseBreakman()
+			blues.canUseBreakman() && !isSpectator
 		);
 	}
 

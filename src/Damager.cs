@@ -277,10 +277,10 @@ public class Damager {
 					}
 					break;
 				}
-				case (int)BassProjIds.IceWallLemon: {
+				/* case (int)BassProjIds.IceWallLemon: {
 					character.addIgFreezeProgress(15);
 					break;
-				}
+				} */
 				case (int)ProjIds.TenguBladeDash: {
 					character.xFlinchPushVel += 4 * (damagingActor?.xDir ?? -character.xDir);
 					break;
@@ -292,10 +292,10 @@ public class Damager {
 				case (int)BassProjIds.SpreadDrillMid:
 					flinchSound = character.wince(35, 0, projId, owner.id);
 					break;
-				case (int)BluesProjIds.LemonAngled: {
+				/* case (int)BluesProjIds.LemonAngled: {
 					character.wince(25, 60, projId, owner.id);
 					break;
-				}
+				} */
 				case (int)BassProjIds.WaveBurnerUnderwater:
 					if (damagingActor is WaveBurnerUnderwaterProj wbproj) {
 						character.pushEffect(new Point(wbproj.pushDir, 0));

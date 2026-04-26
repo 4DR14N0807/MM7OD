@@ -412,7 +412,7 @@ public class Rock : Character {
 	
 	public List<Weapon> getLoadout() {	
 		// 1v1/Training loadout.
-		if (Global.level.isTraining() && !Global.level.server.useLoadout || Global.level.is1v1()) {
+		if (Global.level.isTraining() && !Global.level.server.useLoadout) {
 			return getAllWeapons();
 		}
 		

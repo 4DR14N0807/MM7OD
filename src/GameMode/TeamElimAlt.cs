@@ -160,7 +160,7 @@ public class TeamElimAlt : GameMode {
 
 	public void roundWinLogic() {
 		// If we are respawning then we just continue.
-		if (respawnWindow > 0 || isOver) {
+		if (respawnWindow > 0 && resultTime > 0 && Global.level.time >= 10 || isOver) {
 			return;
 		}
 		// Stalemate if we go over the theshold.
@@ -281,6 +281,9 @@ public class TeamElimAlt : GameMode {
 			Global.playSound("ching");
 		} else {
 			Global.playSound("error");
+		}
+		if (sendRpc) {
+			RPC.syncEAltRound.sendRpc(result);
 		}
 	}
 

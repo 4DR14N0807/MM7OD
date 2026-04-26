@@ -45,7 +45,7 @@ public class GiantAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new GiantAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -70,7 +70,7 @@ public class TankAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new TankAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -96,7 +96,7 @@ public class LargeAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new LargeAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -121,7 +121,7 @@ public class SmallAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new SmallAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -146,7 +146,7 @@ public class MiniAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new MiniAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 

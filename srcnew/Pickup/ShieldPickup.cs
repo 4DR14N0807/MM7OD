@@ -51,7 +51,7 @@ public class TankShieldPickup : BaselineShieldPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new TankShieldPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -75,7 +75,7 @@ public class LargeShieldPickup : BaselineShieldPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new LargeShieldPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -99,7 +99,7 @@ public class SmallShieldPickup : BaselineShieldPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new SmallShieldPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -123,7 +123,7 @@ public class MiniShieldPickup : BaselineShieldPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new MiniShieldPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 

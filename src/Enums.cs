@@ -425,7 +425,7 @@ public enum RockProjIds  {
 }
 
 public enum RobotMastersProjIds {
-	FreezeMProj = 600,
+	FreezeMProj = 800,
 	FreezeMSplitProj,
 	FreezeMSplitProj2,
 	FreezeMFreezeProj,

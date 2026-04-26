@@ -348,6 +348,34 @@ public class OptionsMenu : IMainMenu {
 					},
 					"Enables asynchronous rendering.\nRequires a CPU with +4 cores."
 				),
+				// Full screen
+				new MenuOption(
+					30, startY,
+					() => {
+						if (inGame) return;
+						if (Global.input.isPressedMenu(Control.MenuLeft)) {
+							if (Options.main.fullScreenIntelCompat) {
+								Options.main.fullScreenIntelCompat = false;
+							}
+						} else if (Global.input.isPressedMenu(Control.MenuRight)) {
+							if (!Options.main.fullScreenIntelCompat) {
+								Options.main.fullScreenIntelCompat = true;
+							}
+						}
+					},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							optionFontText, "INTEL ALT-FULLSCREEN:",
+							pos.x, pos.y, selected: selectedArrowPosY == index
+						);
+						Fonts.drawText(
+							optionFontValue, Helpers.boolYesNo(Options.main.fullScreenIntelCompat),
+							pos.x + 200, pos.y, selected: selectedArrowPosY == index
+						);
+					},
+					"Fixes flickering on fullscreen on some intel cards.\n" +
+					"DO NOT use if you do not experience this bug."
+				),
 			};
 		} else if (isGameplay) {
 			menuOptions = new List<MenuOption>() {

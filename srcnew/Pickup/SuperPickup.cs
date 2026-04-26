@@ -64,7 +64,7 @@ public class TankSuperPickup : BaselineSuperPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new TankSuperPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -89,7 +89,7 @@ public class LargeSuperPickup : BaselineSuperPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new LargeSuperPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -114,7 +114,7 @@ public class SmallSuperPickup : BaselineSuperPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new SmallSuperPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -139,7 +139,7 @@ public class MiniSuperPickup : BaselineSuperPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new MiniSuperPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 

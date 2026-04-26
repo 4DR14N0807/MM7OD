@@ -35,7 +35,7 @@ public class GiantHealthPickup : BaselineHealthPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new GiantHealthPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -75,7 +75,7 @@ public class TankHealthPickup : BaselineHealthPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new TankHealthPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -100,7 +100,7 @@ public class LargeHealthPickup : BaselineHealthPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new LargeHealthPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -124,7 +124,7 @@ public class SmallHealthPickup : BaselineHealthPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new SmallHealthPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 
@@ -148,7 +148,7 @@ public class MiniHealthPickup : BaselineHealthPickup {
 
 	public static Actor pickupInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new MiniHealthPickup(
-			arg.player, arg.pos, arg.netId, false, sendRpc: sendRpc
+			arg.player, arg.pos, arg.netId, true, sendRpc: sendRpc
 		);
 	}
 

@@ -83,20 +83,17 @@ public partial class Global {
 				new VideoMode((windowW, windowH)), "MM7 Online Deathmatch"
 			);
 			window.SetVerticalSyncEnabled(options.vsync);
-			if (Global.hideMouse) {
+			if (hideMouse) {
 				window.SetMouseCursorVisible(false);
 			}
 		} else {
 			var desktopWidth = VideoMode.DesktopMode.Size.X;
 			var desktopHeight = VideoMode.DesktopMode.Size.Y;
-			Styles style = Styles.None;
-			if (NativeApi.Main.currentOS == NativeApi.OS.Windows) {
-				style = Styles.Default;
-			}
 			window = new RenderWindow(
 				new VideoMode((desktopWidth, desktopHeight)),
-				"MM7 Online: Deathmatch", style, State.Windowed
+				"MM7 Online: Deathmatch", Styles.None, State.Windowed
 			);
+			window.Position = new Vector2i(0, 0);
 			#if !NOTWINDOWS
 			if (NativeApi.Main is WinApi winApi) {
 				// Fixes bordeless on AMD and NVidia cards.
@@ -104,20 +101,19 @@ public partial class Global {
 				// TODO: To fix this render final render result in GDI... maybe.
 				// Or check how the hell Snes9x OpenGL render avoids this bug.
 				winApi.ReplaceWindowStyle(
-					window, WinApi.WS.VISIBLE | WinApi.WS.SYSMENU |
-					WinApi.WS.CLIPCHILDREN | WinApi.WS.CLIPSIBLINGS
+					window, WinApi.WS.VISIBLE | WinApi.WS.SYSMENU
 				);
 				winApi.SetWindowExStyle(window, WinApi.WSEX.APPWINDOW, true);
+				winApi.SetPosClientArea(window, (0, 0), (desktopWidth, desktopHeight));
 			}
 			#endif
 			window.SetVerticalSyncEnabled(options.vsync);
-			window.Position = new Vector2i(0, 0);
-			if (Options.main.fullScreenIntelCompat && Options.main.integerFullscreen) {
-				window.Size = new Vector2u(desktopWidth, desktopHeight + 1);
-			} else {
-				window.Size = new Vector2u(desktopWidth, desktopHeight);	
+			if (Options.main.integerFullscreen) {
+				if (Options.main.fullScreenIntelCompat) {
+					window.Size = new Vector2u(desktopWidth, desktopHeight + 1);
+				}
+				viewPort = getIntegerViewPort();
 			}
-			viewPort = getFullScreenViewPort();
 		}
 
 		if (!File.Exists(Global.assetPath + "assets/menu/icon.png")) {
@@ -144,14 +140,11 @@ public partial class Global {
 		window.SetActive();
 	}
 
-	public static FloatRect getFullScreenViewPort() {
-		float desktopWidth = VideoMode.DesktopMode.Size.X;
-		float desktopHeight = VideoMode.DesktopMode.Size.Y;
-		float heightMultiple = VideoMode.DesktopMode.Size.Y / (float)screenH;
+	public static FloatRect getIntegerViewPort() {
+		float desktopWidth = window.Size.X;
+		float desktopHeight = window.Size.Y;
+		float heightMultiple = MathF.Floor(window.Size.Y / (float)screenH);
 
-		if (Options.main.integerFullscreen) {
-			heightMultiple = MathF.Floor(VideoMode.DesktopMode.Size.Y / (float)screenH);
-		}
 		float extraWidthPercent = (desktopWidth - screenW * heightMultiple) / desktopWidth;
 		float extraHeightPercent = (desktopHeight - screenH * heightMultiple) / desktopHeight;
 
@@ -163,7 +156,7 @@ public partial class Global {
 
 	public static float getDebugFontScale() {
 		if (fullscreen) {
-			return (float)screenH / getFullScreenViewPort().Height;
+			return (float)screenH / getIntegerViewPort().Height;
 		}
 		if (window != null) {
 			float xSize = (float)screenH / window.Size.Y;

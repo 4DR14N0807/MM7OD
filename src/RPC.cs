@@ -84,6 +84,8 @@ public class RPC {
 	public static RpcReflect reflect = new();
 	public static RpcDeflect deflect = new();
 	public static RpcUpdateMaxTime updateMaxTime = new();
+	public static RPCSyncEAltRound syncEAltRound = new();
+
 	public static RPC[] templates = {
 		// Strings.
 		sendString,
@@ -144,6 +146,7 @@ public class RPC {
 		resetFlags,
 		sendKillFeedEntry,
 		syncControlPoints,
+		syncEAltRound,
 		// 7OD Only stuff.
 		useSubtank,
 		useETank,
@@ -1830,8 +1833,18 @@ public class RPCSyncEAltRound : RPC {
 		if (Global.level.gameMode is not TeamElimAlt tealt) {
 			return;
 		}
-		var rpcMatchOverResponse = JsonConvert.DeserializeObject<RPCMatchOverResponse>(message);
-		tealt.addResult(rpcMatchOverResponse);
+		var response = JsonConvert.DeserializeObject<RPCMatchOverResponse>(message);
+		if (response != null) {
+			tealt.addResult(response);
+		}
+	}
+
+	public void sendRpc(RPCMatchOverResponse response) {
+		if (Global.serverClient == null || Global.level.gameMode is not TeamElimAlt) {
+			return;
+		}
+		string msg = JsonConvert.SerializeObject(response);
+		Global.serverClient.rpc(this, msg);
 	}
 }
 

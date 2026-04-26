@@ -489,7 +489,7 @@ class Program {
 
 	private static void onWindowResized(object? sender, SizeEventArgs e) {
 		if (Options.main.integerFullscreen && Options.main.fullScreen) {
-			FloatRect fviewRect = Global.getFullScreenViewPort();
+			FloatRect fviewRect = Global.getIntegerViewPort();
 			Global.view.Viewport = fviewRect;
 			DrawWrappers.hudView.Viewport = fviewRect;
 			return;

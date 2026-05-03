@@ -85,6 +85,17 @@ public class Rock : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+
+		if (canRevive()) {
+			hyperProgress = 0;
+			if (player.input.isPressed(Control.Special2, player) || player.isAI) {
+				alive = true;
+				player.currency -= SuperAdaptorCost;
+				boughtSuperAdaptorOnce = true;
+				changeState(new CallDownRush(), true);
+			}
+		}
+
 		int[] cooldownKeys = chargedNoiseCrushCd.Keys.ToArray();
 		foreach (int key in cooldownKeys) {
 			chargedNoiseCrushCd[key] -= speedMul;
@@ -266,7 +277,7 @@ public class Rock : Character {
 
 	public void quickAdaptorUpgrade() {
 		if (hasSuperAdaptor || boughtSuperAdaptorOnce ||
-			!alive || !canGoSuperAdaptor() ||
+			!alive || !canGoSuperAdaptor() || charState.normalCtrl ||
 			charState.immortal || charState is CallDownRush or WarpIdle ||
 			!player.input.isHeld(Control.Special2, player)
 		) {
@@ -732,10 +743,16 @@ public class Rock : Character {
 	}
 
 	public bool canGoSuperAdaptor() {
-		return (
-			charState is not Die && charState is not CallDownRush &&
-			!hasSuperAdaptor && player.currency >= SuperAdaptorCost &&
-			rush == null && charState.normalCtrl
+		return !hasSuperAdaptor && player.currency >= SuperAdaptorCost;
+	}
+
+	public bool canRevive() {
+		return ( 
+			(Global.level.is1v1() || Global.level.gameMode.isElim) &&
+			charState is Die dieState &&
+			!dieState.respawnTimerOn &&
+			canGoSuperAdaptor() &&
+			!player.isSpectator
 		);
 	}
 

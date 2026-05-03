@@ -3097,37 +3097,31 @@ public partial class Character : Actor, IDamagable {
 			addDamageText("Rebirth!", (int)FontType.Golden);
 			return;
 		}
+		// Add death now that we confirmed we are truly dead.
+		player.addDeath();
 
+		// Add kill data.
 		if (killer != null && killer != player && killer != Player.stagePlayer) {
 			killer.addKill();
-			if (Global.level.gameMode is TeamDeathMatch) {
-				if (Global.isHost) {
-					if (killer.alliance != player.alliance) {
-						Global.level.gameMode.teamPoints[killer.alliance]++;
-						Global.level.gameMode.syncTeamScores();
-					}
-				}
-			}
+			Global.level.gameMode.reportKill(false, killer, player);
+			Global.level.gameMode.reportDeath(false, killer, player);
+
 			killer.awardKillExp();
 			killer.onKillEffects(false, player, damager, this);
-			//killer.currency += 10;
-		} else if (Global.level.gameMode.level.is1v1()) {
-			// In 1v1 the other player should always be considered a killer to prevent suicide
-			var otherPlayer = Global.level.nonSpecPlayers().Find(p => p.id != player.id);
-			if (otherPlayer != null) {
-				otherPlayer.addKill();
-			}
+		} else {
+			Global.level.gameMode.reportKill(false, player, player);
+			Global.level.gameMode.reportDeath(false, player, player);
 		}
-
 		if (assister != null && assister != killer && assister != player && assister != Player.stagePlayer) {
 			assister.addAssist();
-			assister.addKill();
+			Global.level.gameMode.reportKill(true, assister, player);
+			Global.level.gameMode.reportDeath(true, assister, player);
 
 			assister.awardKillExp(false);
 			assister.onKillEffects(false, player, damager, this);
 		}
-		player.addDeath();
 
+		// Feed, this usually gets sent.
 		Global.level.gameMode.addKillFeedEntry(
 			new KillFeedEntry(killer, assister, player, weaponIndex)
 		);
@@ -3138,7 +3132,7 @@ public partial class Character : Actor, IDamagable {
 		}
 
 		if (Global.level.isNon1v1Elimination() &&
-			player.deaths >= Global.level.gameMode.playingTo
+			player.score >= Global.level.gameMode.playingTo
 		) {
 			Global.level.gameMode.addKillFeedEntry(
 				new KillFeedEntry(player.name + " was eliminated.", GameMode.blueAlliance),

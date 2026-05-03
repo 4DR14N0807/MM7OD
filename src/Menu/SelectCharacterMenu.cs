@@ -172,7 +172,7 @@ public class SelectCharacterMenu : IMainMenu {
 				playerData.charNum = Global.quickStartOnlineClientCharNum;
 			}
 			if (isInGame && !isInGameEndSelect) {
-				if (!Options.main.killOnCharChange && !Global.level.mainPlayer.isDead) {
+				if (!Options.shouldKillOnCharhange() && !Global.level.mainPlayer.isDead) {
 					Global.level.gameMode.setHUDErrorMessage(mainPlayer, "Change will apply on next death", playSound: false);
 					mainPlayer.delayedNewCharNum = playerData.charNum;
 				} else if (mainPlayer.newCharNum != playerData.charNum) {

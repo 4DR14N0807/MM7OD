@@ -204,7 +204,7 @@ public class DevConsole {
 
 	public static void win() {
 		if (Global.level.gameMode is FFADeathMatch) {
-			Global.level.mainPlayer.kills = Global.level.gameMode.playingTo;
+			Global.level.mainPlayer.score = Global.level.gameMode.playingTo;
 		} else if (Global.level.gameMode is TeamDeathMatch) {
 			Global.level.gameMode.teamPoints[0] = (byte)Global.level.gameMode.playingTo;
 		}
@@ -212,7 +212,7 @@ public class DevConsole {
 
 	public static void lose() {
 		if (Global.level.gameMode is FFADeathMatch) {
-			Global.level.otherPlayer?.kills = Global.level.gameMode.playingTo;
+			Global.level.otherPlayer?.score = Global.level.gameMode.playingTo;
 		} else if (Global.level.gameMode is TeamDeathMatch) {
 			Global.level.gameMode.teamPoints[1] = (byte)Global.level.gameMode.playingTo;
 		}

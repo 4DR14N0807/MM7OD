@@ -1246,31 +1246,24 @@ public class Maverick : Actor, IDamagable {
 		}
 	}
 
-
 	public void creditMaverickKill(Player killer, Player assister, int? weaponIndex) {
 		if (killer != null && killer != player) {
 			killer.addKill();
-			if (Global.level.gameMode is TeamDeathMatch) {
-				if (Global.isHost) {
-					if (killer.alliance != player.alliance) {
-						Global.level.gameMode.teamPoints[killer.alliance]++;
-						Global.level.gameMode.syncTeamScores();
-					}
-					Global.level.gameMode.syncTeamScores();
-				}
-			}
-
+			Global.level.gameMode.reportKill(false, killer, player, true);
+			Global.level.gameMode.reportDeath(false, killer, player, true);
 			killer.awardKillExp();
 			awardXWeapon(killer);
+		} else {
+			Global.level.gameMode.reportKill(false, player, player, true);
+			Global.level.gameMode.reportDeath(false, player, player, true);
 		}
-
 		if (assister != null && assister != player) {
 			assister.addAssist();
-			assister.addKill();
+			Global.level.gameMode.reportKill(true, assister, player, true);
+			Global.level.gameMode.reportDeath(true, assister, player, true);
 			assister.awardKillExp(false);
-			awardXWeapon(killer);
+			awardXWeapon(assister);
 		}
-
 		int maverickKillFeedIndex = getMaverickKillFeedIndex();
 		Global.level.gameMode.addKillFeedEntry(
 			new KillFeedEntry(killer, assister, player, weaponIndex,

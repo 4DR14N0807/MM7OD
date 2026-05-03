@@ -245,6 +245,8 @@ public class LevelData {
 			maxPlayers = 4;
 			supportedGameModesSet.Add(GameMode.Deathmatch);
 			supportedGameModesSet.Add(GameMode.Elimination);
+			supportedGameModesSet.Add(GameMode.ElimAlt);
+			supportedGameModesSet.Add(GameMode.TeamElimAlt);
 		} else {
 			maxPlayers = Server.maxPlayerCap;
 			supportedGameModesSet.Add(GameMode.Deathmatch);
@@ -266,6 +268,7 @@ public class LevelData {
 		if (!is1v1()) {
 			supportedGameModesSet.Add(GameMode.Elimination);
 			supportedGameModesSet.Add(GameMode.TeamElimination);
+			supportedGameModesSet.Add(GameMode.ElimAlt);
 			supportedGameModesSet.Add(GameMode.TeamElimAlt);
 		}
 
@@ -399,7 +402,7 @@ public class LevelData {
 	public List<string> gameModeSortOrder = new List<string> {
 		GameMode.Deathmatch, GameMode.TeamDeathmatch, GameMode.CTF,
 		GameMode.KingOfTheHill, GameMode.ControlPoint,
-		GameMode.Elimination, GameMode.TeamElimination, GameMode.TeamElimAlt,
+		GameMode.Elimination, GameMode.TeamElimination, GameMode.ElimAlt, GameMode.TeamElimAlt,
 		GameMode.Race
 	};
 	public int gameModeSortFunc(string a, string b) {

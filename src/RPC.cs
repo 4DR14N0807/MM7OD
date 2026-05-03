@@ -85,6 +85,7 @@ public class RPC {
 	public static RpcDeflect deflect = new();
 	public static RpcUpdateMaxTime updateMaxTime = new();
 	public static RPCSyncEAltRound syncEAltRound = new();
+	public static RPCUpdateMastery updateMastery = new();
 
 	public static RPC[] templates = {
 		// Strings.
@@ -152,6 +153,7 @@ public class RPC {
 		useETank,
 		useWTank,
 		creditExp,
+		updateMastery,
 		// Custom generic RCP.
 		custom,
 	};
@@ -1321,10 +1323,32 @@ public class RPCUpdatePlayer : RPC {
 		isServerMessage = true;
 	}
 
-	public void sendRpc(int playerId, int kills, int deaths) {
-		byte[] killsBytes = BitConverter.GetBytes((ushort)kills);
-		byte[] deathBytes = BitConverter.GetBytes((ushort)deaths);
-		Global.serverClient?.rpc(this, (byte)playerId, killsBytes[0], killsBytes[1], deathBytes[0], deathBytes[1]);
+	public void altInvoke(Server server, byte[] args) {
+		int playerId = args[0];
+		int score = args[1];
+		int kills = args[2];
+		int deaths = args[3];
+		int assists = args[4];
+		ServerPlayer? serverPlayer = server.players.FirstOrDefault(p => p.id == playerId);
+		if (serverPlayer == null) {
+			return;
+		}
+		serverPlayer.score = kills;
+		serverPlayer.kills = kills;
+		serverPlayer.deaths = deaths;
+		serverPlayer.assists = kills;
+		server.periodicPing(server.s_server);
+	}
+
+	public void sendRpc(Player player) {
+		byte[] data = [
+			(byte)player.id,
+			(byte)player.score,
+			(byte)player.kills,
+			(byte)player.deaths,
+			(byte)player.assists,
+		];
+		Global.serverClient?.rpc(this, data);
 	}
 }
 
@@ -1830,17 +1854,22 @@ public class RPCSyncEAltRound : RPC {
 	}
 
 	public override void invoke(string message) {
-		if (Global.level.gameMode is not TeamElimAlt tealt) {
+		var response = JsonConvert.DeserializeObject<RPCMatchOverResponse>(message);
+		if (response == null) {
 			return;
 		}
-		var response = JsonConvert.DeserializeObject<RPCMatchOverResponse>(message);
-		if (response != null) {
+		if (Global.level.gameMode is TeamElimAlt tealt) {
 			tealt.addResult(response);
+			return;
+		}
+		if (Global.level.gameMode is ElimAlt ealt) {
+			ealt.addResult(response);
+			return;
 		}
 	}
 
 	public void sendRpc(RPCMatchOverResponse response) {
-		if (Global.serverClient == null || Global.level.gameMode is not TeamElimAlt) {
+		if (Global.serverClient == null) {
 			return;
 		}
 		string msg = JsonConvert.SerializeObject(response);
@@ -1957,5 +1986,33 @@ public class RPCAddExp : RPC {
 			(byte)charId,
 			expBytes[0], expBytes[1]
 		);
+	}
+}
+
+public class RPCUpdateMastery : RPC {
+	public RPCUpdateMastery() {
+		netDeliveryMethod = NetDeliveryMethod.Unreliable;
+	}
+
+	public override void invoke(params byte[] args) {
+		Player? player = Global.level.getPlayerById(args[0]);
+		if (player == null) {
+			return;
+		}
+		player.mastery.damageLevel = args[1];
+		player.mastery.defenseLevel = args[2];
+		player.mastery.supportLevel = args[3];
+		player.mastery.mapLevel = args[4];
+	}
+
+	public void sendRpc(Player player) {
+		byte[] data = [
+			(byte)player.id,
+			(byte)player.mastery.damageLevel,
+			(byte)player.mastery.defenseLevel,
+			(byte)player.mastery.supportLevel,
+			(byte)player.mastery.mapLevel,
+		];
+		Global.serverClient?.rpc(this, data);
 	}
 }

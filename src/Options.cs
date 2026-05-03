@@ -36,6 +36,14 @@ public class Options {
 		return MathInt.Round(networkTimeoutSeconds * 1000);
 	}
 
+	public static bool shouldKillOnLdChange() {
+		return !Global.level.gameMode.isElim && main.killOnLoadoutChange && !Global.level.is1v1();
+	}
+	public static bool shouldKillOnCharhange() {
+		return !Global.level.gameMode.isElim && main.killOnCharChange && !Global.level.is1v1();
+	}
+
+
 	// Video settings
 	public bool fullScreen = false;
 	public bool integerFullscreen = true;

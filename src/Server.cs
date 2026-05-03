@@ -819,18 +819,10 @@ public class Server {
 			om.Write((byte)RPC.templates.IndexOf(RPC.kickPlayerResponse));
 			om.Write(kickPlayerJson);
 			s_server.SendToAll(om, rpcTemplate.netDeliveryMethod, 0);
-		} else if (rpcTemplate is RPCUpdatePlayer) {
+		} else if (rpcTemplate is RPCUpdatePlayer updatePlayer) {
 			ushort argCount = BitConverter.ToUInt16(im.ReadBytes(2), 0);
-			var bytes = im.ReadBytes(argCount);
-			int playerId = bytes[0];
-			int kills = BitConverter.ToUInt16(new byte[] { bytes[1], bytes[2] }, 0);
-			int deaths = BitConverter.ToUInt16(new byte[] { bytes[3], bytes[4] }, 0);
-			var player = players.FirstOrDefault(p => p.id == playerId);
-			if (player != null) {
-				player.kills = kills;
-				player.deaths = deaths;
-				periodicPing(s_server);
-			}
+			byte[] args = im.ReadBytes(argCount);
+			updatePlayer.altInvoke(this, args);
 		} else if (rpcTemplate is RPCAddBot) {
 			if (players.Count < 10) {
 				ushort argCount = BitConverter.ToUInt16(im.ReadBytes(2), 0);

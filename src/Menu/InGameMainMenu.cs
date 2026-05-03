@@ -96,11 +96,11 @@ public class InGameMainMenu : IMainMenu {
 	}
 
 	public bool isSelWepDisabled() {
-		return Global.level.is1v1();
+		return false;
 	}
 
 	public bool isSelArmorDisabled() {
-		if (Global.level.is1v1()) return true;
+		/*if (Global.level.is1v1()) return true;
 		if (mainPlayer.realCharNum == 2) return false;
 		if (Global.level.server.disableHtSt) {
 			if (mainPlayer.realCharNum != 0) return Global.level.server.disableHtSt;
@@ -109,7 +109,7 @@ public class InGameMainMenu : IMainMenu {
 			} else {
 				return Global.level.server.disableHtSt;
 			}
-		}
+		}*/
 		return false;
 	}
 

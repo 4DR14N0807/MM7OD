@@ -14,13 +14,15 @@ public class ServerPlayer {
 	[ProtoMember(6)] public int? preferredAlliance;
 	[ProtoMember(7)] public bool joinedLate;
 	[ProtoMember(8)] public string deviceId;
-	[ProtoMember(9)] public int kills;
-	[ProtoMember(10)] public int deaths;
-	[ProtoMember(11)] public int ping;
-	[ProtoMember(12)] public bool isBot;
-	[ProtoMember(13)] public bool isSpectator;
-	[ProtoMember(14)] public int? autobalanceAlliance;
-	[ProtoMember(15)] public int? startPing;
+	[ProtoMember(9)] public int score;
+	[ProtoMember(10)] public int kills;
+	[ProtoMember(11)] public int deaths;
+	[ProtoMember(12)] public int assists;
+	[ProtoMember(13)] public int ping;
+	[ProtoMember(14)] public bool isBot;
+	[ProtoMember(15)] public bool isSpectator;
+	[ProtoMember(16)] public int? autobalanceAlliance;
+	[ProtoMember(17)] public int? startPing;
 
 	[JsonIgnore]
 	public NetConnection? connection;

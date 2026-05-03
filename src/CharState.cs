@@ -1632,7 +1632,12 @@ public class Die : CharState {
 	}
 
 	public override bool canExit(Character character, CharState newState) {
-		if (newState is not BluesRevive and not NetLimbo { allowResurection: true }) {
+		if (!character.alive &&
+			newState is not BluesRevive
+			and not CallDownRush
+			and not SuperBassStart
+			and not NetLimbo { allowResurection: true }
+		) {
 			return false;
 		}
 		return base.canExit(character, newState);

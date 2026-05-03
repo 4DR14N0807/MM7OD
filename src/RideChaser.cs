@@ -612,25 +612,16 @@ public class RideChaser : Actor, IDamagable {
 	public void creditKill(Player killer, Player assister, int? weaponIndex) {
 		if (killer != null && killer != player) {
 			killer.addKill();
-			if (Global.level.gameMode is TeamDeathMatch) {
-				if (Global.isHost) {
-					if (killer.alliance != player.alliance) {
-						Global.level.gameMode.teamPoints[killer.alliance]++;
-						Global.level.gameMode.syncTeamScores();
-					}
-					Global.level.gameMode.syncTeamScores();
-				}
-			}
-
+			Global.level.gameMode.reportKill(false, killer, Player.stagePlayer, true);
 			killer.awardKillExp();
+		} else {
+			Global.level.gameMode.reportKill(false, player, Player.stagePlayer, true);
 		}
-
 		if (assister != null && assister != player) {
 			assister.addAssist();
-			assister.addKill();
+			Global.level.gameMode.reportKill(true, assister, Player.stagePlayer, true);
 			assister.awardKillExp();
 		}
-
 		if (ownedByLocalPlayer) {
 			//RPC.creditPlayerKillVehicle.sendRpc(killer, assister, this, weaponIndex);
 		}

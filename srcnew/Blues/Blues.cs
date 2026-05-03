@@ -481,7 +481,7 @@ public class Blues : Character {
 		// Breakman mode.
 		if (player.canReviveBlues()) {
 			hyperProgress = 0;
-			if (player.input.isPressed(Control.Special2, player)) {
+			if (player.input.isPressed(Control.Special2, player) || player.isAI) {
 				changeState(new BluesRevive(), true);
 				player.currency -= reviveCost;
 			}
@@ -1216,11 +1216,9 @@ public class Blues : Character {
 
 	public bool canUseBreakman() {
 		if (isBreakMan) {
-			//Global.level.gameMode.setHUDDebugWarning("test");
 			return false;
 		}
 		if (currency >= reviveCost) {
-			//Global.level.gameMode.setHUDDebugWarning("test2");
 			return true;
 		}
 		return false;

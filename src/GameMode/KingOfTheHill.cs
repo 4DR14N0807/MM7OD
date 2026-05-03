@@ -82,6 +82,7 @@ public class KingOfTheHill : GameMode {
 				winMessage = "Stalemate!",
 				loseMessage = "Stalemate!"
 			};
+			return;
 		}
 		string message2 = $"{teamNames[hill.alliance]} team wins";
 		matchOverResponse = new RPCMatchOverResponse() {

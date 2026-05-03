@@ -315,45 +315,64 @@ public partial class Level {
 			var actorChar = actor as Character;
 			var goChar = gameObject as Character;
 
-			if (actorChar.isCrystalized || goChar.isCrystalized) return true;
-			//if (actorChar.sprite.name.Contains("frozen") || goChar.sprite.name.Contains("frozen")) return false;
+			if (actorChar?.isCrystalized == true || goChar?.isCrystalized == true) {
+				return true;
+			}
 			return true;
 		}
-
-		/*if (actor is Character chr3 && (chr3.player.isViralSigma() || chr3.player.isKaiserViralSigma()) && gameObject is Ladder) {
-			return true;
-		}*/
-
 		if (actorCollider.disabled || gameObjectCollider.disabled) return false;
 
-		if (actorCollider.isTrigger == false && gameObject is Ladder) {
+		if (actorCollider.isTrigger == false && gameObject is Ladder && gameObject.collider != null) {
 			if (actor.pos.y <= gameObject.collider.shape.minY && intersection.y > 0) {
 				if (!actor.checkLadderDown) {
 					return false;
 				}
 			}
 		}
-		if (actorCollider.isTrigger == false && gameObject is OneWay oneWay) {
-			if (oneWay.lockDir.y == -1) {
-				if (actor.pos.y <= gameObject.collider.shape.minY && intersection.y > 0) {
+		// One way platform collison.
+		(int x, int y)? oneWayDir = null;
+		(float x, float y) oneWayDelta = (0, 0);
+		if (gameObject is OneWay oneWay) {
+			oneWayDir = (Math.Sign(oneWay.lockDir.x), Math.Sign(oneWay.lockDir.y));
+		}
+		else if (gameObject is MovingPlatform movingPlatform && movingPlatform.onewayDir != null) {
+			oneWayDir = (
+				Math.Sign(movingPlatform.onewayDir.Value.x),
+				Math.Sign(movingPlatform.onewayDir.Value.y)
+			);
+			oneWayDelta = (MathF.Abs(movingPlatform.deltaMove.x), MathF.Abs(movingPlatform.deltaMove.y));
+		}
+		if (actorCollider.isTrigger == false &&
+			oneWayDir != null &&
+			gameObject.collider != null
+		) {
+			if (oneWayDir.Value.y == -1) {
+				if (actor.pos.y <= gameObject.collider.shape.minY + oneWayDelta.y &&
+					intersection.y > -oneWayDelta.y
+				) {
 					return false;
 				}
 			}
-			else if (oneWay.lockDir.y == 1) {
-				if (actor.pos.y >= gameObject.collider.shape.maxY && intersection.y < 0) {
+			else if (oneWayDir.Value.y == 1) {
+				if (actor.pos.y >= gameObject.collider.shape.maxY - oneWayDelta.y &&
+					intersection.y < oneWayDelta.y) {
 					return false;
 				}
 			}
-			if (oneWay.lockDir.x == -1) {
-				if (actor.pos.x <= gameObject.collider.shape.minX && intersection.x > 0) {
+			if (oneWayDir.Value.x == -1) {
+				if (actor.pos.x <= gameObject.collider.shape.minX + oneWayDelta.x &&
+					intersection.x > -oneWayDelta.x) {
 					return false;
 				}
 			}
-			else if (oneWay.lockDir.x == 1) {
-				if (actor.pos.x >= gameObject.collider.shape.maxX && intersection.x < 0) {
+			else if (oneWayDir.Value.x == 1) {
+				if (actor.pos.x >= gameObject.collider.shape.maxX - oneWayDelta.x &&
+					intersection.x < oneWayDelta.x
+				) {
 					return false;
 				}
 			}
+			return true;
 		}
 
 		if (gameObject is Actor wallActor && wallActor.isSolidWall && !gameObjectCollider.isTrigger) {

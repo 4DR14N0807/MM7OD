@@ -56,7 +56,7 @@ public class Gate : Wall {
 
 public class MovingPlatform : Wall {
 	public Sprite sprite;
-	public Sprite idleSprite;
+	public Sprite? idleSprite;
 	public Point origin;
 	public float moveSpeed;
 	public float timeOffset;
@@ -73,11 +73,18 @@ public class MovingPlatform : Wall {
 	public long zIndex;
 	public bool flipXOnMoveLeft;
 	public bool flipYOnMoveUp;
+	public Point? onewayDir;
 	int xDirToUse = 1;
 	int yDirToUse = 1;
 
-	public MovingPlatform(string spriteName, string idleSpriteName, Point origin, string moveData, float moveSpeed, float timeOffset, string nodeName, string killZoneName, string crackedWallName, long zIndex,
-		bool flipXOnMoveLeft, bool flipYOnMoveUp) {
+	public MovingPlatform(
+		string spriteName, string idleSpriteName, Point origin,
+		string moveData, float moveSpeed, float timeOffset,
+		string nodeName, string killZoneName,
+		string crackedWallName, long zIndex,
+		bool flipXOnMoveLeft, bool flipYOnMoveUp,
+		Point? oneWay = null
+	) {
 		name = "MovingPlatform";
 		isMoving = true;
 
@@ -98,6 +105,7 @@ public class MovingPlatform : Wall {
 		this.zIndex = zIndex;
 		this.flipXOnMoveLeft = flipXOnMoveLeft;
 		this.flipYOnMoveUp = flipYOnMoveUp;
+		this.onewayDir = oneWay;
 
 		var lines = moveData.Split('\n');
 		foreach (var line in lines) {
@@ -160,7 +168,10 @@ public class MovingPlatform : Wall {
 		foreach (var point in sprite.hitboxes[0].shape.points) {
 			points.Add(pos.add(point));
 		}
-		collider = new Collider(points, sprite.hitboxes[0].isTrigger, null, true, false, HitboxFlag.None, new Point(0, 0));
+		collider = new Collider(
+			points, sprite.hitboxes[0].isTrigger, null,
+			true, false, HitboxFlag.None, new Point(0, 0)
+		);
 	}
 
 	public float getPeriod() {

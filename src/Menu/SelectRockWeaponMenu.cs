@@ -116,7 +116,7 @@ public class RockWeaponMenu : IMainMenu {
 			}
 			if (isChanged) {
 				if (inGame && Global.level != null) {
-					if (Options.main.killOnLoadoutChange) {
+					if (Options.shouldKillOnLdChange()) {
 						Global.level.mainPlayer.forceKill();
 					} else {
 						Global.level.gameMode.setHUDErrorMessage(

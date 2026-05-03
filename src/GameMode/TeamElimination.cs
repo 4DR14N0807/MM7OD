@@ -7,6 +7,7 @@ public class TeamElimination : GameMode {
 	public TeamElimination(Level level, int playingTo, int? timeLimit) : base(level, timeLimit) {
 		this.playingTo = playingTo;
 		isTeamMode = true;
+		isElim = true;
 		spawnOnAlly = true;
 
 		if (remainingTime == null) {
@@ -14,15 +15,16 @@ public class TeamElimination : GameMode {
 			startTimeLimit = remainingTime;
 		}
 	}
+
 	public override void drawTopHUD() {
 		/*Player[] enemyPlayersAlive = level.players.Where(
 			p => !p.isSpectator && p.deaths < playingTo && p.alliance != Global.level.mainPlayer.alliance
 		).ToArray();*/
 		Player[] allyPlayersAlive = level.players.Where(
-			p => !p.isSpectator && p.deaths < playingTo && p.alliance == Global.level.mainPlayer.alliance
+			p => !p.isSpectator && p.score < playingTo && p.alliance == Global.level.mainPlayer.alliance
 		).ToArray();
 		FontType fontColor = teamFontsSmall[mainPlayer.alliance];
-		int lives = playingTo - level.mainPlayer.deaths;
+		int lives = playingTo - level.mainPlayer.score;
 		string topText = "Allies:" + (allyPlayersAlive.Length).ToString().PadLeft(2 ,' ');
 		string botText = "Lives:" + lives.ToString().PadLeft(2 ,' ');
 		float mapOffset = shouldDrawRadar() ? 0 : 48;
@@ -62,7 +64,7 @@ public class TeamElimination : GameMode {
 		foreach (Player player in level.players) {
 			if (player.teamAlliance != null &&
 				player.teamAlliance >= 0 && player.teamAlliance < level.teamNum &&
-				!player.isSpectator && player.deaths < playingTo
+				!player.isSpectator && player.score < playingTo
 			) {
 				if (teamsAlive[player.teamAlliance.Value] != true) {
 					teamsAlive[player.teamAlliance.Value] = true;

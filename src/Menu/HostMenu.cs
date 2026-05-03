@@ -433,7 +433,10 @@ public class HostMenu : IMainMenu {
 				() => {
 					if (Global.input.isPressedMenu(Control.MenuLeft) && mapSizeIndex > 0) {
 						onMapSizeChange(mapSizeIndex, --mapSizeIndex);
-					} else if (Global.input.isPressedMenu(Control.MenuRight) && mapSizeIndex < mapSizes.Length - 1) {
+					} else if (
+						Global.input.isPressedMenu(Control.MenuRight) &&
+						mapSizeIndex < mapSizes.Length - 1
+					) {
 						onMapSizeChange(mapSizeIndex, ++mapSizeIndex);
 					}
 				},
@@ -648,6 +651,9 @@ public class HostMenu : IMainMenu {
 							if (!is1v1 && selectedGameMode == GameMode.TeamElimAlt) {
 								minimumTimeLimit = 1;
 							}
+							if (!is1v1 && selectedGameMode == GameMode.ElimAlt) {
+								minimumTimeLimit = 1;
+							}
 							if (timeLimit < minimumTimeLimit) {
 								timeLimit = minimumTimeLimit;
 							}
@@ -686,6 +692,19 @@ public class HostMenu : IMainMenu {
 						Fonts.drawText(
 							fontOption, "MIRRORED: " + Helpers.boolYesNo(mirrored),
 							pos.x, pos.y, selected: index == selectArrowPosY
+						);
+					}
+				)
+			);
+		} else {
+			menuOptions.Add(
+				new MenuOption(startX, startY,
+					() => {},
+					(Point pos, int index) => {
+						Fonts.drawText(
+							FontType.White, "MIRRORED: " + Helpers.boolYesNo(mirrored),
+							pos.x, pos.y, selected: index == selectArrowPosY,
+							selectedFont: FontType.Yellow
 						);
 					}
 				)
@@ -1225,6 +1244,32 @@ public class HostMenu : IMainMenu {
 		timeLimitDirty = false;
 		mapIndex = 0;
 		gameModeIndex = 0;
+		int dir = Math.Sign(newMapSizeIndex - prevMapSizeIndex);
+		int targetSize = prevMapSizeIndex;
+		if (dir < 0) {
+			while (targetSize >= 0) {
+				targetSize--;
+				mapSizeIndex = targetSize;
+				if (currentMapSizePool.Count > 0) {
+					break;
+				}
+			}
+			if (targetSize < 0) {
+				mapSizeIndex = prevMapSizeIndex;
+			}
+		}
+		if (dir > 0) {
+			while (targetSize <= 5) {
+				targetSize++;
+				mapSizeIndex = targetSize;
+				if (currentMapSizePool.Count > 0) {
+					break;
+				}
+			}
+			if (targetSize > 5) {
+				mapSizeIndex = prevMapSizeIndex;
+			}
+		}
 		if (prevMapSizeIndex == 1 && newMapSizeIndex != 1) {
 			removeMaverickCpuDatas();
 		}
@@ -1238,23 +1283,17 @@ public class HostMenu : IMainMenu {
 		isMapSelected = true;
 		string oldSelectedGameMode = selectedGameMode;
 		gameModeIndex = currentGameModePool.IndexOf(selectedGameMode);
-		if (gameModeIndex == -1) gameModeIndex = 0;
+		if (gameModeIndex == -1) {
+			gameModeIndex = 0;
+		}
 		if (selectedGameMode != oldSelectedGameMode) {
 			onModeChange();
 		}
-
 		if (selectedLevel.isTraining()) {
 			timeLimit = 0;
 			removeMaverickCpuDatas();
 		}
-
-		if (!selectedLevel.supportsLargeCam) {
-			fixedCamera = false;
-		} /*else if (selectedLevel.defaultLargeCam) {
-			fixedCamera = true;
-		}*/ else {
-			fixedCamera = false;
-		}
+		fixedCamera = false;
 
 		if (isOffline) {
 			if (selectedLevel.is1v1() || selectedLevel.isTraining()) {
@@ -1266,11 +1305,11 @@ public class HostMenu : IMainMenu {
 			}
 		}
 
+		if (!selectedLevel.mirroredOnly) { mirrored = false; }
 		setPlayToAndTimeLimitBasedOnGameMode();
 		setMirroredBasedOnMapAndGameMode();
 		setMirroredBasedOnMap();
 		setMenuOptions();
-		if (!selectedLevel.mirroredOnly) mirrored = false;
 	}
 
 	private void removeMaverickCpuDatas() {
@@ -1289,12 +1328,11 @@ public class HostMenu : IMainMenu {
 		playToDirty = false;
 		timeLimitDirty = false;
 
+		if (!selectedLevel.mirroredOnly) { mirrored = false; }
 		setPlayToAndTimeLimitBasedOnGameMode();
 		setMirroredBasedOnMapAndGameMode();
 		setMirroredBasedOnMap();
 		setMenuOptions();
-
-		if (!selectedLevel.mirroredOnly) mirrored = false;
 	}
 
 	public void setPlayToAndTimeLimitBasedOnGameMode() {
@@ -1345,10 +1383,11 @@ public class HostMenu : IMainMenu {
 		} else if (selectedGameMode == GameMode.KingOfTheHill) {
 			timeLimit = 5;
 		} else if (selectedGameMode == GameMode.TeamElimAlt) {
-			if (!playToDirty) {
-				playTo = 3;
-			}
-			timeLimit = 2;
+			if (!playToDirty) { playTo = 3; }
+			timeLimit = 1;
+		} else if (selectedGameMode == GameMode.ElimAlt) {
+			if (!playToDirty) { playTo = 3; }
+			timeLimit = 1;
 		}
 	}
 

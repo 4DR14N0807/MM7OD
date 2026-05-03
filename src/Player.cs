@@ -220,6 +220,7 @@ public partial class Player {
 
 	public bool warpedInOnce;
 	public bool spawnedOnce;
+	public bool spawnedOnceAlt;
 
 	public bool isMuted;
 
@@ -323,6 +324,7 @@ public partial class Player {
 	// Note: these are not automatically applied,
 	// you need to add code in Global.level.joinedLateSyncPlayers
 	// and update PlayerSync class at top of this file
+	public int score;
 	public int kills;
 	public int assists;
 	public int deaths;
@@ -379,8 +381,10 @@ public partial class Player {
 		name = serverPlayer.name;
 		ping = serverPlayer.ping;
 
+		score = serverPlayer.score;
 		kills = serverPlayer.kills;
 		deaths = serverPlayer.deaths;
+		assists = serverPlayer.assists;
 
 		if (ownedByLocalPlayer && serverPlayer.autobalanceAlliance != null &&
 			newAlliance != serverPlayer.autobalanceAlliance.Value
@@ -497,6 +501,10 @@ public partial class Player {
 	public float lastMashAmount;
 	public int lastMashAmountSetFrame;
 
+	// Netcode stuff.
+	public long lastNetSendFrame;
+	public long lastNetMasteryFrame;
+	
 	public bool is1v1MaverickX1() {
 		return maverick1v1 <= 8;
 	}
@@ -860,8 +868,19 @@ public partial class Player {
 		if (!Global.level.gameMode.isOver) {
 			respawnTime -= Global.spf;
 		}
-		if (Global.canControlKillscore && Global.isOnFrame(30)) {
-			RPC.updatePlayer.sendRpc(id, kills, deaths);
+		if (Global.canControlKillscore &&
+			Global.isOnFrame(30) &&
+			lastNetSendFrame != Global.floorFrameCount
+		) {
+			lastNetSendFrame = Global.floorFrameCount;
+			RPC.updatePlayer.sendRpc(this);
+		}
+		if (ownedByLocalPlayer &&
+			Global.floorFrameCount % 120 == 0 &&
+			lastNetMasteryFrame != Global.floorFrameCount
+		) {
+			lastNetMasteryFrame = Global.floorFrameCount;
+			RPC.updateMastery.sendRpc(this);
 		}
 		if (character == null && respawnTime <= 0 && eliminated()) {
 			if (Global.serverClient != null && isMainPlayer) {
@@ -1074,6 +1093,8 @@ public partial class Player {
 		if (isMainChar) {
 			newCharNum = spawnCharNum;
 			charNum = spawnCharNum;
+			spawnedOnce = true;
+			spawnedOnceAlt = true;
 		}
 		if (isMainPlayer) {
 			previousLoadout = loadout;
@@ -1963,16 +1984,7 @@ public partial class Player {
 	}
 
 	public void addKill() {
-		if (Global.serverClient == null) {
-			kills++;
-		} else if (Global.canControlKillscore) {
-			kills++;
-			if (!charNumToKills.ContainsKey(realCharNum)) {
-				charNumToKills[realCharNum] = 0;
-			}
-			charNumToKills[realCharNum]++;
-			RPC.updatePlayer.sendRpc(id, kills, deaths);
-		}
+		kills++;
 	}
 
 	public void addAssist() {
@@ -1980,12 +1992,7 @@ public partial class Player {
 	}
 
 	public void addDeath() {
-		if (Global.serverClient == null) {
-			deaths++;
-		} else if (Global.canControlKillscore) {
-			deaths++;
-			RPC.updatePlayer.sendRpc(id, kills, deaths);
-		}
+		deaths++;
 	}
 
 	public float mashValue() {

@@ -136,7 +136,6 @@ public class Bass : Character {
 
 	public bool canGoSuperBass() {
 		return (
-			charState is not Die && charState.normalCtrl &&
 			!isSuperBass && !isTrebbleBoost && player.currency >= TrebleBoostCost &&
 			player.evilEnergyStacks <= 0 && player.pendingEvilEnergyStacks <= 0
 		);
@@ -162,6 +161,11 @@ public class Bass : Character {
 		weapons.Clear();
 		weapons.Add(new SBassBuster());
 		weapons.Add(new SBassRP());
+		if (Global.level.is1v1()) {
+			nextPhase(phase + 1);
+			nextPhase(phase + 1);
+			nextPhase(phase + 1);
+		}
 	}
 
 	public void addEvilness(float ammo) {
@@ -312,6 +316,14 @@ public class Bass : Character {
 		//Non-local players end here.
 		if (!ownedByLocalPlayer) return;
 
+		if (canRevive()) {
+			hyperProgress = 0;
+			if (player.input.isPressed(Control.Special2, player) || player.isAI) {
+				alive = true;
+				player.currency -= TrebleBoostCost;
+				changeState(new SuperBassStart(), true);
+			}
+		}
 
 		Helpers.decrementFrames(ref weaponCooldown);
 		Helpers.decrementFrames(ref tBladeDashCooldown);
@@ -550,7 +562,7 @@ public class Bass : Character {
 	public void quickHyperUpgrade() {
 		if (isSuperBass || isTrebbleBoost || !alive || !canGoSuperBass() ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
-			!player.input.isHeld(Control.Special2, player)
+			charState.normalCtrl || !player.input.isHeld(Control.Special2, player)
 		) {
 			hyperProgress = 0;
 			return;
@@ -562,6 +574,16 @@ public class Bass : Character {
 		player.currency -= TrebleBoostCost;
 		changeState(new SuperBassStart(), true);
 		hyperProgress = 0;
+	}
+
+	public bool canRevive() {
+		return ( 
+			(Global.level.is1v1() || Global.level.gameMode.isElim) &&
+			charState is Die dieState &&
+			!dieState.respawnTimerOn &&
+			canGoSuperBass() &&
+			!player.isSpectator
+		);
 	}
 
 	public override Projectile? getProjFromHitbox(Collider hitbox, Point centerPoint) {

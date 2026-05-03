@@ -357,9 +357,11 @@ public partial class Level {
 			gameMode = new KingOfTheHill(this, server.timeLimit);
 		} else if (server.gameMode == GameMode.Race) {
 			gameMode = new Race(this);
+		} else if (server.gameMode == GameMode.ElimAlt) {
+			gameMode = new ElimAlt(this, server.playTo, server.timeLimit);
 		} else if (server.gameMode == GameMode.TeamElimAlt) {
 			gameMode = new TeamElimAlt(this, server.playTo, server.timeLimit);
-		} 
+		}
 
 		// Radar dimensions
 		float maxDim = 50f;
@@ -909,7 +911,23 @@ public partial class Level {
 
 				long zIndex = getZIndexFromProperty(instance.properties.zIndex, ZIndex.Default);
 
-				var platform = new MovingPlatform(spriteName, idleSpriteName, pos, moveData, moveSpeed, timeOffset, nodeName, killZoneName, crackedWallName, zIndex, flipXOnMoveLeft, flipYOnMoveUp);
+				float? onewayX = instance.properties.onewayX ?? null;
+				float? onewayY = instance.properties.onewayY ?? null;
+				Point? oneway = null;
+				if (onewayX != null && onewayX != 0 || onewayY != null && onewayY != 0) {
+					oneway = new Point(
+						Math.Sign(onewayX ?? 0),
+						Math.Sign(onewayY ?? 0)
+					);
+				}
+				var platform = new MovingPlatform(
+					spriteName, idleSpriteName,
+					pos, moveData, moveSpeed,
+					timeOffset,
+					nodeName, killZoneName, crackedWallName,
+					zIndex, flipXOnMoveLeft, flipYOnMoveUp,
+					oneway
+				);
 				movingPlatforms.Add(platform);
 				addGameObject(platform);
 			} else if (objectName.StartsWith("Music Source")) {
@@ -1121,20 +1139,41 @@ public partial class Level {
 	}*/
 
 	public bool pickupRestricted(dynamic instance) {
-		if (instance.properties.nonDmOnly == true && Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
-		if (instance.properties.nonCpOnly == true && Global.level.server.gameMode.Contains(GameMode.ControlPoint)) return true;
-		if (instance.properties.nonCtfOnly == true && Global.level.server.gameMode.Contains(GameMode.CTF)) return true;
-		if (instance.properties.nonKothOnly == true && Global.level.server.gameMode.Contains(GameMode.KingOfTheHill)) return true;
-		if (instance.properties.dmOnly == true && !Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
-		if (Global.level.server?.customMatchSettings?.pickupItems == false) return true;
-		return false;
+		if (Global.level.server?.customMatchSettings?.pickupItems == false) {
+			return true;
+		}
+		return otherRestricted(instance);
 	}
 	public bool otherRestricted(dynamic instance) {
-		if (instance.properties.nonDmOnly == true && Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
-		if (instance.properties.nonCpOnly == true && Global.level.server.gameMode.Contains(GameMode.ControlPoint)) return true;
-		if (instance.properties.nonCtfOnly == true && Global.level.server.gameMode.Contains(GameMode.CTF)) return true;
-		if (instance.properties.nonKothOnly == true && Global.level.server.gameMode.Contains(GameMode.KingOfTheHill)) return true;
-		if (instance.properties.dmOnly == true && !Global.level.server.gameMode.Contains(GameMode.Deathmatch)) return true;
+		if (instance.properties.nonDmOnly == true && (
+			Global.level.server.gameMode.Contains(GameMode.Deathmatch) ||
+			Global.level.server.gameMode.Contains(GameMode.Elimination) ||
+			Global.level.server.gameMode.Contains(GameMode.ElimAlt)
+		)) {
+			return true;
+		}
+		if (instance.properties.nonCpOnly == true &&
+			Global.level.server.gameMode.Contains(GameMode.ControlPoint)
+		) {
+			return true;
+		}
+		if (instance.properties.nonCtfOnly == true &&
+			Global.level.server.gameMode.Contains(GameMode.CTF)
+		) {
+			return true;
+		}
+		if (instance.properties.nonKothOnly == true &&
+			Global.level.server.gameMode.Contains(GameMode.KingOfTheHill)
+		) {
+			return true;
+		}
+		if (instance.properties.dmOnly == true &&
+			!Global.level.server.gameMode.Contains(GameMode.Deathmatch) &&
+			!Global.level.server.gameMode.Contains(GameMode.Elimination) &&
+			!Global.level.server.gameMode.Contains(GameMode.ElimAlt)
+		) {
+			return true;
+		}
 		return false;
 	}
 
@@ -1150,8 +1189,10 @@ public partial class Level {
 
 			player.alliance = hostPlayer.alliance;
 			player.newAlliance = hostPlayer.newAlliance;
+			player.score = hostPlayer.serverPlayer.score;
 			player.kills = hostPlayer.serverPlayer.kills;
 			player.deaths = hostPlayer.serverPlayer.deaths;
+			player.assists = hostPlayer.serverPlayer.assists;
 			player.newCharNum = hostPlayer.newCharNum;
 			player.charNum = hostPlayer.currentCharNum != -1 ? hostPlayer.currentCharNum : player.newCharNum;
 			player.curMaxNetId = hostPlayer.curMaxNetId;
@@ -1405,7 +1446,7 @@ public partial class Level {
 		players.Remove(player);
 		var nsps = nonSpecPlayers();
 		if (nsps.Count == 1 && is1v1()) {
-			nsps[0].kills = server.playTo;
+			nsps[0].score = server.playTo;
 		}
 	}
 
@@ -2976,7 +3017,7 @@ public partial class Level {
 	}
 
 	public bool enabledBreakmanMusic() {
-		return Options.main.enableHyperMusic;
+		return Options.main.enableHyperMusic && !is1v1();
 	}
 
 	public bool isTraining() {

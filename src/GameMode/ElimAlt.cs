@@ -4,9 +4,10 @@ using SFML.Graphics;
 
 namespace MMXOnline;
 
-public class TeamElimAlt : GameMode {
+public class ElimAlt : GameMode {
 	public RPCMatchOverResponse? roundResult;
-	public int[] last2Teams = [nullAlliance, nullAlliance];
+	public Player? lastPlayer0 = null;
+	public Player? lastPlayer1 = null;
 	public float roundDrawTime;
 	public float resultTime;
 	public float resultMaxTime = 60 * 6;
@@ -15,11 +16,9 @@ public class TeamElimAlt : GameMode {
 	public float roundTime;
 	public float roundMaxTime;
 
-	public TeamElimAlt(Level level, int playingTo, int? timeLimit) : base(level, null) {
+	public ElimAlt(Level level, int playingTo, int? timeLimit) : base(level, null) {
 		this.playingTo = playingTo;
-		isTeamMode = true;
 		isElim = true;
-		spawnOnAlly = true;
 		// Time stuff.
 		finalZoneMaxTime2 = 60;
 		timeLimit ??= 1;
@@ -46,7 +45,6 @@ public class TeamElimAlt : GameMode {
 
 		base.update();
 	}
-
 
 	public override void render() {
 		base.render();
@@ -103,54 +101,35 @@ public class TeamElimAlt : GameMode {
 	}
 
 	public override void drawTopHUD() {
-		int teamSide = Global.level.mainPlayer.teamAlliance ?? -1;
-		if (teamSide < 0 || Global.level.mainPlayer.isSpectator) {
-			drawAllTeamsHUD();
-			return;
-		}
-		int maxTeams = Global.level.teamNum;
+		List<Player> activePlayers = Global.level.nonSpecPlayers();
+		int maxPlayers = activePlayers.Count;
 		Player mainPlayer = Global.level.mainPlayer;
 		float mapOffset = shouldDrawRadar() ? 0 : 48;
 
-		string teamText = $"{teamInitals[teamSide]}: {teamPoints[teamSide]}";
+		// Draw points.
+		string teamText = $"P: {mainPlayer.score}";
 		Fonts.drawText(
-			teamFontsSmall[teamSide], teamText,
+			FontType.WhiteSmall, teamText,
 			Global.screenW - 56 + mapOffset, 7, Alignment.Right
 		);
 		int textSize = Fonts.measureText(FontType.WhiteSmall, teamText);
-
-		int leaderTeam = 0;
+		// Get max score.
 		int leaderScore = -1;
-		bool moreThanOneLeader = false;
-		for (int i = 0; i < Global.level.teamNum; i++) {
-			if (teamPoints[i] >= leaderScore) {
-				leaderTeam = i;
-				if (leaderScore == teamPoints[i]) {
-					moreThanOneLeader = true;
-				}
-				leaderScore = teamPoints[i];
+		foreach (Player player in activePlayers) {
+			if (player.score >= leaderScore) {
+				leaderScore = player.score;
 			}
 		}
-		if (!moreThanOneLeader) {
-			Fonts.drawText(
-				teamFontsSmall[leaderTeam], $"L: {leaderScore} ",
-				Global.screenW - 56 + mapOffset - textSize, 7, Alignment.Right
-			);
-		} else {
-			Fonts.drawText(
-				FontType.WhiteSmall, $"L: {leaderScore} ",
-				Global.screenW - 56 + mapOffset - textSize, 7, Alignment.Right
-			);
-		}
-		// Draw lives.
-		Player[] playersAlive = level.players.Where(p => !p.isSpectator && p.elimAlive).ToArray();
-		Player[] alliesAlive = playersAlive.Where(p => p.alliance == mainPlayer.alliance).ToArray();
-
 		Fonts.drawText(
-			FontType.WhiteSmall, $"Alive: {alliesAlive.Length} / {playersAlive.Length}",
+			FontType.WhiteSmall, $"L: {leaderScore} ",
+			Global.screenW - 56 + mapOffset - textSize, 7, Alignment.Right
+		);
+		// Draw lives.
+		Player[] playersAlive = activePlayers.Where(p => !p.isSpectator && p.elimAlive).ToArray();
+		Fonts.drawText(
+			FontType.WhiteSmall, $"Alive: {playersAlive.Length}",
 			Global.screenW - 56 + mapOffset, 17, Alignment.Right
 		);
-
 		drawTimeIfSet(37, finalZoneTime);
 	}
 
@@ -165,30 +144,21 @@ public class TeamElimAlt : GameMode {
 			return;
 		}
 		// Vars.
-		bool[] teamsAlive = new bool[level.teamNum];
-		bool[] teamsActive = new bool[level.teamNum];
-		HashSet<int> teamsAliveHash = [];
-		int teamNumAlive = 0;
-		int teamNumActive = 0;
+		List<Player> playersAliveList = new();
+		int playersAlive = 0;
+		int playersActive = 0;
 		// Check what is alive.
 		foreach (Player player in level.players) {
-			if (player.teamAlliance != null &&
-				player.teamAlliance >= 0 && player.teamAlliance < level.teamNum &&
-				!player.isSpectator && player.spawnedOnceAlt
-			) {
-				if (player.elimAlive && teamsAlive[player.teamAlliance.Value] != true) {
-					teamsAlive[player.teamAlliance.Value] = true;
-					teamsAliveHash.Add(player.teamAlliance.Value);
-					teamNumAlive++;
+			if (!player.isSpectator && player.spawnedOnceAlt) {
+				if (player.elimAlive) {
+					playersAlive++;
+					playersAliveList.Add(player);
 				}
-				if (teamsActive[player.teamAlliance.Value] != true) {
-					teamsActive[player.teamAlliance.Value] = true;
-					teamNumActive++;
-				}
+				playersActive++;
 			}
 		}
 		// We wait if we are at 1 or less total teams.
-		if (teamNumActive < 2) {
+		if (playersActive < 2) {
 			return;
 		}
 		// Stalemate if we go over the theshold.
@@ -202,15 +172,18 @@ public class TeamElimAlt : GameMode {
 			return;
 		}
 		// If somehow everyone died during draw time then we go into draw.
-		if (teamNumAlive == 0 && roundDrawTime > 0) {
+		if (playersAlive == 0 && roundDrawTime > 0) {
 			string messageSub = "No one won the round";
-			if (last2Teams[0] != nullAlliance) {
+			if (lastPlayer0 != null && lastPlayer1 != null) {
 				messageSub = (
-					$"{teamNames[last2Teams[0]]} and {teamNames[last2Teams[1]]} wins the round"
+					$"{lastPlayer0.name} and {lastPlayer1.name} wins the round"
 				);
 			}
 			addResult(new RPCMatchOverResponse() {
-				winningAlliances = [last2Teams[0], last2Teams[1]],
+				winningAlliances = [
+					lastPlayer0?.alliance ?? nullAlliance,
+					lastPlayer1?.alliance ?? nullAlliance
+				],
 				winMessage = "Draw!",
 				loseMessage = "Draw!",
 				winMessage2 = messageSub,
@@ -219,13 +192,12 @@ public class TeamElimAlt : GameMode {
 			return;
 		}
 		// Save the last 2 teams for draw conditions.
-		if (teamNumAlive == 2) {
-			int[] teamsAliveArray = teamsAliveHash.ToArray();
-			last2Teams[0] = teamsAliveArray[0];
-			last2Teams[1] = teamsAliveArray[1];
+		if (playersAlive == 2) {
+			lastPlayer0 = playersAliveList[0];
+			lastPlayer1 = playersAliveList[1];
 		}
 		// Return if more than 1 team is alive.
-		if (teamNumAlive > 1) {
+		if (playersAlive > 1) {
 			roundDrawTime = 0;
 			return;
 		}
@@ -237,11 +209,10 @@ public class TeamElimAlt : GameMode {
 		}
 		roundDrawTime = 0;
 		// Get winning team id.
-		int winningAlliance = teamsAlive.IndexOf(true);
-		string message2 = $"{teamNames[winningAlliance]} wins the round";
+		string message2 = $"{playersAliveList[0].name} wins the round";
 		// Generate the standart response.
 		addResult(new RPCMatchOverResponse() {
-			winningAlliances = [winningAlliance],
+			winningAlliances = [playersAliveList[0].alliance],
 			winMessage = "Victory!",
 			winMessage2 = message2,
 			loseMessage = "Defeat!",
@@ -253,8 +224,8 @@ public class TeamElimAlt : GameMode {
 		roundResult = result;
 		resultTime = resultMaxTime;
 		respawnWindow = respawnMaxWindow;
-		last2Teams[0] = nullAlliance;
-		last2Teams[1] = nullAlliance;
+		lastPlayer0 = null;
+		lastPlayer1 = null;
 		roundTime = roundMaxTime + finalZoneMaxTime1 + finalZoneMaxTime2;
 		finalZoneTime = roundMaxTime;
 		eliminationTime = 0;
@@ -293,9 +264,5 @@ public class TeamElimAlt : GameMode {
 		if (sendRpc) {
 			RPC.syncEAltRound.sendRpc(result);
 		}
-	}
-
-	public override void drawScoreboard() {
-		drawTeamScoreboard();
 	}
 }

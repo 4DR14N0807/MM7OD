@@ -6,6 +6,7 @@ namespace MMXOnline;
 public class Elimination : GameMode {
 	public Elimination(Level level, int lives, int? timeLimit) : base(level, timeLimit) {
 		playingTo = lives;
+		isElim = true;
 		if (remainingTime == null && !level.is1v1()) {
 			remainingTime = 300;
 			startTimeLimit = remainingTime;
@@ -38,7 +39,7 @@ public class Elimination : GameMode {
 		// Check what is alive.
 		List<Player> playersAlive = [];
 		foreach (Player player in level.players) {
-			if (!player.isSpectator && player.deaths < playingTo) {
+			if (!player.isSpectator && player.score < playingTo) {
 				playersAlive.Add(player);
 			}
 		}
@@ -77,8 +78,8 @@ public class Elimination : GameMode {
 	}
 
 	public override void drawTopHUD() {
-		Player[] playersStillAlive = level.players.Where(p => !p.isSpectator && p.deaths < playingTo).ToArray();
-		int lives = playingTo - level.mainPlayer.deaths;
+		Player[] playersStillAlive = level.players.Where(p => !p.isSpectator && p.score < playingTo).ToArray();
+		int lives = playingTo - level.mainPlayer.score;
 		string topText = "Lives:" + lives.ToString().PadLeft(2 ,' ');
 		string botText = "Alive:" + (playersStillAlive.Length).ToString().PadLeft(2 ,' ');
 		float mapOffset = shouldDrawRadar() ? 0 : 48;
@@ -94,5 +95,14 @@ public class Elimination : GameMode {
 
 	public override void drawScoreboard() {
 		base.drawScoreboard();
+	}
+
+	public override void reportKill(bool isAssist, Player killer, Player victim, bool isSummon = false) {
+		// We ignore assist, as are reported alonside kills.
+		// Same with summons, we only count if the main entity dies.
+		// Elim score works backwards, so we add kills.
+		if (!isAssist && !isSummon) {
+			deathToScore(killer);
+		}
 	}
 }

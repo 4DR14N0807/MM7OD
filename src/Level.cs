@@ -87,6 +87,7 @@ public partial class Level {
 	public string debugString2;
 	public float lerpCamTime = 0;
 	public GameMode gameMode;
+	public HUD hud;
 	public float cellWidth;
 	public LevelData levelData;
 	public int mirrorX;
@@ -298,6 +299,7 @@ public partial class Level {
 		}
 
 		updateLevelShaders();
+		hud = new HUD(this);
 	}
 
 	public Server server;
@@ -362,6 +364,7 @@ public partial class Level {
 		} else if (server.gameMode == GameMode.TeamElimAlt) {
 			gameMode = new TeamElimAlt(this, server.playTo, server.timeLimit);
 		}
+		hud.gameMode =  gameMode;
 
 		// Radar dimensions
 		float maxDim = 50f;
@@ -2363,7 +2366,7 @@ public partial class Level {
 		DrawWrappers.deferredTextDraws.Clear();
 
 		// At this point all drawing should be HUD/menu elements only
-		level.gameMode.render();
+		level.hud.render();
 
 		if (level.mainPlayer.readyTime > 0) {
 			if (level.mainPlayer.readyTime < 0.4) {

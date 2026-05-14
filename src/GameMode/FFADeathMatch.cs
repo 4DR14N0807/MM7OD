@@ -89,7 +89,7 @@ public class FFADeathMatch : GameMode {
 	public override void reportKill(bool isAssist, Player killer, Player victim, bool isSummon = false) {
 		// We ignore suicides.
 		if (killer.alliance != victim.alliance) {
-			killToScore(killer);
+			killToScore(killer, victim);
 		}
 	}
 }

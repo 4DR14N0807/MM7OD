@@ -24,7 +24,7 @@ public class SpreadDrill : Weapon {
 		//);
 		descriptionV2 = [
 			[ "Shoots a drill that splits by pressing SHOOT button\n" +
-			"The smaller the drill the faster it is." ],
+			"Slowdown on hit, the smaller the drill the faster it is." ],
 		];
 	}
 
@@ -104,8 +104,8 @@ public class SpreadDrillProj : Projectile {
 			ownerPlayer.input.isPressed(Control.Shoot, ownerPlayer) &&
 			(ownerActor as Character)?.currentWeapon is SpreadDrill
 		) {
-			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), true, rpc: true);
-			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), false, rpc: true);
+			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), true, sendRpc: true);
+			new SpreadDrillMediumProj(ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(), false, sendRpc: true);
 			destroySelf();
 			return;
 		}
@@ -145,18 +145,19 @@ public class SpreadDrillProj : Projectile {
 		);
 	}
 }
+
 public class SpreadDrillMediumProj : Projectile {
-	public int hits;
 	public Point addPos;
 	public float projSpeed = 150;
+	public float bounceCooldown;
 
 	public SpreadDrillMediumProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
-		bool upOrDown, bool rpc = false, Player? altPlayer = null
+		bool upOrDown, bool sendRpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "spread_drill_medium_proj", netProjId, altPlayer
 	) {
-		maxTime = 120f;
+		maxTime = 40f / 60f;
 		projId = (int)BassProjIds.SpreadDrillMid;
 		destroyOnHit = false;
 
@@ -164,15 +165,14 @@ public class SpreadDrillMediumProj : Projectile {
 		yDir = upOrDown ? -1 : 1;
 		damager.damage = 1;
 		damager.hitCooldown = 30;
+		addPos = new Point(-12 * xDir, 0);
 
-		addPos = new Point(-12 * xDir, 0 * yDir);
-		canBeLocal = false;
-
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, new byte[] { (byte)(yDir == -1 ? 1 : 0) });
+		if (sendRpc) {
+			rpcCreate(
+				pos, owner, ownerPlayer, netProjId, xDir,
+				[(byte)(yDir == -1 ? 1 : 0)]
+			);
 		}
-
-		//projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -182,47 +182,54 @@ public class SpreadDrillMediumProj : Projectile {
 		);
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		Helpers.decrementFrames(ref bounceCooldown);
+	}
+
 	public override void update() {
 		base.update();
-		if (time < 0.2f && hits == 0) move(new Point(0, yDir * 120));
-
-		if (hits >= 3) destroySelfNoEffect(true, true);
-
-		if (Math.Abs(vel.x) < projSpeed) vel.x += Global.speedMul * xDir * 8;
-		else if (Math.Abs(vel.x) > projSpeed) vel.x = speed * xDir;
-
+		if (time < 0.2f) {
+			move(new Point(0, yDir * 120));
+		}
+		if (vel.x * xDir < projSpeed) {
+			vel.x += Global.speedMul * xDir * 8;
+			if (vel.x * xDir >= projSpeed) {
+				vel.x = projSpeed * xDir;
+			}
+		}
+		if (hitCount >= 3) {
+			damager.damage = 0;
+		}
 		if (!ownedByLocalPlayer || ownerActor == null) {
 			return;
 		}
-		if (time >= 40 / 60f ||
+		if (time > 0.05 &&
 			owner.input.isPressed(Control.Shoot, owner) &&
-			(ownerActor as Character)?.currentWeapon is not SpreadDrill
+			ownerActor is Character { currentWeapon: SpreadDrill { shootCooldown: >0 } }
 		) {
-			new SpreadDrillSmallProj(ownerActor, pos, xDir, owner.getNextActorNetId(), true, rpc: true);
-			new SpreadDrillSmallProj(ownerActor, pos, xDir, owner.getNextActorNetId(), false, rpc: true);
 			destroySelf(doRpcEvenIfNotOwned: true);
 		}
 	}
 
-	public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-		if (!ownedByLocalPlayer) return;
-
-		forceNetUpdateNextFrame = true;
-		time = 0;
-	}
-
-	public override void onDamageEX(IDamagable damagable) {
-		base.onDamageEX(damagable);
-		if (!ownedByLocalPlayer) return;
-
-		hits++;
-		playSound("spreaddrillHit", true);
+	public override void afterDamage(IDamagable damagable, bool wasHit) {
+		base.afterDamage(damagable, wasHit);
+		if (damager.damage == 0 || bounceCooldown > 0) {
+			return;
+		}
 		vel.x = xDir * -90;
+		maxTime += 24 / 60f;
+		bounceCooldown = 30 / 60f;
+
+		if (!wasHit) {
+			return;
+		}
+		playSound("spreaddrillHit");
+
 		Point? hitPos = sprite.getCurrentFrame().POIs[0];
 		new Anim(
 			pos.add(hitPos.Value.times(xDir)),
-			"rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true
+			"rock_buster_fade", xDir, null, true
 		);
 	}
 
@@ -231,30 +238,43 @@ public class SpreadDrillMediumProj : Projectile {
 		string exhaust = "spread_drill_effect";
 		int fi = Global.floorFrameCount % 2;
 
-		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
+		Global.sprites[exhaust].draw(
+			fi, pos.x + addPos.x, pos.y + addPos.y,
+			xDir, yDir, null, 1, 1, 1, zIndex
+		);
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
+		if (ownedByLocalPlayer && ownerActor != null) {
+			new SpreadDrillSmallProj(
+				ownerActor, pos, xDir, owner.getNextActorNetId(), true, sendRpc: true
+			);
+			new SpreadDrillSmallProj(
+				ownerActor, pos, xDir, owner.getNextActorNetId(), false, sendRpc: true
+			);
+		}
 		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) {
-			ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0,
+			ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50),
+			frameIndex = 0, frameSpeed = 0,
 			gravityModifier = 0.66f, blink = true
 		};
 		new Anim(pos, "spread_drill_medium_pieces", xDir, null, false) {
-			ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0,
+			ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50),
+			frameIndex = 1, frameSpeed = 0,
 			gravityModifier = 0.66f, blink = true
 		};
 	}
 }
 
 public class SpreadDrillSmallProj : Projectile {
-	int hits;
-	Point addPos;
-	float projSpeed = 200;
+	public Point addPos;
+	public float projSpeed = 200;
+	public float bounceCooldown;
 
 	public SpreadDrillSmallProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId,
-		bool upOrDown, bool rpc = false, Player? altPlayer = null
+		bool upOrDown, bool sendRpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "spread_drill_small_proj", netProjId, altPlayer
 	) {
@@ -266,14 +286,14 @@ public class SpreadDrillSmallProj : Projectile {
 		yDir = upOrDown ? -1 : 1;
 		damager.damage = 1;
 		damager.hitCooldown = 15f;
-
 		addPos = new Point(-6 * xDir, 1 * yDir);
-		canBeLocal = false;
 
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, new byte[] { (byte)(yDir == -1 ? 1 : 0) });
+		if (sendRpc) {
+			rpcCreate(
+				pos, owner, ownerPlayer, netProjId, xDir,
+				[(byte)(yDir == -1 ? 1 : 0)]
+			);
 		}
-		//projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -283,42 +303,45 @@ public class SpreadDrillSmallProj : Projectile {
 		);
 	}
 
+	public override void preUpdate() {
+		base.preUpdate();
+		Helpers.decrementFrames(ref bounceCooldown);
+	}
+
 	public override void update() {
 		base.update();
-
-		if (time < 0.1f && hits == 0) {
-			move(new Point(0, yDir * 120));
+		if (time < 0.2f) {
+			move(new Point(0, yDir * 60));
 		}
-		if (hits >= 3) {
-			destroySelf();
+		if (hitCount >= 2) {
+			damager.damage = 0;
 		}
-		if (Math.Abs(vel.x) < projSpeed) {
+		if (vel.x * xDir < projSpeed) {
 			vel.x += Global.speedMul * xDir * 16;
-		} else if (Math.Abs(vel.x) > projSpeed) {
-			vel.x = projSpeed * xDir;
+			if (vel.x * xDir >= projSpeed) {
+				vel.x = projSpeed * xDir;
+			}
 		}
 	}
 
-	public override void onHitDamagable(IDamagable damagable) {
-		base.onHitDamagable(damagable);
-		if (!ownedByLocalPlayer) return;
+	public override void afterDamage(IDamagable damagable, bool wasHit) {
+		base.afterDamage(damagable, wasHit);
+		if (damager.damage == 0 || bounceCooldown > 0) {
+			return;
+		}
+		vel.x = xDir * -60;
+		maxTime += 12 / 60f;
+		bounceCooldown = 15 / 60f;
 
-		forceNetUpdateNextFrame = true;
-		time = 0;
-	}
+		if (!wasHit) {
+			return;
+		}
+		playSound("spreaddrillHit");
 
-	public override void onDamageEX(IDamagable damagable) {
-		base.onDamageEX(damagable);
-		if (!ownedByLocalPlayer) return;
-
-		hits++;
-		playSound("spreaddrillHit", true);
-		vel.x = xDir * -120;
-		yPushVel = yDir;
 		Point? hitPos = sprite.getCurrentFrame().POIs[0];
 		new Anim(
 			pos.add(hitPos.Value.times(xDir)),
-			"rock_buster_fade", xDir, damager.owner.getNextActorNetId(), true, true
+			"rock_buster_fade", xDir, null, true
 		);
 	}
 
@@ -327,17 +350,22 @@ public class SpreadDrillSmallProj : Projectile {
 		string exhaust = "spread_drill_effect";
 		int fi = Global.floorFrameCount % 2;
 
-		Global.sprites[exhaust].draw(fi, pos.x + addPos.x, pos.y + addPos.y, xDir, yDir, null, 1, 1, 1, zIndex);
+		Global.sprites[exhaust].draw(
+			fi, pos.x + addPos.x, pos.y + addPos.y,
+			xDir, yDir, null, 1, 1, 1, zIndex
+		);
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) {
-			ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50), frameIndex = 0, frameSpeed = 0,
+			ttl = 2, useGravity = true, vel = Point.random(0, -50, 0, -50),
+			frameIndex = 0, frameSpeed = 0,
 			blink = true
 		};
 		new Anim(pos, "spread_drill_small_pieces", xDir, null, false) {
-			ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50), frameIndex = 1, frameSpeed = 0,
+			ttl = 2, useGravity = true, vel = Point.random(0, 150, 0, -50),
+			frameIndex = 1, frameSpeed = 0,
 			blink = true
 		};
 	}

@@ -313,10 +313,12 @@ public class JoinMenu : IMainMenu {
 		var server = joinServerResponse.server;
 
 		if (Global.serverClient.serverPlayer.joinedLate) {
-			Global.level = new Level(server.getLevelData(), SelectCharacterMenu.playerData, server.extraCpuCharData, true);
+			Global.level = new Level(
+				server.getLevelData(), SelectCharacterMenu.playerData, server.extraCpuCharData, true
+			);
 			Global.level.teamNum = joinServerResponse.server.teamNum;
-
 			Global.level.startLevel(joinServerResponse.server, true);
+
 			/*
 			while (!Global.level.started)
 			{

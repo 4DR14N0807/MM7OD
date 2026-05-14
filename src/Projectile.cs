@@ -571,7 +571,6 @@ public class Projectile : Actor {
 			bool isMaverickHealProj = projId == (int)ProjIds.MorphMCScrap || projId == (int)ProjIds.MorphMPowder;
 			if (ownedByLocalPlayer &&
 				(damagable != damager.owner.character || isMaverickHealProj) &&
-				/*(damagable is not Maverick || !damager.owner.mavericks.Contains(damagable)) && */
 				damagable.canBeHealed(damager.alliance) && healAmount > 0
 			) {
 				if (Global.serverClient == null || damagableActor?.ownedByLocalPlayer == true) {
@@ -584,17 +583,12 @@ public class Projectile : Actor {
 					damagedOnce = true;
 					destroySelf(fadeSprite, fadeSound, favorDefenderProjDestroy: isDefenderFavoredAndOwner());
 				}
-			//	if (other.gameObject is not Projectile) onHitDamagable(damagable);
 			}
 
-			//bool isNoiseCrush = projId == (int)RockProjIds.NoiseCrush;
-			/* if (ownedByLocalPlayer && damagableActor.ownedByLocalPlayer && damagable == damager.owner.character && this is NoiseCrushProj ns && character is Rock rock && ns.bounces >= 1) {
-				if (ns.isMain) rock.hasChargedNoiseCrush = true;
-				ns.destroySelfNoEffect();
-			} */
-
 			// Vaccination
-			if (projId == (int)ProjIds.DrDopplerBall2 && ownedByLocalPlayer && damagable is Character damagableChr && damagableChr.player.alliance == damager.alliance) {
+			if (projId == (int)ProjIds.DrDopplerBall2 && ownedByLocalPlayer &&
+				damagable is Character damagableChr && damagableChr.player.alliance == damager.alliance
+			) {
 				//playSound("drDopplerVaccine", sendRpc: true);
 				damagableChr.addVaccineTime(2);
 				RPC.actorToggle.sendRpc(damagableChr.netId, RPCActorToggleType.AddVaccineTime);
@@ -602,9 +596,14 @@ public class Projectile : Actor {
 			}
 		}
 
-		var wall = other.gameObject;
-		if (wall is Wall) {
-			onHitWall(other);
+		GameObject wall = other.gameObject;
+		if (wall is Wall or OneWay) {
+			if (wall is not OneWay ow ||
+				ow.lockDir.x != 0 && Math.Sign(vel.x) != ow.lockDir.x || 
+				ow.lockDir.y != 0 && Math.Sign(vel.y) != ow.lockDir.y 
+			) {
+				onHitWall(other);
+			}
 		}
 	}
 

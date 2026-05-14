@@ -102,7 +102,7 @@ public class Elimination : GameMode {
 		// Same with summons, we only count if the main entity dies.
 		// Elim score works backwards, so we add kills.
 		if (!isAssist && !isSummon) {
-			deathToScore(killer);
+			deathToScore(killer, victim);
 		}
 	}
 }

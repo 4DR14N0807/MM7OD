@@ -355,13 +355,15 @@ public partial class Level {
 			}
 			else if (oneWayDir.Value.y == 1) {
 				if (actor.pos.y >= gameObject.collider.shape.maxY - oneWayDelta.y &&
-					intersection.y < oneWayDelta.y) {
+					intersection.y < oneWayDelta.y
+				) {
 					return false;
 				}
 			}
 			if (oneWayDir.Value.x == -1) {
 				if (actor.pos.x <= gameObject.collider.shape.minX + oneWayDelta.x &&
-					intersection.x > -oneWayDelta.x) {
+					intersection.x > -oneWayDelta.x
+				) {
 					return false;
 				}
 			}

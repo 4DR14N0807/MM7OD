@@ -852,7 +852,7 @@ public partial class Character : Actor, IDamagable {
 	public override void preUpdate() {
 		base.preUpdate();
 		updateProjectileCooldown();
-		attackEffectCooldowns();
+		damagerCooldowns();
 		insideCharacter = false;
 		changedStateInFrame = false;
 		pushedByTornadoInFrame = false;
@@ -952,6 +952,18 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public void debuffCooldowns() {
+		Helpers.decrementFrames(ref crystalizeInvulnTime);
+		Helpers.decrementFrames(ref grabInvulnTime);
+		Helpers.decrementFrames(ref darkHoldInvulnTime);
+		Helpers.decrementTime(ref dwrapInvulnTime);
+		Helpers.decrementFrames(ref burnInvulnTime);
+		Helpers.decrementFrames(ref rootTime);
+		Helpers.decrementFrames(ref flattenedTime);
+		Helpers.decrementFrames(ref virusTime);
+		Helpers.decrementFrames(ref oilTime);
+		slowdownTime.updateCooldown(this);
+		chillDebuff.updateCooldown(this);
+
 		bool matchOn = true;
 		if (Global.level.gameMode is TeamElimAlt tea) {
 			if (tea.resultTime > 0) {
@@ -984,8 +996,6 @@ public partial class Character : Actor, IDamagable {
 				vaccineTime = 0;
 			}
 		}
-		Helpers.decrementFrames(ref virusTime);
-		Helpers.decrementFrames(ref oilTime);
 
 		if (acidTime > 0) {
 			acidTime -= Global.spf;
@@ -1011,6 +1021,7 @@ public partial class Character : Actor, IDamagable {
 				removeAcid();
 			}
 		}
+
 		if (burnTime > 0) {
 			burnTime -= Global.spf;
 			burnHurtCooldown += Global.speedMul;
@@ -1027,10 +1038,6 @@ public partial class Character : Actor, IDamagable {
 				removeBurn();
 			}
 		}
-		Helpers.decrementFrames(ref rootTime);
-		Helpers.decrementFrames(ref flattenedTime);
-		slowdownTime.updateCooldown(this);
-		chillDebuff.updateCooldown(this);
 
 		if (burnStunStacks > 0) {
 			if (burningRecoveryCooldown <= 0) {
@@ -1045,7 +1052,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void attackEffectCooldowns() {
+	public void damagerCooldowns() {
 		if (inCombatCooldown > 0) {
 			inCombatCooldown -= Global.gameSpeed;
 			inCombatTime += Global.gameSpeed;
@@ -1056,12 +1063,6 @@ public partial class Character : Actor, IDamagable {
 		} else {
 			outOfCombatTime += Global.gameSpeed;
 		}
-
-		Helpers.decrementFrames(ref crystalizeInvulnTime);
-		Helpers.decrementFrames(ref grabInvulnTime);
-		Helpers.decrementFrames(ref darkHoldInvulnTime);
-		Helpers.decrementTime(ref dwrapInvulnTime);
-		Helpers.decrementFrames(ref burnInvulnTime);
 
 		Dictionary<string, float>[] cooldownList = [
 			winceCooldown,
@@ -2418,13 +2419,10 @@ public partial class Character : Actor, IDamagable {
 		//FontType? overrideColor = null;
 
 		if (!hideHealthAndName()) {
-			if (Global.level.mainPlayer.isSpectator) {
+			// Spectator drawing.
+			if (Global.level.mainPlayer.isSpectator || Global.level.mainPlayer.altSpectator) {
 				shouldDrawName = true;
 				shouldDrawHealthBar = true;
-			} else if (Global.level.is1v1()) {
-				if (!player.isMainPlayer && player.alliance == Global.level.mainPlayer.alliance) {
-					shouldDrawName = true;
-				}
 			}
 			// Basic case, drawing alliance of teammates in team modes
 			else if (
@@ -2434,11 +2432,11 @@ public partial class Character : Actor, IDamagable {
 				shouldDrawName = true;
 				shouldDrawHealthBar = true;
 			}
+			// Also display on-hit.
+			if (!shouldDrawHealthBar) {
+				shouldDrawHealthBar = displayHpTime > 0;
+			}
 		}
-		if (!shouldDrawHealthBar) {
-			shouldDrawHealthBar = displayHpTime > 0;
-		}
-
 		Point barOffset = pos.round().addxy(-getMiniLifebarLength(), -44);
 
 		if (shouldDrawHealthBar && visible && !sprite.name.EndsWith("die")) {
@@ -2749,8 +2747,8 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public bool hideHealthAndName() {
-		if (isWarpIn() || sprite.name.EndsWith("warp_beam") ||
-			!player.readyTextOver || isDeathOrReviveSprite()
+		if (!visible || isWarpIn() || sprite.name.EndsWith("warp_beam") ||
+			!player.readyTextOver || isDeathOrReviveSprite() || !player.spawnedOnceAlt
 		) {
 			return true;
 		}
@@ -3125,7 +3123,9 @@ public partial class Character : Actor, IDamagable {
 		Global.level.gameMode.addKillFeedEntry(
 			new KillFeedEntry(killer, assister, player, weaponIndex)
 		);
-
+		if (Global.canControlKillscore) {
+			RPC.updatePlayer.sendRpc(player);
+		}
 		// Local only starts here.
 		if (!ownedByLocalPlayer) {
 			return;
@@ -3404,11 +3404,12 @@ public partial class Character : Actor, IDamagable {
 	}
 
 
-	public void addBubble(Player attacker) {
-		if (isSlowImmune() || isStunImmune()) return;
-		if (!ownedByLocalPlayer || dwrapInvulnTime > 0) return;
-		if (bigBubble != null) return;
-
+	public bool addBubble(Player attacker) {
+		if (isStunImmune() || !ownedByLocalPlayer ||
+			dwrapInvulnTime > 0 || bigBubble != null
+		) {
+			return false;
+		}
 		// Duration.
 		float cooldown = 5 * 60;
 		int playerid = attacker.id;
@@ -3425,6 +3426,7 @@ public partial class Character : Actor, IDamagable {
 		if (attacker != player) {
 			attacker.mastery.addSupportExp(2, true);
 		}
+		return true;
 	}
 
 	public void removeBubble(bool ejected) {
@@ -3697,11 +3699,6 @@ public partial class Character : Actor, IDamagable {
 		float maxTime = buff.stackData.time ?? buff.maxTime;
 		float cooldown = Math.Clamp(buff.time / maxTime, 0, 1);
 
-		if (buff.isBuff) {
-			GameMode.drawWeaponSlotCooldownR(drawPos.x, drawPos.y, cooldown);
-		} else {
-			GameMode.drawWeaponSlotCooldown(drawPos.x, drawPos.y, cooldown);
-		}
 		if (buff.stackData.time != null) {
 			float stack = Math.Clamp(buff.stackProgress / buff.stackData.time.Value, 0, 1);
 			int stackP = MathInt.Round((1 - stack) * 14);
@@ -3733,11 +3730,16 @@ public partial class Character : Actor, IDamagable {
 				);
 			}
 		}
-		if (buff.stackData.max != buff.stackData.min) {
+		if (buff.stackData.max != buff.stackData.min && buff.stacks > buff.stackData.min) {
 			Fonts.drawText(
 				FontType.RedSmall, buff.stacks.ToString(),
-				drawPos.x + 1, drawPos.y - 9
+				drawPos.x + 8, drawPos.y, Alignment.Right
 			);
+		}
+		if (buff.isBuff) {
+			GameMode.drawWeaponSlotCooldownR(drawPos.x, drawPos.y, cooldown);
+		} else {
+			GameMode.drawWeaponSlotCooldown(drawPos.x, drawPos.y, cooldown);
 		}
 	}
 

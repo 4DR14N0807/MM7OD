@@ -19,7 +19,9 @@ public class WaitMenu : IMainMenu {
 
 	public WaitMenu(IMainMenu prevMenu, Server server, bool isRecreate) {
 		previous = prevMenu;
-		Global.level = new Level(server.getLevelData(), SelectCharacterMenu.playerData, server.extraCpuCharData, false);
+		Global.level = new Level(
+			server.getLevelData(), SelectCharacterMenu.playerData, server.extraCpuCharData, false
+		);
 		this.server = server;
 		Global.level.teamNum = server.teamNum;
 		if (isRecreate) {

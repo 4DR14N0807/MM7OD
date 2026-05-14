@@ -381,11 +381,12 @@ public partial class Player {
 		name = serverPlayer.name;
 		ping = serverPlayer.ping;
 
-		score = serverPlayer.score;
-		kills = serverPlayer.kills;
-		deaths = serverPlayer.deaths;
-		assists = serverPlayer.assists;
-
+		if (!Global.canControlKillscore) {
+			score = serverPlayer.score;
+			kills = serverPlayer.kills;
+			deaths = serverPlayer.deaths;
+			assists = serverPlayer.assists;
+		}
 		if (ownedByLocalPlayer && serverPlayer.autobalanceAlliance != null &&
 			newAlliance != serverPlayer.autobalanceAlliance.Value
 		) {
@@ -503,8 +504,8 @@ public partial class Player {
 
 	// Netcode stuff.
 	public long lastNetSendFrame;
-	public long lastNetMasteryFrame;
-	
+	public long lastHostNetSendFrame;
+
 	public bool is1v1MaverickX1() {
 		return maverick1v1 <= 8;
 	}
@@ -857,6 +858,13 @@ public partial class Player {
 		if (readyTime >= maxReadyTime) {
 			readyTextOver = true;
 		}
+		if (Global.canControlKillscore &&
+			Global.floorFrameCount % 240 == 0 &&
+			lastHostNetSendFrame != Global.floorFrameCount
+		) {
+			lastHostNetSendFrame = Global.floorFrameCount;
+			RPC.updatePlayer.sendRpc(this);
+		}
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -868,18 +876,10 @@ public partial class Player {
 		if (!Global.level.gameMode.isOver) {
 			respawnTime -= Global.spf;
 		}
-		if (Global.canControlKillscore &&
-			Global.isOnFrame(30) &&
+		if (Global.floorFrameCount % 120 == 0 &&
 			lastNetSendFrame != Global.floorFrameCount
 		) {
 			lastNetSendFrame = Global.floorFrameCount;
-			RPC.updatePlayer.sendRpc(this);
-		}
-		if (ownedByLocalPlayer &&
-			Global.floorFrameCount % 120 == 0 &&
-			lastNetMasteryFrame != Global.floorFrameCount
-		) {
-			lastNetMasteryFrame = Global.floorFrameCount;
 			RPC.updateMastery.sendRpc(this);
 		}
 		if (character == null && respawnTime <= 0 && eliminated()) {
@@ -963,6 +963,16 @@ public partial class Player {
 		}
 
 		updateWeapons();
+	}
+
+	public void syncWithServerPlayer() {
+		if (serverPlayer == null) {
+			return;
+		}
+		serverPlayer.score = score;
+		serverPlayer.kills = kills;
+		serverPlayer.deaths = deaths;
+		serverPlayer.assists = assists;
 	}
 
 	public bool eliminated() {
@@ -1984,14 +1994,23 @@ public partial class Player {
 	}
 
 	public void addKill() {
+		if (Global.serverClient != null && !Global.canControlKillscore) {
+			return;
+		}
 		kills++;
 	}
 
 	public void addAssist() {
+		if (Global.serverClient != null && !Global.canControlKillscore) {
+			return;
+		}
 		assists++;
 	}
 
 	public void addDeath() {
+		if (Global.serverClient != null && !Global.canControlKillscore) {
+			return;
+		}
 		deaths++;
 	}
 

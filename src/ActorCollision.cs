@@ -431,9 +431,11 @@ public partial class Actor {
 		}
 	}
 
-	public void freeFromCollision() {
+	public void freeFromCollision(Func<GameObject, bool>? condition = null) {
 		// Already were colliding in first place: free with path of least resistance
-		List<CollideData> currentCollideDatas = Global.level.checkTerrainCollision(this, 0, 0, null);
+		List<CollideData> currentCollideDatas = (
+			Global.level.checkTerrainCollision(this, 0, 0, null, condition: condition)
+		);
 
 		Collider? terrainCollider = getTerrainCollider() ?? physicsCollider ?? collider;
 		if (terrainCollider == null) {
@@ -452,7 +454,9 @@ public partial class Actor {
 			Point? freeVec = null;
 			if (this is RideChaser rc) {
 				// Hack to make ride chasers not get stuck on inclines
-				freeVec = terrainCollider.shape.getMinTransVectorDir(collideData.otherCollider.shape, new Point(0, -1));
+				freeVec = terrainCollider.shape.getMinTransVectorDir(
+					collideData.otherCollider.shape, new Point(0, -1)
+				);
 			}
 			if ((freeVec == null || freeVec.Value.magnitude > 20)) {
 				freeVec = terrainCollider.shape.getMinTransVector(collideData.otherCollider.shape);

@@ -254,7 +254,7 @@ public class AI {
 			}
 			if (target == null) {
 				target = Global.level.getClosestTarget(
-					character.pos, player.alliance, true, isRequesterAI: true,
+					character.getCenterPos(), player.alliance, true, isRequesterAI: true,
 					aMaxDist: 400
 				);
 			}

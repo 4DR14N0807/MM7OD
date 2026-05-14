@@ -1260,16 +1260,15 @@ public class RPCPeriodicServerSync : RPC {
 			}
 			return;
 		}
-
 		foreach (ServerPlayer serverPlayer in syncModel.players) {
-			Player player = Global.level.getPlayerById(serverPlayer.id);
+			Player? player = Global.level.getPlayerById(serverPlayer.id);
 			if (player != null) {
 				player.syncFromServerPlayer(serverPlayer);
 			} else {
 				Global.level.addPlayer(serverPlayer, serverPlayer.joinedLate);
 			}
 		}
-		foreach (var player in Global.level.players.ToList()) {
+		foreach (Player? player in Global.level.players.ToList()) {
 			if (!syncModel.players.Any(sp => sp.id == player.id)) {
 				Global.level.removePlayer(player);
 			}
@@ -1333,14 +1332,16 @@ public class RPCUpdatePlayer : RPC {
 		if (serverPlayer == null) {
 			return;
 		}
-		serverPlayer.score = kills;
+		serverPlayer.score = score;
 		serverPlayer.kills = kills;
 		serverPlayer.deaths = deaths;
-		serverPlayer.assists = kills;
-		server.periodicPing(server.s_server);
+		serverPlayer.assists = assists;
 	}
 
 	public void sendRpc(Player player) {
+		if (Global.serverClient == null) {
+			return;
+		}
 		byte[] data = [
 			(byte)player.id,
 			(byte)player.score,
@@ -1348,7 +1349,7 @@ public class RPCUpdatePlayer : RPC {
 			(byte)player.deaths,
 			(byte)player.assists,
 		];
-		Global.serverClient?.rpc(this, data);
+		Global.serverClient.rpc(this, data);
 	}
 }
 

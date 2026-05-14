@@ -13,17 +13,17 @@ public class IceWall : Weapon {
 		iconSprite = "hud_weapon_icon_bass";
 		index = (int)BassWeaponIds.IceWall;
 		displayName = "ICE WALL";
-		maxAmmo = 14;
+		maxAmmo = 10;
 		ammo = maxAmmo;
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		//fireRate = 30;
+		switchCooldown = 10;
 		fireRate = 10;
 		descriptionV2 = [
 			[ "Pushes enemies away.\n" +
 			"Can be used as a platform and transport\n" +
-			"both you and your teammates." ]
+			"for both you and your teammates." ]
 		];
 	}
 
@@ -34,6 +34,11 @@ public class IceWall : Weapon {
 		} else {
 			isStream = false;
 		}
+		if (ammo <= 0 && wall?.destroyed != false) {
+			fireRate = 18;
+		} else {
+			fireRate = 10;
+		}		 
 	}
 
 	public override bool canShoot(int chargeLevel, Character character) {
@@ -45,20 +50,28 @@ public class IceWall : Weapon {
 	}
 
 	public override void shoot(Character character, params int[] args) {
+		if (character is not Bass bass) {
+			return;
+		}
 		Point shootPos = character.getShootPos();
 		Player player = character.player;
 		if (!player.ownedByLocalPlayer) return;
-		Bass bass = character as Bass ?? throw new NullReferenceException();
-	
+
 		if (ammo > 0 && !isStream && wall?.destroyed != false) {
 			wall = new IceWallProj(
-				bass, shootPos, bass.getShootXDir(),
+				bass, shootPos.addxy(0, 23), bass.getShootXDir(),
 				player.getNextActorNetId(), rpc: true
 			);
 			bass.playSound("icewall", true);
 			addAmmo(-1, player);
 		} else {
-			new IceWallLemon(bass, shootPos, bass.xDir, player.getNextActorNetId(), true);
+			int shootAngle = bass.getShootAngle(allowUp: false);
+			new IceWallLemon(bass, shootPos, shootAngle, player.getNextActorNetId(), true);
+			new Anim(
+				shootPos, "bass_icewall_lemon_fade",
+				character.xDir, player.getNextActorNetId(), true, true,
+				host: bass, zIndex: ZIndex.Character + 2
+			);
 			bass.playSound("bassbuster", true);
 		}
 	}
@@ -67,8 +80,8 @@ public class IceWall : Weapon {
 public class IceWallProj : Projectile, IDamagable {
 	public bool startedMoving;
 	public bool isFalling;
-	public float health = 2;
-	float maxSpeed = 3f * 60;
+	public float health = 6;
+	float maxSpeed = 3.5f * 60;
 	float groundTime;
 	float soundCooldown;
 
@@ -82,18 +95,21 @@ public class IceWallProj : Projectile, IDamagable {
 		damager.damage = 1;
 		damager.hitCooldown = 140;
 
+		useGravity = true;
 		fadeSprite = "ice_wall_fade";
 		fadeOnAutoDestroy = true;
 		canBeLocal = false;
 		base.xDir = xDir;
 		isSolidWall = true;
-		maxTime = 2f;
+		maxTime = 2.5f;
 		destroyOnHit = false;
 		splashable = true;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
 		selectiveSolididyFunc = selectiveSolidity;
 
-		if (rpc) rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -112,27 +128,34 @@ public class IceWallProj : Projectile, IDamagable {
 
 		if (sprite.name == "ice_wall_spawn" && isAnimOver()) {
 			changeSprite("ice_wall_proj", true);
-			useGravity = true;
+		}
+		if (health > 2 && health <= 4 && sprite.name != "ice_wall_proj_crack") {
+			changeSprite("ice_wall_proj_crack", true);
+		}
+		if (health <= 2 && sprite.name != "ice_wall_proj_crack2") {
+			changeSprite("ice_wall_proj_crack2", true);
 		}
 		if (startedMoving && Math.Abs(vel.x) < maxSpeed) {
-			vel.x += xDir * 0.1f * 60f;
-			if (Math.Abs(vel.x) > maxSpeed) vel.x = maxSpeed * xDir;
+			vel.x += xDir * 0.075f * 60f;
+			if (Math.Abs(vel.x) > maxSpeed) {
+				vel.x = maxSpeed * xDir;
+			}
 		}
 		if (isUnderwater()) {
 			grounded = false;
-			gravityModifier = -1;
-			float terminalVel = Physics.MaxUnderwaterFallSpeed * 0.5f * gravityMod();
+			gravityModifier = 0.5f;
+			float terminalVel = Physics.MaxUnderwaterFallSpeed * 0.5f;
 			if (Math.Abs(vel.y) > terminalVel) {
-				vel.y = terminalVel;
+				vel.y = terminalVel * Math.Abs(vel.y);
 			}
 		} else {
 			gravityModifier = 1;
 		}
 		isFalling = deltaPos.y > 0;
 
-		if (grounded && startedMoving) {		
+		if (grounded && startedMoving) {
 			if (groundTime % 10 == 0) {
-				new Anim(pos.addxy(-11 * xDir,24), "ice_wall_sled", xDir, null, true, ownedByLocalPlayer);
+				new Anim(pos.addxy(-11 * xDir, 0), "ice_wall_sled", xDir, null, true, ownedByLocalPlayer);
 			}
 			groundTime += Global.speedMul;
 		} else {
@@ -162,7 +185,9 @@ public class IceWallProj : Projectile, IDamagable {
 	}
 
 	public override bool canBePlatform(GameObject other) {
-		if (other is RemoteMineProj or RemoteMineLandProj or DangerWrapLandRmProj or DangerWrapMineRmProj) {
+		if (other is RemoteMineProj or RemoteMineLandProj or
+			DangerWrapLandRmProj or DangerWrapMineRmProj or IceWall
+		) {
 			return true;
 		}
 		return (
@@ -174,9 +199,8 @@ public class IceWallProj : Projectile, IDamagable {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (sprite.name == "ice_wall_spawn") return;
 		// Wall hit.
-		if (other.gameObject is Wall) {
+		if (startedMoving && other.gameObject is Wall or OneWay or IceWall) {
 			if (other.isSideWallHit()) {
 				xDir *= -1;
 				vel.x *= -1;
@@ -194,19 +218,39 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 		Character? ownChar = damager.owner?.character;
 		// Movement start.
-		if (other.gameObject == ownChar && !startedMoving) {
-			if (ownChar.pos.y >= getTopY() + 10 && (ownChar.charState is Dash or BaseRun or TenguBladeDash || (ownChar.canMove() && ownChar.player.input.getXDir(ownChar.player) != 0))) {
-				startedMoving = true;
-				xDir = MathF.Sign(pos.x - ownChar.pos.x) >= 0 ? 1 : -1;
-				vel.x = xDir * 30;
-				time = 0;
-			}
+		if (!startedMoving && other.gameObject == ownChar &&
+			ownChar.pos.y >= getTopY() + 10 && (
+				ownChar.charState is Dash or BaseRun or TenguBladeDash ||
+				(ownChar.canMove() && ownChar.player.input.getXDir(ownChar.player) != 0)
+			)
+		) {
+			startMove(MathF.Sign(pos.x - ownChar.pos.x) >= 0 ? 1 : -1);
 		}
+	}
+
+	public void startMove(int moveDir) {
+		if (startedMoving) {
+			return;
+		}
+		startedMoving = true;
+		xDir = moveDir;
+		vel.x = xDir * 30;
+		time = 0;
 	}
 
 	public override void onDestroy() {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
+	}
+
+	public override void afterDamage(IDamagable damagable, bool wasHit) {
+		base.afterDamage(damagable, wasHit);
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (wasHit) {
+			applyDamage(2, ownerPlayer, this, null, null);
+		}
 	}
 
 	public void applyDamage(float damage, Player owner, Actor? actor, int? weaponIndex, int? projId) {
@@ -216,12 +260,27 @@ public class IceWallProj : Projectile, IDamagable {
 		}
 	}
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) {
-		return health > 0 && damagerAlliance != damager.alliance && projId == (int)BassProjIds.IceWall;
+		return health > 0 && damagerAlliance != damager.alliance && (
+			projId == null || projId == (int)BassProjIds.IceWall
+		);
 	}
 	public bool isInvincible(Player attacker, int? projId) => false;
 	public bool canBeHealed(int healerAlliance) => false;
 	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true) { }
 	public bool isPlayableDamagable() => false;
+
+	public override Collider? getTerrainCollider() {
+		if (spriteToColliderMatch(sprite.name, out Collider? overrideGlobalCollider)) {
+			return overrideGlobalCollider;
+		}
+		(float xSize, float ySize) = (14, 30);
+
+		return new Collider(
+			new Rect(0, 0, xSize, ySize).getPoints(),
+			false, this, false, false,
+			HitboxFlag.Hurtbox, Point.zero
+		);
+	}
 
 	public override List<byte> getCustomActorNetData() {
 		return [Helpers.boolArrayToByte([
@@ -238,22 +297,23 @@ public class IceWallProj : Projectile, IDamagable {
 
 public class IceWallLemon : Projectile {
 	public IceWallLemon(
-		Actor owner, Point pos, int xDir, ushort? netProjId, 
+		Actor owner, Point pos, float byteAngle, ushort? netProjId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "copy_vision_lemon", netProjId, altPlayer
+		pos, 1, owner, "bass_icewall_lemon", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.IceWallLemon;
-		maxTime = 34 / 60f;
-		fadeSprite = "copy_vision_lemon_fade";
+		maxTime = 36 / 60f;
+		fadeSprite = "bass_icewall_lemon_fade";
 
-		vel.x = 240 * xDir;
+		vel = Point.createFromByteAngle(byteAngle) * 240;
+		this.byteAngle = byteAngle;
 		damager.damage = 0.5f;
+		destroyOnHitWall = true;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);
+			rpcCreateByteAngle(pos, owner, ownerPlayer, netProjId, this.byteAngle);
 		}
-		addRenderEffect(RenderEffectType.ChargeBlue);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

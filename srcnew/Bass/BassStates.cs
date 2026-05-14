@@ -84,28 +84,25 @@ public class BassShoot : BassState {
 	}
 
 	public static string getShootSprite(int dir, Weapon wep) {
-		if (wep is not BassBuster
-			and not MagicCard
-			and not WaveBurner
-			and not RemoteMine
+		// Weapons that always map to "shoot" regardless of dir.
+		if (wep is not BassBuster and not MagicCard
+			and not WaveBurner and not RemoteMine and not IceWall ||
+			wep is IceWall iw && iw.wall?.destroyed != false
 		) {
 			return "shoot";
 		}
-		if (wep is RemoteMine) {
-			if (dir == -2) { dir = -1; }
-			if (dir == 2) { dir = 1; }
-		}
-		if (wep is MagicCard) {
-			if (dir == -1) { dir = -2; }
-			if (dir == 1) { dir = 2; }
-		}
-		if (wep is BassBuster) {
-			if (dir == 2) { dir = 1; }
-		}
+		// Direction remapping rules.
+		dir = (wep, dir) switch {
+			(MagicCard, -1) => -2,
+			(RemoteMine or IceWall, -2) => -1,
+			(BassBuster or RemoteMine or IceWall, 2) => 1,
+			(MagicCard, 1) => 2,
+			_ => dir
+		};
+		// Direction to sprite.
 		return dir switch {
 			-2 => "shoot_up",
 			-1 => "shoot_up_diag",
-			0 => "shoot",
 			1 => "shoot_down_diag",
 			2 => "shoot_down",
 			_ => "shoot"

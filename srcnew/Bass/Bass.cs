@@ -878,23 +878,23 @@ public class Bass : Character {
 		stopCharge();
 	}
 
-	public int getShootYDir(bool allowDown = false, bool allowDiagonal = true) {
+	public int getShootYDir(bool allowDown = false, bool allowDiagonal = true, bool allowUp = true) {
 		int dir = player.input.getYDir(player);
 		int multiplier = 2;
 		if (allowDiagonal && player.input.getXDir(player) != 0) {
 			multiplier = 1;
 		}
 		if (!allowDown && dir * multiplier == 2) return 1;
-
+		if (!allowUp && dir * multiplier == -2) return -1;
 		return dir * multiplier;
 	}
 
-	public int getShootAngle(bool allowDown = false, bool allowDiagonal = true) {
+	public int getShootAngle(bool allowDown = false, bool allowDiagonal = true, bool allowUp = true) {
 		int baseAngle = 0;
 		if (xDir == -1) {
 			baseAngle = 128;
 		}
-		return getShootYDir(allowDown, allowDiagonal) * xDir * 32 + baseAngle;
+		return getShootYDir(allowDown, allowDiagonal, allowUp) * xDir * 32 + baseAngle;
 	}
 
 	public override void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {

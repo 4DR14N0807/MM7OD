@@ -271,7 +271,9 @@ public class MainMenu : IMainMenu {
 					2
 				);
 				localServer.players = new List<ServerPlayer>() { me };
-				Global.level = new Level(localServer.getLevelData(), SelectCharacterMenu.playerData, localServer.extraCpuCharData, false);
+				Global.level = new Level(
+					localServer.getLevelData(), SelectCharacterMenu.playerData, localServer.extraCpuCharData, false
+				);
 				Global.level.teamNum = localServer.teamNum;
 				Global.level.startLevel(localServer, false);
 			}

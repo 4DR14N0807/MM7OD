@@ -65,7 +65,7 @@ public class ProtoBusterAngledProj : Projectile {
 		vel = 300 * Point.createFromByteAngle(byteAngle);
 
 		damager.damage = 1;
-		damager.hitCooldown = 30;
+		damager.hitCooldown = 60;
 
 		if (byteAngle > 64 && byteAngle < 192) {
 			xDir = -1;
@@ -80,13 +80,13 @@ public class ProtoBusterAngledProj : Projectile {
 
 		if (type == 0) {
 			damager.damage = 0.5f;
+			damager.hitCooldown = 0;
 			projId = (int)BluesProjIds.LemonAOverheat;
 			changeSprite("rock_buster_proj", true);
 			fadeSprite = "rock_buster_fade";
 		} else if (type == 2) {
 			damager.flinch = Global.miniFlinch;
 			projId = (int)BluesProjIds.LemonAOverdrive;
-			Damager.projectileFlinchCooldowns[(int)BluesProjIds.LemonAOverdrive] = 30;
 			changeSprite("proto_chargeshot_yellow_proj", true);
 			fadeSprite = "proto_chargeshot_yellow_proj_fade";
 		}

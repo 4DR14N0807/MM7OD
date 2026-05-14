@@ -106,6 +106,7 @@ public class CopyVisionLemonAlt : Projectile {
 
 		vel.x = 240 * xDir;
 		damager.damage = 1;
+		destroyOnHitWall = true;
 		if (isWeak) {
 			damager.damage = 0.5f;
 		}

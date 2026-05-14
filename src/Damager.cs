@@ -28,9 +28,9 @@ public class Damager {
 	public const float headshotModifier = 2;
 
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
-		{ (int)BluesProjIds.LemonOverdrive, 60 * 2},
-		{ (int)BluesProjIds.SparkShock, 100},
-		{ (int)BluesProjIds.ProtoLandPush, 60 * 1},
+		{ (int)BluesProjIds.LemonOverdrive, 40 },
+		{ (int)BluesProjIds.SparkShock, 100 },
+		{ (int)BluesProjIds.ProtoLandPush, 60 },
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
@@ -278,7 +278,7 @@ public class Damager {
 					break;
 				}
 				case (int)BassProjIds.IceWallLemon: {
-					character.addIgFreezeProgress(10);
+					character.addIgFreezeProgress(15);
 					break;
 				} 
 				case (int)ProjIds.TenguBladeDash: {
@@ -558,7 +558,6 @@ public class Damager {
 			chr.addBubble(attacker);
 			chr.playSound("hit", sendRpc: true);
 		}
-
 		return null;
 	}
 	public static DamagerMessage? onAcidDamage(IDamagable damagable, Player attacker, float acidTime) {

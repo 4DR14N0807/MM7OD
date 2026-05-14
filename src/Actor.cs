@@ -1967,12 +1967,14 @@ public partial class Actor : GameObject {
 		foreach (CollideData collideData in collideDatas) {
 			if (collideData.gameObject is Wall wall) {
 				if (wall.isMoving) {
-					move(wall.deltaMove, useDeltaTime: false);
+					move(wall.deltaMove, useIce: false, useDeltaTime: false);
 				}
 				if (wall.moveX != 0) {
-					moveXY(wall.moveX, 0);
+					moveXY(wall.moveX, 0, useIce: false);
 				}
-				if (wall.moveY != 0 && this is IDamagable damagable && damagable.isPlayableDamagable()) {
+				if (wall.moveY != 0 && this is IDamagable damagable &&
+					damagable.isPlayableDamagable()
+				) {
 					damagable.actor().yPushVel = wall.moveY;
 				}
 				continue;
@@ -1985,8 +1987,7 @@ public partial class Actor : GameObject {
 				(actor.isSolidWall || actor.isPlatform && actor.canBePlatform(this)) &&
 				(actor.selectiveSolididyFunc == null || actor.selectiveSolididyFunc(this))
 			) {
-				move(actor.deltaPos, useDeltaTime: false);
-				continue;
+				move(actor.deltaPos, useDeltaTime: false, useIce: false);
 			}
 		}
 	}

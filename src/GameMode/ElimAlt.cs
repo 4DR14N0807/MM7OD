@@ -20,6 +20,7 @@ public class ElimAlt : GameMode {
 		this.playingTo = playingTo;
 		isElim = true;
 		// Time stuff.
+		finalZoneMaxTime1 = 30;
 		finalZoneMaxTime2 = 60;
 		timeLimit ??= 1;
 		float timeLimitF = timeLimit.Value * 60;
@@ -42,7 +43,6 @@ public class ElimAlt : GameMode {
 		if (isOver) {
 			resultTime = 0;
 		}
-
 		base.update();
 	}
 
@@ -231,12 +231,6 @@ public class ElimAlt : GameMode {
 		eliminationTime = 0;
 		virusStarted = 0;
 
-		foreach (int alliance in result.winningAlliances) {
-			if (alliance != nullAlliance) {
-				Global.level.gameMode.teamPoints[alliance]++;
-			}
-		}
-
 		foreach (Player player in Global.level.players) {
 			if (player.character == null) {
 				player.spawnedOnceAlt = false;
@@ -249,6 +243,7 @@ public class ElimAlt : GameMode {
 				continue;
 			}
 			player.mastery.addMapExp(150);
+			player.score++;
 
 			if (player.character != null) {
 				player.character.addHealth(player.character.maxHealth);

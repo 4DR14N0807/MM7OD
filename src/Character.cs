@@ -2436,6 +2436,9 @@ public partial class Character : Actor, IDamagable {
 			if (!shouldDrawHealthBar) {
 				shouldDrawHealthBar = displayHpTime > 0;
 			}
+			if (!shouldDrawName && shouldDrawHealthBar) {
+				shouldDrawHealthBar = displayHpTime > 0;
+			}
 		}
 		Point barOffset = pos.round().addxy(-getMiniLifebarLength(), -44);
 

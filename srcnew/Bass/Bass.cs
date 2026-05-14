@@ -153,7 +153,7 @@ public class Bass : Character {
 		if (!isTrebbleBoost) {
 			maxHealth += 2;
 		}
-		heal(player, (float)(maxHealth - health));
+		//heal(player, (float)(maxHealth - health));
 		phase = 0;
 		evilEnergy = 0;
 		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);

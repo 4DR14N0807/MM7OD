@@ -2422,7 +2422,7 @@ public partial class Character : Actor, IDamagable {
 				shouldDrawName = true;
 				shouldDrawHealthBar = true;
 			} else if (Global.level.is1v1()) {
-				if (!player.isMainPlayer && player.alliance == Global.level.mainPlayer.alliance) {
+				if (!player.isMainPlayer/*  && player.alliance == Global.level.mainPlayer.alliance */) {
 					shouldDrawName = true;
 				}
 			}

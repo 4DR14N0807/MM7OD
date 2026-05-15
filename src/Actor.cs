@@ -194,6 +194,71 @@ public partial class Actor : GameObject {
 	public bool highPiority;
 	public bool lowPiority;
 	public bool movedUpOnFrame;
+	
+
+	public bool useAngleOnFade;
+	public float angle {
+		get {
+			return _byteAngle * 1.40625f;
+		}
+		set {
+			angleSet = true;
+			_byteAngle = (value / 1.40625f) % 256;
+			if (_byteAngle < 0) {
+				_byteAngle += 256;
+			}
+		}
+	}
+
+	public bool angleSet;
+	public bool destroyPosSet;
+	public float destroyPosTime;
+	public float maxDestroyTime;
+
+	public const int labelCursorOffY = 5;
+	public const int labelWeaponIconOffY = 18;
+	public const int labelKillFeedIconOffY = 9;
+	public const int labelAxlAimModeIconOffY = 15;
+	public const int labelCooldownOffY = 15;
+	public const int labelSubtankOffY = 17;
+	public const int labelStatusOffY = 20;
+	public const int labelHealthOffY = 6;
+	public const int labelNameOffY = 10;
+
+	public float currentLabelY;
+	public Color? spriteColor;
+
+	public Actor getActor => this;
+	public Frame currentFrame => sprite.getCurrentFrame();
+
+
+	public float byteAngle {
+		get {
+			return _byteAngle;
+		}
+		set {
+			angleSet = true;
+			_byteAngle = value % 256;
+			if (_byteAngle < 0) {
+				_byteAngle += 256;
+			}
+		}
+	}
+
+
+	public void setzIndex(long val) {
+		this.zIndex = val;
+	}
+
+	public float framePercent {
+		get {
+			float entireDuration = 0;
+			foreach (var frame in sprite.animData.frames) {
+				entireDuration += frame.duration;
+			}
+			return animSeconds / entireDuration;
+		}
+	}
 
 	public Actor(
 		string spriteName, Point pos, ushort? netId, bool ownedByLocalPlayer, bool addToLevel
@@ -500,52 +565,6 @@ public partial class Actor : GameObject {
 			playSound(matchingVoice);
 		}
 	}
-
-	public bool useAngleOnFade;
-	public float angle {
-		get {
-			return _byteAngle * 1.40625f;
-		}
-		set {
-			angleSet = true;
-			_byteAngle = (value / 1.40625f) % 256;
-			if (_byteAngle < 0) {
-				_byteAngle += 256;
-			}
-		}
-	}
-
-	public bool angleSet;
-	public float byteAngle {
-		get {
-			return _byteAngle;
-		}
-		set {
-			angleSet = true;
-			_byteAngle = value % 256;
-			if (_byteAngle < 0) {
-				_byteAngle += 256;
-			}
-		}
-	}
-
-
-	public void setzIndex(long val) {
-		this.zIndex = val;
-	}
-
-	public Frame currentFrame => sprite.getCurrentFrame();
-
-	public float framePercent {
-		get {
-			float entireDuration = 0;
-			foreach (var frame in sprite.animData.frames) {
-				entireDuration += frame.duration;
-			}
-			return animSeconds / entireDuration;
-		}
-	}
-
 	public virtual void onStart() {
 		if (!string.IsNullOrEmpty(startSound)) {
 			playSound(startSound);
@@ -1163,9 +1182,6 @@ public partial class Actor : GameObject {
 
 	}
 
-	public bool destroyPosSet;
-	public float destroyPosTime;
-	public float maxDestroyTime;
 	public void moveToPosThenDestroy(Point destroyPos, float speed) {
 		destroyPosSet = true;
 		vel = pos.directionToNorm(destroyPos).times(speed);
@@ -1327,7 +1343,8 @@ public partial class Actor : GameObject {
 			sprite.draw(
 				frameIndex, drawX, drawY, xDir, yDirMod(),
 				getRenderEffectSet(), alpha, xScale, yScale, zIndex,
-				getShaders(), angle: angle, actor: this, useFrameOffsets: true
+				getShaders(), angle: angle, actor: this, useFrameOffsets: true,
+				spriteColor
 			);
 		}
 
@@ -1996,18 +2013,6 @@ public partial class Actor : GameObject {
 		return true;
 	}
 
-	public const int labelCursorOffY = 5;
-	public const int labelWeaponIconOffY = 18;
-	public const int labelKillFeedIconOffY = 9;
-	public const int labelAxlAimModeIconOffY = 15;
-	public const int labelCooldownOffY = 15;
-	public const int labelSubtankOffY = 17;
-	public const int labelStatusOffY = 20;
-	public const int labelHealthOffY = 6;
-	public const int labelNameOffY = 10;
-
-	public float currentLabelY;
-
 	public void deductLabelY(float amount) {
 		currentLabelY -= amount;
 		// DrawWrappers.DrawLine(pos.x - 10, pos.y + currentLabelY, pos.x + 10, pos.y + currentLabelY, Color.Red, 1, ZIndex.HUD);
@@ -2176,7 +2181,6 @@ public partial class Actor : GameObject {
 		if (isUnderwater() && checkUnderwater) return Physics.MaxUnderwaterFallSpeed;
 		return Physics.MaxFallSpeed;
 	}
-	public Actor getActor => this;
 
 	public Actor[] getCloseActors(
 		int distance, bool isRequesterAI = false,

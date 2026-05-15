@@ -489,7 +489,8 @@ public partial class DrawWrappers {
 		float cx = 0, float cy = 0,
 		float xScale = 1, float yScale = 1,
 		float angle = 0, float alpha = 1,
-		List<ShaderWrapper> shaders = null!, bool isWorldPos = true
+		List<ShaderWrapper> shaders = null!, bool isWorldPos = true,
+		Color? color = null
 	) {
 		if (texture == null) return;
 		shaders ??= [];
@@ -508,7 +509,9 @@ public partial class DrawWrappers {
 		sprite.Position = new Vector2f(dx, dy);
 		sprite.Origin = new Vector2f(cx, cy);
 		sprite.Scale = new Vector2f(xScale, yScale);
-		sprite.Color = new Color(sprite.Color.R, sprite.Color.G, sprite.Color.B, (byte)(int)(alpha * 255));
+		Color finalColor = color ?? new Color(sprite.Color.R, sprite.Color.G, sprite.Color.B);
+		finalColor.A = (byte)(int)(alpha * 255);
+		sprite.Color = finalColor;
 		sprite.Rotation = angle;
 
 		if (isWorldPos) {

@@ -15,20 +15,26 @@ public class CTF : GameMode {
 	public override void render() {
 		base.render();
 		if (level.mainPlayer.character == null) return;
-		bool isBlue = level.mainPlayer.alliance == GameMode.blueAlliance;
-		bool isRed = level.mainPlayer.alliance == GameMode.redAlliance;
+		bool isBlue = level.mainPlayer.alliance == blueAlliance;
+		bool isRed = level.mainPlayer.alliance == redAlliance;
 
+		// Blue flag.
 		if (isBlue && level.redFlag.linkedChar == level.mainPlayer.character) {
-			addMapNavpoint("Ped", level.blueFlag.pedestal.pos);
+			addMapNavpoint(level.blueFlag.pedestal.pos, ("hud_minimap_hill", 1));
 		}
-		else if (level.redFlag.linkedChar == null || Global.level.frameCount % 10 < 6) {
-			addMapNavpoint("RFlag", level.redFlag.pos);
+		else if (level.redFlag.linkedChar == null || Global.floorFrameCount % 8 < 4) {
+			addMapNavpoint(level.redFlag.pos, ("hud_minimap_flag", 3));
+		} else {
+			addMapNavpoint(level.redFlag.pos, ("hud_minimap_flag", 1));
 		}
+		// Red flag.
 		if (isRed && level.blueFlag.linkedChar == level.mainPlayer.character) {
-			addMapNavpoint("Ped", level.redFlag.pedestal.pos);
+			addMapNavpoint(level.redFlag.pedestal.pos, ("hud_minimap_hill", 1));
 		}
-		else if (level.blueFlag.linkedChar == null || Global.level.frameCount % 10 < 6) {
-			addMapNavpoint("BFlag", level.blueFlag.pos);
+		else if (level.blueFlag.linkedChar == null || Global.floorFrameCount % 8 < 4) {
+			addMapNavpoint(level.blueFlag.pos, ("hud_minimap_flag", 2));
+		} else {
+			addMapNavpoint(level.redFlag.pos, ("hud_minimap_flag", 1));
 		}
 
 		if (!Options.main.oldNavPoints) { return; }

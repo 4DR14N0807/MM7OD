@@ -667,9 +667,14 @@ public partial class Level {
 					int num = (int)instance.properties.num;
 					ushort netId;
 					float offsetY = 0;
+					if (num < 0) {
+						continue;
+					}
 					if (num == 1) {
 						netId = cp1NetId;
-					} else netId = cp2NetId;
+					} else {
+						netId = cp2NetId;
+					}
 					int captureTime = instance.properties.captureTime != null ? (int)instance.properties.captureTime : 30;
 					int awardTime = instance.properties.awardTime != null ? (int)instance.properties.awardTime : 0;
 					controlPoints.Add(new ControlPoint(GameMode.redAlliance, pos, num, false, captureTime, awardTime, netId, isHost) { yOff = offsetY });

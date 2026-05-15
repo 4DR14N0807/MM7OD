@@ -149,7 +149,7 @@ public class GameMode {
 	bool hudPositionsAssigned;
 	int currentLineH;
 
-	public List<(Point pos, string name)> navPoints = new();
+	public List<(Point pos, string sprite, int index)> navPoints = new();
 
 	public enum HUDHealthPosition {
 		Left,
@@ -698,7 +698,7 @@ public class GameMode {
 		drawDiagnostics();
 
 		if (level.isNon1v1Elimination() && virusStarted > 0) {
-			addMapNavpoint("GFlag", safeZonePoint);
+			addMapNavpoint(safeZonePoint);
 		}
 	}
 
@@ -2511,8 +2511,8 @@ public class GameMode {
 	}
 
 
-	public void addMapNavpoint(string label, Point objPos) {
-		navPoints.Add((objPos, label));
+	public void addMapNavpoint(Point objPos, (string name, int index)? spr = null) {
+		navPoints.Add((objPos.round(), spr?.name ?? "hud_minimap_arrow", spr?.index ?? 0));
 	}
 
 	public void drawObjectiveNavpoint(string label, Point objPos) {
@@ -2576,8 +2576,8 @@ public class GameMode {
 		decimal distInMeters = Math.Floor(Math.Abs((decimal)objPos.distanceTo(playerPos) / 32m));
 		bool isLeft = posX < Global.viewScreenW / 2;
 		Fonts.drawText(
-			FontType.White, $"{label} {distInMeters}m",
-			posX, posY, isLeft ? Alignment.Left : Alignment.Right
+			FontType.WhiteMini, $"{label} {distInMeters}m",
+			posX, posY - 4, isLeft ? Alignment.Left : Alignment.Right
 		);
 	}
 

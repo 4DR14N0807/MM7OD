@@ -16,15 +16,15 @@ public class ControlPoints : GameMode {
 		base.render();
 
 		foreach (ControlPoint controlPoint in level.controlPoints) {
-			string text = "NFlag";
+			int index = 0;
 			if (!controlPoint.locked) {
 				if (controlPoint.captured) {
-					text = "RFlag";
+					index = 2;
 				} else {
-					text = "BFlag";
+					index = 1;
 				}
 			}
-			addMapNavpoint(text, controlPoint.pos);
+			addMapNavpoint(controlPoint.pos, ("hud_minimap_hill", index));
 		}
 
 		if (level.mainPlayer.alliance > redAlliance || !Options.main.oldNavPoints) {

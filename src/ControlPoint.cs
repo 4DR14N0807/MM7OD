@@ -30,14 +30,18 @@ public class ControlPoint : Actor {
 	public int attackerCount;
 	public int defenderCount;
 
-	public ControlPoint(int alliance, Point pos, int num, bool isHill, float maxCaptureTime, float awardTime, ushort netId, bool ownedByLocalPlayer) :
-		base("capture_point", pos, netId, ownedByLocalPlayer, false) {
+	public ControlPoint(
+		int alliance, Point pos, int num, bool isHill,
+		float maxCaptureTime, float awardTime, ushort netId, bool ownedByLocalPlayer
+	) : base(
+		"capture_point", pos, netId, ownedByLocalPlayer, false
+	) {
 		this.alliance = alliance;
-		locked = num == 1 ? false : true;
+		locked = num >= 1 ? false : true;
 		this.num = num;
 		this.isHill = isHill;
 		useGravity = false;
-		setzIndex(ZIndex.Character - 2);
+		setzIndex(ZIndex.Backwall - 1000);
 		this.maxCaptureTime = maxCaptureTime;
 		this.awardTime = awardTime;
 		sprite.frameSpeed = 0;
@@ -45,12 +49,12 @@ public class ControlPoint : Actor {
 
 	public override void onStart() {
 		isInit = true;
-		CollideData? hit = Global.level.raycast(
+		/*CollideData? hit = Global.level.raycast(
 			pos.addxy(0, -10), pos.addxy(0, 60), new List<Type>() { typeof(Wall) }
 		);
 		if (hit?.hitData.hitPoint != null) {
-			pos = hit.hitData.hitPoint.Value.addxy(0, 2 + yOff);
-		}
+			pos = hit.hitData.hitPoint.Value.addxy(0, yOff);
+		}*/
 	}
 
 	public override void preUpdate() {
@@ -65,19 +69,21 @@ public class ControlPoint : Actor {
 	public override void postUpdate() {
 		base.postUpdate();
 
-		if (attacked()) addRenderEffect(RenderEffectType.InvisibleFlash);
-		else removeRenderEffect(RenderEffectType.InvisibleFlash);
-
-		if (!ownedByLocalPlayer) return;
-
-		if (alliance == GameMode.redAlliance) {
-			sprite.frameIndex = locked ? 2 : 0;
-		} else if (alliance == GameMode.blueAlliance) {
-			sprite.frameIndex = locked ? 3 : 1;
+		if (attacked()) {
+			addRenderEffect(RenderEffectType.InvisibleFlash);
 		} else {
-			sprite.frameIndex = 8;
+			removeRenderEffect(RenderEffectType.InvisibleFlash);
 		}
-
+		if (alliance != GameMode.neutralAlliance && alliance >= 0 &&
+			alliance < Global.level.gameMode.teamColors.Length
+		) {
+			spriteColor = Global.level.gameMode.teamColors[alliance];
+		} else {
+			spriteColor = null;
+		}
+		if (!ownedByLocalPlayer) {
+			return;
+		}
 		if (captured == true) {
 			sync();
 			return;
@@ -235,10 +241,15 @@ public class ControlPoint : Actor {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) return;
-		if (captured || locked) return;
-		if (other.gameObject is not Character character) { return; }
-
+		if (other.otherCollider?.flag == (int)HitboxFlag.Hitbox) {
+			return;
+		}
+		if (captured || locked) {
+			return;
+		}
+		if (other.gameObject is not Character character) {
+			return;
+		}
 		if (character.ownedByLocalPlayer) {
 			character.mastery.addMapExp(1/64f);
 		}
@@ -253,16 +264,5 @@ public class ControlPoint : Actor {
 
 	public bool canAttack(Character c) {
 		return true;
-	}
-
-	public override void render(float x, float y) {
-		base.render(x, y);
-		var drawX = pos.x + x;
-		var drawY = pos.y + y;
-		if (alliance == GameMode.neutralAlliance) {
-			sprite.draw(9, drawX, drawY, xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex);
-		} else {
-			sprite.draw(frameIndex + 4, drawX, drawY, xDir, yDir, getRenderEffectSet(), 1, 1, 1, zIndex);
-		}
 	}
 }

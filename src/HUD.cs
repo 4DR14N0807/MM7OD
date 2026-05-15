@@ -406,19 +406,14 @@ public class HUD {
 
 		// Nav points.
 		foreach (var navPoint in gameMode.navPoints) {
+			if (!Global.sprites.ContainsKey(navPoint.sprite)) {
+				continue;
+			}
 			Color color = new Color(255, 255, 255);
 			Color outColor = new Color(255, 255, 255, 128);
 			float xPos = MathF.Round(navPoint.pos.x / mapScale) - offsetX;
-			float yPos = MathF.Round(navPoint.pos.y / mapScale) - offsetY - 1;
+			float yPos = MathF.Round(navPoint.pos.y / mapScale) - offsetY;
 
-			if (navPoint.name == "RFlag") {
-				color = new Color(255, 64, 64);
-				outColor = new Color(255, 64, 64, 128);
-			}
-			if (navPoint.name == "BFlag") {
-				color = new Color(64, 64, 255);
-				outColor = new Color(64, 64, 255, 128);
-			}
 			Line line = new Line(new Point(scaledW / 2f, scaledH / 2f), new Point(xPos, yPos));
 			Rect camRect = new Rect(0, 0, scaledW - 1, scaledH);
 			List<CollideData> intersectionPoints = camRect.getShape().getLineIntersectCollisions(line);
@@ -427,14 +422,11 @@ public class HUD {
 				xPos = intersectPoint.x;
 				yPos = intersectPoint.y;
 			}
-
 			float dxPos = radarX + MathF.Round(xPos);
 			float dyPos = radarY + MathF.Round(yPos);
-			DrawWrappers.DrawRectWH(
-				dxPos, dyPos,
-				1, 2,
-				true, color, 1,
-				ZIndex.HUD, false, outColor
+
+			Global.sprites[navPoint.sprite].drawToHUD(
+				navPoint.index, dxPos, dyPos, 1, true
 			);
 		}
 

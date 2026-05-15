@@ -178,7 +178,7 @@ public class Sprite {
 		List<ShaderWrapper>? shaders = null,
 		float angle = 0,
 		Actor? actor = null,
-		bool useFrameOffsets = false
+		bool useFrameOffsets = false, Color? color = null
 	) {
 		if (!visible) return;
 		if (actor != null) {
@@ -414,7 +414,7 @@ public class Sprite {
 				cx - (frameOffsetX - extraXOff) * xDirArg,
 				cy - (frameOffsetY - extraYOff) * yDirArg,
 				xDirArg, yDirArg,
-				angle, alpha, shaders, true
+				angle, alpha, shaders, true, color
 			);
 		} else {
 			DrawWrappers.DrawCompositeTexture(
@@ -943,7 +943,7 @@ public class AnimData {
 		);
 	}
 
-	public void drawToHUD(int frameIndex, float x, float y, float alpha = 1) {
+	public void drawToHUD(int frameIndex, float x, float y, float alpha = 1, bool useOffset = false) {
 		if (frameIndex >= frames.Length) {
 			frameIndex = frames.Length - 1;
 		}
@@ -964,11 +964,21 @@ public class AnimData {
 		cx = MathF.Floor(cx);
 		cy = MathF.Floor(cy);
 
+		float offsetX = 0;
+		float offsetY = 0;
+		if (useOffset) {
+			offsetX = currentFrame.offset.x;
+			offsetY = currentFrame.offset.y;
+		}
+
 		DrawWrappers.DrawTextureHUD(
 			bitmap,
-			currentFrame.rect.x1, currentFrame.rect.y1,
-			currentFrame.rect.w(), currentFrame.rect.h(),
-			MathInt.Round(x - cx), MathInt.Round(y - cy),
+			currentFrame.rect.x1 - offsetX,
+			currentFrame.rect.y1 - offsetY,
+			currentFrame.rect.w(),
+			currentFrame.rect.h(),
+			MathInt.Round(x - cx),
+			MathInt.Round(y - cy),
 			alpha
 		);
 	}

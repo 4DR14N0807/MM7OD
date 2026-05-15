@@ -13,9 +13,18 @@ public class KingOfTheHill : GameMode {
 		base.render();
 		if (level?.hill == null) return;
 
+		int hillColor = 0;
+		if (level.hill.attacked() && Global.floorFrameCount % 10 < 5) {
+			hillColor = 1;
+		} else if (
+			level.hill.alliance != neutralAlliance &&
+			level.hill.alliance >= 0 &&
+			level.hill.alliance < 6
+		) {
+			hillColor = 2 + level.hill.alliance;
+		}
 		addMapNavpoint(
-			level.hill.alliance == level.mainPlayer.alliance ? "BFlag" : "RFlag",
-			level.hill.pos
+			level.hill.pos, ("hud_minimap_hill", hillColor)
 		);
 		drawObjectiveNavpoint(
 			level.hill.alliance == level.mainPlayer.alliance ? "Defend" : "Attack",

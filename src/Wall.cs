@@ -91,7 +91,7 @@ public class MovingPlatform : Wall {
 		sprite = new Sprite(spriteName);
 		idleSprite = !string.IsNullOrEmpty(idleSpriteName) ? new Sprite(idleSpriteName) : null;
 
-		var rect = sprite.hitboxes[0].shape.getRect();
+		Rect rect = sprite.hitboxes[0].shape.getRect();
 		origin = origin.addxy(-rect.w() / 2f, -rect.h() / 2f);
 		this.origin = origin;
 
@@ -247,6 +247,7 @@ public class CrackedWall : Actor, IDamagable {
 	public int flag;
 	public string gibSprite;
 	public bool isGlass;
+	public float glassMaxTime = 90;
 	public float glassCounter;
 	public bool glassCrackOnFrame;
 	public float? respawnTime;
@@ -335,7 +336,7 @@ public class CrackedWall : Actor, IDamagable {
 				glassCounter -= speedMul / 4;
 				if (glassCounter < 0) { glassCounter = 0; }
 			}
-			else if (glassCounter >= 90) {
+			else if (glassCounter >= glassMaxTime) {
 				health = 0;
 				wallDestroy();
 				RPC.actorToggle.sendRpcDestroyCw(id);

@@ -445,11 +445,23 @@ public partial class Level {
 
 		setupGrid(gridSize);
 		foreach (var instance in levelData.levelJson.instances) {
+			var mirrorType = new {
+				All = 0,
+				DefaultOnly = 1,
+				MirrorOnly = 2,
+				KeepUnmirror = 3,
+				KeepMirror = 4,
+				KeepOG = 5
+			};
 			// 0 = both, 1 = non mirrored only, 2 = mirrored only
-			if (instance.mirrorEnabled == 1 && levelData.isMirrored) {
+			if (levelData.isMirrored && (instance.mirrorEnabled == mirrorType.DefaultOnly)) {
 				continue;
 			}
-			if (instance.mirrorEnabled == 2 && !levelData.isMirrored) {
+			if (!levelData.isMirrored && (
+				instance.mirrorEnabled == mirrorType.MirrorOnly ||
+				instance.mirrorEnabled == mirrorType.KeepUnmirror ||
+				instance.mirrorEnabled == mirrorType.KeepMirror
+			)) {
 				continue;
 			}
 			if (otherRestricted(instance)) {
@@ -854,6 +866,13 @@ public partial class Level {
 							);
 							crackedWall.name = instanceName;
 							crackedWall.isGlass = instance.properties.isGlass ?? false;
+							float? tempTime = (float?)instance.properties.glassTimer;
+							if (crackedWall.isGlass && tempTime != null) {
+								float tempTime2 = MathF.Ceiling(tempTime.Value * 60);
+								if (tempTime > 1) {
+									crackedWall.glassMaxTime = tempTime2;
+								}
+							}
 							crackedWall.respawnTime = instance.properties.respawnTime ?? null;
 							if (crackedWall.respawnTime != null) {
 								crackedWall.respawnTime *= 60;
@@ -2299,16 +2318,16 @@ public partial class Level {
 		// If a backwall wasn't set, the background becomes the backwall.
 		if (level.backwallSprites != null) {
 			DrawWrappers.DrawMapTiles(level.backwallSprites, 0, 0, srt, level.altBackwallShader);
-		} else {
-			DrawWrappers.DrawMapTiles(level.backgroundSprites, 0, 0, srt, level.backgroundShader);
-		}
+		}// else {
+		//	DrawWrappers.DrawMapTiles(level.backgroundSprites, 0, 0, srt, level.backgroundShader);
+		//}
 
 		level.drawKeyRange(keys, ZIndex.Backwall, ZIndex.Background, srt, walDrawObjects);
 
 		// If a backwall wasn't set, the background becomes the backwall.
-		if (level.backwallSprites != null) {
+		//if (level.backwallSprites != null) {
 			DrawWrappers.DrawMapTiles(level.backgroundSprites, 0, 0, srt, level.backgroundShader);
-		}
+		//}
 
 		level.drawKeyRange(keys, ZIndex.Background, ZIndex.Foreground, srt, walDrawObjects);
 

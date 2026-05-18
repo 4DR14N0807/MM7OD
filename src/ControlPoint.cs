@@ -41,7 +41,7 @@ public class ControlPoint : Actor {
 		this.num = num;
 		this.isHill = isHill;
 		useGravity = false;
-		setzIndex(ZIndex.Backwall - 1000);
+		setzIndex(ZIndex.Backwall + 2);
 		this.maxCaptureTime = maxCaptureTime;
 		this.awardTime = awardTime;
 		sprite.frameSpeed = 0;
@@ -61,6 +61,7 @@ public class ControlPoint : Actor {
 		base.preUpdate();
 		if (!ownedByLocalPlayer) return;
 
+		setzIndex(ZIndex.Backwall + 2);
 		chrsOnPoint.Clear();
 		defenders.Clear();
 		attackers.Clear();

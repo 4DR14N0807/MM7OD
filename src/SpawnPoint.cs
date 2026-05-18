@@ -40,7 +40,7 @@ public class SpawnPoint {
 	public float getGroundY() {
 		CollideData? hit = Global.level.raycast(pos, pos.addxy(0, 60), new List<Type> { typeof(Wall) });
 		if (hit?.hitData?.hitPoint == null) {
-			return 0;
+			return pos.y;
 		}
 		return hit.hitData.hitPoint.Value.y - 1;
 	}

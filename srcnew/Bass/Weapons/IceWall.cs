@@ -95,6 +95,7 @@ public class IceWallProj : Projectile, IDamagable {
 		damager.damage = 1;
 		damager.hitCooldown = 140;
 
+		netcodeOverride = NetcodeModel.FavorDefender;
 		useGravity = true;
 		fadeSprite = "ice_wall_fade";
 		fadeOnAutoDestroy = true;

@@ -12,7 +12,8 @@ namespace MMXOnline;
 
 public enum NetcodeModel {
 	FavorAttacker,
-	FavorDefender
+	FavorDefender,
+	FavorServer
 }
 
 [ProtoContract]

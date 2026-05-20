@@ -411,7 +411,9 @@ public class WSpongeSideChainProj : Projectile {
 			var pickup = actor as Pickup;
 			if (chr == null && pickup == null) return;
 			if (chr?.isGrabImmune() == true || chr?.isPushImmune() == true) return;
-			if (chr != null && (!chr.canBeDamaged(player.alliance, player.id, projId) || isDefenderFavored())) return;
+			if (chr != null && (!chr.canBeDamaged(player.alliance, player.id, projId) || isDefenderFavored())) {
+				return;
+			}
 			changePos(new Point(chr?.pos.x ?? 0, pos.y));
 			distMoved = pos.distanceTo(WireHetimarl.getFirstPOIOrDefault());
 			hookActor(actor);

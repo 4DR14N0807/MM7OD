@@ -1145,7 +1145,9 @@ public partial class Actor : GameObject {
 			return false;
 		}
 		if (netcodeOverride != null) {
-			if (netcodeOverride == NetcodeModel.FavorDefender) {
+			if (netcodeOverride == NetcodeModel.FavorDefender ||
+				netcodeOverride == NetcodeModel.FavorServer
+			) {
 				return true;
 			} else {
 				return false;
@@ -1166,6 +1168,58 @@ public partial class Actor : GameObject {
 	public bool isDefenderFavoredAndOwner() {
 		return isDefenderFavored() && ownedByLocalPlayer;
 	}
+
+	public bool isFTD() {
+		if (Global.isOffline) {
+			return false;
+		}
+		if (netcodeOverride != null) {
+			if (netcodeOverride == NetcodeModel.FavorDefender) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if (!Global.level.server.favorHost) {
+			if (this is Character chr) {
+				return chr.player?.isDefenderFavored == true;
+			}
+			if (netOwner != null) {
+				return netOwner.isDefenderFavored;
+			}
+			if (this is Projectile proj) {
+				return proj.owner?.isDefenderFavored == true;
+			}
+		}
+		return false;
+	}
+
+	
+	public bool isFTS() {
+		if (Global.isOffline) {
+			return false;
+		}
+		if (netcodeOverride != null) {
+			if (netcodeOverride == NetcodeModel.FavorServer) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if (Global.level.server.favorHost) {
+			if (this is Character chr) {
+				return chr.player?.isDefenderFavored == true;
+			}
+			if (netOwner != null) {
+				return netOwner.isDefenderFavored;
+			}
+			if (this is Projectile proj) {
+				return proj.owner?.isDefenderFavored == true;
+			}
+		}
+		return false;
+	}
+
 
 	// This can be used if a certain effect should be done by only the attacker or defender (if defender favor is on)
 	public bool isRunByLocalPlayer() {

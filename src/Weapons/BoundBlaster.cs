@@ -405,7 +405,6 @@ public class MovingWheelProj : Projectile {
 			if (grounded) {
 				started = 1;
 				damager.damage = 3;
-				if (isDefenderFavored()) damager.damage = 4;
 				damager.flinch = Global.defFlinch;
 				destroyOnHit = false;
 				maxTime = startMaxTime;

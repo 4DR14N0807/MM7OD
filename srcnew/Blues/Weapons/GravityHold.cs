@@ -52,7 +52,7 @@ public class GravityHoldProj : Projectile {
 		shouldShieldBlock = false;
 		destroyOnHit = false;
 		midR = maxR / 2;
-		netcodeOverride = NetcodeModel.FavorDefender;
+		netcodeOverride = NetcodeModel.FavorServer;
 
 		damager.hitCooldown = 60;
 

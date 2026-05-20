@@ -615,13 +615,10 @@ public class Projectile : Actor {
 		if (Global.serverClient == null) {
 			return true;
 		}
-		if (Global.level.server.favorHost && Global.level.server.isP2P) {
-			if (isDefenderFavored()) {
-				return Global.serverClient.isHost;
-			}
-			return ownedByLocalPlayer;
+		if (isFTS()) {
+			return Global.serverClient.isHost;
 		}
-		if (isDefenderFavored()) {
+		if (isFTD()) {
 			return enemyActor.ownedByLocalPlayer;
 		}
 		return ownedByLocalPlayer;

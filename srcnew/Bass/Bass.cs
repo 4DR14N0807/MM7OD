@@ -153,7 +153,7 @@ public class Bass : Character {
 		if (!isTrebbleBoost) {
 			maxHealth += 2;
 		}
-		//heal(player, (float)(maxHealth - health));
+		heal(player, 2);
 		phase = 0;
 		evilEnergy = 0;
 		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);
@@ -562,7 +562,7 @@ public class Bass : Character {
 	public void quickHyperUpgrade() {
 		if (isSuperBass || isTrebbleBoost || !alive || !canGoSuperBass() ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
-			charState.normalCtrl || !player.input.isHeld(Control.Special2, player)
+			!charState.normalCtrl || !player.input.isHeld(Control.Special2, player)
 		) {
 			hyperProgress = 0;
 			return;

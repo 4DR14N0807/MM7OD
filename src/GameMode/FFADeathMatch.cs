@@ -12,60 +12,7 @@ public class FFADeathMatch : GameMode {
 	}
 
 	public override void checkIfWinLogic() {
-		List<Player> winningPlayers = [];
-		// Timeout condition.
-		if (remainingTime <= 0) {
-			int maxKills = 0;
-			foreach (Player player in level.players) {
-				if (player.score >= maxKills) {
-					maxKills = player.score;
-				}
-			}
-			// Get everyone with max kills.
-			// This will be a draw if more than one.
-			if (maxKills > 0) {
-				foreach (var player in level.players) {
-					if (player.score >= playingTo) {
-						winningPlayers.Add(player);
-						break;
-					}
-				}
-			} else {
-				// Make the stage win to show lose message to everyone.
-				winningPlayers.Add(Player.stagePlayer);
-			}
-		}
-		// Regular wincon.
-		else {
-			foreach (Player player in level.players) {
-				if (player.score >= playingTo && !winningPlayers.Contains(player)) {
-					winningPlayers.Add(player);
-					break;
-				}
-			}
-		}
-		if (winningPlayers.Count == 0) {
-			return;
-		}
-		if (winningPlayers.Count == 1) {
-			string winMessage = "You won!";
-			string loseMessage = "You lost!";
-			string loseMessage2 = winningPlayers[0].name + " wins";
-
-			matchOverResponse = new RPCMatchOverResponse() {
-				winningAlliances = [winningPlayers[0].alliance],
-				winMessage = winMessage,
-				loseMessage = loseMessage,
-				loseMessage2 = loseMessage2
-			};
-			return;
-		}
-		string drawMessage = remainingTime <= 0 ? "Stalemate!" : "Draw!";
-		matchOverResponse = new RPCMatchOverResponse() {
-			winningAlliances = [nullAlliance],
-			winMessage = drawMessage,
-			loseMessage = drawMessage,
-		};
+		checkIfWinLogicDM();
 	}
 
 	public override void drawTopHUD() {

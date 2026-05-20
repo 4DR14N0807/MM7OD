@@ -135,7 +135,7 @@ public class ElimAlt : GameMode {
 
 	public override void checkIfWinLogic() {
 		roundWinLogic();
-		checkIfWinLogicTeams();
+		checkIfWinLogicDM();
 	}
 
 	public void roundWinLogic() {

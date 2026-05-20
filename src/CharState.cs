@@ -430,7 +430,7 @@ public class WarpIn : CharState {
 					character.changeState(new WarpIdle(!Global.level.joinedLate, altAnim));
 				} else {
 					if (character is Blues) {
-						character.changeToIdleOrFall("swap");
+						character.changeToIdleOrFall("idle_swap");
 					} else {
 						character.changeToIdleOrFall();
 					}
@@ -536,7 +536,7 @@ public class WarpIdle : CharState {
 
 		if ((character.isAnimOver() || character.sprite.loopCount >= 1) && fullHP && fullAlt) {
 			if (character is Blues) {
-				character.changeToIdleOrFall("swap");
+				character.changeToIdleOrFall("idle_swap");
 			} else {
 				character.changeToIdleOrFall();
 			}

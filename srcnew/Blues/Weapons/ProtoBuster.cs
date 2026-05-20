@@ -13,7 +13,7 @@ public class ProtoBuster : Weapon {
 public class ProtoBusterProj : Projectile {
 	public ProtoBusterProj(
 		Actor owner, Point pos, int xDir, ushort? netId, 
-		Point? vel = null, bool rpc = false, Player? altPlayer = null
+		bool isWeak = false, bool sendRpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "proto_buster_proj", netId, altPlayer
 	) {
@@ -21,17 +21,21 @@ public class ProtoBusterProj : Projectile {
 		projId = (int)BluesProjIds.Lemon;
 		fadeSprite = "proto_buster_proj_fade";
 
-		base.vel.x = 250 * xDir;
+		vel.x = 250 * xDir;
 		damager.damage = 1;
 
-		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		if (isWeak) {
+			changeSprite("proto_buster_weak_proj", true);
+		}
+
+		if (sendRpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)(isWeak ? 1 : 0));
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new ProtoBusterProj(
-			args.owner, args.pos, args.xDir, args.netId, altPlayer: args.player
+			args.owner, args.pos, args.xDir, args.netId, isWeak: args.extraData[0] == 1, altPlayer: args.player
 		);
 	}
 	public override void update() {
@@ -82,8 +86,7 @@ public class ProtoBusterAngledProj : Projectile {
 			damager.damage = 0.5f;
 			damager.hitCooldown = 0;
 			projId = (int)BluesProjIds.LemonAOverheat;
-			changeSprite("rock_buster_proj", true);
-			fadeSprite = "rock_buster_fade";
+			changeSprite("proto_spread_weak_proj", true);
 		} else if (type == 2) {
 			damager.flinch = Global.miniFlinch;
 			projId = (int)BluesProjIds.LemonAOverdrive;

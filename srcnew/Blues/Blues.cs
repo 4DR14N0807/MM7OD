@@ -134,7 +134,6 @@ public class Blues : Character {
 		else {
 			shieldHP = shieldMaxHP;
 		}
-		isShieldActive = false;
 	}
 
 	public override bool canAddAmmo() {
@@ -879,9 +878,9 @@ public class Blues : Character {
 		if (chargeLevel <= 0) {
 			if (type == 0) {
 				new ProtoBusterProj(
-					this, shootPos, xDir, player.getNextActorNetId(), rpc: true
+					this, shootPos, xDir, player.getNextActorNetId(), isWeak: overheating, sendRpc: true
 				);
-				if (overheating) {
+				if (!overheating) {
 					playSound("buster", sendRpc: true);
 				} else {
 					playSound("protoLemon", sendRpc: true);

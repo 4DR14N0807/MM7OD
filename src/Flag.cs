@@ -269,11 +269,11 @@ public class Flag : Actor {
 	}
 
 	public void drawSpinner(float progress) {
-		float cx = pos.x + 8;
-		float cy = pos.y - 40;
+		float cx = MathF.Round(pos.x) + 8;
+		float cy = MathF.Round(pos.y) - 40;
 		float ang = -90;
-		float radius = 3f;
-		float thickness = 1.25f;
+		float radius = 3;
+		float thickness = 2;
 		int count = 40;
 
 		for (int i = 0; i < count; i++) {
@@ -290,7 +290,7 @@ public class Flag : Actor {
 			DrawWrappers.deferredTextDraws.Add(() => DrawWrappers.DrawCircle(
 				(-Global.level.camX + cx + Helpers.cosd(angCopy) * radius) / Global.viewSize,
 				(-Global.level.camY + cy + Helpers.sind(angCopy) * radius) / Global.viewSize,
-				(thickness - 0.5f) / Global.viewSize, true,
+				(thickness - 1) / Global.viewSize, true,
 				alliance == GameMode.redAlliance ? Color.Red : Color.Blue,
 				1, ZIndex.HUD, isWorldPos: false)
 			);

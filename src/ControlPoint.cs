@@ -71,9 +71,9 @@ public class ControlPoint : Actor {
 		base.postUpdate();
 
 		if (attacked()) {
-			addRenderEffect(RenderEffectType.InvisibleFlash);
+			alpha = MathF.Abs(MathF.Sin(Global.floorFrameCount / 25f));
 		} else {
-			removeRenderEffect(RenderEffectType.InvisibleFlash);
+			alpha = 1;
 		}
 		if (alliance != GameMode.neutralAlliance && alliance >= 0 &&
 			alliance < Global.level.gameMode.teamColors.Length
@@ -94,8 +94,11 @@ public class ControlPoint : Actor {
 		defenders = chrsOnPoint.Where(c => c.player.alliance == alliance && canDefend(c)).ToList();
 		attackers = chrsOnPoint.Where(c => c.player.alliance != alliance && canAttack(c)).ToList();
 
-		if (attacked()) addRenderEffect(RenderEffectType.InvisibleFlash);
-		else removeRenderEffect(RenderEffectType.InvisibleFlash);
+		if (attacked()) {
+			alpha = MathF.Abs(MathF.Sin(Global.floorFrameCount / 25f));
+		} else {
+			alpha = 1;
+		}
 
 		if (attacked()) {
 			int attackerAlliance = attackers[0].player.alliance;

@@ -94,6 +94,9 @@ public class Damager {
 		if (projId == (int)BassProjIds.RemoteMineMeleeExplosion) {
 			key = $"{(int)BassProjIds.RemoteMineExplosion}_{owner.id}";
 		}
+		if (damagingActor is Projectile npj && npj.ownerActor is NeutralEnemy npne && npne.netId != null) {
+			key = $"{projId}_{npne.netId}_{owner.id}";
+		}
 		if (multiHitLimit.ContainsKey(projId)) {
 			int hitLimit = multiHitLimit[projId];
 			for (int i = 0; i < hitLimit; i++) {

@@ -426,8 +426,8 @@ public class WarpIn : CharState {
 			if (character.isAnimOver()) {
 				character.grounded = true;
 				character.changePos(destX, destY);
-				if (!player.warpedInOnce || Global.level.joinedLate) {
-					character.changeState(new WarpIdle(!Global.level.joinedLate, altAnim));
+				if (!player.warpedInOnce) {
+					character.changeState(new WarpIdle(player.warpedInOnce, altAnim));
 				} else {
 					if (character is Blues) {
 						character.changeToIdleOrFall("idle_swap");

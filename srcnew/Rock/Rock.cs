@@ -277,7 +277,7 @@ public class Rock : Character {
 
 	public void quickAdaptorUpgrade() {
 		if (hasSuperAdaptor || boughtSuperAdaptorOnce ||
-			!alive || !canGoSuperAdaptor() || charState.normalCtrl ||
+			!alive || !canGoSuperAdaptor() || !charState.normalCtrl ||
 			charState.immortal || charState is CallDownRush or WarpIdle ||
 			!player.input.isHeld(Control.Special2, player)
 		) {

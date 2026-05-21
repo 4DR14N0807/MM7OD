@@ -1615,6 +1615,7 @@ public class Die : CharState {
 		character.useGravity = false;
 		character.stopMovingS();
 		character.stopCharge();
+		character.alive = false;
 
 		if (character is Blues blues) {
 			blues.delinkStarCrash();
@@ -1632,15 +1633,14 @@ public class Die : CharState {
 	}
 
 	public override bool canExit(Character character, CharState newState) {
-		if (!character.alive &&
-			newState is not BluesRevive
-			and not CallDownRush
-			and not SuperBassStart
-			and not NetLimbo { allowResurection: true }
+		if (newState is BluesRevive
+			or CallDownRush
+			or SuperBassStart
+			or NetLimbo { allowResurection: true }
 		) {
-			return false;
+			return base.canExit(character, newState);
 		}
-		return base.canExit(character, newState);
+		return false;
 	}
 }
 

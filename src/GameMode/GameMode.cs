@@ -1185,7 +1185,7 @@ public class GameMode {
 				killerMessage = killFeed.killer.name;
 
 				if (killFeed.assister != null && killFeed.assister != killFeed.victim && (
-					!isTeamMode || killFeed.assister.alliance != killFeed.killer.alliance
+					!isTeamMode || killFeed.assister.alliance == killFeed.killer.alliance
 				)) {
 					assistMsg = killFeed.assister.name;
 				}
@@ -2059,7 +2059,7 @@ public class GameMode {
 			int posY = rows[2] + i * 10;
 			Color charColor = getCharColor(player);
 
-			if (Global.serverClient != null || player.serverPlayer.isHost) {
+			if (Global.serverClient != null && player.serverPlayer.isHost) {
 				Fonts.drawText(FontType.WhiteMini, "h", cols[0] - 6, posY, alpha: 128);
 			} else if (Global.serverClient != null && player.serverPlayer.isBot) {
 				Fonts.drawText(FontType.WhiteMini, "b", cols[0] - 6, posY, alpha: 128);

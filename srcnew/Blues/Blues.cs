@@ -552,7 +552,7 @@ public class Blues : Character {
 			}
 			overdriveAmmoDecreaseCooldown = 10;
 		}
-		if (overdrive && (overdriveLimit || overdriveAmmo >= coreMaxAmmo)) {
+		if (overdrive && (overdriveLimit || overdriveAmmo >= coreMaxAmmo || overdriveAmmo <= 0) && !inCustomShootAnim && charState is not BluesRevive) {
 			overdrive = false;
 			overheating = true;
 			coreAmmoDecreaseCooldown = 60;
@@ -775,19 +775,7 @@ public class Blues : Character {
 		}
 		if (shieldDash && canShieldDash()) {
 			addCoreAmmo(2);
-			if (canJump() && player.input.isPressed(Control.Jump, player)) {
-				isDashing = true;
-				vel.y = -getJumpPower();
-				changeState(getJumpState(), true);
-				playSound("slide", sendRpc: true);
-				new Anim(
-					getDashDustEffectPos(xDir).addxy(0, 4),
-					"dust", xDir, player.getNextActorNetId(), true,
-					sendRpc: true
-				) { vel = new Point(0, -40) };
-			} else {
-				changeState(new ShieldDash(), true);
-			}
+			changeState(new ShieldDash(), true);
 			if (!grounded) {
 				dashedInAir++;
 			}
@@ -1591,7 +1579,7 @@ public class Blues : Character {
 		return pos.addxy(0, -yCollider);
 	}
 	
-	public override void renderHUD(Point offset, HUDHealthPosition position) {
+	public override void renderHUD(Point offset, HUDHealthPosition position) {	
 		offset = offset.addxy(0, 13);
 		if (overdrive) {
 			renderOverdriveHUD();
@@ -1601,6 +1589,7 @@ public class Blues : Character {
 		}
 		base.renderHUD(offset, position);
 		renderCoreAlt();
+		
 	}
 
 	public override void renderLifebar(Point offset, HUDHealthPosition position) {

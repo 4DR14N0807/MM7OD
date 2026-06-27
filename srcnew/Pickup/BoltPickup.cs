@@ -4,10 +4,10 @@ public abstract class BaselineBoltPickup : Pickup {
 	public BaselineBoltPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false, bool isRushPickup = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp, isRushPickup: isRushPickup
 	) {
 		pickupType = PickupType.Bolts;
 		healAmount = 8;
@@ -24,17 +24,18 @@ public abstract class BaselineBoltPickup : Pickup {
 public class GiantBoltPickup : BaselineBoltPickup {
 	public GiantBoltPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_bolt_giant", netId, ownedByLocalPlayer,
-		CActorIds.GiantBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.GiantBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 100;
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new GiantBoltPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -42,10 +43,10 @@ public class GiantBoltPickup : BaselineBoltPickup {
 public class LargeBoltPickup : BaselineBoltPickup {
 	public LargeBoltPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_bolt_large", netId, ownedByLocalPlayer,
-		CActorIds.LargeBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.LargeBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 8;
 
@@ -57,7 +58,8 @@ public class LargeBoltPickup : BaselineBoltPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new LargeBoltPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -65,10 +67,10 @@ public class LargeBoltPickup : BaselineBoltPickup {
 public class SmallBoltPickup : BaselineBoltPickup {
 	public SmallBoltPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_bolt_small", netId, ownedByLocalPlayer,
-		CActorIds.SmallBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.SmallBoltPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 2;
 
@@ -80,7 +82,8 @@ public class SmallBoltPickup : BaselineBoltPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallBoltPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }

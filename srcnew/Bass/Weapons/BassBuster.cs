@@ -52,7 +52,7 @@ public class BassBuster : Weapon {
 		Player player = character.player;
 
 		if (!player.ownedByLocalPlayer) return;
-		new BassBusterProj(bass, shootPos, bass.getShootAngle(), player.getNextActorNetId(), true);
+		new BassBusterProj(bass, shootPos, bass.getShootAngle(bass.charState is LadderClimb or BassShootLadder), player.getNextActorNetId(), true);
 		new Anim(shootPos, "bass_buster_anim", character.xDir, player.getNextActorNetId(), true, true);
 		character.playSound("bassbuster", true);
 
@@ -69,9 +69,9 @@ public class BassBusterProj : Projectile {
 	) {
 		projId = (int)BassProjIds.BassLemon;
 		byteAngle = MathF.Round(byteAngle);
-		maxTime = 40 / 60f;
+		maxTime = 32 / 60f;
 		this.byteAngle = byteAngle;
-		vel = Point.createFromByteAngle(byteAngle) * 240;
+		vel = Point.createFromByteAngle(byteAngle) * 300;
 		destroyOnHitWall = true;
 		fadeSprite = "bass_buster_proj_fade";
 		fadeOnAutoDestroy = true;

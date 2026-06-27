@@ -4,19 +4,20 @@ public abstract class BaselineHealthPickup : Pickup {
 	public BaselineHealthPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false, bool isRushPickup = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp, isRushPickup: isRushPickup
 	) {
 		pickupType = PickupType.Health;
 		healAmount = 8;
 	}
 
+	public override bool canUse(int alliance, Character chr) {
+		return base.canUse(alliance, chr) && chr.canBeHealed();
+	}
+
 	public override void use(Character chr) {
-		if (!chr.canBeHealed()) {
-			return;
-		}
 		chr.addHealth(healAmount);
 		base.use(chr);
 	}
@@ -25,10 +26,10 @@ public abstract class BaselineHealthPickup : Pickup {
 public class GiantHealthPickup : BaselineHealthPickup {
 	public GiantHealthPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_health_giant", netId, ownedByLocalPlayer,
-		CActorIds.GiantHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.GiantHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 64;
 	}
@@ -41,7 +42,8 @@ public class GiantHealthPickup : BaselineHealthPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new GiantHealthPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -51,10 +53,10 @@ public class TankHealthPickup : BaselineHealthPickup {
 
 	public TankHealthPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false, int? type = null
+		bool sendRpc = false, bool teamOnly = false, int? type = null, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_etank", netId, ownedByLocalPlayer, 
-		CActorIds.TankHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.TankHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 12;
 
@@ -81,7 +83,8 @@ public class TankHealthPickup : BaselineHealthPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new TankHealthPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -89,10 +92,10 @@ public class TankHealthPickup : BaselineHealthPickup {
 public class LargeHealthPickup : BaselineHealthPickup {
 	public LargeHealthPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_health_large", netId, ownedByLocalPlayer, 
-		CActorIds.LargeHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.LargeHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 8;
 		syncOnLateJoin = true;
@@ -106,7 +109,8 @@ public class LargeHealthPickup : BaselineHealthPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new LargeHealthPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -114,10 +118,10 @@ public class LargeHealthPickup : BaselineHealthPickup {
 public class SmallHealthPickup : BaselineHealthPickup {
 	public SmallHealthPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_health_small", netId, ownedByLocalPlayer,
-		CActorIds.SmallHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.SmallHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 4;
 	}
@@ -130,7 +134,8 @@ public class SmallHealthPickup : BaselineHealthPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallHealthPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -138,10 +143,10 @@ public class SmallHealthPickup : BaselineHealthPickup {
 public class MiniHealthPickup : BaselineHealthPickup {
 	public MiniHealthPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_health_mini", netId, ownedByLocalPlayer,
-		CActorIds.MiniHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.MiniHealthPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 2;
 	}
@@ -154,7 +159,8 @@ public class MiniHealthPickup : BaselineHealthPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new MiniHealthPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }

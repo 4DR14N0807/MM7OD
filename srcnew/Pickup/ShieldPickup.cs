@@ -6,19 +6,20 @@ public abstract class BaselineShieldPickup : Pickup {
 	public BaselineShieldPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false, bool isRushPickup = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp, isRushPickup: isRushPickup
 	) {
 		healAmount = 8;
 		syncOnLateJoin = true;
 	}
 
+	public override bool canUse(int alliance, Character chr) {
+		return base.canUse(alliance, chr) && chr.canBeShielded();
+	}
+
 	public override void use(Character chr) {
-		if (!chr.canBeShielded()) {
-			return;
-		}
 		chr.playSound("subtank_fill");
 		int time = 60 * 15;
 		Buff? shieldTarget = chr.buffList.FirstOrDefault(b => b.update == buffUpdate);
@@ -41,10 +42,10 @@ public abstract class BaselineShieldPickup : Pickup {
 public class TankShieldPickup : BaselineShieldPickup {
 	public TankShieldPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_atank", netId, ownedByLocalPlayer, 
-		CActorIds.TankShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.TankShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 8;
 	}
@@ -57,7 +58,8 @@ public class TankShieldPickup : BaselineShieldPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new TankShieldPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -65,10 +67,10 @@ public class TankShieldPickup : BaselineShieldPickup {
 public class LargeShieldPickup : BaselineShieldPickup {
 	public LargeShieldPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_shield_large", netId, ownedByLocalPlayer, 
-		CActorIds.LargeShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.LargeShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 6;
 	}
@@ -81,7 +83,8 @@ public class LargeShieldPickup : BaselineShieldPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new LargeShieldPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -89,10 +92,10 @@ public class LargeShieldPickup : BaselineShieldPickup {
 public class SmallShieldPickup : BaselineShieldPickup {
 	public SmallShieldPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_shield_small", netId, ownedByLocalPlayer, 
-		CActorIds.SmallShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.SmallShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 4;
 	}
@@ -105,7 +108,8 @@ public class SmallShieldPickup : BaselineShieldPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallShieldPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -113,10 +117,10 @@ public class SmallShieldPickup : BaselineShieldPickup {
 public class MiniShieldPickup : BaselineShieldPickup {
 	public MiniShieldPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_shield_mini", netId, ownedByLocalPlayer, 
-		CActorIds.MiniShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.MiniShieldPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 2;
 	}
@@ -129,7 +133,8 @@ public class MiniShieldPickup : BaselineShieldPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new MiniShieldPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }

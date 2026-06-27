@@ -2058,16 +2058,19 @@ public partial class Player {
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
 		if (character.usedEtank != null) return false;
+		if (character.invulnTime > 0) return false;
 
 		return true;
 	}
 
 	public bool canUseWTank(WTank wtank) {
 		if (isDead) return false;
+		if (character == null) return false;
 		if (health <= 0) return false;
 		if (character.charState is WarpOut) return false;
 		if (character.charState.invincible) return false;
 		if (!character.canAddAmmo()) return false;
+		if (character.invulnTime > 0) return false;
 
 		return true;
 	}
@@ -2080,6 +2083,7 @@ public partial class Player {
 			if (blues.charState is WarpOut) return false;
 			if (blues.charState.invincible) return false;
 			if (blues.charState is OverheatShutdown or OverheatShutdownStart) return false;
+			if (blues.invulnTime > 0) return false;
 			return true;
 		} 
 		return false;

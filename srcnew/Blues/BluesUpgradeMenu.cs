@@ -73,6 +73,7 @@ public class BluesUpgradeMenu : IMainMenu {
 					if (mainPlayer.ltanks.Count < getMaxLTanks() && mainPlayer.currency >= lTankCost) {
 						mainPlayer.currency -= lTankCost;
 						mainPlayer.ltanks.Add(new LTank(mainPlayer.maxHealth));
+						mainPlayer.fuseLTanks();
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ltanks.InRange(selectArrowPosY)) {
 						if (canUseLTankInMenu(mainPlayer.canUseLTank(mainPlayer.ltanks[selectArrowPosY])) &&

@@ -57,7 +57,7 @@ public class MagicCard : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 17;
+		fireRate = 23;
 		maxAmmo = 48;
 		ammo = maxAmmo;
 		ammoDisplayScale = 2;

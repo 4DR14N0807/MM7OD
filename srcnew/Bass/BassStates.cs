@@ -145,7 +145,7 @@ public class BassShootLadder : BassState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		if (bass.currentWeapon is WaveBurner) {
+		if (bass.currentWeapon is WaveBurner {ammo: > 0}) {
 			bass.playSound("waveburnerEnd", sendRpc: true);
 		}
 	}
@@ -153,7 +153,18 @@ public class BassShootLadder : BassState {
 	public override void update() {
 		base.update();
 
-		if (stateFrames >= 16) {
+		string oldSprite = sprite;
+		sprite = getShootSprite(
+			bass.getShootYDir(true, true),
+			bass.currentWeapon ?? throw new NullReferenceException()
+		);
+
+		if (oldSprite != sprite) {
+			bass.changeSpriteFromName(sprite, true);
+			bass.sprite.restart();
+		}
+
+		if (stateFrames >= 16 && (!player.input.isHeld(Control.Shoot, player) || bass.currentWeapon?.ammo <= 0)) {
 			float midX = ladder.collider.shape.getRect().center().x;
 			character.changeState(new LadderClimb(ladder, midX), true);
 			return;
@@ -161,18 +172,25 @@ public class BassShootLadder : BassState {
 	}
 
 	public static string getShootSprite(int dir, Weapon wep) {
-		if (wep is not BassBuster &&
-			wep is not MagicCard) return "ladder_shoot";
-
-		else if (wep is MagicCard) {
-			if (dir < 0) return "ladder_shoot_up";
+		// Weapons that always map to "shoot" regardless of dir.
+		if (wep is not BassBuster and not MagicCard
+			and not WaveBurner and not RemoteMine and not IceWall ||
+			wep is IceWall iw && iw.wall?.destroyed != false
+		) {
 			return "ladder_shoot";
 		}
-
+		// Direction remapping rules.
+		dir = (wep, dir) switch {
+			(MagicCard, -1) => -2,
+			(RemoteMine or IceWall, -2) => -1,
+			(RemoteMine or IceWall, 2) => 1,
+			(MagicCard, 1) => 2,
+			_ => dir
+		};
+		// Direction to sprite.
 		return dir switch {
 			-2 => "ladder_shoot_up",
 			-1 => "ladder_shoot_up_diag",
-			0 => "ladder_shoot",
 			1 => "ladder_shoot_down_diag",
 			2 => "ladder_shoot_down",
 			_ => "ladder_shoot"
@@ -593,11 +611,12 @@ public class EnergyIncrease : BassState {
 		//aura?.changePos(bass.pos);
 
 		if (stateFrames >= 30) {
-			if (player.input.isHeld(Control.Special2, player)) {
+			/* if (player.input.isHeld(Control.Special2, player)) {
 				character.changeState(new EnergyCharge(), true);
 			} else {
 				character.changeToIdleOrFall();
-			}
+			} */
+			character.changeToIdleFallorFly();
 		}
 	}
 

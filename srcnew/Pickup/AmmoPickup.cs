@@ -4,10 +4,10 @@ public abstract class BaselineAmmoPickup : Pickup {
 	public BaselineAmmoPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false, bool isRushPickup = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp, isRushPickup: isRushPickup
 	) {
 		pickupType = PickupType.Ammo;
 		healAmount = 50;
@@ -15,10 +15,11 @@ public abstract class BaselineAmmoPickup : Pickup {
 		syncOnLateJoin = true;
 	}
 
+	public override bool canUse(int alliance, Character chr) {
+		return base.canUse(alliance, chr) && chr.canAddAmmo();
+	}
+
 	public override void use(Character chr) {
-		if (!chr.canAddAmmo()) {
-			return;
-		}
 		if (chr is Blues blues) {
 			blues.healCore(altHealAmount);
 		} else {
@@ -34,10 +35,10 @@ public abstract class BaselineAmmoPickup : Pickup {
 public class GiantAmmoPickup : BaselineAmmoPickup {
 	public GiantAmmoPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_ammo_giant", netId, ownedByLocalPlayer,
-		CActorIds.GiantAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.GiantAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 100;
 		altHealAmount = 64;
@@ -51,7 +52,8 @@ public class GiantAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new GiantAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -59,10 +61,10 @@ public class GiantAmmoPickup : BaselineAmmoPickup {
 public class TankAmmoPickup : BaselineAmmoPickup {
 	public TankAmmoPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_wtank", netId, ownedByLocalPlayer, 
-		CActorIds.TankAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.TankAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 75;
 		altHealAmount = 16;
@@ -76,7 +78,8 @@ public class TankAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new TankAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -85,10 +88,10 @@ public class TankAmmoPickup : BaselineAmmoPickup {
 public class LargeAmmoPickup : BaselineAmmoPickup {
 	public LargeAmmoPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_ammo_large", netId, ownedByLocalPlayer, 
-		CActorIds.LargeAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.LargeAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 50;
 		altHealAmount = 8;
@@ -102,7 +105,8 @@ public class LargeAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new LargeAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -110,10 +114,10 @@ public class LargeAmmoPickup : BaselineAmmoPickup {
 public class SmallAmmoPickup : BaselineAmmoPickup {
 	public SmallAmmoPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_ammo_small", netId, ownedByLocalPlayer, 
-		CActorIds.SmallAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.SmallAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 25;
 		altHealAmount = 4;
@@ -127,7 +131,8 @@ public class SmallAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -135,10 +140,10 @@ public class SmallAmmoPickup : BaselineAmmoPickup {
 public class MiniAmmoPickup : BaselineAmmoPickup {
 	public MiniAmmoPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_ammo_mini", netId, ownedByLocalPlayer, 
-		CActorIds.MiniAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.MiniAmmoPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 12.5f;
 		altHealAmount = 2;
@@ -152,7 +157,8 @@ public class MiniAmmoPickup : BaselineAmmoPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new MiniAmmoPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }

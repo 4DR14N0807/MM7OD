@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 
 namespace MMXOnline;
 
@@ -383,3 +386,62 @@ public struct ProjParameters {
 }
 
 public delegate Projectile ProjCreate(ProjParameters arg);
+
+public class RPCCreateProjAttribute : Attribute {
+	public int[] projIds;
+
+	public RPCCreateProjAttribute(params int[] projIds) {
+		this.projIds = projIds;
+	}
+	public RPCCreateProjAttribute(params ProjIds[] projIds) {
+		this.projIds = projIds.Cast<int>().ToArray();
+	}
+	public RPCCreateProjAttribute(params RockProjIds[] projIds) {
+		this.projIds = projIds.Cast<int>().ToArray();
+	}
+	public RPCCreateProjAttribute(params BluesProjIds[] projIds) {
+		this.projIds = projIds.Cast<int>().ToArray();
+	}
+	public RPCCreateProjAttribute(params BassProjIds[] projIds) {
+		this.projIds = projIds.Cast<int>().ToArray();
+	}
+	public RPCCreateProjAttribute(params NeutralEnemyProjIds[] projIds) {
+		this.projIds = projIds.Cast<int>().ToArray();
+	}
+	public RPCCreateProjAttribute(params GenericProjIds[] projIds) {
+		this.projIds = projIds.Cast<int>().ToArray();
+	}
+
+	public static void populateInvokeList() {
+		FieldInfo[] invokeFields = (Assembly.GetExecutingAssembly()
+			.GetTypes()
+			.SelectMany(t => t.GetFields(BindingFlags.Static))
+			.Where(f => f.IsDefined(typeof(RPCCreateProjAttribute), false))
+			.ToArray()
+		);
+
+		foreach (FieldInfo field in invokeFields) {
+			// Get main attrib. Usually this should always exist.
+			// We error check anyway in case something very off goes on.
+			RPCCreateProjAttribute? attrib = field.GetCustomAttribute<RPCCreateProjAttribute>();
+			if (attrib == null) {
+				throw new Exception($"Error parsing CreateProj attrib on {field}");
+			}
+			// Get field.
+			// This can be the wrong field so we check that.
+			ProjCreate? value = field.GetValue(null) as ProjCreate;
+			if (value == null) {
+				throw new Exception($"Error parsing CreateProj function on {attrib.projIds[0]}");
+			}
+			// Iterate each projId.
+			foreach (int projId in attrib.projIds) {
+				// Avoid duplicates.
+				if (RPCCreateProj.functs.ContainsKey(projId)) {
+					throw new Exception($"Error on CreateProj attrib, {projId} already exists.");
+				}
+				// Add to main list.
+				RPCCreateProj.functs.Add(projId, value);
+			}
+		}
+	}
+}

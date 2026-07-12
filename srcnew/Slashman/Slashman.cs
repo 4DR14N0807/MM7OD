@@ -26,17 +26,21 @@ public class Slashman : Character {
 		//Non-local players end here.
 		if (!ownedByLocalPlayer) return;
 
+		// Directions.
 		int ixDir = player.input.getXDir(player);
 		int mdDir = MathF.Sign(moveDelta.x);
+		// Wallslide gives a speed boost.
 		if (charState is WallSlide or WallKick && runSpeed < SMPhysics.maxRun) {
 			runSpeed = SMPhysics.maxRun;
 		}
+		// Aceleration.
 		if (MathF.Abs(moveDelta.x) > 0.1f && ixDir == mdDir) {
 			skidDir = 0;
 			float mul = grounded ? 1 : 0.5f;
 			runSpeed += SMPhysics.decel * mul;
 			if (runSpeed > SMPhysics.maxSprint) { runSpeed = SMPhysics.maxSprint; }
 		}
+		// De-aceleration and Skid.
 		else if (runSpeed > SMPhysics.minWalk) {
 			if (ixDir != 0 && ixDir != mdDir) {
 				runSpeed -= grounded ? SMPhysics.skidWalk : SMPhysics.accel;
@@ -52,7 +56,6 @@ public class Slashman : Character {
 				skidDir = 0;
 			}
 		}
-		//Global.level.gameMode.setHUDDebugWarning(runSpeed.ToString());
 	}
 
 	public override void update() {
@@ -66,12 +69,13 @@ public class Slashman : Character {
 	public override bool canDash() => false;
 	public override bool canWallClimb() => base.canWallClimb();
 	public override CharState getRunState(bool skipInto = false) => new SlashmanRun();
+
+	// Sonic physics start here.
 	public override bool canTurn() => MathF.Abs(runSpeed) < 0.5f || charState is WallKick or WallSlide;
 	public override float getRunSpeed() => runSpeed * getRunDebuffs();
 	public override float getJumpPower() {
 		return (SMPhysics.baseJump + (runSpeed * 5 * SMPhysics.jumpMul)) * 60;
 	}
-
 	public override void airMove() {
 		int xDpadDir = player.input.getXDir(player);
 		if (!canTurn()) {
@@ -100,6 +104,7 @@ public class Slashman : Character {
 			if (moveSpeed.x != 0) { movePoint(moveSpeed); }
 		}
 	}
+	// Sonic physics end here.
 
 	public enum MeleeIds {
 		None = -1,

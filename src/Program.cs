@@ -245,6 +245,8 @@ class Program {
 
 		drawLoadST(loadText, window);
 
+		parseAttribs();
+
 		// Force to clean all memory.
 		// Also compacts all objects too.
 		// As it as manual call this freeze the program and takes a while.
@@ -1273,6 +1275,12 @@ class Program {
 				}
 			}
 		}
+	}
+
+	// Parse atribute tasks.
+	// THis is done at runtime to help support dynamic content.
+	public static void parseAttribs() {
+		RPCCreateProjAttribute.populateInvokeList();
 	}
 
 	// Main loop stuff.

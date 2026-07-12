@@ -32,44 +32,29 @@ public class Chip {
 	);
 	public delegate void CreateLink(Character chara, Projectile proj);
 
-	// Function calls. Only use what's needed.
-	public GenericLink? onRunning;
-	public DeathCAct? preDeath;
-	public DeathCAct? onDeath;
-	public GenericLink? onRespawn;
-	public CreateLink? onAttack;
-	public CreateLink? onMelee;
-	public CreateLink? onShoot;
-	public GenericLink? onJump;
-	public AttackLink? onDamage;
-	public AttackLink? onApplyDamage;
-	public AttackLink? onFlinch;
-	public AttackLink? onApplyFlinch;
-	public AttackLink? onStun;
-	public AttackLink? onApplyStun;
-	public AttackLink? onHealing;
-	public AttackLink? onApplyHeal;
-	public KillLink? onKill;
-
-	public static string[] functionNames = [
-		"onRunning",
-		"preDeath",
-		"onDeath",
-		"onRespawn",
-		"onAttack",
-		"onMelee",
-		"onShoot",
-		"onJump",
-		"onDamage",
-		"onApplyDamage",
-		"onFlinch",
-		"onApplyFlinch",
-		"onStun",
-		"onApplyStun",
-		"onHealing",
-		"onApplyHeal",
-		"onKill"
-	];
+	// Function calls. Only use what's needed,
+	// as that would be whats added to the call stack.
+	// If you want to add a new one add the [ItemFunct] tag
+	// and add the proper calls in the character.
+	[ItemFunct] public GenericLink? onRunning;
+	[ItemFunct] public DeathCAct? preDeath;
+	[ItemFunct] public DeathCAct? onDeath;
+	[ItemFunct] public GenericLink? onRespawn;
+	[ItemFunct] public CreateLink? onAttack;
+	[ItemFunct] public CreateLink? onMelee;
+	[ItemFunct] public CreateLink? onShoot;
+	[ItemFunct] public GenericLink? onJump;
+	[ItemFunct] public GenericLink? onLand;
+	[ItemFunct] public AttackLink? onDamage;
+	[ItemFunct] public AttackLink? onApplyDamage;
+	[ItemFunct] public AttackLink? onFlinch;
+	[ItemFunct] public AttackLink? onApplyFlinch;
+	[ItemFunct] public AttackLink? onStun;
+	[ItemFunct] public AttackLink? onApplyStun;
+	[ItemFunct] public AttackLink? onHealing;
+	[ItemFunct] public AttackLink? onApplyHeal;
+	[ItemFunct] public KillLink? onKill;
+	[ItemFunct] public KillLink? onPickup;
 
 	public virtual void preUpdate(Character chara) {}
 	public virtual void update(Character chara) {}
@@ -77,10 +62,18 @@ public class Chip {
 }
 
 public enum ChipId {
-	None
+	None,
+	ThunderRevenge
 }
 
-public class GenericCAct : SortedList<ChipId, Chip.GenericLink> {
+public class ItemFunctAttribute : Attribute {
+}
+
+
+public class BaselineCAct<T> : SortedList<ChipId, T> {
+}
+
+public class GenericCAct : BaselineCAct<Chip.GenericLink> {
 	public void Invoke(Character chara) {
 		foreach (Chip.GenericLink action in Values) {
 			action(chara);
@@ -88,7 +81,7 @@ public class GenericCAct : SortedList<ChipId, Chip.GenericLink> {
 	}
 }
 
-public class BoolCAct : SortedList<ChipId, Chip.BoolLink> {
+public class BoolCAct : BaselineCAct<Chip.BoolLink> {
 	public bool Invoke(Character chara) {
 		bool trackVal = false;
 		foreach (Chip.BoolLink action in Values) {
@@ -98,7 +91,7 @@ public class BoolCAct : SortedList<ChipId, Chip.BoolLink> {
 	}
 }
 
-public class DeathCAct : SortedList<ChipId, Chip.DeathLink> {
+public class DeathCAct : BaselineCAct<Chip.DeathLink> {
 	public bool Invoke(Character chara, Player? killer, Actor? damager, Character? enemyChar) {
 		bool trackVal = false;
 		foreach (Chip.DeathLink action in Values) {
@@ -108,7 +101,7 @@ public class DeathCAct : SortedList<ChipId, Chip.DeathLink> {
 	}
 }
 
-public class KillCAct : SortedList<ChipId, Chip.KillLink> {
+public class KillCAct : BaselineCAct<Chip.KillLink> {
 	public void Invoke(Character chara, bool isAssist, Player? enemy, Actor? damager, Character? enemyChar) {
 		foreach (Chip.KillLink action in Values) {
 			action(chara, isAssist, enemy, damager, enemyChar);
@@ -116,7 +109,7 @@ public class KillCAct : SortedList<ChipId, Chip.KillLink> {
 	}
 }
 
-public class AttackCAct : SortedList<ChipId, Chip.AttackLink> {
+public class AttackCAct : BaselineCAct<Chip.AttackLink> {
 	public float Invoke(Character chara, float val, Actor? damager, Player? enemyPlayer, Character? enemyChar) {
 		float trackVal = val;
 		foreach (Chip.AttackLink action in Values) {
@@ -126,7 +119,7 @@ public class AttackCAct : SortedList<ChipId, Chip.AttackLink> {
 	}
 }
 
-public class CreateCAct : SortedList<ChipId, Chip.CreateLink> {
+public class CreateCAct : BaselineCAct<Chip.CreateLink> {
 	public void Invoke(Character chara, Projectile proj) {
 		foreach (Chip.CreateLink action in Values) {
 			action(chara, proj);

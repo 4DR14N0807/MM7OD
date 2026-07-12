@@ -436,6 +436,12 @@ public enum NeutralEnemyProjIds {
 	MetLemon = 1000,
 }
 
+
+public enum GenericProjIds {
+	Generic = 2000,
+	ThunderSharpnel
+}
+
 public enum ProjIds {
 
 	// Adrián: Some of Rock projectiles IDs have to be here because GM moment

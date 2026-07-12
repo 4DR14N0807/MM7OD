@@ -368,6 +368,7 @@ public class RushSearchState : RushState {
 		for (int i = 1; i < chances.Length; i++) {
 			chances[i] += chances[i-1];
 		}
+
 		// Giant drops.
 		if (mainDice <= chances[0]) {
 			int altDice = Helpers.randomRange(0, 2);
@@ -376,19 +377,19 @@ public class RushSearchState : RushState {
 				text = "FULL HEAL!!!";
 				font = FontType.Blue;
 
-				new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new GiantHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else if (altDice == 1) {
 				sound = "upgrade";
 				text = "FULL AMMO REFILL!!!";
 				font = FontType.Green;
 
-				new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new GiantAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else {
 				sound = "upgrade";
 				text = "100 BOLTS!!!";
 				font = FontType.Yellow;
 
-				new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new GiantBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			}
 		}
 		// Large drops.
@@ -398,7 +399,7 @@ public class RushSearchState : RushState {
 				sound = "upgrade";
 				font = FontType.Blue;
 
-				var pickup = new TankHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				var pickup = new TankHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, isRushPickup: true);
 				text = pickup.type switch {
 					1 => "Yashichi!",
 					2 => "M-Tank!",
@@ -413,28 +414,28 @@ public class RushSearchState : RushState {
 				text = "W-TANK!";
 				font = FontType.Green;
 
-				new TankAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new TankAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			}
 			else if (altDice == 2) {
 				sound = "upgrade";
 				text = "S-TANK!";
 				font = FontType.Yellow;
 
-				new TankSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new TankSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			}
 			else if (altDice == 3) {
 				sound = "rush_search_end";
 				text = "A-TANK!";
 				font = FontType.Purple;
 
-				new TankShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new TankShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else {
 				sound = "upgrade";
 				text = "40 BOLTS!";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 5; i++) {
-					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 				}
 			}
 		}
@@ -446,33 +447,33 @@ public class RushSearchState : RushState {
 				text = "HEALTH CAPSULE!";
 				font = FontType.Blue;
 
-				new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new LargeHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			}
 			else if (altDice == 1) {
 				sound = "upgrade";
 				text = "AMMO CAPSULE!";
 				font = FontType.Green;
 
-				new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new LargeAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else if (altDice == 2) {
 				sound = "upgrade";
 				text = "SUPER CAPSULE!";
 				font = FontType.Yellow;
 
-				new LargeSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new LargeSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else if (altDice == 3) {
 				sound = "rush_search_end";
 				text = "SHIELD CAPSULE!";
 				font = FontType.Purple;
 
-				new LargeShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new LargeShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else {
 				sound = "upgrade";
 				text = "24 BOLTS!";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 3; i++) {
-					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+					new LargeBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 				}
 			}
 		}
@@ -484,20 +485,20 @@ public class RushSearchState : RushState {
 				text = "SMALL HEALTH CAPSULE";
 				font = FontType.Blue;
 
-				new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new SmallHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else if (altDice == 1) {
 				sound = "rush_search_end";
 				text = "SMALL AMMO CAPSULE";
 				font = FontType.Green;
 
-				new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new SmallAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else {
 				sound = "rush_search_end";
 				text = "10 BOLTS";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 5; i++) {
-					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 				}
 			}
 		}
@@ -509,32 +510,32 @@ public class RushSearchState : RushState {
 				text = "MINI HEALTH CAPSULE";
 				font = FontType.Blue;
 
-				new MiniHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new MiniHealthPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else if (altDice == 1) {
 				sound = "rush_search_end";
 				text = "MINI AMMO CAPSULE";
 				font = FontType.Green;
 
-				new MiniAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new MiniAmmoPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else if (altDice == 2) {
 				sound = "rush_search_end";
 				text = "MINI SUPER CAPSULE";
 				font = FontType.Yellow;
 
-				new MiniSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new MiniSuperPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else if (altDice == 3) {
 				sound = "rush_search_end";
 				text = "MINI SHIELD CAPSULE";
 				font = FontType.Purple;
 
-				new MiniShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+				new MiniShieldPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 			} else {
 				sound = "rush_search_end";
 				text = "4 BOLTS";
 				font = FontType.Yellow;
 
 				for (int i = 0; i < 2; i++) {
-					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true);
+					new SmallBoltPickup(player, pickupPos, player.getNextActorNetId(), true, true, true, true);
 				}
 			}
 		}

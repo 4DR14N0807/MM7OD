@@ -29,6 +29,8 @@ public class TeamDeathMatch : GameMode {
 		if (killer.alliance != victim.alliance) {
 			Global.level.gameMode.teamPoints[killer.alliance]++;
 			Global.level.gameMode.syncTeamScores();
+
+			//killToScore(killer, victim);
 		}
 	}
 }

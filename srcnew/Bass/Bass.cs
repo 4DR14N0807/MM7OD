@@ -23,7 +23,7 @@ public class Bass : Character {
 	public float evilEnergy = 0;
 	public float maxEvilEnergy = 16;
 	public float flyTime;
-	public float MaxFlyTime = 240;
+	public float MaxFlyTime = 120;
 	public bool canRefillFly;
 	public float sonicCrusherCooldown;
 	public float evilEnergyEffectTime;
@@ -689,7 +689,7 @@ public class Bass : Character {
 			}
 			if ((phase < 3 || isTrebbleBoost) && player.input.isPressed(Control.Special2, player)) {
 				int yDir = player.input.getYDir(player);
-				if (isTrebbleBoost && yDir == 1 && phase < 4) {
+				/* if (isTrebbleBoost && yDir == 1 && phase < 4) {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
 						int ogPhase = phase;
 						lowerPhase(phase - 1);
@@ -701,7 +701,8 @@ public class Bass : Character {
 						changeState(new BassEvilRelease());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}
-				} else if (evilEnergy >= maxEvilEnergy && isSuperBass && phase < 3) {
+				} else if*/ 
+				if (evilEnergy >= maxEvilEnergy && isSuperBass && phase < 3) {
 					changeState(new EnergyIncrease());
 					nextPhase(phase + 1);
 					if (phase >= 3) {
@@ -721,10 +722,10 @@ public class Bass : Character {
 						changeState(new BassEvilOverflow());
 						return true;
 					}
-				} else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
+				} /* else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
 					changeState(new EnergyCharge(), true);
 					return true;
-				}
+				} */
 			}
 		}
 		return base.normalCtrl();
@@ -805,10 +806,10 @@ public class Bass : Character {
 		turnToInput(player.input, player);
 		if (!currentWeapon.hasCustomAnim) {
 			if (charState is LadderClimb lc) {
-				changeState(new BassShootLadder(lc.ladder));
+				changeState(new BassShootLadder(lc.ladder), false);
 			}
 			else if (charState is BassShootLadder bsl) {
-				changeState(new BassShootLadder(bsl.ladder));
+				changeState(new BassShootLadder(bsl.ladder), false);
 			}
 			else if (charState is BassFly) {
 				string shootSprite = getSprite(charState.shootSprite);
@@ -1062,6 +1063,7 @@ public class Bass : Character {
 	public override float getFallSpeed(bool checkUnderwater = true) {
 		float modifier = 1;
 		if (charState is EnergyCharge or EnergyIncrease) modifier = 0.05f;
+		else if (charState is LBoltBassCharge or LBoltBassShoot) modifier = 0.025f;
 
 		return base.getFallSpeed() * modifier;
 	}

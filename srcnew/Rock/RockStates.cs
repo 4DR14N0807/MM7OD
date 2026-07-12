@@ -41,6 +41,8 @@ public class Slide : RockState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		initialSlideDir = character.xDir;
+		character.changeGlobalColliderOnSpriteChange(character.sprite.name);
+
 	}
 
 	public override void update() {

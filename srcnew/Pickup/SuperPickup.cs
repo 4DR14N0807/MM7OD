@@ -7,14 +7,18 @@ public abstract class BaselineSuperPickup : Pickup {
 	public BaselineSuperPickup(
 		Player owner, Point pos, string sprite, ushort? netId,
 		bool ownedByLocalPlayer, CActorIds cActorId,
-		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false
+		bool sendRpc = false, bool teamOnly = false, bool spawnUp = false, bool isRushPickup = false
 	) : base(
 		owner, pos, sprite, netId, ownedByLocalPlayer,
-		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp
+		cActorId, sendRpc: sendRpc, teamOnly: teamOnly, spawnUp: spawnUp, isRushPickup: isRushPickup
 	) {
 		healAmount = 8;
 		altHealAmount = 50;
 		syncOnLateJoin = true;
+	}
+
+	public override bool canUse(int alliance, Character chr) {
+		return base.canUse(alliance, chr) && (chr.canBeHealed() || chr.canBeShielded() || chr.canAddAmmo());
 	}
 
 	public override void use(Character chr) {
@@ -53,10 +57,10 @@ public abstract class BaselineSuperPickup : Pickup {
 public class TankSuperPickup : BaselineSuperPickup {
 	public TankSuperPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_stank", netId, ownedByLocalPlayer, 
-		CActorIds.TankSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.TankSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 8;
 		altHealAmount = 50;
@@ -70,7 +74,8 @@ public class TankSuperPickup : BaselineSuperPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new TankSuperPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -78,10 +83,10 @@ public class TankSuperPickup : BaselineSuperPickup {
 public class LargeSuperPickup : BaselineSuperPickup {
 	public LargeSuperPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_super_large", netId, ownedByLocalPlayer, 
-		CActorIds.LargeSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.LargeSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 6;
 		altHealAmount = 37.5f;
@@ -95,7 +100,8 @@ public class LargeSuperPickup : BaselineSuperPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new LargeSuperPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -103,10 +109,10 @@ public class LargeSuperPickup : BaselineSuperPickup {
 public class SmallSuperPickup : BaselineSuperPickup {
 	public SmallSuperPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_super_small", netId, ownedByLocalPlayer, 
-		CActorIds.SmallSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.SmallSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 4;
 		altHealAmount = 25;
@@ -120,7 +126,8 @@ public class SmallSuperPickup : BaselineSuperPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new SmallSuperPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }
@@ -128,10 +135,10 @@ public class SmallSuperPickup : BaselineSuperPickup {
 public class MiniSuperPickup : BaselineSuperPickup {
 	public MiniSuperPickup(
 		Player owner, Point pos, ushort? netId, bool ownedByLocalPlayer,
-		bool sendRpc = false, bool teamOnly = false
+		bool sendRpc = false, bool teamOnly = false, bool isRushPickup = false
 	) : base(
 		owner, pos, "pickup_super_mini", netId, ownedByLocalPlayer, 
-		CActorIds.MiniSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly
+		CActorIds.MiniSuperPickup, sendRpc: sendRpc, teamOnly: teamOnly, isRushPickup: isRushPickup
 	) {
 		healAmount = 2;
 		altHealAmount = 12.5f;
@@ -145,7 +152,8 @@ public class MiniSuperPickup : BaselineSuperPickup {
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new MiniSuperPickup(
-			arg.player, arg.pos, arg.netId, false, teamOnly: arg.extraData[0] == 1
+			arg.player, arg.pos, arg.netId, false, 
+			teamOnly: arg.extraData[0] == 1, isRushPickup: arg.extraData[2] == 1
 		);
 	}
 }

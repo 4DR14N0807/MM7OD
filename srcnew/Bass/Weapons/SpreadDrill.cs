@@ -173,6 +173,8 @@ public class SpreadDrillMediumProj : Projectile {
 				[(byte)(yDir == -1 ? 1 : 0)]
 			);
 		}
+
+		projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
@@ -294,6 +296,8 @@ public class SpreadDrillSmallProj : Projectile {
 				[(byte)(yDir == -1 ? 1 : 0)]
 			);
 		}
+
+		projId = (int)BassProjIds.SpreadDrill;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

@@ -199,7 +199,7 @@ public class ShieldDash : BluesState {
 			) { vel = new Point(0, -40) };
 			dustTimer = 0;
 		}
-		if (player.input.isPressed(Control.Jump, player) && stateFrames > 0) {
+		if (player.input.isPressed(Control.Jump, player) && !Options.main.reverseBluesDashInput) {
 			if (!soundPlayed) {
 				character.playSound("slide", sendRpc: true);
 				soundPlayed = true;
@@ -237,6 +237,7 @@ public class ShieldDash : BluesState {
 		if (!character.grounded) {
 			character.dashedInAir++;
 		}
+		character.shootAnimTime = 0;
 		base.onExit(newState);
 	}
 }
@@ -327,9 +328,13 @@ public class BluesSpreadShoot : BluesState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues.spreadCooldown = 12;
-		blues.inCustomShootAnim = true;
 		blues.shieldCustomState = false;
 		if (!blues.grounded) blues.changeSpriteFromName(airSprite, true);
+
+		blues.inCustomShootAnim = true;
+		if ((blues.overdrive && blues.overdriveAmmo <= 0 || blues.overdriveAmmo >= blues.coreMaxAmmo)) {
+			blues.inCustomShootAnim = false;
+		}
 	}
 
 	public override void onExit(CharState? newState) {
@@ -340,11 +345,13 @@ public class BluesSpreadShoot : BluesState {
 
 	public override void update() {
 		base.update();
+
 		if (character.frameIndex != shotLastFrame && shotNum < 5) {
 			int angleOffset = 0;
 			int spreadAng = character.grounded ? shotNum == 0 ? 8 : 6 : 16;
 			int shootDir = blues.getShootXDir();
 			int type = blues.overdrive ? 2 : (blues.overheating ? 0 : 1);
+			
 			if (shootDir == -1) {
 				angleOffset = 128;
 			}

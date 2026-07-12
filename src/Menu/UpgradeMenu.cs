@@ -397,8 +397,8 @@ public class UpgradeMenu : IMainMenu {
 				if (!rock.boughtSuperAdaptorOnce) {
 					mainPlayer.currency -= Rock.SuperAdaptorCost;
 					rock.boughtSuperAdaptorOnce = true;
+					mainPlayer.character.changeState(new CallDownRush(), true);
 				}
-				mainPlayer.character.changeState(new CallDownRush(), true);
 				//mainPlayer.setSuperAdaptor(true);
 				//Global.playSound("chingX4");
 				return true;

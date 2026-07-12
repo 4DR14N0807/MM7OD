@@ -81,7 +81,6 @@ public class LBoltBassCharge : BassState {
 
 	public LBoltBassCharge(Point? customPos = null) : base("lbolt_charge") {
 		enterSound = "lightningbolt";
-		useGravity = false;
 		this.customPos = customPos;
 	}
 
@@ -176,11 +175,14 @@ public class LBoltBassCharge : BassState {
 			character.player.getNextActorNetId(), false, zIndex: ZIndex.HUD
 		);
 		aim.alpha /= 2;
+
+		character.gravityModifier = 0.25f;
 	}
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		aim?.destroySelf();
+		character.gravityModifier = 1;
 	}
 }
 
@@ -195,8 +197,6 @@ public class LBoltBassShoot : BassState {
 		this.chargeLevel = chargeLevel;
 		this.shootPos = shootPos;
 		this.playSound = playSound;
-
-		useGravity = false;
 	}
 
 	public override void update() {
@@ -234,6 +234,13 @@ public class LBoltBassShoot : BassState {
 			weapon.addAmmo(-1, player);
 			weapon.shootCooldown = LightningBolt.cooldown;
 		}
+
+		character.gravityModifier = 0.25f;
+	}
+
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		character.gravityModifier = 1;
 	}
 }
 

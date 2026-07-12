@@ -139,7 +139,7 @@ public class ProtoStrikeProj : Projectile {
 		// Damage.
 		projId = (int)BluesProjIds.ProtoStrike;
 		damager.damage = 2;
-		damager.flinch = Global.miniFlinch;
+		damager.flinch = Global.superFlinch;
 		damager.hitCooldown = 30;
 		// Etc.
 		maxTime = 3f;

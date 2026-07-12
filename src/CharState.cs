@@ -1716,6 +1716,7 @@ public class BottomlessPitState : CharState {
 
 public class BottomlessPitWarpIn : CharState {
 	public BottomlessPitWarpIn() : base("recall_in") {
+		pushImmune = true;
 	}
 
 	public override void update() {

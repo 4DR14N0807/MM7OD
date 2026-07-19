@@ -95,7 +95,6 @@ public partial class DrawWrappers {
 	}
 }
 
-
 public class HUD {
 	public GameMode gameMode;
 	public Level level;

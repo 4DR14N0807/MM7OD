@@ -965,16 +965,6 @@ public partial class Player {
 		updateWeapons();
 	}
 
-	public void syncWithServerPlayer() {
-		if (serverPlayer == null) {
-			return;
-		}
-		serverPlayer.score = score;
-		serverPlayer.kills = kills;
-		serverPlayer.deaths = deaths;
-		serverPlayer.assists = assists;
-	}
-
 	public bool eliminated() {
 		if (Global.level.gameMode is Elimination || Global.level.gameMode is TeamElimination) {
 			if (!isSpectator && (deaths >= Global.level.gameMode.playingTo || (Global.level.isNon1v1Elimination() && serverPlayer?.joinedLate == true))) {

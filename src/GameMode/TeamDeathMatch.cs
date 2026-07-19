@@ -27,10 +27,9 @@ public class TeamDeathMatch : GameMode {
 		// We also ignore ally kills.
 		// These are rare as it means the user was never hit by an enemy.
 		if (killer.alliance != victim.alliance) {
+			killToScore(killer, victim);
 			Global.level.gameMode.teamPoints[killer.alliance]++;
 			Global.level.gameMode.syncTeamScores();
-
-			//killToScore(killer, victim);
 		}
 	}
 }

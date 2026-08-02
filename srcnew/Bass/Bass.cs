@@ -21,11 +21,10 @@ public class Bass : Character {
 	public const int TrebleBoostCost = 75;
 	public int phase;
 	public float evilEnergy = 0;
-	public float maxEvilEnergy = 16;
+	public float maxEvilEnergy = 32;
 	public float flyTime;
-	public float MaxFlyTime = 120;
+	public float maxFlyTime = 120;
 	public bool canRefillFly;
-	public float sonicCrusherCooldown;
 	public float evilEnergyEffectTime;
 	public Sprite? evilAura;
 	public bool evilAuraActive;
@@ -88,7 +87,17 @@ public class Bass : Character {
 		addAttackCooldown(
 			(int)AttackIds.LowerEvilness,
 			new AttackCooldown(
-				14, "hud_weapon_icon_bass", 60 * 4
+				14, "hud_weapon_icon_bass", 60
+		));
+		addAttackCooldown(
+			(int)AttackIds.SonicCrusher,
+			new AttackCooldown(
+				6, "hud_weapon_icon_bass", 60 * 2
+		));
+		addAttackCooldown(
+			(int)AttackIds.AirDash,
+			new AttackCooldown(
+				2, "hud_blues_weapon_icon", 90
 		));
 
 		if (isWarpIn && ownedByLocalPlayer) {
@@ -153,10 +162,11 @@ public class Bass : Character {
 		if (!isTrebbleBoost) {
 			maxHealth += 2;
 		}
+		maxHealth += 2;
+		phase = 1;
 		heal(player, 2);
-		phase = 0;
-		evilEnergy = 0;
 		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);
+		evilEnergy = Math.Min(evilEnergy, maxEvilEnergy - 2);
 		player.changeWeaponSlot(0);
 		weapons.Clear();
 		weapons.Add(new SBassBuster());
@@ -275,7 +285,9 @@ public class Bass : Character {
 
 		onSpecialAttack = charState is SweepingLaserState or DarkCometState;
 
-		Helpers.decrementFrames(ref sonicCrusherCooldown);
+		if (grounded) {
+			resetAtkCooldown((int)AttackIds.AirDash);
+		}
 		Helpers.decrementFrames(ref evilEnergyEffectTime);
 		Helpers.decrementFrames(ref superBassMusicTime);
 		if (evilAuraActive && charState is not BassEvilOverflow) {
@@ -295,6 +307,7 @@ public class Bass : Character {
 		base.update();
 
 		//Hypermode Music.
+		superBassMusicTime = 6000;
 		if (Global.level.enabledBreakmanMusic()) {
 			if (isSuperBass || isTrebbleBoost) {
 				if (musicSource == null) {
@@ -331,8 +344,8 @@ public class Bass : Character {
 			Helpers.decrementFrames(ref flyTime);
 		}
 		armless = sbRocketPunch?.destroyed == false;
-		if (flyTime > MaxFlyTime) {
-			flyTime = MaxFlyTime;
+		if (flyTime > maxFlyTime) {
+			flyTime = maxFlyTime;
 		}
 		player.changeWeaponControls();
 
@@ -380,9 +393,9 @@ public class Bass : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (isSuperBass || isTrebbleBoost) {
-			addEvilness(amount / 2f);
-		}
+		// Allows to stack superbass ammo before transforming.
+		addEvilness(amount / 2f);
+
 		if (superBassMusicTime > 0) {
 			setSuperMusicTime(60 * 4);
 			superBassMusicStacks = 0;
@@ -464,6 +477,22 @@ public class Bass : Character {
 		Global.sprites[healthTopSprite].drawToHUD(baseTopIndex, baseX, baseY);
 	}
 
+	public override void renderBuffs(Point offset, GameMode.HUDHealthPosition position) {
+		/*if ((isSuperBass || isTrebbleBoost) && flyTime > 0) {
+			int drawDir = 1;
+			if (position == GameMode.HUDHealthPosition.Right) {
+				drawDir = -1;
+			}
+			Point drawPos = GameMode.getHUDBuffPosition(position) + offset;
+			drawBuffAlt(
+				drawPos, 1 - (flyTime / maxFlyTime),
+				"hud_weapon_icon_bass", 7
+			);
+			secondBarOffset += 18 * drawDir;
+		}*/
+		base.renderBuffs(offset, position);
+	}
+
 	public override void renderAmmo(
 		Point offset, GameMode.HUDHealthPosition position, Weapon? weaponOverride = null
 	) {
@@ -534,7 +563,7 @@ public class Bass : Character {
 
 		if (player.isMainPlayer && (charState is BassFly || flyTime > 0) && alive) {
 			decimal maxLength = 14;
-			decimal length = (maxLength * (decimal)(MaxFlyTime - flyTime)) / (decimal)MaxFlyTime;
+			decimal length = (maxLength * (decimal)(maxFlyTime - flyTime)) / (decimal)maxFlyTime;
 			int color = 4;
 			if (length <= maxLength * (1 / 2)) color = 3;
 			drawBarVHUD(length, maxLength, color, pos.addxy(-20 * xDir, -27));
@@ -646,6 +675,8 @@ public class Bass : Character {
 		DarkComet,
 		SweepingLaser,
 		LowerEvilness,
+		SonicCrusher,
+		AirDash,
 	}
 
 	public override Dictionary<int, Func<Projectile>> getGlobalProjs() {
@@ -682,14 +713,14 @@ public class Bass : Character {
 		if (isSuperBass || isTrebbleBoost) {
 			if (!isMovementLimited() &&
 				player.input.isPressed(Control.Jump, player) &&
-				!grounded && !canAirJump() && flyTime < MaxFlyTime) {
+				!grounded && !canAirJump() && flyTime < maxFlyTime) {
 				dashedInAir++;
 				changeState(new BassFly(), false);
 				return true;
 			}
 			if ((phase < 3 || isTrebbleBoost) && player.input.isPressed(Control.Special2, player)) {
 				int yDir = player.input.getYDir(player);
-				/* if (isTrebbleBoost && yDir == 1 && phase < 4) {
+				if (isTrebbleBoost && yDir == 1 && phase < 4 && (phase > 0 || evilEnergy >= 6)) {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
 						int ogPhase = phase;
 						lowerPhase(phase - 1);
@@ -701,8 +732,7 @@ public class Bass : Character {
 						changeState(new BassEvilRelease());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}
-				} else if*/ 
-				if (evilEnergy >= maxEvilEnergy && isSuperBass && phase < 3) {
+				} else if (evilEnergy >= maxEvilEnergy && isSuperBass && phase < 3) {
 					changeState(new EnergyIncrease());
 					nextPhase(phase + 1);
 					if (phase >= 3) {
@@ -722,10 +752,10 @@ public class Bass : Character {
 						changeState(new BassEvilOverflow());
 						return true;
 					}
-				} /* else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
+				} else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
 					changeState(new EnergyCharge(), true);
 					return true;
-				} */
+				}
 			}
 		}
 		return base.normalCtrl();
@@ -758,44 +788,52 @@ public class Bass : Character {
 				return true;
 			}
 		}
+		if (superSpecials()) {
+			return true;
+		}
+		return base.attackCtrl();
+	}
 
-		if ((isSuperBass || isTrebbleBoost) && player.input.isPressed(Control.Special1, player)) {
-			int yInput = player.input.getYDir(player);
+	public override bool altCtrl(bool[] ctrls) {
+		if (superSpecials()) {
+			return true;
+		}
+		return base.altCtrl(ctrls);
+	}
 
-			if (yInput == 1 && phase >= 3 && !grounded) {
-				if (isCooldownOver((int)AttackIds.SweepingLaser)) {
-					changeState(new SweepingLaserState(), true);
-					return true;
-				}
-				return false;
-			}
-			if (yInput == -1 && phase >= 1 && !grounded) {
-				if (isCooldownOver((int)AttackIds.DarkComet)) {
-					changeState(new DarkCometState(), true);
-					return true;
-				}
-				return false;
-			}
-			if (grounded && yInput == -1 && phase >= 1) {
-				if (isCooldownOver((int)AttackIds.Kick)) {
-					changeState(new BassKick(), true);
-					return true;
-				}
-				return false;
-			}
-			if (flyTime < MaxFlyTime && sonicCrusherCooldown <= 0 && charState is not SonicCrusher) {
-				if (!isMovementLimited()) {
-					Point spd = Point.zero;
-					if (charState is BassFly bfly) {
-						spd.x = bfly.getFlightMove().x;
-					}
-					changeState(new SonicCrusher(spd.addxy(xPushVel + xIceVel, 0)), true);
-				}
+	public bool superSpecials() {
+		if (!isSuperBass && !isTrebbleBoost || !player.input.isPressed(Control.Special1, player)) {
+			return false;
+		}
+		int yInput = player.input.getYDir(player);
+
+		if (yInput == 1 && phase >= 3 && !grounded) {
+			if (isCooldownOver((int)AttackIds.SweepingLaser) && charState is not SweepingLaserState) {
+				changeState(new SweepingLaserState(), true);
 				return true;
 			}
 			return false;
 		}
-		return base.attackCtrl();
+		if (yInput == -1 && phase >= 1 && !grounded) {
+			if (isCooldownOver((int)AttackIds.DarkComet) && charState is not DarkCometState) {
+				changeState(new DarkCometState(), true);
+				return true;
+			}
+			return false;
+		}
+		if (grounded && yInput == -1 && phase >= 1) {
+			if (isCooldownOver((int)AttackIds.Kick) && charState is not BassKick) {
+				changeState(new BassKick(), true);
+				return true;
+			}
+			return false;
+		}
+		if (isCooldownOver((int)AttackIds.SonicCrusher) && charState is not SonicCrusher) {
+			changeState(new SonicCrusher(Point.zero));
+			triggerCooldown((int)AttackIds.SonicCrusher);
+			return true;
+		}
+		return false;
 	}
 
 	public void shoot(int chargeLevel) {
@@ -846,8 +884,6 @@ public class Bass : Character {
 			} else {
 				if (charState is Dash or AirDash) {
 					changeToIdleOrFall();
-				} else if (charState is SonicCrusher) {
-					changeState(new BassFly(), true);
 				}
 				string shootSprite = getSprite(charState.shootSprite);
 				if (!Global.sprites.ContainsKey(shootSprite)) {
@@ -1076,7 +1112,8 @@ public class Bass : Character {
 	}
 
 	public override bool canAirDash() {
-		return (isSuperBass || isTrebbleBoost) && dashedInAir <= 0 && phase >= 3 && !isMovementLimited();
+		return (isSuperBass || isTrebbleBoost) && isCooldownOver((int)AttackIds.AirDash) &&
+		phase >= 3 && !isMovementLimited();
 	}
 
 	public override bool canWallClimb() {

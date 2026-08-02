@@ -19,7 +19,7 @@ public class TenguBlade : Weapon {
 		fireRate = 30;
 		switchCooldown = 30;
 		hasCustomAnim = true;
-		isStream = true;
+		isStream = false;
 		//ammoDisplayScale = 4;
 		descriptionV2 = [
 			[ "Throws a projectile that bounces on walls.\n" +

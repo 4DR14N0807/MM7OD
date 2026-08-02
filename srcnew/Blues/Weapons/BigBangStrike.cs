@@ -128,7 +128,7 @@ public class ProtoStrikeProj : Projectile {
 	public int type; 
 	public Character? ownerChar;
 	public float radius = 42;
-	public float absorbRadius = 80;
+	public float absorbRadius = 96;
 
 	public ProtoStrikeProj(
 		Point pos, int xDir, int type, Actor owner, ushort? netId,
@@ -138,9 +138,9 @@ public class ProtoStrikeProj : Projectile {
 	) {
 		// Damage.
 		projId = (int)BluesProjIds.ProtoStrike;
-		damager.damage = 2;
-		damager.flinch = Global.superFlinch;
-		damager.hitCooldown = 30;
+		damager.damage = 1;
+		damager.flinch = 20;
+		damager.hitCooldown = 20;
 		// Etc.
 		maxTime = 3f;
 		destroyOnHit = false;
@@ -256,6 +256,7 @@ public class StrikeAttackPushProj : Projectile {
 		}
 		// Proto Strike.
 		else if (type == 1) {
+			damager.damage = 2;
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		}
 		// Red Strike.

@@ -1673,6 +1673,17 @@ public partial class Actor : GameObject {
 		}
 	}
 
+	public void shakeCamera(float power, bool sendRpc = false) {
+		Point originPoint = Global.level.getSoundListenerOrigin();
+		var dist = originPoint.distanceTo(pos);
+		float distFactor = ownedByLocalPlayer ? Global.screenW : Global.screenW * 0.5f;
+		var percent = Helpers.clamp01(1 - (dist / (distFactor)));
+		Global.level.shakeY = percent * power;
+		if (sendRpc) {
+			RPC.actorToggle.sendRpc(netId, RPCActorToggleType.ShakeCamera);
+		}
+	}
+
 	public float getSoundVolume() {
 		if (Global.level == null || Global.level.is1v1()) return 100 * Options.main.soundVolume;
 
@@ -1855,6 +1866,12 @@ public partial class Actor : GameObject {
 			return attacksCooldown[id].cooldown <= 0;
 		}
 		return true;
+	}
+	
+	public void resetAtkCooldown(int id) {
+		if (attacksCooldown.ContainsKey(id)) {
+			attacksCooldown[id].cooldown = 0;
+		}
 	}
 
 	public void turnToPos(Point lookPos) {

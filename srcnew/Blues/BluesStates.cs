@@ -417,7 +417,7 @@ public class ProtoGenericShotState : CharState {
 public class ProtoStrike : BluesState {
 	float startTime;
 	bool fired;
-	float coreCooldown = 60;
+	float coreCooldown = 40;
 
 	public ProtoStrike() : base("strikeattack") {
 	}
@@ -432,6 +432,7 @@ public class ProtoStrike : BluesState {
 		bool isShooting = blues.chargeButtonHeld();
 
 		if (!fired && character.frameIndex >= 3) {
+			blues.addCoreAmmo(blues.overdrive ? 6 : 4);
 			Point shootPos = character.getShootPos();
 			new ProtoStrikeProj(
 				shootPos, character.xDir, blues.overdrive ? 1 : 0,
@@ -441,6 +442,14 @@ public class ProtoStrike : BluesState {
 			fired = true;
 			startTime = stateFrames;
 		}
+		if (fired && !blues.overdrive) {
+			if (coreCooldown <= 0) {
+				blues.addCoreAmmo(1.5f);
+				coreCooldown = 20;
+			} else {
+				coreCooldown -= blues.speedMul;
+			}
+		}
 		if (blues.overdrive && blues.overdriveAmmoDecreaseCooldown < 12) {
 			blues.overdriveAmmoDecreaseCooldown = 12;
 		}
@@ -448,15 +457,14 @@ public class ProtoStrike : BluesState {
 			character.turnToInput(player.input, player);
 			return;
 		}
-		if (!isShooting && stateFrames >= startTime + 60 || stateFrames >= startTime + 180) {
+		if (!isShooting && stateFrames >= startTime + 26 ||
+			!blues.overdrive && stateFrames >= startTime + 106 ||
+			blues.overdrive && stateFrames >= startTime + 166
+		) {
+			blues.addCoreAmmo(2);
 			character.setHurt(-character.xDir, Global.halfFlinch, false);
 			character.slideVel = 200 / 60 * -character.xDir;
 			return;
-		}
-		coreCooldown -= Global.speedMul;
-		if (coreCooldown <= 0) {
-			coreCooldown = 20;
-			blues.addCoreAmmo(1);
 		}
 	}
 }
@@ -652,6 +660,7 @@ public class BluesRevive : BluesState {
 		blues.overdrive = true;
 		blues.overheating = false;
 		blues.invulnTime = 30;
+		blues.isShieldActive = true;
 	}
 }
 

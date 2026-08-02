@@ -11,6 +11,7 @@ namespace MMXOnline;
 public class Blues : Character {
 	// Lemons.
 	public float lemonCooldown;
+	public float altLemonCooldown;
 	public float spreadCooldown;
 	// Overdrive uses max length, normal and overdrive is -1.
 	public float[] unchargedLemonCooldown = new float[3];
@@ -429,6 +430,7 @@ public class Blues : Character {
 		base.preUpdate();
 		// Cooldowns.
 		Helpers.decrementFrames(ref lemonCooldown);
+		Helpers.decrementFrames(ref altLemonCooldown);
 		Helpers.decrementFrames(ref spreadCooldown);
 		Helpers.decrementFrames(ref lTankCoreHealTime);
 		Helpers.decrementFrames(ref coreHealTime);
@@ -818,11 +820,9 @@ public class Blues : Character {
 		}
 
 		if (!isCharging()) {
-			if (shootPressed) {
-				if (lemonCooldown <= 0) {
-					shoot(0);
-					return true;
-				}
+			if (shootPressed && lemonCooldown <= 0 && altLemonCooldown <= 0) {
+				shoot(0);
+				return true;
 			}
 		}
 		return base.attackCtrl();
@@ -858,7 +858,7 @@ public class Blues : Character {
 		}
 		// Shoot anim and vars.
 		float oldShootAnimTime = shootAnimTime;
-		setShootAnim();
+		setShootAnim(chargeLevel == 0 ? 0.25f : 0.3f);
 		Point shootPos = getShootPos();
 		int xDir = getShootXDir();
 
@@ -890,7 +890,6 @@ public class Blues : Character {
 		}
 		// Proto-strike.
 		else if (chargeLevel >= 2 && player.input.isHeld(Control.Up, player) && charState is not LadderClimb) {
-			addCoreAmmo(overdrive ? 6 : 4);
 			changeState(new ProtoStrike(), true);
 		}
 		// Breakman overdrive charge shot.
@@ -994,7 +993,8 @@ public class Blues : Character {
 		}
 		// Shoot anim and vars.
 		if (!specialWeapon.hasCustomAnim) {
-			setShootAnim();
+			// TODO: Unhardcode this.
+			setShootAnim(specialWeapon is NeedleCannon ? 0.25f : 0.3f);
 		} else {
 			inCustomShootAnim = true;
 			extraArg = 1;
@@ -1013,7 +1013,7 @@ public class Blues : Character {
 		if (specialWeapon is StarCrash && coreAmmo >= coreMaxAmmo) starCrashOverheat = true;
 	}
 
-	public void setShootAnim() {
+	public void setShootAnim(float time = 0.3f) {
 		string shootSprite = getSprite(charState.shootSprite);
 		if (!Global.sprites.ContainsKey(shootSprite)) {
 			if (grounded) {
@@ -1023,7 +1023,7 @@ public class Blues : Character {
 			}
 		}
 		if (shootAnimTime == 0) {
-			shootAnimTime = 0.3f;
+			shootAnimTime = time;
 			changeSprite(shootSprite, false);
 		}
 		if (shootSprite == getSprite("shoot") || shootSprite == getSprite("shoot_shield")) {
@@ -1038,7 +1038,7 @@ public class Blues : Character {
 				this.xDir = 1;
 			}
 		}
-		shootAnimTime = 0.3f;
+		shootAnimTime = time;
 	}
 
 	public void addCoreAmmo(float amount, bool? resetCooldown = true, bool forceAdd = false) {

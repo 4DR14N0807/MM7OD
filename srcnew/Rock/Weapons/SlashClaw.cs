@@ -49,6 +49,7 @@ public class SlashClawState : CharState {
 	public SlashClawState() : base("slashclaw") {
 		normalCtrl = false;
 		attackCtrl = false;
+		canJump = true;
 		airMove = true;
 		canStopJump = true;
 		airSprite = "slashclaw_air";

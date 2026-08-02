@@ -642,7 +642,7 @@ public class EnergyIncrease : BassState {
 public class BassFly : BassState {
 	public Point flyVel;
 	float flyVelAcc = 500;
-	float flyVelMaxSpeed = 200;
+	float flyVelMaxSpeed = 150;
 	public float fallY;
 	Anim? anim;
 
@@ -676,10 +676,9 @@ public class BassFly : BassState {
 			character.move(move);
 		}
 
-		bass.flyTime += getFlyConsume();
+		bass.flyTime += getFlyConsume() * bass.speedMul;
 
-		if (
-			bass.flyTime >= bass.MaxFlyTime ||
+		if (bass.flyTime >= bass.maxFlyTime ||
 			(player.input.isPressed(Control.Jump, player) && !character.changedStateInFrame)
 		) {
 			character.changeToIdleOrFall();
@@ -689,7 +688,8 @@ public class BassFly : BassState {
 	public float getFlyConsume() {
 		Point inputDir = bass.isSoftLocked() ? Point.zero : player.input.getInputDir(player);
 
-		if (inputDir.y == -1) return 1.5f;
+		if (inputDir.y == -1) return 2;
+		if (inputDir.x != 0) return 1.25f;
 		return 1;
 	}
 
@@ -777,6 +777,7 @@ public class BassKick : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
+		if (character.canTurn()) { character.turnToInput(player.input, player); }
 		character.xPushVel = character.xDir * 4;
 	}
 
@@ -796,15 +797,16 @@ public class BassKick : CharState {
 				character.playSound("slash_claw", sendRpc: true);
 			}
 		}
-
 		character.vel.x = Helpers.lerp(character.vel.x, 0, Global.spf * 5);
 
+		if (airTime >= 18) {
+			altCtrls[0] = true;
+		}
 		if (jumped) {
 			if (character.vel.y * character.gravitySign() > 0) {
 				character.stopMoving();
 				character.useGravity = false;
 			}
-
 			airTime++;
 		}
 
@@ -821,31 +823,23 @@ public class SonicCrusher : BassState {
 
 	public SonicCrusher(Point oldSpeed) : base("soniccrusher") {
 		enterSound = "slide";
-		normalCtrl = true;
-		attackCtrl = true;
 		useGravity = false;
 		this.oldSpeed = new Point(Math.Abs(oldSpeed.x), Math.Abs(oldSpeed.y));
 	}
 
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
-		bass.canRefillFly = false;
-
-		speed.x = Math.Max(oldSpeed.x, 180);
-		speed.y = oldSpeed.y;
-	}
-
-	public override void onExit(CharState? newState) {
-		base.onExit(newState);
-		bass.canRefillFly = true;
-		bass.sonicCrusherCooldown = 6;
+		if (character.canTurn()) { character.turnToInput(player.input, player); }
+		bass.slideVel = 2 * bass.xDir;
+		altCtrls[0] = true;
 	}
 
 	public override void update() {
 		base.update();
 
-		character.move(new Point(character.xDir * speed.x * bass.getRunDebuffs(), 0));
-		character.move(new Point(0, player.input.getYDir(player) * 60 * bass.getRunDebuffs()));
+		if (stateFrames > 2 && stateFrames <= 3) {
+			bass.slideVel = 4 * bass.xDir;
+		}
 
 		float depth = 24;
 		if (character.checkCollision(0, depth) != null && stateFrames % 6 == 0) {
@@ -860,8 +854,7 @@ public class SonicCrusher : BassState {
 			}
 		}
 
-		bass.flyTime += 1.25f;
-		if (stateFrames >= 32 && (bass.flyTime >= bass.MaxFlyTime || !player.input.isHeld(Control.Special1, player))) {
+		if (stateFrames >= 22) {
 			character.changeToIdleFallorFly();
 		}
 	}
@@ -877,6 +870,9 @@ public class SweepingLaserState : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
+		if (character.canTurn()) {
+			character.turnToInput(player.input, player);
+		}
 		if (!character.isMovementLimited() && !character.grounded && oldState is not BassFly) {
 			character.xPushVel = (
 				character.getDashOrRunSpeed() * character.xDir * 0.8f * character.getRunDebuffs()
@@ -913,6 +909,9 @@ public class SweepingLaserState : CharState {
 		if (once && !character.isMovementLimited()) {
 			character.move(new Point(300 * character.xDir * character.getRunDebuffs(), 0));
 		}
+		if (stateFrames >= 40) {
+			altCtrls[0] = true;
+		}
 		if (stateFrames >= 45) {
 			character.changeToIdleFallorFly();
 		}
@@ -928,6 +927,7 @@ public class DarkCometState : CharState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		character.stopMoving();
+		if (character.canTurn()) { character.turnToInput(player.input, player); }
 		if (!character.grounded && character.isDashing) {
 			character.xPushVel = character.getDashOrRunSpeed() * character.xDir * 0.8f;
 		}
@@ -949,6 +949,9 @@ public class DarkCometState : CharState {
 			character.playSound("buster3X1", sendRpc: true);
 			character.stopMoving();
 			once = true;
+		}
+		if (character.frameIndex >= 6) {
+			altCtrls[0] = true;
 		}
 
 		if (stateFrames >= 25) {

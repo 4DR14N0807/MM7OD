@@ -34,6 +34,10 @@ public class Rock : Character {
 	// AI Stuff.
 	public float aiWeaponSwitchCooldown = 120;
 
+	// Input stuff.
+	public float lastShootPressed;
+	public bool bufferedShotPressed => lastShootPressed > 0 || player.input.isPressed(Control.Shoot, player);
+
 	public Rock(
 		Player player, float x, float y, int xDir,
 		bool isVisible, ushort? netId, bool ownedByLocalPlayer,
@@ -84,6 +88,11 @@ public class Rock : Character {
 		base.preUpdate();
 		if (!ownedByLocalPlayer) {
 			return;
+		}
+		
+		Helpers.decrementFrames(ref lastShootPressed);
+		if (player.input.isPressed(Control.Shoot, player)) {
+			lastShootPressed = 6;
 		}
 
 		if (canRevive()) {
@@ -190,7 +199,7 @@ public class Rock : Character {
 	}
 
 	public override bool attackCtrl() {
-		bool shootPressed = player.input.isPressed(Control.Shoot, player);
+		bool shootPressed = bufferedShotPressed;
 		bool specialPressed = player.input.isPressed(Control.Special1, player);
 		bool downHeld = player.input.isHeld(Control.Down, player);
 		bool slidePressed = player.dashPressed(out string slideControl);
@@ -212,11 +221,12 @@ public class Rock : Character {
 			}
 		}
 
-		if (!isCharging() && !isSlideColliding) {
-			if (shootPressed && weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0) {
-				shoot(0);
-				return true;
-			}
+		if (!isCharging() && !isSlideColliding && shootPressed &&
+			weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0
+		) {
+			lastShootPressed = 0;
+			shoot(0);
+			return true;
 		}
 		return base.attackCtrl();
 	}
@@ -224,7 +234,7 @@ public class Rock : Character {
 	public void shoot(int chargeLevel) {
 		if (!ownedByLocalPlayer) return;
 		if (currentWeapon == null) { return; }
-		if (currentWeapon.canShoot(chargeLevel, player) == false) return;
+		if (currentWeapon.canShoot(chargeLevel, this) == false) return;
 		if (!canShoot()) return;
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
 			changeToIdleOrFall();
@@ -733,7 +743,7 @@ public class Rock : Character {
 		}
 		if (canShoot() && weaponCooldown == 0 &&
 			currentWeapon.shootCooldown == 0 &&
-			currentWeapon.canShoot(0, player)
+			currentWeapon.canShoot(0, this)
 		) {
 			shoot(0);
 			stopCharge();

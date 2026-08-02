@@ -6,9 +6,12 @@ namespace MMXOnline;
 public class RockBuster : Weapon {
 	public static RockBuster netWeapon = new(false);
 	public static RockBuster netWeaponSA = new(true);
-
-	public List<RockBusterProj> lemonsOnField = new List<RockBusterProj>();
 	public bool superAdaptor;
+
+	public int maxSteams = 3;
+	public List<float> cooldowns = [];
+	public int streamCooldown = 36;
+
 
 	public RockBuster(bool superAdaptor) : base() {
 		displayName = "MEGA BUSTER";
@@ -17,13 +20,12 @@ public class RockBuster : Weapon {
 		weaponBarBaseIndex = (int)RockWeaponBarIds.MegaBuster;
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = superAdaptor ? (int)RockWeaponSlotIds.SARocketPunch : (int)RockWeaponSlotIds.MegaBuster;
-		fireRate = 9;
+		fireRate = 7;
 		switchCooldown = 0;
 		drawAmmo = false;
 		descriptionV2 = [
 			[ "Rock's default weapon.\n" + "Can be charged to deal more damage." ]
 		];
-		
 		this.superAdaptor = superAdaptor;
 	}
 
@@ -31,22 +33,17 @@ public class RockBuster : Weapon {
 		return 0;
 	}
 
-	public override bool canShoot(int chargeLevel, Player player) {
-		if (!base.canShoot(chargeLevel, player)) return false;
-		Rock? rock = player.character as Rock;
-		if (chargeLevel > 1) {
-			return true;
-		}
-		
-		return lemonsOnField.Count < 3;
+	
+	public override bool canShoot(int chargeLevel, Character character) {
+		return cooldowns.Count < maxSteams || chargeLevel > 1;
 	}
 
 	public override void update() {
 		base.update();
-
-		for (int i = lemonsOnField.Count - 1; i >= 0; i--) {
-			if (lemonsOnField[i].destroyed) {
-				lemonsOnField.RemoveAt(i);
+		for (int i = cooldowns.Count - 1; i >= 0; i--) {
+			cooldowns[i] -= Global.speedMul;
+			if (cooldowns[i] <= 0) {
+				cooldowns.RemoveAt(i);
 			}
 		}
 	}
@@ -82,9 +79,9 @@ public class RockBuster : Weapon {
 			new RockBusterMidChargeProj(rock, shootPos, xDir, player.getNextActorNetId(), true);
 			rock.playSound("buster2", sendRpc: true);
 		} else {
-			var proj = new RockBusterProj(rock, this, shootPos, xDir, netId, true);
-			lemonsOnField.Add(proj);
+			new RockBusterProj(rock, this, shootPos, xDir, netId, true);
 			rock.playSound("buster", sendRpc: true);
+			cooldowns.Add(streamCooldown);
 		}
 	}
 }

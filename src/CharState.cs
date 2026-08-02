@@ -1193,6 +1193,9 @@ public class AirDash : CharState {
 		character.isDashing = true;
 		dashSpeed = 1.5f;
 		maxDashSpeed = character.getDashSpeed();
+		if (character is Bass bass) {
+			bass.triggerCooldown((int)Bass.AttackIds.AirDash);
+		}
 	}
 }
 

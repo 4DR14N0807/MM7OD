@@ -263,6 +263,7 @@ public class TeamElimAlt : GameMode {
 		foreach (int alliance in result.winningAlliances) {
 			if (alliance != nullAlliance) {
 				Global.level.gameMode.teamPoints[alliance]++;
+				Global.level.gameMode.syncTeamScores();
 			}
 		}
 

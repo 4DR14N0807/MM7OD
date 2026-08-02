@@ -246,7 +246,6 @@ public class LevelData {
 			supportedGameModesSet.Add(GameMode.Deathmatch);
 			supportedGameModesSet.Add(GameMode.Elimination);
 			supportedGameModesSet.Add(GameMode.ElimAlt);
-			supportedGameModesSet.Add(GameMode.TeamElimAlt);
 		} else {
 			maxPlayers = Server.maxPlayerCap;
 			supportedGameModesSet.Add(GameMode.Deathmatch);

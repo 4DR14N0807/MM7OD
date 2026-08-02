@@ -1175,7 +1175,9 @@ public partial class Level {
 		if (instance.properties.nonDmOnly == true && (
 			Global.level.server.gameMode.Contains(GameMode.Deathmatch) ||
 			Global.level.server.gameMode.Contains(GameMode.Elimination) ||
-			Global.level.server.gameMode.Contains(GameMode.ElimAlt)
+			Global.level.server.gameMode.Contains(GameMode.TeamElimination) ||
+			Global.level.server.gameMode.Contains(GameMode.ElimAlt) ||
+			Global.level.server.gameMode.Contains(GameMode.TeamElimAlt)
 		)) {
 			return true;
 		}
@@ -1197,7 +1199,9 @@ public partial class Level {
 		if (instance.properties.dmOnly == true &&
 			!Global.level.server.gameMode.Contains(GameMode.Deathmatch) &&
 			!Global.level.server.gameMode.Contains(GameMode.Elimination) &&
-			!Global.level.server.gameMode.Contains(GameMode.ElimAlt)
+			!Global.level.server.gameMode.Contains(GameMode.TeamElimination) &&
+			!Global.level.server.gameMode.Contains(GameMode.ElimAlt) &&
+			!Global.level.server.gameMode.Contains(GameMode.TeamElimAlt)
 		) {
 			return true;
 		}

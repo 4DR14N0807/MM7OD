@@ -252,7 +252,7 @@ public class Server {
 			int biggerTeam = teamSizes.Max();
 			int smallerTeam = teamSizes.Min();
 			// Check if a team has +2 characters than other team to move 1.
-			bool areTeamsUnbalanced = biggerTeam - 1 >= smallerTeam;
+			bool areTeamsUnbalanced = biggerTeam - 1 > smallerTeam;
 
 			if (playerToAutobalance != null) {
 				// Player left match

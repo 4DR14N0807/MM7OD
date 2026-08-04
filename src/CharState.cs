@@ -1659,6 +1659,7 @@ public class BottomlessPitState : CharState {
 		invincible = true;
 		superArmor = true;
 		stunImmune = true;
+		pushImmune = true;
 	}
 
 	public override void update() {

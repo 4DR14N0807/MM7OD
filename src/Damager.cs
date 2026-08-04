@@ -296,7 +296,7 @@ public class Damager {
 					flinchSound = character.wince(35, 0, projId, owner.id);
 					break;
 				case (int)BluesProjIds.LemonAngled: {
-					character.wince(20, 60, projId, owner.id);
+					//character.wince(20, 60, projId, owner.id);
 					break;
 				}
 				case (int)BassProjIds.WaveBurnerUnderwater:

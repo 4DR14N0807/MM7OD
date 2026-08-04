@@ -1098,7 +1098,7 @@ public class Bass : Character {
 
 	public override float getFallSpeed(bool checkUnderwater = true) {
 		float modifier = 1;
-		if (charState is EnergyCharge or EnergyIncrease) modifier = 0.05f;
+		if (charState is EnergyCharge or EnergyIncrease) modifier = 0.25f;
 		else if (charState is LBoltBassCharge or LBoltBassShoot) modifier = 0.025f;
 
 		return base.getFallSpeed() * modifier;

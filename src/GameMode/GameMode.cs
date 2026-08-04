@@ -1802,9 +1802,14 @@ public class GameMode {
 		int[] col = [
 			padding,
 			padding + 76,
-			padding + 76 * 2,
-			padding + 76 * 3,
-			padding + 76 * 4,
+			padding + (76 * 2),
+			padding + (76 * 2) + 18,
+			padding + (76 * 2) + 36,
+			padding + (76 * 3),
+			padding + (76 * 3) + 18,
+			padding + (76 * 3) + 36,
+			padding + (76 * 3) + 54,
+			padding + (76 * 4),
 		];
 		int lineY = padding + 20;
 		var labelTextY = 48;
@@ -1839,12 +1844,16 @@ public class GameMode {
 			FontType.OrangeMenu, this is Elimination ? "LIVES" : "SCORE",
 			col[1] + 6, labelTextY, Alignment.Left
 		);
-		Fonts.drawText(FontType.OrangeMenu, "KDA", col[2] + 6, labelTextY, Alignment.Left);
-		Fonts.drawText(FontType.OrangeMenu, "RANK", col[3] + 6, labelTextY, Alignment.Left);
+		//Fonts.drawText(FontType.OrangeMenu, "KDA", col[2] + 6, labelTextY, Alignment.Left);
+		Fonts.drawText(FontType.OrangeMenu, "K", col[2], labelTextY, Alignment.Left);
+		Fonts.drawText(FontType.OrangeMenu, "D", col[3], labelTextY, Alignment.Left);
+		Fonts.drawText(FontType.OrangeMenu, "A", col[4], labelTextY, Alignment.Left);
+
+		Fonts.drawText(FontType.OrangeMenu, "RANK", col[5], labelTextY, Alignment.Left);
 
 		if (Global.serverClient != null || true) {
 			Fonts.drawText(FontType.OrangeMenu, "PING",
-			col[4] + 6, labelTextY, Alignment.Left);
+			col[9], labelTextY, Alignment.Left);
 		}
 		DrawWrappers.DrawLine(
 			padding - 2, labelTextY + 15, Global.screenW - padding + 2,
@@ -1877,16 +1886,19 @@ public class GameMode {
 			Fonts.drawText(
 				FontType.Yellow, $"{player.score}", col[1] + 6, labelTextY + 18 + (i) * rowH
 			);
-			Fonts.drawText(
+			/* Fonts.drawText(
 				FontType.White, $"{player.kills} {player.deaths} {player.assists}",
 				col[2] + 6, labelTextY + 18 + (i) * rowH
-			);
+			); */
+			Fonts.drawText(FontType.White, player.kills.ToString(), col[2], labelTextY + 18 + (i) * rowH);
+			Fonts.drawText(FontType.White, player.deaths.ToString(), col[3], labelTextY + 18 + (i) * rowH);
+			Fonts.drawText(FontType.White, player.assists.ToString(), col[4], labelTextY + 18 + (i) * rowH);
 
-			drawSbMasteryRanks(player, new Point(col[3] + 6, labelTextY + 18 + (i) * rowH), false);
+			drawSbMasteryRanks(player, new float[] { col[5], col[6], col[7], col[8] }, labelTextY + 18 + (i) * rowH, false);
 
 			if (Global.serverClient != null) {
 				Fonts.drawText(
-					pingColor, player.getDisplayPing(), col[4] + 6,
+					pingColor, player.getDisplayPing(), col[9] + 9,
 					labelTextY + 18 + (i) * rowH
 				);
 			}
@@ -1894,7 +1906,7 @@ public class GameMode {
 		drawSpectators();
 	}
 
-	public void drawSbMasteryRanks(Player player, Point pos, bool smallFonts) {
+	public void drawSbMasteryRanks(Player player, float[] posX, float posY, bool smallFonts) {
 		string[] masteryText = [
 			$"{player.mastery.damageLevel}",
 				$"{player.mastery.defenseLevel}",
@@ -1936,8 +1948,8 @@ public class GameMode {
 		minSize += Fonts.measureText(masteryFonts[0], "00");
 		int masteryOff = 0;
 		for (int i = 0; i < masteryText.Length; i++) {
-			Fonts.drawText(masteryFonts[i], masteryText[i], pos.x + masteryOff, pos.y, color: masteryColors[i]);
-			masteryOff += Math.Max(minSize, Fonts.measureText(masteryFonts[i], masteryText[i]) + 1);
+			Fonts.drawText(masteryFonts[i], masteryText[i], posX[i] + masteryOff, posY, color: masteryColors[i]);
+			//masteryOff += Math.Max(minSize, Fonts.measureText(masteryFonts[i], masteryText[i]) + 1);
 		}
 	}
 
@@ -2036,6 +2048,9 @@ public class GameMode {
 			baseX + 4 * 13,
 			baseX + 4 * 15,
 			baseX + 4 * 17,
+			baseX + 4 * 19,
+			baseX + 4 * 21,
+			baseX + 4 * 23,
 			baseX + 4 * 25,
 		];
 		DrawWrappers.DrawRect(
@@ -2050,7 +2065,7 @@ public class GameMode {
 		Fonts.drawText(FontType.WhiteMini, isTE ? "L" : "D", cols[3], rows[1], color: teamColors[5]);
 		Fonts.drawText(FontType.WhiteMini, "A", cols[4], rows[1], color: teamColors[5]);
 		Fonts.drawText(FontType.WhiteMini, "RANK", cols[5], rows[1], color: teamColors[5]);
-		Fonts.drawText(FontType.WhiteMini, "P", cols[6], rows[1], color: teamColors[5]);
+		Fonts.drawText(FontType.WhiteMini, "P", cols[9], rows[1], color: teamColors[5]);
 
 		// Player draw
 		Player[] players = level.players.Where(p => p.alliance == alliance && !p.isSpectator).ToArray();
@@ -2072,10 +2087,10 @@ public class GameMode {
 			Fonts.drawText(FontType.WhiteMini, $"{player.deaths}", cols[3], posY);
 			Fonts.drawText(FontType.WhiteMini, $"{player.assists}", cols[4], posY);
 
-			drawSbMasteryRanks(player, new Point(cols[5], posY), true);
+			drawSbMasteryRanks(player, new float[] { cols[5], cols[6], cols[7], cols[8] }, posY, true);
 
 			if (Global.serverClient != null) {
-				Fonts.drawText(FontType.WhiteMini, player.getTeamDisplayPing(), cols[6], posY);
+				Fonts.drawText(FontType.WhiteMini, player.getTeamDisplayPing(), cols[9], posY);
 			}
 		}
 	}

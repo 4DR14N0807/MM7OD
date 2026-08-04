@@ -31,13 +31,16 @@ public class PreJoinOrHostMenu : IMainMenu {
 			Helpers.menuUpDown(ref selectY, 0, 2);
 			if (Global.input.isPressedMenu(Control.MenuConfirm)) {
 				if (selectY == 2) {
-					state = 1;
+					//state = 1;
+					Global.playSound("error");
 				} else if (selectY == 1) {
-					IMainMenu nextMenu = null;
+					/* IMainMenu nextMenu = null;
 					if (isJoin) nextMenu = new JoinMenu(true);
-					else nextMenu = new HostMenu(prevMenu, null, false, true);
+					else nextMenu = new HostMenu(prevMenu, null, false, true); 
 
-					Menu.change(nextMenu);
+					Menu.change(nextMenu); */
+					Global.playSound("error");
+
 				} else if (selectY == 0) {
 					IMainMenu nextMenu = null;
 					if (isJoin) nextMenu = new JoinMenuP2P(true);
@@ -181,9 +184,9 @@ public class PreJoinOrHostMenu : IMainMenu {
 		);
 
 		if (state == 0) {
-			Fonts.drawText(FontType.Grey, "RELAY", startX, 73 + (2 * lineH), selected: selectY == 0);
+			Fonts.drawText(FontType.Grey, "RELAY", startX, 73 + (2 * lineH), selected: selectY == 2, alpha: 128);
 		} else {
-			Fonts.drawText(FontType.Grey, "LOADING...", startX, 73 + (2 * lineH), selected: selectY == 0);
+			Fonts.drawText(FontType.Grey, "LOADING...", startX, 73 + (2 * lineH), selected: selectY == 2, alpha: 128);
 		}
 
 		/*
@@ -211,9 +214,9 @@ public class PreJoinOrHostMenu : IMainMenu {
 		);
 		*/
 
-		Fonts.drawText(FontType.Grey, "LAN", startX, 73 + (1 * lineH), selected: selectY == 2);
+		Fonts.drawText(FontType.Grey, "LAN", startX, 73 + (1 * lineH), selected: selectY == 1, alpha: 128 );
 
-		Fonts.drawText(FontType.Grey, "P2P", startX, 73 + (0 * lineH), selected: selectY == 1);
+		Fonts.drawText(FontType.Grey, "P2P", startX, 73 + (0 * lineH), selected: selectY == 0);
 
 		Fonts.drawTextEX(FontType.Grey, "[OK]: Choose, [BACK]: Back", Global.halfScreenW, 206, Alignment.Center);
 	}

@@ -2895,6 +2895,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
+		if (charState is HealState) changeToIdleOrFall();
 		inCombatCooldown = 120;
 		outOfCombatTime = 0;
 	}

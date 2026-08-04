@@ -48,7 +48,7 @@ public class WaitMenu : IMainMenu {
 				server.players.RemoveAll(p => p.id == disconnectedPlayer.id);
 			} else if (message.StartsWith("hostdisconnect:")) {
 				Global.serverClient = null;
-				Menu.change(new ErrorMenu("The host cancelled the match.", new JoinMenu(false)));
+				Menu.change(new ErrorMenu("The host cancelled the match.", new JoinMenuP2P(false)));
 				return;
 			} else if (message.StartsWith(RPCSwitchTeam.prefix)) {
 				RPCSwitchTeam.getMessageParts(message, out int playerId, out int alliance);

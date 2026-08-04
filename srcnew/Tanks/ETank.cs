@@ -11,6 +11,7 @@ public class ETank : Tank {
 
 	public override void use(Player player, Character character) {
 		character.usedEtank = this;
+		//character.changeState(new HealState(this));
 		RPC.useETank.sendRpc(character.netId, (int)maxHealth);
 	}
 

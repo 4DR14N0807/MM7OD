@@ -100,15 +100,19 @@ public class BigBangStrikeExplosionProj : Projectile {
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && 
 				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
-			) {
+			) {	
+				if (actor.getCenterPos().distanceTo(pos) <= radius) {
+					damager.applyDamage(damagable, false, weapon, this, projId);
+				}
+
 				if (gameObject is not CrackedWall &&
 					actor.getCenterPos().distanceTo(pos) <= absorbRadius
 				) {
+					if (actor is Character {charState.pushImmune: true}) {
+						continue;
+					}
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.move(new Point(direction * 60, 0));
-				}
-				if (actor.getCenterPos().distanceTo(pos) <= radius) {
-					damager.applyDamage(damagable, false, weapon, this, projId);
 				}
 			}
 		}
@@ -180,15 +184,19 @@ public class ProtoStrikeProj : Projectile {
 				actor.ownedByLocalPlayer &&
 				gameObject is IDamagable damagable && 
 				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
-			) {
+			) {		
+				if (actor.getCenterPos().distanceTo(pos) <= radius) {
+					damager.applyDamage(damagable, false, weapon, this, projId);
+				}
+
 				if (gameObject is not CrackedWall &&
 					actor.getCenterPos().distanceTo(pos) <= absorbRadius
 				) {
+					if (actor is Character {charState.pushImmune: true}) {
+						continue;
+					}
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.move(new Point(direction * 60, 0));
-				}
-				if (actor.getCenterPos().distanceTo(pos) <= radius) {
-					damager.applyDamage(damagable, false, weapon, this, projId);
 				}
 			}
 		}
@@ -296,14 +304,20 @@ public class StrikeAttackPushProj : Projectile {
 						continue;
 					}
 					float direction = MathF.Sign(pos.x - actor.pos.x);
-					actor.stopMoving();
-					actor.xPushVel = xDir * pushPower / 60;
+					
 					if (actor is Character chara && !chara.charState.superArmor) {
 						string key = Damager.getFlinchKey(projId, damager.owner.id);
 						if (!chara.flinchCooldown.ContainsKey(key) || chara.flinchCooldown[key] <= 0) {
 							chara.setHurt(xDir, flinchPower, false);
 						}
 					}
+
+					if (actor is Character {charState.pushImmune: true}) {
+						continue;
+					}
+
+					actor.stopMoving();
+					actor.xPushVel = xDir * pushPower / 60;
 				}
 			}
 		}
@@ -423,14 +437,18 @@ public class RedStrikeExplosionProj : Projectile {
 				gameObject is IDamagable damagable && gameObject is not CrackedWall && 
 				damagable.canBeDamaged(damager.alliance, damager.owner.id, null)
 			) {
+				if (actor.getCenterPos().distanceTo(pos) <= radius) {
+					damager.applyDamage(damagable, false, weapon, this, projId);
+				}
+
 				if (gameObject is not CrackedWall &&
 					actor.getCenterPos().distanceTo(pos) <= absorbRadius
 				) {
+					if (actor is Character {charState.pushImmune: true}) {
+						continue;
+					}
 					float direction = MathF.Sign(pos.x - actor.pos.x);
 					actor.move(new Point(direction * 30, 0));
-				}
-				if (actor.getCenterPos().distanceTo(pos) <= radius) {
-					damager.applyDamage(damagable, false, weapon, this, projId);
 				}
 			}
 		}

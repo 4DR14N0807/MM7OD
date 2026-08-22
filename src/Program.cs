@@ -304,12 +304,6 @@ class Program {
 		window.JoystickConnected += new EventHandler<JoystickConnectEventArgs>(onJoystickConnected);
 		window.JoystickDisconnected += new EventHandler<JoystickConnectEventArgs>(onJoystickDisconnected);
 		Joystick.Update();
-		if (Joystick.IsConnected(0)) {
-			joystickConnectedHelper(0);
-			Options.main.gridModeRock = 2;
-			Options.main.gridModeBass = 2;
-		}
-
 	}
 
 	private static void update() {

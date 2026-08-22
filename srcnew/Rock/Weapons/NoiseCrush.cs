@@ -167,7 +167,7 @@ public class NoiseCrushRmProj : Projectile {
 		pos, xDir, owner, "noise_crush_top", netId, altPlayer
 	) {
 		projId = (int)RockProjIds.NoiseCrush;
-		maxTime = 0.75f;
+		maxTime = 0.6f;
 		destroyOnHit = false;
 
 		canBeLocal = false;

@@ -54,7 +54,6 @@ public class Rock : Character {
 				weapon2 = player.loadout.rockLoadout.weapon2,
 				weapon3 = player.loadout.rockLoadout.weapon3,	
 			};
-			
 		}
 		
 		this.loadout = loadout;
@@ -239,6 +238,9 @@ public class Rock : Character {
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
 			changeToIdleOrFall();
 		}
+		
+		hyperProgress = 0;
+
 		// Shoot anim and vars.
 		float oldShootAnimTime = shootAnimTime;
 		if (currentWeapon.hasCustomAnim == false) {
@@ -528,7 +530,7 @@ public class Rock : Character {
 		if (currentWeapon?.canHealAmmo == true && currentWeapon.ammo < currentWeapon.maxAmmo) {
 			return currentWeapon;
 		}
-		if (rushWeapon.ammo < rushWeapon.maxAmmo) {
+		if (rushWeapon.ammo < rushWeapon.maxAmmo && charState is not CallDownRush) {
 			return rushWeapon;
 		}
 		Weapon? targetWeapon = null;

@@ -450,6 +450,7 @@ public partial class Player {
 	//public ShaderWrapper speedBurnerGrey = Helpers.cloneGenericPaletteShader("speedBurnerGrey");
 
 	// New shaders.
+	public ShaderWrapper rgbShader = Helpers.cloneShaderSafe("rgb");
 	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
 	public ShaderWrapper evilEnergyShader = Helpers.cloneShaderSafe("evil_energy");
 	public ShaderWrapper rockPaletteShader = Helpers.cloneGenericPaletteShader("rock_palette_texture");
@@ -637,7 +638,7 @@ public partial class Player {
 			}
 			for (int i = 0; i < etCount; i++) {
 				eTanksMap[key].Add(new ETank());
-				lTanksMap[key].Add(new LTank(getMaxHealth((CharIds.Blues))));
+				lTanksMap[key].Add(new LTank());
 			}
 		}
 		foreach (int key in wTanksMap.Keys) {
@@ -2090,10 +2091,10 @@ public partial class Player {
 	}
 
 	public void delayETank() {
-		if (isMainPlayer) {
+		/* if (isMainPlayer) {
 			UpgradeMenu.eTankDelay = UpgradeMenu.maxETankDelay;
 			BluesUpgradeMenu.lTankDelay = BluesUpgradeMenu.maxLTankDelay;
-		}
+		} */
 	}
 
 	public void fuseETanks() {

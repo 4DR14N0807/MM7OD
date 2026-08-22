@@ -113,10 +113,10 @@ public class RushWarpIn : RushState {
 	}
 
 	public bool canLand(Actor rActor) {
-		if (Global.level.checkTerrainCollisionOnce(rActor, rActor.xDir, 1) == null) {
+		if (Global.level.checkTerrainCollisionOnce(rActor, 0, 1, checkQuicksand: true) == null) {
 			return false;
 		}
-		List<CollideData> hits = Global.level.getTriggerList(rActor, rActor.xDir, 1, null, new Type[] { typeof(KillZone) });
+		List<CollideData> hits = Global.level.getTriggerList(rActor, 0, 1, null, new Type[] { typeof(KillZone) });
 		if (hits.Count > 0) {
 			return false;
 		}

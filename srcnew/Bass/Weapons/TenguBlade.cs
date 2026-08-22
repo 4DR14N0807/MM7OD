@@ -16,7 +16,7 @@ public class TenguBlade : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 30;
+		fireRate = 40;
 		switchCooldown = 30;
 		hasCustomAnim = true;
 		isStream = true;
@@ -273,7 +273,7 @@ public class TenguBladeDash : BassState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		bass.tBladeDashCooldown = 15;
+		bass.tBladeDashCooldown = 45;
 	}
 
 	public override void update() {

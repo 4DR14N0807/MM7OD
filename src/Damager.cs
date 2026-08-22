@@ -279,10 +279,6 @@ public class Damager {
 						}
 					}
 					break;
-				}
-				case (int)BassProjIds.IceWallLemon: {
-					character.addIgFreezeProgress(15);
-					break;
 				} 
 				case (int)ProjIds.TenguBladeDash: {
 					character.xFlinchPushVel += 4 * (damagingActor?.xDir ?? -character.xDir);
@@ -290,6 +286,24 @@ public class Damager {
 				}
 				case (int)BassProjIds.MagicCardFlip:
 					character.xDir *= -1;
+					break;
+				case (int)BassProjIds.MagicCardPull:
+					character.xPushVel = 3 * (-damagingActor?.xDir ?? character.xDir);
+					break;
+				case (int)BassProjIds.MagicCardPush:
+					character.xPushVel = 3 * (damagingActor?.xDir ?? -character.xDir);
+					break;
+				case (int)BassProjIds.MagicCardWince:
+					character.wince(20, 0, projId, owner.id);
+					break;
+				case (int)BassProjIds.MagicCardRoot: 
+					character.root(30, 100, owner.id);
+					break;
+				case (int)BassProjIds.MagicCardFreeze: 
+					character.freeze(Global.defFlinch, 60, owner.id);
+					break;
+				case (int)BassProjIds.MagicCardBurn:
+					character.burnStun(1 * 60, 0, owner.id);
 					break;
 				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:

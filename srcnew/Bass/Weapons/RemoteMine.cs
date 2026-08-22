@@ -19,7 +19,7 @@ public class RemoteMine : Weapon {
 		weaponSlotIndex = index;
 		weaponBarBaseIndex = index;
 		weaponBarIndex = index;
-		fireRate = 45;
+		fireRate = 60;
 		switchCooldown = 30;
 		descriptionV2 = [
 			[ "Sticks on enemies and walls.\n" +
@@ -30,7 +30,7 @@ public class RemoteMine : Weapon {
 
 	public override void charLinkedUpdate(Character character, bool isAlwaysOn) {
 		base.charLinkedUpdate(character, isAlwaysOn);
-
+/* 
 		if (!shootOnFrame && activeMine?.destroyed == false && character.currentWeapon == this &&
 			character.player.input.isPressed(Control.Shoot, character.player)
 		) {
@@ -38,7 +38,8 @@ public class RemoteMine : Weapon {
 			shootOnFrame = true;
 		} else {
 			shootOnFrame = false;
-		}
+		} */
+		shootOnFrame = false;
 		if (landedMines.Count > 0) {
 			landedMines = landedMines.Where(mine => !mine.destroyed).ToList();
 		}
@@ -124,17 +125,9 @@ public class RemoteMineProj : Projectile {
 		}
 		if (attachHost != null) {
 			changePos(attachHost.getCenterPos());
+			return;
 		}
-		/*
-		if (time >= maxTime && !destroyed && bass != null && bass.ownedByLocalPlayer) {
-			// ruben: cant put this as fade anim
-			// or on destroy because it will conflict with the explosion anim
-			new Anim(
-				getCenterPos(), "remote_mine_fade_anim", xDir,
-				bass.player.getNextActorNetId(), true, true
-			);
-		}
-		*/
+		
 		int moveY = owner.input.getYDir(owner);
 		if (moveY != 0) {
 			moveXY(0, 1.5f * moveY);
@@ -190,6 +183,7 @@ public class RemoteMineProj : Projectile {
 			stopMoving();
 			changeSprite("remote_mine_land", true);
 			playSound("remotemineStick", true);
+			time = 0;
 			maxTime = 2;
 		}
 	}
@@ -352,13 +346,13 @@ public class RemoteMineExplosionProj : Projectile {
 		pos, xDir, owner, "remote_mine_explosion", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.RemoteMineExplosion;
-		maxTime = 0.75f;
+		maxTime = 1f;
 		destroyOnHit = false;
 		shouldShieldBlock = false;
 
 		damager.damage = 2;
 		damager.flinch = Global.halfFlinch;
-		damager.hitCooldown = 60;
+		damager.hitCooldown = 75;
 
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir);

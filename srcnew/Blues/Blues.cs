@@ -676,7 +676,7 @@ public class Blues : Character {
 	public void quickHyperUpgrade() {
 		if (isBreakMan || !alive || !canUseBreakman() ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
-			!player.input.isHeld(Control.Special2, player)
+			!player.input.isHeld(Control.Special2, player) || !charState.normalCtrl
 		) {
 			hyperProgress = 0;
 			return;
@@ -831,6 +831,7 @@ public class Blues : Character {
 	public void shoot(int chargeLevel) {
 		if (!ownedByLocalPlayer || !canShoot()) return;
 
+		hyperProgress = 0;
 		int lemonNum = -1;
 		int type = overdrive ? 1 : 0;
 
@@ -978,6 +979,7 @@ public class Blues : Character {
 	public void shootSpecial(int chargeLevel) {
 		if (!ownedByLocalPlayer) return;
 
+		hyperProgress = 0;
 		int extraArg = 0;
 		if (specialWeapon == null) {
 			return;

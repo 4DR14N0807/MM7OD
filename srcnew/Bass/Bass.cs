@@ -163,19 +163,13 @@ public class Bass : Character {
 			maxHealth += 2;
 		}
 		maxHealth += 2;
-		phase = 1;
 		heal(player, 2);
 		maxEvilEnergy = Math.Min(MathF.Floor(10 + phase * 3f), 18);
-		evilEnergy = Math.Min(evilEnergy, maxEvilEnergy - 2);
+		//evilEnergy = Math.Min(evilEnergy, maxEvilEnergy - 2);
 		player.changeWeaponSlot(0);
 		weapons.Clear();
 		weapons.Add(new SBassBuster());
 		weapons.Add(new SBassRP());
-		if (Global.level.is1v1()) {
-			nextPhase(phase + 1);
-			nextPhase(phase + 1);
-			nextPhase(phase + 1);
-		}
 	}
 
 	public void addEvilness(float ammo) {
@@ -188,7 +182,7 @@ public class Bass : Character {
 			float excessEnergy = evilEnergy - maxEvilEnergy;
 			if (phase >= 4) {
 				changeState(new BassEvilOverload());
-				wince(60 * 2, 0, 0, player.id);
+				//wince(60 * 2, 0, 0, player.id);
 				heal(player, 3);
 				playSound("super_bass_aura", sendRpc: true);
 				playSound("hurt", sendRpc: true);
@@ -203,7 +197,7 @@ public class Bass : Character {
 				};
 				addDamageText(text, (int)FontType.Purple);
 			} else {
-				changeState(new EnergyIncrease());
+				if (charState.normalCtrl) changeState(new EnergyIncrease());
 				nextPhase(phase + 1);
 			}
 			evilEnergy = Helpers.clampMax(excessEnergy, maxEvilEnergy - 2);
@@ -223,7 +217,7 @@ public class Bass : Character {
 		}
 		// Incrase level.
 		phase = level;
-		player.pendingEvilEnergyStacks = level;
+		//player.pendingEvilEnergyStacks = level;
 		// Add HP and heal.
 		int hpToAdd = phase >= 4 ? 3 : 2;
 
@@ -250,7 +244,7 @@ public class Bass : Character {
 		int ogPhase = phase;
 		// Decrease level.
 		phase = level;
-		player.pendingEvilEnergyStacks = level;
+		//player.pendingEvilEnergyStacks = level;
 		if (phase < 0) {
 			phase = 0;
 			evilEnergy = 0;
@@ -720,7 +714,7 @@ public class Bass : Character {
 			}
 			if ((phase < 3 || isTrebbleBoost) && player.input.isPressed(Control.Special2, player)) {
 				int yDir = player.input.getYDir(player);
-				if (isTrebbleBoost && yDir == 1 && phase < 4 && (phase > 0 || evilEnergy >= 6)) {
+				/* if (isTrebbleBoost && yDir == 1 && phase < 4 && (phase > 0 || evilEnergy >= 6)) {
 					if (isCooldownOver((int)AttackIds.LowerEvilness) && grounded) {
 						int ogPhase = phase;
 						lowerPhase(phase - 1);
@@ -732,7 +726,7 @@ public class Bass : Character {
 						changeState(new BassEvilRelease());
 						triggerCooldown((int)AttackIds.LowerEvilness);
 					}
-				} else if (evilEnergy >= maxEvilEnergy && isSuperBass && phase < 3) {
+				} */ if (evilEnergy >= maxEvilEnergy && isSuperBass && phase < 3) {
 					changeState(new EnergyIncrease());
 					nextPhase(phase + 1);
 					if (phase >= 3) {
@@ -740,7 +734,7 @@ public class Bass : Character {
 					} else {
 						evilEnergy = 0;
 					}
-				} else if (phase >= 4) {
+				} /* else if (phase >= 4) {
 					if (evilAuraActive) {
 						evilAuraActive = false;
 						playSound("super_bass_aura", sendRpc: true);
@@ -752,10 +746,10 @@ public class Bass : Character {
 						changeState(new BassEvilOverflow());
 						return true;
 					}
-				} else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
+				} */ /* else if ((yDir != 1 || phase >= 4 || isSuperBass) && charState is not EnergyCharge) {
 					changeState(new EnergyCharge(), true);
 					return true;
-				}
+				} */
 			}
 		}
 		return base.normalCtrl();
@@ -821,7 +815,7 @@ public class Bass : Character {
 			}
 			return false;
 		}
-		if (grounded && yInput == -1 && phase >= 1) {
+		if (grounded && yInput == -1) {
 			if (isCooldownOver((int)AttackIds.Kick) && charState is not BassKick) {
 				changeState(new BassKick(), true);
 				return true;

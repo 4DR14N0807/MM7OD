@@ -149,7 +149,7 @@ public class BluesShieldSwapLand : BluesState {
 	public override void onEnter(CharState oldState) {
 		base.onEnter(oldState);
 		blues.shieldCustomState = true;
-		new StrikeAttackPushProj(blues.pos, 3, blues.xDir, blues, player.getNextActorNetId(), true);
+		new StrikeAttackPushProj(blues.pos, 3, blues.xDir, blues, player.getNextActorNetId(), 0, true);
 		blues.playSound("crash");
 		blues.addCoreAmmo(3);
 	}

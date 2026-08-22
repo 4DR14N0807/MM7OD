@@ -185,7 +185,6 @@ public class SBassShot : Projectile {
 		maxTime = 24 / 60f;
 
 		damager.damage = 2;
-		damager.flinch = Global.miniFlinch;
 		damager.hitCooldown = 10;
 
 		fadeSprite = "rock_buster1_fade";
@@ -627,7 +626,7 @@ public class DarkCometUpProj : Projectile {
 		maxTime = 0.5f;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
-		damager.hitCooldown = 15;
+		damager.hitCooldown = 45;
 		destroyOnHit = false;
 
 		vel.y = -240;
@@ -723,9 +722,9 @@ public class DarkCometDownProj : Projectile {
 	) {
 		projId = (int)BassProjIds.DarkCometDown;
 		maxTime = 1.5f;
-		damager.damage = 3;
+		damager.damage = 2;
 		damager.flinch = Global.halfFlinch;
-		damager.hitCooldown = 15;
+		damager.hitCooldown = 45;
 		destroyOnHit = false;
 
 		vel.y = 240;
@@ -733,6 +732,8 @@ public class DarkCometDownProj : Projectile {
 		if (rpc) {
 			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
 		}
+
+		projId = (int)BassProjIds.DarkCometUp;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

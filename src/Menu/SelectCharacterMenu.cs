@@ -198,7 +198,7 @@ public class SelectCharacterMenu : IMainMenu {
 			playerData.armorSet = charSelections[0].mappedCharArmor;
 		}
 
-		if (Global.input.isPressedMenu(Control.Special2)) {
+		if (Global.input.isPressedMenu(Control.MenuAlt)) {
 			//Menu.change(new BluesMovelistMenu(this, isInGame, Options.main.bluesLoadout.specialWeapon, false, true));
 			Menu.change(
 				MovelistMenuHandler.getCharMovelistMenu(
@@ -335,7 +335,7 @@ public class SelectCharacterMenu : IMainMenu {
 		}
 
 		Fonts.drawTextEX(
-			FontType.Blue, "[OK]: Continue, [BACK]: Back\n[MLEFT]/[MRIGHT]: Change character, [CMD]: See movelist",
+			FontType.Blue, "[OK]: Continue, [BACK]: Back\n[MLEFT]/[MRIGHT]: Change character, [ALT]: See movelist",
 			Global.screenW / 2, 178, Alignment.Center
 		);
 	}

@@ -46,7 +46,7 @@ public class SearchSnakeProj : Projectile {
 		fadeSprite = "generic_explosion";
 		fadeOnAutoDestroy = true;
 		useGravity = true;
-		maxTime = 2;
+		maxTime = 1.25f;
 
 		vel.x = 120 * xDir;
 		damager.damage = 2;

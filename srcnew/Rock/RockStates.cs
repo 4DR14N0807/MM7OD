@@ -311,7 +311,7 @@ public class CallDownRush : CharState {
 	public override void update() {
 		base.update();
 
-		if (stateFrames >= 240) character.changeState(new Idle(), true);
+		if (stateFrames >= 240) character.changeToIdleOrFall();
 
 		if (rush != null) {
 

@@ -687,14 +687,15 @@ public class BassFly : BassState {
 
 	public float getFlyConsume() {
 		Point inputDir = bass.isSoftLocked() ? Point.zero : player.input.getInputDir(player);
-
+		if (!character.canMove()) return 0;
+		
 		if (inputDir.y == -1) return 2;
 		if (inputDir.x != 0) return 1.25f;
 		return 1;
 	}
 
 	public Point getFlightMove() {
-		bool isSoftLocked = character.isSoftLocked();
+		bool isSoftLocked = character.isSoftLocked() || !character.canMove();
 
 		var inputDir = isSoftLocked ? Point.zero : player.input.getInputDir(player);
 

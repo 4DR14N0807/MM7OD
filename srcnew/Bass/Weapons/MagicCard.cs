@@ -4,48 +4,58 @@ using System.Linq;
 
 namespace MMXOnline;
 
+public enum MagicCardEffects {
+	None,
+	Flip,
+	Flinch,
+	Pull,
+	Push,
+	Refill,
+	Duplicate,
+	Wince,
+	Root,
+	Freeze,
+	Burn,
+	Met,
+	MultiShot,
+}
+
+
 public class MagicCard : Weapon {
 	public static MagicCard netWeapon = new();
 	public List<MagicCardProj> cardsOnField = new();
 	public int maxCardCount = 4;
 	public int cardCount = 1;
-	string[] effectsText = [
-		"",
-		// Common.
-		"Pen!",
-		"Refill!",
-		"Flip!",
-		"Pull!",
-		"Push!",
-		// Rare.
-		"Slow!",
-		"Sleep!",
-		"Poison!", // 1 Burn.
-		"Heal!", // 1 HP only.
-		"Double shot!",
-		// Very rare.
-		"Confetti!",
-		"Pierce!",
-		"Hinder!",
-		"Root!",
-		"Multi-shot!",
-		// Once in a blue moon.
-		"Bunny Met!",
-	];
 	
 	//Meanwhile we code all the other effects.
 	string[] effectsTextOld = [
 		"",
 		"FLIP!",
+		"FLINCH!",
+		"PULL!",
+		"PUSH!",
 		"AMMO REFILL!",
 		"DOUBLE SHOT!",
+		"WINCE!",
+		"ROOT!",
+		"FREEZE!",
+		"BURN",
+		"MET!!",
 		"MULTI-SHOT!!!",
 	];
 
 	string[] effectsSounds = [
 		"",
 		"magiccard1",
+		"magiccard1",
+		"magiccard1",
+		"magiccard1",
 		"upgrade",
+		"upgrade",
+		"magiccard3",
+		"magiccard3",
+		"magiccard3",
+		"magiccard3",
 		"magiccard3",
 		"magiccard4"
 	];
@@ -67,17 +77,8 @@ public class MagicCard : Weapon {
 			[ 
 				"Can take health and ammo capsules.\n" + 
 				"Shoots a projectile with a random effect\n" +
-				"each 7 shots." 
-			], 
-			[
-				"(1): Changes enemy direction on hit.\n" +
-				"(2): Ammo refill\n" +
-				"(The more hits, the more ammo you will get)." 
-			],
-			[
-				"(3): Homing Double shot.\n" +
-				"(4): Homing Multi-shot.\n" 
-			],
+				"each " + maxCardCount +" shots." 
+			]
 		];
 	}
 
@@ -108,23 +109,22 @@ public class MagicCard : Weapon {
 		cardCount--;
 
 		if (cardCount <= 0) {
+			effect = 1;
 			cardCount += maxCardCount;
-			int[] effectChances = [
-				1, 1, 1, 1, 1, 1,
-				2, 2, 2, 2, 2,
-				3, 3, 3,
-				4, 4
+			int dice = Helpers.randomRange(0, 100);
+			int[] chances = [
+				14,14,13,13,10,10,5,5,5,5,3,3
 			];
-			int effectSel = Helpers.randomRange(0, effectChances.Length - 1);
-			effect = effectChances[effectSel];
-			// 0: No effect.
-			// 1: xDir flip.
-			// 2: Ammo refill.
-			// 3: Duplicate on collision.
-			// 4: Multiple Cards.
-			if (effect >= 2) {
-				addAmmo(-effect + 1, player);
+			int chance = chances[0];
+			for (int i = 1; i < chances.Length; i++) {
+				if (dice > chance) {
+					chance += chances[i];
+					effect++;
+				} else {
+					break;
+				}
 			}
+	
 			bass.playSound(effectsSounds[effect], true);
 			int[] colors = [
 				(int)FontType.WhiteSmall,
@@ -133,9 +133,9 @@ public class MagicCard : Weapon {
 				(int)FontType.YellowSmall,
 				(int)FontType.OrangeSmall,
 			];
-			bass.addDamageText(effectsTextOld[effect], colors[effect]);
+			bass.addDamageText(effectsTextOld[effect], colors[0]);
 		}
-		if (effect >= (int)MagicCardEffects.MultiShot) {
+		if (effect == (int)MagicCardEffects.MultiShot) {
 			new MagicCardSpecialSpawn(bass, shootPos, bass.getShootXDir(), 
 				shootAngle, player.getNextActorNetId(), true);
 		} else {
@@ -148,15 +148,6 @@ public class MagicCard : Weapon {
 		}
 	}
 }
-
-public enum MagicCardEffects {
-	None,
-	Flip,
-	Refill,
-	Duplicate,
-	MultiShot
-}
-
 public class MagicCardProj : Projectile {
 	bool reversed;
 	Character? shooter;
@@ -193,11 +184,10 @@ public class MagicCardProj : Projectile {
 				returnPos = shooter.getCenterPos();
 			}
 		}
-		if (effect >= 1) {
-			changeSprite(sprite.name + effect.ToString(), true);
-		}
+
 		vel = Point.createFromByteAngle(byteAngle) * 425;	
 		damager.damage = 1;
+		damager.flinch = effect == (int)MagicCardEffects.Flinch ? Global.halfFlinch : 0;
 		originalDir = xDir;
 
 		canBeLocal = false;
@@ -207,11 +197,26 @@ public class MagicCardProj : Projectile {
 
 		if (effect == (int)MagicCardEffects.Flip) {
 			projId = (int)BassProjIds.MagicCardFlip;
-		}
-		if (effect == (int)MagicCardEffects.Refill) {
+		} else if (effect == (int)MagicCardEffects.Refill) {
 			damager.hitCooldown = 10;
 			projId = (int)BassProjIds.MagicCardRefill;
 			destroyOnHit = false;
+		} else if (effect == (int)MagicCardEffects.Pull) {
+			projId = (int)BassProjIds.MagicCardPull;
+		} else if (effect == (int)MagicCardEffects.Push) {
+			projId = (int)BassProjIds.MagicCardPush;
+		} else if (effect == (int)MagicCardEffects.Wince) {
+			projId = (int)BassProjIds.MagicCardWince;
+		} else if (effect == (int)MagicCardEffects.Root) {
+			projId = (int)BassProjIds.MagicCardRoot;
+		} else if (effect == (int)MagicCardEffects.Freeze) {
+			projId = (int)BassProjIds.MagicCardFreeze;
+		} else if (effect == (int)MagicCardEffects.Burn) {
+			projId = (int)BassProjIds.MagicCardBurn;
+		}
+
+		if (ownedByLocalPlayer && effect == (int)MagicCardEffects.Met) {
+			new Met(pos, xDir, ownerPlayer, ownerPlayer.getNextActorNetId(), ownerPlayer.alliance, true);
 		}
 	}
 
@@ -334,10 +339,24 @@ public class MagicCardProj : Projectile {
 			return 2 + hits;
 		}
 		// Refund only the ammo use.
-		if (effect >= 2) {
+		/* if (effect >= 2) {
 			return effect;
+		} */
+		return 0;
+	}
+
+	public override List<ShaderWrapper>? getShaders() {
+		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper> baseShaders = base.getShaders() ?? new();
+
+		if (effect != (int)MagicCardEffects.None && effect != (int)MagicCardEffects.MultiShot) {
+			if (ownerPlayer.rgbShader != null) {
+				ownerPlayer.rgbShader.SetUniform("palette", (256f / 10) * effect);
+				shaders.Add(ownerPlayer.rgbShader);
+			}
 		}
-		return 1;
+		shaders.AddRange(baseShaders);
+		return shaders;
 	}
 }
 
@@ -415,7 +434,9 @@ public class MagicCardSpecialProj : Projectile {
 		maxTime = 3;
 
 		this.type = type;
-		changeSprite(sprite.name + type.ToString(), true);
+		if (type == (int)MagicCardEffects.MultiShot) {
+			changeSprite("magic_card_proj4", true);
+		}
 
 		this.byteAngle = startAngle;
 		vel = Point.createFromByteAngle(byteAngle).times(150);

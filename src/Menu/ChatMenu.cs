@@ -55,6 +55,9 @@ public class ChatMenu : IMainMenu {
 					addChatEntry();
 					lastNChatFrames.Add(Global.frameCount);
 					if (lastNChatFrames.Count > 5) lastNChatFrames.PopFirst();
+					if (DevConsole.showConsole && currentTypedChat.EndsWith(" q")) {
+						DevConsole.hide();
+					}
 				}
 				if (Global.input.isPressedMenu(Control.MenuPause) || (Global.input.isPressed(Key.Enter) && string.IsNullOrWhiteSpace(currentTypedChat))) {
 					typingChat = false;

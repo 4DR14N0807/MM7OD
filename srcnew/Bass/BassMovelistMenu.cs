@@ -58,12 +58,11 @@ public class BassMovelistMenu : MovelistMenu {
 				"Mid-air."
 			),
 			new MovelistItem(
-				spriteName, 18, "Sonic Crusher", Control.Special1, "",
-				$"Hold {Control.Special1} to\nkeep flying."
+				spriteName, 18, "Sonic Crusher", Control.Special1
 			),
 			new MovelistItem(
 				spriteName, 17, "Booster Kick", Control.Special1,
-				"On Ground.\nNeeds Lv2."
+				"On Ground."
 			),
 			new MovelistItem(
 				spriteName, 20, "Dark Comet", Control.Up + " + " + Control.Special1,
@@ -77,15 +76,15 @@ public class BassMovelistMenu : MovelistMenu {
 				spriteName, 19, "Sweeping Laser", Control.Down + " + " + Control.Special1,
 				"Needs Lv4\nMid-air."
 			),
-			new MovelistItem(
+			/* new MovelistItem(
 				spriteName, 22, "Evil charge", Control.Special2, "",
 				"Adds evil energy.\nReduces on LV5."
-			),
-			new MovelistItem(
+			), */
+			/* new MovelistItem(
 				spriteName, 21, "Evil Release",
 				$"{Control.Special2} + {Control.Down}", "Under Lv5\nOn Ground",
 				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV.\nDamage Immune."
-			),
+			), */
 			new MovelistItem(
 				spriteName, 23, "Evil Unison", "Auto: on max Evil", "Under Lv5",
 				"Heals 2 HP.\nAdds 2 Max HP.\nIncreases LV.\nDamage Immune.", true

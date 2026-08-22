@@ -122,7 +122,7 @@ public class BigBangStrikeExplosionProj : Projectile {
 		base.onDestroy();
 		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new StrikeAttackPushProj(
-				pos, 0, xDir, ownerActor, ownerPlayer.getNextActorNetId(), sendRpc: true
+				pos, 0, xDir, ownerActor, ownerPlayer.getNextActorNetId(), damager.flinch, sendRpc: true
 			);
 		}
 	}
@@ -143,7 +143,7 @@ public class ProtoStrikeProj : Projectile {
 		// Damage.
 		projId = (int)BluesProjIds.ProtoStrike;
 		damager.damage = 1;
-		damager.flinch = 20;
+		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 20;
 		// Etc.
 		maxTime = 3f;
@@ -173,6 +173,12 @@ public class ProtoStrikeProj : Projectile {
 				destroySelf();
 				return;
 			}
+		}
+
+		if (time >= 45/60f) {
+    		damager.flinch = Global.miniFlinch;
+		} else if (time >= 30/60f) {
+    		damager.flinch = Global.halfFlinch;
 		}
 
 		if (ownerChar != null) {
@@ -206,7 +212,7 @@ public class ProtoStrikeProj : Projectile {
 		base.onDestroy();
 		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new StrikeAttackPushProj(
-				pos, 1, xDir, ownerActor, ownerPlayer.getNextActorNetId(), sendRpc: true
+				pos, 1, xDir, ownerActor, ownerPlayer.getNextActorNetId(), damager.flinch, sendRpc: true
 			);
 			proj.playSound("danger_wrap_explosion", true, true);
 		}
@@ -238,14 +244,14 @@ public class StrikeAttackPushProj : Projectile {
 
 	public StrikeAttackPushProj(
 		Point pos, int type, int xDir, Actor owner, ushort? netId,
-		bool sendRpc = false, Player? altPlayer = null
+		int flinch, bool sendRpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "big_bang_strike_fade", netId, altPlayer
 	) {
 		// Damage.
 		projId = (int)BluesProjIds.BigBangStrike;
 		damager.damage = 1;
-		damager.flinch = Global.miniFlinch;
+		damager.flinch = strongerFlinch(flinch);
 		damager.hitCooldown = 30;
 		// Etc.
 		projId = (int)BluesProjIds.ProtoStrikePush;
@@ -253,7 +259,7 @@ public class StrikeAttackPushProj : Projectile {
 		canBeLocal = false;
 
 		if (sendRpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)type, (byte)flinch });
 		}
 		this.type = type;
 
@@ -283,7 +289,8 @@ public class StrikeAttackPushProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters args) {
 		return new StrikeAttackPushProj(
-			args.pos, args.extraData[0], args.xDir, args.owner, args.netId, altPlayer: args.player
+			args.pos, args.extraData[0], args.xDir, args.owner, 
+			args.netId, args.extraData[1], altPlayer: args.player
 		);
 	}
 
@@ -328,6 +335,17 @@ public class StrikeAttackPushProj : Projectile {
 			return [RedStrikeProj.redStrikePalette];
 		}
 		return base.getShaders();
+	}
+
+	int strongerFlinch(int flinch) {
+		if (flinch == Global.defFlinch) {
+			return Global.superFlinch;
+		} else if (flinch == Global.halfFlinch) {
+			return Global.defFlinch;
+		} else if (flinch == Global.miniFlinch) {
+			return Global.halfFlinch;
+		}
+		return Global.miniFlinch;
 	}
 }
 
@@ -458,7 +476,7 @@ public class RedStrikeExplosionProj : Projectile {
 		base.onDestroy();
 		if (ownedByLocalPlayer && ownerActor != null) {
 			var proj = new StrikeAttackPushProj(
-				pos, 2, xDir, ownerActor, ownerPlayer.getNextActorNetId(), sendRpc: true
+				pos, 2, xDir, ownerActor, ownerPlayer.getNextActorNetId(), 0, sendRpc: true
 			);
 		}
 	}

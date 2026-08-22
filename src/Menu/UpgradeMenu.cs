@@ -104,8 +104,8 @@ public class UpgradeMenu : IMainMenu {
 	}
 
 	public void update() {
-		if (updateAdaptorUpgrades(mainPlayer)) return;
-		if (updateTBoostUpgrades(mainPlayer)) return;
+		//if (updateAdaptorUpgrades(mainPlayer)) return;
+		//if (updateTBoostUpgrades(mainPlayer)) return;
 
 		eTankTargets.Clear();
 		wTankTargets.Clear();
@@ -269,9 +269,9 @@ public class UpgradeMenu : IMainMenu {
 				} else {
 					Point topLeftBar = new Point(spritePos.x + 1, spritePos.y + 2);
 					Point botRightBar = new Point(spritePos.x + 15, spritePos.y + 14);
-					float yPos =  12 * (etank.health / etank.maxHealth);
+					decimal yPos =  12 * (etank.health / etank.maxHealth);
 					DrawWrappers.DrawRect(
-						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
+						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - (float)yPos,
 						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
 					);
 				}
@@ -372,8 +372,8 @@ public class UpgradeMenu : IMainMenu {
 			Fonts.drawText(FontType.Grey, "Left/Right: Change Heal Target", Global.halfScreenW, 202, Alignment.Center);
 		}
 
-		drawAdaptorUpgrades(mainPlayer, 20);
-		drawTBoostUpgrades(mainPlayer, 20);
+		//drawAdaptorUpgrades(mainPlayer, 20);
+		//drawTBoostUpgrades(mainPlayer, 20);
 
 		Fonts.drawTextEX(
 			FontType.Blue, "[MUP]/[MDOWN]: Select Item",

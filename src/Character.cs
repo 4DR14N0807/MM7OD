@@ -3375,12 +3375,12 @@ public partial class Character : Actor, IDamagable {
 	public void dwrapStart() {
 		isDWrapped = true;
 		useGravity = false;
-		stopMoving();
+		stopMovingS();
 	}
 
 	public void dwrapEnd() {
 		isDWrapped = false;
-		stopMoving();
+		stopMovingS();
 		useGravity = true;
 		playSound("hit");
 	}

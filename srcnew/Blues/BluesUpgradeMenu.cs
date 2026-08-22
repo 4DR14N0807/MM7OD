@@ -72,7 +72,7 @@ public class BluesUpgradeMenu : IMainMenu {
 				if (mainPlayer.ltanks.Count <= selectArrowPosY) {
 					if (mainPlayer.ltanks.Count < getMaxLTanks() && mainPlayer.currency >= lTankCost) {
 						mainPlayer.currency -= lTankCost;
-						mainPlayer.ltanks.Add(new LTank(mainPlayer.maxHealth));
+						mainPlayer.ltanks.Add(new LTank());
 						mainPlayer.fuseLTanks();
 						Global.playSound("upgrade");
 					} else if (mainPlayer.ltanks.InRange(selectArrowPosY)) {
@@ -131,9 +131,9 @@ public class BluesUpgradeMenu : IMainMenu {
 				} else {
 					Point topLeftBar = new Point(spritePos.x + 1, spritePos.y + 2);
 					Point botRightBar = new Point(spritePos.x + 15, spritePos.y + 14);
-					float yPos =  12 * (ltank.health / ltank.maxHealth);
+					decimal yPos =  12 * (ltank.health / ltank.maxHealth);
 					DrawWrappers.DrawRect(
-						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - yPos,
+						topLeftBar.x, topLeftBar.y, botRightBar.x, botRightBar.y - (float)yPos,
 						true, new Color(0, 0, 0, 200), 1, ZIndex.HUD, isWorldPos: false
 					);
 				}

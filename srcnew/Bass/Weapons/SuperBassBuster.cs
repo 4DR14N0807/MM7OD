@@ -624,7 +624,7 @@ public class DarkCometUpProj : Projectile {
 	) {
 		projId = (int)BassProjIds.DarkCometUp;
 		maxTime = 0.5f;
-		damager.damage = 3;
+		damager.damage = 2;
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 45;
 		destroyOnHit = false;

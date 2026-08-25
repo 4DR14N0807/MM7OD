@@ -16,6 +16,11 @@ public class LTank : Tank {
 		if (character is not Blues blues) {
 			return;
 		}
+
+		if (!character.charState.normalCtrl){
+			return;
+		}
+		
 		//blues.usedLtank = this;
 		healAmount = Math.Min(health, Math.Ceiling(character.maxHealth / 3));
 		character.changeState(new HealState(this));

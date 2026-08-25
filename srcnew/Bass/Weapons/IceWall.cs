@@ -165,6 +165,11 @@ public class IceWallProj : Projectile, IDamagable {
 	}
 
 	public bool selectiveSolidity(GameObject other) {
+		if (other is RemoteMineProj or RemoteMineLandProj or
+			DangerWrapLandRmProj or DangerWrapMineRmProj or IceWall
+		) {
+			return true;
+		}
 		if (other is not Character chara) {
 			return false;
 		}

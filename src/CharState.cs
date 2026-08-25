@@ -1699,6 +1699,7 @@ public class BottomlessPitState : CharState {
 			}
 			
 			character.changePos(warpInPos.Value);
+			character.freeFromCollision();
 			character.deltaPos = Point.zero;
 		}
 	} 

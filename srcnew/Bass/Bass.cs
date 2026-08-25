@@ -388,7 +388,9 @@ public class Bass : Character {
 			return;
 		}
 		// Allows to stack superbass ammo before transforming.
-		addEvilness(amount / 2f);
+		if (isSuperBass) {
+			addEvilness(amount / 2f);
+		}
 
 		if (superBassMusicTime > 0) {
 			setSuperMusicTime(60 * 4);

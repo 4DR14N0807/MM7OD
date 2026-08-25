@@ -15,6 +15,11 @@ public class ETank : Tank {
 
 	public override void use(Player player, Character character) {
 		//character.usedEtank = this;
+		
+		if (!character.charState.normalCtrl){
+			return;
+		}
+		
 		character.changeState(new HealState(this));
 		healAmount = Math.Min(health, Math.Ceiling(character.maxHealth / 3));
 		healTime = healMaxTime;

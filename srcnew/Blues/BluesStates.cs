@@ -458,8 +458,8 @@ public class ProtoStrike : BluesState {
 			return;
 		}
 		if (!isShooting && stateFrames >= startTime + 26 ||
-			!blues.overdrive && stateFrames >= startTime + 106 ||
-			blues.overdrive && stateFrames >= startTime + 166
+			!blues.overdrive && stateFrames >= startTime + 86 ||
+			blues.overdrive && stateFrames >= startTime + 146
 		) {
 			blues.addCoreAmmo(2);
 			character.setHurt(-character.xDir, Global.halfFlinch, false);

@@ -875,8 +875,7 @@ public class RideArmor : Actor, IDamagable {
 		return character.player.alliance == healerAlliance && health > 0 && health < maxHealth;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
-		if (!allowStacking && this.healAmount > 0) return;
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 		if (health < maxHealth) {
 			playHealSound = true;
 		}

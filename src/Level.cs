@@ -2270,8 +2270,6 @@ public partial class Level {
 		Level level, RenderTexture srt,
 		Dictionary<long, DrawLayer> walDrawObjects
 	) {
-		Program.clearHudTexture();
-
 		for (int i = 0; i < level.parallaxes.Count; i++) {
 			Parallax parallax = level.parallaxes[i];
 			var parallaxTextures = level.levelData.getParallaxTextures(level.parallaxes[i].path);

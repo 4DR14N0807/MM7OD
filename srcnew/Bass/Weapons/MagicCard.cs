@@ -216,7 +216,13 @@ public class MagicCardProj : Projectile {
 		}
 
 		if (ownedByLocalPlayer && effect == (int)MagicCardEffects.Met) {
-			new Met(pos, xDir, ownerPlayer, ownerPlayer.getNextActorNetId(), ownerPlayer.alliance, true);
+			var met = new Met(
+				pos.addxy(0, 2), xDir, ownerPlayer,
+				ownerPlayer.getNextActorNetId(), ownerPlayer.alliance, true
+			);
+			met.vel.y = vel.y / 1.5f;
+			met.xPushVel = vel.x / 60f;
+			destroySelf();
 		}
 	}
 

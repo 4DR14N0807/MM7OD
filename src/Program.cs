@@ -407,17 +407,16 @@ class Program {
 	}
 
 	private static void render() {
+		clearHudTexture();
 		if (Global.levelStarted()) {
 			Global.level.render();
 		} else {
 			if (isMultiThread) {
 				renderAction = () => {
-					clearHudTexture();
 					Menu.render();
 					renderHudTexture();
 				};
 			} else {
-				clearHudTexture();
 				Menu.render();
 				renderHudTexture();
 			}

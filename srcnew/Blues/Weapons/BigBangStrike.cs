@@ -270,7 +270,6 @@ public class StrikeAttackPushProj : Projectile {
 		}
 		// Proto Strike.
 		else if (type == 1) {
-			damager.damage = 2;
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		}
 		// Red Strike.

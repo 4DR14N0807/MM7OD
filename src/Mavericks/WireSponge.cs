@@ -1039,7 +1039,7 @@ public class WSpongeSpike : Projectile, IDamagable {
 		return false;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 
 	public bool isInvincible(Player attacker, int? projId) {

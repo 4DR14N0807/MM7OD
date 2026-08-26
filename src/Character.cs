@@ -661,6 +661,7 @@ public partial class Character : Actor, IDamagable {
 		if (invulnTime > 0) return false;
 		if (flag != null) return false;
 		if (isWarpIn()) return false;
+		if (charState is HealState) return false;
 		if (charState.specialId == SpecialStateIds.WarpIdle) return false;
 		return charState is not Die;
 	}
@@ -1617,6 +1618,23 @@ public partial class Character : Actor, IDamagable {
 					return true;
 				}
 			}
+		}
+		// Etank state.
+		if (grounded && charState is not HealState &&
+			player.ETanks.Count >= 1 &&
+			player.input.isPressed(Control.Special2, player) &&
+			player.input.isHeld(Control.Down, player)
+		) {
+			player.ETanks[0].use(player, this);
+			return true;
+		}
+		if (grounded && charState is not HealState &&
+			player.ltanks.Count >= 1 &&
+			player.input.isPressed(Control.Special2, player) &&
+			player.input.isHeld(Control.Down, player)
+		) {
+			player.ltanks[0].use(player, this);
+			return true;
 		}
 		return false;
 	}
@@ -2853,12 +2871,17 @@ public partial class Character : Actor, IDamagable {
 		return(player.alliance == healerAlliance || healerAlliance == -1) && alive;
 	}
 
-	public virtual void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
-		if (!allowStacking && this.healAmount > 0) return;
+	public virtual void heal(
+		Player healer, float healAmount,
+		bool drawHealText = true, bool creditHeal = true
+	) {
+		if (healAmount <= 0) {
+			return;
+		}
 		if (health < maxHealth) {
 			playHealSound = true;
 		}
-		commonHealLogic(healer, (decimal)healAmount, health, maxHealth, drawHealText);
+		commonHealLogic(healer, (decimal)healAmount, health, maxHealth, drawHealText, creditHeal);
 		addHealth(healAmount);
 	}
 
@@ -3780,7 +3803,7 @@ public partial class Character : Actor, IDamagable {
 		for (var i = 0; i < Math.Ceiling(maxHP); i++) {
 			// Draw HP
 			if (i < shield && i < savings) {
-				Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY);
+				Global.sprites["hud_health_full"].drawToHUD(2, baseX, baseY);
 			}
 			else if (i < curHP) {
 				Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY);
@@ -3790,12 +3813,18 @@ public partial class Character : Actor, IDamagable {
 			}
 			else {
 				Global.sprites["hud_health_empty"].drawToHUD(0, baseX, baseY);
+				if (charState is HealState hs) {
+					decimal thp = curHP + Math.Min(hs.tank.healAmount, hs.tank.health);
+					if (i < thp) {
+						Global.sprites["hud_health_full"].drawToHUD(1, baseX, baseY);
+					}
+				}
 				if (i < ceilCurHP) {
 					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
 				}
 				if (i < shield) {
 					float alpha = (float)(shield % 1);
-					Global.sprites["hud_weapon_full_blues"].drawToHUD(3, baseX, baseY, alpha);
+					Global.sprites["hud_health_full"].drawToHUD(2, baseX, baseY, alpha);
 				}
 			}
 			baseY -= 2;

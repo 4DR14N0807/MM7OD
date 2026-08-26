@@ -1405,14 +1405,22 @@ public partial class Actor : GameObject {
 		renderHitboxes();
 	}
 
-	public void commonHealLogic(Player healer, float healAmount, float currentHealth, float maxHealth, bool drawHealText) {
-		commonHealLogic(healer, (decimal)healAmount, (decimal)currentHealth, (decimal)maxHealth, drawHealText);
+	public void commonHealLogic(
+		Player healer, float healAmount,
+		float currentHealth, float maxHealth,
+		bool drawHealText, bool creditHeal = true
+	) {
+		commonHealLogic(
+			healer, (decimal)healAmount,
+			(decimal)currentHealth, (decimal)maxHealth,
+			drawHealText, creditHeal
+		);
 	}
 
 	public void commonHealLogic(
 		Player healer, decimal healAmount,
 		decimal currentHealth, decimal maxHealth,
-		bool drawHealText
+		bool drawHealText, bool creditHeal = true
 	) {
 		if (!ownedByLocalPlayer) {
 			return;
@@ -1422,6 +1430,9 @@ public partial class Actor : GameObject {
 		if (drawHealText) {
 			//healer.creditHealing(reportAmount);
 			addDamageTextHelper(healer, (float)(-reportAmount), 16, sendRpc: true);
+		}
+		if (!creditHeal) {
+			return;
 		}
 		if (this is Character character) {
 			character.mastery.addDefenseExp(MathInt.Ceiling(reportAmount / 2m));

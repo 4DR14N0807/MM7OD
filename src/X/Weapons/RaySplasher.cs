@@ -291,7 +291,7 @@ public class RaySplasherTurret : Actor, IDamagable {
 		return netOwner?.alliance == healerAlliance && health < maxHealth;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 		health += healAmount;
 		if (drawHealText && healer != netOwner && ownedByLocalPlayer) {
 			addDamageTextHelper(netOwner, -healAmount, 16, sendRpc: true);

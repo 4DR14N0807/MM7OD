@@ -738,7 +738,7 @@ public class KaiserSigmaMissileProj : Projectile {
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return damager.alliance != damagerAlliance; }
 	public bool isInvincible(Player attacker, int? projId) { return false; }
 	public bool canBeHealed(int healerAlliance) { return false; }
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) { }
 }
 
 public class KaiserMineWeapon : Weapon {
@@ -846,7 +846,7 @@ public class KaiserSigmaMineProj : Projectile, IDamagable {
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return damager.alliance != damagerAlliance; }
 	public bool isInvincible(Player attacker, int? projId) { return false; }
 	public bool canBeHealed(int healerAlliance) { return false; }
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) { }
 	public bool isPlayableDamagable() { return false; }
 }
 

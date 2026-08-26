@@ -1474,8 +1474,7 @@ public class Maverick : Actor, IDamagable {
 		return healerAlliance == player.alliance && health > 0 && health < maxHealth;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
-		if (!allowStacking && this.healAmount > 0) return;
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 		if (health < maxHealth) {
 			playHealSound = true;
 		}

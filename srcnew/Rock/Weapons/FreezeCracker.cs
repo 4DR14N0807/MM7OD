@@ -14,6 +14,7 @@ public class FreezeCracker : Weapon {
 		weaponBarIndex = weaponBarBaseIndex;
 		weaponSlotIndex = (int)RockWeaponSlotIds.FreezeCracker;
 		fireRate = 45;
+		switchCooldown = 30;
 		maxAmmo = 20;
 		ammo = maxAmmo;
 		descriptionV2 = [
@@ -28,48 +29,48 @@ public class FreezeCracker : Weapon {
 		Player player = rock.player;
 		int input = player.input.getYDir(player);
 
-		new FreezeCrackerRmProj(rock, shootPos, xDir, player.getNextActorNetId(), 0, input);
+		new FreezeCrackerRmProj(rock, shootPos, xDir, player.getNextActorNetId(), input);
 		rock.playSound("buster2", sendRpc: true);
 	}
 }
 
 
 public class FreezeCrackerRmProj : Projectile {
-	public int type;
 	private bool framgented;
 	private bool didSplit;
-	int input;
+	private int input;
+	private bool introEnd;
 	public float sparkleTime = 0;
 	Anim? sparkle;
 	float projSpeed = 300;
 
 	public FreezeCrackerRmProj(
 		Actor owner, Point pos, int xDir, ushort? netProjId, 
-		int type, int input = 0, bool sendRpc = false, Player? altPlayer = null
+		int input = 0, bool sendRpc = false, Player? altPlayer = null
 	) : base(
-		pos, xDir, owner, "freeze_cracker_start", netProjId, altPlayer
+		pos, xDir, owner, "freeze_cracker_proj", netProjId, altPlayer
 	) {
 		projId = (int)RockProjIds.FreezeCracker;
 		maxTime = 0.6f;
 		fadeSprite = "freeze_cracker_start";
-		this.type = type;
 		this.input = input;
 		damager.damage = 2;
 		damager.hitCooldown = 6;
+		reflectable = true;
+		destroyOnHit = true;
 
-		if (type == 1) {
-			canBeLocal = false;
-			changeSprite("freeze_cracker_proj", false);
-			reflectable = true;
-			destroyOnHit = true;
-			int dir = input * 32;
-			float ang = xDir > 0 ? dir : -dir + 128;
-			vel = Point.createFromByteAngle(ang) * projSpeed;
-		}
+		int dir = input * 32;
+		float ang = xDir > 0 ? dir : -dir + 128;
+		vel = Point.createFromByteAngle(ang) * projSpeed;
 
 		if (sendRpc) {
-			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, [(byte)type ]);
+			rpcCreate(pos, owner, ownerPlayer, netProjId, xDir, (byte)(input + 128));
 		}
+	}
+
+	public override void onStart() {
+		base.onStart();
+		new Anim(pos, "freeze_cracker_start", xDir, null, true);
 	}
 
 	public override void update() {
@@ -84,14 +85,6 @@ public class FreezeCrackerRmProj : Projectile {
 			) { useGravity = true, gravityModifier = 0.5f };
 
 		}
-
-		if (type == 0 && isAnimOver() && ownedByLocalPlayer && ownerActor != null) {
-			time = 0;
-			new FreezeCrackerRmProj(
-				ownerActor, pos, xDir, ownerPlayer.getNextActorNetId(true), 1, input, sendRpc: true
-			);
-			destroySelfNoEffect();
-		}
 	}
 
 	public void onHit() {
@@ -99,8 +92,6 @@ public class FreezeCrackerRmProj : Projectile {
 			return;
 		}
 		didSplit = true;
-		
-
 	}
 
 	public override void onHitWall(CollideData other) {
@@ -158,11 +149,10 @@ public class FreezeCrackerRmProj : Projectile {
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new FreezeCrackerRmProj(
 			arg.owner, arg.pos, arg.xDir, arg.netId, 
-			arg.extraData[0], altPlayer: arg.player
+			arg.extraData[0] - 128, altPlayer: arg.player
 		);
 	}
 }
-
 
 public class FreezeCrackerPieceRmProj : Projectile {
 	public FreezeCrackerPieceRmProj(

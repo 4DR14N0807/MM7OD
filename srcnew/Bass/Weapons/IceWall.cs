@@ -272,7 +272,7 @@ public class IceWallProj : Projectile, IDamagable {
 	}
 	public bool isInvincible(Player attacker, int? projId) => false;
 	public bool canBeHealed(int healerAlliance) => false;
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true) { }
+	public void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) { }
 	public bool isPlayableDamagable() => false;
 
 	public override Collider? getTerrainCollider() {

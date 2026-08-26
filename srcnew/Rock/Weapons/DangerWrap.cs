@@ -162,7 +162,7 @@ public class DangerWrapBubbleRmProj : Projectile, IDamagable {
 		return false;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 
 	public bool isPlayableDamagable() {
@@ -251,7 +251,7 @@ public class DangerWrapMineRmProj : Projectile, IDamagable {
 	}
 
 	public void heal(
-		Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false
+		Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true
 	) {
 	}
 
@@ -355,7 +355,7 @@ public class DangerWrapLandRmProj : Projectile, IDamagable {
 	}
 
 	public void heal(
-		Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false
+		Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true
 	) {
 	}
 
@@ -481,7 +481,7 @@ public class DWrapBigBubble : Actor, IDamagable {
 		return false;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 
 	public override void preUpdate() {

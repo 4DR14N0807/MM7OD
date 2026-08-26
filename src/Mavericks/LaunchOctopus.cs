@@ -240,7 +240,7 @@ public class LaunchOMissile : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) {
 		return false;
 	}
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 	public bool isInvincible(Player attacker, int? projId) {
 		return false;
@@ -433,7 +433,7 @@ public class TorpedoProjChargedOcto : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) {
 		return false;
 	}
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 	public bool isPlayableDamagable() {
 		return false;

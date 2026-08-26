@@ -154,7 +154,7 @@ public class NeutralEnemy : Actor, IDamagable {
 		return (healerAlliance == alliance && health < maxHealth);
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = true) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 		commonHealLogic(healer, healAmount, (float)health, (float)maxHealth, drawHealText);
 		health += (decimal)healAmount;
 		if (health > maxHealth) {

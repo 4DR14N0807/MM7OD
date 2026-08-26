@@ -466,7 +466,7 @@ public class BCrabShieldProj : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) {
 		return (health < maxHealth);
 	}
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 		commonHealLogic(healer, healAmount, health, maxHealth, drawHealText);
 		health += healAmount;
 		if (health > maxHealth) {
@@ -573,7 +573,7 @@ public class BCrabSummonBubbleProj : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) {
 		return false;
 	}
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 		commonHealLogic(healer, healAmount, health, maxHealth, drawHealText);
 		health += healAmount;
 		if (health > maxHealth) {
@@ -727,7 +727,7 @@ public class BCrabSummonCrabProj : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) {
 		return (health < maxHealth);
 	}
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 		commonHealLogic(healer, healAmount, health, maxHealth, drawHealText);
 		health += healAmount;
 		if (health > maxHealth) {

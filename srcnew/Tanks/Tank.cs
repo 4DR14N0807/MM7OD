@@ -10,6 +10,7 @@ public class Tank {
 	public bool isHealing;
 	public float healMaxTime = 45;
     public float healTime;
+    public int healStacks;
 	public decimal healAmount;
 	public Buff? buff;
 	public Tank() {

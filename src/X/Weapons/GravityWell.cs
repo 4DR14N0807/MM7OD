@@ -259,7 +259,7 @@ public class GravityWellProj : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) { return false; }
 	public void heal(float healAmount, bool allowStacking = true) { }
 	public bool isInvincible(Player attacker, int? projId) { return false; }
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) { }
 
 	public bool isPlayableDamagable() { return false; }
 }
@@ -392,7 +392,7 @@ public class GravityWellProjCharged : Projectile, IDamagable {
 	public bool canBeDamaged(int damagerAlliance, int? damagerPlayerId, int? projId) { return owner.alliance != damagerAlliance; }
 	public bool isInvincible(Player attacker, int? projId) { return false; }
 	public bool canBeHealed(int healerAlliance) { return false; }
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) { }
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) { }
 	public bool isPlayableDamagable() { return false; }
 }
 

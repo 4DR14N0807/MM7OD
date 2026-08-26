@@ -387,11 +387,10 @@ public class Bass : Character {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		// Allows to stack superbass ammo before transforming.
-		if (isSuperBass) {
-			addEvilness(amount / 2f);
+		// Disallows stacking superbass ammo before transforming.
+		if (isTrebbleBoost || isSuperBass) {
+			addEvilness(amount);
 		}
-
 		if (superBassMusicTime > 0) {
 			setSuperMusicTime(60 * 4);
 			superBassMusicStacks = 0;
@@ -586,6 +585,7 @@ public class Bass : Character {
 
 	public void quickHyperUpgrade() {
 		if (isSuperBass || isTrebbleBoost || !alive || !canGoSuperBass() ||
+			charState is HealState ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
 			!charState.normalCtrl || !player.input.isHeld(Control.Special2, player)
 		) {

@@ -273,7 +273,6 @@ public class Blues : Character {
 
 	public bool canSlide() {
 		return (
-			flag == null &&
 			grounded && vel.y >= 0 &&
 			charState is not BluesSlide and not BluesSpreadShoot &&
 			!overdrive && !isMovementLimited()
@@ -308,8 +307,7 @@ public class Blues : Character {
 	}
 
 	public bool canShootSpecial() {
-		if (flag != null ||
-			overheating ||
+		if (overheating ||
 			overdrive ||
 			specialWeapon.shootCooldown > 0 ||
 			!specialWeapon.canShoot(0, this) ||
@@ -442,9 +440,14 @@ public class Blues : Character {
 		// Core ammo regen.
 		if (!overdrive && !isCharging() ||
 			overdrive && chargeTime <= charge1Time / 2f ||
-			chargeTime > charge3Time + (overdrive ? 20 : 10)) {
+			chargeTime > charge3Time + (overdrive ? 20 : 10)
+		) {
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
-			Helpers.decrementFrames(ref overdriveAmmoDecreaseCooldown);
+			float rmul = 1;
+			if (charState is HealState) {
+				rmul *= 0.25f;
+			}
+			overdriveAmmoDecreaseCooldown = Helpers.clampMin0(overdriveAmmoDecreaseCooldown - speedMul * rmul);
 		}
 	}
 
@@ -675,6 +678,7 @@ public class Blues : Character {
 
 	public void quickHyperUpgrade() {
 		if (isBreakMan || !alive || !canUseBreakman() ||
+			charState is HealState ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
 			!player.input.isHeld(Control.Special2, player) || !charState.normalCtrl
 		) {

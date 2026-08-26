@@ -234,7 +234,7 @@ public class MechMissileProj : Projectile, IDamagable {
 		return false;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 
 	public bool isPlayableDamagable() {
@@ -449,7 +449,7 @@ public class TorpedoProjMech : Projectile, IDamagable {
 	public bool canBeHealed(int healerAlliance) {
 		return false;
 	}
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 	public bool isPlayableDamagable() {
 		return false;

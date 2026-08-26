@@ -214,7 +214,7 @@ public class Rush : Actor, IDamagable {
 		return false;
 	}
 
-	public void heal(Player healer, float healAmount, bool allowStacking = true, bool drawHealText = false) {
+	public virtual void heal(Player healer, float healAmount, bool drawHealText = true, bool creditHeal = true) {
 	}
 
 	public override void onDestroy() {

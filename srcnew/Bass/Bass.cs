@@ -344,7 +344,7 @@ public class Bass : Character {
 		player.changeWeaponControls();
 
 		// For the shooting animation.
-		if ((shootAnimTime > 0) || charState is LadderClimb) {
+		if ((shootAnimTime > 0) || charState is LadderClimb or BassShootLadder) {
 			Helpers.decrementFrames(ref shootAnimTime);
 			if (shootAnimTime <= 0 || string.IsNullOrEmpty(charState.shootSprite)) {
 				shootAnimTime = 0;
@@ -1215,6 +1215,7 @@ public class Bass : Character {
 		customData.Add(ammo);
 		customData.Add((byte)phase);
 		customData.Add((byte)evilEnergy);
+		customData.Add((byte)maxEvilEnergy);
 
 		bool[] flags = [
 			isSuperBass,
@@ -1242,8 +1243,9 @@ public class Bass : Character {
 		}
 		phase = data[2];
 		evilEnergy = data[3];
+		maxEvilEnergy = data[4];
 
-		bool[] flags = Helpers.byteToBoolArray(data[4]);
+		bool[] flags = Helpers.byteToBoolArray(data[5]);
 		isSuperBass = flags[0];
 		armless = flags[1];
 		isTrebbleBoost = flags[2];

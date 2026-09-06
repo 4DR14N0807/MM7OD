@@ -29,7 +29,7 @@ public class FreezeCracker : Weapon {
 		Player player = rock.player;
 		int input = player.input.getYDir(player);
 
-		new FreezeCrackerRmProj(rock, shootPos, xDir, player.getNextActorNetId(), input);
+		new FreezeCrackerRmProj(rock, shootPos, xDir, player.getNextActorNetId(), input, true);
 		rock.playSound("buster2", sendRpc: true);
 	}
 }

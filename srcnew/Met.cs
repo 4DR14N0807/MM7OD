@@ -8,9 +8,11 @@ public class Met : NeutralEnemy {
 	public float cooldown = 60;
 	public float distance = 80;
 	public int shotCount;
+	ShaderWrapper? shader;
+	int palette;
 
 	public Met(
-		Point pos, int xDir, Player ownerPlayer, ushort netId,
+		Point pos, int xDir, Player ownerPlayer, ushort netId, int palette,
 		int alliance = GameMode.stageAlliance, bool sendRpc = false,
 		bool addToLevel = true, bool isWarpIn = false
 	) : base(
@@ -19,6 +21,9 @@ public class Met : NeutralEnemy {
 		base.xDir = xDir;
 		maxHealth = 3;
 		health = maxHealth;
+		this.palette = palette;
+
+		shader = Helpers.cloneGenericPaletteShader("met_palette_texture");
 
 		if (ownedByLocalPlayer) {
 			if (isWarpIn) {
@@ -36,18 +41,18 @@ public class Met : NeutralEnemy {
 
 	public static Actor localInvoke(ActorLocalParameters arg, bool sendRpc) {
 		return new Met(
-			arg.pos, arg.xDir, arg.player, arg.netId, arg.extraData[0], sendRpc: sendRpc
+			arg.pos, arg.xDir, arg.player, arg.netId, arg.extraData[1], arg.extraData[0], sendRpc: sendRpc
 		);
 	}
 
 	public static Actor rpcInvoke(ActorRpcParameters arg) {
 		return new Met(
-			arg.pos, arg.xDir, arg.player, arg.netId, arg.extraData[0]
+			arg.pos, arg.xDir, arg.player, arg.netId, arg.extraData[1], arg.extraData[0]
 		);
 	}
 
 	public override byte[] getSerialExtra() {
-		return [(byte)alliance];
+		return new byte[] { (byte)alliance, (byte)palette };
 	}
 
 	public override string getSprite(string spriteName) {
@@ -89,6 +94,20 @@ public class Met : NeutralEnemy {
 
 		new Anim(pos, "generic_explosion", xDir, Player.stagePlayer.getNextActorNetId(), true, true);
 		playSound("danger_wrap_explosion", sendRpc: true);
+	}
+
+	public override List<ShaderWrapper>? getShaders() {
+		List<ShaderWrapper> shaders = new();
+		List<ShaderWrapper> baseShaders = base.getShaders() ?? new();
+
+		if (palette != 0) {
+			shader?.SetUniform("palette", palette);
+			if (shader != null) {
+				shaders.Add(shader);
+			}
+		}
+		shaders.AddRange(baseShaders);
+		return shaders;
 	}
 
 	public override List<byte> getCustomActorNetData() {

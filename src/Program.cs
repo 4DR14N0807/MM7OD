@@ -386,7 +386,7 @@ class Program {
 			Global.calledPerFrame = 0;
 
 			if (!Global.paused) {
-				if (Options.main.isDeveloperConsoleEnabled() && Menu.chatMenu != null) {
+				if (Options.main.isDeveloperConsoleEnabled() && Menu.chatMenu != null && !Menu.inMenu) {
 					if (Global.input.isPressed(Key.F10)) {
 						DevConsole.toggleShow();
 					}

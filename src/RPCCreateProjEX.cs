@@ -341,6 +341,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.MagicCardSSpawn, MagicCardSpecialSpawn.rpcInvoke },
 		{ (int)BassProjIds.MagicCardS, MagicCardSpecialProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMine, RemoteMineProj.rpcInvoke },
+		{ (int)BassProjIds.RemoteMineStick, RemoteMineStickProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMineLand, RemoteMineLandProj.rpcInvoke },
 		{ (int)BassProjIds.RemoteMineExplosion, RemoteMineExplosionProj.rpcInvoke },
 		{ (int)BassProjIds.SpreadDrill, SpreadDrillProj.rpcInvoke },
@@ -359,6 +360,7 @@ public partial class RPCCreateProj : RPC {
 		{ (int)BassProjIds.DarkCometUp, DarkCometUpProj.rpcInvoke },
 		{ (int)BassProjIds.DarkCometDown, DarkCometDownProj.rpcInvoke },
 		{ (int)BassProjIds.SuperBassSquare, SuperBassSquare.rpcInvoke },
+		{ (int)BassProjIds.SuperBassAura, SuperBassAura.rpcInvoke },
 
 		// Freeze Man
 		//{ (int)RobotMastersProjIds.FreezeMProj, FreezeMProj.rpcInvoke },

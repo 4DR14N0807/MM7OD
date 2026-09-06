@@ -332,6 +332,7 @@ public enum BassProjIds {
 	WaveBurner,
 	WaveBurnerUnderwater,
 	RemoteMine,
+	RemoteMineStick,
 	RemoteMineLand,
 	RemoteMineMeleeExplosion,
 	RemoteMineExplosion,
@@ -361,6 +362,7 @@ public enum BassProjIds {
 	DarkCometUp,
 	DarkCometDown,
 	SuperBassSquare,
+	SuperBassAura,
 }
 
 public enum BluesProjIds  {

@@ -1622,7 +1622,8 @@ public partial class Character : Actor, IDamagable {
 		// Etank state.
 		if (grounded && charState is not HealState &&
 			player.ETanks.Count >= 1 &&
-			player.input.isPressed(Control.Special2, player) &&
+			player.ETanks[0].canUse(player, this) &&
+			player.input.isHeld(Control.Special2, player) &&
 			player.input.isHeld(Control.Down, player)
 		) {
 			player.ETanks[0].use(player, this);
@@ -1630,7 +1631,8 @@ public partial class Character : Actor, IDamagable {
 		}
 		if (grounded && charState is not HealState &&
 			player.ltanks.Count >= 1 &&
-			player.input.isPressed(Control.Special2, player) &&
+			player.ltanks[0].canUse(player, this) &&
+			player.input.isHeld(Control.Special2, player) &&
 			player.input.isHeld(Control.Down, player)
 		) {
 			player.ltanks[0].use(player, this);

@@ -128,5 +128,7 @@ public class HpShield {
 public enum ShieldIds {
 	None,
 	Pickup,
+	Tank,
+	
 	RmJunk,
 }

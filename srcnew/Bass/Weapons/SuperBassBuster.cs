@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SFML.Graphics;
 
 namespace MMXOnline;
 
@@ -26,16 +27,17 @@ public class SBassBuster : Weapon {
 		Player player = character.player;
 		int chargeLevel = args[0];
 		Bass bass = character as Bass ?? throw new NullReferenceException();
+		int shaderIndex = bass.phase + 1;
 
 		if (chargeLevel == 3) {
-			new ChamoBuster(bass, shootPos.addxy(12 * xDir, 0), xDir, player.getNextActorNetId(), true);
+			new ChamoBuster(bass, shootPos.addxy(12 * xDir, 0), xDir, shaderIndex, player.getNextActorNetId(), true);
 			character.playSound("buster3", sendRpc: true);
 
 			for (int i = 1; i < 3; i++) {
 				Global.level.delayedActions.Add(new DelayedAction(
 					() => {
 						new SBassShot(
-							bass, shootPos.addxy(11 * xDir, 0), xDir, 1,
+							bass, shootPos.addxy(11 * xDir, 0), xDir, 1, shaderIndex,
 							player.getNextActorNetId(), true, multiShot: true
 						);
 						character.playSound("buster2", sendRpc: true);
@@ -46,11 +48,11 @@ public class SBassBuster : Weapon {
 				));
 			}
 		} else if (chargeLevel == 2) {
-			new ChamoBuster(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			new ChamoBuster(bass, shootPos, xDir, shaderIndex, player.getNextActorNetId(), true);
 			character.playSound("buster3", sendRpc: true);
 		} else if (chargeLevel == 1) {
 			for (int i = 0; i < 3; i++) {
-				new SBassShot(bass, shootPos, xDir, i, player.getNextActorNetId(), true);
+				new SBassShot(bass, shootPos, xDir, i, shaderIndex, player.getNextActorNetId(), true);
 			}
 			character.playSound("buster2X1", sendRpc: true);
 		} else {
@@ -86,16 +88,17 @@ public class SBassRP : Weapon {
 		Player player = character.player;
 		int chargeLevel = args[0];
 		Bass bass = character as Bass ?? throw new NullReferenceException();
+		int shaderIndex = bass.phase + 1;
 
 		if (chargeLevel >= 3) {
-			new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			new SuperBassRP(bass, shootPos, xDir, shaderIndex, player.getNextActorNetId(), true);
 			character.playSound("super_adaptor_punch", sendRpc: true);
 
 			for (int i = 1; i < 3; i++) {
 				Global.level.delayedActions.Add(new DelayedAction(
 					() => {
 						new SBassShot(
-							bass, shootPos.addxy(11 * xDir, 0), xDir, 1,
+							bass, shootPos.addxy(11 * xDir, 0), xDir, 1, shaderIndex,
 							player.getNextActorNetId(), true, multiShot: true
 						);
 						character.playSound("buster2", sendRpc: true);
@@ -106,11 +109,11 @@ public class SBassRP : Weapon {
 				));
 			}
 		} else if (chargeLevel == 2) {
-			bass.sbRocketPunch = new SuperBassRP(bass, shootPos, xDir, player.getNextActorNetId(), true);
+			bass.sbRocketPunch = new SuperBassRP(bass, shootPos, xDir, shaderIndex, player.getNextActorNetId(), true);
 			character.playSound("super_adaptor_punch", sendRpc: true);
 		} else if (chargeLevel == 1) {
 			for (int i = 0; i < 3; i++) {
-				new SBassShot(bass, shootPos, xDir, i, player.getNextActorNetId(), true);
+				new SBassShot(bass, shootPos, xDir, i, shaderIndex, player.getNextActorNetId(), true);
 			}
 			character.playSound("buster2X1", sendRpc: true);
 		} else {
@@ -175,8 +178,9 @@ public class SBassLemon : Projectile {
 }
 
 public class SBassShot : Projectile {
+	int shaderIndex;
 	public SBassShot(
-		Actor owner, Point pos, int xDir, int type, ushort? netId,
+		Actor owner, Point pos, int xDir, int type, int shaderIndex, ushort? netId,
 		bool sendRpc = false, Player? altPlayer = null, bool multiShot = false
 	) : base(
 		pos, xDir, owner, "sbass_buster2_proj", netId, altPlayer
@@ -187,9 +191,6 @@ public class SBassShot : Projectile {
 		damager.damage = 2;
 		damager.hitCooldown = 10;
 
-		fadeSprite = "rock_buster1_fade";
-		fadeOnAutoDestroy = true;
-
 		byteAngle = (type - 1) * 8;
 		if (xDir < 0) {
 			byteAngle = -byteAngle + 128;
@@ -197,8 +198,10 @@ public class SBassShot : Projectile {
 		}
 		vel = Point.createFromByteAngle(byteAngle).times(5.5f * 60);
 
+		this.shaderIndex = shaderIndex;
+
 		if (sendRpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir, (byte)type);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)type, (byte)shaderIndex });
 		}
 		if (multiShot) {
 			maxTime = 30 / 60f;
@@ -210,8 +213,17 @@ public class SBassShot : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SBassShot(
-			arg.owner, arg.pos, arg.xDir, arg.extraData[0], arg.netId, altPlayer: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.extraData[1], arg.netId, altPlayer: arg.player
 		);
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+
+		new Anim(pos, "rock_buster1_fade", xDir, damager.owner.getNextActorNetId(), true, ownedByLocalPlayer) {
+			customShaders = getShaders()
+		};
 	}
 
 	public override List<ShaderWrapper> getShaders() {
@@ -220,7 +232,7 @@ public class SBassShot : Projectile {
 			return shaders;
 		}
 		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
-		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("palette", shaderIndex);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) {
 			shaders.Add(palette);
@@ -231,8 +243,9 @@ public class SBassShot : Projectile {
 
 
 public class ChamoBuster : Projectile {
+	int shaderIndex;
 	public ChamoBuster(
-		Actor owner, Point pos, int xDir, ushort? netId,
+		Actor owner, Point pos, int xDir, int shaderIndex, ushort? netId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "bass_chamobuster", netId, altPlayer
@@ -243,18 +256,26 @@ public class ChamoBuster : Projectile {
 		vel.x = (5.5f * 60) * xDir;
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
-		fadeSprite = "thunder_bolt_fade2";
-		fadeOnAutoDestroy = true;
+		this.shaderIndex = shaderIndex;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)shaderIndex });
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new ChamoBuster(
-			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+
+		new Anim(pos, "thunder_bolt_fade2", xDir, damager.owner.getNextActorNetId(), true, ownedByLocalPlayer) {
+			customShaders = getShaders()
+		};
 	}
 
 	public override List<ShaderWrapper> getShaders() {
@@ -263,7 +284,7 @@ public class ChamoBuster : Projectile {
 			return shaders;
 		}
 		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
-		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("palette", shaderIndex);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) {
 			shaders.Add(palette);
@@ -278,9 +299,10 @@ public class SuperBassRP : Projectile {
 	bool reversed;
 	Actor? target;
 	float projSpeed = 240;
+	int shaderIndex;
 
 	public SuperBassRP(
-		Actor owner, Point pos, int xDir, ushort? netId,
+		Actor owner, Point pos, int xDir, int shaderIndex, ushort? netId,
 		bool rpc = false, Player? altPlayer = null
 	) : base(
 		pos, xDir, owner, "sb_rocket_punch", netId, altPlayer
@@ -289,6 +311,7 @@ public class SuperBassRP : Projectile {
 
 		maxReverseTime = 0.5f;
 		this.player = ownerPlayer;
+		this.shaderIndex = shaderIndex;
 
 		vel.x = projSpeed * xDir;
 		damager.damage = 3;
@@ -299,13 +322,14 @@ public class SuperBassRP : Projectile {
 		canBeLocal = false;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)shaderIndex });
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SuperBassRP(
-			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
 		);
 	}
 
@@ -451,7 +475,7 @@ public class SuperBassRP : Projectile {
 			return shaders;
 		}
 		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
-		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("palette", shaderIndex);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) {
 			shaders.Add(palette);
@@ -474,9 +498,10 @@ public class SweepingLaserProj : Projectile {
 	bool ground;
 	int groundTime;
 	int lastGroundTime;
+	int shaderIndex;
 
 	public SweepingLaserProj(
-		Actor owner, Point pos, int xDir, ushort? netId, 
+		Actor owner, Point pos, int xDir, int shaderIndex, ushort? netId, 
 		bool rpc = false, Player? player = null
 	) : base(
 		pos, xDir, owner, "sweeping_laser_top", netId, player
@@ -488,17 +513,19 @@ public class SweepingLaserProj : Projectile {
 		damager.damage = 3;
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 30;
+		this.shaderIndex = shaderIndex;
 		canBeLocal = false;
 		start();
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)shaderIndex });
 		}
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new SweepingLaserProj(
-			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+			arg.owner, arg.pos, arg.xDir, 
+			arg.extraData[0], arg.netId, player: arg.player
 		);
 	}
 
@@ -602,7 +629,7 @@ public class SweepingLaserProj : Projectile {
 			return shaders;
 		}
 		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
-		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("palette", shaderIndex);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) {
 			shaders.Add(palette);
@@ -615,9 +642,10 @@ public class DarkCometUpProj : Projectile {
 	Actor? actor;
 	Anim? anim;
 	bool hitWall;
+	int shaderIndex;
 
 	public DarkCometUpProj(
-		Actor owner, Point pos, int xDir,
+		Actor owner, Point pos, int xDir, int shaderIndex,
 		ushort? netId, bool rpc = false, Player? player = null
 	) : base(
 		pos, xDir, owner, "dark_comet", netId, player
@@ -633,14 +661,15 @@ public class DarkCometUpProj : Projectile {
 		yDir *= -1;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)shaderIndex });
 		}
 		actor = owner;
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DarkCometUpProj(
-			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+			arg.owner, arg.pos, arg.xDir, 
+			arg.extraData[0], arg.netId, player: arg.player
 		);
 	}
 
@@ -689,7 +718,7 @@ public class DarkCometUpProj : Projectile {
 
 		for (int i = -1; i < 2; i++) {
 			new DarkCometDownProj(
-				actor, pos.addxy(48 * i, 0), xDir,
+				actor, pos.addxy(48 * i, 0), xDir, shaderIndex,
 				damager.owner.getNextActorNetId(), true, damager.owner
 			);
 		}
@@ -701,7 +730,7 @@ public class DarkCometUpProj : Projectile {
 			return shaders;
 		}
 		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
-		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("palette", shaderIndex);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) {
 			shaders.Add(palette);
@@ -713,9 +742,10 @@ public class DarkCometUpProj : Projectile {
 
 public class DarkCometDownProj : Projectile {
 	Anim? anim;
+	int shaderIndex;
 
 	public DarkCometDownProj(
-		Actor owner, Point pos, int xDir,
+		Actor owner, Point pos, int xDir, int shaderIndex,
 		ushort? netId, bool rpc = false, Player? player = null
 	) : base(
 		pos, xDir, owner, "dark_comet", netId, player
@@ -726,11 +756,12 @@ public class DarkCometDownProj : Projectile {
 		damager.flinch = Global.halfFlinch;
 		damager.hitCooldown = 45;
 		destroyOnHit = false;
+		this.shaderIndex = shaderIndex;
 
 		vel.y = 240;
 
 		if (rpc) {
-			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)shaderIndex });
 		}
 
 		projId = (int)BassProjIds.DarkCometUp;
@@ -738,7 +769,8 @@ public class DarkCometDownProj : Projectile {
 
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new DarkCometDownProj(
-			arg.owner, arg.pos, arg.xDir, arg.netId, player: arg.player
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, player: arg.player
 		);
 	}
 
@@ -778,7 +810,7 @@ public class DarkCometDownProj : Projectile {
 			return shaders;
 		}
 		ShaderWrapper? palette = bass.player.superBassPaletteShader;	
-		palette?.SetUniform("palette", bass.phase + 1);
+		palette?.SetUniform("palette", shaderIndex);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) {
 			shaders.Add(palette);

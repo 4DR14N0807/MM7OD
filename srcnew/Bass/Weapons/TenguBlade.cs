@@ -117,6 +117,11 @@ public class TenguBladeState : BassState {
 		canJump = true;
 	}
 
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		if (oldState is Dash or DashEnd) bass.xPushVel = 2 * bass.xDir;
+	}
+
 	public override void update() {
 		base.update();
 		character.turnToInput(player.input, player);
@@ -237,7 +242,7 @@ public class TenguBladeProjMelee : GenericMeleeProj {
 public class TenguBladeMelee : GenericMeleeProj {
 	public TenguBladeMelee(Point pos, Player player, bool addToLevel) : base(
 		TenguBlade.netWeapon, pos, ProjIds.TenguBladeDash,
-		player, 2, 0, 30, addToLevel: addToLevel
+		player, 1, 0, 30, addToLevel: addToLevel
 	) {
 	}
 }

@@ -1427,7 +1427,7 @@ public partial class Actor : GameObject {
 		}
 		decimal reportAmount = Helpers.clampMax(healAmount, maxHealth - currentHealth);
 
-		if (drawHealText) {
+		if (drawHealText && reportAmount != 0) {
 			//healer.creditHealing(reportAmount);
 			addDamageTextHelper(healer, (float)(-reportAmount), 16, sendRpc: true);
 		}

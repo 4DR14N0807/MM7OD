@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Security;
 
 namespace MMXOnline;
 
 public class RemoteMine : Weapon {
 	public static RemoteMine netWeapon = new();
 	public bool shootOnFrame;
-	public RemoteMineProj? activeMine;
+	public Projectile? activeMine;
 	public List<Projectile> landedMines = [];
 
 	public RemoteMine() : base() {
@@ -23,14 +24,13 @@ public class RemoteMine : Weapon {
 		switchCooldown = 30;
 		descriptionV2 = [
 			[ "Sticks on enemies and walls.\n" +
-			"Press UP or DOWN after shooting to aim.\n" +
-			"Press SHOOT button after sticking to detonate."]
+			"Press UP or DOWN after shooting to aim.\n" ]
 		];
 	}
 
 	public override void charLinkedUpdate(Character character, bool isAlwaysOn) {
 		base.charLinkedUpdate(character, isAlwaysOn);
-/* 
+		/* 
 		if (!shootOnFrame && activeMine?.destroyed == false && character.currentWeapon == this &&
 			character.player.input.isPressed(Control.Shoot, character.player)
 		) {
@@ -148,7 +148,7 @@ public class RemoteMineProj : Projectile {
 
 	public override void onCollision(CollideData other) {
 		base.onCollision(other);
-		if (!ownedByLocalPlayer) {
+		if (!ownedByLocalPlayer || ownerActor == null) {
 			return;
 		}
 		if (landed || exploded || attachHost != null) {
@@ -180,11 +180,18 @@ public class RemoteMineProj : Projectile {
 
 		if (characterLand) {
 			attachHost = chr;
-			stopMoving();
 			changeSprite("remote_mine_land", true);
+			stopMoving();
+			
 			playSound("remotemineStick", true);
 			time = 0;
 			maxTime = 2;
+			
+			var stickProj = new RemoteMineStickProj(
+				ownerActor, pos, xDir, damager.owner.getNextActorNetId(), chr, true
+			);
+			linkedWeapon?.activeMine = stickProj;
+			destroySelf();
 		}
 	}
 
@@ -217,14 +224,83 @@ public class RemoteMineProj : Projectile {
 			var rme = new RemoteMineExplosionProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
 			playSound("remotemineExplode", true);
 			// Apply direct damage if attached.
-			if (attachHost is IDamagable damagable) {
+			/* if (attachHost is IDamagable damagable) {
 				rme.damager.applyDamage(
 					damagable, false, linkedWeapon ?? weapon,
 					rme, (int)BassProjIds.RemoteMineMeleeExplosion
 				);
-			}
+			} */
 		}
 		exploded = true;
+	}
+}
+
+public class RemoteMineStickProj : Projectile {
+	Actor? host;
+	public Sprite altAnim = new Sprite("remote_mine_anim");
+	public RemoteMineStickProj(
+		Actor owner, Point pos, int xDir, ushort? netId,
+		Actor? host = null, bool rpc = false, Player? altPlayer = null
+		) : base(
+			pos, xDir, owner, "remote_mine_proj", netId, altPlayer
+		) {
+
+		projId = (int)BassProjIds.RemoteMineStick;
+		maxTime = 2f;
+		destroyOnHit = false;
+		frameSpeed = 0;
+
+		this.host = host;
+		canBeLocal = false;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir);
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new RemoteMineStickProj(
+			arg.owner, arg.pos, arg.xDir, arg.netId, altPlayer: arg.player
+		);
+	}
+
+	public override void update() {
+		base.update();
+		altAnim.update();
+
+		if (!ownedByLocalPlayer) return;
+
+		if (host != null) {
+			changePos(host.getCenterPos());
+		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x, y);
+		if (!visible) {
+			return;
+		}
+		Point center = getCenterPos();
+		altAnim.draw(
+			altAnim.frameIndex, center.x, center.y, xDir, yDir,
+			null, alpha, 1, 1, zIndex
+		);
+	}
+
+	public override void onDestroy() {
+		base.onDestroy();
+
+		if (ownedByLocalPlayer && ownerActor != null) {
+			var rme = new RemoteMineExplosionProj(ownerActor, pos, xDir, damager.owner.getNextActorNetId(), true);
+			playSound("remotemineExplode", true);
+			// Apply direct damage if attached.
+			/* if (attachHost is IDamagable damagable) {
+				rme.damager.applyDamage(
+					damagable, false, linkedWeapon ?? weapon,
+					rme, (int)BassProjIds.RemoteMineMeleeExplosion
+				);
+			} */
+		}
 	}
 }
 

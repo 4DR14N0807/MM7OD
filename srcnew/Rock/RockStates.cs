@@ -401,7 +401,11 @@ public class CallDownRush : CharState {
 		if (air) character.changeSpriteFromName("sa_activate_air", true);
 		rush = new Anim(new Point(character.pos.x + (30 * character.xDir), character.pos.y - rushAnimStartPos),
 		"rush_warp_beam", -character.xDir, player.getNextActorNetId(), false, true);
-		Global.playSound("warpin");
+		character.playSound("warpin");
+
+		if (character is Rock rock && rock.rush != null) {
+			rock.rush.changeState(new RushWarpOut());
+		}
 	}
 
 	public override void onExit(CharState? newState) {

@@ -845,7 +845,8 @@ public class OptionsMenu : IMainMenu {
 							optionFontValue, coreHeatStr(Options.main.coreHeatDisplay),
 							pos.x + 200, pos.y, selected: selectedArrowPosY == index
 						);
-					}
+					}, 
+					"Changes whether the core heat bar is displayed \nin the HUD, next to Proto Man, or both."
 				),
 				// Switch Shield Dash input.
 				new MenuOption(

@@ -28,6 +28,7 @@ public class Damager {
 	public const float headshotModifier = 2;
 
 	public static Dictionary<int, float> projectileFlinchCooldowns = new Dictionary<int, float>() {
+		{ (int)RockProjIds.JunkShield, 45 },
 		{ (int)BluesProjIds.LemonOverdrive, 40 },
 		{ (int)BluesProjIds.SparkShock, 100 },
 		{ (int)BluesProjIds.ProtoLandPush, 60 },
@@ -257,7 +258,8 @@ public class Damager {
 			// Status effects.
 			switch (projId) {
 				case (int)BluesProjIds.SparkShock: {
-					character.root(60, 100, owner.id);
+					//character.root(60, 100, owner.id);
+					character.wince(90, 130, projId, owner.id);
 					break;
 				}
 				case (int)BassProjIds.IceWall: {
@@ -303,7 +305,7 @@ public class Damager {
 					character.freeze(Global.defFlinch, 60, owner.id);
 					break;
 				case (int)BassProjIds.MagicCardBurn:
-					character.burnStun(1 * 60, 0, owner.id);
+					character.burnStun(Global.defFlinch, 0, owner.id);
 					break;
 				case (int)BassProjIds.SpreadDrill:
 				case (int)BassProjIds.SpreadDrillMid:

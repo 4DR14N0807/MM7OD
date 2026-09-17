@@ -11,7 +11,13 @@ public class ETank : Tank {
 		maxHealth = 24;
 		healAmount = 8;
 		health = maxHealth;
-		healMaxTime = 180;
+	}
+
+	public override bool canUse(Player player, Character character) {
+		return base.canUse(player, character) && (
+			character.health < character.maxHealth || 
+			character.shieldManager.totalHealth < healAmount 
+		);
 	}
 
 	public override void use(Player player, Character character) {
@@ -46,18 +52,22 @@ public class ETank : Tank {
 			//character.buffList.Add(buff);
 
 			decimal shield = healAmount - hpToHeal;
-			if (shield > 0 && healStacks >= 3 && character.canBeShielded()) {
+			shield = Math.Min(shield, health);
+			if (
+				shield > 0 && healStacks >= 3 && character.canBeShielded() && 
+				character.shieldManager.totalHealth < shield  
+			) {
 				character.playSound("subtank_fill");
 				int time = 60 * 15;
 				Buff? shieldTarget = character.buffList.FirstOrDefault(
-					b => b.update == BaselineShieldPickup.buffUpdate
+					b => b.update == buffUpdate
 				);
 				if (shieldTarget == null) {
 					character.buffList.Add(new Buff("hud_shields", 0, true, time, time) {
-						update = BaselineShieldPickup.buffUpdate
+						update = buffUpdate
 					});
 				}
-				character.shieldManager.addShield(shield, time, ShieldIds.Pickup);
+				character.shieldManager.addShield(shield, time, ShieldIds.Tank);
 				health -= shield;
 			}
         }

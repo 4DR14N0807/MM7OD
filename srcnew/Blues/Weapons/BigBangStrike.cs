@@ -175,9 +175,9 @@ public class ProtoStrikeProj : Projectile {
 			}
 		}
 
-		if (time >= 45/60f) {
+		if (time >= 30/60f) {
     		damager.flinch = Global.miniFlinch;
-		} else if (time >= 30/60f) {
+		} else if (time >= 15/60f) {
     		damager.flinch = Global.halfFlinch;
 		}
 
@@ -270,6 +270,8 @@ public class StrikeAttackPushProj : Projectile {
 		}
 		// Proto Strike.
 		else if (type == 1) {
+			damager.damage = 2;
+			flinchPower = damager.flinch;
 			addRenderEffect(RenderEffectType.ChargeOrange, 0, 600);
 		}
 		// Red Strike.

@@ -7,7 +7,7 @@ namespace MMXOnline;
 
 public class LightningBolt : Weapon {
 	public static LightningBolt netWeapon = new();
-	public static float cooldown = 45;
+	public static float cooldown = 60;
 
 	public LightningBolt() : base() {
 		iconSprite = "hud_weapon_icon_bass";
@@ -23,7 +23,7 @@ public class LightningBolt : Weapon {
 		hasCustomAnim = true;
 		descriptionV2 = [
 			[ "Powerfull attack able to pierce defenses.\n" + 
-			"Press LEFT or RIGTH to aim.\n" + 
+			"Press UP, DOWN, LEFT or RIGHT to aim.\n" + 
 			"Press SHOOT again for a faster but weaker attack."],
 		];
 	}
@@ -202,13 +202,13 @@ public class LBoltBassShoot : BassState {
 	public override void update() {
 		base.update();
 
-		if (!shotPressed && weapon?.ammo > 0 && player.input.isPressed(Control.Shoot, player) && stateFrames >= 20) {
+		/* if (!shotPressed && weapon?.ammo > 0 && player.input.isPressed(Control.Shoot, player) && stateFrames >= 20) {
 			shotPressed = true;
 		}
 		if (shotPressed && stateFrames >= 45 && bass.currentWeapon is LightningBolt) {
 			character.changeState(new LBoltBassCharge(shootPos), true);
 			return;
-		}
+		} */
 		if (stateFrames >= 45) {
 			bass.changeToIdleOrFall();
 		}
@@ -241,6 +241,7 @@ public class LBoltBassShoot : BassState {
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
 		character.gravityModifier = 1;
+		
 	}
 }
 

@@ -148,6 +148,7 @@ public class BassShootLadder : BassState {
 		if (bass.currentWeapon is WaveBurner {ammo: > 0}) {
 			bass.playSound("waveburnerEnd", sendRpc: true);
 		}
+		bass.shootAnimTime = 0;
 	}
 
 	public override void update() {
@@ -217,7 +218,7 @@ public class DashEnd : CharState {
 
 public class SuperBassStart : BassState {
 	Anim? treble;
-	Anim? aura;
+	SuperBassAura? aura;
 	int phase;
 	Point headPos;
 	Point spawnPos;
@@ -345,7 +346,7 @@ public class SuperBassStart : BassState {
 						bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 						false, true, zIndex: ZIndex.Character - 10
 					); */
-					aura = new SuperBassAura(bass, bass.pos, bass.xDir, player.getNextActorNetId(), true);
+					aura = new SuperBassAura(bass, bass.pos, bass.xDir, bass.phase + 1, player.getNextActorNetId(), true);
 
 					phase = 6;
 				}
@@ -424,16 +425,32 @@ public class SuperBassSquare : Projectile {
 	}
 }
 
-public class SuperBassAura : Anim {
+public class SuperBassAura : Projectile {
 	Bass? bass = null;
-	int p;
+	int shaderIndex;
 	public SuperBassAura(
-		Bass bass, Point pos, int xDir, ushort? netId, bool rpc = false
+		Actor owner, Point pos, int xDir, int shaderIndex, 
+		ushort? netId, bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, "sbass_aura", xDir, netId, false, rpc
+		pos, xDir, owner, "sbass_aura", netId, altPlayer
 	) {
-		this.bass = bass;
-		zIndex = ZIndex.Character - 10;
+		projId = (int)BassProjIds.SuperBassAura;
+		maxTime = 0.6f;
+
+		this.bass = owner as Bass;
+		this.shaderIndex = shaderIndex;
+		zIndex = ZIndex.Character - 100;
+
+		if (rpc) {
+			rpcCreate(pos, owner, ownerPlayer, netId, xDir, new byte[] { (byte)shaderIndex });
+		}
+	}
+
+	public static Projectile rpcInvoke(ProjParameters arg) {
+		return new SuperBassAura(
+			arg.owner, arg.pos, arg.xDir, arg.extraData[0], 
+			arg.netId, altPlayer: arg.player
+		);
 	}
 
 	public override void update() {
@@ -443,7 +460,6 @@ public class SuperBassAura : Anim {
 			return;
 		}
 
-		p = bass.phase;
 		changePos(bass.pos);
 	}
 
@@ -454,7 +470,7 @@ public class SuperBassAura : Anim {
 	
 		palette = bass?.player.superBassPaletteShader;
 			
-		palette?.SetUniform("palette", p + 1);
+		palette?.SetUniform("palette", shaderIndex);
 		palette?.SetUniform("paletteTexture", Global.textures["bass_superadaptor_palette"]);
 		if (palette != null) shaders.Add(palette);
 		
@@ -465,12 +481,12 @@ public class SuperBassAura : Anim {
 
 	public override List<byte> getCustomActorNetData() {
 		return [
-			(byte)p	
+			(byte)shaderIndex
 		];
 	}
 
 	public override void updateCustomActorNetData(byte[] data) {
-		p = data[0];
+		shaderIndex = data[0];
 	}
 }
 
@@ -539,7 +555,7 @@ public class SuperBassPilar : Effect {
 
 public class EnergyCharge : BassState {
 	public float ammoTimer = 8;
-	Anim? aura;
+	SuperBassAura? aura;
 
 	public EnergyCharge() : base("enter") {
 		normalCtrl = false;
@@ -551,7 +567,7 @@ public class EnergyCharge : BassState {
 			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 			false, true, zIndex: ZIndex.Character - 10
 		); */
-		aura = new SuperBassAura(bass, bass.pos, bass.xDir, player.getNextActorNetId(), true);
+		aura = new SuperBassAura(bass, bass.pos, bass.xDir, bass.phase + 1, player.getNextActorNetId(), true);
 		bass.stopMoving();
 		bass.gravityModifier = 0.1f;
 		bass.frameIndex = 3;
@@ -596,7 +612,7 @@ public class EnergyCharge : BassState {
 }
 
 public class EnergyIncrease : BassState {
-	Anim? aura;
+	SuperBassAura? aura;
 
 	public EnergyIncrease() : base("enter") {
 		normalCtrl = false;
@@ -626,7 +642,7 @@ public class EnergyIncrease : BassState {
 			bass.pos, "sbass_aura", bass.xDir, player.getNextActorNetId(),
 			false, true, zIndex: ZIndex.Character - 10
 		); */
-		aura = new SuperBassAura(bass, bass.pos, bass.xDir, player.getNextActorNetId(), true);
+		aura = new SuperBassAura(bass, bass.pos, bass.xDir, bass.phase + 1, player.getNextActorNetId(), true);
 		character.gravityModifier = 0.1f;
 		bass.playSound("super_bass_aura", sendRpc: true);
 	}
@@ -899,7 +915,7 @@ public class SweepingLaserState : CharState {
 
 		if (!once && character.ownedByLocalPlayer && character.currentFrame.getBusterOffset() != null) {
 			laser = new SweepingLaserProj(
-				character, character.getShootPos(), character.xDir,
+				character, character.getShootPos(), character.xDir, (character as Bass)?.phase + 1 ?? 0,
 				player.getNextActorNetId(), true, player
 			);
 			character.playSound("buster4X1", sendRpc: true);
@@ -944,7 +960,7 @@ public class DarkCometState : CharState {
 
 		if (!once && character.ownedByLocalPlayer && character.currentFrame.getBusterOffset() != null) {
 			new DarkCometUpProj(
-				character, character.getShootPos(), character.xDir,
+				character, character.getShootPos(), character.xDir, (character as Bass)?.phase + 1 ?? 0,
 				player.getNextActorNetId(), true, player
 			);
 			character.playSound("buster3X1", sendRpc: true);

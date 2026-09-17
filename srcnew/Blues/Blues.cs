@@ -32,6 +32,9 @@ public class Blues : Character {
 	public float overheatTime;
 	public bool starCrashOverheat;
 
+	// Extra core heat variables (l-tanks stuff)
+	public float coreExtraAmmo;
+
 	// Breakman stuff.
 	public bool overdrive;
 	public float overdriveAmmo = 20;
@@ -856,7 +859,7 @@ public class Blues : Character {
 		}
 		// Cancel non-invincible states.
 		if (!charState.attackCtrl && !charState.invincible || charState is BluesSlide or ShieldDash) {
-			if (charState is ShieldDash) {
+			if (charState is ShieldDash && grounded) {
 				slideVel = getShieldDashSpeed() * 0.75f * this.xDir;
 			}
 			changeToIdleOrFall();
@@ -874,9 +877,9 @@ public class Blues : Character {
 					this, shootPos, xDir, player.getNextActorNetId(), isWeak: overheating, sendRpc: true
 				);
 				if (!overheating) {
-					playSound("buster", sendRpc: true);
-				} else {
 					playSound("protoLemon", sendRpc: true);
+				} else {
+					playSound("buster", sendRpc: true);
 				}
 			} else {
 				float shootAngle = xDir == 1 ? 0 : 128;
@@ -1055,7 +1058,15 @@ public class Blues : Character {
 			addOvedriveAmmo(amount, resetCooldown);
 			return;
 		}
-		coreAmmo += amount;
+		float a = amount;
+		
+		coreExtraAmmo -= amount;
+		if (coreExtraAmmo < 0) {
+			coreAmmo += -coreExtraAmmo;
+			coreExtraAmmo = 0;
+		}
+		
+		//coreAmmo += amount;
 		if (coreAmmo > coreMaxAmmo) { coreAmmo = coreMaxAmmo; }
 		if (coreAmmo < 0) { coreAmmo = 0; }
 		if (resetCooldown == true || resetCooldown == null && amount > 0) {
@@ -1065,6 +1076,10 @@ public class Blues : Character {
 
 	public void healCore(float amount) {
 		coreHealAmount = amount;
+	}
+
+	public void healExtraCore(float amount) {
+		coreExtraAmmo += amount;
 	}
 
 	public void drawLTankHealingInner() {
@@ -1694,13 +1709,14 @@ public class Blues : Character {
 				ammoAlpha = 0.55f;
 			}
 			int yPos = MathInt.Ceiling(baseY - 16 - MathF.Ceiling(baseAmmo) * 2);
+			int ogYPos = yPos;
 
 			int ammoAmmount = getChargeShotCorePendingAmmo();
 			int actualUse = getChargeShotAmmoUse(getChargeLevel());
 			if (ammoAmmount + baseAmmo > coreMaxAmmo) {
 				ammoAmmount = MathInt.Floor(coreMaxAmmo - baseAmmo);
 			}
-			for (var i = 0; i < ammoAmmount; i++) {
+			for (int i = 0; i < ammoAmmount; i++) {
 				int color = baseColor;
 				if (i < actualUse) {
 					color = filledColor;
@@ -1709,6 +1725,13 @@ public class Blues : Character {
 					Global.sprites["hud_weapon_full_blues"].drawToHUD(coreAmmoColor, baseX, yPos);
 				}
 				Global.sprites["hud_weapon_full_blues"].drawToHUD(color, baseX, yPos, ammoAlpha);
+				yPos -= 2;
+			}
+
+			yPos = MathInt.Ceiling(baseY - 16);
+			for (int i = 0; i < coreExtraAmmo; i++) {
+				baseColor = i < coreAmmo ? 1 : 3;
+				Global.sprites["hud_weapon_full_blues"].drawToHUD(baseColor, baseX, yPos);
 				yPos -= 2;
 			}
 		}

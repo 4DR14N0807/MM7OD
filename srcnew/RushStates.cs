@@ -547,7 +547,7 @@ public class RushSearchState : RushState {
 
 			new Met(
 				pickupPos.addxy(0, 16), rush.xDir, player,
-				player.getNextActorNetId(), sendRpc: true 
+				player.getNextActorNetId(), 1, sendRpc: true 
 			) {
 				vel = pickupVel
 			};

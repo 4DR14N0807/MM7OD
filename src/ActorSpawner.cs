@@ -58,7 +58,7 @@ public class ActorSpawner {
 			byteAngle = 0,
 			player = Global.level.mainPlayer,
 			netId = Global.level.mainPlayer.getNextActorNetId(),
-			extraData = [teamSide]
+			extraData = [teamSide, 0]
 		}, true);
 	}
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -152,7 +152,7 @@ public class MagicCardProj : Projectile {
 	bool reversed;
 	Character? shooter;
 	float maxReverseTime;
-	const float projSpeed = 480;
+	const float projSpeed = 300;
 	public Pickup? pickup;
 	Weapon wep;
 	public int effect;
@@ -170,7 +170,7 @@ public class MagicCardProj : Projectile {
 	) {
 		projId = (int)BassProjIds.MagicCard;
 		maxTime = 5f;
-		maxReverseTime = 0.45f;
+		maxReverseTime = 0.425f;
 		destroyOnHit = true;
 
 		this.byteAngle = byteAngle;
@@ -185,14 +185,14 @@ public class MagicCardProj : Projectile {
 			}
 		}
 
-		vel = Point.createFromByteAngle(byteAngle) * 425;	
+		vel = Point.createFromByteAngle(byteAngle) * projSpeed;	
 		damager.damage = 1;
 		damager.flinch = effect == (int)MagicCardEffects.Flinch ? Global.halfFlinch : 0;
 		originalDir = xDir;
 
 		canBeLocal = false;
 		if (rpc) {
-			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, (byte)(xDir + 1));
+			rpcCreateByteAngle(pos, ownerPlayer, netId, byteAngle, new byte[] { (byte)(xDir + 1), (byte)effect });
 		}
 
 		if (effect == (int)MagicCardEffects.Flip) {
@@ -218,7 +218,7 @@ public class MagicCardProj : Projectile {
 		if (ownedByLocalPlayer && effect == (int)MagicCardEffects.Met) {
 			var met = new Met(
 				pos.addxy(0, 2), xDir, ownerPlayer,
-				ownerPlayer.getNextActorNetId(), ownerPlayer.alliance, true
+				ownerPlayer.getNextActorNetId(), 2, ownerPlayer.alliance, true
 			);
 			met.vel.y = vel.y / 1.5f;
 			met.xPushVel = vel.x / 60f;
@@ -229,7 +229,7 @@ public class MagicCardProj : Projectile {
 	public static Projectile rpcInvoke(ProjParameters arg) {
 		return new MagicCardProj(
 			arg.owner, MagicCard.netWeapon, arg.pos, arg.extraData[0] - 1, 
-			arg.byteAngle, arg.netId, altPlayer: arg.player
+			arg.byteAngle, arg.netId, effect: arg.extraData[1], altPlayer: arg.player
 		);
 	}
 
@@ -259,7 +259,7 @@ public class MagicCardProj : Projectile {
 				}
 				returnPos = shooter.pos.addxy(poi.x * shooter.xDir, poi.y);
 			}
-			Point speed = pos.directionToNorm(returnPos).times(425);
+			Point speed = pos.directionToNorm(returnPos).times(projSpeed);
 			move(speed);
 			byteAngle = speed.byteAngle;
 

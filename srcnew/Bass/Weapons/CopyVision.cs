@@ -48,7 +48,7 @@ public class CopyVision : Weapon {
 			addAmmo(-1, player);
 			bass?.playSound("copyvision", true);
 		} else {
-			new CopyVisionLemonAlt(bass, shootPos, bass.xDir, ammo <= 0, player.getNextActorNetId(), true);
+			new CopyVisionLemonAlt(bass, shootPos, bass.xDir, true, player.getNextActorNetId(), true);
 			bass.playSound("bassbuster", true);
 		}
 	}

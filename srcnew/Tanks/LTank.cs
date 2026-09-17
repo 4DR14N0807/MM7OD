@@ -9,7 +9,6 @@ public class LTank : Tank {
 	public LTank() {
 		maxHealth = 24;
 		health = maxHealth;
-		healMaxTime = 180;
 	}
 
 	public override void use(Player player, Character character) {
@@ -27,11 +26,14 @@ public class LTank : Tank {
 	}
 
 	public override void heal(Player player, Character character) {
-		Helpers.decrementFrames(ref healTime);
+		if (character is not Blues blues) return;
 
+		Helpers.decrementFrames(ref healTime);
+		
         if (healTime <= 0) {
             decimal hpToHeal = Math.Ceiling(Math.Min(healAmount, character.maxHealth - character.health));
-            character.heal(player, (int)hpToHeal, drawHealText: true, creditHeal: false);
+			hpToHeal = Math.Min(hpToHeal, health);
+            character.heal(player, (float)hpToHeal, drawHealText: true, creditHeal: false);
             health -= hpToHeal;
 			if (hpToHeal == 0) {
 	            character.playSound("heal", sendRpc: true);
@@ -43,20 +45,31 @@ public class LTank : Tank {
 			//character.buffList.Add(buff);
 
 			decimal shield = healAmount - hpToHeal;
-			if (shield > 0 && healStacks >= 3 && character.canBeShielded()) {
+			shield = Math.Min(shield, health);
+			if (
+				shield > 0 && healStacks >= 3 && character.canBeShielded() && 
+				character.shieldManager.totalHealth < shield 
+			) {
 				character.playSound("subtank_fill");
 				int time = 60 * 15;
 				Buff? shieldTarget = character.buffList.FirstOrDefault(
-					b => b.update == BaselineShieldPickup.buffUpdate
+					b => b.update == buffUpdate
 				);
 				if (shieldTarget == null) {
 					character.buffList.Add(new Buff("hud_shields", 0, true, time, time) {
-						update = BaselineShieldPickup.buffUpdate
+						update = buffUpdate
 					});
 				}
-				character.shieldManager.addShield(shield, time, ShieldIds.Pickup);
+				character.shieldManager.addShield(shield, time, ShieldIds.Tank);
 				health -= shield;
 			}
+
+			decimal coreHeal = 3;
+			hpToHeal = Math.Min(coreHeal, (decimal)(blues.coreMaxAmmo - blues.coreExtraAmmo));
+			hpToHeal = Math.Min(health, hpToHeal);
+			blues.healExtraCore((float)hpToHeal);
+			blues.addDamageTextHelper(blues.player, (float)(-hpToHeal), blues.coreMaxAmmo, sendRpc: false);
+			health -= hpToHeal;
         }
 
         if (health <= 0 || healStacks >= 3) { 

@@ -102,7 +102,7 @@ public class IceWallProj : Projectile, IDamagable {
 		canBeLocal = false;
 		base.xDir = xDir;
 		isSolidWall = true;
-		maxTime = 2.5f;
+		maxTime = 1.75f;
 		destroyOnHit = false;
 		splashable = true;
 		Global.level.modifyObjectGridGroups(this, isActor: true, isTerrain: true);
@@ -306,7 +306,7 @@ public class IceWallLemon : Projectile {
 		Actor owner, Point pos, float byteAngle, ushort? netProjId, 
 		bool rpc = false, Player? altPlayer = null
 	) : base(
-		pos, 1, owner, "bass_icewall_lemon", netProjId, altPlayer
+		pos, 1, owner, "copy_vision_lemon", netProjId, altPlayer
 	) {
 		projId = (int)BassProjIds.IceWallLemon;
 		maxTime = 36 / 60f;
@@ -320,6 +320,8 @@ public class IceWallLemon : Projectile {
 		if (rpc) {
 			rpcCreateByteAngle(pos, owner, ownerPlayer, netProjId, this.byteAngle);
 		}
+
+		addRenderEffect(RenderEffectType.ChargeBlue);
 	}
 
 	public static Projectile rpcInvoke(ProjParameters arg) {

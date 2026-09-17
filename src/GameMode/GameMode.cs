@@ -1476,9 +1476,12 @@ public class GameMode {
 		}
 		else if (weapon is RemoteMine rMine) {
 			int count = rMine.landedMines.Count;
-			if (rMine.activeMine?.attachHost != null) {
+			if (rMine.activeMine is RemoteMineStickProj) {
 				count++;
 			}
+			/* if (rMine.activeMine?.attachHost != null) {
+				count++;
+			} */
 			if (count > 0) {
 				text = count.ToString();
 			}

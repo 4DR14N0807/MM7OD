@@ -742,7 +742,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		float runSpeed = 1;
 		if (slowdownTime.time > 0) {
-			runSpeed *= 0.5f;
+			runSpeed *= 0.375f;
 		}
 		if (chillDebuff.stacks > 0) {
 			runSpeed *= MathF.Min(1 - 0.25f * chillDebuff.stacks, 0.25f);
@@ -771,12 +771,12 @@ public partial class Character : Actor, IDamagable {
 		float jp = 1;
 
 		if (slowdownTime.time > 0) {
-			jp *= 0.75f;
+			jp *= 0.6875f;
 		}
 		jp *= chillDebuff.stacks switch {
-			>3 => 0.25f,
-			2 => 0.5f,
-			1 => 0.75f,
+			>3 => 0.625f,
+			2 => 0.75f,
+			1 => 0.875f,
 			_ => 1,
 		};
 

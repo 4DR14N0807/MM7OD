@@ -447,6 +447,7 @@ public enum NeutralEnemyProjIds {
 
 public enum GenericProjIds {
 	Generic = 2000,
+	BottomlessPit,
 	ThunderSharpnel
 }
 

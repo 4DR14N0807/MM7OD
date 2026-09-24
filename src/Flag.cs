@@ -99,6 +99,7 @@ public class Flag : Actor {
 		if (timeDropped > 30 && pickedUpOnce) {
 			returnFlag();
 		}
+		yScale = gravityModifier;
 	}
 
 	public float? getUpdraftY() {

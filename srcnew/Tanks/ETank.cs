@@ -21,10 +21,11 @@ public class ETank : Tank {
 	}
 
 	public override void use(Player player, Character character) {
-		if (!character.charState.normalCtrl) {
+		if (!character.charState.normalCtrl && character.charState is not LadderClimb) {
 			return;
 		}
-		character.changeState(new HealState(this));
+		character.stopCharge();
+		character.changeState(character.getHealState(this));
 		healTime = healMaxTime;
 		healAmount = Math.Ceiling(character.maxHealth / 3);
 		healStacks = 0;

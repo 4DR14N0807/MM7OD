@@ -661,7 +661,7 @@ public partial class Character : Actor, IDamagable {
 		if (invulnTime > 0) return false;
 		if (flag != null) return false;
 		if (isWarpIn()) return false;
-		if (charState is HealState) return false;
+		if (isInHealState()) return false;
 		if (charState.specialId == SpecialStateIds.WarpIdle) return false;
 		return charState is not Die;
 	}
@@ -731,6 +731,31 @@ public partial class Character : Actor, IDamagable {
 	public virtual CharState getAirJumpState() => new Jump();
 	public virtual CharState getFallState() => new Fall();
 	public virtual CharState getTauntState() => new Taunt();
+	public virtual CharState getHurtState(
+		int dir, int flinchFrames, bool spiked = false, float? oldComboPos = null
+	) 
+		=> new Hurt(dir, flinchFrames, spiked, oldComboPos);
+
+	public virtual CharState getHealState(Tank tank) {
+		if (charState is LadderClimb lc) {
+			return new HealStateLadder(tank, lc.ladder, lc.snapX, lc.incY);
+		}
+		return new HealState(tank);
+	}
+
+	public virtual bool isInHealState() {
+		return charState is HealState or HealStateLadder;
+	}
+
+	public virtual bool canUseETank() {
+		if (player.ETanks.Count <= 0) return false;
+		return player.ETanks[0].canUse(player, this); 
+	}
+
+	public virtual bool canUseLTank() {
+		if (player.ltanks.Count <= 0) return false;
+		return player.ltanks[0].canUse(player, this); 
+	}
 
 	public virtual float getRunSpeed() {
 		return Physics.WalkSpeed * getRunDebuffs();
@@ -1226,7 +1251,7 @@ public partial class Character : Actor, IDamagable {
 		 ) {
 			if (invulnTime <= 0) {
 				playSound("hurt");
-				applyDamage(4, Player.stagePlayer, this, null, null);
+				applyDamage(4, Player.stagePlayer, this, null, (int)GenericProjIds.BottomlessPit);
 			}
 			changeState(new BottomlessPitState());
 		}
@@ -1620,18 +1645,16 @@ public partial class Character : Actor, IDamagable {
 			}
 		}
 		// Etank state.
-		if (grounded && charState is not HealState &&
-			player.ETanks.Count >= 1 &&
-			player.ETanks[0].canUse(player, this) &&
+		if (grounded && !isInHealState() &&
+			canUseETank() &&
 			player.input.isHeld(Control.Special2, player) &&
 			player.input.isHeld(Control.Down, player)
 		) {
 			player.ETanks[0].use(player, this);
 			return true;
 		}
-		if (grounded && charState is not HealState &&
-			player.ltanks.Count >= 1 &&
-			player.ltanks[0].canUse(player, this) &&
+		if (grounded && !isInHealState() &&
+			canUseLTank() &&
 			player.input.isHeld(Control.Special2, player) &&
 			player.input.isHeld(Control.Down, player)
 		) {
@@ -2920,7 +2943,7 @@ public partial class Character : Actor, IDamagable {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
-		if (charState is HealState) changeToIdleOrFall();
+		if (isInHealState()) changeToIdleOrFall();
 		inCombatCooldown = 120;
 		outOfCombatTime = 0;
 	}
@@ -3297,18 +3320,21 @@ public partial class Character : Actor, IDamagable {
 			if (flinchFrames >= hurtState.flinchLeft) {
 				// You can probably add a check here that sets "hurtState.yStartPos" to null if you.
 				// Want to add a flinch attack that pushes up on chain-flinch.
-				changeState(new Hurt(dir, flinchFrames, false, hurtState.flinchYPos), true);
+				changeState(getHurtState(dir, flinchFrames, false, hurtState.flinchYPos), true);
+				//changeState(new Hurt(dir, flinchFrames, false, hurtState.flinchYPos), true);
 				return;
 			}
 			return;
 		}
 		if (charState is GenericStun stunState) {
 			// We disable the jump as we mid-flinch movement.
-			changeState(new Hurt(dir, flinchFrames, true, stunState.flinchYPos), true);
+			//changeState(new Hurt(dir, flinchFrames, true, stunState.flinchYPos), true);
+			changeState(getHurtState(dir, flinchFrames, true, stunState.flinchYPos), true);
 			return;
 		}
 		if (charState is not Die and not InRideArmor and not InRideChaser) {
-			changeState(new Hurt(dir, flinchFrames, spiked), true);
+			//changeState(new Hurt(dir, flinchFrames, spiked), true);
+			changeState(getHurtState(dir, flinchFrames, spiked), true);
 			return;
 		}
 	}
@@ -3820,6 +3846,11 @@ public partial class Character : Actor, IDamagable {
 					if (i < thp) {
 						Global.sprites["hud_health_full"].drawToHUD(1, baseX, baseY);
 					}
+				} else if (charState is HealStateLadder hsl) {
+					decimal thp = curHP + Math.Min(hsl.tank.healAmount, hsl.tank.health);
+					if (i < thp) {
+						Global.sprites["hud_health_full"].drawToHUD(1, baseX, baseY);
+					}
 				}
 				if (i < ceilCurHP) {
 					Global.sprites["hud_health_full"].drawToHUD(0, baseX, baseY, fhpAlpha);
@@ -3927,7 +3958,7 @@ public partial class Character : Actor, IDamagable {
 		);
 	}
 
-	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo) {
+	public virtual Point renderMiniBar(Point offset, int color, float ammo, float maxAmmo, bool drawBg = true) {
 		float cAmmo = MathF.Ceiling(ammo);
 		float fAmmo = MathF.Floor(ammo);
 		float aAlpha = ammo - fAmmo;
@@ -3939,9 +3970,11 @@ public partial class Character : Actor, IDamagable {
 		Point lpos = offset.addxy(0, -5);
 		for (int i = 0; i < mAmmo; i++) {
 			int id = i < fAmmo ? color : 0;
-			Global.sprites["hud_bar_small_h"].draw(
-				id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
-			);
+			if (drawBg || id != 0) {
+				Global.sprites["hud_bar_small_h"].draw(
+					id, lpos.x + i, lpos.y, 1, 1, null, 1, 1, 1, zPos
+				);
+			}
 			if (i >= fAmmo && i < cAmmo) {
 				Global.sprites["hud_bar_small_h"].draw(
 					color, lpos.x + i, lpos.y, 1, 1, null, aAlpha, 1, 1, zPos

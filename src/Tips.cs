@@ -4,6 +4,10 @@ namespace MMXOnline;
 
 public class Tips {
 	public static List<string[]> xTipsPool = new List<string[]>() {
+			new string[] {
+				"You can use your E-Tanks by pressing COMMAND + DOWN",
+				"to heal without going to the pause menu."			
+			},
 			new string[]
 			{
 				"Every special weapon has a weakness!",

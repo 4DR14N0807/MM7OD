@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using static System.Reflection.Metadata.BlobBuilder;
+using SFML.Graphics;
 
 namespace MMXOnline;
 
@@ -190,6 +191,46 @@ public class CharState {
 	}
 
 	public virtual void render(float x, float y) {
+	}
+
+	public void renderHealBar(Tank tank) {
+		Color color = new Color(123, 255, 123);
+		int posX = ((int)Global.screenW / 2) - 32;
+		int posY = (int)Global.screenH - 32;
+		Color outline = new Color(24, 24, 24);
+
+		int segments = 3;
+		int stacks = tank.healStacks;
+		float progress = 1 - (tank.healTime / tank.healMaxTime);
+		int barSize = 20;
+		int currentOffset = 0;
+
+		DrawWrappers.DrawRectWH(
+			posX, posY, 64, 6, true, outline, 0, ZIndex.HUD, false
+		);
+		for (int i = 0; i <= segments - 1; i++) {
+			DrawWrappers.DrawRectWH(
+				posX + 1 + currentOffset,
+				posY + 1, barSize, 4, true, new Color(49, 49, 49), 0, ZIndex.HUD, false
+			);
+			currentOffset += barSize + 1;
+		}
+		currentOffset = 0;
+		for (int i = 0; i <= stacks - 1; i++) {
+			DrawWrappers.DrawRectWH(
+				posX + 1 + currentOffset,
+				posY + 1, barSize, 4, true, color, 0, ZIndex.HUD, false
+			);
+			currentOffset += barSize + 1;
+		}
+		DrawWrappers.DrawRectWH(
+			posX + 1 + currentOffset, posY + 1,
+			barSize * progress, 4, true, color, 0, ZIndex.HUD, false
+		);
+		Fonts.drawText(
+			FontType.WhiteMini, "resting", posX + 32, posY - 5,
+			Alignment.Center, false, depth: ZIndex.HUD, color: color
+		);
 	}
 
 	public virtual void preUpdate() {
@@ -1440,9 +1481,20 @@ public class LadderClimb : CharState {
 				//character.vel.y = character.getClimbLadderSpeed() * -1;
 				character.frameSpeed = 1;
 			} else if (player.input.isHeld(Control.Down, player)) {
-				character.move(new Point(0, character.getClimbLadderSpeed()));
-				//character.vel.y = character.getClimbLadderSpeed();
-				character.frameSpeed = 1;
+				if (player.input.isHeld(Control.Special2, player) && (character.canUseETank() || character.canUseLTank())) {
+					int fi = character.frameIndex;
+					if (character.canUseETank()) {
+						player.ETanks[0].use(player, character);
+					} else {
+						player.ltanks[0].use(player, character);
+					}
+					character.frameIndex = fi;
+					return;
+				} else {
+					character.move(new Point(0, character.getClimbLadderSpeed()));
+					//character.vel.y = character.getClimbLadderSpeed();
+					character.frameSpeed = 1;
+				}
 			}
 		}
 
@@ -1690,8 +1742,8 @@ public class BottomlessPitState : CharState {
 				character.changeState(new OverheatShutdown(), true); 
 			}
 
-			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 64);
-			warpInPos ??=  Global.level.getGroundPosNoKillzone(lastGroundPosAlt, 64);
+			Point? warpInPos = Global.level.getGroundPosNoKillzone(lastGroundPos, 64, false, false);
+			warpInPos ??=  Global.level.getGroundPosNoKillzone(lastGroundPosAlt, 64, false, false);
 
 			if (warpInPos == null) {
 				SpawnPoint nearestSpawnPoint = Global.level.getClosestSpawnPoint(lastGroundPos);

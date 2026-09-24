@@ -173,19 +173,19 @@ public class Bass : Character {
 	}
 
 	public void addEvilness(float ammo) {
-		if (!isTrebbleBoost && phase >= 3) {
+		if ((!isTrebbleBoost && phase >= 3) || phase >= 4) {
 			return;
 		}
 		evilEnergyEffectTime = 8;
-		evilEnergy += ammo;
+		evilEnergy += ammo / 2;
 		if (evilEnergy >= maxEvilEnergy && isTrebbleBoost) {
 			float excessEnergy = evilEnergy - maxEvilEnergy;
 			if (phase >= 4) {
-				changeState(new BassEvilOverload());
+				//changeState(new BassEvilOverload());
 				//wince(60 * 2, 0, 0, player.id);
-				heal(player, 3);
+				//heal(player, 3);
 				playSound("super_bass_aura", sendRpc: true);
-				playSound("hurt", sendRpc: true);
+				//playSound("hurt", sendRpc: true);
 				int rand = Helpers.randomRange(0, 10);
 				string text = rand switch {
 					1 => "ugh...",
@@ -195,12 +195,13 @@ public class Bass : Character {
 					5 => "need more...",
 					_ => "...",
 				};
-				addDamageText(text, (int)FontType.Purple);
+				//addDamageText(text, (int)FontType.Purple);
 			} else {
-				if (charState.normalCtrl) changeState(new EnergyIncrease());
+				//if (charState.normalCtrl) changeState(new EnergyIncrease());
 				nextPhase(phase + 1);
 			}
 			evilEnergy = Helpers.clampMax(excessEnergy, maxEvilEnergy - 2);
+			if (phase >= 4) evilEnergy = maxEvilEnergy;
 		}
 	}
 
@@ -215,6 +216,9 @@ public class Bass : Character {
 		if (phase >= 4 || phase >= level) {
 			return;
 		}
+		playSound("super_bass_aura", sendRpc: true);
+		new SuperBassAura(this, pos, xDir, phase + 1, player.getNextActorNetId(), ownedByLocalPlayer);
+
 		// Incrase level.
 		phase = level;
 		//player.pendingEvilEnergyStacks = level;
@@ -344,9 +348,9 @@ public class Bass : Character {
 		player.changeWeaponControls();
 
 		// For the shooting animation.
-		if ((shootAnimTime > 0) || charState is LadderClimb or BassShootLadder) {
+		if ((shootAnimTime > 0) || charState is LadderClimb || charState is BassShootLadder) {
 			Helpers.decrementFrames(ref shootAnimTime);
-			if (shootAnimTime <= 0 || string.IsNullOrEmpty(charState.shootSprite)) {
+			if (shootAnimTime <= 0) {
 				shootAnimTime = 0;
 				if (sprite.name.EndsWith("_shoot")) {
 					changeSpriteFromName(charState.defaultSprite, false);
@@ -417,7 +421,6 @@ public class Bass : Character {
 	public override void renderHUD(Point offset, GameMode.HUDHealthPosition position) {
 		offset = offset.addxy(0, 0);
 		base.renderHUD(offset, position);
-
 	}
 
 	public override void renderLifebar(Point offset, GameMode.HUDHealthPosition position) {
@@ -585,7 +588,7 @@ public class Bass : Character {
 
 	public void quickHyperUpgrade() {
 		if (isSuperBass || isTrebbleBoost || !alive || !canGoSuperBass() ||
-			charState is HealState ||
+			isInHealState() ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
 			!charState.normalCtrl || !player.input.isHeld(Control.Special2, player)
 		) {
@@ -824,7 +827,7 @@ public class Bass : Character {
 			}
 			return false;
 		}
-		if (isCooldownOver((int)AttackIds.SonicCrusher) && charState is not SonicCrusher) {
+		if (isCooldownOver((int)AttackIds.SonicCrusher) && charState is not SonicCrusher && !isMovementLimited()) {
 			changeState(new SonicCrusher(Point.zero));
 			triggerCooldown((int)AttackIds.SonicCrusher);
 			return true;
@@ -840,10 +843,10 @@ public class Bass : Character {
 		turnToInput(player.input, player);
 		if (!currentWeapon.hasCustomAnim) {
 			if (charState is LadderClimb lc) {
-				changeState(new BassShootLadder(lc.ladder), false);
+				changeState(new BassShootLadder(lc.ladder), true);
 			}
 			else if (charState is BassShootLadder bsl) {
-				changeState(new BassShootLadder(bsl.ladder), false);
+				changeState(new BassShootLadder(bsl.ladder), true);
 			}
 			else if (charState is BassFly) {
 				string shootSprite = getSprite(charState.shootSprite);
@@ -875,8 +878,10 @@ public class Bass : Character {
 		if (!currentWeapon.hasCustomAnim) {
 			if (charState is LadderClimb lc) {
 				changeState(new BassShootLadder(lc.ladder));
+				shootAnimTime = 18;
 			} else if (charState is BassShootLadder bsl) {
 				changeState(new BassShootLadder(bsl.ladder));
+				shootAnimTime = 18;
 			} else {
 				if (charState is Dash or AirDash) {
 					changeToIdleOrFall();
@@ -889,6 +894,7 @@ public class Bass : Character {
 						shootSprite = getSprite("jump_shoot");
 					}
 				}
+				if (charState is HealState or HealStateLadder) changeToIdleFallorFly();
 				if (shootAnimTime == 0) {
 					shootAnimTime = 18;
 					changeSprite(shootSprite, false);
@@ -1109,7 +1115,7 @@ public class Bass : Character {
 
 	public override bool canAirDash() {
 		return (isSuperBass || isTrebbleBoost) && isCooldownOver((int)AttackIds.AirDash) &&
-		phase >= 3 && !isMovementLimited();
+		phase >= 2 && !isMovementLimited();
 	}
 
 	public override bool canWallClimb() {
@@ -1254,4 +1260,3 @@ public class Bass : Character {
 		superBassMusicTime = flags[5] ? 30 : 0;
 	}
 }
-

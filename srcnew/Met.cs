@@ -80,7 +80,7 @@ public class Met : NeutralEnemy {
 			changeState(new MetShoot());
 			for (int i = 0; i < 3; i++) {
 				new MetLemon(
-					this, pos.addxy(xDir * 13, -3), xDir, i, Player.stagePlayer.getNextActorNetId(), true
+					this, pos.addxy(xDir * 13, -3), xDir, i, ownerPlayer.getNextActorNetId(), true, ownerPlayer
 				);
 			}
 			shotCount++;
@@ -92,7 +92,7 @@ public class Met : NeutralEnemy {
 		base.onDestroy();
 		if (!ownedByLocalPlayer) return;
 
-		new Anim(pos, "generic_explosion", xDir, Player.stagePlayer.getNextActorNetId(), true, true);
+		new Anim(pos, "generic_explosion", xDir, ownerPlayer.getNextActorNetId(), true, true);
 		playSound("danger_wrap_explosion", sendRpc: true);
 	}
 
@@ -222,7 +222,11 @@ public class MetLemon : Projectile {
 		if (xDir < 0) ang = -ang + 128;
 		vel = Point.createFromByteAngle(ang).times(240);
 
-		damager.owner = Player.stagePlayer;
+		if ((owner as Met)?.alliance != GameMode.stageAlliance) {
+			damager.owner = player ?? ownerPlayer;
+		} else {
+			damager.owner = Player.stagePlayer;
+		}
 		damager.damage = 1;
 		damager.flinch = Global.defFlinch;
 		damager.hitCooldown = 10;

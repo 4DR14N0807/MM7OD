@@ -84,6 +84,7 @@ public class IceWallProj : Projectile, IDamagable {
 	float maxSpeed = 3.5f * 60;
 	float groundTime;
 	float soundCooldown;
+	bool wasUnderwater;
 
 	public IceWallProj(
 		Actor owner, Point pos, int xDir, ushort? netId,
@@ -143,12 +144,14 @@ public class IceWallProj : Projectile, IDamagable {
 			}
 		}
 		if (isUnderwater()) {
-			grounded = false;
-			gravityModifier = 0.5f;
+			gravityModifier = -0.5f;
 			float terminalVel = Physics.MaxUnderwaterFallSpeed * 0.5f;
 			if (Math.Abs(vel.y) > terminalVel) {
-				vel.y = terminalVel * Math.Abs(vel.y);
+				vel.y = terminalVel * Math.Sign(vel.y);
 			}
+			wasUnderwater = true;
+		} else if (wasUnderwater) {
+			gravityModifier = 2f;
 		} else {
 			gravityModifier = 1;
 		}
@@ -162,6 +165,7 @@ public class IceWallProj : Projectile, IDamagable {
 		} else {
 			groundTime = 0;
 		}
+		yScale = Math.Sign(gravityModifier);
 	}
 
 	public bool selectiveSolidity(GameObject other) {
@@ -242,11 +246,6 @@ public class IceWallProj : Projectile, IDamagable {
 		xDir = moveDir;
 		vel.x = xDir * 30;
 		time = 0;
-	}
-
-	public override void onDestroy() {
-		base.onDestroy();
-		if (!ownedByLocalPlayer) return;
 	}
 
 	public override void afterDamage(IDamagable damagable, bool wasHit) {

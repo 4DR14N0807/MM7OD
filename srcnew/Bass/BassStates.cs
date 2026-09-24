@@ -34,6 +34,7 @@ public class BassShoot : BassState {
 
 	public override void update() {
 		base.update();
+		airTrasition();
 		if (player.dashPressed(out string dashControl) && character.grounded && character.canDash()) {
 			if (bass.canUseTBladeDash()) {
 				bass.changeState(new TenguBladeDash(), true);
@@ -58,7 +59,7 @@ public class BassShoot : BassState {
 		airSprite = "jump_" + sprite;
 		fallSprite = "fall_" + sprite;
 
-		if (!bass.grounded || bass.vel.y < 0) {
+		if (!bass.grounded || bass.vel.y != 0) {
 			sprite = airSprite;
 			if (bass.vel.y >= 0) {
 				sprite = fallSprite;
@@ -67,7 +68,7 @@ public class BassShoot : BassState {
 				}
 			} else {
 				if (bass.sprite.name != bass.getSprite(sprite)) {
-					bass.changeSpriteFromName(sprite, false);
+					bass.changeSpriteFromName(sprite, true);
 				}
 			}
 		} else {
@@ -87,7 +88,7 @@ public class BassShoot : BassState {
 		// Weapons that always map to "shoot" regardless of dir.
 		if (wep is not BassBuster and not MagicCard
 			and not WaveBurner and not RemoteMine and not IceWall ||
-			wep is IceWall iw && iw.wall?.destroyed != false
+			wep is IceWall iw && !iw.isStream
 		) {
 			return "shoot";
 		}
@@ -145,10 +146,9 @@ public class BassShootLadder : BassState {
 
 	public override void onExit(CharState? newState) {
 		base.onExit(newState);
-		if (bass.currentWeapon is WaveBurner {ammo: > 0}) {
+		if (bass.currentWeapon is WaveBurner {ammo: > 0} && newState is not BassShootLadder) {
 			bass.playSound("waveburnerEnd", sendRpc: true);
 		}
-		bass.shootAnimTime = 0;
 	}
 
 	public override void update() {
@@ -165,7 +165,10 @@ public class BassShootLadder : BassState {
 			bass.sprite.restart();
 		}
 
-		if (stateFrames >= 16 && (!player.input.isHeld(Control.Shoot, player) || bass.currentWeapon?.ammo <= 0)) {
+		if (
+			(stateFrames >= 16 || (bass.currentWeapon is WaveBurner && !player.input.isHeld(Control.Shoot, player))) && 
+			(bass.currentWeapon?.ammo <= 0 || bass.shootAnimTime <= 0)
+		) {
 			float midX = ladder.collider.shape.getRect().center().x;
 			character.changeState(new LadderClimb(ladder, midX), true);
 			return;
@@ -455,7 +458,7 @@ public class SuperBassAura : Projectile {
 
 	public override void update() {
 		base.update();
-		if (bass == null || !bass.alive) {
+		if (bass == null || !bass.alive || time >= 0.4) {
 			destroySelf();
 			return;
 		}
@@ -615,8 +618,8 @@ public class EnergyIncrease : BassState {
 	SuperBassAura? aura;
 
 	public EnergyIncrease() : base("enter") {
-		normalCtrl = false;
-		attackCtrl = false;
+		normalCtrl = true;
+		attackCtrl = true;
 		useGravity = false;
 		invincible = true;
 		stunImmune = true;

@@ -578,7 +578,7 @@ public class KillZone : Geometry {
 					character.projectileCooldown["bottomlesszone"] = 10;
 					if (character.invulnTime <= 0) {
 						character.playSound("hurt");
-						character.applyDamage(4, Player.stagePlayer, character, null, null);
+						character.applyDamage(4, Player.stagePlayer, character, null, (int)GenericProjIds.BottomlessPit);
 					}
 					character.changeState(new BottomlessPitState());
 				} else {
@@ -599,7 +599,8 @@ public class KillZone : Geometry {
 				chr.playSound(flinch ? "hurt" : "hit", sendRpc: true);
 				chr.addRenderEffect(RenderEffectType.Hit, 3, 6);
 				if (flinch && chr.ownedByLocalPlayer) {
-					chr.changeState(new Hurt(-chr.xDir, flinch ? Global.defFlinch : 0));
+					//chr.changeState(new Hurt(-chr.xDir, flinch ? Global.defFlinch : 0));
+					chr.changeState(chr.getHurtState(-chr.xDir, flinch ? Global.defFlinch : 0));
 				}
 			} else {
 				damagable.actor().playSound("hit", sendRpc: true);

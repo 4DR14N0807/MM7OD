@@ -18,8 +18,8 @@ namespace MMXOnline;
 public partial class Global {
 	public static decimal version = 20m;
 	public static string versionName = "v0.6";
-	public static string subVersionName = "Alpha 20";
-	public static string subVersionShortName = "A20";
+	public static string subVersionName = "Alpha 21";
+	public static string subVersionShortName = "A21";
 
 	// THIS VALUE MUST ALWAYS MANUALLY BE SET AFTER UPDATING ASSETS BEFORE BUILDING A RELEASE BUILD.
 	// Obtain it by pressing F1 in main menu.

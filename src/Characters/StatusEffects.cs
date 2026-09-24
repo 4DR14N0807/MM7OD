@@ -11,6 +11,7 @@ public class Hurt : CharState {
 	public float hurtSpeed;
 	public float flinchTime;
 	public bool spiked;
+	public bool move;
 
 	public float flinchLeft => (flinchTime - stateFrames);
 
@@ -24,6 +25,7 @@ public class Hurt : CharState {
 			isCombo = true;
 			flinchYPos = oldComboPos.Value;
 		}
+		move = true;
 	}
 
 	public bool isMiniFlinch() {
@@ -48,7 +50,7 @@ public class Hurt : CharState {
 				character.changeSpriteFromName("hurt2", true);
 			}
 		}
-		if (!spiked && character is not BaseSigma && !character.isToughGuyHyperMode()) {
+		if (!spiked && character is not BaseSigma && !character.isToughGuyHyperMode() && move) {
 			float flichLimitusTime = flinchTime <= 30 ? flinchTime : 30;
 
 			character.vel.y = (-0.125f * (flichLimitusTime - 1)) * 60f;
@@ -65,7 +67,7 @@ public class Hurt : CharState {
 
 	public override void update() {
 		base.update();
-		if (hurtSpeed != 0 && character.rootTime <= 0) {
+		if (hurtSpeed != 0 && character.rootTime <= 0 && move) {
 			hurtSpeed = Helpers.toZero(hurtSpeed, 1.6f / flinchTime * Global.speedMul, hurtDir);
 			if (character is not BaseSigma && !character.isToughGuyHyperMode()) //Tough guy
 				character.move(new Point(hurtSpeed * 60f, 0));
@@ -87,8 +89,12 @@ public class Hurt : CharState {
 		}
 
 		if (stateFrames >= flinchTime) {
-			character.changeToLandingOrFall(false);
+			exit();
 		}
+	}
+
+	public virtual void exit() {
+		character.changeToLandingOrFall(false);
 	}
 }
 
@@ -133,9 +139,13 @@ public class GenericStun : CharState {
 			character.paralyzedTime == 0
 		) {
 			if (flinchTime > 0) {
-				character.changeState(
+				/* character.changeState(
 					new Hurt(hurtDir, MathInt.Ceiling(flinchTime), false, flinchYPos
 					), true
+				); */
+				character.changeState(
+					character.getHurtState(hurtDir, MathInt.Ceiling(flinchTime), false, flinchYPos),
+					true
 				);
 				return;
 			}

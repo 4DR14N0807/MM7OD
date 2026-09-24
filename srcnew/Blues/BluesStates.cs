@@ -248,6 +248,7 @@ public class BluesSlide : BluesState {
 	public int particles = 3;
 	Anim? dust;
 	public bool locked;
+	public bool ceilingCheck = false;
 
 	public BluesSlide() : base("slide") {
 		enterSound = "slide";
@@ -274,9 +275,9 @@ public class BluesSlide : BluesState {
 			slideTime += Global.speedMul;
 		}
 
-		CollideData? cellingCheck = Global.level.checkTerrainCollisionOnce(character, 0, -16);
+		ceilingCheck = Global.level.checkTerrainCollisionOnce(character, 0, -16) != null;
 
-		if (cellingCheck != null) {
+		if (ceilingCheck) {
 			locked = true;
 			if (player.input.getXDir(player) == -initialSlideDir) {
 				character.xDir *= -1;
@@ -463,7 +464,7 @@ public class ProtoStrike : BluesState {
 		) {
 			blues.addCoreAmmo(2);
 			character.setHurt(-character.xDir, Global.halfFlinch, false);
-			character.slideVel = 200 / 60 * -character.xDir;
+			character.slideVel = 100 / 60 * -character.xDir;
 			return;
 		}
 	}

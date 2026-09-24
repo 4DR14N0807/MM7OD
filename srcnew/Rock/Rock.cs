@@ -234,7 +234,6 @@ public class Rock : Character {
 		if (!ownedByLocalPlayer) return;
 		if (currentWeapon == null) { return; }
 		if (currentWeapon.canShoot(chargeLevel, this) == false) return;
-		if (!canShoot()) return;
 		if (!charState.attackCtrl && !charState.invincible || charState is Slide) {
 			changeToIdleOrFall();
 		}
@@ -289,7 +288,7 @@ public class Rock : Character {
 
 	public void quickAdaptorUpgrade() {
 		if (hasSuperAdaptor || boughtSuperAdaptorOnce ||
-			charState is HealState ||
+			isInHealState() ||
 			!alive || !canGoSuperAdaptor() || !charState.normalCtrl ||
 			charState.immortal || charState is CallDownRush or WarpIdle ||
 			!player.input.isHeld(Control.Special2, player)
@@ -380,10 +379,6 @@ public class Rock : Character {
 	public override bool canShoot() {
 		if (isSlideColliding) return false;
 		if (sWheel?.destroyed == false) return false;
-		if (charState is Slide)
-			return (currentWeapon is RockBuster || currentWeapon is WildCoil) && getChargeLevel() == 2;
-		if (charState is CallDownRush) return false;
-		if (charState is SAArrowSlashState) return false;
 		if (isInvulnerableAttack()) return false;
 		if (saRocketPunchProj?.destroyed == false) return false;
 
@@ -407,15 +402,8 @@ public class Rock : Character {
 		return true;
 	}
 
-
-	public override bool canChangeWeapons() {
-		return base.canChangeWeapons();
-	}
 	public override bool canCharge() {
-		if (flag != null) return false;
 		if (player.weapons.Count == 0) return false;
-		if (isWarpIn()) return false;
-		if (invulnTime > 0) return false;
 		if (junkShieldProjs.Count > 0) return false;
 		if (sWheel?.destroyed == false) return false;
 
@@ -424,6 +412,13 @@ public class Rock : Character {
 
 	public override bool chargeButtonHeld() {
 		return player.input.isHeld(Control.Shoot, player);
+	}
+
+	public override CharState getHurtState(int dir, int flinchFrames, bool spiked = false, float? oldComboPos = null) {
+		if (isSlideColliding) {
+			return new HurtSlide(dir, flinchFrames);
+		}
+		return base.getHurtState(dir, flinchFrames, spiked, oldComboPos);
 	}
 
 	public override bool isInvulnerable(bool ignoreRideArmorHide = false, bool factorHyperMode = false) {

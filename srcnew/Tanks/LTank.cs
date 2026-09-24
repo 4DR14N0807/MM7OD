@@ -12,13 +12,14 @@ public class LTank : Tank {
 	}
 
 	public override void use(Player player, Character character) {
-		if (character is not Blues || !character.charState.normalCtrl){
+		if (!character.charState.normalCtrl && character.charState is not LadderClimb) {
 			return;
 		}
 
 		//blues.usedLtank = this;
+		character.stopCharge();
 		healAmount = Math.Min(health, Math.Ceiling(character.maxHealth / 3));
-		character.changeState(new HealState(this));
+		character.changeState(character.getHealState(this));
 		healTime = healMaxTime;
 		healAmount = Math.Ceiling(character.maxHealth / 3);
 		isHealing = true;

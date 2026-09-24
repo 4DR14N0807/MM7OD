@@ -70,7 +70,7 @@ public class BassMovelistMenu : MovelistMenu {
 			),
 			new MovelistItem(
 				spriteName, 14, "Airdash", Control.Dash,
-				"Needs Lv4\nMid-air."
+				"Needs Lv3\nMid-air."
 			),
 			new MovelistItem(
 				spriteName, 19, "Sweeping Laser", Control.Down + " + " + Control.Special1,
@@ -85,14 +85,14 @@ public class BassMovelistMenu : MovelistMenu {
 				$"{Control.Special2} + {Control.Down}", "Under Lv5\nOn Ground",
 				"Heals 1 HP.\nMinus 2 Max HP.\nReduces LV.\nDamage Immune."
 			), */
-			new MovelistItem(
+			/* new MovelistItem(
 				spriteName, 23, "Evil Unison", "Auto: on max Evil", "Under Lv5",
 				"Heals 2 HP.\nAdds 2 Max HP.\nIncreases LV.\nDamage Immune.", true
-			),
-			new MovelistItem(
+			), */
+			/* new MovelistItem(
 				spriteName, 24, "Evil Overload", "Auto: on max Evil", "At Lv5",
 				"Heals 3 HP.\nStuns the user.", true
-			),
+			), */
 		]);	
 	}
 

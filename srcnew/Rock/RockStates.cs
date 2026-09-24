@@ -91,6 +91,13 @@ public class Slide : RockState {
 		}
 	}
 
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		if (newState is not HurtSlide) {
+			rock.isSlideColliding = false;
+		}
+	}
+
 	string getOppositeDir(float inputX) {
 		if (inputX == -1) return Control.Right;
 		else return Control.Left;
@@ -282,8 +289,8 @@ public class RockDoubleJump : CharState {
 
 		if (anim != null) anim.changePos(character.pos);
 
-		character.move(new Point(character.xDir * jumpSpeedX, 0));
-		character.move(new Point(0, jumpSpeedY));
+		character.move(new Point(character.xDir * jumpSpeedX * character.getRunDebuffs(), 0));
+		character.move(new Point(0, jumpSpeedY * character.getRunDebuffs()));
 
 		time += Global.spf;
 		if (stateFrames > 30 || (stateFrames > 6 && character.player.input.isPressed(Control.Jump, character.player))) {

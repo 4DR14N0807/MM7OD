@@ -34,6 +34,7 @@ public class Blues : Character {
 
 	// Extra core heat variables (l-tanks stuff)
 	public float coreExtraAmmo;
+	public float coreExtraHealAmount;
 
 	// Breakman stuff.
 	public bool overdrive;
@@ -222,6 +223,13 @@ public class Blues : Character {
 			jumpSpeed = 5.25f * 60;
 		}
 		return jumpSpeed * getJumpModifier();
+	}
+
+	public override CharState getHurtState(int dir, int flinchFrames, bool spiked = false, float? oldComboPos = null) {
+		if (charState is BluesSlide { ceilingCheck: true }) {
+			return new HurtSlide(dir, flinchFrames);
+		}
+		return base.getHurtState(dir, flinchFrames, spiked, oldComboPos);
 	}
 
 	public override bool canAirJump() {
@@ -447,7 +455,7 @@ public class Blues : Character {
 		) {
 			Helpers.decrementFrames(ref coreAmmoDecreaseCooldown);
 			float rmul = 1;
-			if (charState is HealState) {
+			if (isInHealState()) {
 				rmul *= 0.25f;
 			}
 			overdriveAmmoDecreaseCooldown = Helpers.clampMin0(overdriveAmmoDecreaseCooldown - speedMul * rmul);
@@ -601,14 +609,34 @@ public class Blues : Character {
 		}
 		isUsingLtank = usedLtank != null;
 
-		if (coreHealAmount > 0 && coreHealTime <= 0) {
-			coreHealAmount--;
+		if ((coreHealAmount > 0 || coreExtraHealAmount > 0) && coreHealTime <= 0) {
+			bool coreHeal = false, coreExtraHeal = false;
+			if (coreHealAmount > 0) {
+				coreHealAmount--;
+				coreHeal = true;
+			}
+			if (coreExtraHealAmount > 0) {
+				coreExtraHealAmount--;
+				coreExtraHeal = true;
+			}
 			coreHealTime = 3;
 			if (!overdrive) {
-				coreAmmo--;
-				if (coreAmmo <= 0) {
-					coreAmmo = 0;
-					coreHealAmount = 0;
+				if (coreHeal) {
+					coreAmmo--;
+					if (coreAmmo <= 0) {
+						coreAmmo = 0;
+						coreHealAmount = 0;
+					}
+				}
+				if (coreExtraHeal) {
+					coreExtraAmmo++;
+					if (coreExtraAmmo > coreMaxAmmo) {
+						coreExtraAmmo = coreMaxAmmo;
+						coreExtraHealAmount = 0;
+					}
+				}
+
+				if (coreAmmo <= 0 || coreExtraAmmo > coreMaxAmmo) {
 					coreHealTime = 0;
 				}
 				playSound("heal");
@@ -681,7 +709,7 @@ public class Blues : Character {
 
 	public void quickHyperUpgrade() {
 		if (isBreakMan || !alive || !canUseBreakman() ||
-			charState is HealState ||
+			isInHealState() ||
 			charState.immortal || charState is SuperBassStart or WarpIdle ||
 			!player.input.isHeld(Control.Special2, player) || !charState.normalCtrl
 		) {
@@ -1079,7 +1107,7 @@ public class Blues : Character {
 	}
 
 	public void healExtraCore(float amount) {
-		coreExtraAmmo += amount;
+		coreExtraHealAmount += amount;
 	}
 
 	public void drawLTankHealingInner() {
@@ -1277,7 +1305,7 @@ public class Blues : Character {
 		bool bodyPierced = false;
 		int damageReduction = 1;
 		bool shieldFront = isShieldFront();
-		bool shieldHitFront = (shieldFront && Damager.hitFromFront(this, actor, attacker, projId ?? -1));
+		bool shieldHitFront = (shieldFront && (Damager.hitFromFront(this, actor, attacker, projId ?? -1) || projId == (int)GenericProjIds.BottomlessPit));
 		bool shieldHitBack = (
 			!shieldFront && Damager.hitFromBehind(this, actor, attacker, projId ?? -1)
 			&& charState is not OverheatShutdown and not OverheatShutdownStart and not Recover
@@ -1743,7 +1771,7 @@ public class Blues : Character {
 			Global.level.mainPlayer.character != this ||
 			Global.level.mainPlayer.isSpectator ||
 			displayHpTime > 0 ||
-			coreAmmo <= 0 && (!overdrive || overdriveAmmo <= 0)
+			coreAmmo <= 0 && (!overdrive || overdriveAmmo <= 0) && coreExtraAmmo <= 0
 		) {
 			return;
 		}
@@ -1752,6 +1780,7 @@ public class Blues : Character {
 			-MathInt.Ceiling(coreMaxAmmo / scale), -44
 		);
 		renderMiniBar(offset, 4, coreAmmo / scale, coreMaxAmmo / scale);
+		renderMiniBar(offset, 2, coreExtraAmmo / scale, coreMaxAmmo / scale, coreAmmo <= 0);
 		if (overdrive) {
 			renderMiniBar(offset, 2, overdriveAmmo / scale, overdriveAmmo / scale);
 		}

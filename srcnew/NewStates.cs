@@ -67,42 +67,98 @@ public class HealState : CharState {
 	public override void render(float x, float y) {
 		base.render(x, y);
 
-		Color color = new Color(123, 255, 123);
-		int posX = ((int)Global.screenW / 2) - 32;
-		int posY = (int)Global.screenH - 32;
-		Color outline = new Color(24, 24, 24);
+		renderHealBar(tank);
+	}
+}
 
-		int segments = 3;
-		int stacks = tank.healStacks;
-		float progress = 1 - (tank.healTime / tank.healMaxTime);
-		int barSize = 20;
-		int currentOffset = 0;
 
-		DrawWrappers.DrawRectWH(
-			posX, posY, 64, 6, true, outline, 0, ZIndex.HUD, false
-		);
-		for (int i = 0; i <= segments - 1; i++) {
-			DrawWrappers.DrawRectWH(
-				posX + 1 + currentOffset,
-				posY + 1, barSize, 4, true, new Color(49, 49, 49), 0, ZIndex.HUD, false
-			);
-			currentOffset += barSize + 1;
+public class HealStateLadder : CharState{
+
+	public Tank tank;
+	public float healEffectTime;
+	Ladder ladder;
+	float snapX;
+	float? incY = null;
+	public HealStateLadder(Tank tank, Ladder ladder, float snapX, float? incY = null
+	) : base("ladder_climb") {
+		this.tank = tank;
+		this.ladder = ladder;
+		this.snapX = snapX;
+		this.incY = incY;
+		useGravity = false;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		character.shootAnimTime = 0;
+		character.frameSpeed = 0;
+	}
+
+	public override void update() {
+		base.update();
+
+		tank.heal(player, character);
+		healGfx();
+
+		if (character.canClimbLadder()) {
+			if (
+				(
+					player.input.isPressed(Control.Down, player) || player.input.isPressed(Control.Up, player)
+				) || (
+					!tank.isHealing || character.shootAnimTime > 0 ||
+					stateFrames > 10 && player.input.isPressed(Control.Special2, player)
+				)
+			) {
+				character.changeState(new LadderClimb(ladder, snapX, incY));
+			}
 		}
-		currentOffset = 0;
-		for (int i = 0; i <= stacks - 1; i++) {
-			DrawWrappers.DrawRectWH(
-				posX + 1 + currentOffset,
-				posY + 1, barSize, 4, true, color, 0, ZIndex.HUD, false
-			);
-			currentOffset += barSize + 1;
+	}
+
+	public override void onExit(CharState? newState) {
+		base.onExit(newState);
+		character.frameSpeed = 1;
+		if (tank?.buff != null) {
+			character.buffList.Remove(tank.buff);
+			tank.buff = null;
 		}
-		DrawWrappers.DrawRectWH(
-			posX + 1 + currentOffset, posY + 1,
-			barSize * progress, 4, true, color, 0, ZIndex.HUD, false
-		);
-		Fonts.drawText(
-			FontType.WhiteMini, "resting", posX + 32, posY - 5,
-			Alignment.Center, false, depth: ZIndex.HUD, color: color
-		);
+	}
+
+	public void healGfx() {
+		healEffectTime += Global.speedMul;
+		if (healEffectTime >= 3) {
+			healEffectTime = 0;
+			Point gfxPos = character.pos.addxy(0, -15);
+
+			Anim tempAnim = new Anim(
+				gfxPos.addRand(14, 15), "charge_part_2", 1,
+				null, true, host: character
+			);
+			tempAnim.vel.y = -120;
+		}
+	}
+
+	public override void render(float x, float y) {
+		base.render(x, y);
+
+		renderHealBar(tank);
+	}
+}
+
+
+public class HurtSlide : Hurt {
+
+	CharState? oldState;
+	public HurtSlide(int dir, int flinchFrames) : base(dir, flinchFrames) {
+		sprite = "hurt_slide";
+		move = false;
+	}
+
+	public override void onEnter(CharState oldState) {
+		base.onEnter(oldState);
+		this.oldState = oldState;
+	}
+
+	public override void exit() {
+		character.changeState(oldState ?? character.getIdleState());
 	}
 }

@@ -105,15 +105,15 @@ public class CollideData {
 	}
 
 	public bool isSideWallHit() {
-		return gameObject is Wall && hitData?.normal != null && hitData.normal.Value.isSideways();
+		return gameObject is Wall or OneWay && hitData?.normal != null && hitData.normal.Value.isSideways();
 	}
 
 	public bool isCeilingHit() {
-		return gameObject is Wall && hitData?.normal != null && hitData.normal.Value.isCeilingNormal();
+		return gameObject is Wall or OneWay && hitData?.normal != null && hitData.normal.Value.isCeilingNormal();
 	}
 
 	public bool isGroundHit() {
-		return gameObject is Wall && hitData?.normal != null && hitData.normal.Value.isGroundNormal();
+		return gameObject is Wall or OneWay && hitData?.normal != null && hitData.normal.Value.isGroundNormal();
 	}
 
 	public bool isMovingPlatformHit() {

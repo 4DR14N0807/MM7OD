@@ -35,7 +35,7 @@ public class Damager {
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
-		{ (int)BluesProjIds.LemonAngled, 3 },
+		{ (int)BluesProjIds.LemonAngled, 4 },
 		{ (int)BluesProjIds.LemonAOverdrive, 3 },
 	};
 	
@@ -561,6 +561,7 @@ public class Damager {
 			(int)ProjIds.AcidBurstPoison => true,
 			(int)ProjIds.Burn => true,
 			(int)BassProjIds.RemoteMineMeleeExplosion => true,
+			(int)BassProjIds.RemoteMineExplosion => true,
 			_ => false
 		};
 	}

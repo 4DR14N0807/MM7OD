@@ -222,7 +222,7 @@ public class ExpBolts : Actor {
 				vel.y = MathF.Sign(distY) * 5 * 60;
 			}
 		}
-		if (hommingOnActor && time >= 60 * 4) {
+		if ((hommingOnActor && time >= 60 * 4) || target?.destroyed == true) {
 			destroySelf();
 		}
 	}

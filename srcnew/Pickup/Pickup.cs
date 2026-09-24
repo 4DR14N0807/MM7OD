@@ -56,7 +56,7 @@ public class Pickup : Actor {
 		}
 
 		if (!ownedByLocalPlayer && isRushPickup) {
-			alpha *= 0.75f;
+			alpha *= 0.6f;
 		}
 
 		if (Global.level.gameMode.isTeamMode && isRushPickup) {

@@ -336,6 +336,7 @@ public class DevConsole {
 		}),
 		new Command("hurt", (args) => {
 			Global.level.mainPlayer.character?.setHurt(-1, Global.defFlinch, false);
+			Global.level.mainPlayer.character?.playSound("hurt");
 			return "";
 		}),
 		new Command("trhealth", (args) => {

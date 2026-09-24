@@ -296,7 +296,7 @@ public class Damager {
 					character.xPushVel = 3 * (damagingActor?.xDir ?? -character.xDir);
 					break;
 				case (int)BassProjIds.MagicCardWince:
-					character.wince(20, 0, projId, owner.id);
+					character.wince(Global.halfFlinch, 0, projId, owner.id);
 					break;
 				case (int)BassProjIds.MagicCardRoot: 
 					character.root(30, 100, owner.id);
@@ -308,11 +308,12 @@ public class Damager {
 					character.burnStun(Global.defFlinch, 0, owner.id);
 					break;
 				case (int)BassProjIds.SpreadDrill:
+					flinchSound = character.wince(Global.halfFlinch, 0, projId, owner.id);
 				case (int)BassProjIds.SpreadDrillMid:
-					flinchSound = character.wince(35, 0, projId, owner.id);
+					flinchSound = character.wince(Global.miniFlinch, 0, projId, owner.id);
 					break;
 				case (int)BluesProjIds.LemonAngled: {
-					//character.wince(20, 60, projId, owner.id);
+					//character.wince(Global.halfFlinch, 0, projId, owner.id);
 					break;
 				}
 				case (int)BassProjIds.WaveBurnerUnderwater:

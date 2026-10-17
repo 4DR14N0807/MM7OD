@@ -1929,7 +1929,8 @@ public partial class Level {
 					}
 					else if (altDeltaY > -46 && altDeltaY < 46 &&
 						camPlayer.character?.charState is
-						(not WallKick and not WallSlide and not LadderClimb)
+						(not WallKick and not LadderClimb) &&
+						camPlayer.character?.inWallSlideState() == false
 					) {
 						if (!unlockfollow) {
 							fullDeltaY = 0;

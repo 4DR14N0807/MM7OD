@@ -1108,7 +1108,7 @@ public class Bass : Character {
 
 	public override bool canAirJump() {
 		return (
-			dashedInAir == 0 && rootTime <= 0 &&
+			dashedInAir == 0 && rootTime <= 0 && disarmTime <= 0 &&
 			charState is not BassShootLadder && !isSuperBass && !isTrebbleBoost
 		);
 	}
@@ -1189,7 +1189,7 @@ public class Bass : Character {
 		palette?.SetUniform("paletteTexture", Global.textures["bass_palette_texture"]);
 
 		//We don't apply palette shader on hypermode.
-		if (palette != null && !isSuperBass && !isTrebbleBoost) {
+		if (palette != null && !isSuperBass && !isTrebbleBoost && disarmTime <= 0) {
 			shaders.Add(palette);
 		} else if (isSuperBass || isTrebbleBoost) {
 			ShaderWrapper? palette2 = player.superBassPaletteShader;

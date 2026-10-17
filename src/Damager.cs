@@ -32,6 +32,7 @@ public class Damager {
 		{ (int)BluesProjIds.LemonOverdrive, 40 },
 		{ (int)BluesProjIds.SparkShock, 100 },
 		{ (int)BluesProjIds.ProtoLandPush, 60 },
+		{ (int)RobotMastersProjIds.SlashMClaw, 60 },
 	};
 
 	public static Dictionary<int, int> multiHitLimit = new() {
@@ -299,7 +300,7 @@ public class Damager {
 					character.wince(20, 0, projId, owner.id);
 					break;
 				case (int)BassProjIds.MagicCardRoot: 
-					character.root(30, 100, owner.id);
+					character.root(30, 100, owner.id, true);
 					break;
 				case (int)BassProjIds.MagicCardFreeze: 
 					character.freeze(Global.defFlinch, 60, owner.id);
@@ -329,6 +330,16 @@ public class Damager {
 				case (int)RobotMastersProjIds.FreezeMFreezeProj:
 					character.freeze(60, 150, owner.id);
 					break;
+				case (int)RobotMastersProjIds.SlashMGoo:
+					character.disarm(90, 180, owner.id);
+					break;
+				case (int)RobotMastersProjIds.SlashMGooPuddle:
+					character.gooStick(damagingActor, owner.id, false);
+					break;
+				case (int)RobotMastersProjIds.SlashMGooPuddleSide:
+				case (int)RobotMastersProjIds.SlashMGooPuddleCeiling:
+					character.gooStick(damagingActor, owner.id, true);
+					break;
 			}
 			float flinchCooldown = 0;
 			if (projectileFlinchCooldowns.ContainsKey(projId)) {
@@ -348,6 +359,24 @@ public class Damager {
 					flinch = 0;
 				} else {
 					character.flinchCooldown[flinchKey] = flinchCooldown;
+				}
+			}
+
+			// Slashman block
+			if (character is Slashman { isBlocking: true} && !isArmorPiercing(projId)) {
+				if (hitFromFront(character, damagingActor, owner, projId)) {
+					damage /= 2;
+					decimal decDamage = (decimal)damage % 1;
+					damage = MathF.Floor(damage);
+					if (decDamage >= 0) {
+						character.damageSavings += decDamage;
+					}
+					if (character.damageSavings >= 1) {
+						character.damageSavings--;
+						damage++;
+					}
+
+					flinch = 0;
 				}
 			}
 
@@ -568,7 +597,7 @@ public class Damager {
 	private static bool isVictimImmuneToQuake(Actor victim) {
 		if (victim is CrackedWall) return false;
 		if (!victim.grounded) return true;
-		if (victim is Character chr && chr.charState is WallSlide) return true;
+		if (victim is Character chr && chr.inWallSlideState()) return true;
 		return false;
 	}
 

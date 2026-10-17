@@ -157,7 +157,7 @@ public partial class Character : Actor, IDamagable {
 	// For wallkick.
 	public float wallKickTimer;
 	public int wallKickDir;
-	public float maxWallKickTime = 12;
+	public float maxWallKickTime = 20;
 
 	// Char Ids.
 	public CharIds charId;
@@ -188,6 +188,12 @@ public partial class Character : Actor, IDamagable {
 	public Dictionary<string, float> rootCooldown = new();
 	public Anim? rootAnim;
 	public Anim? slowdownAnim;
+
+	// Slash Man Disarm
+	public float disarmTime;
+	public Dictionary<string, float> disarmCooldown = new();
+	public Anim? disarmAnim;
+	public Anim? disarmAnim2;
 
 	public float burnEffectTime;
 	public float burnHurtCooldown;
@@ -521,6 +527,10 @@ public partial class Character : Actor, IDamagable {
 			player.burnStateShader.SetUniform("burnStateStacks", burnStunStacks / Burning.maxStacks);
 			shaders.Add(player.burnStateShader);
 		}
+		if (disarmTime > 0 && player.rgbShader != null) {
+			player.rgbShader.SetUniform("palette", 20f);
+			shaders.Add(player.rgbShader);
+		}
 		if (player.evilEnergyStacks > 0 && player.evilEnergyShader != null && this is Bass) {
 			player.evilEnergyShader.SetUniform("stacks", player.evilEnergyStacks / 8f);
 			shaders.Add(player.evilEnergyShader);
@@ -575,7 +585,7 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool canDash() {
 		if (player.isAI && charState is Dash ||
 			rideArmorPlatform != null ||
-			charState is WallSlide ||
+			inWallSlideState() ||
 			charState is WallKick wallKick && wallKick.stateTime < wallKick.dashThreshold ||
 			isMovementLimited()
 		) {
@@ -588,6 +598,7 @@ public partial class Character : Actor, IDamagable {
 		if (rideArmorPlatform != null ||
 			isSoftLocked() ||
 			rootTime > 0 ||
+			disarmTime > 0 ||
 			bigBubble != null ||
 			isDWrapped ||
 			flag != null
@@ -600,6 +611,7 @@ public partial class Character : Actor, IDamagable {
 	public virtual bool canJump() {
 		if (rideArmorPlatform != null) return false;
 		if (rootTime > 0) return false;
+		if (disarmTime > 0) return false;
 		if (bigBubble != null) return false;
 		if (isSoftLocked()) return false;
 		return true;
@@ -647,7 +659,7 @@ public partial class Character : Actor, IDamagable {
 		if (shootAnimTime > 0 || isSoftLocked()) {
 			return false;
 		}
-		if (isDWrapped || rootTime > 0) {
+		if (isDWrapped || rootTime > 0 || disarmTime > 0) {
 			return false;
 		}
 		return true;
@@ -663,11 +675,12 @@ public partial class Character : Actor, IDamagable {
 		if (isWarpIn()) return false;
 		if (isInHealState()) return false;
 		if (charState.specialId == SpecialStateIds.WarpIdle) return false;
+		if (disarmTime > 0) return false;
 		return charState is not Die;
 	}
 
 	public virtual bool canShoot() {
-		return charState.attackCtrl;
+		return charState.attackCtrl && disarmTime <= 0;
 	}
 
 	public virtual bool canShootCharge() {
@@ -736,6 +749,15 @@ public partial class Character : Actor, IDamagable {
 	) 
 		=> new Hurt(dir, flinchFrames, spiked, oldComboPos);
 
+	public virtual CharState getWallSlideState(int wallDir, Collider wallCollider) {
+		return new WallSlide(wallDir, wallCollider);
+	}
+	public virtual bool inWallSlideState() {
+		return charState is WallSlide or WallSlideAttack;
+	}
+	public virtual CharState getWallKickState() {
+		return new WallKick();
+	}
 	public virtual CharState getHealState(Tank tank) {
 		if (charState is LadderClimb lc) {
 			return new HealStateLadder(tank, lc.ladder, lc.snapX, lc.incY);
@@ -956,17 +978,24 @@ public partial class Character : Actor, IDamagable {
 				}
 			}
 		}
-		if (rootTime > 0) {
-			if (rootAnim == null || rootAnim.destroyed) {
-				rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+		if (rootTime <= 0) {
+
+			if (rootAnim != null) {
+				if (!rootAnim.destroyed) {
+					rootAnim.destroySelf();
+				}
+				rootAnim = null;
+			}
+			
+			if (disarmAnim2 != null && !disarmAnim2.destroyed) {
+				disarmAnim2?.destroySelf();
+				disarmAnim2 = null;
+				useGravity = true;
+				frameSpeed = 1;
+				Anim.createGibEffect("slashman_goo_fade", pos, null, pieceOverdive: 5, blink: true);
 			}
 		}
-		else if (rootAnim != null) {
-			if (!rootAnim.destroyed) {
-				rootAnim.destroySelf();
-			}
-			rootAnim = null;
-		}
+		
 		if (slowdownTime.time > 0) {
 			if (slowdownAnim == null || slowdownAnim.destroyed) {
 				slowdownAnim = new Anim(getCenterPos(), "ra_elec", 1, null, true, host: this);
@@ -984,6 +1013,7 @@ public partial class Character : Actor, IDamagable {
 		Helpers.decrementTime(ref dwrapInvulnTime);
 		Helpers.decrementFrames(ref burnInvulnTime);
 		Helpers.decrementFrames(ref rootTime);
+		Helpers.decrementFrames(ref disarmTime);
 		Helpers.decrementFrames(ref flattenedTime);
 		Helpers.decrementFrames(ref virusTime);
 		Helpers.decrementFrames(ref oilTime);
@@ -1093,6 +1123,7 @@ public partial class Character : Actor, IDamagable {
 		Dictionary<string, float>[] cooldownList = [
 			winceCooldown,
 			rootCooldown,
+			disarmCooldown,
 			stunCooldown,
 			freezeCooldown,
 		];
@@ -1447,7 +1478,7 @@ public partial class Character : Actor, IDamagable {
 			!grounded && vel.y >= 0 &&
 			wallKickTimer <= 0 && (
 				charState.normalCtrl || charState.airMove ||
-				charState is WallSlide || charState is WallSlideAttack { canCancel: true }
+				inWallSlideState() || charState is WallSlideAttack { canCancel: true }
 			) &&
 			player.input.isPressed(Control.Jump, player) &&
 			(charState.wallKickLeftWall != null || charState.wallKickRightWall != null)
@@ -1457,7 +1488,7 @@ public partial class Character : Actor, IDamagable {
 			isDashing = false;
 			// Enable dash speed if input if pressed.
 			if (player.input.isHeld(Control.Dash, player) &&
-				(charState.useDashJumpSpeed || charState is WallSlide or WallSlideAttack)
+				(charState.useDashJumpSpeed || inWallSlideState())
 			) {
 				isDashing = true;
 				dashedInAir++;
@@ -1486,8 +1517,8 @@ public partial class Character : Actor, IDamagable {
 			charState.lastLeftWall = null;
 			charState.lastRightWall = null;
 			// Set wallkick state if normal ctrl.
-			if (charState.normalCtrl || charState is WallSlide or WallSlideAttack) {
-				changeState(new WallKick(), true);
+			if (charState.normalCtrl || inWallSlideState()) {
+				changeState(getWallKickState(), true);
 				if (wallKickDir != 0) {
 					xDir = -wallKickDir;
 				}
@@ -1621,7 +1652,7 @@ public partial class Character : Actor, IDamagable {
 				lastJumpPressedTime = 0;
 			}
 			// Wallclimb code.
-			if (canWallClimb() && charState is not WallSlide && wallKickTimer <= 0) {
+			if (canWallClimb() && !inWallSlideState() && wallKickTimer <= 0) {
 				bool velYRequirementMet = vel.y > 0;
 				// This logic can be abit confusing,
 				// but we are trying to mirror the actual Mega man X wall climb physics.
@@ -1633,13 +1664,15 @@ public partial class Character : Actor, IDamagable {
 				if (dpadXDir == -1 && velYRequirementMet && charState.lastLeftWall != null
 					&& charState.lastLeftWallCollider != null
 				) {
-					changeState(new WallSlide(-1, charState.lastLeftWallCollider));
+					//changeState(new WallSlide(-1, charState.lastLeftWallCollider));
+					changeState(getWallSlideState(-1, charState.lastLeftWallCollider));
 					return true;
 				}
 				if (dpadXDir == 1 && velYRequirementMet && charState.lastRightWall != null
 					&& charState.lastRightWallCollider != null
 				) {
-					changeState(new WallSlide(1, charState.lastRightWallCollider));
+					//changeState(new WallSlide(1, charState.lastRightWallCollider));
+					changeState(getWallSlideState(1, charState.lastRightWallCollider));
 					return true;
 				}
 			}
@@ -1829,7 +1862,7 @@ public partial class Character : Actor, IDamagable {
 		}
 	}
 
-	public void root(float time, float cooldown, int playerid) {
+	public void root(float time, float cooldown, int playerid, bool anim) {
 		if (!ownedByLocalPlayer) {
 			return;
 		}
@@ -1859,6 +1892,58 @@ public partial class Character : Actor, IDamagable {
 		}
 		// Hud stuff.
 		buffList.Add(new Buff("hud_debuffs", 1, false, time, time));
+
+		if (anim) {
+			rootAnim = new Anim(getCenterPos(), "root_anim", 1, null, true, host: this);
+		}
+	}
+
+	public void disarm(float time, float cooldown, int playerid) {
+		if (!ownedByLocalPlayer) {
+			return;
+		}
+		if (isSlowImmune() || isStunImmune()) {
+			return;
+		}
+		string cdId = $"{playerid}";
+		if (disarmCooldown.GetValueOrDefault(cdId) > 0) {
+			return;
+		}
+		setHurt(-xDir, Global.miniFlinch, false);
+		playSound("hurt", sendRpc: true);
+		// Disarray mechanic.
+		float disarrayReduction = (100 - Helpers.clampMax(disarrayStacks.Count * 20, 80)) / 100f;
+		time = MathF.Floor(time * disarrayReduction);
+		disarrayStacks[$"{playerid}_disarm"] = new DisarrayStack(cooldown);
+		// Apply debuff.
+		disarmCooldown[cdId] = time + 60;
+		
+		if (disarmTime < time) {
+			disarmTime = time;
+		}
+		stopMoving();
+		charState.canStopJump = false;
+		Player? enemyPlayer = Global.level.getPlayerById(playerid);
+		if (enemyPlayer != null && enemyPlayer != player) {
+			enemyPlayer.mastery.addSupportExp(time / 30f, true);
+		}
+		// Hud stuff.
+		buffList.Add(new Buff("hud_debuffs", 1, false, time, time));
+	}
+
+	public void gooStick(Actor? actor, int playerId, bool changeGravity) {
+		root(60, 180, playerId, false);
+
+		if (changeGravity) {
+			useGravity = false;
+			frameSpeed = 0;
+		}
+
+		if (actor == null) return;
+
+		disarmAnim2 = new Anim(
+			actor.pos, actor.sprite.name, actor.xDir, player.getNextActorNetId(), false, ownedByLocalPlayer
+		);
 	}
 
 	public void paralize(float time, float cooldown, int playerid) {
@@ -2115,9 +2200,9 @@ public partial class Character : Actor, IDamagable {
 		return xDir;
 	}
 
-	public int getShootXDir() {
+	public virtual int getShootXDir() {
 		int xDir = this.xDir;
-		if (charState is WallSlide) xDir *= -1;
+		if (inWallSlideState()) xDir *= -1;
 		return xDir;
 	}
 
@@ -3050,6 +3135,10 @@ public partial class Character : Actor, IDamagable {
 		if (health < 0) {
 			health = 0;
 		}
+		//Character on damage effects.
+		attacker?.character?.onDamageDeal(originalDamage, damage);
+		onDamageTaken(originalDamage, damage);
+
 		// DPS display.
 		if (player.showTrainingDps && health > 0 && originalDamage > 0) {
 			if (player.trainingDpsStartTime == 0) {
@@ -3103,6 +3192,9 @@ public partial class Character : Actor, IDamagable {
 			displayHpTime = 60 * 2;
 		}
 	}
+
+	public virtual void onDamageDeal(decimal ogDamage, decimal fDamage) {}
+	public virtual void onDamageTaken(decimal ogDamage, decimal fDamage) {}
 
 	public void applyGHoldDamage(GravityHoldProj proj, Player owner, Damager damager, int projId, float hitCooldown) {
 		if (!grounded && !isPushImmune()) {
@@ -3601,6 +3693,13 @@ public partial class Character : Actor, IDamagable {
 
 	public virtual void onFlinchOrStun(CharState state) {
 		if (bigBubble != null) bigBubble.destroySelf();
+		if (rootTime > 0 && disarmAnim2 != null) {
+			disarmAnim2.destroySelf();
+			Anim.createGibEffect("slashman_goo_fade", pos, null, pieceOverdive: 5, blink: true);
+			disarmAnim2 = null;
+			useGravity = true;
+			frameSpeed = 1;
+		}
 	}
 
 	public virtual void onWeaponChange(Weapon oldWeapon, Weapon newWeapon) {}

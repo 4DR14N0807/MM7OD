@@ -504,14 +504,14 @@ public class Projectile : Actor {
 		}
 
 		if (otherProj != null && otherProj.ownedByLocalPlayer &&
-			(otherProj.isDeflectShield || otherProj.isReflectShield)
+			(otherProj.isDeflectShield || otherProj.isReflectShield || otherProj.isShield)
 		) {
 			if (otherProj.isReflectShield &&
 				reflectable && damager.alliance != otherProj.damager.alliance
 			) {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					reflect(otherProj.owner, sendRpc: true);
-					playSound("sigmaSaberBlock", sendRpc: true);
+					//playSound("sigmaSaberBlock", sendRpc: true);
 					return;
 				}
 			}
@@ -521,7 +521,17 @@ public class Projectile : Actor {
 			) {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					deflect(otherProj.owner, sendRpc: true);
-					playSound("sigmaSaberBlock", forcePlay: false, sendRpc: true);
+					//playSound("sigmaSaberBlock", forcePlay: false, sendRpc: true);
+					return;
+				}
+			}
+
+			if (otherProj != null && otherProj.isShield && !destroyOnHit && 
+				damager.alliance != otherProj.damager.alliance
+			) {
+				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
+					playSound("ding", forcePlay: false, sendRpc: true);
+					destroySelf();
 					return;
 				}
 			}
@@ -533,7 +543,7 @@ public class Projectile : Actor {
 			) {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					reflect(otherProj.owner, sendRpc: true);
-					playSound("sigmaSaberBlock", sendRpc: true);
+					//playSound("sigmaSaberBlock", sendRpc: true);
 					return;
 				}
 			}
@@ -544,6 +554,16 @@ public class Projectile : Actor {
 				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
 					deflect(otherProj.owner, sendRpc: true);
 					//playSound("sigmaSaberBlock", forcePlay: false, sendRpc: true);
+					return;
+				}
+			}
+
+			if (otherProj != null && otherProj.isShield && destroyOnHit && 
+				damager.alliance != otherProj.damager.alliance
+			) {
+				if (deltaPos.x != 0 && Math.Sign(deltaPos.x) != otherProj.xDir) {
+					playSound("ding", forcePlay: false, sendRpc: true);
+					destroySelf();
 					return;
 				}
 			}

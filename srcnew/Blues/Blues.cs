@@ -650,7 +650,7 @@ public class Blues : Character {
 				shootAnimTime = 0;
 				if (sprite.name.EndsWith("_shoot") || sprite.name.EndsWith("_shoot_shield")) {
 					changeSpriteFromName(charState.defaultSprite, false);
-					if (charState is WallSlide) {
+					if (inWallSlideState()) {
 						frameIndex = sprite.totalFrameNum - 1;
 					}
 				}
@@ -1576,7 +1576,7 @@ public class Blues : Character {
 	public override List<ShaderWrapper> getShaders() {
 		List<ShaderWrapper> shaders = base.getShaders();
 
-		if (player.bluesScarfShader != null && !overdrive && !overheating
+		if (player.bluesScarfShader != null && !overdrive && !overheating && disarmTime <= 0
 			&& (!isBreakMan || !Options.main.fastShaders)
 		) {
 			ShaderWrapper palette = player.bluesScarfShader;

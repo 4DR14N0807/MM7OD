@@ -1267,6 +1267,9 @@ public class WallSlide : CharState {
 		if (player.isAI && character.ai != null) {
 			character.ai.jumpTime = 0;
 		}
+		if (character is Slashman sm) {
+			sm.runSpeed = 0;
+		}
 	}
 
 	public override void update() {
@@ -1313,16 +1316,16 @@ public class WallSlide : CharState {
 				var hit = character.getHitWall(wallDir, 0);
 				var hitWall = hit?.gameObject as Wall;
 
-				if (wallDir != player.input.getXDir(player)) {
+				/* if (wallDir != player.input.getXDir(player)) {
 					character.changeState(character.getFallState());
-				} else if (hitWall == null || !hitWall.collider.isClimbable) {
+				} else  */if (hitWall == null || !hitWall.collider.isClimbable) {
 					var hitActor = hit?.gameObject as Actor;
 					if (hitActor == null || !hitActor.isPlatform) {
 						character.changeState(character.getFallState());
 					}
 				}
 			}
-			character.move(new Point(0, 100));
+			if (player.input.isHeld(Control.Down,player)) character.move(new Point(0, 60));
 		}
 
 		dustTime += Global.speedMul;

@@ -369,6 +369,11 @@ public partial class RPCCreateProj : RPC {
 		//{ (int)RobotMastersProjIds.FreezeMSplitProj2, FreezeMSplitProj2.rpcInvoke },
 		//{ (int)RobotMastersProjIds.FreezeMCrawlProj, FreezeMCrawlProj.rpcInvoke },
 
+		// Slash Man
+		{ (int)RobotMastersProjIds.SlashMClaw, SlashManClawProj.rpcInvoke },
+		{ (int)RobotMastersProjIds.SlashMGoo, SlashManGooProj.rpcInvoke },
+		{ (int)RobotMastersProjIds.SlashMGooPuddle, SlashManGooPuddleProj.rpcInvoke },
+
 		//Others
 		{ (int)NeutralEnemyProjIds.MetLemon, MetLemon.rpcInvoke },
 	};

@@ -236,6 +236,14 @@ public class Helpers {
 		return genericPaletteShader;
 	}
 
+	public static ShaderWrapper cloneGenericColorShader(float red, float green, float blue) {
+		var genericColorShader = cloneShaderSafe("genericColor");
+		genericColorShader?.SetUniform("red", red);
+		genericColorShader?.SetUniform("green", green);
+		genericColorShader?.SetUniform("blue", blue);
+		return genericColorShader;
+	}
+
 	public static ShaderWrapper cloneNightmareZeroPaletteShader(string textureName) {
 		var texture = Global.textures[textureName];
 		var genericPaletteShader = cloneShaderSafe("nightmareZero");

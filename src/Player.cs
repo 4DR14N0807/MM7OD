@@ -452,6 +452,7 @@ public partial class Player {
 	// New shaders.
 	public ShaderWrapper rgbShader = Helpers.cloneShaderSafe("rgb");
 	public ShaderWrapper burnStateShader = Helpers.cloneShaderSafe("burning");
+	public ShaderWrapper disarmShader = Helpers.cloneGenericColorShader(205, -25, -40);
 	public ShaderWrapper evilEnergyShader = Helpers.cloneShaderSafe("evil_energy");
 	public ShaderWrapper rockPaletteShader = Helpers.cloneGenericPaletteShader("rock_palette_texture");
 	//public ShaderWrapper rockCharge1 = Helpers.cloneGenericPaletteShader("rock_charge_texture");
@@ -461,6 +462,7 @@ public partial class Player {
 	public ShaderWrapper bassPaletteShader = Helpers.cloneGenericPaletteShader("bass_palette_texture");
 	public ShaderWrapper superBassPaletteShader = Helpers.cloneGenericPaletteShader("bass_superadaptor_palette");
 	public ShaderWrapper superBassBodyShader = Helpers.cloneGenericPaletteShader("bass_superadaptor_bodypalette");
+	public ShaderWrapper slashManShader = Helpers.cloneGenericPaletteShader("slashman_palette");
 
 	// Character specific data populated on RPC request
 	//public ushort? charNetId;

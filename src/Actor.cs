@@ -1954,7 +1954,7 @@ public partial class Actor : GameObject {
 		return false;
 	}
 
-	public Point getPoiDir() {
+	public virtual Point getPoiDir() {
 		return new Point(xDir * xScale, yDirMod() * yScale);
 	}
 

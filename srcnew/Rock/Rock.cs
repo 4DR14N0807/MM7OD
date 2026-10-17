@@ -221,7 +221,7 @@ public class Rock : Character {
 		}
 
 		if (!isCharging() && !isSlideColliding && shootPressed &&
-			weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0
+			weaponCooldown <= 0 && currentWeapon?.shootCooldown <= 0 && canShoot()
 		) {
 			lastShootPressed = 0;
 			shoot(0);
@@ -356,6 +356,7 @@ public class Rock : Character {
 		if (charState is SAArrowSlashState) return false;
 		if (charState is LegBreakerState) return false;
 		if (rootTime > 0) return false;
+		if (disarmTime > 0) return false;
 		if (bigBubble != null) return false;
 		return true;
 	}
@@ -498,7 +499,7 @@ public class Rock : Character {
 		palette?.SetUniform("palette", index);
 		palette?.SetUniform("paletteTexture", Global.textures["rock_palette_texture"]);
 
-		if (palette != null) {
+		if (palette != null && disarmTime <= 0) {
 			shaders.Add(palette);
 		}
 		shaders.AddRange(baseShaders);

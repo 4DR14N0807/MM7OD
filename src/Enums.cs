@@ -438,6 +438,13 @@ public enum RobotMastersProjIds {
 	FreezeMSplitProj2,
 	FreezeMFreezeProj,
 	FreezeMCrawlProj,
+
+	//SlashMan
+	SlashMClaw,
+	SlashMGoo,
+	SlashMGooPuddle,
+	SlashMGooPuddleSide,
+	SlashMGooPuddleCeiling,
 }
 
 public enum NeutralEnemyProjIds {
@@ -907,9 +914,10 @@ public enum ProjIds {
 	BassKick,
 	SonicCrusher,
 	FreezeMDownAttack,
-
-	//7OD stuff
-	SlashmanIdle,
+	SlashMIdle,
+	SlashMSpin,
+	SlashMDive,
+	SlashMBlock,
 
 	// Special damage types.
 	SelfDmg = 30000,

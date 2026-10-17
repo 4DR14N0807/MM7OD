@@ -789,7 +789,7 @@ public partial class Character : Actor, IDamagable {
 		}
 		float runSpeed = 1;
 		if (slowdownTime.time > 0) {
-			runSpeed *= 0.5f;
+			runSpeed *= 0.375f;
 		}
 		if (chillDebuff.stacks > 0) {
 			runSpeed *= MathF.Min(1 - 0.25f * chillDebuff.stacks, 0.25f);
@@ -818,16 +818,19 @@ public partial class Character : Actor, IDamagable {
 		float jp = 1;
 
 		if (slowdownTime.time > 0) {
-			jp *= 0.75f;
+			jp *= 0.625f;
 		}
 		jp *= chillDebuff.stacks switch {
-			>3 => 0.25f,
-			2 => 0.5f,
-			1 => 0.75f,
+			>3 => 0.5f,
+			2 => 0.66666f,
+			1 => 0.83333f,
 			_ => 1,
 		};
-
-		return jp * gravitySign();
+		// Skip sqaure root if 1 or 0.
+		if (jp == 1) {
+			return gravitySign();
+		}
+		return MathF.Sqrt(jp) * gravitySign();
 	}
 
 	public void hook(Projectile strikeChainProj) {
@@ -3342,7 +3345,6 @@ public partial class Character : Actor, IDamagable {
 	}
 
 	public virtual void addWTankAddAmmo(float amount) {
-		//player.weapons?[weaponSlot].addAmmoHeal(amount);
 		foreach (var weapon in weapons) {
 			if (weapon.canHealAmmo) {
 				weapon?.addAmmoPercentHeal(amount);
